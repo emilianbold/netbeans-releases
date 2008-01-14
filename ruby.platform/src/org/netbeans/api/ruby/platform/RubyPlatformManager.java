@@ -49,16 +49,18 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -73,7 +75,6 @@ public final class RubyPlatformManager {
 
     private static final String PLATFORM_PREFIX = "rubyplatform."; // NOI18N
     private static final String PLATFORM_INTEPRETER = ".interpreter"; // NOI18N
-    private static final String PLATFORM_LABEL_SUFFIX = ".label"; // NOI18N
     private static final String PLATFORM_ID_DEFAULT = "default"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(RubyPlatformManager.class.getName());
@@ -164,8 +165,8 @@ public final class RubyPlatformManager {
             // Test and preindexing hook
             String hardcodedRuby = System.getProperty("ruby.interpreter");
             if (hardcodedRuby != null) {
-                platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, hardcodedRuby,
-                        "User-specified Ruby"));
+                Info info = new Info("User-specified Ruby", "0.1");
+                platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, hardcodedRuby, info));
                 return platforms;
             }
             
@@ -180,17 +181,34 @@ public final class RubyPlatformManager {
                 if (key.startsWith(PLATFORM_PREFIX) && key.endsWith(PLATFORM_INTEPRETER)) {
                     String id = key.substring(PLATFORM_PREFIX.length(),
                             key.length() - PLATFORM_INTEPRETER.length());
-                    String label = p.get(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX);
+                    String idDot = id + '.';
+                    Properties props = new Properties();
+                    props.put(Info.RUBY_KIND, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_KIND));
+                    props.put(Info.RUBY_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION));
+                    String jrubyVersion = p.get(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION);
+                    if (jrubyVersion != null) {
+                        props.put(Info.JRUBY_VERSION, jrubyVersion);
+                    }
+                    props.put(Info.RUBY_PATCHLEVEL, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL));
+                    props.put(Info.RUBY_RELEASE_DATE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE));
+//                    props.put(Info.RUBY_EXECUTABLE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE));
+                    props.put(Info.RUBY_PLATFORM, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM));
+                    String gemHome = p.get(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
+                    if (gemHome != null) {
+                        props.put(Info.GEM_HOME, gemHome);
+                        props.put(Info.GEM_PATH, p.get(PLATFORM_PREFIX + idDot + Info.GEM_PATH));
+                        props.put(Info.GEM_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.GEM_VERSION));
+                    }
                     String interpreterPath = entry.getValue();
-                    platforms.add(new RubyPlatform(id, interpreterPath, label));
+                    Info info = new Info(props);
+                    platforms.add(new RubyPlatform(id, interpreterPath, info));
                     foundDefault |= id.equals(PLATFORM_ID_DEFAULT);
                 }
             }
             if (!foundDefault) {
                 String loc = RubyInstallation.getInstance().getJRuby();
                 if (loc != null) {
-                    platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, loc,
-                            NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")));
+                    platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, loc, Info.forDefaultPlatform()));
                 }
             }
             LOGGER.fine("RubyPlatform initial list: " + platforms);
@@ -240,13 +258,12 @@ public final class RubyPlatformManager {
     }
 
     public static RubyPlatform addPlatform(final File interpreter) throws IOException {
-        String version = computeVersion(interpreter);
-        if (version == null) {
+        final Info info = computeInfo(interpreter);
+        if (info == null) {
             return null;
         }
 
-        final String label = interpreter.getName() + " (" + version + ')'; // NOI18N
-        final String id = computeID(label);
+        final String id = computeID(info.getKind());
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
@@ -259,7 +276,21 @@ public final class RubyPlatformManager {
                     if (!interpreter.isFile()) {
                         throw new FileNotFoundException(interpreter.getAbsolutePath());
                     }
-                    props.setProperty(PLATFORM_PREFIX + id + PLATFORM_LABEL_SUFFIX, label);
+                    String idDot = id + '.';
+                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_KIND, info.getKind());
+                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION, info.getVersion());
+                    if (info.getJVersion() != null) {
+                        props.setProperty(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION, info.getJVersion());
+                    }
+                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL, info.getPatchlevel());
+                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE, info.getReleaseDate());
+//                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE, info.getExecutable());
+                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM, info.getPlatform());
+                    if (info.getGemHome() != null) {
+                        props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_HOME, info.getGemHome());
+                        props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_PATH, info.getGemPath());
+                        props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_VERSION, info.getGemVersion());
+                    }
                     PropertyUtils.putGlobalProperties(props);
                     return null;
                 }
@@ -267,7 +298,7 @@ public final class RubyPlatformManager {
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
-        RubyPlatform plaf = new RubyPlatform(id, interpreter.getAbsolutePath(), label);
+        RubyPlatform plaf = new RubyPlatform(id, interpreter.getAbsolutePath(), info);
         synchronized (RubyPlatform.class) {
             getPlatformsInternal().add(plaf);
         }
@@ -280,8 +311,19 @@ public final class RubyPlatformManager {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
-                    props.remove(PLATFORM_PREFIX + plaf.getID() + PLATFORM_INTEPRETER);
-                    props.remove(PLATFORM_PREFIX + plaf.getID() + PLATFORM_LABEL_SUFFIX);
+                    String id = PLATFORM_PREFIX + plaf.getID();
+                    props.remove(id + PLATFORM_INTEPRETER);
+                    String idDot = id + '.';
+                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_KIND);
+                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION);
+                    props.remove(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION);
+                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL);
+                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE);
+//                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE);
+                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM);
+                    props.remove(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
+                    props.remove(PLATFORM_PREFIX + idDot + Info.GEM_PATH);
+                    props.remove(PLATFORM_PREFIX + idDot + Info.GEM_VERSION);
                     PropertyUtils.putGlobalProperties(props);
                     return null;
                 }
@@ -308,26 +350,46 @@ public final class RubyPlatformManager {
         return getPlatformsInternal().iterator();
     }
 
-    private static String computeVersion(final File interpreter) throws IOException {
+    private static Info computeInfo(final File interpreter) throws IOException {
         if (TEST_RUBY == interpreter) { // tests
-            return "test_ruby_version"; // NOI18N
+            Properties props = new Properties();
+            props.put(Info.RUBY_KIND, "Ruby");
+            props.put(Info.RUBY_VERSION, "0.1");
+            props.put(Info.RUBY_PATCHLEVEL, "123");
+            props.put(Info.RUBY_RELEASE_DATE, "2000-01-01");
+            props.put(Info.RUBY_PLATFORM, "abcd");
+            props.put(Info.GEM_HOME, "/a/b/c");
+            props.put(Info.GEM_PATH, "/a/b/c");
+            props.put(Info.GEM_VERSION, "0.2");
+            return new Info(props);
         }
-        String ruby = null;
+        Info info = null;
         try {
-            ProcessBuilder pb = new ProcessBuilder(interpreter.getAbsolutePath(), "-e", "print VERSION"); // NOI18N
+            File platformInfoScript = InstalledFileLocator.getDefault().locate(
+                    "platform_info.rb", "org.netbeans.modules.ruby.platform", false);  // NOI18N
+            if (platformInfoScript == null) {
+                throw new IllegalStateException("Cannot locate platform_info.rb script");
+            }
+            ProcessBuilder pb = new ProcessBuilder(interpreter.getAbsolutePath(), platformInfoScript.getAbsolutePath()); // NOI18N
             Process start = pb.start();
             // FIXME: set timeout
             start.waitFor();
             if (start.exitValue() == 0) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(start.getInputStream()));
-                ruby = reader.readLine();
+                Properties props = new Properties();
+                props.load(start.getInputStream());
+                info = new Info(props);
             } else {
                 LOGGER.severe(interpreter.getAbsolutePath() + " does not seems to be a valid interpreter"); // TODO localize me
+                BufferedReader errors = new BufferedReader(new InputStreamReader(start.getErrorStream()));
+                String line;
+                while ((line = errors.readLine()) != null) {
+                    LOGGER.severe(line);
+                }
             }
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
-        return ruby;
+        return info;
     }
 
 }

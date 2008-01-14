@@ -77,6 +77,12 @@ public abstract class RubyTestBase extends NbTestCase {
                 return cd;
             } else if (relativePath.equals("jruby-1.1RC1")) {
                 return TestUtil.getXTestJRubyHome();
+            } else if (relativePath.equals("platform_info.rb")) {
+                String script = System.getProperty("xtest.platform_info.rb");
+                if (script == null) {
+                    throw new RuntimeException("xtest.platform_info.rb property has to be set when running within binary distribution");
+                }
+                return new File(script);
             } else {
                 return null;
             }

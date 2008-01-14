@@ -42,10 +42,8 @@ package org.netbeans.modules.ruby.platform;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.Collator;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -111,7 +109,7 @@ public final class PlatformComponentFactory {
             RubyPlatform[] platforms = _platforms.toArray(new RubyPlatform[_platforms.size()]);
             Arrays.sort(platforms, new Comparator<RubyPlatform>() {
                 public int compare(RubyPlatform p1, RubyPlatform p2) {
-                    int res = Collator.getInstance().compare(p1.getLabel(), p2.getLabel());
+                    int res = Collator.getInstance().compare(p1.getInfo().getLongDescription(), p2.getInfo().getLongDescription());
                     if (res != 0) {
                         return res;
                     } else {

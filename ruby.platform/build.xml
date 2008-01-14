@@ -60,6 +60,7 @@ made subject to such option by the copyright holder.
     </target>    
     
     <target name="release" depends="init">
+        <copy todir="${cluster}" file="release/platform_info.rb"/>
         <!-- Generated Ruby files for core libraries, used by code completion
              etc. See the extractsigs project for details. -->
         <chmod perm="ugo+w">

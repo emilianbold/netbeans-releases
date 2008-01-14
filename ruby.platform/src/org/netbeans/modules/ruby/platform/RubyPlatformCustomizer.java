@@ -145,10 +145,10 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
             removeButton.setEnabled(false);
             return;
         }
-        plfNameValue.setText(plaf.getLabel());
+        plfNameValue.setText(plaf.getInfo().getLongDescription());
         plfInterpreterValue.setText(plaf.getInterpreter());
         gemHomeValue.setText(plaf.getGemManager().getGemDir());
-        gemToolValue.setText(plaf.getGemManager().getGemTool());
+        gemToolValue.setText(plaf.getGemManager().getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
         removeButton.setEnabled(!plaf.isDefault());
     }
 

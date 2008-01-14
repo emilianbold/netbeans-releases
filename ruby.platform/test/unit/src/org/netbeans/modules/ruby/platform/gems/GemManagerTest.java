@@ -84,7 +84,7 @@ public class GemManagerTest extends RubyTestBase {
         List<Gem> available = gm.getRemoteGems(errors);
         assertNotNull("gem not null", available);
         System.out.println("available: " + available.size());
-        assertTrue("no errros", errors.isEmpty());
+        assertTrue("no errros: " + errors, errors.isEmpty());
         
         List<Gem> installed = gm.getInstalledGems(errors);
         assertNotNull("gem not null", installed);

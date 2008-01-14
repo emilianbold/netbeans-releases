@@ -111,11 +111,6 @@ public class RubyInstallation {
         return jruby;
     }
     
-    public static boolean isJRuby(final String pathToInterpreter) {
-        File rubyF = new File(pathToInterpreter);
-        return rubyF.getName().startsWith("jruby"); // NOI18N
-    }
-    
     static void displayRubyOptions() {
         OptionsDisplayer.getDefault().open("RubyOptions"); // NOI18N
     }

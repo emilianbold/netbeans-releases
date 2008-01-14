@@ -53,7 +53,7 @@ public final class TestUtil {
     public static File getXTestJRubyHome() {
         String destDir = System.getProperty("xtest.jruby.home");
         if (destDir == null) {
-            throw new RuntimeException("xtest.jruby.home property has to be set when running within binary distribution " + destDir);
+            throw new RuntimeException("xtest.jruby.home property has to be set when running within binary distribution");
         }
         return new File(destDir);
     }

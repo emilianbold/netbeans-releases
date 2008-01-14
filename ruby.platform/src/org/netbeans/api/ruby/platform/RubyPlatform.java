@@ -44,6 +44,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -75,9 +76,10 @@ public final class RubyPlatform {
     /** Version number of the rubystubs */
     private static final String RUBYSTUBS_VERSION = "1.8.6-p110"; // NOI18N
 
+    private Info info;
+    
     private final String id;
     private final String interpreter;
-    private final String label;
     private File home;
     private String homeUrl;
     private String rubylib;
@@ -88,14 +90,10 @@ public final class RubyPlatform {
     
     private PropertyChangeSupport pcs;
 
-    private RubyPlatform(final String id, final String interpreterPath) {
-        this(id, interpreterPath, new File(interpreterPath).getName());
-    }
-
-    public RubyPlatform(final String id, final String interpreterPath, final String label) {
+    RubyPlatform(String id, String interpreterPath, Info info) {
         this.id = id;
         this.interpreter = interpreterPath;
-        this.label = label;
+        this.info = info;
     }
 
     /**
@@ -117,6 +115,10 @@ public final class RubyPlatform {
     public static GemManager gemManagerFor(final Project project) {
         RubyPlatform platform = RubyPlatform.platformFor(project);
         return platform == null ? null : platform.getGemManager();
+    }
+
+    public Info getInfo() {
+        return info;
     }
 
     /**
@@ -407,8 +409,12 @@ public final class RubyPlatform {
         return closeButton;
     }
 
+    public String getVersion() {
+        return info.getVersion();
+    }
+
     public String getLabel() {
-        return label;
+        return info.getLabel();
     }
 
     public boolean isDefault() {
@@ -416,7 +422,7 @@ public final class RubyPlatform {
     }
 
     public boolean isJRuby() {
-        return RubyInstallation.isJRuby(interpreter);
+        return info.isJRuby();
     }
 
     public boolean isValid() {
@@ -561,6 +567,114 @@ public final class RubyPlatform {
     public @Override String toString() {
         return "RubyPlatform[id:" + getID() + ", label:" + getLabel() + ", " + getInterpreter() + "]"; // NOI18N
     }
-    
-    
+
+    public static class Info {
+
+        static final String RUBY_KIND = "ruby_kind"; // NOI18N
+        static final String RUBY_VERSION = "ruby_version"; // NOI18N
+        static final String JRUBY_VERSION = "jruby_version"; // NOI18N
+        static final String RUBY_PATCHLEVEL = "ruby_patchlevel"; // NOI18N
+        static final String RUBY_RELEASE_DATE = "ruby_release_date"; // NOI18N
+        static final String RUBY_EXECUTABLE = "ruby_executable"; // NOI18N
+        static final String RUBY_PLATFORM = "ruby_platform"; // NOI18N
+        static final String GEM_HOME = "gem_home"; // NOI18N
+        static final String GEM_PATH = "gem_path"; // NOI18N
+        static final String GEM_VERSION = "gem_version"; // NOI18N
+
+        private String kind;
+        private String version;
+        private String jversion;
+        private String patchlevel;
+        private String releaseDate;
+        private String executable;
+        private String platform;
+        private String gemHome;
+        private String gemPath;
+        private String gemVersion;
+        
+        Info(final Properties props) {
+            this.kind = props.getProperty(RUBY_KIND);
+            this.version = props.getProperty(RUBY_VERSION);
+            this.jversion = props.getProperty(JRUBY_VERSION);
+            this.patchlevel = props.getProperty(RUBY_PATCHLEVEL);
+            this.releaseDate = props.getProperty(RUBY_RELEASE_DATE);
+            this.executable = props.getProperty(RUBY_EXECUTABLE);
+            this.platform = props.getProperty(RUBY_PLATFORM);
+            this.gemHome = props.getProperty(GEM_HOME);
+            this.gemPath = props.getProperty(GEM_PATH);
+            this.gemVersion = props.getProperty(GEM_VERSION);
+        }
+
+        Info(String kind, String version) {
+            this.kind = kind;
+            this.version = version;
+        }
+        
+        static Info forDefaultPlatform() {
+            // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
+            Info info = new Info("JRuby", "1.8.6");
+            info.jversion = "1.1RC1";
+            info.patchlevel = "5512";
+            info.releaseDate = "2008-01-12";
+            info.executable = null;
+            info.platform = "java";
+            info.gemHome = "/space/ruby/gem-repo";
+            info.gemPath = "/space/ruby/gem-repo";
+            info.gemVersion = "1.0.1 (1.0.1)";
+            return info;
+        }
+        
+        public String getLabel() {
+            return kind + " (" + (isJRuby() ? jversion : version) + ')';
+        }
+        
+        public String getLongDescription() {
+            return kind + ' ' + version + ' ' + '(' + releaseDate + " patchlevel " + patchlevel + ") [" + platform + ']'; // NOI18N
+        }
+
+        public boolean isJRuby() {
+            return "JRuby".equals(kind);
+        }
+        
+//        public String getExecutable() {
+//            return executable;
+//        }
+
+        public String getGemHome() {
+            return gemHome;
+        }
+
+        public String getGemPath() {
+            return gemPath;
+        }
+
+        public String getGemVersion() {
+            return gemVersion;
+        }
+
+        public String getKind() {
+            return kind;
+        }
+
+        public String getPatchlevel() {
+            return patchlevel;
+        }
+
+        public String getPlatform() {
+            return platform;
+        }
+
+        public String getReleaseDate() {
+            return releaseDate;
+        }
+
+        public String getJVersion() {
+            return jversion;
+        }
+        
+        public String getVersion() {
+            return version;
+        }
+        
+    }
 }
