@@ -128,6 +128,7 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
             
             if (artifactFile != null) {
                 LOG.log(Level.WARNING, "Created File: " + artifactFile.getAbsolutePath());
+                project.getProjectDirectory().getFileSystem().refresh(true);
                 artifactFile = FileUtil.normalizeFile(artifactFile);
                 FileObject fo = FileUtil.toFileObject(artifactFile);
                 
