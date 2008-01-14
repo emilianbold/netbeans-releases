@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -93,6 +93,7 @@ public final class UpdateTracking {
     public static final String TRACKING_FILE_NAME = "update_tracking"; // NOI18N
     public static final String ADDITIONAL_INFO_FILE_NAME = "additional_information.xml"; // NOI18N
     private static final String XML_EXT = ".xml"; // NOI18N
+    private static final String FORBID_AUTOUPDATE = ".noautoupdate"; // NOI18N
 
     /** maps root of clusters to tracking files. (File -> UpdateTracking) */
     private static final Map<File, UpdateTracking> trackings = new HashMap<File, UpdateTracking> ();
@@ -106,7 +107,6 @@ public final class UpdateTracking {
     private final File directory;
     private final File trackingFile;
     private String origin = NBM_ORIGIN;
-
     
     /** Private constructor.
      */
@@ -117,7 +117,6 @@ public final class UpdateTracking {
         directory = nbPath;
         origin = UPDATER_ORIGIN;
     }
-    
     
     //
     // Various factory and utility methods
@@ -138,13 +137,12 @@ public final class UpdateTracking {
                     // do not allow creation at all (only in userdir)
                     return null;
                 }
-                File noAU = new File(path, ".noautoupdate"); // NOI18N
+                File noAU = new File(path, FORBID_AUTOUPDATE); // NOI18N
                 if (noAU.exists()) {
                     // ok, this prevents autoupdate from accessing this 
                     // directory completely
                     return null;
                 }
-                
                 
                 track = new UpdateTracking (path);
                 trackings.put (path, track);
@@ -210,7 +208,12 @@ public final class UpdateTracking {
         if (includeUserDir) {
             File ud = getUserDir ();
             if (ud != null) {
-                files.add(ud);
+                // this prevents autoupdate from accessing this 
+                // directory completely
+                File noAU = new File (ud, FORBID_AUTOUPDATE); // NOI18N
+                if (! noAU.exists ()) {
+                    files.add (ud);
+                }
             }
         }
         
@@ -219,14 +222,24 @@ public final class UpdateTracking {
             Enumeration en = new StringTokenizer (dirs, File.pathSeparator);
             while (en.hasMoreElements ()) {
                 File f = new File ((String)en.nextElement ());
-                files.add (f);
+                // this prevents autoupdate from accessing this 
+                // directory completely
+                File noAU = new File (f, FORBID_AUTOUPDATE); // NOI18N
+                if (! noAU.exists ()) {
+                    files.add (f);
+                }
             }
         }
         
         
         File id = getPlatformDir ();
         if (id != null) {
-            files.add(id);
+            // this prevents autoupdate from accessing this 
+            // directory completely
+            File noAU = new File (id, FORBID_AUTOUPDATE); // NOI18N
+            if (! noAU.exists ()) {
+                files.add (id);
+            }
         }
         
         return java.util.Collections.unmodifiableList (files);

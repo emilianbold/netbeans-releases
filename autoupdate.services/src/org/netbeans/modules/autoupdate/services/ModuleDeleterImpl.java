@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -252,11 +252,18 @@ public final class ModuleDeleterImpl  {
         if (updateTracking != null && updateTracking.exists ()) {
             //err.log ("Find UPDATE_TRACKING: " + updateTracking + " found.");
             // check the write permission
-            if (! updateTracking.getParentFile ().canWrite ()) {
+            File installCluster = null;
+            for (File cluster : UpdateTracking.clusters (true)) {       
+                if (isParentOf (cluster, updateTracking)) {
+                    installCluster = cluster;
+                    break;
+                }
+            }
+            if (installCluster == null || ! installCluster.canWrite ()) {
                 err.log(Level.FINE,
                         "Cannot delete module " + moduleInfo.getCodeName() +
-                        " because no write permission to directory " +
-                        updateTracking.getParent());
+                        " because is forbidden to write in directory " +
+                        updateTracking.getParentFile ().getParent ());
                 return false;
             }
             return true;
@@ -268,6 +275,22 @@ public final class ModuleDeleterImpl  {
         }
     }
             
+    private static boolean isParentOf (File parent, File child) {
+        if (parent.equals (child.getParentFile ())) {
+            return true;
+        }
+        if (! parent.isDirectory ()) {
+            return false;
+        }
+        File [] childs = parent.listFiles ();
+        for (int i = 0; i < childs.length; i++) {
+            if (isParentOf (childs [i], child)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private void removeModuleFiles (ModuleInfo m, boolean markForDelete) throws IOException {
         err.log (Level.FINE, "Entry removing files of module " + m);
         File updateTracking = null;
