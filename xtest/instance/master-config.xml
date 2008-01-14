@@ -44,157 +44,11 @@ made subject to such option by the copyright holder.
 
 <testconfig>
 
-  <!-- Dev TESTS -->
-  <!-- ========= -->
-
-    <config name="unit-nb"> <!-- was also similar to old "config-1" -->
-        <module name="openide/awt" testtypes="unit" attributes="stable"/>
-        <module name="openide/fs" testtypes="unit" attributes="stable"/>
-        <module name="openide/masterfs" testtypes="unit" attributes="stable"/>
-        <module name="openide/util" testtypes="unit" attributes="stable"/>
-        <module name="nbbuild" testtypes="unit" attributes="automated"/>
-        <module name="core" testtypes="unit" attributes="stable"/>
-        <module name="core/startup" testtypes="unit" attributes="stable"/>
-        <module name="core/bootstrap" testtypes="unit" attributes="stable"/>
-        <module name="openide/compat" testtypes="unit" attributes="stable"/>
-        <module name="openide/dialogs" testtypes="unit" attributes="stable"/>
-        <module name="openide/explorer" testtypes="unit" attributes="stable"/>
-        <module name="openide/nodes" testtypes="unit" attributes="stable"/>
-        <module name="openide/loaders" testtypes="unit" attributes="stable"/>
-        <module name="openide/options" testtypes="unit" attributes="stable"/>
-        <module name="openide/text" testtypes="unit" attributes="stable"/>
-        <module name="openide/actions" testtypes="unit" attributes="stable"/>
-        <module name="openide/modules" testtypes="unit" attributes="stable"/>
-        <module name="openide/windows" testtypes="unit" attributes="stable"/>
-        <!-- Needs to be early since many other tests compile against it: -->
-        <!-- (in general, check using: 'fgrep /build/test/unit/classes */{,*/}nbproject/project.properties') -->
-        <module name="projects/projectapi" testtypes="unit" attributes="stable"/>
-        <module name="ant" testtypes="unit" attributes="stable"/>
-        <module name="ant/freeform" testtypes="unit" attributes="stable"/>
-        <module name="ant/grammar" testtypes="unit" attributes="stable"/>
-        <module name="ant/project" testtypes="unit" attributes="stable"/>
-        <module name="java/api" testtypes="unit" attributes="stable"/>
-        <module name="java/freeform" testtypes="unit" attributes="stable"/>
-        <module name="java/j2seplatform" testtypes="unit" attributes="stable"/>
-        <module name="java/j2seproject" testtypes="unit" attributes="stable"/>
-        <module name="java/platform" testtypes="unit" attributes="stable"/>
-        <module name="java/project" testtypes="unit" attributes="stable"/>
-        <module name="projects/projectui" testtypes="unit" attributes="stable"/>
-        <module name="projects/libraries" testtypes="unit" attributes="stable"/>
- <!--       <module name="refactoring" testtypes="unit" attributes="full"/>-->
-        <module name="core/output2" testtypes="unit" attributes="stable"/>
-        <module name="core/favorites" testtypes="unit" attributes="stable"/>
-        <module name="core/settings" testtypes="unit" attributes="stable"/>
-        <module name="core/windows" testtypes="unit" attributes="stable"/>
-        <module name="core/javahelp" testtypes="unit" attributes="stable"/>
-        <module name="autoupdate" testtypes="unit" attributes="stable"/>
-        <module name="diff" testtypes="unit" attributes="stable"/>
-                
-        <!-- J2EE team -->
-        <module name="db" testtypes="unit" attributes="stable"/>
-        <module name="db/core" testtypes="unit" attributes="stable"/>
-        <module name="db/dbapi" testtypes="unit" attributes="stable"/>
-        <module name="db/derby" testtypes="unit" attributes="stable"/>
-        <module name="db/sqleditor" testtypes="unit" attributes="stable"/>
-        <module name="extbrowser" testtypes="unit" attributes="stable"/>
-        <module name="html" testtypes="unit" attributes="stable"/>
-<!--        <module name="html/editor" testtypes="unit" attributes="stable"/> -->
-        <module name="html/editor/lib" testtypes="unit" attributes="stable"/>
-        <module name="html/lexer" testtypes="unit" attributes="stable"/>
-        <module name="httpserver" testtypes="unit" attributes="stable"/>
-<!--        <module name="j2ee/clientproject" testtypes="unit" attributes="stable"/> -->
-        <module name="j2ee/ddapi" testtypes="unit" attributes="stable"/>
-<!--        <module name="j2ee/ddloaders" testtypes="unit" attributes="stable"/> -->
-<!--        <module name="j2ee/earproject" testtypes="unit" attributes="stable"/> -->
-        <module name="j2ee/ejbapi" testtypes="unit" attributes="stable"/>
-        <module name="j2ee/ejbcore" testtypes="unit" attributes="stable"/>
-        <module name="j2ee/ejbfreeform" testtypes="unit" attributes="stable"/>
-        <module name="j2ee/ejbjarproject" testtypes="unit" attributes="stable"/>
-<!--        <module name="j2ee/metadata" testtypes="unit" attributes="stable"/> -->
-        <module name="j2ee/persistence" testtypes="unit" attributes="stable"/>
-        <module name="j2ee/persistenceapi" testtypes="unit" attributes="stable"/>
-<!--        <module name="j2ee/refactoring" testtypes="unit" attributes="stable"/> -->
-        <module name="j2ee/utilities" testtypes="unit" attributes="stable"/>
-<!--        <module name="j2ee/verification" testtypes="unit" attributes="stable"/> -->
-        <module name="j2eeserver" testtypes="unit" attributes="stable"/>
-        <module name="schema2beans" testtypes="unit" attributes="stable"/> 
-        <module name="tomcatint/tomcat5" testtypes="unit" attributes="stable"/>
-        <module name="web/core" testtypes="unit" attributes="stable"/>
-        <module name="web/el/lexer" testtypes="unit" attributes="stable"/>
-        <module name="web/freeform" testtypes="unit" attributes="stable"/>
-        <module name="web/jspparser" testtypes="unit" attributes="stable"/>
-        <module name="web/jspsyntax" testtypes="unit" attributes="stable"/>
-        <module name="web/jspsyntax/lexer" testtypes="unit" attributes="stable"/>
-        <module name="web/project" testtypes="unit" attributes="stable"/>
-        <module name="web/webapi" testtypes="unit" attributes="stable"/>
-<!--        <module name="websvc/customization" testtypes="unit" attributes="stable"/>-->
-        <module name="websvc/jaxwsmodel" testtypes="unit" attributes="stable"/>
-        <module name="websvc/websvcapi" testtypes="unit" attributes="stable"/>
-        <module name="websvc/websvcddapi" testtypes="unit" attributes="stable"/>
-        <module name="xml/catalog" testtypes="unit" attributes="stable"/>
-        <module name="xml/multiview" testtypes="unit" attributes="stable"/>
-        <module name="xml/tageditorsupport" testtypes="unit" attributes="stable"/>
-        <module name="xml/text-edit" testtypes="unit" attributes="stable"/>
-        <!-- other candidate modules - J2EE team: xml/api xml/core xml/tax/lib xml/xsl -->
-
-        <!-- module name="debuggerjpda" testtypes="unit" attributes="stable"/>-->
-        <!-- these two need depend on each other -->
-        <module name="openide/execution" testtypes="unit" attributes="stable"/>
-        <module name="core/execution" testtypes="unit" attributes="stable"/>
-        
-         <!-- Visual Web team -->
-        <module name="visualweb/designer" testtypes="unit" attributes="stable"/>
-        <module name="ide/launcher/upgrade" testtypes="unit" attributes="stable" />
-        <module name="apisupport/project" testtypes ="unit" attributes="stable"/>
-        <module name="apisupport/samples/feedreader-sample-ui" testtypes ="unit" attributes="stable"/>
-        <module name="apisupport/samples/PaintApp-sample-ui" testtypes ="unit" attributes="stable"/>
-        <module name="apisupport/harness" testtypes ="unit" attributes="stable"/>
-        <module name="logger/uihandler" testtypes="unit" attributes="stable"/>
-        <module name="logger/uihandlerlib" testtypes="unit" attributes="stable"/>
-
-        <!-- does not run: core/multiview -->
-        <!-- other candidate modules in current default moduleconfig (except J2EE team): debuggercore debuggerjpda editor editor/fold editor/util mdr refactoring tasklist tasklist/core tasklist/docscan tasklist/suggestions tasklist/usertasks -->
-    </config>
+    <!-- This file is not used to add unit tests for daily runs. It is configured
+         directly on Test4U or through binary tests distribution. See
+         http://jupiter.czech.sun.com/wiki/view/PlatformQE/DailyTestRunTestSuite.
+    -->
     
-  <config name="unit-nb-nbm">
-      <module name="mdr" testtypes="unit" attributes="stable"/>
-      <module name="mdr" testtypes="perf" attributes="stable">
-          <property file="../../mdr/test/perf.properties"/>
-      </module>
-  </config>
-  
-  <!-- QA TESTS -->
-  <!-- ======== -->
-  
-  <!-- VALIDATION -->
-  
-  <!-- QA functional tests for Netbeans -->
-  <config name="qa-functional-nb">
-        <module name="ide" testtypes="qa-functional" attributes="validation"/>
-<!--    <module name="java" testtypes="qa-functional" attributes="validation"/>
-        <module name="java/editor" testtypes="qa-functional" attributes="validation"/>
-        <module name="refactoring" testtypes="qa-functional" attributes="validation"/>-->
-<!--    <module name="web" testtypes="qa-functional" attributes="validation"/>
-        <module name="web/jspsyntax" testtypes="qa-functional" attributes="validation"/>
- --><!-- Will be included again after installing j2ee server on perf/t4u machines
-        <module name="web/jspdebug" testtypes="qa-functional" attributes="validation"/>
-        -->
-        <!-- Has to be fixed.
-        <module name="form" testtypes="qa-functional" attributes="validation"/> -->
-        <!-- Has to be fixed.
-        <module name="java/project" testtypes="qa-functional" attributes="validation"/>
-        <module name="editor" testtypes="qa-functional" attributes="validation"/>
-        <module name="properties" testtypes="qa-functional" attributes="validation"/>
--->
-        <module name="jellytools" testtypes="qa-functional" attributes="stable"/>
-        <module name="xtest" testtypes="unit" attributes="stable"/>
-        <module name="xtest/nbjunit/ide" testtypes="unit" attributes="stable"/>
-        <module name="xtest/plugins_src/ide" testtypes="unit" attributes="stable"/>
-<!--<module name="apisupport/refactoring" testtypes="qa-functional" attributes="validation"/>-->
-        <module name="openide/loaders" testtypes="qa-functional" attributes="validation"/>
-        <module name="junit" testtypes="qa-functional" attributes="validation"/>
-  </config>
-
   <!-- PERFORMANCE -->
  
   <config name="qa-performance">
@@ -216,15 +70,10 @@ made subject to such option by the copyright holder.
     <module name="performance"   testtypes="qa-functional"  attributes="measure_setup"/>  
   </config>
   
-  <config name="qa-j2ee-functional">
-    <module name="j2ee"   testtypes="qa-functional"  attributes="validation"/>  
-        <!-- <module name="serverplugins/jboss4" testtypes="qa-functional" attributes="dev-api"/>
-        <module name="serverplugins/sun/appsrv81" testtypes="qa-functional" attributes="dev-api"/> -->
-  </config>
-  
-  <!-- validation suites for Release Engineering -->
 
-  <!-- validation suite before commit -->
+  <!-- Validation tests configurations. Used in NetBeans continuous build process.
+       See http://wiki.netbeans.org/wiki/view/UICommitValidation.
+  -->
   <config name="commit-validation-nb">
       <module name="core" testtypes="unit" attributes="commit"/>
       <module name="core/windows" testtypes="unit" attributes="commit" />
