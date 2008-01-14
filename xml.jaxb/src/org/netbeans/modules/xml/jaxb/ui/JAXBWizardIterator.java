@@ -161,7 +161,21 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
     // TemplateWizard specific - Start
     public Set<DataObject> instantiate(TemplateWizard wiz) throws IOException {
         FileObject template = Templates.getTemplate( wiz );
-        DataObject dTemplate = DataObject.find( template );                        
+        DataObject dTemplate = DataObject.find( template );  
+        
+        try {
+            Schema nSchema = ProjectHelper.importResources(project, 
+                    wiz, null);
+            ProjectHelper.addSchema2Model(project, nSchema);                    
+            ProjectHelper.compileXSDs(project, true);
+        } catch (Throwable ex ){
+            //Exceptions.printStackTrace(ioe);
+            String msg = NbBundle.getMessage(JAXBWizardIterator.class, 
+                    "MSG_ErrorReadingSchema");//NOI18N
+            wiz.putProperty(JAXBWizModuleConstants.WIZ_ERROR_MSG, msg); 
+            throw new IOException(msg);
+        }
+        
         return Collections.singleton(dTemplate);
     }
 
@@ -217,15 +231,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
 
     public void uninitialize(TemplateWizard wiz) {
         if ( wiz.getValue() == TemplateWizard.FINISH_OPTION ) {
-                try {
-                    Schema nSchema = ProjectHelper.importResources(project, 
-                            wiz, null);
-                    ProjectHelper.addSchema2Model(project, nSchema);                    
-                    ProjectHelper.compileXSDs(project, true);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-                this.project = null;
+            this.project = null;
         }
     }
     // TemplateWizard specific - End

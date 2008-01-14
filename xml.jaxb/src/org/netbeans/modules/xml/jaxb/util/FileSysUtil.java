@@ -78,7 +78,6 @@ public class FileSysUtil {
     }
  
     public static boolean isAbsolutePath(File file){
-        file.isAbsolute();
         return file.isAbsolute();
     }
     

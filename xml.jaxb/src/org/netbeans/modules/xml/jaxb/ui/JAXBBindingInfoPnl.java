@@ -60,6 +60,7 @@ import org.netbeans.modules.xml.jaxb.util.JAXBWizModuleConstants;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -431,8 +432,14 @@ private void focusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_focusLo
         if ((this.prevSchemaPath != null) && (this.prevSchemaPath.equals(str))){
             //Field has not changed, skip guessing 
         } else {
-            guessSchemaType(str);
-            this.prevSchemaPath = str;
+            if ((str != null) && (!"".equals(str.trim()))){            
+                guessSchemaType(str);
+                this.prevSchemaPath = str;
+                str = relativizePath(str);
+                if ((str != null) && (!"".equals(str.trim()))){
+                    this.txtFilePath.setText(str);
+                }
+            }
         }        
     }
     
@@ -453,6 +460,12 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
     this.wizPanel.fireChangeEvent();
 }//GEN-LAST:event_fireChangeEvent
 
+    private String relativizePath(String absPath){
+        File absFile = new File(absPath);
+        absFile = FileUtil.normalizeFile(absFile);
+        return FileSysUtil.Absolute2RelativePathStr(this.projDir, absFile);
+    }
+    
     private String getMsg(String msgKey){
         return org.openide.util.NbBundle.getMessage(
                 JAXBBindingInfoPnl.class, msgKey);
@@ -790,6 +803,7 @@ private void fireChangeEvent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_
         int iRt = jfc.showOpenDialog(panel);
         if ( iRt == JFileChooser.APPROVE_OPTION ) {
             file = jfc.getSelectedFile();
+            file = FileUtil.normalizeFile(file);
         }
         File currDir = jfc.getCurrentDirectory();
         if (currDir != null){

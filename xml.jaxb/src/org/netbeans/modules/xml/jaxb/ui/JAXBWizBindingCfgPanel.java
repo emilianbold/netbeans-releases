@@ -67,7 +67,6 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     public static final int MODE_WIZARD  = 0;
     public static final int MODE_EDITING = 1;
     private static final String WIZ_NEW_FILE_TITLE = "NewFileWizard_Title"; //NOI18N
-    private static final String WIZ_ERROR_MSG = "WizardPanel_errorMessage"; //NOI18N
 
     private WizardDescriptor wd = null;
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();  
@@ -107,7 +106,7 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     }
     
     private void setError(String msg){
-        this.wd.putProperty(WIZ_ERROR_MSG, msg);  
+        this.wd.putProperty(JAXBWizModuleConstants.WIZ_ERROR_MSG, msg);  
     }
     
     private boolean isValid(StringBuffer sb){
