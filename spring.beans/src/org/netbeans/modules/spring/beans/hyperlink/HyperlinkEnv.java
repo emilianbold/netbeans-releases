@@ -42,7 +42,7 @@
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import javax.swing.text.Document;
-import org.netbeans.modules.spring.beans.hyperlink.BeansContextHyperlinkProvider.Type;
+import org.netbeans.modules.spring.beans.hyperlink.BeansConfigHyperlinkProvider.Type;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 
 /**
