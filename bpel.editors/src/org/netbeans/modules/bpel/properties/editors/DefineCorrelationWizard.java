@@ -401,7 +401,6 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     //========================================================================//
     public class WizardDefineCorrelationPanel extends WizardAbstractPanel {
-        private CorrelationMapperTreeModel leftTreeModel, rightTreeModel;
         private Mapper correlationMapper;
         
         public WizardDefineCorrelationPanel() {
@@ -409,11 +408,14 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         
         public void buildCorrelationMapper(BpelEntity leftBpelEntity, BpelEntity rightBpelEntity) {
+            CorrelationMapperTreeModel leftTreeModel = null, rightTreeModel = null;
             if (leftBpelEntity != null) {
-                leftTreeModel = new CorrelationMapperTreeModel(leftBpelEntity);
+                leftTreeModel = new CorrelationMapperTreeModel(leftBpelEntity,
+                    PrintUtil.i18n(WizardDefineCorrelationPanel.class, "LBL_Left_Mapper_Top_Tree_Node_Name_Pattern"));
             }
             if (rightBpelEntity != null) {
-                rightTreeModel = new CorrelationMapperTreeModel(rightBpelEntity);
+                rightTreeModel = new CorrelationMapperTreeModel(rightBpelEntity,
+                    PrintUtil.i18n(WizardDefineCorrelationPanel.class, "LBL_Right_Mapper_Top_Tree_Node_Name_Pattern"));
             }
             
             MapperModel mapperModel = new CorrelationMapperModel(leftTreeModel, rightTreeModel);
@@ -429,8 +431,17 @@ public class DefineCorrelationWizard implements WizardProperties {
 
         @Override
         public boolean isValid() {
-            boolean isOK = true;
-//*******??????? check that left and right trees in mapper contains at least 1 leaf-child.
+            boolean isOK = false;
+            // allows moving to the next panel if the right tree 
+            // in mapper contains at least 1 link
+            Map<TreePath, Graph> mapTreePathGraphs = ((CorrelationMapperModel) correlationMapper.getModel()).getMapTreePathGraphs();
+            for (Graph graph : mapTreePathGraphs.values()) {
+                isOK = graph.hasIngoingLinks();
+                if (isOK) break;
+            }
+            wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, isOK ? null :
+                PrintUtil.i18n(WizardDefineCorrelationPanel.class, "LBL_ErrMsg_No_Links_For_Correlation"));                              
+            
             return isOK;
         }
 
@@ -440,10 +451,18 @@ public class DefineCorrelationWizard implements WizardProperties {
         //====================================================================//
         private class CorrelationMapperTreeModel extends DefaultTreeModel {
             public CorrelationMapperTreeModel(BpelEntity topBpelEntity) {
+                this(topBpelEntity, null);
+            }
+            public CorrelationMapperTreeModel(BpelEntity topBpelEntity, String nodeNamePattern) {
                 super(new CorrelationMapperTreeNode(new BpelBuilderImpl(
                     (BpelModelImpl) topBpelEntity.getBpelModel()).createEmpty()));
                 ((CorrelationMapperTreeNode) getRoot()).add(
-                    new CorrelationMapperTreeNode(topBpelEntity));
+                    new CorrelationMapperTreeNode(topBpelEntity, nodeNamePattern));
+            }
+            
+            public BpelEntity getTopBpelEntity() {
+                CorrelationMapperTreeNode topTreeNode = (CorrelationMapperTreeNode) ((CorrelationMapperTreeNode) getRoot()).getChildAt(0);
+                return (BpelEntity) topTreeNode.getUserObject();
             }
             
             public void fireTreeChanged(Object source, TreePath treePath) {
@@ -505,24 +524,33 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         //====================================================================//
         private class CorrelationMapperModel implements MapperModel {
-            private TreeModel letfTreeModel, rightTreeModel;
+            private TreeModel leftTreeModel, rightTreeModel;
             private Map<TreePath, Graph> mapTreePathGraphs = new HashMap<TreePath, Graph>();
 
-            public CorrelationMapperModel(TreeModel letfTreeModel, TreeModel rightTreeModel) {
-                this.letfTreeModel = letfTreeModel;
+            public CorrelationMapperModel(TreeModel leftTreeModel, TreeModel rightTreeModel) {
+                this.leftTreeModel = leftTreeModel;
                 this.rightTreeModel = rightTreeModel;
                 TMP_FAKE_GRAPH = new Graph(this);
             }
 
+            public Map<TreePath, Graph> getMapTreePathGraphs() {
+                return mapTreePathGraphs;
+            }
+
             public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target) {
                 boolean result = false;
+                CorrelationMapperTreeNode treeNode = null;
                 if ((source != null) && (source instanceof TreeSourcePin)) {
                     TreePath sourceTreePath = ((TreeSourcePin) source).getTreePath();
-                    if (((TreeNode) sourceTreePath.getLastPathComponent()).isLeaf()) {
-                        result = true;
-                    }
+                    treeNode = (CorrelationMapperTreeNode) sourceTreePath.getLastPathComponent();
+                    result = treeNode.isLeaf();
+                    result &= ! treeNode.getUserObject().equals(
+                        ((CorrelationMapperTreeModel) leftTreeModel).getTopBpelEntity());
                 }
-                result &= ((TreeNode) treePath.getLastPathComponent()).isLeaf();
+                treeNode = (CorrelationMapperTreeNode) treePath.getLastPathComponent();
+                result &= treeNode.isLeaf();
+                result &= ! treeNode.getUserObject().equals(
+                    ((CorrelationMapperTreeModel) rightTreeModel).getTopBpelEntity());
 
                 if (target instanceof Graph) {
                     Graph targetGraph = (Graph) target;
