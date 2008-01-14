@@ -12,6 +12,7 @@ import org.netbeans.modules.iep.editor.share.SharedConstants;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 
@@ -89,33 +90,28 @@ public class IEPWizardPanel3 implements WizardDescriptor.Panel {
     public void readSettings(Object settings) {
         mDescriptor = (WizardDescriptor) settings;
         
-        ElementOrType elementOrType = (ElementOrType) mDescriptor.getProperty(WizardConstants.WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY);
-        if(elementOrType!= null) {
-            List<XSDToIEPAttributeNameVisitor.AttributeNameToType> nameToTypeList;
+        SchemaComponent sc = (SchemaComponent) mDescriptor.getProperty(WizardConstants.WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY);
+        if(sc!= null) {
+            List<XSDToIEPAttributeNameVisitor.AttributeNameToType> nameToTypeList = processSchemaComponent(sc);
 
-            if(elementOrType.isElement()) {
-                GlobalElement element = elementOrType.getElement();
-                nameToTypeList = processElement(element);
-                
-                 //add one attribute with CLOB type for storing
-                //this whole element xml
-                XSDToIEPAttributeNameVisitor.AttributeNameToType nameToType = new XSDToIEPAttributeNameVisitor.AttributeNameToType(element.getName(), SharedConstants.SQL_TYPE_CLOB);
-                nameToTypeList.add(nameToType);
-        
-            } else {
-                GlobalType type = elementOrType.getType();
-                nameToTypeList = processType(type);
-                
-                if(type instanceof GlobalComplexType) {
-                    String name = ((GlobalComplexType)type).getName();
-                    //add one attribute with CLOB type for storing
-                    //this whole element xml
-                    XSDToIEPAttributeNameVisitor.AttributeNameToType nameToType = new XSDToIEPAttributeNameVisitor.AttributeNameToType(name, SharedConstants.SQL_TYPE_CLOB);
-                    nameToTypeList.add(nameToType);
-                }
+             //add one attribute with CLOB type for storing
+            //this whole element xml
+            String name = null;
             
+            if(sc instanceof GlobalElement) {
+                GlobalElement ge = (GlobalElement) sc;
+                name = ge.getName();
+            } else if (sc instanceof GlobalComplexType) {
+                GlobalComplexType gct = (GlobalComplexType) sc;
+                name = gct.getName();
             }
-        
+            
+            if(name != null) {
+                XSDToIEPAttributeNameVisitor.AttributeNameToType nameToType = new XSDToIEPAttributeNameVisitor.AttributeNameToType(name, SharedConstants.SQL_TYPE_CLOB);
+                nameToTypeList.add(nameToType);
+            }
+            
+            component.clearAttributes();
             component.addDefaultIEPAttributes(nameToTypeList);
         }
     }
@@ -125,18 +121,12 @@ public class IEPWizardPanel3 implements WizardDescriptor.Panel {
         mDescriptor.putProperty(WizardConstants.WIZARD_SELECTED_ATTRIBUTE_LIST_KEY, attrList);
     }
     
-    private List<XSDToIEPAttributeNameVisitor.AttributeNameToType> processElement(GlobalElement element) {
+    private List<XSDToIEPAttributeNameVisitor.AttributeNameToType> processSchemaComponent(SchemaComponent sc) {
         XSDToIEPAttributeNameVisitor visitor = new XSDToIEPAttributeNameVisitor();
-        element.accept(visitor);
+        sc.accept(visitor);
         
         return visitor.getAttributeNameToTypeList();
     }
     
-    private List<XSDToIEPAttributeNameVisitor.AttributeNameToType> processType(GlobalType type) {
-        XSDToIEPAttributeNameVisitor visitor = new XSDToIEPAttributeNameVisitor();
-        type.accept(visitor);
-        
-        return visitor.getAttributeNameToTypeList();
-    }
 }
 

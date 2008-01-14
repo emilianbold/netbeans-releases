@@ -38,6 +38,10 @@ public final class IEPVisualPanel3 extends JPanel {
         mPanel.addDefaultIEPAttributes(nameToTypeList);
     }
     
+    public void clearAttributes() {
+        mPanel.clearAttributes();
+    }
+    
     public List<PlaceholderSchemaAttribute> getAttributeList() {
         return mPanel.getAttributeList();
     }

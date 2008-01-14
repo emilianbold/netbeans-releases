@@ -6,9 +6,11 @@
 package org.netbeans.modules.iep.editor.wizard;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeListener;
 import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.openide.util.NbBundle;
 
 public final class IEPVisualPanel2 extends JPanel {
@@ -56,9 +58,24 @@ public final class IEPVisualPanel2 extends JPanel {
         this.add(mElementOrTypePanel, BorderLayout.CENTER);
     }
     
-    public ElementOrType getSelectedElementOrType() {
-        return mElementOrTypePanel.getSelectedComponent();
+    public SchemaComponent getSelectedSchemaComponent() {
+        return mElementOrTypePanel.getSelectedSchemaComponent();
     }
+    
+    
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        super.addPropertyChangeListener(listener);
+        mElementOrTypePanel.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        super.removePropertyChangeListener(listener);
+        mElementOrTypePanel.removePropertyChangeListener(listener);
+    }
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables

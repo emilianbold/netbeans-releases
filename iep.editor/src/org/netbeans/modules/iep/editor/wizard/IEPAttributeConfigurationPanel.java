@@ -63,6 +63,10 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
         }
     }
     
+    public void clearAttributes() {
+        mTableModel.clear();
+    }
+    
     public List<PlaceholderSchemaAttribute> getAttributeList() {
         return mTableModel.getAttributeList();
     }

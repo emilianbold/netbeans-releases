@@ -209,6 +209,11 @@ public class IEPAttributeTableModel extends AbstractTableModel {
         }
     }
     
+    public void clear() {
+        this.mAttrList.clear();
+        this.fireTableDataChanged();
+    }
+    
     public PlaceholderSchemaAttribute getRowData(int rowIndex) {
         PlaceholderSchemaAttribute rowData = null;
        
@@ -217,5 +222,7 @@ public class IEPAttributeTableModel extends AbstractTableModel {
         }
         return rowData;
     }
+    
+    
     
 }

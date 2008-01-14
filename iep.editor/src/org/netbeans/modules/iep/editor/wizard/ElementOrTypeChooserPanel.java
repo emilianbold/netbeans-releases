@@ -115,7 +115,7 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
             Node node = schemaHelper.selectNode(mPreviousSelectedComponent);
             if (node != null) {
                 selectNode(node);
-                firePropertyChange(ElementOrTypeChooserPanel.PROP_ACTION_APPLY, false, true);
+                firePropertyChange(ElementOrTypeChooserPanel.PROP_SELECTED_SCHEMA_COMPONENT, null, mPreviousSelectedComponent);
             }
         } else {
             selectNode(rootNode);
@@ -154,15 +154,6 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);*/
     }
 
-    public void apply() {
-        if (selectedComponent != null) {
-            if (selectedComponent instanceof GlobalType) {
-                selectedElementOrType = new ElementOrType((GlobalType)selectedComponent);
-            } else if (selectedComponent instanceof GlobalElement) {
-                selectedElementOrType = new ElementOrType((GlobalElement)selectedComponent);
-            }
-        }
-    }
     
     @Override
     public void removeNotify() {
@@ -176,8 +167,7 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
     }
     
     private ExplorerManager manager;
-    public static String PROP_ACTION_APPLY = "APPLY";
-    private ElementOrType selectedElementOrType;
+    public static String PROP_SELECTED_SCHEMA_COMPONENT = "PROP_SELECTED_SCHEMA_COMPONENT";
     private SchemaComponent selectedComponent;
     
     
@@ -192,8 +182,10 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
                 if(nodes.length > 0) {
                     Node node = nodes[0];
                     //set the selected node to null and state as invalid by default
-                    firePropertyChange(PROP_ACTION_APPLY, true, false);
+                    SchemaComponent previousComp = selectedComponent;
+                    selectedComponent = null;
                     SchemaComponent sc = null;
+                    firePropertyChange(PROP_SELECTED_SCHEMA_COMPONENT, previousComp, selectedComponent);
                     SchemaComponentReference reference = node.getLookup().lookup(SchemaComponentReference.class);
                     if (reference != null) {
                         sc = reference.get();
@@ -203,9 +195,9 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
                     }
 
                     if (sc != null && (sc instanceof GlobalType || sc instanceof GlobalElement)) {
+                        previousComp = selectedComponent;
                         selectedComponent = sc;
-                        apply();
-                        firePropertyChange(PROP_ACTION_APPLY, false, true);
+                        firePropertyChange(PROP_SELECTED_SCHEMA_COMPONENT, previousComp, selectedComponent);
                     }
                     
                 }
@@ -213,21 +205,9 @@ public class ElementOrTypeChooserPanel extends javax.swing.JPanel implements Exp
         }
     }
 
-    public ElementOrType getSelectedComponent() {
-        return selectedElementOrType;
-    }
-    
     public SchemaComponent getSelectedSchemaComponent() {
         return selectedComponent;
     }
-
-    public void setSelectedComponent(ElementOrType selectedComponent) {
-        this.selectedElementOrType = selectedComponent;
-    }
-    
-    public void setEnvForPropertyEditor(PropertyEnv env) {
-        mEnv = env;
-    }
-    
-    PropertyEnv mEnv;
+ 
+   
 }

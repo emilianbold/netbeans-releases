@@ -5,9 +5,16 @@
 package org.netbeans.modules.iep.editor.wizard;
 
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -39,7 +46,9 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     public Component getComponent() {
         if (component == null) {
             component = new IEPVisualPanel2(this.mProject);
+            component.addPropertyChangeListener(new MyPropertyChangeListener());
         }
+        
         return component;
     }
 
@@ -51,21 +60,17 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     }
 
     public boolean isValid() {
-        // If it is always OK to press Next or Finish, then:
-        return true;
-    // If it depends on some condition (form filled out...), then:
-    // return someCondition();
-    // and when this condition changes (last form field filled in...) then:
-    // fireChangeEvent();
-    // and uncomment the complicated stuff below.
+        return component.getSelectedSchemaComponent() != null;
+//        // If it is always OK to press Next or Finish, then:
+//        return true;
+//    // If it depends on some condition (form filled out...), then:
+//    // return someCondition();
+//    // and when this condition changes (last form field filled in...) then:
+//    // fireChangeEvent();
+//    // and uncomment the complicated stuff below.
     }
 
-    public final void addChangeListener(ChangeListener l) {
-    }
 
-    public final void removeChangeListener(ChangeListener l) {
-    }
-    /*
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1); // or can use ChangeSupport in NB 6.0
     public final void addChangeListener(ChangeListener l) {
     synchronized (listeners) {
@@ -87,7 +92,6 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     it.next().stateChanged(ev);
     }
     }
-     */
 
     // You can use a settings object to keep track of state. Normally the
     // settings object will be the WizardDescriptor, so you can use
@@ -98,9 +102,21 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     }
 
     public void storeSettings(Object settings) {
-        ElementOrType elementOrType = component.getSelectedElementOrType();
+        SchemaComponent sc = component.getSelectedSchemaComponent();
         
-        mDescriptor.putProperty(WizardConstants.WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY, elementOrType);
+        mDescriptor.putProperty(WizardConstants.WIZARD_SELECTED_ELEMENT_OR_TYPE_KEY, sc);
+    }
+    
+    class MyPropertyChangeListener implements PropertyChangeListener {
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propName = evt.getPropertyName();
+            if(ElementOrTypeChooserPanel.PROP_SELECTED_SCHEMA_COMPONENT.equals(propName)) {
+                fireChangeEvent();
+            }
+            
+        }
+        
     }
 }
 
