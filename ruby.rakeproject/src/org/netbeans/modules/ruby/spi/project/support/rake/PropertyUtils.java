@@ -157,8 +157,8 @@ public class PropertyUtils {
                         FileObject bp = FileUtil.toFileObject(ubp);
                         if (bp == null) {
                             if (!ubp.exists()) {
-                                ubp.getParentFile().mkdirs();
-                                new FileOutputStream(ubp).close();
+                                FileObject folder = FileUtil.createFolder(ubp.getParentFile());
+                                folder.createData(ubp.getName());
                                 assert ubp.isFile() : "Did not actually make " + ubp;
                             }
                             bp = FileUtil.toFileObject(ubp);
