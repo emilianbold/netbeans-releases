@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 <mconfig name="qa-functional config">
 
-    <testbag testattribs="identity" executor="ide" name="Identity support validation (basic)">
+    <testbag testattribs="validation,identity" executor="ide" name="Identity support validation (basic)">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/modules/identity/qaf/identity/IdentityValidation.class"/>
