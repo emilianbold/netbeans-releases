@@ -42,7 +42,8 @@
 <project name="sierra" default="all" basedir=".">
     <import file="build.pro"/>
     
-    <target name="all" depends="init,get-modules,run-daily,get-netbeans,clean,build-and-create"/>
+    <target name="all" depends="init,get-modules,get-sources,get-netbeans,clean,build-and-create"/>
+    <target name="hudson" depends="run-daily,all"/>
     <target name="build-and-create" depends="build-fcs,create-zip-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
     
     <target name="init">
@@ -155,7 +156,6 @@
 
         <echo file="${lock}/${daily}" message="${daily}"/>
 
-        <antcall target="get-sources"/>
         <antcall target="get-test"/>
     </target>
 
