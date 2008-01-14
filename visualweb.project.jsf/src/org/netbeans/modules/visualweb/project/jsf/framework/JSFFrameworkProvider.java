@@ -142,7 +142,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         JsfProjectUtils.createProjectProperty(project, JsfProjectConstants.PROP_START_PAGE, pageName);
         JsfProjectUtils.setProjectVersion(project, "4.0"); // NOI18N
 
-        updateNode(project);
+        fireChange(project);
 
         // Create Visual Web files
         ProjectManager.mutex().postReadRequest(new Runnable() {
@@ -582,9 +582,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
     }
 
-    private HashMap propertyListeners = new HashMap();
+    private static HashMap propertyListeners = new HashMap();
 
-    private void updateNode(Project project) {
+    private static void fireChange(Project project) {
         PropertyChangeEvent event = new PropertyChangeEvent(project, null, null, null);
 
         PropertyChangeListener[] listeners;
@@ -603,7 +603,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
     }
     
-    public void addPropertyChangeListener(Project project, PropertyChangeListener listener) {
+    public static void addPropertyChangeListener(Project project, PropertyChangeListener listener) {
         synchronized (propertyListeners) {
             ArrayList projectListeners = (ArrayList) propertyListeners.get(project);
             if (projectListeners == null) {
@@ -614,7 +614,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
     }
     
-    public void removePropertyChangeListener(Project project, PropertyChangeListener listener) {
+    public static void removePropertyChangeListener(Project project, PropertyChangeListener listener) {
         synchronized (propertyListeners) {
             ArrayList projectListeners = (ArrayList) propertyListeners.get(project);
             if (projectListeners != null) {

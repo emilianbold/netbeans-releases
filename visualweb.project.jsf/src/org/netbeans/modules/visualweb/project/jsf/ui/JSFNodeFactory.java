@@ -43,12 +43,8 @@ package org.netbeans.modules.visualweb.project.jsf.ui;
 
 import org.netbeans.modules.visualweb.complib.api.ComplibService;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
-import org.netbeans.modules.visualweb.project.jsf.framework.JSFFrameworkProvider;
 import org.netbeans.modules.visualweb.project.jsf.services.ThemeNodeService;
 import org.netbeans.modules.visualweb.project.jsf.services.DataSourceService;
-
-import org.netbeans.modules.web.api.webmodule.WebFrameworks;
-import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -153,30 +149,11 @@ public class JSFNodeFactory implements NodeFactory {
         }
 
         public void addNotify() {
-            JSFFrameworkProvider framework = getJSFFramework();
-            if (framework != null) {
-                framework.addPropertyChangeListener(project, this);
-            }
+            JsfProjectUtils.addJsfFrameworkChangeListener(project, this);
         }
 
         public void removeNotify() {
-            JSFFrameworkProvider framework = getJSFFramework();
-            if (framework != null) {
-                framework.removePropertyChangeListener(project, this);
-            }
-        }
-
-        private JSFFrameworkProvider getJSFFramework() {
-            List frameworks = WebFrameworks.getFrameworks();
-            for (int i = 0; i < frameworks.size(); i++) {
-                WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
-                String name = NbBundle.getMessage(JSFFrameworkProvider.class, "JSF_Name");
-                if (framework.getName().equals(name)) {
-                    return (JSFFrameworkProvider) framework;
-                }
-            }
-
-            return null;
+            JsfProjectUtils.removeJsfFrameworkChangeListener(project, this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

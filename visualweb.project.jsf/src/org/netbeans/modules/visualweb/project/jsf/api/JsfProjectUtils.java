@@ -186,6 +186,14 @@ public class JsfProjectUtils {
         return (framework instanceof JSFFrameworkProvider);
     }
 
+    public static void addJsfFrameworkChangeListener(Project project, PropertyChangeListener listener) {
+        JSFFrameworkProvider.addPropertyChangeListener(project, listener);
+    }
+    
+    public static void removeJsfFrameworkChangeListener(Project project, PropertyChangeListener listener) {
+        JSFFrameworkProvider.removePropertyChangeListener(project, listener);
+    }
+
     public static boolean isWebProject(Project project) {
         if (project == null) {
             return false;
