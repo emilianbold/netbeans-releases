@@ -746,7 +746,7 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
         String title = node.getDisplayName();
         if(fm!=null) {
             FormDesigner fd = FormEditor.getFormDesigner(formDataObject.getFormEditor().getFormModel());
-            if(fd!=null) {
+            if(fd!=null && fd.getFormModel() != null) {
                 if( fd.isShowing() && !fd.isTopRADComponent() && fd.getTopDesignComponent() != null ) {
                     title = FormUtils.getFormattedBundleString(
                             "FMT_FormTitleWithContainerName",          // NOI18N
