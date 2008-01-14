@@ -46,6 +46,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.j2ee.archive.wizard.*;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
+import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -64,7 +65,7 @@ public class AddRemoveSjsasInstance4Test extends NbTestCase {
     
     public void addSjsasInstance() {
         try {
-            AddDomainWizardIterator inst = new AddDomainWizardIterator();
+            AddDomainWizardIterator inst = new AddDomainWizardIterator(new PlatformValidator());
             WizardDescriptor wizard = new WizardDescriptor(new Panel[] {});
             wizard.putProperty(TestUtil.PLATFORM_LOCATION, new File(TestUtil._PLATFORM_LOCATION));
             wizard.putProperty(TestUtil.INSTALL_LOCATION, TestUtil._INSTALL_LOCATION);
