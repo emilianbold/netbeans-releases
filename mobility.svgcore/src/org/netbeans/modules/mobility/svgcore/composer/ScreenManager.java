@@ -46,7 +46,6 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
-import java.awt.Shape;
 import java.awt.event.KeyListener;
 import java.util.Stack;
 import javax.microedition.m2g.SVGImage;
@@ -96,31 +95,25 @@ public final class ScreenManager {
         m_animatorView = perseus.getAnimatorGUI();
                        
         m_imageContainer = new SVGImagePanel(m_animatorView) {
-            protected void paintPanel(Graphics g, int x, int y, int w, int h) {
+            protected void paintPanel(Graphics g, int x, int y) {
                 PerseusController perseus = m_sceneMgr.getPerseusController();
                 if (perseus != null) {
-                    Shape clip = g.getClip();
-                    try {
-                        g.setClip(x, y, w, h);
-                        if (m_showAllArea) {
-                            SVGLocatableElement elem = perseus.getViewBoxMarker();
-                            if (elem != null) {
-                                SVGRect rect = elem.getScreenBBox();
-                                g.setColor( VIEWBOXBORDER_COLOR);
-                                g.drawRect((int)(x + rect.getX()), (int)(y + rect.getY()),
-                                           (int)(rect.getWidth()), (int)(rect.getHeight()) - 1);
-                            }
+                    if (m_showAllArea) {
+                        SVGLocatableElement elem = perseus.getViewBoxMarker();
+                        if (elem != null) {
+                            SVGRect rect = elem.getScreenBBox();
+                            g.setColor( VIEWBOXBORDER_COLOR);
+                            g.drawRect((int)(x + rect.getX()), (int)(y + rect.getY()),
+                                       (int)(rect.getWidth()), (int)(rect.getHeight()) - 1);
                         }
+                    }
 
-                        boolean isReadOnly = m_sceneMgr.isReadOnly();
-                        Stack<ComposerAction> actions = m_sceneMgr.getActiveActions();
-                        synchronized( actions) {
-                            for (int i = actions.size()-1; i >= 0; i--) {
-                                actions.get(i).paint(g, x, y, isReadOnly);
-                            }
+                    boolean isReadOnly = m_sceneMgr.isReadOnly();
+                    Stack<ComposerAction> actions = m_sceneMgr.getActiveActions();
+                    synchronized( actions) {
+                        for (int i = actions.size()-1; i >= 0; i--) {
+                            actions.get(i).paint(g, x, y, isReadOnly);
                         }
-                    } finally {
-                        g.setClip(clip);
                     }
                 }
             }
@@ -290,7 +283,6 @@ public final class ScreenManager {
                     double xRatio = viewBoxRect.getWidth() / rect.getWidth();
                     double yRatio = viewBoxRect.getHeight() / rect.getHeight();
                     float  ratio  = (float) Math.max(xRatio, yRatio);
-                    //System.out.println("Scale ratio: " + ratio);
                     svg.setCurrentScale( ratio);
                 }
 

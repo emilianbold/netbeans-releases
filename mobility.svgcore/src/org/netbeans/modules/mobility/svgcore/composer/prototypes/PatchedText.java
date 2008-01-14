@@ -87,8 +87,8 @@ public final class PatchedText extends Text implements PatchedTransformableEleme
             float yCoord = getFloatTrait( SVGConstants.SVG_Y_ATTRIBUTE) + tfm.getComponent(5);
             
             changedAttrs = new String [] {
-                SVGConstants.SVG_X_ATTRIBUTE, String.valueOf(xCoord),
                 SVGConstants.SVG_Y_ATTRIBUTE, String.valueOf(yCoord),
+                SVGConstants.SVG_X_ATTRIBUTE, String.valueOf(xCoord),
                 SVGConstants.SVG_TRANSFORM_ATTRIBUTE, null
             };
         }

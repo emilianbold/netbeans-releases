@@ -714,6 +714,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 
         initButton(toolbar, allowEditAction, true);
         allowEditAction.setIsSelected(!smgr.isReadOnly());
+        allowEditAction.setEnabled( m_svgDataObject.getPrimaryFile().canWrite());
 
         toolbar.add(createToolBarSeparator(), constrains);
         initButton(toolbar, insertGraphicsAction, false);
@@ -941,7 +942,16 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             }
         }));
 
-        smgr.registerPopupActions(new Action[]{insertGraphicsAction, zoomToFitAction, zoomInAction, zoomOutAction, scaleAction, showViewBoxAction, startAnimationAction, pauseAnimationAction, allowEditAction}, this, lookup);
+        smgr.registerPopupActions(new Action[]{
+            insertGraphicsAction,
+            zoomToFitAction,
+            zoomInAction,
+            zoomOutAction,
+            scaleAction,
+            showViewBoxAction,
+            startAnimationAction,
+            pauseAnimationAction,
+            allowEditAction}, this, lookup);
 
         updateZoomCombo();
         updateAnimationActions();

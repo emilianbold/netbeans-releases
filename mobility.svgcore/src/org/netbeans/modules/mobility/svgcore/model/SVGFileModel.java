@@ -861,7 +861,7 @@ public final class SVGFileModel {
                     String attrValue = attributes[i+1];
                     
                     int p;
-                    if ((p = fragment.indexOf(attrName)) != -1) {
+                    if ((p = indexOfAttr(fragment, attrName)) != -1) {
                         int start = p;
                         p += attrName.length();
                         while (++p < fragment.length()) {
@@ -920,7 +920,37 @@ public final class SVGFileModel {
             }
         });
     }
+    
+    private static int skipWhite(String fragment, int index) {
+        while(index < fragment.length()) {
+            if ( fragment.charAt(index) > ' ') {
+                return index;
+            } else {
+                index++;
+            }
+        }
+        return -1;
+    }
+    
+    private static int indexOfAttr( String fragment, String attrName) {
+        int index = 0;
         
+        while ( (index=fragment.indexOf(attrName, index)) != -1) {
+            int q = index;
+            index += attrName.length();
+            if ( q < 1 || fragment.charAt(q-1) == ' ') {
+                int p = skipWhite( fragment, index);
+                if ( p != -1 && fragment.charAt(p) == '=') {
+                    p = skipWhite(fragment, p+1);
+                    if (p != -1 && fragment.charAt(p) == '"') {
+                        return q;
+                    }
+                }
+            }
+        }
+        
+        return index;
+    }
     public void setAttribute(final String id, final String attrName, final String attrValue) {
         runTransaction(new FileModelTransaction() {
             protected void transaction() throws BadLocationException {

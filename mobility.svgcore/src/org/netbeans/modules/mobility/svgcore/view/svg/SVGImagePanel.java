@@ -101,10 +101,11 @@ public abstract class SVGImagePanel extends JPanel {
         drawCross( g, xOff + imagePanel.getWidth() + 1, yOff -1);
         drawCross( g, xOff + imagePanel.getWidth() + 1, yOff + imagePanel.getHeight() + 1);
 
-        paintPanel(g, xOff, yOff, imagePanel.getWidth(), imagePanel.getHeight());
+        g.setClip( getVisibleRect());
+        paintPanel(g, xOff, yOff);
     }   
 
-    protected abstract void paintPanel(Graphics g, int x, int y, int w, int h);
+    protected abstract void paintPanel(Graphics g, int x, int y);
 
     private static void drawCross(Graphics g, int x, int y) {
         g.drawLine( x - CROSS_SIZE, y, x + CROSS_SIZE, y);

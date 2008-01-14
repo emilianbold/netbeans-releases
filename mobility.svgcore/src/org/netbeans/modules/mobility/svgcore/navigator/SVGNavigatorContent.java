@@ -49,8 +49,9 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.lang.ref.WeakReference;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
-import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -71,6 +72,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
+import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SVGObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
@@ -129,34 +131,63 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
         }
     }
     
-    public synchronized void navigate(final SVGDataObject d) {   
-        if (d != peerDO) {
+    private final WeakHashMap uiCache = new WeakHashMap();
+    
+    public synchronized void navigate(final SVGDataObject dObj) {   
+        if (dObj != peerDO) {
             if (peerDO != null) {
                 peerDO.getSceneManager().removeSelectionListener(this);
             }
-            peerDO = d;
-            
-            if (d != null) {
-                d.getSceneManager().addSelectionListener( this);
+            peerDO = dObj;
+                        
+            //try to find the UI in the UIcache
+            final NavigatorContentPanel cachedPanel;
+            WeakReference panelWR = (WeakReference)uiCache.get(dObj);
+            if(panelWR != null) {
+                NavigatorContentPanel cp = (NavigatorContentPanel)panelWR.get();
+                if(cp != null) {
+                    System.out.println("panel is cached");
+                    //test if the document associated with the panel is the same we got now
+                    if (cp.m_model == dObj.getModel().getModel()) {
+                        cachedPanel = cp;
+                    } else {
+                        //System.out.println("but the document is different - creating a new UI...");
+                        //remove the old mapping from the cache
+                        uiCache.remove(dObj);
+                        cachedPanel = null;
+                    }
+                } else {
+                    cachedPanel = null;
+                }
+            } else {
+                cachedPanel = null;
+            }
+        
+            if (dObj != null) {
+                dObj.getSceneManager().addSelectionListener( this);
                 
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         showWaitPanel();
                         final NavigatorContentPanel panel;
-                        try {
-                            //cache the newly created panel
-                            panel = new NavigatorContentPanel(d);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                            showCannotNavigate();
-                            return;
+                        if ( cachedPanel == null) {
+                            try {
+                                //cache the newly created panel
+                                panel = new NavigatorContentPanel(dObj);
+                                uiCache.put(dObj, new WeakReference(panel));
+                            } catch (Exception ex) {
+                                SceneManager.log(Level.SEVERE, "Navigator panel creation failed", ex); //NOI18N
+                                showCannotNavigate();
+                                return;
+                            }
+                        } else {
+                            panel = cachedPanel;
                         }
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                setContent(d, panel);
+                                setContent(dObj, panel);
                             }
                         });
-
                     }
                 });        
             } else {
@@ -168,12 +199,12 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
     synchronized void setContent( final SVGDataObject obj, final NavigatorContentPanel panel) {
         navigatorPanel = panel;
                 
-        SVGNavigatorContent.this.removeAll();
+        removeAll();
         if (panel != null) {
-            SVGNavigatorContent.this.add(panel, BorderLayout.CENTER);  
+            add(panel, BorderLayout.CENTER);  
         }
-        SVGNavigatorContent.this.validate();                                
-        SVGNavigatorContent.this.repaint();                                
+        validate();                                
+        repaint();                                
     }
     
     synchronized void select(final String elemId) {
@@ -184,6 +215,7 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
 
     public void release() {
         removeAll();
+        peerDO = null;
         repaint();
     }
     
@@ -215,7 +247,8 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
                  FiltersManager.FilterChangeListener {
         private final SVGDataObject    m_doj;
         private final SVGNavigatorTree tree;
-        private final FiltersManager   filters;
+        private final FiltersManager   m_filters;
+        final DocumentModel m_model;
 
         private final SVGFileModel.ModelListener modelListener = new SVGFileModel.ModelListener() {
             public void modelChanged() {
@@ -234,6 +267,7 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
         
         public NavigatorContentPanel(SVGDataObject doj) throws Exception {
             m_doj = doj;
+            m_model = doj.getModel().getModel();
             setLayout(new BorderLayout());
             
             //create the JTree pane
@@ -331,7 +365,7 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
                             pm.add(animStop);
                         }
                         
-                        JMenuItem[] items = new FilterActions(filters).createMenuItems();
+                        JMenuItem[] items = new FilterActions(m_filters).createMenuItems();
                         //add filter actions
                         for(int i = 0; i < items.length; i++) {
                             pm.add(items[i]);
@@ -364,11 +398,11 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             filtersPanel.setToolTipText(NbBundle.getMessage(SVGNavigatorContent.class, "TIP_TapPanel", keyText)); //NOI18N
             
             //create FiltersManager
-            filters = createFilters();
+            m_filters = createFilters();
             //listen to filters changes
-            filters.hookChangeListener(this);
+            m_filters.hookChangeListener(this);
             
-            filtersPanel.add(filters.getComponent());
+            filtersPanel.add(m_filters.getComponent());
             
             add(filtersPanel, BorderLayout.SOUTH);
             
@@ -432,18 +466,18 @@ public class SVGNavigatorContent extends JPanel implements SceneManager.Selectio
             boolean attrVisibilityChanged = false;
             boolean selected;
             
-            selected = filters.isSelected(ATTRIBUTES_FILTER);
+            selected = m_filters.isSelected(ATTRIBUTES_FILTER);
             if ( selected != SVGNavigatorTree.showAttributes) {
                 SVGNavigatorTree.showAttributes = selected;
                 attrVisibilityChanged = true;
             }
 
-            if ( (selected=filters.isSelected(ID_FILTER)) != SVGNavigatorTree.showIdOnly) {
+            if ( (selected=m_filters.isSelected(ID_FILTER)) != SVGNavigatorTree.showIdOnly) {
                 filterChanged = true;
                 SVGNavigatorTree.showIdOnly = selected;
             }
             
-            if ( (selected=filters.isSelected(ANIMATION_FILTER)) != SVGNavigatorTree.showAnimationsOnly) {
+            if ( (selected=m_filters.isSelected(ANIMATION_FILTER)) != SVGNavigatorTree.showAnimationsOnly) {
                 filterChanged = true;
                 SVGNavigatorTree.showAnimationsOnly = selected;
             }

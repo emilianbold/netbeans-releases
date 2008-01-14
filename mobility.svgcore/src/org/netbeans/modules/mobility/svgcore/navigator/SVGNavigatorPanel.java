@@ -58,26 +58,15 @@ import org.openide.util.NbBundle;
  */
 public class SVGNavigatorPanel implements NavigatorPanel {
     
-    private SVGNavigatorContent navigator = SVGNavigatorContent.getDefault();
-    
-    private Lookup.Result dataObjectSelection;
-    //private Lookup.Result testSelection;
+    private SVGNavigatorContent navigator = SVGNavigatorContent.getDefault();    
+    private Lookup.Result       dataObjectSelection;
     
     private final LookupListener dataObjectListener = new LookupListener() {
         public void resultChanged(LookupEvent ev) {
-            //System.out.println("Lookup changed: " + ev);
             navigate(dataObjectSelection.allInstances());
         }
     };
-    
-    /*
-    private final LookupListener elementSelectionListener = new LookupListener() {
-        public void resultChanged(LookupEvent ev) {
-            select(elementSelection.allInstances());
-        }
-    };    
-    */
-    
+        
     /** public no arg constructor needed for system to instantiate the provider. */
     public SVGNavigatorPanel() {
     }
@@ -96,31 +85,16 @@ public class SVGNavigatorPanel implements NavigatorPanel {
     
     public Lookup getLookup() {
         return null;
-    }
-    
+    }    
     
     public void panelActivated(Lookup context) {
         dataObjectSelection = context.lookup(new Lookup.Template<SVGDataObject>(SVGDataObject.class));
         dataObjectSelection.addLookupListener(dataObjectListener);
         dataObjectSelection.allItems();
         dataObjectListener.resultChanged(null);
-
-        //testSelection = context.lookup(new Lookup.Template<SVGViewTopComponent.SVGCookie>(SVGViewTopComponent.SVGCookie.class));
-        //testSelection.allItems();
-        
-/*
-        elementSelection = context.lookup(new Lookup.Template(SelectionPathBean.class));
-        elementSelection.addLookupListener(elementSelectionListener);
-        elementSelection.allItems();
-        elementSelectionListener.resultChanged(null);
- */
     }
     
     public void panelDeactivated() {
-        /*
-        elementSelection.removeLookupListener(elementSelectionListener);
-        elementSelection = null;
-        */
         dataObjectSelection.removeLookupListener(dataObjectListener);
         dataObjectSelection = null;
         navigator.release(); //hide the UI
