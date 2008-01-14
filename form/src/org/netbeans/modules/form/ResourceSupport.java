@@ -45,6 +45,7 @@ import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -997,11 +998,17 @@ public class ResourceSupport {
                 && getNameProperty(((RADProperty)prop).getRADComponent()) == prop;
     }
 
-    public static List<FileObject> getAutomatedResourceFiles(FormModel formModel) {
-        return FormEditor.getResourceSupport(formModel).getAutomatedResourceFiles();
+    /**
+     * @param formModel
+     * @return Resource files to be affected by a change inside the form (e.g.
+     *         by renaming a component).
+     */
+    public static List<URL> getFilesForContentChangeBackup(FormModel formModel) {
+        return FormEditor.getResourceSupport(formModel).getFilesForContentChangeBackup();
     }
 
-    private List<FileObject> getAutomatedResourceFiles() {
+    private List<URL> getFilesForContentChangeBackup() {
+        // with content change we can backup all i18n and resource files
         if (isI18nAutoMode()) {
             return getI18nService().getResourceFiles(getSourceFile(), getI18nBundleName());
         } else if (isResourceAutoMode()) {
@@ -1009,6 +1016,56 @@ public class ResourceSupport {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * @param formModel
+     * @return Resource files to be affected by renaming a form class.
+     */
+    public static List<URL> getFilesForFormRenameBackup(FormModel formModel) {
+        return FormEditor.getResourceSupport(formModel).getI18nFilesForFormRenameBackup();
+    }
+
+    private List<URL> getI18nFilesForFormRenameBackup() {
+        // With form rename we only backup i18n properties files.
+        // App framework properties files are renamed by separate refactoring,
+        // need not be backed up (as not changed inside).
+        if (isI18nAutoMode()) {
+            return getI18nService().getResourceFiles(getSourceFile(), getI18nBundleName());
+        } else {
+            return Collections.emptyList();
+        }        
+    }
+
+    /**
+     * @param formModel
+     * @param oldFolder
+     * @return Resource files to be affected by moving the form. URL of an
+     *         non-existing file indicates the file will be created.
+     */
+    public static List<URL> getFilesForFormMoveBackup(FormModel formModel, FileObject oldFolder) {
+        return FormEditor.getResourceSupport(formModel).getFilesForFormMoveBackup(oldFolder);
+    }
+
+    private List<URL> getFilesForFormMoveBackup(FileObject oldFolder) {
+        // With form move we only backup i18n properties files - the current ones.
+        // A new one may be created in the new package - may not exist yet.
+        // App framework properties files are moved by separate refactoring,
+        // need not be backed up (as not changed inside).
+        if (isI18nAutoMode()) {
+            String oldPkg = getPkgResourceName(oldFolder);
+            String newPkg = getPkgResourceName(getSourceFile());
+            String newBundle = getI18nBundleName();
+            String oldBundle = oldPkg + newBundle.substring(newPkg.length());
+            List<URL> oldFiles = getI18nService().getResourceFiles(getSourceFile(), oldBundle);
+            List<URL> newFiles = getI18nService().getResourceFiles(getSourceFile(), newBundle);
+            List<URL> all = new ArrayList<URL>(oldFiles.size()+newFiles.size());
+            all.addAll(oldFiles);
+            all.addAll(newFiles);
+            return all;
+        } else {
+            return Collections.emptyList();
+        }        
     }
 
     // -----

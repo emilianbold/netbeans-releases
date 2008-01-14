@@ -46,13 +46,16 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.*;
 import org.openide.cookies.SaveCookie;
 import org.openide.DialogDescriptor;
@@ -466,22 +469,28 @@ public class I18nServiceImpl implements I18nService {
         return false;
     }
 
-    public List<FileObject> getResourceFiles(FileObject srcFile, String bundleName) {
+    public List<URL> getResourceFiles(FileObject srcFile, String bundleName) {
         PropertiesDataObject dobj = null;
         try {
             dobj = getPropertiesDataObject(srcFile, bundleName);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        if (dobj != null) {
-            List<FileObject> list = new ArrayList<FileObject>();
-            list.add(dobj.getPrimaryEntry().getFile());
-            for (MultiDataObject.Entry e : dobj.secondaryEntries()) {
-                list.add(e.getFile());
+            if (dobj != null) {
+                List<URL> list = new ArrayList<URL>();
+                list.add(dobj.getPrimaryEntry().getFile().getURL());
+                for (MultiDataObject.Entry e : dobj.secondaryEntries()) {
+                    list.add(e.getFile().getURL());
+                }
+                return list;
+            } else {
+                FileObject root = getResourcesRoot(srcFile);
+                if (root != null) {
+                    return Collections.singletonList(
+                            new File(root.getPath()+File.separator + bundleName + ".properties").toURL()); // NOI18N
+                }
             }
-            return list;
+        } catch (IOException ex) {
+            Logger.getLogger(I18nServiceImpl.class.getName()).log(Level.INFO, null, ex); // NOI18N
         }
-        return Collections.EMPTY_LIST;
+        return Collections.emptyList();
     }
 
     // -----
@@ -506,9 +515,15 @@ public class I18nServiceImpl implements I18nService {
                                                          String filePath)
         throws IOException
     {
-        if (filePath == null)
+        if (filePath == null) {
             return null;
+        }
 
+        FileObject root = getResourcesRoot(srcFile);
+        return org.netbeans.modules.properties.Util.createPropertiesDataObject(root, filePath);
+    }
+
+    private static FileObject getResourcesRoot(FileObject srcFile) {
         FileObject root = null;
         Project owner = FileOwnerQuery.getOwner(srcFile);
         if (owner != null) {
@@ -522,8 +537,7 @@ public class I18nServiceImpl implements I18nService {
         if (root == null) {
             root = ClassPath.getClassPath(srcFile, ClassPath.SOURCE).getRoots()[0];
         }
-
-        return org.netbeans.modules.properties.Util.createPropertiesDataObject(root, filePath);
+        return root;
     }
 
     /**

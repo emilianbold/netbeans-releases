@@ -43,6 +43,7 @@ package org.netbeans.modules.form;
 
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import org.openide.filesystems.FileObject;
@@ -243,5 +244,5 @@ public interface ResourceService {
      *        be returned
      * @return list of properties files defining resources for given source file
      */
-    List<FileObject> getResourceFiles(FileObject srcFile);
+    List<URL> getResourceFiles(FileObject srcFile);
 }

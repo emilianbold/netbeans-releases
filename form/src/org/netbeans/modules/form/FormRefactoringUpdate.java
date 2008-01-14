@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +57,7 @@ import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementati
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.PositionBounds;
@@ -286,7 +288,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
             RADComponent metacomp = formEditor.getFormModel().findRADComponent(oldName);
             if (metacomp != null) {
                 saveFormForUndo();
-                saveResourcesForUndo();
+                saveResourcesForContentChangeUndo();
                 metacomp.setName(newName);
                 updateForm(false);
             }
@@ -296,7 +298,7 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     private void formRename(/*boolean saveAll*/) {
         if (prepareForm(true)) {
             saveFormForUndo();
-            saveResourcesForUndo();
+            saveResourcesForFormRenameUndo();
             ResourceSupport.formRenamed(formEditor.getFormModel(), refInfo.getOldName());
             updateForm(true);
         }
@@ -331,8 +333,9 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
     private void formMove2(/*boolean saveAll*/) {
         if (prepareForm(true)) {
             saveFormForUndo();
-            saveResourcesForUndo();
-            ResourceSupport.formMoved(formEditor.getFormModel(), changingFile.getParent());
+            FileObject oldFolder = changingFile.getParent();
+            saveResourcesForFormMoveUndo(oldFolder);
+            ResourceSupport.formMoved(formEditor.getFormModel(), oldFolder);
             updateForm(true);
         }
     }
@@ -475,10 +478,48 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         // java file is backed up by java refactoring
     }
 
-    private void saveResourcesForUndo() {
-        for (FileObject file : ResourceSupport.getAutomatedResourceFiles(formEditor.getFormModel())) {
-            saveForUndo(file);
+    private void saveResourcesForContentChangeUndo() {
+        for (URL url : ResourceSupport.getFilesForContentChangeBackup(formEditor.getFormModel())) {
+            saveForUndo(url);
         }
+    }
+
+    private void saveResourcesForFormRenameUndo() {
+        for (URL url : ResourceSupport.getFilesForFormRenameBackup(formEditor.getFormModel())) {
+            saveForUndo(url);
+        }
+    }
+
+    private void saveResourcesForFormMoveUndo(FileObject oldFolder) {
+        for (URL url : ResourceSupport.getFilesForFormMoveBackup(formEditor.getFormModel(), oldFolder)) {
+            saveForUndo(url);
+        }
+    }
+
+    private void saveForUndo(final URL url) {
+        FileObject file = URLMapper.findFileObject(url);
+        BackupFacility.Handle id;
+        if (file != null) {
+            try {
+                id = BackupFacility.getDefault().backup(file);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return;
+            }
+        } else { // file does not exist - will be created; to undo we must delete it
+           id = new BackupFacility.Handle() {
+                public void restore() throws IOException {
+                    FileObject file = URLMapper.findFileObject(url);
+                    if (file != null) {
+                        file.delete();
+                    }
+                }
+           };
+        }
+        if (backups == null) {
+            backups = new ArrayList<BackupFacility.Handle>();
+        }
+        backups.add(id);
     }
 
     private void saveForUndo(FileObject file) {

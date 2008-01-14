@@ -44,6 +44,7 @@ package org.netbeans.modules.form;
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -150,5 +151,5 @@ public interface I18nService {
      * default properties file and all locale variants. The returned files can
      * be used e.g. for backup (undo).
      */
-    List<FileObject> getResourceFiles(FileObject srcFile, String bundleName);
+    List<URL> getResourceFiles(FileObject srcFile, String bundleName);
 }

@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,6 +56,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.form.ResourcePanel;
 import org.netbeans.modules.form.ResourceService;
 import org.netbeans.modules.form.ResourceValue;
@@ -275,15 +278,19 @@ public class ResourceServiceImpl implements ResourceService {
         return new ResourcePanelImpl(ResourceUtils.getDesignResourceMap(srcFile, true), valueType);
     }
 
-    public List<FileObject> getResourceFiles(FileObject srcFile) {
+    public List<URL> getResourceFiles(FileObject srcFile) {
         PropertiesDataObject dobj = ResourceUtils.getPropertiesDataObject(srcFile);
         if (dobj != null) {
-            List<FileObject> list = new ArrayList<FileObject>();
-            list.add(dobj.getPrimaryEntry().getFile());
-            for (MultiDataObject.Entry e : dobj.secondaryEntries()) {
-                list.add(e.getFile());
+            try {
+                List<URL> list = new ArrayList<URL>();
+                list.add(dobj.getPrimaryEntry().getFile().getURL());
+                for (MultiDataObject.Entry e : dobj.secondaryEntries()) {
+                    list.add(e.getFile().getURL());
+                }
+                return list;
+            } catch (IOException ex) {
+                Logger.getLogger(ResourceServiceImpl.class.getName()).log(Level.INFO, null, ex); // NOI18N
             }
-            return list;
         }
         return Collections.emptyList();
     }
