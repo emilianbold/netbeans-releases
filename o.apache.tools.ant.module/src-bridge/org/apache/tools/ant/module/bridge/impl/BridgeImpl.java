@@ -384,12 +384,7 @@ public class BridgeImpl implements BridgeInterface {
     //http://core.netbeans.org/source/browse/core/src/org/netbeans/core/actions/RefreshAllFilesystemsAction.java
     //http://java.netbeans.org/source/browse/java/api/src/org/netbeans/api/java/classpath/ClassPath.java
         
-    private static FileSystem[] fileSystems;
-
     private static FileSystem[] getFileSystems() {
-        if (fileSystems != null) {
-            return fileSystems;
-        }
         File[] roots = File.listRoots();
         Set<FileSystem> allRoots = new LinkedHashSet<FileSystem>();
         assert roots != null && roots.length > 0 : "Could not list file roots"; // NOI18N
@@ -402,21 +397,12 @@ public class BridgeImpl implements BridgeInterface {
             try {
                 fs = random.getFileSystem();
                 allRoots.add(fs);
-                
-                /*Because there is MasterFileSystem impl. that provides conversion to FileObject for all File.listRoots
-                (except floppy drives and empty CD). Then there is useless to convert all roots into FileObjects including
-                net drives that might cause performance regression.
-                */
-                
-                if (fs != null) {
-                    break;
-                }
             } catch (FileStateInvalidException e) {
                 throw new AssertionError(e);
             }
         }
         assert !allRoots.isEmpty() : "Could not get any filesystem"; // NOI18N
-        return fileSystems = allRoots.toArray(new FileSystem[allRoots.size()]);
+        return allRoots.toArray(new FileSystem[allRoots.size()]);
     }
 
     private static void addCustomDefs(Project project) throws BuildException, IOException {
