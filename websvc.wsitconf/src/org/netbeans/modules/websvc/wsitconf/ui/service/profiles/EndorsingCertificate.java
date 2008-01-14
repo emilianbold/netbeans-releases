@@ -92,14 +92,14 @@ public class EndorsingCertificate extends javax.swing.JPanel {
         algoSuiteCombo.addItem(ComboConstants.BASIC192RSA15);
         algoSuiteCombo.addItem(ComboConstants.BASIC128RSA15);
         algoSuiteCombo.addItem(ComboConstants.TRIPLEDESRSA15);
-//        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256);
-//        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256);
-//        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256);
-//        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256);
-//        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256RSA15);
-//        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256RSA15);
-//        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256RSA15);
-//        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256RSA15);
+        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256);
+        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256);
+        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256);
+        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256);
+        algoSuiteCombo.addItem(ComboConstants.BASIC256SHA256RSA15);
+        algoSuiteCombo.addItem(ComboConstants.BASIC192SHA256RSA15);
+        algoSuiteCombo.addItem(ComboConstants.BASIC128SHA256RSA15);
+        algoSuiteCombo.addItem(ComboConstants.TRIPLEDESSHA256RSA15);
         
         inSync = false;
         

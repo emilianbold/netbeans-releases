@@ -572,7 +572,7 @@ public class ProfilesModelHelper {
                 WSDLComponent bt = SecurityPolicyModelHelper.setSecurityBindingType(c, ComboConstants.SYMMETRIC);
                 WSDLComponent tokenType = SecurityTokensModelHelper.setTokenType(bt, ComboConstants.PROTECTION, ComboConstants.KERBEROS);
                 SecurityTokensModelHelper.setTokenInclusionLevel(tokenType, ComboConstants.ONCE);
-                SecurityPolicyModelHelper.setLayout(bt, ComboConstants.LAX);
+                SecurityPolicyModelHelper.setLayout(bt, ComboConstants.STRICT);
                 SecurityPolicyModelHelper.enableIncludeTimestamp(bt, true);
                 SecurityPolicyModelHelper.enableSignEntireHeadersAndBody(bt, true);
                 AlgoSuiteModelHelper.setAlgorithmSuite(bt, ComboConstants.BASIC128);
