@@ -603,7 +603,15 @@ Date:     ${buildday}
 Branding:
 Branch:   trunk
 Tag:
-    </echo>
+</echo>
+    <exec executable="hg" dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
+      <arg value="id"/>
+    </exec>
+    <condition property="hg.id.line" value="Hg ID:    ${hg.id}&#10;">
+      <equals arg1="${hg.id.exit}" arg2="0"/>
+    </condition>
+    <property name="hg.id.line" value=""/>
+    <echo file="${netbeans.dest.dir}/build_info" append="true">${hg.id.line}</echo>
   </target>
   
   <target name="build" depends="build-nozip"
