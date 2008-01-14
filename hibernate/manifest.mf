@@ -1,6 +1,15 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.hibernate/1
 OpenIDE-Module-Implementation-Version: 1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/hibernate/Bundle.properties
+OpenIDE-Module-Layer: org/netbeans/modules/hibernate/resources/layer.xml
+OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/hibernate/resources/Bundle.properties
 OpenIDE-Module-Specification-Version: 1.0
+
+Name: org/netbeans/modules/hibernate/loaders/cfg/HibernateCfgDataLoader.class
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+OpenIDE-Module-Class: Loader
+
+Name: org/netbeans/modules/hibernate/loaders/mapping/HibernateMappingDataLoader.class
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+OpenIDE-Module-Class: Loader
 
