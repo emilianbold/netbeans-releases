@@ -172,7 +172,6 @@ public class PhysicalView {
         static final String GROUP_NAME_PATTERN = NbBundle.getMessage(
             PhysicalView.class, "FMT_PhysicalView_GroupName" ); // NOI18N
 
-        private Project project;
         private ProjectInformation pi;
         private SourceGroup group;
         private boolean isProjectDir;
@@ -182,7 +181,6 @@ public class PhysicalView {
                    dataFolder.createNodeChildren( VISIBILITY_QUERY_FILTER ),                       
                    createLookup( project, group, dataFolder ) );
 
-            this.project = project;
             this.pi = ProjectUtils.getInformation( project );
             this.group = group;
             this.isProjectDir = isProjectDir;
