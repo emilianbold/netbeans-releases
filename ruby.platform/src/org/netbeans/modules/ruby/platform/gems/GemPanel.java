@@ -108,7 +108,7 @@ final class GemPanel extends JPanel implements Runnable {
         if (lastPlatformID != null) {
             platforms.setSelectedItem(RubyPlatformManager.getPlatformByID(lastPlatformID));
         }
-        this.gemManager = RubyPlatformManager.getDefaultPlatform().getGemManager();
+        this.gemManager = getSelectedPlatform().getGemManager();
 
         installedList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         installedList.getSelectionModel().addListSelectionListener(new MyListSelectionListener(installedList, installedDesc, uninstallButton));
@@ -157,9 +157,8 @@ final class GemPanel extends JPanel implements Runnable {
                     newGems = Collections.emptyList();
                     fetchingLocal = false;
                     fetchingRemote = false;
-                    updateList(TabIndex.NEW, true);
+                    notifyGemsUpdated();
                     updateList(TabIndex.INSTALLED, true);
-                    updateList(TabIndex.UPDATED, true);
                     setEnabledGUI(false);
                 }
             }
