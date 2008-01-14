@@ -3144,7 +3144,7 @@ public class JavaCodeGenerator extends CodeGenerator {
                         println("if (" + createTokenStr + checkTokenNullStr + checkSkip + ") {");
                         if (!Tool.agressive || !rblk.isConstText()) {
                             println("	_token = makeToken(_ttype);");
-                            println("	_token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));");
+                            println("	if (_token != null) _token.setText(new String(text.getBuffer(), _begin, text.length()-_begin));");
                             //println("_returnToken = _token;");
                             println("}");
                             println("_returnToken = _token;");

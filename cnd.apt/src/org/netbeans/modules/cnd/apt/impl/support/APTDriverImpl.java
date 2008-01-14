@@ -144,27 +144,46 @@ public class APTDriverImpl {
                 // build token stream for file       
                 InputStream stream = null;
                 try {
-                    stream = buffer.getInputStream();               
-                    TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, stream);
-                    // build apt from token stream
-                    apt = APTBuilder.buildAPT(path, ts);
-                    fullAPT = apt;
-                    if (apt != null) {
-                        if (APTTraceFlags.TEST_APT_SERIALIZATION) {
-                            APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
-                            if (test != null) {
-                                apt = test;
-                            } else {
-                                System.err.println("error on serialization apt for file " + file.getAbsolutePath()); // NOI18N
+                    stream = buffer.getInputStream();
+                    if (!withTokens) {
+                        TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(path, stream);
+                        // build apt from token stream
+                        apt = APTBuilder.buildAPT(path, ts);
+                        fullAPT = null;
+                        if (apt != null) {
+                            if (APTTraceFlags.TEST_APT_SERIALIZATION) {
+                                APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
+                                if (test != null) {
+                                    apt = test;
+                                } else {
+                                    System.err.println("error on serialization apt for file " + file.getAbsolutePath()); // NOI18N
+                                }
                             }
+                            lightAPT = apt;
+                            _putAPTFile(path, lightAPT, withTokens);
                         }
-                        _putAPTFile(path, apt, withTokens);
-                        APTFile aptLight = (APTFile) APTBuilder.buildAPTLight(apt);
-                        lightAPT = aptLight;
-                        _putAPTFile(path, aptLight, withTokens);
-                        if (!withTokens) {
-                            // were asked to return apt light
-                            apt = aptLight;
+                    } else {
+                        TokenStream ts = APTTokenStreamBuilder.buildTokenStream(path, stream);
+                        // build apt from token stream
+                        apt = APTBuilder.buildAPT(path, ts);
+                        fullAPT = apt;
+                        if (apt != null) {
+                            if (APTTraceFlags.TEST_APT_SERIALIZATION) {
+                                APTFile test = (APTFile) APTSerializeUtils.testAPTSerialization(buffer, apt);
+                                if (test != null) {
+                                    apt = test;
+                                } else {
+                                    System.err.println("error on serialization apt for file " + file.getAbsolutePath()); // NOI18N
+                                }
+                            }
+                            _putAPTFile(path, apt, withTokens);
+                            APTFile aptLight = (APTFile) APTBuilder.buildAPTLight(apt);
+                            lightAPT = aptLight;
+                            _putAPTFile(path, aptLight, withTokens);
+                            if (!withTokens) {
+                                // were asked to return apt light
+                                apt = aptLight;
+                            }
                         }
                     }
                 } finally {

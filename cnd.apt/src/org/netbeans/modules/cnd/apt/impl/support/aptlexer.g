@@ -375,6 +375,17 @@ tokens {
     }
 
     /**
+     *  Flag prevents token creating for APT light.
+     */	
+    private boolean onlyPreproc = false;
+    private boolean isOnlyPreproc() {
+        return onlyPreproc;
+    }
+    public void setOnlyPreproc(boolean onlyPreproc) {
+        this.onlyPreproc = onlyPreproc;
+    }
+
+    /**
      *  EndOfLine read while in this state whould be treated as the end
      * of a PreprocDirective and token END_PREPROC_DIRECTIVE will be created
      */
@@ -443,6 +454,12 @@ tokens {
     }
 
     protected Token makeToken(int t) {
+        if (isOnlyPreproc() && isPreprocPossible()) {
+           // do not create token if lexer builds light stream
+            if (!(t==Token.EOF_TYPE || t==END_PREPROC_DIRECTIVE)){
+                return null;
+            }
+        } 
         APTToken k = (APTToken)super.makeToken(t);
         k.setOffset(tokenStartOffset);
         k.setEndOffset(offset);

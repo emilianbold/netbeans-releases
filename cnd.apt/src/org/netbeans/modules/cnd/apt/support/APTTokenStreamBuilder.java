@@ -73,6 +73,13 @@ public class APTTokenStreamBuilder {
         lexer.init(name, 0);
         return lexer;
     }    
+
+    public static TokenStream buildLightTokenStream(String name, InputStream stream) {  
+        APTLexer lexer = new APTLexer(stream);
+        lexer.init(name, 0);
+        lexer.setOnlyPreproc(true);
+        return lexer;
+    }    
     
     public static TokenStream buildTokenStream(String name, Reader in) {  
         APTLexer lexer = new APTLexer(in);
