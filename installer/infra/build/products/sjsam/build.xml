@@ -57,7 +57,15 @@
     <!-- ============================================================================
       Default
     ============================================================================= -->
-    
+    <!-- prepare SJSAM package -->
+    <target name="-pre-package">
+	<delete includeemptydirs="true">
+            <fileset dir="${data.directory}">
+		<include name="*.eml"/>
+                <include name="Software_License_Agt_SLA.txt"/>
+            </fileset>
+        </delete>
+    </target>
     <!--
       The default target. 
       
