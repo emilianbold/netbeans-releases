@@ -167,9 +167,10 @@ class First {
                 if (depthLimit == maxDepth) {
                     String conflict = findConflict (firstForNT, depthLimit);
                     if (conflict != null) {
-                        Thread.dumpStack();
-                        System.out.println (firstForNT);
-                        throw new ParseException ("Can not resolve first set for " + nt + ".\n Conflicting input: " + conflict);
+//                        Thread.dumpStack();
+//                        System.out.println (firstForNT);
+                        System.out.println ("Conflict: " + conflict);
+                        //throw new ParseException ("Can not resolve first set for " + nt + ".\n Conflicting input: " + conflict);
                     }
                 }
             }
