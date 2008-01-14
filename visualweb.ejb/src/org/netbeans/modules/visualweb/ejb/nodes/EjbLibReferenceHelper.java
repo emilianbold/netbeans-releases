@@ -46,18 +46,18 @@
 
 package org.netbeans.modules.visualweb.ejb.nodes;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 
+import java.util.zip.ZipEntry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -78,7 +78,6 @@ import org.netbeans.modules.visualweb.ejb.util.Util;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectConstants;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -90,6 +89,9 @@ import org.openide.util.Lookup;
  */
 public class EjbLibReferenceHelper {
 
+    private static final String MANIFEST_PATH = "META-INF/MANIFEST.MF"; // NOI18N
+    private static final String TIMESTAMP_ATTR = "Generated-time-in-millies"; // NOI18N
+    
     /**
      * Class to encapsulate a hack to implement a feature that is not yet implemented by the Sun
      * AppServer plugin. Remove this hack once it is implemented. Also, remove dependency on the
@@ -237,49 +239,6 @@ public class EjbLibReferenceHelper {
         }
     }
 
-    /**
-     * Adds the given jars to the project as archive references. This method is idempotent and is
-     * safe to call even if jars already have been copied to the project.
-     * 
-     * @param project
-     *            the project to be added to
-     * @param role
-     *            One of three values: ClassPath.COMPILE = compile-time only, do not deploy;
-     *            ClassPath.EXECUTE = deploy only; or null = means both.
-     * @param jars
-     *            jar files to be copied to the project (filename Strings)
-     * @throws IOException
-     */
-    private static void addJarsAndRefsToProject(Project project, String role, String... jars)
-            throws IOException {
-        FileObject ejbSubDir = getProjectEjbDataDir(project);
-
-        // Copy over the jar files into the project library directory
-        ArrayList<URL> copiedArchiveJars = new ArrayList<URL>();
-        for (String jarFilePath : jars) {
-            try {
-                String jarFileName = new File(jarFilePath).getName();
-                FileObject destJar = ejbSubDir.getFileObject(jarFileName);
-
-                if (destJar == null) {
-                    destJar = ejbSubDir.createData(jarFileName);
-                    copyJarFile(jarFilePath, destJar);
-                }
-
-                copiedArchiveJars.add(new URL(destJar.getURL().toExternalForm() + "/")); // NOI18N
-            } catch (IOException ex) {
-                Util.getLogger().log(Level.SEVERE, null, ex);
-            }
-        }
-
-        // Add archive references to the project
-        if (role != null) {
-            JsfProjectUtils.addRootReferences(project, copiedArchiveJars.toArray(new URL[0]), role);
-        } else {
-            JsfProjectUtils.addRootReferences(project, copiedArchiveJars.toArray(new URL[0]));
-        }
-    }
-
     private static FileObject getProjectEjbDataDir(Project project) throws IOException {
         // Obtain the path to the project's library directory
         FileObject projectLibDir = JsfProjectUtils.getProjectLibraryDirectory(project);
@@ -289,49 +248,108 @@ public class EjbLibReferenceHelper {
             ejbSubDir = projectLibDir.createFolder(EjbDataSourceManager.EJB_DATA_SUB_DIR);
         return ejbSubDir;
     }
-
-    private static void updateJarsForProject(Project project, String role, String... jars)
-            throws IOException {
-        final FileObject ejbSubDir = getProjectEjbDataDir(project);
-
-        for (final String jarFilePath : jars) {
-            final String jarFileName = new File(jarFilePath).getName();
-
-            ejbSubDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    FileObject jar = ejbSubDir.getFileObject(jarFileName);
-                    if (jar != null) {
-                        jar.delete();
-                    }
-
-                    jar = ejbSubDir.createData(jarFileName);
-                    copyJarFile(jarFilePath, jar);
-                }
-            });
+    
+    private static void addRefsToProject(Project project, String role, List<FileObject> projectJars, String... jars) throws IOException {
+        ArrayList<URL> copiedArchiveJars = new ArrayList<URL>(jars.length);
+        for (String jar : jars) {
+            FileObject jarFO = findFileObject(projectJars, jar);
+            if (jarFO != null) {
+                copiedArchiveJars.add(new URL(jarFO.getURL().toExternalForm() + "/"));
+            }
+        }
+        
+        URL[] jarArray = copiedArchiveJars.toArray(new URL[copiedArchiveJars.size()]);
+        
+        // Add archive references to the project
+        if (role != null) {
+            JsfProjectUtils.addRootReferences(project, jarArray, role);
+        } else {
+            JsfProjectUtils.addRootReferences(project, jarArray);
         }
     }
-
-    private static void copyJarFile(String srcPath, FileObject destJar) throws IOException {
-        FileLock fileLock = destJar.lock();
-        try {
-            OutputStream outStream = destJar.getOutputStream(fileLock);
-            DataInputStream in = new DataInputStream(new FileInputStream(new File(srcPath)));
-            DataOutputStream out = new DataOutputStream(outStream);
-
-            byte[] bytes = new byte[1024];
-            int byteCount = in.read(bytes);
-
-            while (byteCount > -1) {
-                out.write(bytes, 0, byteCount);
-                byteCount = in.read(bytes);
+    
+    private static FileObject findFileObject(List<FileObject> files, String filePath) {
+        String fileName = new File(filePath).getName();
+        for (FileObject fo : files) {
+            if (fo.getNameExt().equals(fileName)) {
+                return fo;
             }
-            out.flush();
-            out.close();
-            outStream.close();
-            in.close();
-        } finally {
-            fileLock.releaseLock();
         }
+        
+        return null;
+    }
+    
+    private static ArrayList<FileObject> addUpdateJarsForProject(Project project, final ArrayList<String> jars) throws IOException {
+        final FileObject ejbSubDir = getProjectEjbDataDir(project);
+        final ArrayList<FileObject> copiedJars = new ArrayList<FileObject>(jars.size());
+        
+        ejbSubDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            
+           public void run() throws IOException {
+               for (String jarFile : jars) {                  
+                   FileObject jarFileObject = FileUtil.toFileObject(FileUtil.normalizeFile(new File(jarFile)));
+                   if (jarFileObject != null) {
+                       String jarFileName = jarFileObject.getName();
+                       String jarFileExt = jarFileObject.getExt();
+                       FileObject projectJar = ejbSubDir.getFileObject(jarFileName, jarFileExt);
+                       
+                       if (projectJar == null) { 
+                           FileObject copiedJar = FileUtil.copyFile(jarFileObject, ejbSubDir, jarFileName);
+                           copiedJars.add(copiedJar);
+                       }else if (!isJarUpToDate(projectJar, jarFileObject)) {
+                           projectJar.delete();
+                           
+                           FileObject copiedJar = FileUtil.copyFile(jarFileObject, ejbSubDir, jarFileName);
+                           copiedJars.add(copiedJar);
+                       }else {
+                           copiedJars.add(projectJar);
+                       }
+                   }
+               }
+           }
+        });
+        
+        return copiedJars;
+    }
+    
+    private static boolean isJarUpToDate(FileObject projectJarFO, FileObject repositoryJarFO) {
+        if (projectJarFO.getSize() != repositoryJarFO.getSize()) {
+            return false;
+        }
+        
+        try {
+            File projectFile = FileUtil.toFile(projectJarFO);
+            File repositoryFile = FileUtil.toFile(repositoryJarFO);
+            
+            JarFile projectJar = new JarFile(projectFile, false);
+            JarFile repositoryJar = new JarFile(repositoryFile, false);
+            
+            ZipEntry projectManifestEntry = projectJar.getEntry(MANIFEST_PATH);
+            ZipEntry repositoryManifestEntry = repositoryJar.getEntry(MANIFEST_PATH);
+            
+            if (projectManifestEntry == null && repositoryManifestEntry == null) {
+                return true;
+            }else if (projectManifestEntry == null || repositoryManifestEntry == null) {
+                return false;
+            }
+            
+            Manifest projectManifest = new Manifest(projectJar.getInputStream(projectManifestEntry));
+            Manifest repositoryManifest = new Manifest(repositoryJar.getInputStream(repositoryManifestEntry));
+            
+            String projectTS = (String)projectManifest.getMainAttributes().getValue(TIMESTAMP_ATTR);
+            String repositoryTS = (String)repositoryManifest.getMainAttributes().getValue(TIMESTAMP_ATTR);
+            
+            if (projectTS == null && repositoryTS == null) {
+                return true;
+            }
+            
+            return projectTS != null && repositoryTS != null && projectTS.equals(repositoryTS);
+        }catch (Exception ex) {
+            // if there is no manifest, the file sizes and names are at least the same, so
+            // assume that the file is unchanged
+            return true;
+        }
+        
     }
 
     /**
@@ -467,34 +485,42 @@ public class EjbLibReferenceHelper {
             throws IOException {
         // Add EJB client wrapper archive to the project
         String wrapperJar = ejbGroup.getClientWrapperBeanJar();
-        addJarsAndRefsToProject(project, null, wrapperJar);
-
-        // Add EJB design-time archive to the project
         String dtJar = ejbGroup.getDesignInfoJar();
-        addJarsAndRefsToProject(project, ClassPath.COMPILE, dtJar);
+        ArrayList<String> clientJarFiles = ejbGroup.getClientJarFiles();
+        
+        ArrayList<String> allJars = new ArrayList<String>(clientJarFiles.size() + 2);
+        allJars.add(wrapperJar);
+        allJars.add(dtJar);
+        allJars.addAll(clientJarFiles);
+        
+        // copy all jars to the project
+        List<FileObject> projectJars = addUpdateJarsForProject(project, allJars);
+        
+        // add EJB client wrapper archive to the project
+        addRefsToProject(project, null, projectJars, wrapperJar);
+        
+        // Add EJB design-time archive to the project
+        addRefsToProject(project, ClassPath.COMPILE, projectJars, dtJar);
 
         // Add the client stub jars to the project
-        ArrayList<String> clientJarFiles = ejbGroup.getClientJarFiles();
-        for (String clientJar : clientJarFiles) {
-            addJarsAndRefsToProject(project, null, clientJar);
+        if (clientJarFiles.size() > 0) {
+            addRefsToProject(project, null, projectJars, clientJarFiles.toArray(new String[clientJarFiles.size()]));
         }
     }
-
+    
     private static void updateEjbGroupForProject(EjbGroup ejbGroup, Project project)
             throws IOException, ConfigurationException {
         // Update EJB client wrapper archive
         String wrapperJar = ejbGroup.getClientWrapperBeanJar();
-        updateJarsForProject(project, null, wrapperJar);
-
-        // Update EJB design-time archive
         String dtJar = ejbGroup.getDesignInfoJar();
-        updateJarsForProject(project, ClassPath.COMPILE, dtJar);
-
-        // Update the client stub jars
         ArrayList<String> clientJarFiles = ejbGroup.getClientJarFiles();
-        for (String clientJar : clientJarFiles) {
-            updateJarsForProject(project, null, clientJar);
-        }
+        
+        ArrayList<String> allJars = new ArrayList<String>(clientJarFiles.size() + 2);
+        allJars.add(wrapperJar);
+        allJars.add(dtJar);
+        allJars.addAll(clientJarFiles);
+        
+        addUpdateJarsForProject(project, allJars);
         
         // Partial fix for 119881
         addToDeploymentDescriptors(project, ejbGroup);
