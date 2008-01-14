@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.platform.gems;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -142,9 +144,24 @@ final class GemPanel extends JPanel implements Runnable {
         // This will also update the New and Installed lists because Update depends on these
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                gemHomeValue.setText(gemManager.getGemDir());
-                setEnabledGUI(false);
-                refreshUpdated();
+                if (getSelectedPlatform().hasRubyGemsInstalled()) {
+                    gemHomeValue.setText(gemManager.getGemDir());
+                    gemHomeValue.setForeground(UIManager.getColor("Label.foreground"));
+                    setEnabledGUI(false);
+                    refreshUpdated();
+                } else {
+                    gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
+                    gemHomeValue.setText(GemManager.getNotInstalledMessage());
+                    availableGems = Collections.emptyList();
+                    installedGems = Collections.emptyList();
+                    newGems = Collections.emptyList();
+                    fetchingLocal = false;
+                    fetchingRemote = false;
+                    updateList(TabIndex.NEW, true);
+                    updateList(TabIndex.INSTALLED, true);
+                    updateList(TabIndex.UPDATED, true);
+                    setEnabledGUI(false);
+                }
             }
         });
     }
@@ -303,7 +320,7 @@ final class GemPanel extends JPanel implements Runnable {
         return !(fetchingRemote || fetchingLocal);
     }
     
-    private void updateList(TabIndex tab, boolean showCount) {
+    private void updateList(TabIndex tab, boolean updateCount) {
         assert SwingUtilities.isEventDispatchThread();
 
         Pattern pattern = null;
@@ -381,7 +398,7 @@ final class GemPanel extends JPanel implements Runnable {
         //            list.setSelectedIndex(0);
         //        }
 
-        if (showCount) {
+        if (updateCount) {
             String tabTitle = gemsTab.getTitleAt(tab.ordinal());
             String originalTabTitle = tabTitle;
             int index = tabTitle.lastIndexOf('(');

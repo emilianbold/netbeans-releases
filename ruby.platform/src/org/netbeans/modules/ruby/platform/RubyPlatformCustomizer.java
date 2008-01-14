@@ -55,6 +55,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory.RubyPlatformListModel;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -69,8 +70,6 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
     
-    private static final Color INVALID_PLAF_COLOR = UIManager.getColor("nb.errorForeground"); // NOI18N
-
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
         JButton closeButton = new JButton();
@@ -104,6 +103,8 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         if (preferences.getBoolean(FIRST_TIME_KEY, true)) {
             performPlatformDetection();
             preferences.putBoolean(FIRST_TIME_KEY, false);
+        } else {
+            setAutoDetecting(false);
         }
     }
 
@@ -156,8 +157,8 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
             gemToolValue.setText(plaf.getGemManager().getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
             color = UIManager.getColor("Label.foreground");
         } else {
-            color = INVALID_PLAF_COLOR;
-            String notInstalled = NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.rubyGemsNotInstalled");
+            color = PlatformComponentFactory.INVALID_PLAF_COLOR;
+            String notInstalled = GemManager.getNotInstalledMessage();
             gemHomeValue.setText(notInstalled);
             gemToolValue.setText(notInstalled);
         }

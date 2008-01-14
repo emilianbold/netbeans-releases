@@ -98,7 +98,7 @@ public final class GemManager {
      * #SPECIFICATIONS}.
      */
     private static final String DOT_GEM_SPEC = ".gemspec"; // NOI18N
-    
+
     private Map<String, Map<String, File>> gemFiles;
     private Map<String, String> gemVersions;
     private Map<String, URL> gemUrls;
@@ -1083,5 +1083,9 @@ public final class GemManager {
                 origTask.run();
             }
         };
+    }
+
+    public static String getNotInstalledMessage() {
+        return NbBundle.getMessage(GemManager.class, "GemManager.rubyGemsNotInstalled");
     }
 }

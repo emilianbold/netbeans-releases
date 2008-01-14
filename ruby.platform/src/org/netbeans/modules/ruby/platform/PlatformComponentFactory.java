@@ -66,7 +66,7 @@ public final class PlatformComponentFactory {
 
     private static final Logger LOGGER = Logger.getLogger(PlatformComponentFactory.class.getName());
     
-    private static final Color INVALID_PLAF_COLOR = UIManager.getColor("nb.errorForeground"); // NOI18N
+    public static final Color INVALID_PLAF_COLOR = UIManager.getColor("nb.errorForeground"); // NOI18N
 
     private PlatformComponentFactory() {
         // don't allow instances
