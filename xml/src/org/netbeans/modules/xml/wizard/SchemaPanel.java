@@ -347,6 +347,7 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
                         String fileName = new File(erdn.getSchemaFileName()).getName();
                         if(ns.equals(erdn.getNamespace()) && uri.equals(fileName)) {
                             model.setPrefix(erdn.getPrefix());
+                            model.setPrimarySchema(erdn.getSchemaFileName());
                         }
                    }
                }

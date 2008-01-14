@@ -47,6 +47,15 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.xml.axi</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -122,16 +131,18 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.bpel.editors</friend>
+                <friend>org.netbeans.modules.soa.ui</friend>
+                <friend>org.netbeans.modules.xml</friend>
+                <friend>org.netbeans.modules.xml.core</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
                 <friend>org.netbeans.modules.xml.schema.completion</friend>
                 <friend>org.netbeans.modules.xml.schema.ui.basic</friend>
                 <friend>org.netbeans.modules.xml.wsdlui</friend>
-                <friend>org.netbeans.modules.bpel.editors</friend>
-                <friend>org.netbeans.modules.soa.ui</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
-                <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.xslt.mapper</friend>
+                <friend>org.netbeans.modules.xslt.tmap</friend>
                 <package>org.netbeans.modules.xml.axi</package>
                 <package>org.netbeans.modules.xml.axi.datatype</package>
                 <package>org.netbeans.modules.xml.axi.visitor</package>

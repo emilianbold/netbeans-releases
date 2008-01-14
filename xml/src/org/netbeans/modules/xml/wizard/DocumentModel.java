@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import org.netbeans.modules.xml.axi.visitor.XMLContentAttributes;
 import org.openide.nodes.Node;
 
 /**
@@ -89,6 +90,8 @@ public final class DocumentModel {
     private String prefix;
     
     private XMLContentAttributes contentAttr;
+    
+    private String primarySchemaFileName;
     
     /** Creates new SchemaWizardModel */
     public DocumentModel(URL targetFolderURL) {
@@ -190,6 +193,14 @@ public final class DocumentModel {
     
     public XMLContentAttributes getXMLContentAttributes() {
         return contentAttr;
+    }
+    
+     void setPrimarySchema(String fileName) {
+        this.primarySchemaFileName = fileName;
+    }
+    
+    public String getPrimarySchema(){
+        return primarySchemaFileName;
     }
    
 }

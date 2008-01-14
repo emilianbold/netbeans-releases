@@ -106,7 +106,7 @@ public class DeepAXITreeVisitor extends DefaultVisitor {
         pathToRoot.pop();
     }
         
-    private boolean canVisit(AXIComponent component) {        
+    protected boolean canVisit(AXIComponent component) {        
         if(pathToRoot.contains(component))
             return false;
         
