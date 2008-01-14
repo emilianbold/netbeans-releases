@@ -223,7 +223,7 @@ public class RegistrationData {
      * <tt>hostname</tt>, <tt>osName</tt>,  <tt>osVersion</tt> and
      * <tt>osArchitecture</tt>
      * </blockquote>
-     * and the value of other keys will be empty.
+     * and the value of other keys may be empty.
      */
     public RegistrationData() {
         this(Util.generateURN());
@@ -238,22 +238,16 @@ public class RegistrationData {
     
     private Map<String, String> initEnvironment() {
         Map<String, String> map = new LinkedHashMap<String, String>();
-        try {
-            String hostname = java.net.InetAddress.getLocalHost().getHostName();
-            map.put(ST_NODE_HOSTNAME, hostname);
-        } catch (UnknownHostException ex) {
-            InternalError x = new InternalError(ex.getMessage());
-            x.initCause(ex);
-            throw x;
-        }
-        map.put(ST_NODE_HOST_ID, "");
-        map.put(ST_NODE_OS_NAME, System.getProperty("os.name"));
-        map.put(ST_NODE_OS_VERSION, System.getProperty("os.version"));
-        map.put(ST_NODE_OS_ARCH, System.getProperty("os.arch"));
-        map.put(ST_NODE_SYSTEM_MODEL, "");
-        map.put(ST_NODE_SYSTEM_MANUFACTURER, "");
-        map.put(ST_NODE_CPU_MANUFACTURER, "");
-        map.put(ST_NODE_SERIAL_NUMBER, "");
+        SystemEnvironment sysEnv = SystemEnvironment.getSystemEnvironment();
+        map.put(ST_NODE_HOSTNAME, sysEnv.getHostname());
+        map.put(ST_NODE_HOST_ID, sysEnv.getHostId());
+        map.put(ST_NODE_OS_NAME, sysEnv.getOsName());
+        map.put(ST_NODE_OS_VERSION, sysEnv.getOsVersion());
+        map.put(ST_NODE_OS_ARCH, sysEnv.getOsArchitecture());
+        map.put(ST_NODE_SYSTEM_MODEL, sysEnv.getSystemModel());
+        map.put(ST_NODE_SYSTEM_MANUFACTURER, sysEnv.getSystemManufacturer());
+        map.put(ST_NODE_CPU_MANUFACTURER, sysEnv.getCpuManufacturer());
+        map.put(ST_NODE_SERIAL_NUMBER, sysEnv.getSerialNumber());
         return map;
     }  
     

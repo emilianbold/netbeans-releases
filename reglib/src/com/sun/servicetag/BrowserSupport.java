@@ -58,12 +58,16 @@ import java.net.URI;
  * if needed.  The current implementation only supports JDK 6.
  */
 class BrowserSupport {
-    private final static boolean isBrowseSupported;
-    private final static Method browseMethod;
-    private final static Object desktop;
+    private static boolean isBrowseSupported = false;
+    private static Method browseMethod = null;
+    private static Object desktop = null;
+    private static volatile Boolean result = false;
    
 
-    static {
+    private static void initX() {
+	if  (desktop != null) {
+            return;
+	}
         boolean supported = false;
         Method browseM = null;
         Object desktopObj = null;
@@ -74,13 +78,40 @@ class BrowserSupport {
             browseM = desktopCls.getMethod("browse", URI.class); 
 
             Class actionCls = Class.forName("java.awt.Desktop$Action", true, null);
-            Method isDesktopSupportedMethod = desktopCls.getMethod("isDesktopSupported"); 
+            final Method isDesktopSupportedMethod = desktopCls.getMethod("isDesktopSupported"); 
             Method isSupportedMethod = desktopCls.getMethod("isSupported", actionCls); 
             Field browseField = actionCls.getField("BROWSE");
-
-            // support only if Desktop.isDesktopSupported() and 
-            // Desktop.isSupported(Desktop.Action.BROWSE) return true.
-            Boolean result = (Boolean) isDesktopSupportedMethod.invoke(null);
+            // isDesktopSupported calls getDefaultToolkit which can block 
+            // infinitely, see 6636099 for details, to workaround we call 
+            // in a  thread and time it out, noting that the issue is specific
+	    // to X11, it does not hurt for Windows.
+            Thread xthread = new Thread() {
+                public void run() {
+                    try {
+                        // support only if Desktop.isDesktopSupported() and 
+                        // Desktop.isSupported(Desktop.Action.BROWSE) return true.
+                        result = (Boolean) isDesktopSupportedMethod.invoke(null);
+                    } catch (IllegalAccessException e) {
+                        // should never reach here
+                        InternalError x =
+                            new InternalError("Desktop.getDesktop() method not found");
+                        x.initCause(e);
+                    } catch (InvocationTargetException e) {
+                        // browser not supported
+                        if (Util.isVerbose()) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
+	    // set it to daemon, so that the vm will exit.
+	    xthread.setDaemon(true);
+            xthread.start();
+            try {
+                xthread.join(5 * 1000);
+            } catch (InterruptedException ie) {
+                // ignore the exception
+            }
             if (result.booleanValue()) {
                 desktopObj = getDesktopM.invoke(null);
                 result = (Boolean) isSupportedMethod.invoke(desktopObj, browseField.get(null));
@@ -103,10 +134,10 @@ class BrowserSupport {
             }
         } catch (IllegalAccessException e) {
             // should never reach here
-            InternalError x = 
-                new InternalError("Desktop.getDesktop() method not found");
+            InternalError x =
+                    new InternalError("Desktop.getDesktop() method not found");
             x.initCause(e);
-                throw x;
+            throw x;
         } catch (InvocationTargetException e) {
             // browser not supported
             if (Util.isVerbose()) {
@@ -119,6 +150,7 @@ class BrowserSupport {
     }
 
     static boolean isSupported() {
+	initX();
         return isBrowseSupported; 
     }
 
@@ -153,6 +185,9 @@ class BrowserSupport {
 
         // Call Desktop.browse() method
         try { 
+	    if (Util.isVerbose()) {
+                System.out.println("desktop: " + desktop + ":browsing..." + uri);
+	    }
             browseMethod.invoke(desktop, uri);
         } catch (IllegalAccessException e) {
             // should never reach here

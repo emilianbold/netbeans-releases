@@ -46,6 +46,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 import static com.sun.servicetag.Util.*;
 
 /**
@@ -657,19 +659,45 @@ public class Installer {
         }
 
         String name = REGISTRATION_HTML_NAME;
-        Locale locale = Locale.getDefault();
-        if (supportedLocales.contains(locale)) {
-            if (!locale.equals(Locale.ENGLISH)) {
-                name = REGISTRATION_HTML_NAME + "_" + locale.toString();
+        List<Locale> candidateLocales = getCandidateLocales(Locale.getDefault());
+        for (Locale l : candidateLocales) {
+            if (supportedLocales.contains(l)) {
+                name = REGISTRATION_HTML_NAME + "_" + l.toString();
+                break;
             }
         }
         File htmlFile = new File(parent, name + ".html");
-        if (f.exists()) {
+        if (isVerbose()) {
+            System.out.print("Offline registration page: " + htmlFile);
+            System.out.println((htmlFile.exists() ? 
+                               "" : " not exist. Use register.html"));
+        }
+        if (htmlFile.exists()) {
             return htmlFile;
         } else {
             return new File(parent,
                             REGISTRATION_HTML_NAME + ".html");
         }
+    }
+
+    private static List<Locale> getCandidateLocales(Locale locale) {
+        String language = locale.getLanguage();
+        String country = locale.getCountry();
+        String variant = locale.getVariant();
+                                                                                
+        List<Locale> locales = new ArrayList<Locale>(3);
+        if (variant.length() > 0) {
+            locales.add(locale);
+        }
+        if (country.length() > 0) {
+            locales.add((locales.size() == 0) ?
+                        locale : new Locale(language, country, ""));
+        }
+        if (language.length() > 0) {
+            locales.add((locales.size() == 0) ?
+                        locale : new Locale(language, "", ""));
+        }
+        return locales;
     }
     
     // Remove the offline registration pages 
@@ -895,6 +923,7 @@ public class Installer {
                     SunConnection.register(regData);
                 }
             }
+	    System.exit(0);
         } catch (IOException e) {
             System.err.println("I/O Error: " + e.getMessage());
             if (isVerbose()) {
@@ -910,6 +939,7 @@ public class Installer {
                 e.printStackTrace();
             }
         }
+	System.exit(1);
     }
 
     private static void usage() {
