@@ -68,14 +68,6 @@ public class RubyMimeResolver extends MIMEResolver {
     public String findMIMEType(FileObject fo) {
         String ext = fo.getExt();
         
-        if (ext.equalsIgnoreCase("rb") || ext.equalsIgnoreCase("mab") || // NOI18N
-                ext.equalsIgnoreCase("gemspec") || ext.equalsIgnoreCase("rake") || // NOI18N
-                ext.equalsIgnoreCase("builder") || ext.equalsIgnoreCase("rxml") || // NOI18N
-                ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("rbw")) { // NOI18N
-            
-            return RUBY_MIME_TYPE;
-        }
-        
         //        // TODO - is this just a Rails thing? Maybe register in the rails support module
         //        if (ext.equalsIgnoreCase("conf")) {
         //            return RUBY_MIME_TYPE;
@@ -97,6 +89,23 @@ public class RubyMimeResolver extends MIMEResolver {
                     return RUBY_MIME_TYPE;
                 }
             }
+            
+            return null;
+        }
+
+        char first = Character.toLowerCase(ext.charAt(0)); // I know ext.length() > 0 from above check
+        if ((first == 'r') && 
+            (ext.equalsIgnoreCase("rb") || ext.equalsIgnoreCase("rake") || // NOI18N
+                ext.equalsIgnoreCase("rxml") || // NOI18N
+                ext.equalsIgnoreCase("rjs") || ext.equalsIgnoreCase("rbw") ||
+                ext.equalsIgnoreCase("rbx"))) { // NOI18N
+            return RUBY_MIME_TYPE;
+        } else if (first == 'm' && ext.equalsIgnoreCase("mab")) { // NOI18N
+            return RUBY_MIME_TYPE;
+        } else if (first == 'b' && ext.equalsIgnoreCase("builder")) { // NOI18N
+            return RUBY_MIME_TYPE;
+        } else if (first == 'g' && ext.equalsIgnoreCase("gemspec")) { // NOI18N
+            return RUBY_MIME_TYPE;
         }
         
         return null;
