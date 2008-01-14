@@ -48,10 +48,13 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
 import org.netbeans.modules.sun.manager.jbi.nodes.Refreshable;
+import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
@@ -66,59 +69,83 @@ public class MBeanOperationAction extends AbstractAction {
     private String mBeanKey;
     private String operationName;
     private String description;
-    
+
     public MBeanOperationAction(
             String mBeanKey, String operationName,
             String displayName, String description, boolean enabled) {
         super(displayName);
-        
+
         this.mBeanKey = mBeanKey;
         this.operationName = operationName;
         this.description = description;
-        
-        setEnabled(enabled); 
+
+        setEnabled(enabled);
     }
 
     public void actionPerformed(ActionEvent ev) {
-      
-        Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();        
-        JBIComponentNode componentNode = 
+
+        final Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
+        JBIComponentNode componentNode =
                 activatedNodes[0].getLookup().lookup(JBIComponentNode.class);
-        
-        String componentName = componentNode.getName();
-        
-        AppserverJBIMgmtController controller = 
+
+        final String componentName = componentNode.getName();
+
+        final AppserverJBIMgmtController controller =
                 componentNode.getAppserverJBIMgmtController();
 
-        try {
-            ConfigurationService configService = controller.getConfigurationService();
-            final String result = (String) configService.invokeExtensionMBeanOperation(
-                    componentName, mBeanKey, operationName, 
-                    new Object[] {}, new String[] {},
-                    AppserverJBIMgmtController.SERVER_TARGET, null);
+        String title =
+                NbBundle.getMessage(MBeanOperationAction.class,
+                "LBL_Invoking_MBean_Operation", // NOI18N
+                new Object[]{operationName});
+        final ProgressUI progressUI = new ProgressUI(title, false);
+        progressUI.start();
 
-            Lookup lookup = activatedNodes[0].getLookup();
-            final Refreshable refreshable =
-                    lookup.lookup(Refreshable.class);
-            if (refreshable != null) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        if (result != null) {
-                            NotifyDescriptor d = new NotifyDescriptor.Message(
-                                    result,
-                                    NotifyDescriptor.INFORMATION_MESSAGE);
-                            DialogDisplayer.getDefault().notify(d);
-                        }
-                        refreshable.refresh();
+        // Invoke the action out of EDT 'cause the operation could be expensive.
+        new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    ConfigurationService configService = controller.getConfigurationService();
+                    final String result = (String) configService.invokeExtensionMBeanOperation(
+                            componentName, mBeanKey, operationName,
+                            new Object[]{}, new String[]{},
+                            AppserverJBIMgmtController.SERVER_TARGET, null);
+                    Thread.sleep(5000);
+
+                    Lookup lookup = activatedNodes[0].getLookup();
+                    final Refreshable refreshable =
+                            lookup.lookup(Refreshable.class);
+                    if (refreshable != null) {
+                        SwingUtilities.invokeLater(new Runnable() {
+                            
+                            public void run() {
+                                if (result != null) {
+                                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                                            result,
+                                            NotifyDescriptor.INFORMATION_MESSAGE);
+                                    DialogDisplayer.getDefault().notify(d);
+                                }
+                                refreshable.refresh();
+                            }
+                        });
                     }
-                });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ManagementRemoteException e) {
+                    NotifyDescriptor d = new NotifyDescriptor.Message(
+                            e.getMessage(),
+                            NotifyDescriptor.ERROR_MESSAGE);
+                    DialogDisplayer.getDefault().notify(d);
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        
+                        public void run() {
+                            progressUI.finish();
+                        }
+                    });                    
+                }
             }
-        } catch (ManagementRemoteException e) {
-            NotifyDescriptor d = new NotifyDescriptor.Message(
-                    e.getMessage(),
-                    NotifyDescriptor.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(d);
-        }
-       
+        }.start();
     }
 }
