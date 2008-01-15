@@ -58,11 +58,13 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeMirror;
@@ -76,6 +78,9 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
+import org.netbeans.modules.java.editor.overridden.AnnotationType;
+import org.netbeans.modules.java.editor.overridden.ElementDescription;
+import org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationHandler;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
@@ -207,7 +212,57 @@ public final class UncaughtException implements ErrorRule<Void> {
             if (method != null) {
                 //if the method header is inside a guarded block, do nothing:
                 if (!org.netbeans.modules.java.hints.errors.Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) pathRec.getLeaf())) {
+                    List<ElementDescription> eds = new LinkedList<ElementDescription>();
+                    AnnotationType at = IsOverriddenAnnotationHandler.detectOverrides(info, (TypeElement) method.getEnclosingElement(), method, eds);
+                    List<TypeMirror> declaredThrows = null;
+                    
+                    if (at != null) {
+                        declaredThrows = new LinkedList<TypeMirror>();
+
+                        for (ElementDescription ed : eds) {
+                            ExecutableElement ee = (ExecutableElement) ed.getHandle().resolve(info);
+                            List<TypeMirror> thisDeclaredThrows = new LinkedList<TypeMirror>(ee.getThrownTypes());
+                            
+                            for (Iterator<TypeMirror> dt = declaredThrows.iterator(); dt.hasNext(); ) {
+                                for (Iterator<TypeMirror> tdt = thisDeclaredThrows.iterator(); tdt.hasNext(); ) {
+                                    TypeMirror dtNext = dt.next();
+                                    TypeMirror tdtNext = tdt.next();
+                                    
+                                    if (info.getTypes().isSubtype(tdtNext, dtNext)) {
+                                        tdt.remove();
+                                        continue;
+                                    }
+                                    
+                                    if (info.getTypes().isSubtype(dtNext, tdtNext)) {
+                                        dt.remove();
+                                        continue;
+                                    }
+                                    
+                                    tdt.remove();
+                                    dt.remove();
+                                }
+                            }
+                            
+                            declaredThrows.addAll(thisDeclaredThrows);
+                        }
+                    }
+
                     for (TypeMirror tm : uncaught) {
+                        if (declaredThrows != null) {
+                            boolean found = false;
+
+                            for (TypeMirror decl : declaredThrows) {
+                                if (info.getTypes().isSubtype(tm, decl)) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found) {
+                                continue;
+                            }
+                        }
+                        
                         if (tm.getKind() != TypeKind.ERROR) {
                             result.add(new AddThrowsClauseHintImpl(info.getJavaSource(), Utilities.getTypeName(tm, true).toString(), TypeMirrorHandle.create(tm), ElementHandle.create(method)));
                         }

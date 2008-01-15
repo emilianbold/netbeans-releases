@@ -113,6 +113,25 @@ public class UncaughtExceptionTest extends HintsTestBase {
         performTestDoNotPerform("TestBug88923", 8, 11);
     }
     
+    public void testBug123850a() throws Exception {
+        performTestDoNotPerform("TestBug123850a", 7, 18);
+    }
+    
+    public void testBug123850b() throws Exception {
+        performTestDoNotPerform("TestBug123850b", 7, 18);
+    }
+    
+    public void testBug123850c() throws Exception {
+        performTestDoNotPerform("TestBug123850c", 7, 18);
+    }
+    
+    public void testBug123850d() throws Exception {
+        performTestDoNotPerform("TestBug123850d", 7, 18);
+    }
+    public void testBug123850e() throws Exception {
+        performTestDoNotPerform("TestBug123850e", 7, 18);
+    }
+    
     /**
      * Duplicate entries should not be offered
      * (ie, two same exception thrown on same line, like:<br>

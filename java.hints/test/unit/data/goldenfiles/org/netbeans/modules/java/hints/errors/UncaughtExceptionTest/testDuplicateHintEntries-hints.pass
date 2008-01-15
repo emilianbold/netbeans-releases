@@ -1,4 +1,6 @@
 Add throws clause for org.netbeans.test.java.hints.Exc1
-Surround with try-catch
+Surround Statement with try-catch
+Surround Block with try-catch
 Add throws clause for org.netbeans.test.java.hints.Exc2
-Surround with try-catch
+Surround Statement with try-catch
+Surround Block with try-catch
