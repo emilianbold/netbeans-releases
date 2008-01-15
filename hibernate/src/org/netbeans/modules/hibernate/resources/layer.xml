@@ -180,15 +180,21 @@ made subject to such option by the copyright holder.
         <folder name="Hibernate">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             <attr name="position" intvalue="1400"/>
-            <file name="HibernateCfgTemplate.xml" url="HibernateCfgTemplate.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
-                <attr name="template" boolvalue="true"/>
+            <file name="HibernateCfgTemplate.xml" url="HibernateCfgTemplate.xml>
                 <attr name="position" intvalue="100"/>
+                <attr name="template" boolvalue="true"/>                
+                <attr name="instantiatingIterator" methodvalue=""/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateConfigurationFile.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>                                		
             </file>
             <file name="HibernateMappingTemplate.xml" url="HibernateMappingTemplate.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
-                <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="200"/>
+                <attr name="template" boolvalue="true"/>                
+                <attr name="instantiatingIterator" methodvalue=""/>
+                <attr name="templateCategory" stringvalue="web-types"/>
+   		<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateMappingFile.html"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             </file>
         </folder>
     </folder>
