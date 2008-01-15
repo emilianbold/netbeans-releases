@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -252,9 +252,8 @@ public class UnitTab extends javax.swing.JPanel {
     }
     
     private void prepareTopButton (Action action) {
-        JButton button = topButton;
-        button.setToolTipText ((String)action.getValue (JComponent.TOOL_TIP_TEXT_KEY));
-        button.setAction (action);
+        topButton.setToolTipText ((String)action.getValue (JComponent.TOOL_TIP_TEXT_KEY));
+        topButton.setAction (action);
     }
     
     @Override
@@ -843,12 +842,22 @@ public class UnitTab extends javax.swing.JPanel {
         }
         
         @Override
-        public boolean isEnabled () {
-            if (super.isEnabled ()) {
-                RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
-                return t == null || t.isFinished ();
-            } else {
-                return false;
+        public void setEnabled (boolean enabled) {
+            if (isEnabled () != enabled) {
+                if (enabled) {
+                    RequestProcessor.Task t = PluginManagerUI.getRunningTask ();
+                    if (t != null && ! t.isFinished ()) {
+                        t.addTaskListener (new TaskListener () {
+                            public void taskFinished (org.openide.util.Task task) {
+                                setEnabled (true);
+                            }
+                        });
+                    } else {
+                        super.setEnabled (true);
+                    }
+                } else {
+                    super.setEnabled (false);
+                }
             }
         }
         
@@ -1526,18 +1535,19 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_ReloadAction", KeyStroke.getKeyStroke (KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_RefreshAction");//NOI18N
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
-            //StringBuilder sb = new StringBuilder ("/org/netbeans/modules/autoupdate/ui/resources/");//NOI18N
-            //String picture = "newUpdates.gif";//NOI18N
-            //sb.append (picture);
-            //putValue (SMALL_ICON, new javax.swing.ImageIcon (getClass ().getResource (sb.toString ())));
-            //putValue (NAME, "");//NOI18N
             setEnabled (false);
         }
-        
+
         public void performerImpl () {
             setEnabled (false);
             reloadTask = reloadTask (true);
-        }        
+        }
+
+        @Override
+        public void setEnabled (boolean enabled) {
+            super.setEnabled (enabled);
+            super.firePropertyChange ("enabled", !isEnabled (), isEnabled ());
+        }
     }
     
     private class AddLocallyDownloadedAction extends TabAction {
@@ -1545,11 +1555,6 @@ public class UnitTab extends javax.swing.JPanel {
             super ("UnitTab_bAddLocallyDownloads_Name", null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_AddAction_LOCAL");//NOI18N
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
-            //String picture = "add.png";//NOI18N
-            //StringBuilder sb = new StringBuilder ("/org/netbeans/modules/autoupdate/ui/resources/");//NOI18N
-            //sb.append (picture);
-            //putValue (SMALL_ICON, new javax.swing.ImageIcon (getClass ().getResource (sb.toString ())));
-            //putValue (NAME, "");//NOI18N
         }
         
         public void performerImpl () {
@@ -1577,6 +1582,11 @@ public class UnitTab extends javax.swing.JPanel {
             }
         }
         
+        @Override
+        public void setEnabled (boolean enabled) {
+            super.setEnabled (enabled);
+            super.firePropertyChange ("enabled", !isEnabled (), isEnabled ());
+        }
     }
     
     private class RemoveLocallyDownloadedAction extends RowTabAction {
@@ -1592,9 +1602,18 @@ public class UnitTab extends javax.swing.JPanel {
         
         @Override
         public boolean isEnabled () {
-            return table.getSelectedRow () > -1;
+            if (super.isEnabled ()) {
+                return table.getSelectedRow () > -1;
+            } else {
+                return false;
+            }
         }
         
+        @Override
+        public void setEnabled (boolean enabled) {
+            super.setEnabled (enabled);
+            super.firePropertyChange ("enabled", !isEnabled (), isEnabled ());
+        }
         public void performerImpl (final Unit unit) {
             final Runnable removeUpdates = new Runnable (){
                 public void run () {

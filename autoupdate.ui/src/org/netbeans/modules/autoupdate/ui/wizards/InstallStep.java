@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -461,7 +461,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             systemHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Install_InstallingPlugins"));
             handle = systemHandle;
         } else {
-            spareHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Validate_ValidatingPlugins"));
+            spareHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Install_InstallingPlugins"));
             totalUnits = model.getBaseContainer ().listAll ().size ();
             processedUnits = 0;
             if (indeterminateProgress) {
