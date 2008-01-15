@@ -359,7 +359,7 @@ public final class RubyPlatformManager {
         return getPlatformsInternal().iterator();
     }
 
-    private static Info computeInfo(final File interpreter) throws IOException {
+    private static Info computeInfo(final File interpreter) {
         if (TEST_RUBY_PROPS != null) { // tests
             return new Info(TEST_RUBY_PROPS);
         }
@@ -386,6 +386,8 @@ public final class RubyPlatformManager {
                     LOGGER.severe(line);
                 }
             }
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, "Not a ruby platform: " + interpreter.getAbsolutePath()); // NOI18N
         } catch (InterruptedException e) {
             LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }

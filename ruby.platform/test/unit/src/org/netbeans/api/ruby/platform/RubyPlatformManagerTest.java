@@ -41,6 +41,7 @@ package org.netbeans.api.ruby.platform;
 import java.io.File;
 import java.io.FileOutputStream;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
+import org.openide.filesystems.FileUtil;
 
 public final class RubyPlatformManagerTest extends RubyTestBase {
 
@@ -88,5 +89,12 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         // sanity-check test
         RubyPlatformManager.performPlatformDetection();
     }
-    
+
+    public void testAddInvalidPlatform() throws Exception { // #125296
+        RubyPlatformManager.TEST_RUBY_PROPS = null;
+        assertEquals("bundle JRuby", 1, RubyPlatformManager.getPlatforms().size());
+        FileUtil.toFileObject(getWorkDir()).createData("invalid-ruby");
+        RubyPlatform plaf = RubyPlatformManager.addPlatform(new File(getWorkDir(), "invalid-ruby"));
+        assertNull("invalid platform", plaf);
+    }
 }

@@ -58,6 +58,7 @@ import org.netbeans.modules.ruby.platform.PlatformComponentFactory.RubyPlatformL
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -337,7 +338,11 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
             File intepreter = FileUtil.normalizeFile(chooser.getSelectedFile());
             Util.getPreferences().put(LAST_PLATFORM_DIRECTORY, intepreter.getParentFile().getAbsolutePath());
             // XXX store last used directory into the settings
-            getPlafListModel().addPlatform(intepreter);
+            RubyPlatform platform = getPlafListModel().addPlatform(intepreter);
+            if (platform == null) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.invalid.platform.added", intepreter.getAbsolutePath())));
+            }
             refreshPlatform();
         }
     }//GEN-LAST:event_addButtonaddPlatform
