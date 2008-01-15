@@ -43,42 +43,19 @@
 
 package org.netbeans.modules.spring.webmvc;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
-import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
-import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.Listener;
-import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,26 +70,10 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
     public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
     public static final String ENCODING = "UTF-8"; // NOI18N
 
-    private SpringConfigPanel panel;
+    private SpringWebModuleExtender panel;
 
     public SpringWebFrameworkProvider() {
         super(NbBundle.getMessage(SpringWebFrameworkProvider.class, "LBL_FrameworkName"), NbBundle.getMessage(SpringWebFrameworkProvider.class, "LBL_FrameworkDescription"));
-    }
-
-    // not named extend() so as to avoid implementing WebFrameworkProvider.extend()
-    public Set<FileObject> extendImpl(WebModule webModule) {
-        CreateSpringConfig createSpringConfig = new CreateSpringConfig(webModule);
-        FileObject webInf = webModule.getWebInf();
-        if (webInf != null) {
-            try {
-                FileSystem fs = webInf.getFileSystem();
-                fs.runAtomicAction(createSpringConfig);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(e);
-                return null;
-            }
-        }        
-        return createSpringConfig.getFilesToOpen();
     }
 
     @Override
@@ -144,9 +105,10 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
         return files.toArray(new java.io.File[0]);
     }
     
+    @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        panel = new SpringConfigPanel(this, controller, !defaultValue);
+        panel = new SpringWebModuleExtender(this, controller, !defaultValue);
         // may need to use panel for setting an extended configuration
         return panel;
     }  
@@ -157,159 +119,5 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
 
     public WebApp getWebAppCopy(WebModule webModule) throws IOException {
         return DDProvider.getDefault().getDDRootCopy(webModule.getDeploymentDescriptor());
-    }
-
-    private class CreateSpringConfig implements FileSystem.AtomicAction {
-
-        private Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
-        private WebModule webModule;
-
-        public CreateSpringConfig(WebModule webModule) {
-            this.webModule = webModule;
-        }
-
-        public void run() throws IOException {
-            // MODIFY WEB.XML
-            FileObject dd = webModule.getDeploymentDescriptor();
-            WebApp ddRoot = DDProvider.getDefault().getDDRoot(dd);
-            addContextParam(ddRoot, "contextConfigLocation", "/WEB-INF/applicationContext.xml"); // NOI18N
-            addListener(ddRoot, CONTEXT_LOADER);
-            addServlet(ddRoot, panel.getDispatcherName(), DISPATCHER_SERVLET, panel.getDispatcherMapping(), "2"); // NOI18N
-            WelcomeFileList welcomeFiles = ddRoot.getSingleWelcomeFileList();
-            if (welcomeFiles == null) {
-                try {
-                    welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); // NOI18N
-                    ddRoot.setWelcomeFileList(welcomeFiles);
-                } catch (ClassNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            if (welcomeFiles.sizeWelcomeFile() == 0) {
-                welcomeFiles.addWelcomeFile("index.jsp"); // NOI18N
-            }
-            ddRoot.write(dd);
-
-            // ADD SPRING LIBRARY
-            addLibraryToWebModule(getLibrary(SPRING_LIB_NAME), webModule);
-            
-            // CREATE WEB-INF/JSP FOLDER
-            FileObject webInf = webModule.getWebInf();
-            FileObject jsp = webInf.createFolder("jsp");
-
-            // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
-            copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
-            copyResource("taglibs.jsp", FileUtil.createData(jsp, "taglibs.jsp")); // NOI18N
-            copyResource("header.jsp", FileUtil.createData(jsp, "header.jsp")); // NOI18N
-            copyResource("footer.jsp", FileUtil.createData(jsp, "footer.jsp")); // NOI18N
-            copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
-            addFileToOpen(copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml"))); // NOI18N
-            addFileToOpen(copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, panel.getDispatcherName() + "-servlet.xml"))); // NOI18N
-
-            // MODIFY EXISTING INDEX.JSP
-            FileObject documentBase = webModule.getDocumentBase();
-            FileObject indexJsp = documentBase.getFileObject("index.jsp"); // NOI18N
-            if (indexJsp == null) {
-                indexJsp = FileUtil.createData(documentBase, "index.jsp"); // NOI18N
-            }
-            addFileToOpen(copyResource("redirect.jsp", indexJsp)); // NOI18N
-        }
-        
-        public void addFileToOpen(FileObject file) {
-            filesToOpen.add(file);
-        }
-
-        public Set<FileObject> getFilesToOpen() {
-            return filesToOpen;
-        }
-
-        protected FileObject copyResource(String resourceName, FileObject target) throws UnsupportedEncodingException, IOException {
-            InputStream in = getClass().getResourceAsStream("resources/templates/" + resourceName); // NOI18N
-            String lineSeparator = System.getProperty("line.separator"); // NOI18N
-            StringBuffer buffer = new StringBuffer();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in, ENCODING));
-            try {
-                String line = reader.readLine();
-                while (line != null) {
-                    buffer.append(line);
-                    buffer.append(lineSeparator);
-                    line = reader.readLine();
-                }
-            } finally {
-                reader.close();
-            }
-            FileLock lock = target.lock();
-            try {
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(target.getOutputStream(lock), ENCODING));
-                try {
-                    writer.write(buffer.toString());
-                } finally {
-                    writer.close();
-                }
-            } finally {
-                lock.releaseLock();
-            }
-            return target;
-        }
-
-        @SuppressWarnings(value = "deprecation")
-        protected void addLibraryToWebModule(Library library, WebModule webModule) throws IOException {
-            FileOwnerQuery.getOwner(webModule.getDocumentBase()).getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class).addLibrary(library);
-        }
-
-        protected Listener addListener(WebApp webApp, String classname) throws IOException {
-            Listener listener = (Listener) createBean(webApp, "Listener"); // NOI18N
-            listener.setListenerClass(classname);
-            webApp.addListener(listener);
-            return listener;
-        }
-
-        protected Servlet addServlet(WebApp webApp, String name, String classname, String pattern, String loadOnStartup) throws IOException {
-            Servlet servlet = (Servlet) createBean(webApp, "Servlet"); // NOI18N
-            servlet.setServletName(name);
-            servlet.setServletClass(classname);
-            if (loadOnStartup != null) {
-                servlet.setLoadOnStartup(new BigInteger(loadOnStartup));
-            }
-            webApp.addServlet(servlet);
-            if (pattern != null) {
-                addServletMapping(webApp, name, pattern);
-            }
-            return servlet;
-        }
-        
-        protected ServletMapping addServletMapping(WebApp webApp, String name, String pattern) throws IOException {
-            ServletMapping mapping = (ServletMapping) createBean(webApp, "ServletMapping"); // NOI18N
-            mapping.setServletName(name);
-            mapping.setUrlPattern(pattern);
-            webApp.addServletMapping(mapping);
-            return mapping;
-        }
-
-        protected InitParam addContextParam(WebApp webApp, String name, String value) throws IOException {
-            InitParam initParam = (InitParam) createBean(webApp, "InitParam"); // NOI18N
-            initParam.setParamName(name);
-            initParam.setParamValue(value);
-            webApp.addContextParam(initParam);
-            return initParam;
-        }
-
-        protected CommonDDBean createBean(CreateCapability creator, String beanName) throws IOException {
-            CommonDDBean bean = null;
-            try {
-                bean = creator.createBean(beanName);
-            } catch (ClassNotFoundException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
-                throw new IOException("Error creating bean with name:" + beanName); // NOI18N
-            }
-            return bean;
-        }
-
-        protected Library getLibrary(String name) {
-            return LibraryManager.getDefault().getLibrary(name);
-        }
-
-        protected FileSystem getDefaultFileSystem() {
-            return Repository.getDefault().getDefaultFileSystem();
-        }
     }
 }

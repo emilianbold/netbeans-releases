@@ -56,7 +56,7 @@ import org.openide.util.ChangeSupport;
  */
 public class SpringConfigPanelVisual extends javax.swing.JPanel {
     
-    private final SpringConfigPanel configPanel;
+    private final SpringWebModuleExtender configPanel;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final DocumentListener docListener = new DocumentListener() {
 
@@ -73,13 +73,11 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         }
     };
     
-    public SpringConfigPanelVisual(SpringConfigPanel configPanel) {
+    public SpringConfigPanelVisual(SpringWebModuleExtender configPanel) {
         this.configPanel = configPanel;
         changeSupport.addChangeListener(configPanel);
         initComponents();
-        nameText.setText(configPanel.getDispatcherName());
         nameText.getDocument().addDocumentListener(docListener);
-        mappingText.setText(configPanel.getDispatcherMapping());
         mappingText.getDocument().addDocumentListener(docListener);
     }
     
@@ -89,6 +87,14 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
     
     public String getDispatcherMapping() {
         return mappingText.getText();
+    }
+    
+    public void setDispatcherName(String dispatcherName) {
+        nameText.setText(dispatcherName);
+    }
+    
+    public void setDispatcherMapping(String dispatcherMapping) {
+        mappingText.setText(dispatcherMapping);
     }
     
     private void fireChange() {
@@ -112,9 +118,13 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
+        nameText.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.nameText.text")); // NOI18N
+
         nameLabel.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherName")); // NOI18N
 
         mappingLabel.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherMapping")); // NOI18N
+
+        mappingText.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.mappingText.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout standardPanelLayout = new org.jdesktop.layout.GroupLayout(standardPanel);
         standardPanel.setLayout(standardPanelLayout);
@@ -127,8 +137,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                     .add(mappingLabel))
                 .add(8, 8, 8)
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(nameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
-                    .add(mappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
+                    .add(nameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                    .add(mappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE))
                 .addContainerGap())
         );
         standardPanelLayout.setVerticalGroup(
@@ -142,7 +152,7 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(mappingLabel)
                     .add(mappingText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(337, Short.MAX_VALUE))
+                .addContainerGap(334, Short.MAX_VALUE))
         );
 
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Configuration"), standardPanel); // NOI18N
