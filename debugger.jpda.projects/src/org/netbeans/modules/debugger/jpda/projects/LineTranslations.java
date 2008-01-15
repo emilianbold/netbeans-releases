@@ -364,6 +364,7 @@ class LineTranslations {
         
         public synchronized void attach() throws IOException {
             this.lc = dataObject.getCookie (LineCookie.class);
+            if (lc == null) return ;
             lb.addPropertyChangeListener(this);
             try {
                 this.line = lc.getLineSet().getCurrent(lb.getLineNumber() - 1);
