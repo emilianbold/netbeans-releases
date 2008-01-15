@@ -333,7 +333,8 @@ public final class MakeProject implements Project, AntProjectListener {
                 try {
                     FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
                     Project project = ProjectManager.getDefault().findProject(fo);
-                    subProjects.add(project);
+                    if (project != null)
+                        subProjects.add(project);
                 } catch (Exception e) {
                     System.err.println("Cannot find subproject in '"+location+"' "+e); // FIXUP // NOI18N
                 }
