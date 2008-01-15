@@ -57,6 +57,8 @@ import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
@@ -96,9 +98,13 @@ public class ConstructorGenerator implements CodeGenerator {
             final Set<VariableElement> uninitializedFields = new LinkedHashSet<VariableElement>();
             final List<ExecutableElement> constructors = new ArrayList<ExecutableElement>();
             final List<ExecutableElement> inheritedConstructors = new ArrayList<ExecutableElement>();
-            TypeElement superClass = (TypeElement)((DeclaredType)typeElement.getSuperclass()).asElement();
-            for (ExecutableElement executableElement : ElementFilter.constructorsIn(superClass.getEnclosedElements())) {
-                inheritedConstructors.add(executableElement);
+            TypeMirror superClassType = typeElement.getSuperclass();
+            TypeElement superClass = null;
+            if (superClassType.getKind() == TypeKind.DECLARED) {
+                superClass = (TypeElement) ((DeclaredType) superClassType).asElement();
+                for (ExecutableElement executableElement : ElementFilter.constructorsIn(superClass.getEnclosedElements())) {
+                    inheritedConstructors.add(executableElement);
+                }
             }
             GeneratorUtils.scanForFieldsAndConstructors(controller, path, initializedFields, uninitializedFields, constructors);
             ElementHandle<? extends Element> constructorHandle = null;
