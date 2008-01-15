@@ -40,6 +40,8 @@
 package org.netbeans.api.ruby.platform;
 
 import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 
 public class RubyPlatformTest extends RubyTestBase {
     
@@ -65,6 +67,35 @@ public class RubyPlatformTest extends RubyTestBase {
         assertTrue(RubyPlatformManager.getDefaultPlatform().hasRubyGemsInstalled());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertFalse(ruby.hasRubyGemsInstalled());
+    }
+
+    public void testFindGemExecutableInRubyBin() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        touch("rdebug-ide", platform.getBinDir());
+        assertNotNull(platform.findExecutable("rdebug-ide"));
+    }
+
+    public void testFindGemExecutableInGemRepo() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        GemManager gemManager = platform.getGemManager();
+        touch("rdebug-ide", new File(gemManager.getGemDir(), "bin").getPath());
+        assertNotNull(platform.findExecutable("rdebug-ide"));
+    }
+
+    public void testFindRDoc() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        assertNotNull("rdoc found", platform.getRDoc());
+    }
+
+    public void testFindRDocWithSuffix() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
+        assertNotNull("rdoc found", platform.getRDoc());
+    }
+
+    private String touch(String path, String dir) throws IOException {
+        File f = new File(dir, path);
+        f.createNewFile();
+        return f.getAbsolutePath();
     }
 
 }

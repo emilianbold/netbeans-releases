@@ -42,7 +42,6 @@
 package org.netbeans.api.ruby.platform;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Set;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 
@@ -121,32 +120,6 @@ public class RubyInstallationTest extends RubyTestBase {
         assertEquals("1.15.3.6752", gemManager.getVersion("activerecord"));
     }
 
-    public void testFindGemExecutableInRubyBin() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
-        GemManager gemManager = platform.getGemManager();
-        touch("rdebug-ide", platform.getBinDir());
-        assertNotNull(gemManager.findGemExecutable("rdebug-ide"));
-    }
-
-    public void testFindGemExecutableInGemRepo() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
-        GemManager gemManager = platform.getGemManager();
-        touch("rdebug-ide", new File(gemManager.getGemDir(), "bin").getPath());
-        assertNotNull(gemManager.findGemExecutable("rdebug-ide"));
-    }
-
-    public void testFindRDoc() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
-        GemManager gemManager = platform.getGemManager();
-        assertNotNull("rdoc found", gemManager.getRDoc());
-    }
-
-    public void testFindRDocWithSuffix() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
-        GemManager gemManager = platform.getGemManager();
-        assertNotNull("rdoc found", gemManager.getRDoc());
-    }
-
     // XXX
 //    public void testFindGemExecutableWith_GEM_HOME() throws Exception {
 //        File gemRepo = new File(getWorkDir(), "gemrepo");
@@ -157,11 +130,5 @@ public class RubyInstallationTest extends RubyTestBase {
 //        touch("rdebug-ide", gemRepoBinF.getAbsolutePath());
 //        assertNotNull(platform.getGemManager().findGemExecutable("rdebug-ide"));
 //    }
-
-    private String touch(String path, String dir) throws IOException {
-        File f = new File(dir, path);
-        f.createNewFile();
-        return f.getAbsolutePath();
-    }
 
 }

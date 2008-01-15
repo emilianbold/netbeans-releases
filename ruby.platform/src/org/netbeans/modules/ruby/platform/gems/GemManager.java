@@ -58,6 +58,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
+import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -122,7 +123,6 @@ public final class GemManager {
     private String gemHomeUrl;
     private String rake;
     private String rails;
-    private String rdoc;
 
     private final RubyPlatform platform;
     
@@ -679,44 +679,8 @@ public final class GemManager {
         return gemHomeUrl;
     }
 
-    /**
-     * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
-     * specific" manner.
-     *
-     * @param toFind executable to be find, e.g. rails, rake, ...
-     * @return path to the found executable; might be <tt>null</tt> if not
-     *         found.
-     */
-    public String findGemExecutable(final String toFind) {
-        String exec = null;
-        boolean canonical = true; // default
-        do {
-            String binDir = platform.getBinDir();
-            if (binDir != null) {
-                LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + platform.getInterpreter() + "'"); // NOI18N
-                exec = GemManager.findExecutable(binDir, toFind);
-            } else {
-                LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
-            }
-            if (exec == null) {
-                String libGemBinDir = getGemDir(canonical) + File.separator + "bin"; // NOI18N
-                exec = GemManager.findExecutable(libGemBinDir, toFind);
-            }
-            canonical ^= true;
-        } while (!canonical && exec == null);
-        // try to find a gem on system path - see issue 116219
-        if (exec == null) {
-            exec = findOnPath(toFind);
-        }
-        // try *.bat commands on Windows
-        if (exec == null && !toFind.endsWith(".bat") && Utilities.isWindows()) { // NOI18N
-            exec = findGemExecutable(toFind + ".bat"); // NOI18N
-        }
-        return exec;
-    }
-
     public String getAutoTest() {
-        return findGemExecutable("autotest"); // NOI18N
+        return platform.findExecutable("autotest"); // NOI18N
     }
 
     public boolean isValidAutoTest(boolean warn) {
@@ -733,15 +697,6 @@ public final class GemManager {
         return valid;
     }
 
-    private static String findExecutable(final String dir, final String toFind) {
-        String exec = dir + File.separator + toFind;
-        if (!new File(exec).isFile()) {
-            LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
-            exec = null;
-        }
-        return exec;
-    }
-    
     /**
      * Return path to the <em>gem</em> tool if it does exist.
      *
@@ -762,25 +717,11 @@ public final class GemManager {
             }
         }
         if (gemTool == null) {
-            gemTool = GemManager.findOnPath("gem"); // NOI18N
+            gemTool = Util.findOnPath("gem"); // NOI18N
         }
         return gemTool;
     }
     
-    private static String findOnPath(final String toFind) {
-        String rubyLib = System.getenv("PATH"); // NOI18N
-        if (rubyLib != null) {
-            String[] paths = rubyLib.split("[:;]"); // NOI18N
-            for (String path : paths) {
-                String result = path + File.separator + toFind;
-                if (new File(result).isFile()) {
-                    return result;
-                }
-            }
-        }
-        return null;
-    }
-
     public FileObject getRubyLibGemDirFo() {
         initGemList(); // Ensure getRubyLibGemDir has been called, which initialized gemHomeFo
         return gemHomeFo;
@@ -788,7 +729,7 @@ public final class GemManager {
 
     public String getRake() {
         if (rake == null) {
-            rake = findGemExecutable("rake"); // NOI18N
+            rake = platform.findExecutable("rake"); // NOI18N
 
             if (rake != null && !(new File(rake).exists()) && getVersion("rake") != null) { // NOI18N
                 // On Windows, rake does funny things - you may only get a rake.bat
@@ -829,24 +770,9 @@ public final class GemManager {
         return valid;
     }
 
-    public String getRDoc() {
-        if (rdoc == null) {
-            rdoc = findGemExecutable("rdoc"); // NOI18N
-            if (rdoc == null && !platform.isJRuby()) {
-                String name = new File(platform.getInterpreter(true)).getName();
-                if (name.startsWith("ruby")) { // NOI18N
-                    String suffix = name.substring(4);
-                    // Try to find with suffix (#120441)
-                    rdoc = findGemExecutable("rdoc" + suffix); // NOI18N
-                }
-            }
-        }
-        return rdoc;
-    }
-
     public String getRails() {
         if (rails == null) {
-            rails = findGemExecutable("rails"); // NOI18N
+            rails = platform.findExecutable("rails"); // NOI18N
         }
         return rails;
     }

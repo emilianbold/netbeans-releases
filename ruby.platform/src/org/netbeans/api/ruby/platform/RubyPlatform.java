@@ -51,6 +51,7 @@ import javax.swing.JButton;
 import org.netbeans.api.gsf.annotations.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -63,6 +64,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
@@ -88,6 +90,8 @@ public final class RubyPlatform {
     private FileObject stubsFO;
     private boolean indexInitialized;
     
+    private String rdoc;
+
     private PropertyChangeSupport pcs;
 
     RubyPlatform(String id, String interpreterPath, Info info) {
@@ -454,6 +458,66 @@ public final class RubyPlatform {
             rubybin = new File(r).getParent();
         }
         return rubybin;
+    }
+
+    /**
+     * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
+     * specific" manner.
+     *
+     * @param toFind executable to be find, e.g. rails, rake, ...
+     * @return path to the found executable; might be <tt>null</tt> if not
+     *         found.
+     */
+    public String findExecutable(final String toFind) {
+        String exec = null;
+        boolean canonical = true; // default
+        do {
+            String binDir = getBinDir();
+            if (binDir != null) {
+                LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + getInterpreter() + "'"); // NOI18N
+                exec = RubyPlatform.findExecutable(binDir, toFind);
+            } else {
+                LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
+            }
+            if (exec == null && hasRubyGemsInstalled()) {
+                String libGemBinDir = getGemManager().getGemDir(canonical) + File.separator + "bin"; // NOI18N
+                exec = RubyPlatform.findExecutable(libGemBinDir, toFind);
+            }
+            canonical ^= true;
+        } while (!canonical && exec == null);
+        // try to find a gem on system path - see issue 116219
+        if (exec == null) {
+            exec = Util.findOnPath(toFind);
+        }
+        // try *.bat commands on Windows
+        if (exec == null && !toFind.endsWith(".bat") && Utilities.isWindows()) { // NOI18N
+            exec = findExecutable(toFind + ".bat"); // NOI18N
+        }
+        return exec;
+    }
+
+    private static String findExecutable(final String dir, final String toFind) {
+        String exec = dir + File.separator + toFind;
+        if (!new File(exec).isFile()) {
+            LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
+            exec = null;
+        }
+        return exec;
+    }
+
+    public String getRDoc() {
+        if (rdoc == null) {
+            rdoc = findExecutable("rdoc"); // NOI18N
+            if (rdoc == null && !isJRuby()) {
+                String name = new File(getInterpreter(true)).getName();
+                if (name.startsWith("ruby")) { // NOI18N
+                    String suffix = name.substring(4);
+                    // Try to find with suffix (#120441)
+                    rdoc = findExecutable("rdoc" + suffix); // NOI18N
+                }
+            }
+        }
+        return rdoc;
     }
 
     public FileObject getRubyStubs() {

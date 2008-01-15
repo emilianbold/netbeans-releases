@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.ruby.platform;
 
+import java.io.File;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
@@ -145,5 +146,19 @@ public final class Util {
         }
 
         return host + ":" + port; // NOI18N
+    }
+
+    public static String findOnPath(final String toFind) {
+        String rubyLib = System.getenv("PATH"); // NOI18N
+        if (rubyLib != null) {
+            String[] paths = rubyLib.split("[:;]"); // NOI18N
+            for (String path : paths) {
+                String result = path + File.separator + toFind;
+                if (new File(result).isFile()) {
+                    return result;
+                }
+            }
+        }
+        return null;
     }
 }
