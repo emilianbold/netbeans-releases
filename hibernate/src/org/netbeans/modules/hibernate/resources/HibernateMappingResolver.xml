@@ -9,7 +9,7 @@ and open the template in the editor.
         <ext name="xml"/>
         <resolver mime="text/x-hibernate-mapping+xml">
             <xml-rule>
-                <element ns="http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd"/>
+                <element name="hibernate-mapping" ns="http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd"/>
             </xml-rule>
         </resolver>
     </file>
