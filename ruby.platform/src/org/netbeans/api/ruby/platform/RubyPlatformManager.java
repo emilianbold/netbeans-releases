@@ -183,7 +183,11 @@ public final class RubyPlatformManager {
                             key.length() - PLATFORM_INTEPRETER.length());
                     String idDot = id + '.';
                     Properties props = new Properties();
-                    props.put(Info.RUBY_KIND, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_KIND));
+                    String kind = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_KIND);
+                    if (kind == null) { // not supporting old 6.0 platform, skip
+                        continue;
+                    }
+                    props.put(Info.RUBY_KIND, kind);
                     props.put(Info.RUBY_VERSION, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION));
                     String jrubyVersion = p.get(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION);
                     if (jrubyVersion != null) {

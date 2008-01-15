@@ -39,6 +39,8 @@
 package org.netbeans.api.ruby.platform;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 
 public final class RubyPlatformManagerTest extends RubyTestBase {
 
@@ -69,6 +71,17 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         assertSame("found by path", ruby, alsoRuby);
         RubyPlatform jruby = RubyPlatformManager.getPlatformByPath(TestUtil.getXTestJRubyPath());
         assertSame("found by path", RubyPlatformManager.getDefaultPlatform(), jruby);
+    }
+    
+    public void test60PlatformInBuildProperties() throws Exception {
+        EditableProperties ep = new EditableProperties();
+        ep.setProperty("rubyplatform.ruby_(1_8_6).interpreter", "/a/path/to/ruby");
+        ep.setProperty("rubyplatform.ruby_(1_8_6).label", "ruby (1.8.6)");
+        File bp = new File(getWorkDir(), "build.properties");
+        FileOutputStream fos = new FileOutputStream(bp);
+        ep.store(fos);
+        fos.close();
+        RubyPlatformManager.getDefaultPlatform();
     }
     
     public void testPlatformDetection() throws Exception {
