@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import org.apache.batik.css.engine.CSSEngine;
 import org.apache.batik.css.engine.CSSStylableElement;
 import org.apache.batik.css.engine.CSSStyleSheetNode;
@@ -106,7 +107,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
 //    /** Maps <code>Document</code> to XHTML CSS engine. */
 //    private final Map<Document, XhtmlCssEngine> document2engine = new WeakHashMap<Document, XhtmlCssEngine>();
-    private static final String KEY_CSS_ENGINE = "vwpXhtmlCssEngine"; // NOI18N
+//    private static final String KEY_CSS_ENGINE = "vwpXhtmlCssEngine"; // NOI18N
 
 
     /** Creates a new instance of CssServiceImpl */
@@ -121,6 +122,8 @@ public final class CssEngineServiceImpl implements CssEngineService {
         return instance;
     }
 
+    
+    private static final Map<Document, XhtmlCssEngine> doc2engine = new WeakHashMap<Document, XhtmlCssEngine>();
 
     private XhtmlCssEngine getCssEngine(Document document) {
         if (document == null) {
@@ -130,7 +133,8 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        synchronized (document2engine) {
 //            ret = document2engine.get(document);
 //        }
-        return (XhtmlCssEngine)document.getUserData(KEY_CSS_ENGINE);
+//        return (XhtmlCssEngine)document.getUserData(KEY_CSS_ENGINE);
+        return doc2engine.get(document);
     }
 
 //    public void setCssEngine(Document document, XhtmlCssEngine engine) {
@@ -148,7 +152,8 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        synchronized (document2engine) {
 //            document2engine.put(document, engine);
 //        }
-        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
+//        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
+        doc2engine.put(document, engine);
     }
 
     /*private*/ static CssUserAgentInfo getUserAgentInfo() {
@@ -211,7 +216,8 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        synchronized (document2engine) {
 //            engine = document2engine.remove(document);
 //        }
-        engine = (XhtmlCssEngine) document.getUserData(KEY_CSS_ENGINE);
+//        engine = (XhtmlCssEngine) document.getUserData(KEY_CSS_ENGINE);
+        engine = doc2engine.get(document);
         
         if (engine != null) {
             engine.dispose();
@@ -226,8 +232,10 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //            XhtmlCssEngine engine = document2engine.get(originalDocument);
 //            document2engine.put(document, engine);
 //        }
-        XhtmlCssEngine engine = (XhtmlCssEngine)originalDocument.getUserData(KEY_CSS_ENGINE);
-        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
+//        XhtmlCssEngine engine = (XhtmlCssEngine)originalDocument.getUserData(KEY_CSS_ENGINE);
+//        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
+        XhtmlCssEngine engine = doc2engine.get(originalDocument);
+        doc2engine.put(document, engine);
     }
 
     public Collection<String> getCssStyleClassesForDocument(Document document) {
@@ -1109,16 +1117,16 @@ public final class CssEngineServiceImpl implements CssEngineService {
     } // End of DefaultCssSyntaxErrorInfo.
     
     
-    private static class CssEngineDataHandler implements UserDataHandler {
-        private static final CssEngineDataHandler INSTANCE = new CssEngineDataHandler();
-        
-        public static CssEngineDataHandler getDefault() {
-            return INSTANCE;
-        }
-        
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-        }
-    } // End of CssEngineDataHandler.
+//    private static class CssEngineDataHandler implements UserDataHandler {
+//        private static final CssEngineDataHandler INSTANCE = new CssEngineDataHandler();
+//        
+//        public static CssEngineDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//        }
+//    } // End of CssEngineDataHandler.
     
 }
