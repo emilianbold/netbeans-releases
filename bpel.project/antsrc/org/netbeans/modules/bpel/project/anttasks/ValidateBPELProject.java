@@ -126,8 +126,7 @@ public class ValidateBPELProject extends Task {
         }
     }  
             
-    public void setClasspathRef(Reference ref) {
-    }    
+    public void setClasspathRef(Reference ref) {}    
 
     public void setProjectClassPath(String projectClassPath) {
       this.mProjectClassPath = projectClassPath;
@@ -220,170 +219,138 @@ public class ValidateBPELProject extends Task {
                         processSourceDir(sourceDir);
                 }
                 
-        }
+    }
         
-        private void processSourceDir(File sourceDir) {
-                processFileObject(sourceDir);
-        }
-        
-        private void processFileObject(File file) {
-                if (file.isDirectory()) {
-                        processFolder(file);
-                } else {
-                        //processFile(file);
-                }
-        }
-        
-        private void processFolder(File fileDir) {
-                File[] bpelFiles = fileDir.listFiles(new Util.BpelFileFilter());
-                processBpelFiles(bpelFiles);
-        }
-        
-        private void processFile(File file) {
-                String fileName = file.getName();
-                String fileExtension = null;
-                int dotIndex = fileName.lastIndexOf('.');
-                if(dotIndex != -1) {
-                        fileExtension = fileName.substring(dotIndex +1);
-                }
-                
-                if (fileExtension != null) {
-                        if(fileExtension.equalsIgnoreCase("bpel")) {
-                                processBpelFile(file);
-                        } 
-                }
-        }
-        
-        private void processBpelFiles(File[]bpelFiles) {
-                for (int i = 0; i < bpelFiles.length; i++) {
-                        if(bpelFiles[i].isFile()) {
-                                processBpelFile(bpelFiles[i]);
-                        } else {
-                                processFolder(bpelFiles[i]);
-                        }
-                }
-        }
-        
-        private void processBpelFile(File bpelFile) {
-                        if(isBpelFileModified(bpelFile)) {
-                                loadAndValidateExistingBusinessProcess(bpelFile);
-                        }
-        }
-        
-        private boolean isBpelFileModified(File bpelFile) {
-                boolean modified = true;
-                String relativePath = RelativePath.getRelativePath(this.mSourceDir, bpelFile);
-                File bpelFileInBuildDir = (File) this.mBpelFileNamesToFileInBuildDir.get(relativePath);
-                
-                if (bpelFileInBuildDir != null) {
-                        if(bpelFileInBuildDir.lastModified() == bpelFile.lastModified()) {
-                                modified = false;
-                        }
-                }
-                return modified;
-        }
-        
-        private void validateBPEL(File bpel) throws BuildException {
-//System.out.println("111");
-            BpelModel model = null;
+    private void processSourceDir(File sourceDir) {
+            processFileObject(sourceDir);
+    }
+    
+    private void processFileObject(File file) {
+            if (file.isDirectory()) {
+                    processFolder(file);
+            }
+    }
+    
+    private void processFolder(File fileDir) {
+            File[] bpelFiles = fileDir.listFiles(new Util.BpelFileFilter());
+            processBpelFiles(bpelFiles);
+    }
+    
+    private void processFile(File file) {
+            String fileName = file.getName();
+            String fileExtension = null;
+            int dotIndex = fileName.lastIndexOf('.');
+            if(dotIndex != -1) {
+                    fileExtension = fileName.substring(dotIndex +1);
+            }
             
-            try {
+            if (fileExtension != null) {
+                    if(fileExtension.equalsIgnoreCase("bpel")) {
+                            processBpelFile(file);
+                    } 
+            }
+    }
+    
+    private void processBpelFiles(File[]bpelFiles) {
+            for (int i = 0; i < bpelFiles.length; i++) {
+                    if(bpelFiles[i].isFile()) {
+                            processBpelFile(bpelFiles[i]);
+                    } else {
+                            processFolder(bpelFiles[i]);
+                    }
+            }
+    }
+    
+    private void processBpelFile(File bpelFile) {
+                    if(isBpelFileModified(bpelFile)) {
+                            loadAndValidateExistingBusinessProcess(bpelFile);
+                    }
+    }
+    
+    private boolean isBpelFileModified(File bpelFile) {
+            boolean modified = true;
+            String relativePath = RelativePath.getRelativePath(this.mSourceDir, bpelFile);
+            File bpelFileInBuildDir = (File) this.mBpelFileNamesToFileInBuildDir.get(relativePath);
+            
+            if (bpelFileInBuildDir != null) {
+                    if(bpelFileInBuildDir.lastModified() == bpelFile.lastModified()) {
+                            modified = false;
+                    }
+            }
+            return modified;
+    }
+    
+    private void validateBPEL(File bpel) throws BuildException {
+//System.out.println("111");
+        BpelModel model = null;
+        
+        try {
 //System.out.println("222");
-                model = BPELCatalogModel.getDefault().getBPELModel(bpel.toURI());
+            model = BPELCatalogModel.getDefault().getBPELModel(bpel.toURI());
 //System.out.println("333");
-            }
-            catch (Exception e) {
+        }
+        catch (Exception e) {
 //e.printStackTrace();
-                throw new RuntimeException("Error while trying to create BPEL Model", e);
-            }
+            throw new RuntimeException("Error while trying to create BPEL Model", e);
+        }
 //System.out.println("444");
-            Validation validation = new Validation();
+        Validation validation = new Validation();
 //System.out.println("444.1");
-            validation.validate((org.netbeans.modules.xml.xam.Model) model, ValidationType.COMPLETE);
+        validation.validate((org.netbeans.modules.xml.xam.Model) model, ValidationType.COMPLETE);
 //System.out.println("444.2");
-            Collection col = validation.getValidationResult();
-            boolean isError = false;
+        Collection col = validation.getValidationResult();
+        boolean isError = false;
 
 //System.out.println("555");
-            for (Iterator itr = col.iterator(); itr.hasNext();) {
-               ResultItem resultItem = (ResultItem) itr.next();
-               logValidationErrors(bpel, resultItem);
+        for (Iterator itr = col.iterator(); itr.hasNext();) {
+           ResultItem resultItem = (ResultItem) itr.next();
 
-               if(resultItem.getType() == Validator.ResultType.ERROR) {
-                   isError = true;
-               }
-            }
+           if ( !mAllowBuildWithError) {
+             System.out.println(getValidationError(bpel, resultItem));
+             System.out.println();
+           }
+           if (resultItem.getType() == Validator.ResultType.ERROR) {
+             isError = true;
+           }
+        }
 //System.out.println("666");
-            if (isError) {
-                this.isFoundErrors = true;
-            }
+        if (isError) {
+            this.isFoundErrors = true;
         }
-        
-        private void logValidationErrors(File bpelFile, ResultItem resultItem) {
-          int lineNumber = 0;
-          int columnNumber = 0;
-          String errorDescription = resultItem.getDescription();
-          String msgType = resultItem.getType().name();
-          Component component = resultItem.getComponents();
-          File file = null;
+    }
+    
+    private String getValidationError(File bpelFile, ResultItem resultItem) {
+      int lineNumber = 0;
+      int columnNumber = 0;
+      String errorDescription = resultItem.getDescription();
+      String msgType = resultItem.getType().name();
+      Component component = resultItem.getComponents();
+      File file = null;
 
-          if(component != null) {
-            lineNumber = ModelUtil.getLineNumber(component);
-            columnNumber = ModelUtil.getColumnNumber(component);
-            file = (File) component.getModel().getModelSource().getLookup().lookup(File.class);        
-            showError(file,columnNumber, lineNumber, errorDescription, msgType);
+      if (component == null) {
+        columnNumber = resultItem.getColumnNumber();
+        lineNumber = resultItem.getLineNumber(); 
+        file = (File) resultItem.getModel().getModelSource().getLookup().lookup(File.class);  
+      }
+      else {
+        lineNumber = ModelUtil.getLineNumber(component);
+        columnNumber = ModelUtil.getColumnNumber(component);
+        file = (File) component.getModel().getModelSource().getLookup().lookup(File.class);        
+      }
+      return Util.getError(file, columnNumber, lineNumber, errorDescription, msgType);
+    }
+    
+    private void loadAndValidateExistingBusinessProcess(File bpelFile) throws BuildException {
+        try {
+            validateBPEL(bpelFile);
+        }
+        catch (Throwable e) {
+          System.out.println();
+          System.out.println("Found error: " + e);
+
+          if ( !mAllowBuildWithError) {
+              throw new BuildException(e);
           }
-          else {
-            columnNumber = resultItem.getColumnNumber();
-            lineNumber = resultItem.getLineNumber(); 
-            file =(File)resultItem.getModel().getModelSource().getLookup().lookup(File.class);  
-            showError(file,columnNumber, lineNumber, errorDescription, msgType);
-          }
         }
-        
-        private void showError(File file, int columnNumber, int lineNumber, String errorDescription, String msgType) {
-            StringBuffer lineNumStr = new StringBuffer(5);
-            StringBuffer columnNumStr = new StringBuffer(5);
-
-            if(lineNumber != -1) {
-              lineNumStr.append(":");
-              lineNumStr.append(lineNumber);
-              lineNumStr.append(",");
-            }
-            if(columnNumber != -1) {
-              columnNumStr.append(" column:"); 
-              columnNumStr.append(columnNumber);
-              columnNumStr.append(" ");
-            }
-            msgType = msgType + ": "; 
-            StringBuffer msg = new StringBuffer(100);
-            msg.append(msgType);
-
-            if (file != null) {
-              msg.append(file.getPath());
-            }
-            msg.append(lineNumStr);
-            msg.append(columnNumStr + "\n");
-            msg.append(errorDescription);
-
-            if ( !mAllowBuildWithError) {
-              System.out.println(msg);
-              System.out.println();
-            }
-        }
-        
-        private void loadAndValidateExistingBusinessProcess(File bpelFile) throws BuildException {
-                try {
-                    validateBPEL(bpelFile);
-                }
-                catch (Throwable e) {
-                  System.out.println();
-                  System.out.println("Exception: " + e);
-                  e.printStackTrace();
-
-                  if ( !mAllowBuildWithError) {
-                      throw new BuildException(e);
-                  }
-                }
-        }
+    }
 }

@@ -49,49 +49,27 @@ import org.openide.util.Lookup;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 /**
- * This class helps Bpel project to obtain the Bpel model given a
- * BPEL File URI
+ * This class helps Bpel project to obtain the Bpel model given a BPEL File URI
  * @author Sreenivasan Genipudi
  */
 public class IDEBPELCatalogModel {
 
     static IDEBPELCatalogModel singletonCatMod = null;
 
-    /**
-     * Constructor
-     */
-    public IDEBPELCatalogModel() {
-    }
+    public IDEBPELCatalogModel() {}
 
-    /**
-     * Gets the instance of this class internal API
-     * @return current class instance
-     */
     public static IDEBPELCatalogModel getDefault(){
         if (singletonCatMod == null){
-            singletonCatMod = new IDEBPELCatalogModel	();
+            singletonCatMod = new IDEBPELCatalogModel   ();
         }
         return singletonCatMod;
     }
 
-
-
-    /**
-     * Creates BPEL Model from BPEL URI
-     * @param locationURI
-     * @throws java.lang.Exception
-     * @return
-     */
      public BpelModel getBPELModel(File file) throws Exception {
-             //convert file to FileObject
              ModelSource source = org.netbeans.modules.xml.retriever.catalog.Utilities.createModelSource(FileUtil.toFileObject(file), true);
-
-             BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault()
-                     .lookup(BpelModelFactory.class);
-
+             BpelModelFactory factory = (BpelModelFactory) Lookup.getDefault().lookup(BpelModelFactory.class);
              BpelModel model = factory.getModel(source);
              model.sync();
              return model;
          }
-
 }

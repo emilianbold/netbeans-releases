@@ -96,81 +96,24 @@ import org.netbeans.modules.bpel.project.anttasks.jbi.Provider;
  * @author Sreenivasan Genipudi
  */
 public class JBIGenerator {
-    //Member variable representing logger
-    /**
-     * Logger instance
-     */
     private Logger logger = Logger.getLogger(JBIGenerator.class.getName());
-    //Constant representing the partnerRole
-    /**
-     * Constant representing Parter Role
-     */
     private static final String PARTNER_ROLE = "partnerRole";
-    //Constant representing myRole
-    /**
-     * Constant representing My role
-     */
     private static final String MY_ROLE = "myRole";
-    //Member variable representing list of dependent project directories
-    /**
-     * collection of dependent project directories
-     */
     private List mDepedentProjectDirs;
-    //Member variable representing list of source directories
-    /**
-     * Collection of source directories
-     */
     private List mSourceDirs;
     
     private File mBuildDir = null;
-    //Member variable representing the list of Provider list
-    /**
-     * collection of providers
-     */
     private List mProviderList = new ArrayList();
-    //Member variable representing the list of Consumer list
-    /**
-     * collection of consumers
-     */
     private List mConsumerList = new ArrayList();
-    //Member variable representing list of namespace prefix
-    /**
-     * Map of namespace to its prefix
-     */
     private Map mNameSpacePrefix = new HashMap();
     
-    //Constants used in generating JBI.XML
-    /**
-     * Constant
-     */
     public static final String JBI_ELEM_NAME = "jbi"; // NOI18N
-    /**
-     * Constant
-     */
     public static final String SERVICES_ELEM_NAME = "services"; // NOI18N
-    /**
-     * Constant
-     */
     public static final String PROVIDES_ELEM_NAME = "provides"; // NOI18N
-    /**
-     * Constant
-     */
     public static final String CONSUMES_ELEM_NAME = "consumes"; // NOI18N
-    /**
-     * Constant
-     */
     public static final String BINDING_ATTR_NAME = "binding-component"; // NOI18N
-    /**
-     * Constant
-     */
     public static final String INTERFACE_ATTR_NAME = "interface-name"; // NOI18N
-    /**
-     * Constant
-     */
     public static final String ENDPOINT_ATTR_NAME = "endpoint-name"; // NOI18N
-    /**
-     * Constant
-     */
     public static final String SERVICE_ATTR_NAME = "service-name"; // NOI18N
     
     public static final String VERSION_ATTR_NAME = "version"; // NOI18N
@@ -184,26 +127,13 @@ public class JBIGenerator {
     
     public static final String NAMESPACE_PREFIX = "ns"; // NOI18N
     
-    /**
-     * Constructor
-     */
-    public JBIGenerator() {
-    }
+    public JBIGenerator() {}
 
-    /**
-     * Constructor
-     * @param depedentProjectDirs List of dependent projects directories
-     * @param sourceDirs  List of current source directory
-     */
     public JBIGenerator(List depedentProjectDirs , List sourceDirs) {
         this.mDepedentProjectDirs = depedentProjectDirs;
         this.mSourceDirs = sourceDirs;
     }
 
-    /**
-     * Process the source directory and gather 
-     * the data required to generate JBI.xml
-     */
     void process() {
         if (this.mSourceDirs != null
                 && this.mSourceDirs.size() != 0) {
@@ -211,14 +141,10 @@ public class JBIGenerator {
         }
     }
 
-    /**
-     * Generate JBI.xml
-     * @param buildDir the build directory 
-     */
     public void generate(File buildDir) {
         this.mBuildDir = buildDir;
         process();
-        // write to jbi.xml
+
         try {
             File cnfFile = new File(buildDir, "META-INF");
             if (!cnfFile.exists()) {
@@ -228,18 +154,11 @@ public class JBIGenerator {
             
             generateJbiXml(jbiFile);
         } catch (Exception ex) {
-            // careate failed...
             logger.log(Level.SEVERE, "Failed to create jbi.xml", ex);
         }
     }
 
-    /**
-     * Utility method used in generating JBI.xml 
-     * Adds attribute to the Elements
-     * @param root XML element
-     */
     private void addNamespaceToRoot(Element root) {
-        
         Set nameSpaceSet = this.mNameSpacePrefix.entrySet();
         Iterator itr = nameSpaceSet.iterator();
         while(itr.hasNext()) {
@@ -248,11 +167,6 @@ public class JBIGenerator {
         }
     }
 
-    /**
-     * Generate the JBI.xml 
-     * @param jbiFie File object representing the JBI.xml 
-     * @throws ParserConfigurationException
-     */
     private void generateJbiXml(File jbiFile) throws ParserConfigurationException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -376,10 +290,6 @@ public class JBIGenerator {
         }
     }
     
-    /**
-     * Process the file object to generate JBI.xml
-     * @param file BPEL file location
-     */
     private void processFileObject(File file) {
         if (file.isDirectory()) {
             processFolder(file);
@@ -388,10 +298,6 @@ public class JBIGenerator {
         }
     }
 
-    /**
-     * Process the folder to generate JBI.xml
-     * @param fileDir  Folder location
-     */
     private void processFolder(File fileDir) {
         File[] children = fileDir.listFiles();
         
@@ -400,10 +306,6 @@ public class JBIGenerator {
         }
     }
     
-    /**
-     * Process the file to generate JBI.xml
-     * @param file input file
-     */
     protected void processFile(File file) {
         String fileName = file.getName();
         String fileExtension = null;
@@ -433,12 +335,6 @@ public class JBIGenerator {
         }
     }
     
-    /**
-     * Collect the namespaces used in the BPEL doc obtained from 
-     * BPEL Model and generate Prefix
-     * @param namespaceURI
-     * @return namespace prefix
-     */
     private String populateNamespace(String namespaceURI) {
         String namespacePrefix = null;
         namespacePrefix =(String) mNameSpacePrefix.get(namespaceURI);

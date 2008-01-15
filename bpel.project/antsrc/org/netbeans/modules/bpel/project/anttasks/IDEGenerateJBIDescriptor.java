@@ -93,14 +93,18 @@ public class IDEGenerateJBIDescriptor extends Task {
     public void setBuildDirectory(String buildDir) {
         mBuildDirectory = buildDir;
     }
+
     public void setSourceDirectory(String srcDir) {
         this.mSourceDirectory = srcDir;
     }
+    
     public void setClasspathRef(Reference ref) {
     }
+    
     public String getSourceDirectory() {
         return this.mSourceDirectory;
     }
+    
     public void setProjectClassPath(String projectClassPath) {
         this.mProjectClassPath = projectClassPath;
     }

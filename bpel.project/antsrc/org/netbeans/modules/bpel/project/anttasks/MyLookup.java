@@ -73,5 +73,4 @@ public class MyLookup extends Lookup {
     public Lookup.Item  lookupItem(Lookup.Template template) {
         return getInstance().lookupItem(template);
     }
-    
 }

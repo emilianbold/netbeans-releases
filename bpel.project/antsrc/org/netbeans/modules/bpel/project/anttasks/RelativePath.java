@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.bpel.project.anttasks;
 
 import java.io.File;
@@ -52,13 +51,7 @@ import java.util.List;
  * @author David M. Howard
  */
 public class RelativePath {
-    /**
-     * break a path down into individual elements and add to a list.
-     * example : if a path is /a/b/c/d.txt, the breakdown will be [d.txt,c,b,a]
-     * @param f input file
-     * @return a List collection with the individual elements of the path in
-       reverse order
-     */
+
     private static List getPathList(File f) {
         List l = new ArrayList();
         File r;
@@ -76,12 +69,6 @@ public class RelativePath {
         return l;
     }
 
-    /**
-     * figure out a string representing the relative path of
-     * 'f' with respect to 'r'
-     * @param r home path
-     * @param f path of file
-     */
     private static String matchPathLists(List r,List f) {
         int i;
         int j;
@@ -113,16 +100,6 @@ public class RelativePath {
         return s;
     }
 
-    /**
-     * get relative path of File 'f' with respect to 'home' directory
-     * example : home = /a/b/c
-     *           f    = /a/d/e/x.txt
-     *           s = getRelativePath(home,f) = ../../d/e/x.txt
-     * @param home base path, should be a directory, not a file, or it doesn't
-        make sense
-     * @param f file to generate path for
-     * @return path from home to f as a string
-     */
     public static String getRelativePath(File home,File f){
         File r;
         List homelist;

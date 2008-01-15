@@ -286,7 +286,6 @@ public class IDEValidateBPELProject extends Task {
           }
           myBPELFiles.add(current);
       }
-
       if (isBpelFileModified(file)) {
         loadAndValidateExistingBusinessProcess(file);
       }
@@ -318,24 +317,22 @@ public class IDEValidateBPELProject extends Task {
         validation.validate((org.netbeans.modules.xml.xam.Model)model, ValidationType.COMPLETE);
         Collection col = validation.getValidationResult();
         boolean isError = false;
-        StringBuffer buffer = new StringBuffer();
 
         for (Iterator itr = col.iterator(); itr.hasNext();) {
           ResultItem resultItem = (ResultItem) itr.next();
-          logValidationErrors(bpel, resultItem);
 
           if (resultItem.getType() == Validator.ResultType.ERROR) {
-            String description = resultItem.getDescription();
-            buffer.append("\nError: " + description);
+            System.err.println(getValidationError(bpel, resultItem));
+            System.err.println();
             isError = true;
           }
         }
         if (isError) {
-          throw new BuildException("\nFound validation errors:\n" + buffer);
+          throw new BuildException(Util.FOUND_VALIDATION_ERRORS);
         }
     }
 
-    private void logValidationErrors(File bpelFile, ResultItem resultItem) {
+    private String getValidationError(File bpelFile, ResultItem resultItem) {
       int lineNumber = 0;
       int columnNumber = 0;
       String errorDescription = resultItem.getDescription();
@@ -344,52 +341,20 @@ public class IDEValidateBPELProject extends Task {
       FileObject fileObj = null;
       File file = null;
 
-      if (component != null) {
+      if (component == null) {
+        columnNumber = resultItem.getColumnNumber();
+        lineNumber = resultItem.getLineNumber();
+        fileObj = (FileObject) resultItem.getModel().getModelSource().getLookup().lookup(FileObject.class);
+      }
+      else {
         lineNumber = ModelUtil.getLineNumber(component);
         columnNumber = ModelUtil.getColumnNumber(component);
         fileObj = (FileObject) component.getModel().getModelSource().getLookup().lookup(FileObject.class);
-  
-        if (fileObj != null) {
-          file = FileUtil.toFile(fileObj);
-        }
-        showError(file,columnNumber, lineNumber,errorDescription,msgType );
       }
-      else {
-        columnNumber = resultItem.getColumnNumber();
-        lineNumber = resultItem.getLineNumber();
-        fileObj = (FileObject)resultItem.getModel().getModelSource().getLookup().lookup(FileObject.class);
-
-        if (fileObj != null) {
-          file = FileUtil.toFile(fileObj);
-        }                
-        showError(file,columnNumber, lineNumber,errorDescription ,msgType);
+      if (fileObj != null) {
+        file = FileUtil.toFile(fileObj);
       }
-    }
-
-    private void showError(File file, int columnNumber, int lineNumber, String errorDescription, String msgType) {
-        StringBuffer lineNumStr = new StringBuffer(5);
-        StringBuffer columnNumStr = new StringBuffer(5);
-
-        if (lineNumber != -1) {
-          lineNumStr.append(":");
-          lineNumStr.append(lineNumber);
-          lineNumStr.append(":");
-        }
-        if (columnNumber != -1) {
-          columnNumStr.append(" column:");
-          columnNumStr.append(columnNumber);
-          columnNumStr.append(" ");
-        }
-        msgType = msgType + ": ";
-        StringBuffer msg = new StringBuffer(100);
-
-        if (file != null) {
-          msg.append(file.getPath());
-        }
-        msg.append(lineNumStr);
-        msg.append(columnNumStr);
-        msg.append(msgType);
-        msg.append(errorDescription);
+      return Util.getError(file, columnNumber, lineNumber, errorDescription, msgType);
     }
 
     private void loadAndValidateExistingBusinessProcess(File bpelFile) throws BuildException {

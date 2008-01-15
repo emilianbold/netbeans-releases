@@ -161,11 +161,11 @@ public class ValidateBPELProjectTask extends Task {
 //System.out.println("isErrors: " + isErrors);
          }
          catch (Throwable e) {
-           throw new BuildException("Found error: " + e.getMessage());
+           throw new BuildException("Exception occurs.");
          }
          if (isErrors != null && isErrors.booleanValue()) {
              if ( !mAllowBuildWithError) {
-                 throw new BuildException("Found validation error(s).");
+                 throw new BuildException(Util.FOUND_VALIDATION_ERRORS);
              }
          }
     }

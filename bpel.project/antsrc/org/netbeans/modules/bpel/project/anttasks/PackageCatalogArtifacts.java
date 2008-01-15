@@ -61,22 +61,10 @@ public class PackageCatalogArtifacts extends org.apache.tools.ant.Task {
 
     private static final String dirSep = "/";
     public static HashSet mValidRetrievedUriSet = new HashSet();
-    // Member variable representing build directory
-     /**
-      * Logger instance
-      */
-     private Logger logger = Logger.getLogger(PackageCatalogArtifacts.class.getName());    
-
-    /**
-     * Build directory
-     */
+    private Logger logger = Logger.getLogger(PackageCatalogArtifacts.class.getName());    
     private String mBuildDirectoryPath = null;
 
-    public PackageCatalogArtifacts() {
-    }
-
-
-
+    public PackageCatalogArtifacts() {}
     
     public void doCopy(String projectCatalogPath, File buildDir) {
         projectCatalogPath = projectCatalogPath.replace('\\','/');
@@ -103,34 +91,7 @@ public class PackageCatalogArtifacts extends org.apache.tools.ant.Task {
         }
         
     }
-    /*
-    public void execute() throws BuildException {
-        File sourceDir = new File(mSourceDirectory);
-        mSourceDirectoryPath = sourceDir.getParent();
-        String catalogXMLLocation = 
-        if (mSourceDirectoryPath != null) {
-            
-        }
-        String catalogXMLLocation = 
-            mSourceDirectory+ dirSep  +".."+ dirSep + "catalog.xml";
-            
-        File catalogFile = new File(catalogXMLLocation);
-        Set<String> setOfURIs = null;
-        if (!catalogFile.exists()) {
-            return;
-        }
 
-        BpelProjectCatalogReader bpCatRdr = null;
-        try {
-            bpCatRdr = new BpelProjectCatalogReader(catalogXMLLocation);
-            doCopy(bpCatRdr.getListOfLocalURIs());
-        } catch (Exception ex) {
-            throw new BuildException("Failed to package Catalog.xml!");
-        }
-
-
-    }
-*/
     private void doCopy(File mBuildDir,BpelProjectCatalogReader projectCtlg, BpelProjectCatalogReader localCtlg ) throws Exception {
         
         ArrayList <String> listOfProjectNS = projectCtlg.getListOfNamespaces();
@@ -196,10 +157,6 @@ public class PackageCatalogArtifacts extends org.apache.tools.ant.Task {
             boolean bDelete = true;
             copyOp.setFile(new File(projectDir+dirSep+prjURILoc));
             copyOp.execute();
-            
         }
-
     }
-    
-
 }

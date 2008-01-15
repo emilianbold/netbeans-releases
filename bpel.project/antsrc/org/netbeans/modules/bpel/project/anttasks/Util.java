@@ -44,90 +44,94 @@ package org.netbeans.modules.bpel.project.anttasks;
 import java.io.File;
 import java.io.FileFilter;
 
-/**
- * @author radval
- *
- * To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
- */
 public class Util {
-	public static final String WSDL_FILE_EXTENSION = "wsdl";
-	
-	public static final String XSD_FILE_EXTENSION = "xsd";
-	
-	public static final String BPEL_FILE_EXTENSION = "bpel";
-	
-	static class ProjectFileFilter implements FileFilter {
-    	
-    	public boolean accept(File pathname) {
-    		boolean result = false;
-//    		if(pathname.isDirectory()) {
-//    			return true;
-//    		}
-    		
-    		String fileName = pathname.getName();
-    		String fileExtension = null;
-    		int dotIndex = fileName.lastIndexOf('.');
-    		if(dotIndex != -1) {
-    			fileExtension = fileName.substring(dotIndex +1);
-    		}
-    		
-    		if(fileExtension != null 
-    		   && (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION) 
-    		   	   || fileExtension.equalsIgnoreCase(XSD_FILE_EXTENSION))) {
-    			result = true;
-    		}
-    		
-    		return result;
-		}
-	 }
-	 
-	 static class BpelFileFilter implements FileFilter {
-    	
-    	public boolean accept(File pathname) {
-    		boolean result = false;
-    		if(pathname.isDirectory()) {
-    			return true;
-    		}
-    		
-    		String fileName = pathname.getName();
-    		String fileExtension = null;
-    		int dotIndex = fileName.lastIndexOf('.');
-    		if(dotIndex != -1) {
-    			fileExtension = fileName.substring(dotIndex +1);
-    		}
-    		
-    		if(fileExtension != null 
-    		   && (fileExtension.equalsIgnoreCase(BPEL_FILE_EXTENSION))) {
-    			result = true;
-    		}
-    		
-    		return result;
-		}
-	 }
-	 
-	 
-	 static class WsdlFileFilter implements FileFilter {
-    	
-    	public boolean accept(File pathname) {
-    		boolean result = false;
-//    		if(pathname.isDirectory()) {
-//    			return true;
-//    		}
-    		
-    		String fileName = pathname.getName();
-    		String fileExtension = null;
-    		int dotIndex = fileName.lastIndexOf('.');
-    		if(dotIndex != -1) {
-    			fileExtension = fileName.substring(dotIndex +1);
-    		}
-    		
-    		if(fileExtension != null 
-    		   && (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION))) {
-    			result = true;
-    		}
-    		
-    		return result;
-		}
-	 }
+
+    public static final String WSDL_FILE_EXTENSION = "wsdl";
+    public static final String XSD_FILE_EXTENSION = "xsd";
+    public static final String BPEL_FILE_EXTENSION = "bpel";
+    public static final String FOUND_VALIDATION_ERRORS = "Found validation error(s).";
+    
+    public static String getError(File file, int column, int line, String description, String type) {
+      StringBuffer buffer = new StringBuffer();
+
+      if (file != null) {
+        buffer.append(file.getPath());
+
+        if (line != -1) {
+          buffer.append(": ");
+          buffer.append(line);
+        }
+        if (column != -1) {
+          buffer.append(", ");
+          buffer.append(column);
+        }
+      }
+      buffer.append("\n" + type + ": " + description);
+
+      return buffer.toString();
+    }
+
+    static class ProjectFileFilter implements FileFilter {
+        
+        public boolean accept(File pathname) {
+            boolean result = false;
+            
+            String fileName = pathname.getName();
+            String fileExtension = null;
+            int dotIndex = fileName.lastIndexOf('.');
+
+            if(dotIndex != -1) {
+                fileExtension = fileName.substring(dotIndex +1);
+            }
+            if (fileExtension != null && (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION) || fileExtension.equalsIgnoreCase(XSD_FILE_EXTENSION))) {
+                result = true;
+            }
+            return result;
+        }
+     }
+     
+     static class BpelFileFilter implements FileFilter {
+        
+        public boolean accept(File pathname) {
+            boolean result = false;
+            if(pathname.isDirectory()) {
+                return true;
+            }
+            
+            String fileName = pathname.getName();
+            String fileExtension = null;
+            int dotIndex = fileName.lastIndexOf('.');
+            if(dotIndex != -1) {
+                fileExtension = fileName.substring(dotIndex +1);
+            }
+            
+            if(fileExtension != null 
+               && (fileExtension.equalsIgnoreCase(BPEL_FILE_EXTENSION))) {
+                result = true;
+            }
+            
+            return result;
+        }
+     }
+     
+     static class WsdlFileFilter implements FileFilter {
+        
+        public boolean accept(File pathname) {
+            boolean result = false;
+            
+            String fileName = pathname.getName();
+            String fileExtension = null;
+            int dotIndex = fileName.lastIndexOf('.');
+            if(dotIndex != -1) {
+                fileExtension = fileName.substring(dotIndex +1);
+            }
+            
+            if(fileExtension != null 
+               && (fileExtension.equalsIgnoreCase(WSDL_FILE_EXTENSION))) {
+                result = true;
+            }
+            
+            return result;
+        }
+     }
 }

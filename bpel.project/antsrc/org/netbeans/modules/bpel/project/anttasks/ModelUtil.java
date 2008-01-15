@@ -65,51 +65,30 @@ import org.xml.sax.SAXException;
  * To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
-/**
- * This is a temporary code which is copied from 
- *http://xml.netbeans.org/source/browse/xml/xam/src/org/netbeans/modules/xml/xam/dom/ReadOnlyAccess.java
- *because this code did not make through beta2. This class will not be required since this 
- *functionality will be provided by ReadOnlyAccess after beta2
- * @author radval
- */
 public class ModelUtil {
     
-    /** Creates a new instance of ModelUtil */
-    public ModelUtil() {
-    }
+    public ModelUtil() {}
     
      private static javax.swing.text.Element findLineRootElement(AbstractDocument doc) {
-        //checkDocParameter(doc);
-
         javax.swing.text.Element e = doc.getParagraphElement(0).getParentElement();
 
         if (e == null) {
-            // try default root (should work for text/plain)
             e = doc.getDefaultRootElement();
         }
-
         return e;
     }
  
-    /**
-     *  Get line number from Component.
-     */
     public static int getLineNumber(Component component) {
         AbstractDocument doc = getAbstractDocument(component);
         int position = findPosition((AbstractDocumentModel) component.getModel(), ((AbstractDocumentComponent) component).getPeer());
         return findLineNumber(doc, position) + 1;
     }
     
-    
-    /**
-     *  Get column number from Component.
-     */
     public static int getColumnNumber(Component component) {
         AbstractDocument doc = getAbstractDocument(component);
         int position = findPosition((AbstractDocumentModel) component.getModel(), ((AbstractDocumentComponent) component).getPeer());
         return findColumnNumber(doc, position);
     }
-    
     
     private static int findLineNumber(AbstractDocument doc, int argInt) {
         javax.swing.text.Element paragraphsParent = findLineRootElement(doc);
@@ -124,9 +103,6 @@ public class ModelUtil {
         return retInt;
     }
     
-     /**
-     *  Get styled document from Component.
-     */
     private static AbstractDocument getAbstractDocument(Component component) {
         int position = 0;
         AbstractDocument doc;
@@ -151,7 +127,7 @@ public class ModelUtil {
         return -1;
     }
     
-      private static int getRootElementPosition(String buf, Element root) {
+    private static int getRootElementPosition(String buf, Element root) {
         NodeList children = root.getOwnerDocument().getChildNodes();
         int pos = 0;
         for (int i=0; i<children.getLength(); i++) {
@@ -197,13 +173,12 @@ public class ModelUtil {
             if (current == target) {
                 return fromPos;
             }
-            
             int found = findPosition(target, buf, current, fromPos);
+
             if (found > -1) {
                 return found;
             }
         }
         return -1;
     }
-    
 }
