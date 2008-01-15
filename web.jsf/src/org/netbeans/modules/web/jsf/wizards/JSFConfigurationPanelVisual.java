@@ -560,7 +560,8 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                     && p.indexOf('/') == -1 && !p.trim().equals(""))
                 return true;
         }
-        if (pattern.endsWith("/*") && pattern.startsWith("/"))
+        // pattern = "/.../*", where ... can't be empty.
+        if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/"))
             return true;
         return false;
     }
