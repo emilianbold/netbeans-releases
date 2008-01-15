@@ -49,15 +49,16 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /* 
@@ -65,8 +66,7 @@ import org.openide.util.NbBundle;
  * @author Ana von Klopp 
  */
 
-class DeployDataPanel extends BaseWizardPanel implements ItemListener, 
-							 KeyListener { 
+class DeployDataPanel extends BaseWizardPanel implements ItemListener { 
 
     private TargetEvaluator evaluator = null; 
 
@@ -175,7 +175,30 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener,
 	tfC.gridy++; 
 	jTFname = new JTextField(25);
 	jTFname.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DeployDataPanel.class,"ACSD_name_".concat(fileType.toString()))); 
-	jTFname.addKeyListener (this);
+	jTFname.getDocument().addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                changedUpdate(e);
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                Mutex.EVENT.readAccess(new Runnable() {
+                    public void run() {
+                        // PENDING - this is way too heavy weight,
+                        // just append until we get the focus lost.
+                        deployData.setName(jTFname.getText().trim());
+                        if (fileType == FileType.FILTER) {
+                            mappingPanel.setData();
+                        }
+                        fireChangeEvent();
+                    }
+                });
+            }
+        });
 	jTFname.unregisterKeyboardAction
 	    (KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
 	jTFname.addFocusListener(new FocusAdapter() {
@@ -197,7 +220,27 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener,
 	    tfC.gridy++; 
 	    jTFmapping = new JTextField(25);
 	    jTFmapping.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DeployDataPanel.class,"ACSD_url_mapping"));
-	    jTFmapping.addKeyListener (this);
+	    jTFmapping.getDocument().addDocumentListener(new DocumentListener() {
+
+                public void insertUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+
+                public void removeUpdate(DocumentEvent e) {
+                    changedUpdate(e);
+                }
+
+                public void changedUpdate(DocumentEvent e) {
+                    Mutex.EVENT.readAccess(new Runnable() {
+                        public void run() {
+                            // PENDING - this is way too heavy weight,
+                            // just append until we get the focus lost.
+                            deployData.parseUrlMappingString(jTFmapping.getText().trim());
+                            fireChangeEvent();
+                        }
+                    });
+                }
+            });
 	    jTFmapping.unregisterKeyboardAction
 		(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0));
 	    jTFmapping.addFocusListener(new FocusAdapter() {
@@ -250,8 +293,7 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener,
 	    deployData.setName(evaluator.getFileName()); 
 	    if(fileType == FileType.SERVLET) { 
 		if(debug) log("\tData type is servlet"); //NOi18N
-		deployData.parseUrlMappingString("/" + //NOI18N
-						 evaluator.getFileName()); 
+		deployData.parseUrlMappingString("/" + ServletData.getRFC2396URI(evaluator.getFileName())); // NOI18N
 	    } 
 	}
 
@@ -310,42 +352,6 @@ class DeployDataPanel extends BaseWizardPanel implements ItemListener,
 		jTFmapping.setBackground(this.getBackground()); 
 	} 
     } 
-
-    public void keyPressed (java.awt.event.KeyEvent keyEvent) {
-    }
-        
-    public void keyReleased (java.awt.event.KeyEvent keyEvent) {
-	edited = true; 
-	if(keyEvent.getSource() == jTFname) {
-	    SwingUtilities.invokeLater(new Runnable() {
-		    public void run() {
-			// PENDING - this is way too heavy weight,
-			// just append until we get the focus lost.
-			deployData.setName(jTFname.getText().trim()); 
-			if(fileType == FileType.FILTER) 
-			    mappingPanel.setData(); 
-			fireChangeEvent();
-		    }
-		});
-	    return;
-	}
-	else if(keyEvent.getSource() == jTFmapping) {
-	    SwingUtilities.invokeLater(new Runnable() {
-		    public void run() {
-			// PENDING - this is way too heavy weight,
-			// just append until we get the focus lost.
-			deployData.parseUrlMappingString(jTFmapping.getText().trim()); 
-			fireChangeEvent();
-		    }
-		});
-	    return;
-	}
-	fireChangeEvent();
-    }
-        
-    public void keyTyped (java.awt.event.KeyEvent keyEvent) {
-    }
-    
 
     public void log(String s) { 
 	System.out.println("DeployDataPanel" + s); //NOI18N

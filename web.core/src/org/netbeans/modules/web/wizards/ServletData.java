@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 
+import java.util.regex.Pattern;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -61,6 +62,8 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
  * @author ana.von.klopp@sun.com
  */
 class ServletData extends DeployData { 
+
+    private static final Pattern VALID_URI_PATTERN = Pattern.compile("[-_.!~*'();/?:@&=+$,a-zA-Z0-9]+"); // NOI18N
 
     private String errorMessage = null; 
     private String name = null; 
@@ -291,7 +294,7 @@ class ServletData extends DeployData {
 	    index++; 
 	} 
 
-	buf.append(urlMappings[index]); 
+        buf.append(urlMappings[index]);
 	return buf.toString(); 
     } 
 
@@ -680,8 +683,33 @@ class ServletData extends DeployData {
             return NbBundle.getMessage(ServletData.class,"MSG_TwoAsterisks");
         } else if (uri.matches("..*\\*..*")) { //NOI18N
             return NbBundle.getMessage(ServletData.class,"MSG_AsteriskInTheMiddle"); 
+        } else if (uri.length() > 1
+                && !isRFC2396URI(uri.substring(1))) {
+            return NbBundle.getMessage(ServletData.class,"MSG_WrongUri");
         }
         return null;
+    }
+
+    /**
+     * Get the valid URI according to <a href="http://www.ietf.org/rfc/rfc2396.txt">the RFC 2396</a>.
+     * @param uri URI to be checked.
+     * @return valid URI according to <a href="http://www.ietf.org/rfc/rfc2396.txt">the RFC 2396</a>.
+     */
+    static String getRFC2396URI(String uri) {
+        if (isRFC2396URI(uri)) {
+            return uri;
+        }
+        StringBuilder sb = new StringBuilder(uri);
+        for (int i = 0; i < sb.length(); i++) {
+            if (!isRFC2396URI(sb.substring(i, i + 1))) {
+                sb.replace(i, i + 1, "_"); // NOI18N
+            }
+        }
+        return sb.toString();
+    }
+
+    private static boolean isRFC2396URI(String uri) {
+        return VALID_URI_PATTERN.matcher(uri).matches();
     }
 }
 
