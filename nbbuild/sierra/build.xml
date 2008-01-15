@@ -244,6 +244,12 @@
         <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp3/BluePrint3"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp4/BluePrint4"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp5/BluePrint5"/></antcall>
+
+        <!-- BpelToBpel -->
+        <antcall target="do-test-jbi"><param name="dir" value="BpelToBpel/ClientEmployeeInfo"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="BpelToBpel/EmployeeInfo"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="BpelToBpel/InAServiceUnit"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="BpelToBpel/RemoteClientEmployeeInfo"/></antcall>
     </target>
 
     <target name="do-test-jbi">
