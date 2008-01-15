@@ -103,7 +103,6 @@ public class SQLObjectUtil {
     public static final String FILE_LOC = "FILE_LOC";
     /* Log4J category string */
     private static final String LOG_CATEGORY = SQLObjectUtil.class.getName();
-    public static final String argName =SQLObjectUtil.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(SQLObjectUtil.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public static Map<String, String> getTableMetaData(SQLDBTable table) throws SQLException, BaseException {
@@ -335,19 +334,6 @@ public class SQLObjectUtil {
                 rtInput = getOrCreateRuntimeInput(rtDBModel);
             }
             // if runtime input arg does not exist then only add it
-            if (rtInput.getColumn(argName) == null) {
-                SourceColumn arg = createRuntimeInputArg(sTable, argName, dbModel.getETLDBConnectionDefinition());
-                rtInput.addColumn(arg);
-
-                return arg;
-            }
-        }else{
-            RuntimeDatabaseModel rtDBModel = getOrCreateRuntimeModel(sqlDefn);
-            RuntimeInput rtInput = rtDBModel.getRuntimeInput();
-                if (rtInput == null) {
-                rtInput = getOrCreateRuntimeInput(rtDBModel);
-            }
-              // if runtime input arg does not exist then only add it
             if (rtInput.getColumn(argName) == null) {
                 SourceColumn arg = createRuntimeInputArg(sTable, argName, dbModel.getETLDBConnectionDefinition());
                 rtInput.addColumn(arg);
