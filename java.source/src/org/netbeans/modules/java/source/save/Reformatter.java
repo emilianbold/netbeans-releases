@@ -675,7 +675,12 @@ public class Reformatter implements ReformatTask {
                 if (init != null) {
                     spaces(cs.spaceAroundAssignOps() ? 1 : 0);
                     accept(EQ);
-                    wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, init);
+                    if (init.getKind() == Tree.Kind.NEW_ARRAY && ((NewArrayTree)init).getType() == null) {
+                        spaces(cs.spaceAroundAssignOps() ? 1 : 0);
+                        scan(init, p);
+                    } else {
+                        wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, init);
+                    }
                 }
                 fieldGroup = accept(SEMICOLON, COMMA) == COMMA;
             }
@@ -1545,7 +1550,13 @@ public class Reformatter implements ReformatTask {
             if (b || getCurrentPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION) {
                 spaces(cs.spaceAroundAssignOps() ? 1 : 0);
                 accept(EQ);
-                wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, node.getExpression());
+                ExpressionTree expr = node.getExpression();
+                if (expr.getKind() == Tree.Kind.NEW_ARRAY && ((NewArrayTree)expr).getType() == null) {
+                    spaces(cs.spaceAroundAssignOps() ? 1 : 0);
+                    scan(expr, p);
+                } else {
+                    wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, expr);
+                }
             } else {
                 scan(node.getExpression(), p);
             }
@@ -1660,7 +1671,9 @@ public class Reformatter implements ReformatTask {
                 CodeStyle.BracePlacement bracePlacement = cs.getOtherBracePlacement();
                 boolean spaceBeforeLeftBrace = cs.spaceBeforeArrayInitLeftBrace();
                 int oldIndent = indent;
-                indent -= continuationIndentSize;
+                Tree parent = getCurrentPath().getParentPath().getLeaf();
+                if (parent.getKind() == Tree.Kind.VARIABLE || parent.getKind() == Tree.Kind.ASSIGNMENT)
+                    indent -= continuationIndentSize;
                 int old = indent;
                 int halfIndent = indent;
                 switch(bracePlacement) {
@@ -1690,6 +1703,7 @@ public class Reformatter implements ReformatTask {
                         break;
                 }
                 if (!inits.isEmpty()) {
+                    boolean oldAfterNewLine = afterNewline;
                     afterNewline = bracePlacement != CodeStyle.BracePlacement.SAME_LINE;
                     if (afterNewline)
                         newline();
@@ -1706,6 +1720,7 @@ public class Reformatter implements ReformatTask {
                         newline();
                     else
                         spaces(cs.spaceWithinBraces() ? 1 : 0);
+                    afterNewline = oldAfterNewLine;
                 }
                 indent = halfIndent;
                 Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
