@@ -747,6 +747,26 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         fileObject.refresh();
         assertNotNull(fileObject.getFileObject(externalName));        
     }
+    
+    public void testToFileObjectCaptureExternalChanges () throws Exception {
+        FileBasedFileSystem fs = (FileBasedFileSystem) testedFS;        
+        FileObject testFolder_Fo = FileUtil.toFileObject(getWorkDir()).createFolder(getName());        
+        assertNotNull(testFolder_Fo);
+        File testFolder = FileUtil.normalizeFile(FileUtil.toFile(testFolder_Fo));
+        assertNotNull(testFolder);
+        assertTrue(testFolder.exists());
+
+        String externalName = "newfile.external3";                
+        File newFile = new File (testFolder, externalName);
+        assertFalse(newFile.exists());        
+        assertNull(fs.getFileObject(newFile));
+        assertNull(testFolder_Fo.getFileObject(newFile.getName()));
+        assertNull(FileUtil.toFileObject(newFile));        
+        
+        assertTrue(newFile.createNewFile());
+        assertNotNull(FileUtil.toFileObject(newFile));        
+    }
+    
 
     public void testGetFileObject47885 () throws Exception {
         assertNotNull(root);
