@@ -139,9 +139,11 @@ public abstract class AbstractServerLookup<T> extends AbstractLookup implements 
         for (Iterator it = servers.iterator(); it.hasNext();) {
             Server server = (Server) it.next();
             T instance = createBridgingInstance(server);
-            content.add(instance);
-            serversMap.put(server, instance);
-            afterAddition(instance);
+            if (instance != null) {
+                content.add(instance);
+                serversMap.put(server, instance);
+                afterAddition(instance);
+            }
         }
     }
 }

@@ -68,6 +68,9 @@ public class BridgingServerWizardProvider implements org.netbeans.spi.server.Ser
     }
 
     public InstantiatingIterator getInstantiatingIterator() {
+        if (optional.getAddInstanceIterator() == null) {
+            return null;
+        }
         return new InstantiatingIteratorBridge(optional.getAddInstanceIterator(), server);
     }
 
