@@ -331,6 +331,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
                 newPath = IpeUtils.toRelativePath(getBaseDir(), FilePathAdaptor.naturalize(path));
             else
                 newPath = IpeUtils.toAbsolutePath(getBaseDir(), path);
+            newPath = FilePathAdaptor.normalize(newPath);
             item = (Item)projectItems.get(newPath);
         }
         return item;
