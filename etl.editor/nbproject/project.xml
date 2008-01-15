@@ -211,20 +211,31 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+            <class-path-extension>
+                <runtime-relative-path>ext/etl/velocity-1.4.jar</runtime-relative-path>
+                <binary-origin>external/velocity-1.4.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/etl/i18n-1.0.jar</runtime-relative-path>
+                <binary-origin>external/i18n-1.0.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/etl/commons-collections-3.0.jar</runtime-relative-path>
+                <binary-origin>external/commons-collections-3.0.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/etl/avalon-logkit-current.jar</runtime-relative-path>
+                <binary-origin>external/avalon-logkit-current.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/etl/axiondb.jar</runtime-relative-path>
+                <binary-origin>external/axiondb.jar</binary-origin>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/etl/etlengine.jar</runtime-relative-path>
+                <binary-origin>external/etlengine.jar</binary-origin>
+            </class-path-extension>
             <public-packages>
-                <package>com.ibm.wsdl</package>
-                <package>com.ibm.wsdl.extensions</package>
-                <package>com.ibm.wsdl.extensions.http</package>
-                <package>com.ibm.wsdl.extensions.mime</package>
-                <package>com.ibm.wsdl.extensions.schema</package>
-                <package>com.ibm.wsdl.extensions.soap</package>
-                <package>com.ibm.wsdl.factory</package>
-                <package>com.ibm.wsdl.util</package>
-                <package>com.ibm.wsdl.util.xml</package>
-                <package>com.ibm.wsdl.xml</package>
-                <package>com.nwoods.jgo</package>
-                <package>com.nwoods.jgo.layout</package>
-                <package>com.nwoods.jgo.svg</package>
                 <package>com.sun.axiondb.functions</package>
                 <package>com.sun.etl.engine</package>
                 <package>com.sun.etl.engine.impl</package>
@@ -234,29 +245,8 @@
                 <package>com.sun.sql.framework.exception</package>
                 <package>com.sun.sql.framework.jdbc</package>
                 <package>com.sun.sql.framework.utils</package>
-                <package>com.sun.xml.stream</package>
-                <package>com.sun.xml.stream.dtd</package>
-                <package>com.sun.xml.stream.dtd.nonvalidating</package>
-                <package>com.sun.xml.stream.events</package>
-                <package>com.sun.xml.stream.util</package>
-                <package>com.sun.xml.stream.writers</package>
-                <package>com.sun.xml.stream.xerces.impl.io</package>
-                <package>com.sun.xml.stream.xerces.impl.msg</package>
-                <package>com.sun.xml.stream.xerces.util</package>
-                <package>com.sun.xml.stream.xerces.xni</package>
-                <package>com.sun.xml.stream.xerces.xni.parser</package>
                 <package>common</package>
                 <package>common.log</package>
-                <package>javax.wsdl</package>
-                <package>javax.wsdl.extensions</package>
-                <package>javax.wsdl.extensions.http</package>
-                <package>javax.wsdl.extensions.mime</package>
-                <package>javax.wsdl.extensions.schema</package>
-                <package>javax.wsdl.extensions.soap</package>
-                <package>javax.wsdl.factory</package>
-                <package>javax.wsdl.xml</package>
-                <package>javax.xml</package>
-                <package>javax.xml.namespace</package>
                 <package>javax.xml.stream</package>
                 <package>javax.xml.stream.events</package>
                 <package>javax.xml.stream.util</package>
@@ -269,11 +259,6 @@
                 <package>jxl.read.biff</package>
                 <package>jxl.write</package>
                 <package>jxl.write.biff</package>
-                <package>org.apache.commons.codec</package>
-                <package>org.apache.commons.codec.binary</package>
-                <package>org.apache.commons.codec.digest</package>
-                <package>org.apache.commons.codec.language</package>
-                <package>org.apache.commons.codec.net</package>
                 <package>org.apache.commons.collections</package>
                 <package>org.apache.commons.collections.bag</package>
                 <package>org.apache.commons.collections.bidimap</package>
@@ -371,13 +356,9 @@
                 <package>org.netbeans.modules.mashup.db.ui.wizard</package>
                 <package>org.netbeans.modules.mashup.db.wizard</package>
                 <package>org.netbeans.modules.mashup.tables.wizard</package>
-                <package>org.netbeans.modules.sql.framework.common.jdbc</package>
-                <package>org.netbeans.modules.sql.framework.common.utils</package>
                 <package>org.netbeans.modules.sql.framework.codegen</package>
                 <package>org.netbeans.modules.sql.framework.codegen.axion</package>
-                <package>org.netbeans.modules.sql.framework.codegen.axion.config</package>
                 <package>org.netbeans.modules.sql.framework.codegen.base</package>
-                <package>org.netbeans.modules.sql.framework.codegen.base.config</package>
                 <package>org.netbeans.modules.sql.framework.codegen.db2v5</package>
                 <package>org.netbeans.modules.sql.framework.codegen.db2v7</package>
                 <package>org.netbeans.modules.sql.framework.codegen.db2v8</package>
@@ -387,7 +368,8 @@
                 <package>org.netbeans.modules.sql.framework.codegen.oracle9</package>
                 <package>org.netbeans.modules.sql.framework.codegen.sqlserver</package>
                 <package>org.netbeans.modules.sql.framework.codegen.sybase</package>
-                <package>org.netbeans.modules.sql.framework.highlighter</package>
+                <package>org.netbeans.modules.sql.framework.common.jdbc</package>
+                <package>org.netbeans.modules.sql.framework.common.utils</package>
                 <package>org.netbeans.modules.sql.framework.model</package>
                 <package>org.netbeans.modules.sql.framework.model.impl</package>
                 <package>org.netbeans.modules.sql.framework.model.utils</package>
@@ -403,6 +385,8 @@
                 <package>org.netbeans.modules.sql.framework.ui.graph.view.impl</package>
                 <package>org.netbeans.modules.sql.framework.ui.model</package>
                 <package>org.netbeans.modules.sql.framework.ui.model.impl</package>
+                <package>org.netbeans.modules.sql.framework.ui.output</package>
+                <package>org.netbeans.modules.sql.framework.ui.output.dataview</package>
                 <package>org.netbeans.modules.sql.framework.ui.undo</package>
                 <package>org.netbeans.modules.sql.framework.ui.utils</package>
                 <package>org.netbeans.modules.sql.framework.ui.view</package>
@@ -414,26 +398,6 @@
                 <package>org.netbeans.modules.sql.framework.ui.view.validation</package>
                 <package>org.netbeans.modules.sql.framework.ui.zoom</package>
             </public-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/etl/velocity-1.4.jar</runtime-relative-path>
-                <binary-origin>external/velocity-1.4.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/etl/commons-collections-3.0.jar</runtime-relative-path>
-                <binary-origin>external/commons-collections-3.0.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/etl/avalon-logkit-current.jar</runtime-relative-path>
-                <binary-origin>external/avalon-logkit-current.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/etl/axiondb.jar</runtime-relative-path>
-                <binary-origin>external/axiondb.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/etl/etlengine.jar</runtime-relative-path>
-                <binary-origin>external/etlengine.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>
