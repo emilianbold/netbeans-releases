@@ -250,6 +250,9 @@
         <antcall target="do-test-jbi"><param name="dir" value="BpelToBpel/EmployeeInfo"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="BpelToBpel/InAServiceUnit"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="BpelToBpel/RemoteClientEmployeeInfo"/></antcall>
+
+        <!-- clusterSupport -->
+        <antcall target="do-test-jbi"><param name="dir" value="clusterSupport/ClusterBPEL"/></antcall>
     </target>
 
     <target name="do-test-jbi">
