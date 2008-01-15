@@ -118,6 +118,10 @@ public class WrongPackageSuggestionTest extends NbTestCase {
         performAnalysisTest("Test.java", "public class Test{}", Collections.<String>emptyList());
     }
     
+    public void testEvaluate121562() throws Exception {
+        performAnalysisTest("test/Test.java", "", Collections.<String>emptyList());
+    }
+    
     public void testAdjustPackageClause1() throws Exception {
         performAdjustPackageClauseTest("test/Test.java", "package other; public class Test{}", "test", "package test; public class Test{}");
     }
