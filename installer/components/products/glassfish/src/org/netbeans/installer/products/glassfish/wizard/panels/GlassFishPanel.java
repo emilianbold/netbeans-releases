@@ -645,7 +645,7 @@ public class GlassFishPanel extends DestinationPanel {
                                     (port == adminPort)) {
                                 return StringUtils.format(
                                         panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
-                                        port,
+                                        StringUtils.EMPTY_STRING + port,
                                         product);
                             }
                             
@@ -655,7 +655,7 @@ public class GlassFishPanel extends DestinationPanel {
                                     (port == adminPort)) {
                                 return StringUtils.format(
                                         panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
-                                        port,
+                                        StringUtils.EMPTY_STRING + port,
                                         product);
                             }
                             
@@ -665,7 +665,7 @@ public class GlassFishPanel extends DestinationPanel {
                                     (port == adminPort)) {
                                 return StringUtils.format(
                                         panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
-                                        port,
+                                        StringUtils.EMPTY_STRING + port,
                                         product);
                             }
                         }

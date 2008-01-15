@@ -632,7 +632,7 @@ public class ASPanel extends DestinationPanel {
                                     (port == adminPort)) {
                                 return StringUtils.format(
                                         panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
-                                        port,
+                                        StringUtils.EMPTY_STRING + port,
                                         product);
                             }
                             
@@ -642,7 +642,7 @@ public class ASPanel extends DestinationPanel {
                                     (port == adminPort)) {
                                 return StringUtils.format(
                                         panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
-                                        port,
+                                        StringUtils.EMPTY_STRING + port,
                                         product);
                             }
                             
@@ -652,7 +652,7 @@ public class ASPanel extends DestinationPanel {
                                     (port == adminPort)) {
                                 return StringUtils.format(
                                         panel.getProperty(WARNING_PORT_IN_USE_PROPERTY),
-                                        port,
+                                        StringUtils.EMPTY_STRING + port,
                                         product);
                             }
                         }
