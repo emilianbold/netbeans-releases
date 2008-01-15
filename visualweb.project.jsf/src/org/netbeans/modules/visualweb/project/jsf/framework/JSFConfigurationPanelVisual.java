@@ -59,6 +59,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 // import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.ExtenderController.Properties;
@@ -633,13 +634,16 @@ private void jtFolderKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private void initLibSettings(boolean webModule25Version, String serverInstanceID) {
         try {
             addJSF = false;
-            // <RAVE> fix issue#112245, java.lang.NullPointerException
-            boolean isJSF = false;
-            if (serverInstanceID != null) {
-                File[] cp = Deployment.getDefault().getJ2eePlatform(serverInstanceID).getClasspathEntries();
-                isJSF = Util.containsClass(Arrays.asList(cp), "javax.faces.FacesException");
+            File[] cp;
+            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            // j2eeplatform can be null, when the target server is not accessible.
+            if (platform != null) {
+                cp = platform.getClasspathEntries();
             }
-            // </RAVE>
+            else {
+                cp = new File[0];
+            }
+            boolean isJSF = Util.containsClass(Arrays.asList(cp), JSFUtils.FACES_EXCEPTION);
             if (isJSF)
                 rbNoneLibrary.setSelected(true);
             else if (webModule25Version) {

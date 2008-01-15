@@ -68,6 +68,10 @@ public class JSFUtils {
     private static final String COLLECTIONS_JAR = "commons-collections.jar";
     private static final String BEANUTILS_JAR = "commons-beanutils.jar";
         
+    public static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
+    public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
+    public static final String MYFACES_SPAECIFIC_CLASS = "org.apache.myfaces.webapp.StartupServletContextListener"; //NOI18N
+
     public static boolean isJSFInstallFolder(File file){
         boolean result = false;
         if (file.exists() && file.isDirectory()){
