@@ -91,7 +91,6 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.java.source</friend>
-                <friend>org.netbeans.modules.vcscore</friend>
                 <friend>org.netbeans.modules.versioning</friend>
                 <package>org.netbeans.modules.masterfs.providers</package>
             </friend-packages>

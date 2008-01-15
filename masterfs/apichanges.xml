@@ -46,6 +46,60 @@ made subject to such option by the copyright holder.
         <apidef name="masterfs">MasterFileSystem API</apidef>
     </apidefs>
     <changes>
+        <change id="one-drive-one-instance-of-filesystem-on-windows">
+            <api name="masterfs"/>
+            <summary>One drive == one instance of filesystem on windows</summary>
+            <version major="2" minor="13"/>
+            <date day="8" month="1" year="2008"/>
+            <author login="rmatous"/>
+            <compatibility binary="compatible" source="compatible" semantic="incompatible"/>
+            <description>
+                For every individual drive on windows now exists one filesystem. Every
+                instance of filesystem is created on demand. Before this change there was
+                one filesystem with virtual root containing all reachable drives as its
+                children.
+            </description>
+            <issue number="123542"/>
+        </change>                        
+        
+        <change id="fileobject-instances-are-not-issued-after-external-changes">
+            <api name="masterfs"/>
+            <summary>Fileobject instances are not issued after external changes</summary>
+            <version major="2" minor="13"/>
+            <date day="8" month="1" year="2008"/>
+            <author login="rmatous"/>
+            <compatibility binary="compatible" source="compatible" semantic="incompatible"/>
+            <description>
+                <code>FileObject</code> instances are not guaranteed to be issued if files, folders
+                were not created, deleted, modified by FileSystem API and method <code>refresh</code> wasn't properly
+                called. These methods were semantically changed:
+                <ul>
+                    <li><code>FileObject.getFileObject</code></li>
+                    <li><code>FileSystem.findResource</code></li>                        
+                    <li><code>FileObject.getChildren</code></li>
+                </ul>    
+                <p>Method <code>FileUtil.toFileObject</code> should still work as before.</p>
+            </description>
+            <issue number="123542"/>
+        </change>                        
+        
+        <change id="dropped-friend-contract-for-org-netbeans-modules-vcscore">
+            <api name="masterfs"/>
+            <summary>Simplify MasterFS, do not delegate on other embedded FS</summary>
+            <version major="2" minor="13"/>
+            <date day="8" month="1" year="2008"/>
+            <author login="rmatous"/>
+            <compatibility binary="incompatible" source="incompatible"/>
+            <description>
+                Friend contract for <code>org.netbeans.modules.vcscore</code> broken. Following classes deleted:
+                <code>MountSupport</code>, <code>FileSystemProvider</code>, <code>AutoMountProvider</code>
+            </description>
+            <class package="org.netbeans.modules.masterfs.providers" name="MountSupport"/>
+            <class package="org.netbeans.modules.masterfs.providers" name="FileSystemProvider"/>
+            <class package="org.netbeans.modules.masterfs.providers" name="AutoMountProvider"/>            
+            <issue number="123542"/>
+        </change>                        
+        
         <change id="added-filelock-notification-for-versioning-systems ">
             <api name="masterfs"/>
             <summary><code>ProvidedExtensions.fileLock</code> and <code>ProvidedExtensions.fileUnlock</code> was added.</summary>
