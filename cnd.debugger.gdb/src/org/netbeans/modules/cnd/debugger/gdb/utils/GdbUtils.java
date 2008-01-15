@@ -110,6 +110,15 @@ public class GdbUtils {
         }
     }
 
+//    public static boolean isSimpleArray(Object type) {
+//        if (type == null || type instanceof Map) {
+//            return false;
+//        } else {
+//            
+//        }
+//        return true;
+//    }
+
 //    public static boolean isSimpleNonArray(Object type) {
 //	return type instanceof String && type.toString().indexOf('[') == -1 && isSimpleType(type.toString());
 //    }

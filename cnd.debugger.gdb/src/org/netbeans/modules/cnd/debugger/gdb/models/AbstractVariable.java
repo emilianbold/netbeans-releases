@@ -99,9 +99,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         type = getDebugger().requestWhatis(name);
         ovalue = null;
         fields = new Field[0];
-        if (type != null) {
-            tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
-        }
+        tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
         
         if (Utilities.getOperatingSystem() != Utilities.OS_MAC) {
             this.value = value;
@@ -132,9 +130,6 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @return declared type of this local
      */
     public String getType() {
-        if (type == null) {
-            type = getDebugger().requestWhatis(name);
-        }
         return type;
     }
     
@@ -312,7 +307,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int pos2 = rt.indexOf('}');
         if (pos1 > 0 && pos2 > 0) {
             String enum_values = rt.substring(pos1 + 1, pos2);
-            for (String frag : enum_values.split(", ")) {
+            for (String frag : enum_values.split(", ")) { // NOI18N
                 if (value.equals(frag)) {
                     return value;
                 }
@@ -365,18 +360,16 @@ public class AbstractVariable implements LocalVariable, Customizer {
      */
     private boolean mightHaveFields() {
         String rt = getTypeInfo().getResolvedType();
-        if (rt != null) {
-            if (GdbUtils.isArray(rt)) {
-                return true;
-            } else if (isValidPointerAddress()) {
-                if (GdbUtils.isFunctionPointer(rt) || (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
-                    return false;
-                } else {
-                    return true;
-                }
-            } else if (value != null && value.charAt(0) == '{') {
+        if (GdbUtils.isArray(rt) && !isCharString(rt)) {
+            return true;
+        } else if (isValidPointerAddress()) {
+            if (GdbUtils.isFunctionPointer(rt) || (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
+                return false;
+            } else {
                 return true;
             }
+        } else if (value != null && value.charAt(0) == '{') {
+            return true;
         }
         return false;
     }
@@ -779,7 +772,6 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int vstart = 0;
         int vend;
         int size;
-//        int count = 0;
         int nextbrace = type.indexOf('[', rbpos);
         String extra;
         
@@ -799,16 +791,44 @@ public class AbstractVariable implements LocalVariable, Customizer {
         } catch (Exception ex) {
             size = 0;
         }
-        for (int i = 0; i < size && vstart != -1; i++) {
-            if (value.charAt(vstart) == '{') {
-                vend = GdbUtils.findNextComma(value, GdbUtils.findMatchingCurly(value, vstart));
-            } else {
-                vend = GdbUtils.findNextComma(value, vstart);
+        if (t.equals("char")) { // NOI18N
+            String nextv;
+            for (int i = 0; i < size && vstart != -1; i++) {
+                nextv = nextValue(value, vstart);
+                addField(new AbstractField(this, name + "[" + i + "]", t, nextv)); // NOI18N
+                vstart += nextv.length();
             }
-            addField(new AbstractField(this, name + "[" + i + "]", t, // NOI18N
-                    vend == -1 ? value.substring(vstart) : value.substring(vstart, vend)));
-            vstart = GdbUtils.firstNonWhite(value, vend + 1);
+        } else {
+            for (int i = 0; i < size && vstart != -1; i++) {
+                if (value.charAt(vstart) == '{') {
+                    vend = GdbUtils.findNextComma(value, GdbUtils.findMatchingCurly(value, vstart));
+                } else {
+                    vend = GdbUtils.findNextComma(value, vstart);
+                }
+                addField(new AbstractField(this, name + "[" + i + "]", t, // NOI18N
+                        vend == -1 ? value.substring(vstart) : value.substring(vstart, vend)));
+                vstart = GdbUtils.firstNonWhite(value, vend + 1);
+            }
         }
+    }
+    
+    private String nextValue(String info, int start) {
+        char ch = info.charAt(start);
+        
+        if (info.charAt(start) == '\\' && info.charAt(start + 1) == '\\') {
+            ch = info.charAt(start + 2);
+            if (ch == 'n' || ch == 't' || ch == 'b' || ch == 'r' || ch == '"' || ch == '\'') {
+                return info.substring(start, start + 3);
+            } else {
+                try {
+                    Integer.parseInt(info.substring(start + 2, start + 5), 8);
+                    return info.substring(start, start + 5);
+                } catch (NumberFormatException nfe) {}
+            }
+        } else {
+            return info.substring(start, start + 1);
+        }
+        throw new IllegalStateException();
     }
     
     /**
@@ -865,7 +885,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         private AbstractVariable parent;
         
         public AbstractField(AbstractVariable parent, String name, String type, String value) {
-            if (name.startsWith("static ")) {
+            if (name.startsWith("static ")) { // NOI18N
                 this.name = name.substring(7);
             } else {
                 this.name = name;
@@ -880,6 +900,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             this.parent = parent;
             fields = new Field[0];
             derefValue = null;
+            tinfo = null;
         
             if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 this.value = GdbUtils.mackHack(value);

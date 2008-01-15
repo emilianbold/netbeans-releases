@@ -54,97 +54,68 @@ import org.openide.util.NbBundle;
 public class TypeInfo {
     
     private GdbDebugger debugger;
-    private String name;
-    private AbstractVariable var;
     private String resolvedType;
+    private String rawInfo;
     private Map<String, Object> map;
     private Map<String, TypeInfo> ticache;
     private static Map<String, Map<String, Object>> mcache = new HashMap<String, Map<String, Object>>();
+    protected static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public static TypeInfo getTypeInfo(GdbDebugger debugger, AbstractVariable var) {
+        String resolvedType;
+        String rawInfo;
         Map<String, TypeInfo> ticache = debugger.getTypeInfoCache();
+        
         TypeInfo tinfo = ticache.get(var.getType());
         if (tinfo != null) {
+            log.fine("TI.getTypeInfo[var]: " + var.getType() + " ==> [" + tinfo.resolvedType + "]"); // NOI18N
             return tinfo;
         }
         
-        String resolvedType;
-        if (GdbUtils.isSimpleType(var.getType())) {
-            resolvedType = var.getType();
-        } else {
-            String name;
             if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
-                name = var.getType();
-            } else if (var.getName().indexOf('.') != -1) {
-                name = stripName(var.getName()); // getFullName() has already been applied...
+            rawInfo = debugger.requestSymbolType(var.getType()).replace("\\n", "").trim();  // NOI18N
             } else {
-                name = stripName(var.getFullName(false));
+            rawInfo = debugger.requestSymbolType(var.getFullName(false)).replace("\\n", "").trim(); // NOI18N
             }
-            resolvedType = debugger.requestSymbolType(name);
+        int pos1 = rawInfo.indexOf('{');
+        if (pos1 == -1) {
+            resolvedType = rawInfo;
+        } else {
+            resolvedType = rawInfo.substring(0, pos1).trim();
+            int pos2 = resolvedType.indexOf(" : "); // NOI18N
+            if (pos2 != -1) {
+                resolvedType = resolvedType.substring(0, pos2);
         }
-        if (resolvedType != null) {
+            pos2 = GdbUtils.findMatchingCurly(rawInfo, pos1);
+            if (pos2 != -1) {
+                resolvedType = resolvedType + rawInfo.substring(pos2 + 1);
+            }
+        }
             tinfo = ticache.get(resolvedType);
             if (tinfo != null) {
+                log.fine("TI.getTypeInfo[rt]: " + var.getType() + " ==> [" + resolvedType + "]"); // NOI18N
                 return tinfo;
             }
-        }
         
-        return new TypeInfo(debugger, var, resolvedType);
+        return new TypeInfo(debugger, var.getType(), resolvedType, rawInfo);
     }
     
-    public TypeInfo(GdbDebugger debugger, AbstractVariable var, String resolvedType) {
+    public TypeInfo(GdbDebugger debugger, String vartype, String resolvedType, String rawInfo) {
         this.debugger = debugger;
-        this.var = var;
         this.resolvedType = resolvedType;
-        ticache = debugger.getTypeInfoCache();
+        this.rawInfo = rawInfo;
         map = null;
+        ticache = debugger.getTypeInfoCache();
+        log.fine("TI.<Init>: " + vartype + " ==> [" + resolvedType + ", " + rawInfo + "]");
         
-        String type = var.getType();
-        if (type != null) {
-            ticache.put(type, this);
-            if (!type.equals(resolvedType)) {
-                ticache.put(resolvedType, this);
-            }
+        if (!vartype.equals(resolvedType)) {
+            ticache.put(resolvedType, this);
         }
+        ticache.put(vartype, this);
     }
     
     public String getResolvedType() {
-        if (resolvedType == null) {
-            if (GdbUtils.isSimpleType(var.getType())) {
-                resolvedType = var.getType();
-            } else {
-                String n;
-                if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
-                    n = var.getType();
-                } else if (var.getName().indexOf('.') != -1) {
-                    n = stripName(var.getName()); // getFullName() has already been applied...
-                } else {
-                    n = stripName(var.getFullName(false));
-                }
-                resolvedType = debugger.requestSymbolType(n);
-            }
-        }
         return resolvedType;
-    }
-    
-    private static String stripName(String name) {
-        boolean modified = true;
-        int pos;
-        
-        while (modified) {
-            char ch = name.charAt(name.length() - 1);
-            if (ch == '*') {
-                name = name.substring(0, name.length());
-                modified = true;
-            } else if (ch == ']') {
-                pos = name.lastIndexOf('[');
-                name = name.substring(0, pos);
-                modified = true;
-            } else {
-                modified = false;
-            }
-        }
-        return name;
     }
     
     public Map<String, Object> getMap() {
@@ -158,48 +129,45 @@ public class TypeInfo {
     }
     
     private Map<String, Object> getCachedMap() {
-        String rt = getResolvedType();
-        if (rt != null) {
-            return mcache.get(rt);
-        } else {
-            return null;
+        Map<String, Object> m = mcache.get(resolvedType);
+        if (m != null) {
+            log.fine("TI.getCachedMap: Got Map for " + resolvedType); // NOI18N
         }
-    }
+        return m;
+        }
     
     private Map<String, Object> createMap() {
         Map<String, Object> m = createFieldMap();
-        mcache.put(getResolvedType(), m);
+        mcache.put(resolvedType, m);
         return m;
     }
     
     private Map<String, Object> createFieldMap() {
         Map<String, Object> m = new HashMap<String, Object>();
-        String rt = getResolvedType();
         int pos0;
-        int pos1 = rt.indexOf('{');
-        int pos2 = GdbUtils.findMatchingCurly(rt, pos1);
+        int pos1 = rawInfo.indexOf('{');
+        int pos2 = GdbUtils.findMatchingCurly(rawInfo, pos1);
         String fields = null;
         String n;
-        n = name;
         
         if (pos1 != -1) {
-            if ((pos0 = getSuperclassColon(rt.substring(0, pos1))) != -1) {
-                m = addSuperclassEntries(m, rt.substring(pos0 + 1, pos1));
+            if ((pos0 = getSuperclassColon(rawInfo.substring(0, pos1))) != -1) {
+                m = addSuperclassEntries(m, rawInfo.substring(pos0 + 1, pos1));
             }
             if (pos0 == -1) {
-                n = rt.substring(0, pos1).trim();
+                n = rawInfo.substring(0, pos1).trim();
             } else {
-                n = rt.substring(0, pos0).trim();
+                n = rawInfo.substring(0, pos0).trim();
             }
             m.put("<name>", n.startsWith("class ") ? n.substring(5).trim() : n); // NOI18N
         }
-        
+        String rt = rawInfo;
         if (pos1 == -1 && pos2 == -1) {
-            if (GdbUtils.isPointer(rt)) {
+            if (GdbUtils.isPointer(rawInfo)) {
                 rt = rt.replace('*', ' ').trim();
             }
         } else if (pos1 != -1 && pos2 != -1 && pos2 > (pos1 + 1)) {
-            fields = rt.substring(pos1 + 1, pos2 - 2);
+            fields = rt.substring(pos1 + 1, pos2);
         }
         if (fields != null) {
             m = parseFields(m, fields);
@@ -305,21 +273,6 @@ public class TypeInfo {
         return m;
     }
     
-//    private List getEnumList(String info) {
-//        List<String> list = new ArrayList<String>();
-//        int pos1 = info.indexOf('{');
-//        int pos2 = info.indexOf('}');
-//        if (pos1 != -1 && pos2 != -1) {
-//            StringTokenizer tok = new StringTokenizer(info.substring(pos1+ 1, pos2), ","); // NOI18N
-//            while (tok.hasMoreTokens()) {
-//                list.add(tok.nextToken().trim());
-//            }
-//            return list;
-//        } else {
-//            return null;
-//        }
-//    }
-    
     private String shortenType(String type) {
         if (type.startsWith("class {")) { // NOI18N
             return "class {...}"; // NOI18N
@@ -351,40 +304,4 @@ public class TypeInfo {
         }
         return false;
     }
-    
-//    private void checkForUnknownTypes(Map m) {
-//        Iterator iter = m.entrySet().iterator();
-//        while (iter.hasNext()) {
-//            Map.Entry entry = (Map.Entry) iter.next();
-//            Object o = entry.getValue();
-//            if (o instanceof String) {
-//                String type = o.toString();
-//                if (!GdbUtils.isSimpleType(type) && !type.equals("<No data fields>") && !isUnnamedType(type)) { // NOI18N
-////                    addTypeCompletion(o.toString());
-//                }
-//            } else if (o instanceof Map) {
-//                checkForUnknownTypes((Map) o);
-//            }
-//        }
-//    }
-//    
-//    private boolean isUnnamedType(String type) {
-//        int pos = type.indexOf('{');
-//        if (pos != -1) {
-//            String tmp = null;
-//            if (type.startsWith("class ")) { // NOI18N
-//                tmp = type.substring(5, pos + 1).trim();
-//            } else if (type.startsWith("struct ")) { // NOI18N
-//                tmp = type.substring(6, pos + 1).trim();
-//            } else if (type.startsWith("union ")) { // NOI18N
-//                tmp = type.substring(5, pos + 1).trim();
-//            } else {
-//                log.warning("Unexpected type information [" + type + "]");
-//                tmp = "  "; // NOI18N - this makes this method return false...
-//            }
-//            return tmp.length() == 1;
-//        } else {
-//            return false;
-//        }
-//    }
 }

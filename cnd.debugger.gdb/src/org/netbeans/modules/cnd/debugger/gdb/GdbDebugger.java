@@ -1455,7 +1455,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (info.length() == 0) {
                 return type;
             } else {
-                String tmp = info.substring(7, info.length() - 2);
                 return info.substring(7, info.length() - 2);
             }
         } else {

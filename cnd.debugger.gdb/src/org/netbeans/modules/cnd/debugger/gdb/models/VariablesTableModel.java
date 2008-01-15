@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
+import java.util.logging.Logger;
 import javax.swing.JToolTip;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -67,6 +68,7 @@ public class VariablesTableModel implements TableModel, Constants {
     
     private GdbDebugger      debugger;
     private ContextProvider  lookupProvider;
+    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public VariablesTableModel(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -115,10 +117,25 @@ public class VariablesTableModel implements TableModel, Constants {
                     columnID.equals(WATCH_TYPE_COLUMN_ID)) {
                 return true;
             } else if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-                if (GdbUtils.isPointer(var.getType())) {
+                String t = var.getType();
+                int count = 20;
+                
+                // this can get called while var is waiting for its type to be returned
+                while (t == null && count-- > 0) {
+                    try {
+                        Thread.sleep(100);
+                        t = var.getType();
+                    } catch (InterruptedException ex) {
+                        return true;
+                    }
+                }
+                if (t == null) {
+                    log.fine("VTM.isReadOnly: Timeout getting type of variable");
+                    return false; // timed out getting type
+                }
+                if (GdbUtils.isPointer(t)) {
                     return false;
-                } else if (var.getType().length() == 0 && var.getValue().equals("...")) { // NOI18N
-                    // a truncated array...
+                } else if (t.length() == 0 && var.getValue() != null && var.getValue().equals("...")) { // NOI18N
                     return true;
                 } else {
                     return var.getFieldsCount() != 0;

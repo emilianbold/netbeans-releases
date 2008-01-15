@@ -72,10 +72,12 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     /** Creates a new instance of GdbWatchVariable */
     public GdbWatchVariable(WatchesTreeModel model, Watch watch) {
-        super(watch.getExpression());
+//        super(watch.getExpression());
         this.model = model;
         this.watch = watch;
-        value = getDebugger().requestValue(watch.getExpression());
+        name = watch.getExpression();
+        value = null;
+//        value = getDebugger().requestValue(watch.getExpression());
         
         if (getDebugger() != null) {
             getDebugger().addPropertyChangeListener(this);
@@ -116,11 +118,19 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
      */
     @Override
     public String getName() {
-        if (watch != null) {
+//        if (watch != null) {
             return watch.getExpression();
-        } else {
-            return super.getName(); // this happens during initialization when name is s
+//        } else {
+//            return super.getName(); // this happens during initialization when name is s
+//        }
         }
+    
+    @Override
+    public String getType() {
+        if (type == null) {
+            type = getDebugger().requestSymbolType(watch.getExpression());
+    }
+        return type;
     }
     
     @Override
@@ -133,12 +143,12 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     @Override
     public void setValue(String value) {
-        if (value == null) {
-            this.value = "";
-        } else {
+//        if (value == null) {
+//            this.value = "";
+//        } else {
             this.value = value;
+//        }
         }
-    }
     
     public void setValueAt(String value) {
         super.setValue(value);
