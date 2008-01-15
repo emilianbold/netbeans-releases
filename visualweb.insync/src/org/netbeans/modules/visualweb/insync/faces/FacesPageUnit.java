@@ -95,7 +95,6 @@ import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
 import org.w3c.dom.Text;
-import org.w3c.dom.UserDataHandler;
 
 /**
  * An extended FacesUnit that adds in the ability to have a JSF bean being designed have source in
@@ -1461,7 +1460,9 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
 
     
 //    private static final Map element2region = new WeakHashMap(200);
-    private static final String KEY_MARKUP_MOUSE_REGION = "vwpMarkupMouseRegion"; // NOI18N
+//    private static final String KEY_MARKUP_MOUSE_REGION = "vwpMarkupMouseRegion"; // NOI18N
+    
+    private static final Map<Element, MarkupMouseRegion> element2region = new WeakHashMap<Element, MarkupMouseRegion>(200);
     
     public static void setMarkupMouseRegionForElement(Element element, MarkupMouseRegion region) {
 //        synchronized (element2region) {
@@ -1470,7 +1471,8 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
         if (element == null) {
             return;
         }
-        element.setUserData(KEY_MARKUP_MOUSE_REGION, region, MarkupMouseRegionDataHandler.getDefault());
+//        element.setUserData(KEY_MARKUP_MOUSE_REGION, region, MarkupMouseRegionDataHandler.getDefault());
+        element2region.put(element, region);
     }
     
     public static MarkupMouseRegion getMarkupMouseRegionForElement(Element element) {
@@ -1480,20 +1482,21 @@ public class FacesPageUnit extends FacesUnit implements PropertyChangeListener {
         if (element == null) {
             return null;
         }
-        return (MarkupMouseRegion)element.getUserData(KEY_MARKUP_MOUSE_REGION);
+//        return (MarkupMouseRegion)element.getUserData(KEY_MARKUP_MOUSE_REGION);
+        return element2region.get(element);
     }
     
     
-    private static class MarkupMouseRegionDataHandler implements UserDataHandler {
-        private static final MarkupMouseRegionDataHandler INSTANCE = new MarkupMouseRegionDataHandler();
-        
-        public static MarkupMouseRegionDataHandler getDefault() {
-            return INSTANCE;
-        }
-        
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-        }
-    } // End of MarkupMouseRegionDataHandler.
+//    private static class MarkupMouseRegionDataHandler implements UserDataHandler {
+//        private static final MarkupMouseRegionDataHandler INSTANCE = new MarkupMouseRegionDataHandler();
+//        
+//        public static MarkupMouseRegionDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//        }
+//    } // End of MarkupMouseRegionDataHandler.
     
     
     /**
