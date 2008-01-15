@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
+import org.openide.util.HelpCtx;
 
 public class ProfileNodeProvider {
 
@@ -70,6 +71,11 @@ public class ProfileNodeProvider {
 	    GdbProfile profile = (GdbProfile) configuration.getAuxObject(GdbProfile.GDB_PROFILE_ID);
 	    return profile == null ? null : profile.getSheet();
 	}
+        
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx("ProjectPropsDebugging"); // NOI18N
+        }
     }
 
     /** Look up i18n strings here */
