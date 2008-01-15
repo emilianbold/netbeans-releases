@@ -350,7 +350,7 @@ IdentifierExpression = ClassStaticPrimaryExpression | Variable;
 # In this case node Arguments is absent. So I put here Arguments node as 
 # possible . But it required in any case except two described above cases.
 #
-NewExpression = [ "&" ] "new" <php_identifier> [ Arguments ] ;
+NewExpression = "new" <php_identifier> [ Arguments ] ;
 Arguments = "(" [ Expression ( "," Expression )* ] ")";
 PrimaryExpression = ConstantExpression  | "(" Expression ")";
 # Class function call could  be written via variable ( variable should has 
@@ -359,6 +359,7 @@ MemberExpression = <php_identifier> | <php_variable> | ( "{" Expression "}" );
 ConstantExpression = <php_number> | <php_string> | "null" | "true" | "false" | "<<<" <php_eod_string>;
 ClassStaticPrimaryExpression = <php_magic_constants> | 
 	( <php_identifier> [ "::" ( <php_identifier> | Variable )]);
+# NB : in the PHP 5.3 it is possible to have constant in form $clazz::CONST.
 
 FunctionDefinition = FunctionDeclaration Block;
 FunctionDeclaration = "function" [ "&" ] FunctionName "(" FormalParameterList ")";
