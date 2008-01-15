@@ -60,6 +60,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import org.openide.util.Parameters;
 
 // XXX: consider adding getInitialComment() and setInitialComment() methods
 // (useful e.g. for GeneratedFilesHelper)
@@ -234,8 +235,9 @@ public final class EditableProperties extends AbstractMap<String,String> impleme
 
     @Override
     public String put(String key, String value) {
-        if (key == null || value == null) {
-            throw new NullPointerException();
+        Parameters.notNull("key", key); //NOI18N
+        if (value == null) {
+            throw new NullPointerException("The value for key [" + key + "] must not be null"); //NOI18N
         }
         Item item = itemIndex.get(key);
         String result = null;
