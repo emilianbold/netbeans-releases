@@ -169,18 +169,12 @@ public class PushAction extends AbstractAction {
             }
             if (!list.isEmpty() &&
                     HgCommand.isErrorAbortPush(list.get(list.size() - 1))) {
-                boolean bConfirmForcedPush = HgUtils.confirmDialog(PushAction.class,
-                        "MSG_PUSH_FORCE_CONFIRM_TITLE", "MSG_PUSH_FORCE_CONFIRM_QUERY"); // NOI18N 
-
-                if (bConfirmForcedPush) {
-                    HgUtils.outputMercurialTabInRed(
-                            NbBundle.getMessage(PushAction.class,
-                            "MSG_PUSH_FORCE_DO")); // NOI18N
-                    list = HgCommand.doPush(root, pushPath, true);
-                } else {
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_FORCE_CANCELED")); // NOI18N
-                    return;
-                }
+                HgUtils.outputMercurialTab(list);
+                HgUtils.outputMercurialTab("");
+                HgUtils.warningDialog(PushAction.class,
+                        "MSG_PUSH_ERROR_TITLE", "MSG_PUSH_ERROR_QUERY"); // NOI18N 
+                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_ERROR_CANCELED")); // NOI18N
+                return;
             }
 
             if (list != null && !list.isEmpty()) {
