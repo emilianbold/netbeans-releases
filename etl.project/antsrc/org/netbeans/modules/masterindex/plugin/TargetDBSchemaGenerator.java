@@ -46,7 +46,6 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.masterindex.plugin;
 
 import org.netbeans.modules.masterindex.plugin.datamodel.ObjectDefinitionBuilder;
@@ -74,170 +73,171 @@ import org.axiondb.io.BufferedDataInputStream;
  * @author Manish
  */
 public class TargetDBSchemaGenerator {
-    
+
     private static TargetDBSchemaGenerator targetdbSchemaGenerator = null;
     private Lookup lookup = null;
     private static ObjectDefinition objDef = null;
     private Connection conn = null;
     //eview data model type vs. db data type
     private String[][] datatypes = {
-                                     {"string" , "VARCHAR"},
-                                     {"int"    , "INTEGER"},
-                                     {"char"   , "CHAR"},
-                                     {"boolean", "BOOLEAN"},
-                                     {"date"   , "DATE"},
-                                     {"blob"   , "BLOB"},
-                                   };
+            {"string", "VARCHAR"},
+            {"int", "INTEGER"},
+            {"char", "CHAR"},
+            {"boolean", "BOOLEAN"},
+            {"date", "DATE"},
+            {"blob", "BLOB"},
+            {"float", "FLOAT"}};
     /**
      * logger
      */
     private static Logger logger = Logger.getLogger(TargetDBSchemaGenerator.class.getName());
-    
+
     private TargetDBSchemaGenerator() {
     }
-    
-    public static TargetDBSchemaGenerator getTargetDBSchemaGenerator(){
-        if (targetdbSchemaGenerator == null){
+
+    public static TargetDBSchemaGenerator getTargetDBSchemaGenerator() {
+        if (targetdbSchemaGenerator == null) {
             targetdbSchemaGenerator = new TargetDBSchemaGenerator();
         }
         return targetdbSchemaGenerator;
     }
-    
-    
-    public void createTargetDB(String dbname){
-        //
+
+    public void createTargetDB(String dbname) {
+    //
     }
-    
-    public void createTargetDB(String dbdir, String dbname){
+
+    public void createTargetDB(String dbdir, String dbname) {
         //Check if dbdir is valid
-        if (validateDir(dbdir)){
+        if (validateDir(dbdir)) {
             // Init DB
             initDB(dbdir, dbname);
             // Create List of Tables to be created 
             //[Note - As FKs reference keys in Primary Table, Parent needs to be created first, build a ordered list]
             ArrayList tablelist = buildTableList();
-            for (int i=0; i < tablelist.size(); i++){
+            for (int i = 0; i < tablelist.size(); i++) {
                 createTable(normalizeTableName(tablelist.get(i).toString()), tablelist.get(i).toString());
             }
         }
     }
-    
-    private void createTable(String NormtableName, String ModelTableName){
+
+    private void createTable(String NormtableName, String ModelTableName) {
         try {
-            logger.log(Level.INFO,"Creating Table [ " + NormtableName + " ]");
+            logger.log(Level.INFO, "Creating Table [ " + NormtableName + " ]");
             Statement stmt = conn.createStatement();
             stmt.execute(createSQL(NormtableName, ModelTableName));
         } catch (SQLException ex) {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
         }
     }
-    
-    private String createSQL(String normtablename, String modeltablename){
-        String query =  "CREATE EXTERNAL TABLE IF NOT EXISTS " + normtablename + " ( " + createSQLTableColumns(modeltablename) + " ) " + createOrganizationString(normtablename);
-        logger.log(Level.INFO,"SQL Executed : " + query);
+
+    private String createSQL(String normtablename, String modeltablename) {
+        String query = "CREATE EXTERNAL TABLE IF NOT EXISTS " + normtablename + " ( " + createSQLTableColumns(modeltablename) + " ) " + createOrganizationString(normtablename);
+        logger.log(Level.INFO, "SQL Executed : " + query);
         return query;
     }
-    
-    private String createSQLTableColumns(String modeltablename){
+
+    private String createSQLTableColumns(String modeltablename) {
         StringBuilder columns = new StringBuilder();
-        HashMap colmap = (HashMap)lookup.getLookupMap().get(modeltablename);
+        HashMap colmap = (HashMap) lookup.getLookupMap().get(modeltablename);
         Iterator iterator = colmap.keySet().iterator();
         String nonQualifiedTableName = modeltablename.substring(modeltablename.lastIndexOf(".") + 1);
         ArrayList<Field> fieldsForTable = lookup.getFields(nonQualifiedTableName);
-        
-        while(iterator.hasNext()){
+
+        while (iterator.hasNext()) {
             String columnname = iterator.next().toString();
-            columns.append(columnname + " " + getFieldDataType(fieldsForTable, columnname) + "(" + getFieldSize(fieldsForTable, columnname) + "), ");
+            String fdatatype = getFieldDataType(fieldsForTable, columnname);
+            if (fdatatype.equals("VARCHAR")) {
+                columns.append(columnname + " " + getFieldDataType(fieldsForTable, columnname) + "(" + getFieldSize(fieldsForTable, columnname) + "), ");
+            } else {
+                columns.append(columnname + " " + getFieldDataType(fieldsForTable, columnname) + ", ");
+            }
         }
-        
+
         // Add QueryManager Default Columns into the database if already not modelled (<TableName + Id>)
         String defaultCol = modeltablename.substring(modeltablename.lastIndexOf(".") + 1) + "Id";
-        if (!colmap.containsKey(defaultCol)){
+        if (!colmap.containsKey(defaultCol)) {
             columns.append(defaultCol + " " + getDataTypeMapping(PluginDTConstants.datatype) + "(" + PluginDTConstants.datasize + "), ");
         }
-        
+
         columns.append(createPrimaryKeyConstraint(defaultCol));
-        
+
         columns.append(createForeignKeyConstraint(modeltablename));
-        
+
         return columns.toString();
     }
-    
-    
-    private String createPrimaryKeyConstraint(String defaultcol){
+
+    private String createPrimaryKeyConstraint(String defaultcol) {
         String PK_Constraint = "CONSTRAINT pk_" + defaultcol.toLowerCase() + " PRIMARY KEY (" + defaultcol + ")";
         return PK_Constraint;
     }
-    
-    private String createForeignKeyConstraint(String modeltablename){
+
+    private String createForeignKeyConstraint(String modeltablename) {
         String tablename = modeltablename.substring(modeltablename.lastIndexOf(".") + 1);
-        if (!tablename.equals(lookup.getRootName())){
-            return ", CONSTRAINT fk_" + lookup.getRootName().toLowerCase() + "id" +  tablename.toLowerCase() + " FOREIGN KEY (" + lookup.getRootName() + "Id"  + ") REFERENCES " + normalizeTableName(lookup.getRootName())  + "(" + lookup.getRootName() + "Id" + ")";
+        if (!tablename.equals(lookup.getRootName())) {
+            return ", CONSTRAINT fk_" + lookup.getRootName().toLowerCase() + "id" + tablename.toLowerCase() + " FOREIGN KEY (" + lookup.getRootName() + "Id" + ") REFERENCES " + normalizeTableName(lookup.getRootName()) + "(" + lookup.getRootName() + "Id" + ")";
         }
         return "";
     }
-    
-    private String createOrganizationString(String normtablename){
+
+    private String createOrganizationString(String normtablename) {
         String orgstr = "organization(LOADTYPE='delimited' filename='" + normtablename + ".csv" + "' FIELDDELIMITER='|')";
-        return orgstr;  
+        return orgstr;
     }
-    
+
     /**
      * Sets eViewConfig File Object (objectmap.xml conventionally)
      * @param configpath
      * @param configfilename
      * @return boolean
      */
-    public boolean setEViewConfigFilePath(String configpath, String configfilename){
-        if(validateDir(configpath)){
-            if(validateFile(configpath, configfilename)){
+    public boolean setEViewConfigFilePath(String configpath, String configfilename) {
+        if (validateDir(configpath)) {
+            if (validateFile(configpath, configfilename)) {
                 return true;
-            } else{
+            } else {
                 logger.severe("Invalid Config File : " + configfilename);
             }
-        } else{
+        } else {
             logger.severe("Invalid Directory : " + configpath);
         }
         return false;
     }
-    
-    
-    private boolean validateDir(String dirpath){
+
+    private boolean validateDir(String dirpath) {
         File dbdir = new File(dirpath);
-        if (dbdir.exists()){
-            if (dbdir.isDirectory()){
+        if (dbdir.exists()) {
+            if (dbdir.isDirectory()) {
                 return true;
-            } else{
+            } else {
                 logger.severe("Directory is not a valid dir : " + dirpath);
             }
-        } else{
+        } else {
             logger.severe("Directory does not exist : " + dirpath);
         }
         return false;
     }
-    
-    
-    private boolean validateFile(String filepath, String filename){
+
+    private boolean validateFile(String filepath, String filename) {
         boolean ret = false;
         File dbfile = new File(filepath + PluginDTConstants.fs + filename);
-        if (dbfile.exists()){
-            if (dbfile.isFile()){
-                setEviewConfigFile(new File(filepath + PluginDTConstants.fs  + filename));
+        if (dbfile.exists()) {
+            if (dbfile.isFile()) {
+                setEviewConfigFile(new File(filepath + PluginDTConstants.fs + filename));
                 createObjectDefModel();
                 ret = true;
-            } else{
+            } else {
                 logger.severe("File does not exist : " + filename);
             }
-        } else{
+        } else {
             logger.severe("File [ " + filename + " ] does not exist in dir : " + filepath);
         }
         return ret;
     }
-    
-    private void initDB(String dbdir, String dbname){
+
+    private void initDB(String dbdir, String dbname) {
         try {
             Class.forName(PluginDTConstants.DB_DRIVER);
-            String uri = PluginDTConstants.URI_PRIFIX + PluginDTConstants.PS + dbname + PluginDTConstants.PS  + dbdir;
+            String uri = PluginDTConstants.URI_PRIFIX + PluginDTConstants.PS + dbname + PluginDTConstants.PS + dbdir;
             conn = DriverManager.getConnection(uri);
         } catch (SQLException ex) {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
@@ -245,26 +245,25 @@ public class TargetDBSchemaGenerator {
             Logger.getLogger("global").log(Level.SEVERE, null, ex);
         }
     }
-    
-    private static void setEviewConfigFile(File filename){
+
+    private static void setEviewConfigFile(File filename) {
         PluginDTConstants.EVIEW_CONFIG_FILE = filename;
     }
-    
-    public File getEviewConfigFile(){
+
+    public File getEviewConfigFile() {
         return PluginDTConstants.EVIEW_CONFIG_FILE;
     }
-    
+
     /*
     public Lookup getLookup(){
-        return this.lookup;
+    return this.lookup;
     }
      */
-    
-    private void createObjectDefModel(){
+    private void createObjectDefModel() {
         AxionFileSystem afs = new AxionFileSystem();
         File configfile = PluginDTConstants.EVIEW_CONFIG_FILE;
-        if (configfile != null){
-            if (configfile.exists()){
+        if (configfile != null) {
+            if (configfile.exists()) {
                 BufferedDataInputStream bdis = null;
                 try {
                     bdis = afs.openBufferedDIS(configfile);
@@ -280,76 +279,75 @@ public class TargetDBSchemaGenerator {
                         logger.severe("Error Closing Axion BufferedDataInputStream : " + ex.getMessage());
                     }
                 }
-            } else{
+            } else {
                 logger.severe("Unable to find file : " + PluginDTConstants.EVIEW_CONFIG_FILE.getAbsolutePath());
             }
-        }else{
+        } else {
             logger.severe("EView Config File is not available. Set the file using DataSourceReaderFactory.setEViewConfigFilePath()");
-            
+
         }
     }
-    
-    private static void addExtraFieldsToParent(ObjectDefinition objDef){
+
+    private static void addExtraFieldsToParent(ObjectDefinition objDef) {
         String[] sysfields = DefaultSystemFields.getDefaultSystemFields();
-        for (int i=0; i < sysfields.length; i++){
+        for (int i = 0; i < sysfields.length; i++) {
             objDef.addField(i, createExtraFieldObj(sysfields[i]));
         }
     }
-    
-    private static Field createExtraFieldObj(String name){
+
+    private static Field createExtraFieldObj(String name) {
         Field newfield = new Field();
         newfield.setName(name);
         newfield.setType("string"); //Change Later
         newfield.setSize(32); //Change Later
         return newfield;
     }
-    
-    private ArrayList buildTableList(){
+
+    private ArrayList buildTableList() {
         ArrayList tlist = new ArrayList();
         tlist.add(lookup.getRootName());
         Iterator iterator = lookup.getLookupMap().keySet().iterator();
-        while (iterator.hasNext()){
-            String key = (String)iterator.next();
-            if ((key).indexOf(".") != -1){
+        while (iterator.hasNext()) {
+            String key = (String) iterator.next();
+            if ((key).indexOf(".") != -1) {
                 tlist.add(key);
             }
         }
         return tlist;
-    }    
-    
-    private String normalizeTableName(String tableNameModel){
+    }
+
+    private String normalizeTableName(String tableNameModel) {
         String tablename = tableNameModel.substring(tableNameModel.lastIndexOf(".") + 1);
         return PluginDTConstants.QueryManagerTablePrefix + tablename.toUpperCase();
     }
-    
-    private String getFieldDataType(ArrayList fields, String colname){
-        for (int i=0; i < fields.size(); i++){
-            if (((Field)fields.get(i)).getName().equals(colname)){
-                return getDataTypeMapping(((Field)fields.get(i)).getType());
+
+    private String getFieldDataType(ArrayList fields, String colname) {
+        for (int i = 0; i < fields.size(); i++) {
+            if (((Field) fields.get(i)).getName().equals(colname)) {
+                return getDataTypeMapping(((Field) fields.get(i)).getType());
             }
         }
         return null;
     }
-    
-    private int getFieldSize(ArrayList fields, String colname){
-        for (int i=0; i < fields.size(); i++){
-            if (((Field)fields.get(i)).getName().equals(colname)){
-                return ((Field)fields.get(i)).getSize();
+
+    private int getFieldSize(ArrayList fields, String colname) {
+        for (int i = 0; i < fields.size(); i++) {
+            if (((Field) fields.get(i)).getName().equals(colname)) {
+                return ((Field) fields.get(i)).getSize();
             }
         }
-        return -1;        
-    }    
-    
+        return -1;
+    }
+
     /**
      * This method Maps datatypes defined in eview data model with Relational DB datatypes
      */
-    private String getDataTypeMapping(String datatypeModel){
-       for (int i=0; i < datatypes.length; i++){
-           if (datatypes[i][0].equals(datatypeModel)){
-               return datatypes[i][1];
-           }
-       }
-       return "NULL";
+    private String getDataTypeMapping(String datatypeModel) {
+        for (int i = 0; i < datatypes.length; i++) {
+            if (datatypes[i][0].equals(datatypeModel)) {
+                return datatypes[i][1];
+            }
+        }
+        return "NULL";
     }
-    
 }
