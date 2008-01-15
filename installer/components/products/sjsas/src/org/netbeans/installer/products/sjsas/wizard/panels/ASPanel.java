@@ -659,9 +659,9 @@ public class ASPanel extends DestinationPanel {
                     }
                 }
             } catch (IOException e) {
-                ErrorManager.notifyDebug("Faield to get the port value.", e);
+                ErrorManager.notifyDebug("Failed to get the port value.", e);
             } catch (XMLException e) {
-                ErrorManager.notifyDebug("Faield to get the port value.", e);
+                ErrorManager.notifyDebug("Failed to get the port value.", e);
             }
             
             return null;
