@@ -687,7 +687,11 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         /**
          */
         public TextEditorSupport findTextEditorSupport() {
-            return (TextEditorSupport) getDataObject().getCookie(EditCookie.class);
+            EditCookie cookie = getDataObject().getCookie(EditCookie.class);
+            if(cookie instanceof TextEditorSupport)
+                return (TextEditorSupport)cookie;
+            
+            return null;
         }
         
         // copy pasted, do not get it
