@@ -31,6 +31,10 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 
 import org.netbeans.modules.bpel.design.decoration.components.AbstractGlassPaneButton;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.SystemAction;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -39,18 +43,20 @@ import org.netbeans.modules.bpel.design.decoration.components.AbstractGlassPaneB
 public final class LoggingButton extends AbstractGlassPaneButton {
 
   public LoggingButton(final ExtensibleElements element) {
-    super(ICON, "", true, new ActionListener() {
-      public void actionPerformed(ActionEvent event) {
-//        String content = event.getSource().toString().trim();
-//        try {
-//          element.setDocumentation(content);
-//        }
-//        catch (VetoException e) {
-//          e.printStackTrace();
-//        }
-      }
-    });
+      super(ICON);
+//    super(ICON, "", true, new ActionListener() {
+//      public void actionPerformed(ActionEvent event) {
+////        String content = event.getSource().toString().trim();
+////        try {
+////          element.setDocumentation(content);
+////        }
+////        catch (VetoException e) {
+////          e.printStackTrace();
+////        }
+//      }
+//    });
     myElement = element;
+    setAction(SystemAction.get(GoToLoggingAction.class));
     addTitle(ICON, TITLE, Color.BLUE);
     ToolTipManager.sharedInstance().registerComponent(this);
   }
@@ -59,21 +65,17 @@ public final class LoggingButton extends AbstractGlassPaneButton {
   public String getToolTipText() {
     String text = null;
     List<Trace> traceElements = myElement.getChildren(Trace.class);
-    if (traceElements != null && traceElements.size() == 1) {
-        Trace trace = traceElements.get(0);
-        text = "There is trace element here";
-    }
-
-    if (text != null) {
-        return "<html><body>" + text + "</body></html>"; // NOI18N
-    } else {
-        return null;
-    }
-    
+    return traceElements != null && traceElements.size() == 1 
+            ? NbBundle.getMessage(LoggingButton.class, "LBL_LoggingButtonTooltip") : null;
   }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // do nothing
+    }
 
   private ExtensibleElements myElement;
 
-  private static final String TITLE = "Logging and Alerting"; // todo bundle
+  private static final String TITLE = NbBundle.getMessage(LoggingButton.class, "LBL_LoggingButtonTitle"); // NOI18N
   private static final Icon ICON = new ImageIcon(LoggingButton.class.getResource("resources/logging.png"));
 }
