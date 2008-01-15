@@ -331,7 +331,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     private void openIrbConsole(Lookup context) {
         // FIXME: project or platfrom sensitive
         RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-        platform.getGemManager().findGemExecutable("irb"); // NOI18N
+        platform.findExecutable("irb"); // NOI18N
         
         String displayName = "IRB"; //NbBundle.getMessage(RailsActionProvider.class, "RailsConsole");
         File pwd = FileUtil.toFile(project.getProjectDirectory());
