@@ -1,2 +1,2 @@
 FAILED INCLUDE: from include_macro_expanding.cc for:
-	TOKEN{["#include ",<11>,line=11,col=1],offset=222,file=null} INCLUDE{ <M> ["_MULTIARCH_MAKE_HEADER",<199>,line=11,col=10],offset=231,file=null ["(",<132>,line=11,col=32],offset=253,file=null ["i386",<199>,line=11,col=33],offset=254,file=null [",",<128>,line=11,col=37],offset=258,file=null ["_MULTIARCH_HEADER",<199>,line=11,col=38],offset=259,file=null [")",<133>,line=11,col=55],offset=276,file=null}
+	TOKEN{["#include ",<11>,line=11,col=1],offset=222,file=null} INCLUDE{ <M> _MULTIARCH_MAKE_HEADER(i386,_MULTIARCH_HEADER)}
