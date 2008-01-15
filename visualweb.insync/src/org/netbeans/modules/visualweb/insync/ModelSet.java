@@ -51,14 +51,18 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.JarFile;
 
 import javax.swing.SwingUtilities;
 
@@ -69,6 +73,9 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.netbeans.modules.visualweb.project.jsf.api.JsfProjectUtils;
@@ -397,6 +404,14 @@ public abstract class ModelSet implements FileChangeListener {
         return project;
     }
 
+    private static String[] volumeTypes = new String[] {
+        "classpath",
+        "visual-web-designtime",        
+    };
+    
+    private static final String WEBSERVICE_CLIENTS_SUB_DIR = "webservice_clients"; // NOI18N
+    private static final String EJB_DATA_SUB_DIR = "ejb-sources"; // NOI18N
+    
     /**
      * Get the per-project class loader for this ModelSet. The class loader may change as project
      * settings and libraries are changed by the user.
@@ -405,53 +420,37 @@ public abstract class ModelSet implements FileChangeListener {
      */
     public URLClassLoader getProjectClassLoader() {
         if (classLoader == null) {
-            List urls1List = new ArrayList();
+            Set urls1Set = new LinkedHashSet();
 
-			// Add design time jars from COMPLIBS
+			// Add design time and run time jars from COMPLIBS
             LibraryManager libraryManager = LibraryManager.getDefault();
+            Library jaxrpc16Library = null;         
             Library[] libraries = libraryManager.getLibraries();
-            
             for (int i = 0; i < libraries.length; i++) {
                 Library library = libraries[i];
+                
+                if (library.getType().equals("j2se")) {
+                    if (library.getName().equals("jaxrpc16")) {
+                        // cache
+                        jaxrpc16Library = library;
+                        continue;
+                    }
+                }
+            
                 if (JsfProjectUtils.hasLibraryReference(project, library, ClassPath.COMPILE)) {
                     // TODO The following hardcoded constants are defined in
                     // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLibraryTypeProvider
+                    // org.netbeans.modules.visualweb.project.jsf.libraries.provider.ThemeLibraryTypeProvider
                     // However this class is not part of a public package.
-                    if (library.getType().equals("complib")) { // NOI18N
-                        List urls = library.getContent("visual-web-designtime");
-                        List normalizedUrls = new ArrayList();
-                        
-                        for (Iterator it = urls.iterator(); it.hasNext();) {
-                            URL url = (URL) it.next();
-                            FileObject fileObject = URLMapper.findFileObject (url);
-                            
-                            //file inside library is broken
-                            if (fileObject == null)
+                    if (library.getType().equals("complib") || 
+                            library.getType().equals("theme")) { // NOI18N
+                        for (String volumeType : volumeTypes) {
+                            if (library.getType().equals("theme") && // NOI18N
+                                    (!volumeType.equals("classpath"))) { // NOI18N
                                 continue;
-                            
-                            if ("jar".equals(url.getProtocol())) {  //NOI18N
-                                fileObject = FileUtil.getArchiveFile (fileObject);
                             }
-                            File f = FileUtil.toFile(fileObject);                            
-                            if (f != null) {
-                                try {
-                                    URL entry = f.toURI().toURL();
-                                    if (FileUtil.isArchiveFile(entry)) {
-                                        entry = FileUtil.getArchiveRoot(entry);
-                                    } else if (!f.exists()) {
-                                        // if file does not exist (e.g. build/classes folder
-                                        // was not created yet) then corresponding File will
-                                        // not be ended with slash. Fix that.
-                                        assert !entry.toExternalForm().endsWith("/") : f; // NOI18N
-                                        entry = new URL(entry.toExternalForm() + "/"); // NOI18N
-                                    }
-                                    normalizedUrls.add(entry);
-                                } catch (MalformedURLException mue) {
-                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue);
-                                }
-                            }
+                            addEntriesInLibraryVolume(library, volumeType, urls1Set);                            
                         }
-                        urls1List.addAll(normalizedUrls); // NOI18N
                     }
                 }
             }
@@ -459,35 +458,168 @@ public abstract class ModelSet implements FileChangeListener {
             // !EAT TODO: Is this really the correct way to build the class loader ???
             FileObject pageBeanRoot = JsfProjectUtils.getPageBeanRoot(project);
             classPath = ClassPath.getClassPath(pageBeanRoot, ClassPath.COMPILE);
-            FileObject docRoot = JsfProjectUtils.getDocumentRoot(project);
-            URLClassLoader projectClassLoader = (URLClassLoader) classPath.getClassLoader(true);
-            URL urls[] = projectClassLoader.getURLs();
             
-            urls1List.addAll(Arrays.asList(urls));
+            // Now scan and add all the files under
+            // <project-lib-dir>/webservice_clients
+            // <project-lib-dir>/ejb-sources            
+            boolean hasWebservicesClients = false;
+            boolean hasEjbClients = false;
+            FileObject projectLibDir;
+            try {
+                projectLibDir = JsfProjectUtils.getProjectLibraryDirectory(project);
+                FileObject wsClientsSubDir = projectLibDir.getFileObject( WEBSERVICE_CLIENTS_SUB_DIR );
+                if( wsClientsSubDir != null ) {
+                    hasWebservicesClients = addJarsInFolder(wsClientsSubDir, urls1Set);
+                }
+                FileObject ejbClientsSubDir = projectLibDir.getFileObject( EJB_DATA_SUB_DIR );
+                if( ejbClientsSubDir != null ) {
+                    hasEjbClients = addJarsInFolder(ejbClientsSubDir, urls1Set);
+                }
+            } catch (IOException e) {
+                // not found - ignore
+            }
+            
+            // Special handling of jaxrpc16Library (J2EE 1.3 and J2EE 1.4)
+            if (hasWebservicesClients) {
+                String platformVersion = JsfProjectUtils.getJ2eePlatformVersion(project);
+                if (platformVersion.equals(JsfProjectUtils.J2EE_1_3) || 
+                        platformVersion.equals(JsfProjectUtils.J2EE_1_4)) {
+                    if (jaxrpc16Library != null) {           
+                        // Add the jars from jaxrpc16Library
+                        addEntriesInLibraryVolume(jaxrpc16Library, "classpath", urls1Set); // NOI18N
+                    }
+                } 
+                // For JAVA EE 5 projects the jaxws APIs are available thorugh a module dependency in
+                // org.netbeans.modules.visualweb.j2ee15classloaderprovider
+                // module
+            }
+            
+            // Special handling of EJB
+            if (hasEjbClients) {
+                List<File> javaEEClasspathEntries = getJavaEEClasspathEntries();
+                for (File javaEEClasspathEntry : javaEEClasspathEntries) {
+                    if (javaEEClasspathEntry.isFile() && javaEEClasspathEntry.getName().endsWith(".jar")) {
+                        try {
+                            JarFile jarFile = new JarFile(javaEEClasspathEntry);
+                            // Found one of the ejb20 classes - use this jar file 
+                            if (jarFile.getEntry("javax/ejb/CreateException.class") != null) {
+                                try {
+                                    URL entry = javaEEClasspathEntry.toURI().toURL();
+                                    if (FileUtil.isArchiveFile(entry)) {
+                                        entry = FileUtil.getArchiveRoot(entry);
+                                    }
+                                    urls1Set.add(entry);
+                                    break;
+                                } catch (MalformedURLException mue) {
+                                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue);
+                                }
+                            }
+                        } catch (IOException e) {
+                            // corrupt .jar file
+                        }
+                        
+                    }
+                }
+            }
             
             //Add <project>\build\web\WEB-INF\classes directory into project 
             //classloader classpath.
             //TODO: We need to consider a better approach to achieve this 
             //This may not be required if insync models all the source code
+            FileObject docRoot = JsfProjectUtils.getDocumentRoot(project);
             File docPath = FileUtil.toFile(docRoot);
             File buildClassPath = new File(docPath.getParentFile(), "build" + File.separator + 
                     "web" + File.separator + "WEB-INF" + File.separator + "classes");
             URL buildClassURL = null;
             try {
                 buildClassURL = buildClassPath.toURI().toURL();
-                urls1List.add(buildClassURL);
+                urls1Set.add(buildClassURL);
             } catch(MalformedURLException mue) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue);
             }
             
-            URL [] urls1 = (URL[]) urls1List.toArray(new URL[0]);
-                
-//            classLoader = new URLClassLoader(urls1, parentClassLoader);
+            URL [] urls1 = (URL[]) urls1Set.toArray(new URL[0]);
+            
             classLoader = new ProjectClassLoader(urls1, parentClassLoader);
             classPathListener = new ClassPathListener();
             classPath.addPropertyChangeListener(classPathListener);
         }
         return classLoader;
+    }
+    
+    private static List<File> getJavaEEClasspathEntries() {
+        for (String serverInstanceID : Deployment.getDefault().getServerInstanceIDs()) {
+            String displayName = Deployment.getDefault().getServerInstanceDisplayName(
+                    serverInstanceID);
+            J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            if (displayName != null && j2eePlatform != null
+                    && j2eePlatform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                File[] classpath = j2eePlatform.getClasspathEntries();
+                return Arrays.asList(classpath);
+            }
+        }
+        return Collections.emptyList();
+    }
+    
+    private static void addEntriesInLibraryVolume(Library library, String volumeType, Set urlsSet) {
+        List urls = library.getContent(volumeType);
+        List normalizedUrls = new ArrayList();
+        
+        for (Iterator it = urls.iterator(); it.hasNext();) {
+            URL url = (URL) it.next();
+            FileObject fileObject = URLMapper.findFileObject (url);
+            
+            //file inside library is broken
+            if (fileObject == null)
+                continue;
+            
+            if ("jar".equals(url.getProtocol())) {  //NOI18N
+                fileObject = FileUtil.getArchiveFile (fileObject);
+            }
+            File f = FileUtil.toFile(fileObject);                            
+            if (f != null) {
+                try {
+                    URL entry = f.toURI().toURL();
+                    if (FileUtil.isArchiveFile(entry)) {
+                        entry = FileUtil.getArchiveRoot(entry);
+                    } else if (!f.exists()) {
+                        // if file does not exist (e.g. build/classes folder
+                        // was not created yet) then corresponding File will
+                        // not be ended with slash. Fix that.
+                        assert !entry.toExternalForm().endsWith("/") : f; // NOI18N
+                        entry = new URL(entry.toExternalForm() + "/"); // NOI18N
+                    }
+                    normalizedUrls.add(entry);
+                } catch (MalformedURLException mue) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue);
+                }
+            }
+        }
+        urlsSet.addAll(normalizedUrls); // NOI18N
+    }
+    
+    private static boolean addJarsInFolder(FileObject folder, Set urlsSet) {
+        boolean added = false;
+        Enumeration<? extends FileObject> children = folder.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject child = children.nextElement();
+            if (child.isData() && child.getExt().equals("jar")) {
+                File file = FileUtil.toFile(child);                            
+                if (file != null) {
+                    try {
+                        URL entry = file.toURI().toURL();
+                        if (FileUtil.isArchiveFile(entry)) {
+                            entry = FileUtil.getArchiveRoot(entry);
+                        }
+                        urlsSet.add(entry);
+                        added = true;
+                    } catch (MalformedURLException mue) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue);
+                    }
+                }
+            }
+        }
+        return added;
     }
     
     // XXX To be able to distinguish our specific project classloader during debugging.
