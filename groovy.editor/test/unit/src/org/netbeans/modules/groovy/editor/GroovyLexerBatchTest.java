@@ -132,7 +132,6 @@ public class GroovyLexerBatchTest extends TestCase {
         next(ts, GroovyTokenId.IDENTIFIER, "size");
         next(ts, GroovyTokenId.LPAREN, "(");
         next(ts, GroovyTokenId.RPAREN, ")");
-        
     }
     
     public void testGstringLexing4(){
@@ -140,8 +139,90 @@ public class GroovyLexerBatchTest extends TestCase {
         TokenSequence<?> ts = seqForText("\"hallo\"");
         
         next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
-        
     }
+
+    
+    public void testGstringLexing5(){
+        
+        TokenSequence<?> ts = seqForText("println \"Hello $name!\"\r\n");
+        
+        // FIXME: This test is meant to be brocken, since I'm still
+        // hunting the trailing doubleqoutes errer. BEWARE!
+        
+        next(ts, GroovyTokenId.IDENTIFIER, "println");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $");
+        next(ts, GroovyTokenId.STRING_LITERAL, "name");
+        next(ts, GroovyTokenId.STRING_LITERAL, "!");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"");
+        
+        assertTrue(ts.moveNext());
+        Token t = ts.token();
+        
+        System.out.println("-------------------------------");  
+        System.out.println("Token-Text   :" + t.toString() + ":CLOSED");  
+        System.out.println("Token-Length :" + t.length());  
+        System.out.println("Token-ID     :" + t.id());
+        System.out.println("-------------------------------"); 
+    }
+    
+    
+    public void testMultipleStringConstants(){
+        
+        TokenSequence<?> ts = seqForText("\"hallo\" \"hallo\" \"hallo\" \"hallo\"");
+        
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+    }
+    
+    public void testMultipleStringConstantsClosed(){
+        
+        TokenSequence<?> ts = seqForText("\"hallo\" \"hallo\" \"hallo\" \"hallo\"");
+        
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        assertFalse(ts.moveNext());
+    }
+    
+    public void testMultipleStringConstantsDosTerminated(){
+        
+        TokenSequence<?> ts = seqForText("\"hallo\" \"hallo\" \"hallo\" \"hallo\"\r\n");
+        
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.NLS, "\r\n");
+        assertFalse(ts.moveNext());
+    } 
+    
+    public void testMultipleStringConstantsUnixTerminated(){
+        
+        TokenSequence<?> ts = seqForText("\"hallo\" \"hallo\" \"hallo\" \"hallo\"\n");
+        
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo\"");
+        next(ts, GroovyTokenId.NLS, "\n");
+        assertFalse(ts.moveNext());
+    }     
     
     
     TokenSequence<?> seqForText(String text){
@@ -276,46 +357,7 @@ public class GroovyLexerBatchTest extends TestCase {
         assertTrue(t.length() == 7);
     }
      
-    public void testFullSyntaxGstring(){
-        String text = "def name = 'World'; println \"Hello, ${name}\"";
-        
-        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
-        TokenSequence<?> ts = hi.tokenSequence();
-        
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.LITERAL_def, "def", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.IDENTIFIER, "name", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.ASSIGN, "=", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "'World'", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.SEMI, ";", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.IDENTIFIER, "println", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.WHITESPACE, " ", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"Hello, $", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.LBRACE, "{", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.IDENTIFIER, "name", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.RBRACE, "}", -1);
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,GroovyTokenId.STRING_LITERAL, "\"", -1);
-    }
-    
+
     public void testGstringsWithoutNewLine() {
         String text = "def name = 'foo'; def s = \"H $name\"";
         TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
