@@ -50,18 +50,25 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.datatransfer.Transferable;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.KeyStroke;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeModelEvent;
@@ -255,7 +262,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             Map<Class<? extends Activity>, Set<Class<? extends Activity>>> mapActivityTypes = 
                 new HashMap<Class<? extends Activity>, Set<Class<? extends Activity>>>(4);
             mapActivityTypes.put(Receive.class, new HashSet(
-                Arrays.asList(new Class[] {Reply.class})));
+                Arrays.asList(new Class[] {Invoke.class, Reply.class})));
             mapActivityTypes.put(Reply.class, new HashSet(
                 Arrays.asList(new Class[] {Receive.class})));
             mapActivityTypes.put(Invoke.class, new HashSet(
@@ -475,6 +482,8 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     //========================================================================//
     public class WizardDefineCorrelationPanel extends WizardAbstractPanel {
+        private final String ACTION_KEY_DELETE = "ACTION_KEY_DELETE";
+            
         private Mapper correlationMapper;
         
         public WizardDefineCorrelationPanel() {
@@ -506,6 +515,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 correlationMapper = new Mapper(mapperModel);
                 MapperContext defaultMapperContext = correlationMapper.getContext();
                 correlationMapper.setContext(new CorrelationMapperContext(defaultMapperContext));                
+                defineCorrelationMapperKeyBindings();
                 
                 wizardPanel.add(correlationMapper);
                 wizardPanel.revalidate();
@@ -574,6 +584,16 @@ public class DefineCorrelationWizard implements WizardProperties {
             CorrelationMapperTreeNode topTreeNode) {
             return topTreeNode;
         }
+
+    
+        private void defineCorrelationMapperKeyBindings() {
+            if (correlationMapper == null) return;
+            InputMap inputMap = correlationMapper.getInputMap(JComponent.WHEN_FOCUSED);
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), ACTION_KEY_DELETE);
+            ActionMap actionMap = correlationMapper.getActionMap();
+            actionMap.put(ACTION_KEY_DELETE, new ActionDeleteKey());
+        }
+        
         
         @Override
         public boolean isValid() {
@@ -593,6 +613,14 @@ public class DefineCorrelationWizard implements WizardProperties {
 
         @Override
         public void validate() throws WizardValidationException {
+        }
+        //====================================================================//
+        private class ActionDeleteKey extends AbstractAction {
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("");
+                System.out.println("Button Delete has been pressed !");
+                System.out.println("");
+            }
         }
         //====================================================================//
         private class CorrelationMapperTreeModel extends DefaultTreeModel {
