@@ -189,7 +189,10 @@ public final class RubyPlatformManager {
                     if (jrubyVersion != null) {
                         props.put(Info.JRUBY_VERSION, jrubyVersion);
                     }
-                    props.put(Info.RUBY_PATCHLEVEL, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL));
+                    String patchLevel = p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL);
+                    if (patchLevel != null){
+                        props.put(Info.RUBY_PATCHLEVEL, patchLevel);
+                    }
                     props.put(Info.RUBY_RELEASE_DATE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE));
 //                    props.put(Info.RUBY_EXECUTABLE, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE));
                     props.put(Info.RUBY_PLATFORM, p.get(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM));
