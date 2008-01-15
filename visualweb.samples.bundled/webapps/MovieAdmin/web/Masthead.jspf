@@ -44,9 +44,9 @@
         <h:panelGrid binding="#{Masthead.mainPanel}" id="mainPanel" style="height: 155px; left: 0px; top: 0px; width: 760px">
             <h:panelGrid binding="#{Masthead.titlePanel}" id="titlePanel" style="background-image: url(resources/masthead_background.gif); height: 120px; text-indent: 25px; width: 760px">
                 <webuijsf:staticText binding="#{Masthead.appName}" id="appName"
-                    style="color: rgb(255, 255, 255); font-family: 'Georgia', 'Times New Roman', 'times', 'serif'; font-size: 24px; font-weight: bold" text="Movie Administrator"/>
+                    style="color: rgb(255, 255, 255); font-family: Georgia,'Times New Roman',times,serif; font-size: 24px; font-weight: bold" text="Movie Administrator"/>
                 <webuijsf:staticText binding="#{Masthead.poweredBy}" id="poweredBy"
-                    style="color: #ffffff; font-family: 'Georgia','Times New Roman','times','serif'; font-size: 10px" text="Empowered by NetBeans 6"/>
+                    style="color: #ffffff; font-family: Georgia,'Times New Roman',times,serif; font-size: 10px" text="Empowered by NetBeans 6"/>
             </h:panelGrid>
             <h:panelGrid binding="#{Masthead.navPanel}" columns="3" id="navPanel" style="background-color: #dde2ee; height: 24px; width: 760px">
                 <h:panelGrid binding="#{Masthead.fillerPanel}" id="fillerPanel" style="height: 24px; width: 380px"/>
