@@ -1543,7 +1543,9 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
 //    // Do not pass it directly into the doc or engine, it is not needed there.
 //    /** Map between <code>org.w3c.dom.Document</code> and <code>MarkupUnit</code> */
 //    private final static Map doc2markupUnit = new WeakHashMap();
-    private static final String KEY_MARKUP_UNIT = "vwpMarkupUnit"; // NOI18N
+//    private static final String KEY_MARKUP_UNIT = "vwpMarkupUnit"; // NOI18N
+  
+    private static final Map<Document, MarkupUnit> doc2markupUnit = new WeakHashMap<Document, MarkupUnit>();
     
     private static void setMarkupUnitForDocument(Document doc, MarkupUnit markupUnit) {
 //        synchronized (doc2markupUnit) {
@@ -1552,7 +1554,8 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
         if (doc == null) {
             return;
         }
-        doc.setUserData(KEY_MARKUP_UNIT, markupUnit, MarkupUnitDataHandler.getDefault());
+//        doc.setUserData(KEY_MARKUP_UNIT, markupUnit, MarkupUnitDataHandler.getDefault());
+        doc2markupUnit.put(doc, markupUnit);
     }
     
     public static MarkupUnit getMarkupUnitForDocument(Document doc) {
@@ -1562,20 +1565,21 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
         if (doc == null) {
             return null;
         }
-        return (MarkupUnit)doc.getUserData(KEY_MARKUP_UNIT);
+//        return (MarkupUnit)doc.getUserData(KEY_MARKUP_UNIT);
+        return doc2markupUnit.get(doc);
     }
     
-    private static class MarkupUnitDataHandler implements UserDataHandler {
-        private static final MarkupUnitDataHandler INSTANCE = new MarkupUnitDataHandler();
-        
-        public static MarkupUnitDataHandler getDefault() {
-            return INSTANCE;
-        }
-        
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-        }
-    } // End of MarkupUnitDataHandler.
+//    private static class MarkupUnitDataHandler implements UserDataHandler {
+//        private static final MarkupUnitDataHandler INSTANCE = new MarkupUnitDataHandler();
+//        
+//        public static MarkupUnitDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//        }
+//    } // End of MarkupUnitDataHandler.
     
 //    /** Map between <code>XhtmlCssEngine</code> and <code>MarkupUnit</code>. */
 //    private final static Map cssEngine2markupUnit = new WeakHashMap();
@@ -1595,7 +1599,9 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
     
 //    /** Map between <code>org.w3c.dom.Document</code> and <code>URL</code> */
 //    private final static Map doc2url = new WeakHashMap();
-    private static final String KEY_URL = "vwpUrl"; // NOI18N
+//    private static final String KEY_URL = "vwpUrl"; // NOI18N
+    
+    private static final Map<Document, URL> doc2url = new WeakHashMap<Document, URL>();
     
     public /*private*/ static void setUrlForDocument(Document doc, URL url) {
 //        synchronized (doc2url) {
@@ -1604,7 +1610,8 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
         if (doc == null) {
             return;
         }
-        doc.setUserData(KEY_URL, url, UrlDataHandler.getDefault());
+//        doc.setUserData(KEY_URL, url, UrlDataHandler.getDefault());
+        doc2url.put(doc, url);
     }
     
     public static URL getUrlForDocument(Document doc) {
@@ -1614,18 +1621,19 @@ public class MarkupUnit extends SourceUnit implements org.w3c.dom.events.EventLi
         if (doc == null) {
             return null;
         }
-        return (URL)doc.getUserData(KEY_URL);
+//        return (URL)doc.getUserData(KEY_URL);
+        return doc2url.get(doc);
     }
     
-    private static class UrlDataHandler implements UserDataHandler {
-        private static final UrlDataHandler INSTANCE = new UrlDataHandler();
-        
-        public static UrlDataHandler getDefault() {
-            return INSTANCE;
-        }
-        
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-        }
-    } // End of UrlDataHandler.
+//    private static class UrlDataHandler implements UserDataHandler {
+//        private static final UrlDataHandler INSTANCE = new UrlDataHandler();
+//        
+//        public static UrlDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//        }
+//    } // End of UrlDataHandler.
 }
