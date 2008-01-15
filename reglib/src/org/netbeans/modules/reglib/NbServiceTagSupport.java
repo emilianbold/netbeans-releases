@@ -300,8 +300,21 @@ public class NbServiceTagSupport {
      */
     private static void writeRegistrationXml() throws IOException {
         File targetFile = null;
-        if (nbClusterDir.canWrite()) {
-            targetFile = regXmlFileNb;
+        if (svcTagDirNb.exists() && svcTagDirNb.canWrite()) {
+            //Try to create temp file to verify we can create file on Windows
+            File tmpFile = null;
+            try {
+                tmpFile = File.createTempFile("regtmp", null, svcTagDirNb);
+            } catch (IOException exc) {
+                LOG.log(Level.INFO,"Warning: Cannot create file in " + svcTagDirNb
+                + " Will use user home dir", exc);
+            }
+            if ((tmpFile != null) && tmpFile.exists()) {
+                tmpFile.delete();
+                targetFile = regXmlFileNb;
+            } else {
+                targetFile = regXmlFileHome;    
+            }
         } else {
             targetFile = regXmlFileHome;
         }
@@ -595,8 +608,21 @@ public class NbServiceTagSupport {
         }
 
         File targetFile;
-        if (nbClusterDir.canWrite()) {
-            targetFile = serviceTagFileNb;
+        if (svcTagDirNb.exists() && svcTagDirNb.canWrite()) {
+            //Try to create temp file to verify we can create file on Windows
+            File tmpFile = null;
+            try {
+                tmpFile = File.createTempFile("regtmp", null, svcTagDirNb);
+            } catch (IOException exc) {
+                LOG.log(Level.INFO,"Error: Cannot create file in " + svcTagDirNb
+                + " Will use user home dir", exc);
+            }
+            if ((tmpFile != null) && tmpFile.exists()) {
+                tmpFile.delete();
+                targetFile = serviceTagFileNb;
+            } else {
+                targetFile = serviceTagFileHome;
+            }
         } else {
             targetFile = serviceTagFileHome;
         }
