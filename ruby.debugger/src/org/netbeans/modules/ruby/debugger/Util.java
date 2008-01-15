@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -108,8 +109,8 @@ public final class Util {
                 && gemManager.isGemInstalled(RUBY_DEBUG_BASE_NAME, RDEBUG_BASE_VERSION);
     }
     
-    public static String findRDebugExecutable(final GemManager gemManager) {
-        return gemManager.findGemExecutable(rdebugPattern());
+    public static String findRDebugExecutable(final RubyPlatform platform) {
+        return platform.findExecutable(rdebugPattern());
     }
     
     public static void showMessage(final String message) {

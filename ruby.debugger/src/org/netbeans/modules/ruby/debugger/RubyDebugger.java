@@ -167,7 +167,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
-            File rDebugF = new File(Util.findRDebugExecutable(gemManager));
+            File rDebugF = new File(Util.findRDebugExecutable(platform));
             proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
                     rDebugF.getAbsolutePath(), interpreter, timeout);
         }
@@ -235,7 +235,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             if (!Util.ensureRubyDebuggerIsPresent(gemManager, true, message)) {
                 return false;
             }
-            String rDebugPath = Util.findRDebugExecutable(gemManager);
+            String rDebugPath = Util.findRDebugExecutable(platform);
             if (rDebugPath == null) {
                 Util.showMessage(NbBundle.getMessage(RubyDebugger.class,
                         "RubyDebugger.wrong.rdebug-ide", // NOI18N
