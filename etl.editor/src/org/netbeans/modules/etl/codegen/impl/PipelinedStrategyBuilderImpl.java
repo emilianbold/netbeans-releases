@@ -52,8 +52,10 @@ import com.sun.etl.engine.ETLTaskNode;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConstants;
 import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
@@ -64,7 +66,8 @@ import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
     private static final String LOG_CATEGORY = PipelinedStrategyBuilderImpl.class.getName();
     private static final MessageManager msgMgr = MessageManager.getManager(ETLTaskNode.class);
-
+    private static transient final Logger mLogger = LogUtil.getLogger(PipelinedStrategyBuilderImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     protected AxionDB db;
     protected Map linkTableMap;
     protected AxionPipelineStatements pipelineStmts;
@@ -144,7 +147,8 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
      * Before calling apply appropriate applyConnections
      */
     public void generateScriptForTable(ETLStrategyBuilderContext context) throws BaseException {
-        Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
+        mLogger.infoNoloc(mLoc.t("PRSR008: Looping through target tables:{0}",LOG_CATEGORY));
+       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
         checkTargetConnectionDefinition(context);
 
         TargetTable tt = context.getTargetTable();

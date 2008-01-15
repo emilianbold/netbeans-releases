@@ -83,8 +83,10 @@ import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.openide.util.NbBundle;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConstants;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.Index;
 
 /**
@@ -92,7 +94,8 @@ import org.netbeans.modules.sql.framework.model.Index;
  * @version $Revision$
  */
 public class SQLValidationVisitor implements SQLVisitor {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLValidationVisitor.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private static final HashSet<String> DATE_FORMAT_OPS = new HashSet<String>();
     static {
         DATE_FORMAT_OPS.add("isvaliddatetime");
@@ -503,7 +506,8 @@ public class SQLValidationVisitor implements SQLVisitor {
                 }
             }
         } catch (BaseException ex) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "validate", "Error while validating SQLJoinOperator " + operator.getDisplayName(), ex);
+              mLogger.errorNoloc(mLoc.t("PRSR130: Error while validating SQLJoinOperator{0}",operator.getDisplayName()),ex);
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "validate", "Error while validating SQLJoinOperator " + operator.getDisplayName(), ex);
         }
     }
 
@@ -820,7 +824,8 @@ public class SQLValidationVisitor implements SQLVisitor {
                 sTable.visit(this);
             }
         } catch (BaseException ex) {
-            Logger.printThrowable(Logger.ERROR, SQLValidationVisitor.class.getName(), "validate", "Could not find source tables for this target table " + targetTable.getName(), ex);
+             mLogger.errorNoloc(mLoc.t("PRSR132: Could not find source tables for this target table{0}in {1}",targetTable.getName(),SQLValidationVisitor.class.getName()),ex);
+            //Logger.printThrowable(Logger.ERROR, SQLValidationVisitor.class.getName(), "validate", "Could not find source tables for this target table " + targetTable.getName(), ex);
         }
     }
 
@@ -836,7 +841,8 @@ public class SQLValidationVisitor implements SQLVisitor {
                 }
             }
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.DEBUG, SQLValidationVisitor.class.getName(), this, "Validating target table condition.", ex);
+             mLogger.errorNoloc(mLoc.t("PRSR133: Validating target table condition in{0}", SQLValidationVisitor.class.getName()),ex);
+            //Logger.printThrowable(Logger.DEBUG, SQLValidationVisitor.class.getName(), this, "Validating target table condition.", ex);
         }
     }
 

@@ -81,9 +81,11 @@ import org.netbeans.modules.sql.framework.model.VisibleSQLPredicate;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.util.HashMap;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
 import org.netbeans.modules.mashup.db.model.impl.FlatfileDBTableImpl;
@@ -98,11 +100,12 @@ import org.openide.awt.StatusDisplayer;
  * @author Ahimanikya Satapathy
  */
 public class SQLObjectUtil {
-
     public static final String FILE_LOC = "FILE_LOC";
     /* Log4J category string */
     private static final String LOG_CATEGORY = SQLObjectUtil.class.getName();
-
+    public static final String argName =SQLObjectUtil.class.getName();
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLObjectUtil.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public static Map<String, String> getTableMetaData(SQLDBTable table) throws SQLException, BaseException {
         SQLDBModel dbModel = (SQLDBModel) table.getParent();
         HashMap<String, String> map = new HashMap<String, String>();
@@ -326,13 +329,25 @@ public class SQLObjectUtil {
             RuntimeDatabaseModel rtDBModel = getOrCreateRuntimeModel(sqlDefn);
             // now use the same name as runtime input argument for file location
             String argName = sTable.getFlatFileLocationRuntimeInputName();
-
             RuntimeInput rtInput = rtDBModel.getRuntimeInput();
 
             if (rtInput == null) {
                 rtInput = getOrCreateRuntimeInput(rtDBModel);
             }
             // if runtime input arg does not exist then only add it
+            if (rtInput.getColumn(argName) == null) {
+                SourceColumn arg = createRuntimeInputArg(sTable, argName, dbModel.getETLDBConnectionDefinition());
+                rtInput.addColumn(arg);
+
+                return arg;
+            }
+        }else{
+            RuntimeDatabaseModel rtDBModel = getOrCreateRuntimeModel(sqlDefn);
+            RuntimeInput rtInput = rtDBModel.getRuntimeInput();
+                if (rtInput == null) {
+                rtInput = getOrCreateRuntimeInput(rtDBModel);
+            }
+              // if runtime input arg does not exist then only add it
             if (rtInput.getColumn(argName) == null) {
                 SourceColumn arg = createRuntimeInputArg(sTable, argName, dbModel.getETLDBConnectionDefinition());
                 rtInput.addColumn(arg);
@@ -385,8 +400,9 @@ public class SQLObjectUtil {
                 }
             }
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.ERROR, SQLDefinition.class.getName(),
-                    "Error while retrieving file name", null, ex);
+             mLogger.errorNoloc(mLoc.t("PRSR124: Error while retrieving file name{0}",SQLDefinition.class.getName()),ex);
+           // Logger.printThrowable(Logger.ERROR, SQLDefinition.class.getName(),
+             //       "Error while retrieving file name", null, ex);
         } finally {
             try {
                 if (conn != null) {
@@ -401,9 +417,8 @@ public class SQLObjectUtil {
 
     public static String generateFFRuntimeInputName(String prefix, SQLDBTable table) {
         String genName = prefix + "_" + table.getUniqueTableName();
-
-        Logger.print(Logger.DEBUG, SQLDefinition.class.getName(), prefix + " table name " + genName + " for table " + table.getName());
-
+        mLogger.infoNoloc(mLoc.t("PRSR125: table name{0} for table",genName,table.getName()));
+        //Logger.print(Logger.DEBUG, SQLDefinition.class.getName(), prefix + " table name " + genName + " for table " + table.getName());
         return genName;
     }
 
@@ -415,8 +430,8 @@ public class SQLObjectUtil {
         if (sysName.length() > 18) {
             sysName = sysName.substring(0, 18);
         }
-        Logger.print(Logger.DEBUG, SQLDefinition.class.getName(), "temp table name " + sysName + " for table " + tableName);
-
+        //Logger.print(Logger.DEBUG, SQLDefinition.class.getName(), "temp table name " + sysName + " for table " + tableName);
+        mLogger.infoNoloc(mLoc.t("PRSR126: temp table name{0} for table",sysName,tableName));
         return sysName;
     }
 
@@ -427,8 +442,8 @@ public class SQLObjectUtil {
         if (sysName.length() > 18) {
             sysName = sysName.substring(0, 18);
         }
-        Logger.print(Logger.DEBUG, SQLDefinition.class.getName(), "temp table name " + sysName + " for table " + tableName);
-
+       // Logger.print(Logger.DEBUG, SQLDefinition.class.getName(), "temp table name " + sysName + " for table " + tableName);
+          mLogger.infoNoloc(mLoc.t("PRSR127: temp table name{0} for table",sysName,tableName));
         return sysName;
     }
 
@@ -839,7 +854,8 @@ public class SQLObjectUtil {
                 jmd.addInput(SQLJoinOperator.LEFT, left);
                 jmd.addInput(SQLJoinOperator.RIGHT, right);
             } catch (BaseException sqlEx) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "discoverJoinPredicate", "Failed to create auto-join", sqlEx); // NOI18N
+                 mLogger.errorNoloc(mLoc.t("PRSR128: Failed to create auto-join{0}",LOG_CATEGORY),sqlEx);
+                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "discoverJoinPredicate", "Failed to create auto-join", sqlEx); // NOI18N
                 jmd = null;
             }
         }
@@ -943,9 +959,6 @@ public class SQLObjectUtil {
                 }
             }
         }
-    }
-
-    private SQLObjectUtil() {
     }
 }
 

@@ -47,6 +47,7 @@ import org.openide.windows.WindowManager;
 
 import com.sun.sql.framework.exception.BaseException;
 import java.io.IOException;
+import org.netbeans.modules.sql.framework.model.impl.RuntimeInputImpl;
 
 /**
  *
@@ -110,6 +111,7 @@ public class DataObjectHelper {
         }
     }
     
+  
     private static void addDestinationDb(List db, ETLCollaborationModel collabModel)
     throws BaseException {
         for (int i = 0; i < db.size(); i++) {

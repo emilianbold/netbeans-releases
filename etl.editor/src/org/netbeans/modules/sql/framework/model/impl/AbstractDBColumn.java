@@ -53,8 +53,10 @@ import org.netbeans.modules.sql.framework.model.utils.GeneratorUtil;
 import org.w3c.dom.Element;
 
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -65,6 +67,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  */
 public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLDBColumn, Cloneable, Comparable {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(AbstractDBColumn.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /** Constant for indicating unknown ordinal position for this column. */
     public static final int POSITION_UNKNOWN = Integer.MIN_VALUE;
 
@@ -510,13 +514,15 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
         try {
             this.jdbcType = Integer.parseInt(jdbcTypeStr);
         } catch (NumberFormatException e) {
-            Logger.print(Logger.INFO, LOG_CATEGORY, "parseXML", "Cannot determine JDBC int type for column " + name + " (" + jdbcTypeStr
-                + "); will try parsing as string.");
+           mLogger.infoNoloc(mLoc.t("PRSR102: Cannot determine JDBC int type for column{0}({1}); will try parsing as string.",name,jdbcTypeStr));
+           // Logger.print(Logger.INFO, LOG_CATEGORY, "parseXML", "Cannot determine JDBC int type for column " + name + " (" + jdbcTypeStr
+            //    + "); will try parsing as string.");
             try {
                 this.jdbcType = SQLUtils.getStdJdbcType(jdbcTypeStr);
             } catch (IllegalArgumentException iae) {
-                Logger.print(Logger.ERROR, LOG_CATEGORY, "parseXML", "Could not determine JDBC int type for column " + name
-                    + " by parsing as string; giving up..");
+               // Logger.print(Logger.ERROR, LOG_CATEGORY, "parseXML", "Could not determine JDBC int type for column " + name
+                 //   + " by parsing as string; giving up..");
+              mLogger.infoNoloc(mLoc.t("PRSR103: Cannot determine JDBC int type for column{0}by parsing as string; giving up..",name));   
                 this.jdbcType = SQLConstants.JDBCSQL_TYPE_UNDEFINED;
             }
         }
@@ -643,7 +649,8 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
                     }
                 }
             } catch (BaseException ex) {
-                Logger.print(Logger.ERROR, LOG_CATEGORY, "setParent", "could not set parent object or id for column " + this.getName());
+                 mLogger.errorNoloc(mLoc.t("PRSR104: could not set parent object or id for column{0}",this.getName()),ex);
+               // Logger.print(Logger.ERROR, LOG_CATEGORY, "setParent", "could not set parent object or id for column " + this.getName());
             }
         }
     }

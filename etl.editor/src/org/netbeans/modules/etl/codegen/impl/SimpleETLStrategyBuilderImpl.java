@@ -34,7 +34,9 @@ import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLTask;
 import com.sun.etl.engine.ETLTaskNode;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Strategy: If extractionRequired is true we will extract all the source table to target
@@ -53,7 +55,8 @@ import com.sun.sql.framework.utils.Logger;
 public class SimpleETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
     private static final String LOG_CATEGORY = SimpleETLStrategyBuilderImpl.class.getName();
     private static final String SQL_INDENT = "";
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SimpleETLStrategyBuilderImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public SimpleETLStrategyBuilderImpl(ETLScriptBuilderModel model) throws BaseException {
         super(model);
     }
@@ -62,7 +65,8 @@ public class SimpleETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
      * Before calling apply appropriate applyConnections
      */
     public void generateScriptForTable(ETLStrategyBuilderContext context) throws BaseException {
-        Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
+         mLogger.infoNoloc(mLoc.t("PRSR009: Looping through target tables:{0}",LOG_CATEGORY));
+       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
         populateInitTask(context.getInitTask(), context.getGlobalCleanUpTask(), context.getTargetTable());
 
         checkTargetConnectionDefinition(context);

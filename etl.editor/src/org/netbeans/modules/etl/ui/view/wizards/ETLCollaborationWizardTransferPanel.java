@@ -87,8 +87,9 @@ import org.netbeans.modules.sql.framework.model.impl.TargetTableImpl;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
@@ -104,10 +105,12 @@ import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
  */
 public class ETLCollaborationWizardTransferPanel extends JPanel implements ActionListener, ListSelectionListener, WizardDescriptor.Panel,
         TableModelListener, PropertyChangeListener {
-    
+
     /* Log4J category string */
     private static final String LOG_CATEGORY = ETLCollaborationWizardTransferPanel.class.getName();
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizardTransferPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Extends ChangeEvent to convey information on an item being transferred to or from
      * the source of the event.
@@ -116,15 +119,14 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      * @version $Revision$
      */
     public static class TransferEvent extends ChangeEvent {
+
         /** Indicates addition of an item to the source of the event */
         public static final int ADDED = 0;
-        
         /** Indicates removal of an item from the source of the event */
         public static final int REMOVED = 1;
-        
         private Object item;
         private int type;
-        
+
         /**
          * Create a new TransferEvent instance with the given source, item and type.
          *
@@ -139,7 +141,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             this.item = item;
             this.type = type;
         }
-        
+
         /**
          * Gets item that was transferred.
          *
@@ -148,7 +150,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         public Object getItem() {
             return item;
         }
-        
+
         /**
          * Gets type of transfer event.
          *
@@ -158,7 +160,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             return type;
         }
     }
-    
+
     /**
      * Container for ListModels associated with source and destination lists of a list
      * transfer panel. Holds ButtonModels for controls that indicate selected addition and
@@ -169,25 +171,19 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      * @version $Revision$
      */
     class ListTransferModel {
-        
+
         private HashSet<ChangeListener> changeListeners;
         // Dropdown of schemas for a selected connection (source)
         private DefaultComboBoxModel dest;
-        
         private String listPrototype;
-        
         // Connections from the DB explorer.
         private DefaultListModel source;
-        
         // Tables for a selected schema.
         private DefaultListModel schemaTables;
-        
         private DefaultTableModel selectedTableModel;
-        
         private HashMap<String, SQLDBTable> nameToModelMap;
-        
-        private final String[] tableHeaders = new String [] { "Name", "Schema", "Catalog", "Connection"};
-        
+        private final String[] tableHeaders = new String[]{"Name", "Schema", "Catalog", "Connection"};
+
         /**
          * Creates a new instance of ListTransferModel, using the data in the given
          * collections to initially populate the source and destination lists.
@@ -196,32 +192,32 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
          * @param dstColl Collection used to populate destination list
          */
         public ListTransferModel(Collection srcColl, Collection dstColl) {
-            
+
             if (srcColl == null || dstColl == null) {
                 throw new IllegalArgumentException("Must supply non-null collections for srcColl and dstColl");
             }
-            
+
             listPrototype = "";
-            
+
             source = new DefaultListModel();
             dest = new DefaultComboBoxModel();
             schemaTables = new DefaultListModel();
             nameToModelMap = new HashMap<String, SQLDBTable>();
-            
+
             selectedTableModel = new DefaultTableModel(new Object[][]{}, tableHeaders) {
+
                 @Override
                 public boolean isCellEditable(int row, int col) {
                     return false;
                 }
             };
-            
+
             setSourceList(srcColl);
             setDestinationList(dstColl);
-            
+
             changeListeners = new HashSet<ChangeListener>();
         }
-        
-        
+
         /**
          * Moves indicated items from source to destination list.
          *
@@ -232,7 +228,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         public void add(Object[] selections) {
             synchronized (dest) {
                 synchronized (source) {
-                    
+
                     for (int i = 0; i < selections.length; i++) {
                         Object element = selections[i];
                         dest.addElement(element);
@@ -240,7 +236,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             }
         }
-        
+
         public void addToSelectedTables(Object[] rowData, SQLDBTable table) {
             if (rowData != null && rowData.length > 0) {
                 selectedTableModel.addRow(rowData);
@@ -248,37 +244,37 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 nameToModelMap.put(key, table);
             }
         }
-        
+
         public String getConnectionNameForTable(String tableDisplayString, String schemaName) {
             String connName = null;
             String key = schemaName + "." + tableDisplayString;
             for (int i = 0; i < selectedTableModel.getRowCount(); i++) {
-                String rowKey = (String)selectedTableModel.getValueAt(i, 1) + "."
-                        + (String)selectedTableModel.getValueAt(i, 0);
+                String rowKey = (String) selectedTableModel.getValueAt(i, 1) + "." + (String) selectedTableModel.getValueAt(i, 0);
                 if (rowKey.equals(key)) {
-                    connName = (String)selectedTableModel.getValueAt(i, 3);
+                    connName = (String) selectedTableModel.getValueAt(i, 3);
                     break;
                 }
             }
             return connName;
         }
-        
+
         public void removeFromSelectedTables(int rowIndex) {
             try {
                 selectedTableModel.removeRow(rowIndex);
             } catch (ArrayIndexOutOfBoundsException aix) {
-                Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Failed to remove row from selected tables" , aix);
+                mLogger.errorNoloc(mLoc.t("PRSR030: Failed to remove row from selected tables{0}",LOG_CATEGORY),aix);
+                //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Failed to remove row from selected tables", aix);
             }
         }
-        
+
         public DefaultTableModel getSelectedTablesModel() {
             return this.selectedTableModel;
         }
-        
+
         public HashMap getNameToModelMap() {
             return this.nameToModelMap;
         }
-        
+
         /**
          * Moves indicated items from source to destination list.
          *
@@ -296,7 +292,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             }
         }
-        
+
         /**
          * Add a ChangeListener to this model.
          *
@@ -309,7 +305,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             }
         }
-        
+
         /**
          * Gets copy of current contents of destination list
          *
@@ -330,8 +326,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             }
             return dstList;
         }
-        
-        
+
         /**
          * Gets ListModel associated with destination list.
          *
@@ -340,7 +335,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         public ListModel getDestinationModel() {
             return dest;
         }
-        
+
         /**
          * Gets ListModel associated with schemaTables JList (below combobox).
          *
@@ -349,7 +344,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         public ListModel getSchemaTablesModel() {
             return schemaTables;
         }
-        
+
         /**
          * Gets maximum number of items expected in either the source or destination list.
          *
@@ -358,7 +353,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         public int getMaximumListSize() {
             return source.size() + dest.getSize();
         }
-        
+
         /**
          * Gets prototype String that has the largest width of an item in either list.
          *
@@ -367,7 +362,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         public String getPrototypeCell() {
             return listPrototype;
         }
-        
+
         /**
          * Returns index of source item matching the given string.
          *
@@ -379,14 +374,14 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             if (startFrom < 0 || startFrom > source.size()) {
                 startFrom = 0;
             }
-            
+
             if (searchStr != null && searchStr.trim().length() != 0) {
                 return source.indexOf(searchStr, startFrom);
             }
-            
+
             return -1;
         }
-        
+
         /**
          * Gets copy of current contents of source list
          *
@@ -394,7 +389,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
          */
         public List getSourceList() {
             ArrayList<Object> srcList = new ArrayList<Object>();
-            
+
             synchronized (source) {
                 source.trimToSize();
                 for (int i = 0; i < source.size(); i++) {
@@ -403,7 +398,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             }
             return srcList;
         }
-        
+
         /**
          * Gets ListModel associated with source list.
          *
@@ -412,7 +407,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         public ListModel getSourceModel() {
             return source;
         }
-        
+
         /**
          * Moves indicated items from destination to source list.
          *
@@ -437,7 +432,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             // in table
             fireChangeEvent();
         }
-        
+
         /**
          * Remove a ChangeListener from this model.
          *
@@ -450,7 +445,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             }
         }
-        
+
         /**
          * Sets destination list to include contents of given list. Clears current
          * contents before adding items from newList.
@@ -462,14 +457,14 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             if (newList == null) {
                 throw new IllegalArgumentException("Must supply non-null Collection for newList");
             }
-            
+
             if (dest == null) {
                 dest = new DefaultComboBoxModel();
             }
-            
+
             synchronized (dest) {
                 dest.removeAllElements();
-                
+
                 Iterator it = newList.iterator();
                 while (it.hasNext()) {
                     Object o = it.next();
@@ -480,7 +475,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             }
         }
-        
+
         /**
          * Sets source list to include contents of given list. Clears current contents
          * before adding items from newList.
@@ -492,14 +487,14 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             if (newList == null) {
                 throw new IllegalArgumentException("Must supply non-null Collection for newList");
             }
-            
+
             if (source == null) {
                 source = new DefaultListModel();
             }
-            
+
             synchronized (source) {
                 source.clear();
-                
+
                 Iterator it = newList.iterator();
                 while (it.hasNext()) {
                     Object o = it.next();
@@ -510,7 +505,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             }
         }
-        
+
         private void fireTransferEvent(Object src, Object item, int type) {
             if (src != null && item != null) {
                 TransferEvent e = new TransferEvent(src, item, type);
@@ -524,20 +519,21 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             }
         }
     }
-    
-    class DBModelNameCellRenderer extends DefaultListCellRenderer{
-        public DBModelNameCellRenderer(String protoString){
+
+    class DBModelNameCellRenderer extends DefaultListCellRenderer {
+
+        public DBModelNameCellRenderer(String protoString) {
             super();
             setText(protoString.toString());
         }
-        
+
         @Override
         public Component getListCellRendererComponent(JList list,
                 Object value,
                 int index,
                 boolean isSelected,
-                boolean cellHasFocus){
-            
+                boolean cellHasFocus) {
+
             if (isSelected) {
                 this.setBackground(list.getSelectionBackground());
                 this.setForeground(list.getSelectionForeground());
@@ -545,70 +541,56 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 this.setBackground(list.getBackground());
                 this.setForeground(list.getForeground());
             }
-            
+
             this.setEnabled(list.isEnabled());
             this.setFont(list.getFont());
             this.setOpaque(true);
-            
-            if (value instanceof SQLDBModel){
+
+            if (value instanceof SQLDBModel) {
                 SQLDBModel model = (SQLDBModel) value;
-                if (model.getDisplayName() != null){
+                if (model.getDisplayName() != null) {
                     this.setText(model.getDisplayName());
-                }else{
+                } else {
                     this.setText(model.getModelName());
                 }
             } else if (value instanceof DatabaseConnection) {
-                this.setText(DBExplorerUtil.getDisplayName(((DatabaseConnection)value)));
+                this.setText(DBExplorerUtil.getDisplayName(((DatabaseConnection) value)));
             } else if (value instanceof String) {
-                this.setText((String)value);
+                this.setText((String) value);
             }
-            
+
             return this;
         }
     }
-    
     /** Command requesting search of source list for a given string */
     public static final String CMD_SEARCH = "Search";
-    
     /** Indicates addition of item(s). */
     public static final String LBL_ADD = ">";
-    
     /** Label indicating that all elements should be moved. */
     public static final String LBL_ALL = "ALL";
-    
     /** Indicates addition of all source items. */
     public static final String LBL_ADD_ALL = LBL_ALL + " " + LBL_ADD;
-    
     /** Describes destination list */
     public static final String LBL_DEST_MSG = "Schemas:";
-    
     /** Indicates removal of item(s). */
     public static final String LBL_REMOVE = "<";
-    
     /** Indicates removal of all destination items. */
     public static final String LBL_REMOVE_ALL = LBL_REMOVE + " " + LBL_ALL;
-    
     /** Describes source list and user task. */
     public static final String LBL_SOURCE_MSG = "Available Connections:";
-    
     /** Maximum number of visible items in lists */
     public static final int MAXIMUM_VISIBLE = 10;
-    
     /** Minimum number of visible items in lists */
     public static final int MINIMUM_VISIBLE = 5;
-    
     /** Tooltip to describe addition of selected item(s). */
     public static final String TIP_ADD = "Add to selected items";
-    
     /** Tooltip to describe addition of all source items. */
     public static final String TIP_ADD_ALL = "Add all items";
-    
     /** Tooltip to describe addition of selected item(s). */
     public static final String TIP_REMOVE = "Remove from selected items";
-    
     /** Tooltip to describe removal of all destination items. */
     public static final String TIP_REMOVE_ALL = "Remove all items";
-    
+
     /**
      * Indicates whether Databases in the given List have enough selected tables to allow for
      * creation of a join from among the set of tables.
@@ -619,7 +601,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     static boolean hasEnoughTablesForJoin(List db) {
         return (getSelectedTableCount(db) >= 2);
     }
-    
+
     /**
      * Counts number of selected tables in the given List of Databases.
      *
@@ -628,7 +610,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      */
     private static int getSelectedTableCount(List db) {
         int selected = 0;
-        
+
         Iterator dbIter = db.iterator();
         while (dbIter.hasNext()) {
             SQLDBModel dbModel = (SQLDBModel) dbIter.next();
@@ -639,23 +621,21 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 }
             }
         }
-        
+
         return selected;
     }
-    
+
     private static List getTableNames(ListModel dest) {
         ArrayList<DBTable> tabNameList = new ArrayList<DBTable>();
         for (int i = 0; i < dest.getSize(); i++) {
             DatabaseModel db = (DatabaseModel) dest.getElementAt(i);
             if (db != null) {
-                
+
                 tabNameList.addAll(db.getTables());
             }
         }
         return tabNameList;
     }
-    
-    
     private javax.swing.JButton selectButton;
     private javax.swing.JButton removeButton;
     private javax.swing.JComboBox schemaComboBox;
@@ -668,7 +648,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JTable jTable1;
-    
+
     private void initComponents() {
         srcLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -684,138 +664,84 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         //jButton3 = new javax.swing.JButton();
         srcLabel.setText(LBL_SOURCE_MSG);
         srcLabel.setName("srcLabel");
-        
+
         jScrollPane1.setViewportView(sourceList);
-        
+
         destLabel.setText(LBL_DEST_MSG);
         destLabel.setName("destLabel");
-        
+
         schemaTablesList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
+
+            String[] strings = {""            };
+
+            public int getSize() {
+                return strings.length;
+            }
+
+            public Object getElementAt(int i) {
+                return strings[i];
+            }
         });
         schemaTablesList.setName("schemaTables");
         schemaTablesList.addMouseListener(new java.awt.event.MouseAdapter() {
+
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if(evt.getClickCount() == 2 && evt.getSource() instanceof JList ) {
+                if (evt.getClickCount() == 2 && evt.getSource() instanceof JList) {
                     moveSelectedTables();
                 } // end if
             }
         });
-        
+
         jScrollPane2.setViewportView(schemaTablesList);
-        
+
         jLabel3.setText("Selected Tables:");
         jLabel3.setName("selectedTablesLabel");
-        
+
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
-                new Object [][] {
-        },
-                new String [] {
+                new Object[][]{},
+                new String[]{
             "Name", "Schema", "User", "Connection"
-        }
-        ));
+        }));
         jTable1.setName("selectedTables");
         jScrollPane3.setViewportView(jTable1);
         jScrollPane3.setAutoscrolls(true);
-        
+
         selectButton.setMnemonic('S');
         selectButton.setText("Select");
         selectButton.addActionListener(this);
-        
+
         removeButton.setMnemonic('R');
         removeButton.setText("Remove");
         removeButton.addActionListener(this);
         removeButton.setEnabled(false);
-        
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                .add(jLabel3)
-                .addContainerGap(519, Short.MAX_VALUE))
-                .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                .add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE)
-                .add(layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(srcLabel)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
-                .add(26, 26, 26)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(schemaComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(destLabel))
-                .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
-                .add(23, 23, 23)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                //.add(jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .add(selectButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .add(35, 35, 35))))
-                );
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().add(jLabel3).addContainerGap(519, Short.MAX_VALUE)).add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING).add(org.jdesktop.layout.GroupLayout.LEADING, jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 421, Short.MAX_VALUE).add(layout.createSequentialGroup().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(srcLabel).add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)).add(26, 26, 26).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(schemaComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 198, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).add(destLabel)).add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 200, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))).add(23, 23, 23).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false) //.add(jButton3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).add(selectButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).add(35, 35, 35)))));
         layout.setVerticalGroup(
-                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .add(srcLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                .add(destLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(schemaComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                .add(layout.createSequentialGroup()
-                //.add(jButton3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 56, Short.MAX_VALUE)
-                .add(selectButton))
-                .add(jScrollPane2, 0, 0, Short.MAX_VALUE))))
-                .add(20, 20, 20)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                .add(layout.createSequentialGroup()
-                .add(jLabel3)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 214, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(removeButton))
-                .addContainerGap(66, Short.MAX_VALUE))
-                );
+                layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup().addContainerGap().add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false).add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup().add(srcLabel).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 130, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup().add(destLabel).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(schemaComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING).add(layout.createSequentialGroup() //.add(jButton3)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 56, Short.MAX_VALUE).add(selectButton)).add(jScrollPane2, 0, 0, Short.MAX_VALUE)))).add(20, 20, 20).add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING).add(layout.createSequentialGroup().add(jLabel3).addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED).add(jScrollPane3, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 214, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)).add(removeButton)).addContainerGap(66, Short.MAX_VALUE)));
     }// </editor-fold>
-    
-    
     private JButton addButton;
-    
-    
     private boolean isSource;
-    
     /* Set <ChangeListeners> */
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    
     private ListTransferModel listModel;
-    
     /* private JLabel srcLabel;*/
     private ETLCollaborationWizardTablePanel tablePanel;
-    
     /**
      * place holder to determine the selected database connection
      */
     private DatabaseConnection selectedConnection = null;
-    
-    private HashMap<String,DatabaseConnection> nameToConnMap = null;
-    
+    private HashMap<String, DatabaseConnection> nameToConnMap = null;
+
     /** Creates a default instance of ETLCollaborationWizardTransferPanel. */
     public ETLCollaborationWizardTransferPanel() {
     }
-    
+
     /**
      * Creates a new instance of ETLCollaborationWizardTransferPanel using the given
      * ListModels to initially populate the source and destination panels.
@@ -832,52 +758,52 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         if (title != null && title.trim().length() != 0) {
             setName(title);
         }
-        
+
         this.isSource = sourceDb;
         listModel = new ListTransferModel(dsList, destColl);
         String largestString = listModel.getPrototypeCell();
-        
+
         if (largestString.length() < LBL_SOURCE_MSG.length()) {
             largestString = LBL_SOURCE_MSG;
         } else if (largestString.length() < LBL_DEST_MSG.length()) {
             largestString = LBL_DEST_MSG;
         }
-        
+
         int visibleCt = Math.min(Math.max(MINIMUM_VISIBLE, listModel.getMaximumListSize()), MAXIMUM_VISIBLE);
         sourceList = new JList(listModel.getSourceModel());
         sourceList.addMouseListener(new MouseAdapter() {
-            
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 ((DefaultComboBoxModel) listModel.getDestinationModel()).removeAllElements();
                 schemaTablesList.setListData(new Vector());
-                DatabaseConnection conn = (DatabaseConnection) listModel
-                        .getSourceModel().getElementAt(sourceList.getSelectedIndex());
+                DatabaseConnection conn = (DatabaseConnection) listModel.getSourceModel().getElementAt(sourceList.getSelectedIndex());
                 // assigning the conn to the placeholder for current selected
                 // connection
                 selectedConnection = conn;
                 DBMetaDataFactory meta = new DBMetaDataFactory();
                 try {
                     meta.connectDB(DBExplorerUtil.createConnection(selectedConnection));
-                    if(selectedConnection.getDatabaseURL().startsWith("jdbc:axiondb:")) {
+                    if (selectedConnection.getDatabaseURL().startsWith("jdbc:axiondb:")) {
                         schemaComboBox.setEnabled(false);
                         populateTableList("");
-                    } else if(selectedConnection.getDatabaseURL().startsWith("jdbc:mysql:")) {
+                    } else if (selectedConnection.getDatabaseURL().startsWith("jdbc:mysql:")) {
                         schemaComboBox.setEnabled(false);
                         populateTableList("");
-                    } else  {
+                    } else {
                         // Get all Schemas from meta
                         schemaComboBox.setEnabled(true);
                         String[] schemas = meta.getSchemas();
                         listModel.add(schemas);
                         schemaComboBox.setSelectedItem(selectedConnection.getUser().toUpperCase());
                         populateTableList(selectedConnection.getUser().toUpperCase());
-                        
+
                     }
                 } catch (Exception ex) {
-                    Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error retrieving schemas" , ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR031: Error retrieving schemas{0}",LOG_CATEGORY),ex);
+                    //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error retrieving schemas", ex);
                     throw new RuntimeException(ex.getCause());
-                } finally{
+                } finally {
                     meta.disconnectDB();
                 }
             }
@@ -887,15 +813,15 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         sourceList.setPrototypeCellValue(srcRenderer);
         sourceList.setCellRenderer(srcRenderer);
         sourceList.setVisibleRowCount(visibleCt);
-        
+
         ArrayList testList = new ArrayList();
         tablePanel = new ETLCollaborationWizardTablePanel(testList);
-        schemaComboBox = new JComboBox((DefaultComboBoxModel)listModel.getDestinationModel());
-        
+        schemaComboBox = new JComboBox((DefaultComboBoxModel) listModel.getDestinationModel());
+
         schemaComboBox.addActionListener(this);
         initComponents();
     }
-    
+
     private List getSelectedDBModels(boolean isSource) throws Exception {
         AbstractDBTable newTable = null;
         String connName = null;
@@ -907,16 +833,16 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 newTable = (AbstractDBTable) tableList.get(i);
                 connName = this.listModel.getConnectionNameForTable(newTable.getQualifiedName(), newTable.getSchema());
                 DatabaseConnection conn = this.nameToConnMap.get(connName);
-                if( conn != null ) {
-                    
+                if (conn != null) {
+
                     // Add all tables to database
                     DBMetaDataFactory meta = new DBMetaDataFactory();
                     try {
                         meta.connectDB(DBExplorerUtil.createConnection(conn));
-                        
+
                         // we are now using SQLDBModel and SQLTable etc
                         SQLDBModel model = nameToDBModelMap.get(connName);
-                        if( model == null ) {
+                        if (model == null) {
                             int type = SQLConstants.TARGET_DBMODEL;
                             if (isSource) {
                                 type = SQLConstants.SOURCE_DBMODEL;
@@ -925,7 +851,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                             populateModel(model, conn, meta);
                             nameToDBModelMap.put(connName, model);
                         }
-                        
+
                         meta.populateColumns(newTable);
                         newTable.setEditable(true);
                         newTable.setSelected(true);
@@ -939,13 +865,13 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             }
         }
         Iterator iter = nameToDBModelMap.values().iterator();
-        while(iter.hasNext()) {
-            SQLDBModel model = (SQLDBModel)iter.next();
+        while (iter.hasNext()) {
+            SQLDBModel model = (SQLDBModel) iter.next();
             dbModels.add(model);
         }
         return dbModels;
     }
-    
+
     private SQLDBModel populateModel(SQLDBModel model, DatabaseConnection conn, DBMetaDataFactory meta) {
         DBConnectionDefinition def = null;
         try {
@@ -959,7 +885,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         model.setConnectionDefinition(def);
         return model;
     }
-    
+
     /**
      * Invoked whenever one of the transfer buttons is clicked.
      *
@@ -970,36 +896,38 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         if (e.getSource() instanceof JComboBox) {
             populateTableList((String) schemaComboBox.getSelectedItem());
         }
-        
+
         String cmd = e.getActionCommand();
         if ("Select".equals(cmd)) {
             moveSelectedTables();
         } else if ("Remove".equals(cmd)) {
             int[] indexes = jTable1.getSelectedRows();
             for (int ii = 0; ii < indexes.length; ii++) {
-                if ((indexes[ii] >= 0) && (jTable1.getRowCount() >= 1))
+                if ((indexes[ii] >= 0) && (jTable1.getRowCount() >= 1)) {
                     listModel.removeFromSelectedTables(indexes[ii]);
+                }
                 for (int j = 0; j < indexes.length; j++) {
                     indexes[j]--;
                 }
             }
-            
+
             jTable1.setModel(listModel.getSelectedTablesModel());
-            if( listModel.getSelectedTablesModel().getRowCount() < 1 ) {
+            if (listModel.getSelectedTablesModel().getRowCount() < 1) {
                 this.removeButton.setEnabled(false);
             }
         }
     } //end actionPerformed
-    
+
     private void populateTableList(String schemaName) {
         DBMetaDataFactory dbMeta = new DBMetaDataFactory();
         try {
             if (ETLCollaborationWizardTransferPanel.this.selectedConnection == null) {
-                Logger.print(Logger.INFO, LOG_CATEGORY, null, "selectedConn is null");
+                  mLogger.infoNoloc(mLoc.t("PRSR032: selectedConn is null{0}",LOG_CATEGORY));
+                //Logger.print(Logger.INFO, LOG_CATEGORY, null, "selectedConn is null");
             }
-            
+
             if ((selectedConnection != null)) {
-                dbMeta.connectDB(DBExplorerUtil.createConnection(selectedConnection));                
+                dbMeta.connectDB(DBExplorerUtil.createConnection(selectedConnection));
                 String[][] tableList = dbMeta.getTablesAndViews("", schemaName, "", false);
                 SQLDBTable aTable = null;
                 String[] currTable = null;
@@ -1009,7 +937,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                         currTable = tableList[i];
                         if (isSource) {
                             aTable = new SourceTableImpl(currTable[DBMetaDataFactory.NAME],
-                                    currTable[DBMetaDataFactory.SCHEMA], currTable[DBMetaDataFactory.CATALOG]);                            
+                                    currTable[DBMetaDataFactory.SCHEMA], currTable[DBMetaDataFactory.CATALOG]);
                         } else {
                             aTable = new TargetTableImpl(currTable[DBMetaDataFactory.NAME],
                                     currTable[DBMetaDataFactory.SCHEMA], currTable[DBMetaDataFactory.CATALOG]);
@@ -1020,13 +948,13 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 schemaTablesList.setListData(tableNameList);
             }
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error trying to retrieve tables and views" , ex);
+              mLogger.errorNoloc(mLoc.t("PRSR033: Error trying to retrieve tables and views{0}",LOG_CATEGORY),ex);
+            //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error trying to retrieve tables and views", ex);
         } finally {
             dbMeta.disconnectDB();
         }
     }
-    
-    
+
     private String generateTableAliasName(boolean isSource) {
         int cnt = 1;
         String aliasPrefix = isSource ? "S" : "T";
@@ -1035,14 +963,14 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             cnt++;
             aName = aliasPrefix + cnt;
         }
-        
+
         return aName;
     }
-    
+
     private boolean isTableAliasNameExist(String aName) {
         List sTables = this.listModel.getSelectedTablesList();
         Iterator it = sTables.iterator();
-        
+
         while (it.hasNext()) {
             SQLDBTable tTable = (SQLDBTable) it.next();
             String tAlias = tTable.getAliasName();
@@ -1050,10 +978,10 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     /**
      *
      */
@@ -1061,24 +989,25 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         // add selected tables from the list to table
         try {
             if (ETLCollaborationWizardTransferPanel.this.selectedConnection == null) {
-                Logger.print(Logger.INFO, LOG_CATEGORY, null, "selectedConn is null");
+                mLogger.infoNoloc(mLoc.t("PRSR034: selectedConn is null{0}",LOG_CATEGORY));
+                //Logger.print(Logger.INFO, LOG_CATEGORY, null, "selectedConn is null");
             }
-            
+
             Object[] selectedTables = schemaTablesList.getSelectedValues();
             Object[] clonedTables = new Object[selectedTables.length];
-            for(int i=0; i < selectedTables.length ; i++ ) {
-                if(isSource) {
-                    clonedTables[i] = ((SourceTableImpl)selectedTables[i]).clone();
+            for (int i = 0; i < selectedTables.length; i++) {
+                if (isSource) {
+                    clonedTables[i] = ((SourceTableImpl) selectedTables[i]).clone();
                 } else {
-                    clonedTables[i] = ((TargetTableImpl)selectedTables[i]).clone();
+                    clonedTables[i] = ((TargetTableImpl) selectedTables[i]).clone();
                 }
             }
-            
+
             String[][] tablesList = new String[selectedTables.length][4];
             if (selectedTables.length > 0) {
                 for (int i = 0; i < selectedTables.length; i++) {
                     String tableAliasName = generateTableAliasName(isSource);
-                    
+
                     if (isSource) {
                         ((SourceTableImpl) clonedTables[i]).setAliasName(tableAliasName);
                         tablesList[i][0] = ((SourceTableImpl) clonedTables[i]).getQualifiedName();
@@ -1095,17 +1024,18 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                     listModel.addToSelectedTables(tablesList[i], (SQLDBTable) clonedTables[i]);
                 }
             }
-            
+
             jTable1.setModel(listModel.getSelectedTablesModel());
-            if( listModel.getSelectedTablesModel().getRowCount() > 0 ) {
+            if (listModel.getSelectedTablesModel().getRowCount() > 0) {
                 this.removeButton.setEnabled(true);
             }
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null,
-                    "Error trying to get selected table metadata", ex);
+           mLogger.errorNoloc(mLoc.t("PRSR035: Error trying to get selected table metadata{0}",LOG_CATEGORY),ex);
+           //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null,
+             //       "Error trying to get selected table metadata", ex);
         }
     }
-    
+
     /**
      * @see org.openide.WizardDescriptor.Panel#addChangeListener
      */
@@ -1114,38 +1044,38 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             listeners.add(l);
         }
     }
-    
+
     /**
      * Fires a ChangeEvent to all interested listeners to indicate a state change in one
      * or more UI components.
      */
     public void fireChangeEvent() {
         Iterator it;
-        
+
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();
         }
-        
+
         ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
             ((ChangeListener) it.next()).stateChanged(ev);
         }
     }
-    
+
     /**
      * @see org.openide.WizardDescriptor.Panel#getComponent
      */
     public Component getComponent() {
         return this;
     }
-    
+
     /**
      * @see org.openide.WizardDescriptor.Panel#getHelp
      */
     public HelpCtx getHelp() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     /**
      * Gets ListTransferModel associated with this object.
      *
@@ -1154,7 +1084,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     synchronized ListTransferModel getModel() {
         return listModel;
     }
-    
+
     // TODO add constructor flag to set whether panel is always valid, or
     // if at least one item must be transferred to the destination list.
     /**
@@ -1167,7 +1097,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         // Return true if at least one item has been selected.
         return (getModel().getDestinationModel().getSize() > 0);
     }
-    
+
     /**
      * @see org.openide.WizardDescriptor.Panel#isValid
      */
@@ -1175,7 +1105,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
     public boolean isValid() {
         return true;
     }
-    
+
     /**
      * @see java.beans.PropertyChangeListener#propertyChange
      */
@@ -1184,20 +1114,20 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             ((TableModel) evt.getNewValue()).addTableModelListener(this);
         }
     }
-    
+
     /**
      * @see org.openide.WizardDescriptor.Panel#readSettings
      */
     public void readSettings(final Object settings) {
         WizardDescriptor wizard = null;
-        if(settings instanceof ETLWizardContext) {
+        if (settings instanceof ETLWizardContext) {
             ETLWizardContext wizardContext = (ETLWizardContext) settings;
             wizard = (WizardDescriptor) wizardContext.getProperty(ETLWizardContext.WIZARD_DESCRIPTOR);
-            
-        } else if(settings instanceof WizardDescriptor) {
+
+        } else if (settings instanceof WizardDescriptor) {
             wizard = (WizardDescriptor) settings;
         }
-        
+
         if (wizard != null &&
                 WizardDescriptor.NEXT_OPTION.equals(wizard.getValue())) {
             /*
@@ -1216,12 +1146,13 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 models = Arrays.asList(targets);
             }
             listModel.setSourceList(models);
-            ((DefaultComboBoxModel)listModel.getDestinationModel()).removeAllElements();
+            ((DefaultComboBoxModel) listModel.getDestinationModel()).removeAllElements();
             tablePanel.resetTable(Collections.EMPTY_LIST);
         }
-        
+
         if (sourceList != null) {
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     if (sourceList != null && sourceList.getModel().getSize() != 0) {
                         sourceList.requestFocusInWindow();
@@ -1232,7 +1163,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             });
         }
     }
-    
+
     /**
      * @see org.openide.WizardDescriptor.Panel#removeChangeListener
      */
@@ -1241,26 +1172,26 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             listeners.remove(l);
         }
     }
-    
+
     /**
      * @see org.openide.WizardDescriptor.Panel#storeSettings
      */
     public void storeSettings(Object settings) {
         WizardDescriptor wizard = null;
-        if(settings instanceof ETLWizardContext) {
+        if (settings instanceof ETLWizardContext) {
             ETLWizardContext wizardContext = (ETLWizardContext) settings;
             wizard = (WizardDescriptor) wizardContext.getProperty(ETLWizardContext.WIZARD_DESCRIPTOR);
-            
-        } else if(settings instanceof WizardDescriptor) {
+
+        } else if (settings instanceof WizardDescriptor) {
             wizard = (WizardDescriptor) settings;
         }
-        
-        if(wizard != null) {
+
+        if (wizard != null) {
             final Object selectedOption = wizard.getValue();
             if (NotifyDescriptor.CANCEL_OPTION == selectedOption || NotifyDescriptor.CLOSED_OPTION == selectedOption) {
                 return;
             }
-            
+
             boolean isAdvancingPanel = (selectedOption == WizardDescriptor.NEXT_OPTION) || (selectedOption == WizardDescriptor.FINISH_OPTION);
             if (isAdvancingPanel) {
                 try {
@@ -1275,24 +1206,25 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                     } else {
                         wizard.putProperty(ETLCollaborationWizard.TARGET_DB, list);
                     }
-                } catch( Exception e) {
-                    Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error trying to get selected table metadata" , e);
+                } catch (Exception e) {
+                     mLogger.errorNoloc(mLoc.t("PRSR036: Error trying to get selected table metadata{0}",LOG_CATEGORY),e);
+                    //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error trying to get selected table metadata", e);
                 }
             }
         }
     }
-    
+
     /**
      * @see javax.swing.event.TableModelListener#tableChanged
      */
     public void tableChanged(TableModelEvent e) {
         fireChangeEvent();
     }
-    
+
     public void updatePanelState() {
         fireChangeEvent();
     }
-    
+
     /**
      * Called whenever the value of the selection changes.
      *
@@ -1300,7 +1232,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      */
     public void valueChanged(ListSelectionEvent e) {
     }
-    
+
     /**
      * Indicates whether this panel has enough selected tables to allow for creation of a
      * join.
@@ -1309,7 +1241,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
      *         otherwise
      */
     boolean hasEnoughTablesForJoin() {
-        return listModel.getSelectedTablesModel().getRowCount() > 1 ? true: false;
+        return listModel.getSelectedTablesModel().getRowCount() > 1 ? true : false;
     }
 }
 

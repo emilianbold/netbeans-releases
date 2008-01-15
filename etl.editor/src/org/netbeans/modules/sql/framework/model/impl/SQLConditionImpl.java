@@ -76,10 +76,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * This class represents the condition set at source table, target table and at each case
@@ -88,7 +90,8 @@ import com.sun.sql.framework.utils.Logger;
  * @author Ritesh Adval
  */
 public class SQLConditionImpl implements SQLCondition, Cloneable {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLConditionImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     class SecondParseObjectInfo {
         private Element mElm;
         private SQLObject mObj;
@@ -1097,7 +1100,8 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
                     Attribute copiedAttr = (Attribute) attr.clone();
                     this.attributes.put(name, copiedAttr);
                 } catch (CloneNotSupportedException ex) {
-                    Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source objects attributes", ex);
+                   // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source objects attributes", ex);
+                     mLogger.errorNoloc(mLoc.t("PRSR108: Failed to copy source objects attributes{0}",LOG_CATEGORY),ex);
                 }
             }
         }
@@ -1121,7 +1125,8 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
                 this.addObject(clonedObj);
                 origToCloneMap.put(obj, clonedObj);
             } catch (CloneNotSupportedException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source objects attributes", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR109: Failed to copy source objects attributes{0}",LOG_CATEGORY),ex);
+                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source objects attributes", ex);
             }
         }
 
@@ -1323,8 +1328,9 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
             ConditionUtil.populateCondition(this, obj);
             this.root = findRootPredicate();
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "populateObjectsFromConditionText", "Error finding root predicate from text condition "
-                + this.conditionText, ex);
+            mLogger.errorNoloc(mLoc.t("PRSR110: Error finding root predicate from text condition{0}in {1}",this.conditionText,LOG_CATEGORY),ex);
+           // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "populateObjectsFromConditionText", "Error finding root predicate from text condition "
+             //   + this.conditionText, ex);
         }
     }
 

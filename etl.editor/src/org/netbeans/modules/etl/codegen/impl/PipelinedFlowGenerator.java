@@ -37,8 +37,10 @@ import com.sun.etl.engine.ETLTask;
 import com.sun.etl.engine.ETLTaskNode;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConstants;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
@@ -53,7 +55,8 @@ public class PipelinedFlowGenerator extends BaseFlowGenerator {
     private static final String LOG_CATEGORY = PipelinedFlowGenerator.class.getName();
     private static final MessageManager MSG_MGR = MessageManager.getManager(ETLTaskNode.class);
     protected PipelinedStrategyBuilderImpl pipelinedBuilder;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(PipelinedFlowGenerator.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public PipelinedFlowGenerator(SQLDefinition sqlD) throws BaseException {
         super(sqlD);
         this.builderModel.setUseInstanceDB(true);
@@ -72,7 +75,8 @@ public class PipelinedFlowGenerator extends BaseFlowGenerator {
     }
 
     public ETLEngine getScript() throws BaseException {
-        Logger.print(Logger.DEBUG, LOG_CATEGORY, "In getScript()");
+        mLogger.infoNoloc(mLoc.t("PRSR006: In getScript(){0}",LOG_CATEGORY));
+       //Logger.print(Logger.DEBUG, LOG_CATEGORY, "In getScript()");
         generateScript();
         return builderModel.getEngine();
     }
@@ -111,7 +115,8 @@ public class PipelinedFlowGenerator extends BaseFlowGenerator {
         // Iterate through the target tables to generate pipeline tasks.
         Iterator it = targetTables.iterator();
         while (it.hasNext()) {
-            Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
+            mLogger.infoNoloc(mLoc.t("PRSR007: Looping through target tables:{0}",LOG_CATEGORY));
+           // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
             TargetTable tt = (TargetTable) it.next();
 
             context.setTargetTable(tt);

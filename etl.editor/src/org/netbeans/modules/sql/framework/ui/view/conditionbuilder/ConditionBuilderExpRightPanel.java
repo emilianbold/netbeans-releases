@@ -94,8 +94,9 @@ import org.netbeans.modules.sql.framework.ui.output.SQLLogView;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions.ValidateSQLAction;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.output.SQLEditorPanel;
 
 /**
@@ -103,6 +104,8 @@ import org.netbeans.modules.sql.framework.ui.output.SQLEditorPanel;
  * @version $Revision$
  */
 public class ConditionBuilderExpRightPanel extends TopComponent  {
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderExpRightPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     private class ConditionDocumentListener implements DocumentListener {
         /**
@@ -418,7 +421,8 @@ public class ConditionBuilderExpRightPanel extends TopComponent  {
             }
             showSplitPaneView(logView);
         } catch (Exception ex) {
-            Logger.print(Logger.ERROR, LOG_CATEGORY, this, ex);
+             mLogger.errorNoloc(mLoc.t("PRSR153: Error({0})",LOG_CATEGORY),ex);
+           // Logger.print(Logger.ERROR, LOG_CATEGORY, this, ex);
             if (ex instanceof ParseException) {
                 logView.refreshView("Condition is invalid - cannot parse text.");
             } else {

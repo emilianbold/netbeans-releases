@@ -58,16 +58,19 @@ import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.sql.framework.ui.event.SQLDataEvent;
 import org.netbeans.modules.sql.framework.ui.event.SQLLinkEvent;
 import org.netbeans.modules.sql.framework.ui.model.ConditionBuilderSQLUiModel;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author radval
  */
 public class ConditionBuilderSQLUIModelImpl extends AbstractSQLModel implements ConditionBuilderSQLUiModel  {
     private static final String LOG_CATEGORY = ConditionBuilderSQLUIModelImpl.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderSQLUIModelImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private SQLCondition sqlCondition;
 
     /** Creates a new instance of ConditionBuilderSQLUIModelImpl */
@@ -216,8 +219,9 @@ public class ConditionBuilderSQLUIModelImpl extends AbstractSQLModel implements 
                 // reload time we do not want to handle auto join
                 addObjectInGraph(sqlObj, false);
             } catch (BaseException e) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "restoreObjects", "Error caught while restoring object (" + sqlObj.getDisplayName()
-                    + ")", e);
+                 mLogger.errorNoloc(mLoc.t("PRSR144: Error caught while restoring object ({0})",sqlObj.getDisplayName()),e);
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "restoreObjects", "Error caught while restoring object (" + sqlObj.getDisplayName()
+               //     + ")", e);
             }
         }
 

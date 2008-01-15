@@ -41,15 +41,15 @@
 package org.netbeans.modules.etl.ui.view;
 
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.util.ArrayList;
 import java.util.List;
-
-
 import org.netbeans.modules.etl.codegen.ETLProcessFlowGeneratorFactory;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilder;
 import org.netbeans.modules.etl.codegen.ETLStrategyBuilderContext;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.view.graph.actions.CollabPropertiesAction;
 import org.netbeans.modules.etl.ui.view.graph.actions.EditDbModelAction;
 import org.netbeans.modules.etl.ui.view.graph.actions.JoinAction;
@@ -85,7 +85,8 @@ import org.openide.util.NbBundle;
  */
 public class ETLEditorTopView extends BasicTopView {
     public static final String OPERATOR_FOLDER = "ETLOperators";
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLEditorTopView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private ETLCollaborationTopPanel topPanel;
     //private UndoAction undoAction;
     //private RedoAction redoAction;
@@ -293,8 +294,8 @@ public class ETLEditorTopView extends BasicTopView {
                             }
                         }
                     } catch (BaseException be) {
-                        Logger.printThrowable(Logger.ERROR, ETLEditorTopView.class.getName(), this, "Failed to generate Core SQL", be);
-                        
+                        //Logger.printThrowable(Logger.ERROR, ETLEditorTopView.class.getName(), this, "Failed to generate Core SQL", be);
+                         mLogger.errorNoloc(mLoc.t("PRSR048: Failed to generate Core SQL{0}",ETLEditorTopView.class.getName()),be);
                         StringBuilder msg = new StringBuilder();
                         if (targetTable != null) {
                             msg.append(targetTable.getQualifiedName()).append(": ");
@@ -307,7 +308,8 @@ public class ETLEditorTopView extends BasicTopView {
                         }
                         this.sqlText = NbBundle.getMessage(SQLStatementPanel.class, "MSG_cant_evaluate_sql", msg);
                     }catch (Exception exp) {
-                        Logger.printThrowable(Logger.ERROR, ETLEditorTopView.class.getName(), this, "Failed to generate Core SQL", ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR049: Failed to generate Core SQL{0}",ETLEditorTopView.class.getName()),ex);
+                       // Logger.printThrowable(Logger.ERROR, ETLEditorTopView.class.getName(), this, "Failed to generate Core SQL", ex);
                         this.sqlText = NbBundle.getMessage(SQLStatementPanel.class, "MSG_cant_evaluate_sql", exp.getMessage());
                     }
                     return "";

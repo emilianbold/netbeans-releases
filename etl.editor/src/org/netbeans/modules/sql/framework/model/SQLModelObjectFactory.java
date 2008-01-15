@@ -41,12 +41,13 @@
 package org.netbeans.modules.sql.framework.model;
 
 import java.util.List;
-
 import org.netbeans.modules.sql.framework.common.jdbc.SQLDBConnectionDefinition;
 import org.w3c.dom.Element;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * SQL Framework Object factory
@@ -58,7 +59,8 @@ public abstract class SQLModelObjectFactory {
 
     private static SQLModelObjectFactory instance = null;
     private static final String LOG_CATEGORY = SQLModelObjectFactory.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLModelObjectFactory.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Returns Singlton-instance of SQL Framework Object factory
      * 
@@ -70,7 +72,8 @@ public abstract class SQLModelObjectFactory {
                 Class implClass = Class.forName("org.netbeans.modules.sql.framework.model.impl.SQLModelObjectFactoryImpl");
                 instance = (SQLModelObjectFactory) implClass.newInstance();
             } catch (Exception ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Can't instantiate factory class", ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR135: Can't instantiate factory class{0}",LOG_CATEGORY),ex);
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Can't instantiate factory class", ex);
             }
         }
         return instance;

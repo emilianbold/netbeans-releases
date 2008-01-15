@@ -44,12 +44,13 @@ import java.awt.Dialog;
 import java.awt.Dimension;
 
 import javax.swing.SwingUtilities;
-
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 
-import com.sun.sql.framework.utils.Logger;
 
 /**
  * Abstract base class for ETL Wizards. Interested classes should instantiate the correct
@@ -61,7 +62,8 @@ import com.sun.sql.framework.utils.Logger;
 public abstract class ETLWizard {
     /* Log4J category string */
     private static final String LOG_CATEGORY = ETLWizard.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLWizard.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /** Common context for panels to exchange and store data. */
     protected ETLWizardContext context;
 
@@ -128,20 +130,21 @@ public abstract class ETLWizard {
 
             if (desc != null) {
                 if (desc.getValue() == WizardDescriptor.FINISH_OPTION) {
-                    Logger.print(Logger.DEBUG, LOG_CATEGORY, "show()", "User finished the wizard."); // NOI18N
-
+                    //Logger.print(Logger.DEBUG, LOG_CATEGORY, "show()", "User finished the wizard."); // NOI18N
+                     mLogger.infoNoloc(mLoc.t("PRSR037: User finished the wizard.{0}",LOG_CATEGORY));
                     // Call method in concrete implementation to handle committal.
                     commit();
                     response = true;
                 } else {
-                    Logger.print(Logger.DEBUG, LOG_CATEGORY, "show()", "User closed or cancelled the wizard."); // NOI18N
-
+                   // Logger.print(Logger.DEBUG, LOG_CATEGORY, "show()", "User closed or cancelled the wizard."); // NOI18N
+                      mLogger.infoNoloc(mLoc.t("PRSR038: User closed or cancelled the wizard.{0}",LOG_CATEGORY));
                     // Call method in concrete implementation to handle cancellation.
                     cancel();
                 }
             }
         } catch (Exception e) {
-            Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "show()", "Exception caught while performing wizard processing.", e); // NOI18N
+             mLogger.errorNoloc(mLoc.t("PRSR039: Exception caught while performing wizard processing.{0}",LOG_CATEGORY),e);
+            //Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "show()", "Exception caught while performing wizard processing.", e); // NOI18N
             ErrorManager.getDefault().notify(e);
         } finally {
             // Call method in concrete implementation to do any necessary cleanup.

@@ -28,12 +28,14 @@ import org.netbeans.modules.etl.codegen.PatternFinder;
 import org.netbeans.modules.etl.utils.MessageManager;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.TargetTable;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.etl.engine.ETLEngine;
 import com.sun.etl.engine.ETLTask;
 import com.sun.etl.engine.ETLTaskNode;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Builds ETLProcess Flow and delegate to appropriate ETLStrategy Builder as required
@@ -43,7 +45,8 @@ import com.sun.sql.framework.utils.Logger;
  */
 public class DefaultProcessFlowGenerator extends BaseFlowGenerator {
     private static final String LOG_CATEGORY = DefaultProcessFlowGenerator.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(DefaultProcessFlowGenerator.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private StringBuilder dependentsForThreadCollector = new StringBuilder();
 
     public DefaultProcessFlowGenerator(SQLDefinition sqlD) throws BaseException {
@@ -55,7 +58,8 @@ public class DefaultProcessFlowGenerator extends BaseFlowGenerator {
      * Called during Test run codegen.
      */
     public ETLEngine getScript() throws BaseException {
-        Logger.print(Logger.DEBUG, LOG_CATEGORY, "In getScript()");
+        mLogger.infoNoloc(mLoc.t("PRSR003: In getScript(){0}",LOG_CATEGORY));
+        //Logger.print(Logger.DEBUG, LOG_CATEGORY, "In getScript()");
         generateScript();
         return builderModel.getEngine();
     }
@@ -79,7 +83,8 @@ public class DefaultProcessFlowGenerator extends BaseFlowGenerator {
         ETLStrategyBuilderContext context = new ETLStrategyBuilderContext(initTask, globalCleanupTask, this.statsUpdateTask, this.builderModel);
 
         while (it.hasNext()) {
-            Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
+             mLogger.infoNoloc(mLoc.t("PRSR004: Looping through target tables:{0}",LOG_CATEGORY));
+           //Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
             TargetTable tt = (TargetTable) it.next();
             // Create commit node to collect transformer connections and commit/close
             // them.

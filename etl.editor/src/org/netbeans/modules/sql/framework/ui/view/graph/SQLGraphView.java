@@ -78,7 +78,6 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphLink;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphNode;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphPort;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
-import org.netbeans.modules.sql.framework.ui.graph.IToolBar;
 import org.netbeans.modules.sql.framework.ui.graph.impl.GraphView;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
@@ -88,8 +87,9 @@ import org.openide.actions.UndoAction;
 import org.openide.actions.RedoAction;
 import org.openide.actions.PrintAction;
 import org.openide.util.actions.SystemAction;
-import com.sun.sql.framework.utils.Logger;
-
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 /**
  * @author Ritesh Adval
  * @version $Revision$
@@ -98,7 +98,8 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
     
     private static ClipBoard clipBoard = new ClipBoard();
     private static final String LOG_CATEGORY = SQLGraphView.class.getName();
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLGraphView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     Color pColor;
     Color sColor;
     
@@ -503,7 +504,8 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                     }
                     nodeMap.put(node, clonedObj);
                 } catch (Exception ex) {
-                    Logger.print(Logger.DEBUG, LOG_CATEGORY, ex.getMessage(), ex);
+                    //Logger.print(Logger.DEBUG, LOG_CATEGORY, ex.getMessage(), ex);
+                      mLogger.errorNoloc(mLoc.t("PRSR175: Exception{0}",ex.getMessage()),ex);
                 }
             }
         }
@@ -524,7 +526,8 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                 IGraphNode toNode = toPort.getDataNode();
                 if (toNode != node && srcNodes.contains(toNode)) {
                     //copy the link
-                    Logger.print(Logger.DEBUG, LOG_CATEGORY, "Find a link between " + node + " and " + toNode);
+                      mLogger.infoNoloc(mLoc.t("PRSR176: Find a link between{0} and {1}", node,toNode));
+                   // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Find a link between " + node + " and " + toNode);
                     Object clonedSrcObj = nodeMap.get(node);
                     Object clonedDestObj = nodeMap.get(toNode);
                     if (clonedSrcObj != null && clonedDestObj != null) {
@@ -535,7 +538,8 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                             SQLConnectableObject exprObj = (SQLConnectableObject) clonedDestObj;
                             sqlModel.createLink((SQLCanvasObject) clonedSrcObj, srcFieldName, exprObj, destFieldName);
                         } catch (Exception ex) {
-                            Logger.print(Logger.DEBUG, LOG_CATEGORY, ex.getMessage(), ex);
+                            //Logger.print(Logger.DEBUG, LOG_CATEGORY, ex.getMessage(), ex);
+                              mLogger.errorNoloc(mLoc.t("PRSR177: Exception{0}",ex.getMessage()),ex);
                         }
                     }
                 }

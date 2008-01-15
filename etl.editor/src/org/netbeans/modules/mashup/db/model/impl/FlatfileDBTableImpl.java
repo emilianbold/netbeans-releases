@@ -64,9 +64,10 @@ import org.netbeans.modules.sql.framework.model.impl.PrimaryKeyImpl;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
@@ -91,7 +92,8 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     private static final String END_QUOTE_SPACE = "\" ";
     
     private static final String EQUAL_START_QUOTE = "=\"";
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileDBTableImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /* Log4J category string */
     private static final String LOG_CATEGORY = FlatfileDBTableImpl.class.getName();
     
@@ -520,7 +522,8 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             setOrPutProperty(FlatfileDBTable.PROP_CREATE_IF_NOT_EXIST, new Boolean(createDataFileIfNotExist));
             sql = this.getCreateStatementSQL(this, theTableName) + this.getFlatfilePropertiesSQL();
         } catch (Exception e) {
-            Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to set the file path", e);
+             mLogger.errorNoloc(mLoc.t("PRSR061: Failed to set the file path.{0}",LOG_CATEGORY),e);
+          //  Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to set the file path", e);
         }
         return sql;
     }
@@ -609,8 +612,9 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
                 if (aProp.isRequired()) {
                     return ""; // Required property is invalid; fail.
                 }
-                Logger.print(Logger.ERROR, LOG_CATEGORY, this, "Value for property '" + aProp.getName() + "' is invalid: " + aProp.getValue()
-                + "; skipping.");
+                  mLogger.infoNoloc(mLoc.t("PRSR062: Value for property {0}is invalid:{1}; skipping.",aProp.getName(),aProp.getValue()));
+               // Logger.print(Logger.ERROR, LOG_CATEGORY, this, "Value for property '" + aProp.getName() + "' is invalid: " + aProp.getValue()
+               // + "; skipping.");
                 continue; // Log and skip this parameter.
             }
             
@@ -1114,4 +1118,5 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     protected void parseChildren(NodeList childNodeList) throws BaseException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
 }

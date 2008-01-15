@@ -55,15 +55,18 @@ import org.netbeans.modules.mashup.db.ui.FlatfileNode;
 import org.openide.explorer.view.NodeTreeModel;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
-import com.sun.sql.framework.utils.Logger;
 
 /**
  * @author Ritesh Adval, Jonathan Giron
  * @version $Revision$
  */
 public class FlatfileTreeTableModel extends NodeTreeModel {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileTreeTableModel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /* Log4J category string */
     private static final String LOG_CATEGORY = FlatfileTreeTableModel.class.getName();
 
@@ -159,13 +162,15 @@ public class FlatfileTreeTableModel extends NodeTreeModel {
                         modelNode.getChildren().add(new Node[] { fileNode});
                     }
                 } catch (IntrospectionException ignore) {
-                    Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while building FlatfileNode for " + table.getName(),
-                        ignore);
+                      mLogger.errorNoloc(mLoc.t("PRSR071: Caught exception while building FlatfileNode for{0}" , table.getName()), ignore);
+                   // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while building FlatfileNode for " + table.getName(),
+                     //   ignore);
                 }
             }
         } catch (IntrospectionException ignore) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while building FlatfileNode for " + dbModel.getModelName(),
-                ignore);
+              mLogger.errorNoloc(mLoc.t("PRSR072: Caught exception while building FlatfileNode for{0}" , dbModel.getModelName()), ignore);
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while building FlatfileNode for " + dbModel.getModelName(),
+               // ignore);
         }
     }
 

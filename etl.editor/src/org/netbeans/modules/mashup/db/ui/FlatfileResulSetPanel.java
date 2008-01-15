@@ -71,14 +71,17 @@ import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
 public class FlatfileResulSetPanel extends JPanel implements ActionListener, PropertyChangeListener {
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileResulSetPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     
     private class FlatfileTableQuery {
         public FlatfileTableQuery() {
@@ -129,14 +132,16 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
                     conn = db.getJDBCConnection();
                     stmt = conn.createStatement();
                     String selectSQL = table.getSelectStatementSQL(ct);
-                    Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), selectSQL);
+                    mLogger.infoNoloc(mLoc.t("PRSR084: FlatfileResulSetPanel.class.getName(){0}",selectSQL));
+                   // Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), selectSQL);
                     rs = stmt.executeQuery(selectSQL);
                     recordViewer.clearView();
                     recordViewer.setResultSet(rs);
                     
                     // get the count of all rows
                     String countSql = "Select count(*) From " + table.getName();
-                    Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), "Select count(*) statement used for total rows: \n" + countSql);
+                    mLogger.infoNoloc(mLoc.t("PRSR085: Select count(*) statement used for total rows: {0}",countSql));
+                   // Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), "Select count(*) statement used for total rows: \n" + countSql);
                     
                     stmt = conn.createStatement();
                     cntRs = stmt.executeQuery(countSql);
@@ -158,7 +163,8 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
                 
             } catch (Exception e) {
                 this.ex = e;
-                Logger.printThrowable(Logger.ERROR, FlatfileResulSetPanel.class.getName(), null, "Can't get contents for table ", e);
+                  mLogger.errorNoloc(mLoc.t("PRSR086: Can't get contents for table:{0}",FlatfileResulSetPanel.class.getName()),e);
+               // Logger.printThrowable(Logger.ERROR, FlatfileResulSetPanel.class.getName(), null, "Can't get contents for table ", e);
                 recordViewer.clearView();
                 totalRowsLabel.setText("0");
             }
@@ -182,8 +188,9 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
                 }
                 
             } catch (SQLException sqle) {
-                Logger.printThrowable(Logger.ERROR, FlatfileResulSetPanel.class.getName(), null,
-                        "Could not close statement after retrieving table contents.", sqle);
+                 mLogger.errorNoloc(mLoc.t("PRSR087: Could not close statement after retrieving table contents {0}",FlatfileResulSetPanel.class.getName()),sqle);
+               // Logger.printThrowable(Logger.ERROR, FlatfileResulSetPanel.class.getName(), null,
+                 //       "Could not close statement after retrieving table contents.", sqle);
             } finally {
                 if (conn != null) {
                     try {

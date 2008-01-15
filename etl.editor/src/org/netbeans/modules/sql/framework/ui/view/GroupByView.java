@@ -80,8 +80,9 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ritesh Adval
@@ -89,7 +90,8 @@ import com.sun.sql.framework.utils.Logger;
  * @version $Revision$
  */
 public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(GroupByView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     class ButtonActionListener implements ActionListener {
         /**
          * Invoked when an action occurs.
@@ -196,7 +198,8 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
                 try {
                     conditionContainer = (SQLCondition) conditionContainer.cloneSQLObject();
                 } catch (CloneNotSupportedException ex) {
-                    Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "showCondBuilder", "error cloning the condition ", ex);
+                   mLogger.errorNoloc(mLoc.t("PRSR200: error cloning the condition {0}",LOG_CATEGORY),ex);
+                   // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "showCondBuilder", "error cloning the condition ", ex);
                     return;
                 }
 
@@ -212,8 +215,9 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
                         warnForInvalidCondition();
                     }
                 } catch (Exception ex) {
-                    Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "showCondBuilder", "Error finding root predicate from text condition " + text,
-                        ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR201: Error finding root predicate from text condition{0}from joinview table.",text),ex);
+                   // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "showCondBuilder", "Error finding root predicate from text condition " + text,
+                   //     ex);
                     warnForInvalidCondition();
                 }
 

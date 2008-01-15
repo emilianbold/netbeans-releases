@@ -67,8 +67,10 @@ import com.sun.etl.engine.ETLEngineExecEvent;
 import com.sun.etl.engine.ETLEngineListener;
 import com.sun.etl.engine.ETLEngineLogEvent;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Encapsulates access control and execution of test eTL process on a selected
@@ -86,7 +88,8 @@ public class ExecuteTestCookie implements Node.Cookie {
     private SQLLogView logView;
     private long startTime;
     private long endTime;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ExecuteTestCookie.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Creates a new instance of ETLEditorSaveAction associated with the given
      * data object.
@@ -158,7 +161,8 @@ public class ExecuteTestCookie implements Node.Cookie {
 
             logView.appendToView(msg);
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-            Logger.printThrowable(Logger.ERROR, logCategory, null, "Problem in executing engine.", e);
+             mLogger.errorNoloc(mLoc.t("PRSR011: Problem in executing engine.{0}",logCategory),e);
+           // Logger.printThrowable(Logger.ERROR, logCategory, null, "Problem in executing engine.", e);
         }
     }
 
@@ -178,8 +182,8 @@ public class ExecuteTestCookie implements Node.Cookie {
          */
         public synchronized void executionPerformed(ETLEngineExecEvent event) {
             if ((event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) || (event.getStatus() == ETLEngine.STATUS_COLLAB_EXCEPTION)) {
-
-                Logger.print(Logger.INFO, logCategory, "eTL engine execution completed...");
+             mLogger.infoNoloc(mLoc.t("PRSR012: eTL engine execution completed...{0}",logCategory));
+                //Logger.print(Logger.INFO, logCategory, "eTL engine execution completed...");
                 // Ensure GUI change occurs in the event-dispatch thread.
                 SwingUtilities.invokeLater(new CloseProgressBarTask());
                 try {
@@ -199,7 +203,8 @@ public class ExecuteTestCookie implements Node.Cookie {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msgBuf.toString(), NotifyDescriptor.INFORMATION_MESSAGE));
                     }
                 } catch (Exception ex) {
-                    Logger.printThrowable(Logger.ERROR, logCategory, null, "Problem while handling ETLEngineExecEvent for current execution.", ex);
+                     mLogger.errorNoloc(mLoc.t("PRSR013: Problem while handling ETLEngineExecEvent for current execution.{0}",logCategory),ex);
+                    //Logger.printThrowable(Logger.ERROR, logCategory, null, "Problem while handling ETLEngineExecEvent for current execution.", ex);
                 } finally {
                     // Ensure dialog box is removed from display - should be harmless if called twice.
                     SwingUtilities.invokeLater(new CloseProgressBarTask());
@@ -213,7 +218,8 @@ public class ExecuteTestCookie implements Node.Cookie {
             if (evt != null && logView != null) {
                 String msg = NbBundle.getMessage(ExecuteTestCookie.class, "MSG_output_template", evt.getSourceName(), evt.getLogMessage());
                 logView.appendToView(msg);
-                Logger.print(evt.getLogLevel(), logCategory, msg);
+                         mLogger.infoNoloc(mLoc.t("PRSR014: evt.getLogLevel(){0}{1}",logCategory,msg));
+               // Logger.print(evt.getLogLevel(), logCategory, msg);
             }
         }
     }
@@ -252,7 +258,8 @@ public class ExecuteTestCookie implements Node.Cookie {
                     }
                     throwableList = engine.getContext().getThrowableList();
                 } catch (Exception ex) {
-                    Logger.printThrowable(Logger.ERROR, "Temp", this, "Exception:", ex);
+                     mLogger.errorNoloc(mLoc.t("PRSR015: Exception:{0}",logCategory),ex);
+                    //Logger.printThrowable(Logger.ERROR, "Temp", this, "Exception:", ex);
                     throwableList.add(ex);
                 } finally {
                     Thread.currentThread().setContextClassLoader(origLoader);
@@ -303,10 +310,12 @@ public class ExecuteTestCookie implements Node.Cookie {
         private void writeToAppLog(List throwables) {
             if (throwables.size() != 0) {
                 ListIterator iter = throwables.listIterator();
-                Logger.print(Logger.ERROR, logCategory, "Exceptions caught during engine execution:");
+                 mLogger.infoNoloc(mLoc.t("PRSR016: Exceptions caught during engine execution:{0}",logCategory));
+                //Logger.print(Logger.ERROR, logCategory, "Exceptions caught during engine execution:");
                 while (iter.hasNext()) {
                     Throwable t = (Throwable) iter.next();
-                    Logger.printThrowable(Logger.ERROR, logCategory, null, "> Exception " + Integer.toString(iter.nextIndex()), t);
+                     mLogger.errorNoloc(mLoc.t("PRSR017: > Exception{0}",Integer.toString(iter.nextIndex())),t);
+                    //Logger.printThrowable(Logger.ERROR, logCategory, null, "> Exception " + Integer.toString(iter.nextIndex()), t);
                 }
             }
         }
@@ -329,7 +338,8 @@ public class ExecuteTestCookie implements Node.Cookie {
                 File workingFolder = new File(ETLScriptBuilderModel.ETL_DESIGN_WORK_FOLDER);
                 deleteFile(workingFolder);
             } catch (Exception ex) {
-                Logger.printThrowable(Logger.WARN, logCategory, this, "Error deleting working folder.", ex);
+                  mLogger.errorNoloc(mLoc.t("PRSR018: Error deleting working folder.{0}",logCategory),ex);
+               // Logger.printThrowable(Logger.WARN, logCategory, this, "Error deleting working folder.", ex);
             }
         }
     }

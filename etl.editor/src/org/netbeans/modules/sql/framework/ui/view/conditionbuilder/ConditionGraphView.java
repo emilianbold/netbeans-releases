@@ -55,15 +55,19 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphNode;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLGraphView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author Ritesh Adval
  * @version $Revision$
  */
 public class ConditionGraphView extends SQLGraphView {
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionGraphView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of ConditionGraphView */
     public ConditionGraphView() {
@@ -97,8 +101,8 @@ public class ConditionGraphView extends SQLGraphView {
             }
 
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.ERROR, ConditionGraphView.class.getName(), "drop", "error in doing reload", ex);
-
+          //  Logger.printThrowable(Logger.ERROR, ConditionGraphView.class.getName(), "drop", "error in doing reload", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR158: error in doing reload{0}",ConditionGraphView.class.getName()),ex);
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message("Can not create Node in the canvas " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
         } finally {

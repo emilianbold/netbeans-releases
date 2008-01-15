@@ -65,8 +65,9 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuil
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
 
 /**
@@ -76,7 +77,8 @@ import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
  */
 
 public class ConditionPropertyEditor extends PropertyEditorSupport implements IPropertyEditor {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionPropertyEditor.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public static class Validation extends ConditionPropertyEditor {
         public Validation(IGraphViewContainer editor, SQLDBTable table) {
             super(editor, table);
@@ -199,7 +201,8 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
             try {
                 this.conditionContainer = (SQLCondition) conditionContainer.cloneSQLObject();
             } catch (CloneNotSupportedException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setAsText", "error cloning the condition ", ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR196: error cloning the condition {0}",LOG_CATEGORY),ex);
+                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setAsText", "error cloning the condition ", ex);
                 return;
             }
 
@@ -215,7 +218,8 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
                     warnForInvalidCondition();
                 }
             } catch (Exception ex) {
-                Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "setAsText", "Error finding root predicate from text condition " + text, ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR197: Error finding root predicate from text condition{0}",text),ex);
+               // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "setAsText", "Error finding root predicate from text condition " + text, ex);
                 warnForInvalidCondition();
             }
 
@@ -226,8 +230,9 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
                     this.property.setValue(this.conditionContainer);
                 }
             } catch (Exception ex) {
-                Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "setAsText", "Error occurred in setting the property value for condition " + text,
-                    ex);
+                mLogger.errorNoloc(mLoc.t("PRSR198: Error occurred in setting the property value for condition{0}from joinview table.",text),ex);
+               // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "setAsText", "Error occurred in setting the property value for condition " + text,
+                 //   ex);
             }
         }
     }

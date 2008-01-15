@@ -87,9 +87,10 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DBTableCookie;
 
@@ -102,7 +103,8 @@ public class SQLGraphController implements IGraphController {
     private static final String NETBEANS_NODE_MIMETYPE = "application/x-java-openide-nodednd; class=org.openide.nodes.Node";
 
     private static final String LOG_CATEGORY = SQLGraphController.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLGraphController.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private static DataFlavor[] mDataFlavorArray = new DataFlavor[1];
 
     static {
@@ -174,14 +176,17 @@ public class SQLGraphController implements IGraphController {
                     }
                 }
             } catch (IOException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught IOException while handling DnD.", ex);
+                  mLogger.errorNoloc(mLoc.t("PRSR170: Caught IOException while handling DnD{0}",LOG_CATEGORY),ex);
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught IOException while handling DnD.", ex);
                 e.rejectDrop();
             } catch (UnsupportedFlavorException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught UnsupportedFlavorException while handling DnD.", ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR171: Caught UnsupportedFlavorException while handling DnD{0}",LOG_CATEGORY),ex);
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught UnsupportedFlavorException while handling DnD.", ex);
                 e.rejectDrop();
             } catch (BaseException ex) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE));
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught BaseException while handling DnD.", ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR172: Caught BaseException while handling DnD{0}",LOG_CATEGORY),ex);
+               //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught BaseException while handling DnD.", ex);
                 e.rejectDrop();
             }
         } else {
@@ -285,7 +290,8 @@ public class SQLGraphController implements IGraphController {
                     msg = NbBundle.getMessage(SQLGraphController.class, "ERR_object_check_incompatible_no_argnames", srcObjType, destObjType);
                 }
             } catch (Exception e) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while resolving error message.", e);
+                mLogger.errorNoloc(mLoc.t("PRSR173: Caught Exception while resolving error message{0}",LOG_CATEGORY),e);
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while resolving error message.", e);
                 msg = "Cannot link these objects together.";
             }
 
@@ -518,8 +524,8 @@ public class SQLGraphController implements IGraphController {
                 collabModel.removeObject(sqlObj);
             }
         } catch (Exception e) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while removing object.", e);
-
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while removing object.", e);
+           mLogger.errorNoloc(mLoc.t("PRSR174: Caught exception while removing object{0}",LOG_CATEGORY),e);
             NotifyDescriptor d = new NotifyDescriptor.Message(e.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
         }

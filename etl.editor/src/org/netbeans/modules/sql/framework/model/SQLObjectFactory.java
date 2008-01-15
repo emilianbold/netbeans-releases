@@ -54,10 +54,12 @@ import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Singleton object factory for SQL objects.
@@ -69,7 +71,8 @@ public class SQLObjectFactory {
 
     /* Log4J category string */
     private static final String LOG_CATEGORY = SQLObjectFactory.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLObjectFactory.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private static final String OBJECT_TYPE_CLASS = "class";
 
     private static final String OBJECT_TYPE_CLASS_TAG = "objectTypeClass";
@@ -258,7 +261,8 @@ public class SQLObjectFactory {
             NodeList objMap = elem.getElementsByTagName(OBJECT_TYPE_CLASS_TAG);
             parseObjectMap(objMap);
         } catch (Exception e) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Failed to load the Object Map", e);
+            mLogger.errorNoloc(mLoc.t("PRSR136: Failed to load the Object Map{0}",LOG_CATEGORY),e);
+            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Failed to load the Object Map", e);
         }
     }
 

@@ -56,7 +56,6 @@ import javax.swing.Action;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.etl.ui.DataObjectProvider;
@@ -88,8 +87,10 @@ import org.netbeans.modules.sql.framework.ui.view.property.SourceTableProperties
 import org.netbeans.modules.sql.framework.ui.view.property.TargetTableProperties;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import java.beans.PropertyChangeListener;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.view.ETLOutputWindowTopComponent;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
@@ -122,7 +123,8 @@ import org.openide.windows.WindowManager;
  * @version $Revision$
  */
 public abstract class BasicTopView extends JPanel implements IGraphViewContainer {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(BasicTopView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     protected static abstract class ConditionValidator implements ActionListener {
 
         static final class DataValidation extends ConditionValidator {
@@ -516,7 +518,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                         TemplateFactory.invokeSetter(pb, evt.getPropertyName(), evt.getNewValue());
                         DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
                     } catch (Exception ex) {
-                        Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "editProperties", "Failed to save changes", ex);
+                          mLogger.errorNoloc(mLoc.t("PRSR194: Failed to save changes {0}",LOG_CATEGORY),ex);
+                       // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "editProperties", "Failed to save changes", ex);
                     }
                 }
             }
@@ -576,8 +579,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             try {
                 JoinUtility.editJoinView(jView, modifiedJoinView, modifiedJoinView.getSourceTables(), tableNodes, this.getGraphView());
             } catch (BaseException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "editJoinView", "Caught Exception while commiting join view edits.", ex);
-
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "editJoinView", "Caught Exception while commiting join view edits.", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR195: Caught Exception while commiting join view edits.{0}",LOG_CATEGORY),ex);
                 NotifyDescriptor d = new NotifyDescriptor.Message(ex.toString(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }

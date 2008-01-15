@@ -51,9 +51,10 @@ import org.netbeans.modules.sql.framework.ui.editor.property.IPropertySheet;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyViewManager;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import org.openide.util.NbBundle;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.XmlUtil;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 
@@ -63,7 +64,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  */
 public class ConfigParamsTreeView extends JPanel implements PropertyChangeListener {
     private String LOG_CATEGORY = DBModelTreeView.class.getName();
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(ConfigParamsTreeView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private JTree tree;
     private List srcdbModels;
     private List tgtdbModels;
@@ -313,7 +315,8 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
             Element element = XmlUtil.loadXMLFile(new BufferedReader(new FileReader(this.confFile)));
             rootNode = (Node) element;
         } catch (Exception ex) {
-            Logger.print(Logger.ERROR, ConfigParamsTreeView.class.getName(), ex.getMessage());
+             mLogger.infoNoloc(mLoc.t("PRSR041: ConfigParamsTreeView.class.getName(){0}",ex.getMessage()));
+            //Logger.print(Logger.ERROR, ConfigParamsTreeView.class.getName(), ex.getMessage());
         }
         Node node;
         if(rootNode != null) {
@@ -321,7 +324,8 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
             try {
                 sqlDefn = new SQLDefinitionImpl((Element)sqlNode);
             } catch (Exception ex) {
-                Logger.print(Logger.ERROR, ConfigParamsTreeView.class.getName(), ex.getMessage());
+                 mLogger.infoNoloc(mLoc.t("PRSR042: ConfigParamsTreeView.class.getName(){0}",ex.getMessage()));
+                //Logger.print(Logger.ERROR, ConfigParamsTreeView.class.getName(), ex.getMessage());
             }
         }
         if(isSource) {

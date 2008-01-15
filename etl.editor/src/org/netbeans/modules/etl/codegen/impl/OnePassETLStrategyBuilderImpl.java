@@ -38,7 +38,9 @@ import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConstants;
 import com.sun.sql.framework.jdbc.SQLPart;
 import com.sun.sql.framework.utils.AttributeMap;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 /**
@@ -50,7 +52,8 @@ import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 
 public class OnePassETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
     private static final String LOG_CATEGORY = OnePassETLStrategyBuilderImpl.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(OnePassETLStrategyBuilderImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public OnePassETLStrategyBuilderImpl(ETLScriptBuilderModel model) throws BaseException {
         super(model);
     }
@@ -134,8 +137,8 @@ public class OnePassETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
      * Before calling apply appropriate applyConnections
      */
     public void generateScriptForTable(ETLStrategyBuilderContext context) throws BaseException {
-        Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
-
+       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
+        mLogger.infoNoloc(mLoc.t("PRSR005: Looping through target tables:{0}",LOG_CATEGORY));
         populateInitTask(context.getInitTask(), context.getGlobalCleanUpTask(), context.getTargetTable());
 
         // Create cleanup task for this execution thread.

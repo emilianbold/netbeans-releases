@@ -80,9 +80,10 @@ import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -107,7 +108,8 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     private static final String ATTR_CREATE_TARGET_TABLE = "createTargetTable";
 
     private static final String ATTR_TRUNCATE_BEFORE_LOAD = "truncateBeforeLoad";
-
+    private static transient final Logger mLogger = LogUtil.getLogger(TargetTableImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private SQLCondition joinCondition;
     private SQLCondition filterCondition;
     private SQLCondition havingCondition;
@@ -209,8 +211,9 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
             } catch (BaseException ex) {
                 // we should not throw this exception; this is just fail to
                 // create an automatic filter so we can ignore now.
-                Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "addInput", "Could not create auto joinCondition for target table.",
-                    ex);
+                  mLogger.errorNoloc(mLoc.t("PRSR120: Could not create auto joinCondition for target table.{0}",TargetTableImpl.class.getName()),ex);
+               // Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "addInput", "Could not create auto joinCondition for target table.",
+                 //   ex);
             }
         }
     }
@@ -415,8 +418,9 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
                 }
             }
         } catch (BaseException ex) {
-            Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "getJoinView", "Could not find a join view for this target table "
-                + this.getName(), ex);
+             mLogger.errorNoloc(mLoc.t("PRSR121: Could not find a join view for this target table{0}",this.getName()),ex);
+          // Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "getJoinView", "Could not find a join view for this target table "
+            //    + this.getName(), ex);
         }
 
         return joinView;
@@ -724,8 +728,8 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         } catch (BaseException ex) {
             // we should not throw this exception; this is just fail to
             // create an automatic filter so we can ignore now.
-            Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "addInput", "Could not create auto joinCondition for target table.", ex);
-
+            //Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "addInput", "Could not create auto joinCondition for target table.", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR122: Could not create auto joinCondition for target table.{0}",TargetTableImpl.class.getName()),ex);
         }
 
         return victim;

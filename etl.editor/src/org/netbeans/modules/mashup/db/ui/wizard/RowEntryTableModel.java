@@ -52,8 +52,9 @@ import java.util.Set;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * TableModel implementation that manages instances of classes which implement the
@@ -64,6 +65,8 @@ import com.sun.sql.framework.utils.Logger;
  * @version $Revision$
  */
 public class RowEntryTableModel implements TableModel {
+    private static transient final Logger mLogger = LogUtil.getLogger(RowEntryTableModel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     /**
      * Defines contract for implementation classes that want to be rendered by a JTable
@@ -440,13 +443,14 @@ public class RowEntryTableModel implements TableModel {
                 ((RowEntry) rowData).setValue(columnIndex, aValue);
                 success = true;
             } catch (Exception e) {
-                Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "doSetRowEntry", "Error while setting value for row " + rowIndex + ", col "
-                    + columnIndex, e);
+                  mLogger.errorNoloc(mLoc.t("PRSR081: Error while setting value for row {0}, col{1}",rowIndex,columnIndex),e);
+               // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "doSetRowEntry", "Error while setting value for row " + rowIndex + ", col "
+                  //  + columnIndex, e);
                 success = false;
             }
-
-            Logger.print(Logger.DEBUG, LOG_CATEGORY, "doSetRowEntry", "After setValue at row " + rowIndex + ", col " + columnIndex + ":  value = "
-                + aValue + "; rowData = " + rowData);
+        mLogger.infoNoloc(mLoc.t("PRSR082: After setValue at row{0}, col{1}:  value ={2}; rowData ={3}",rowIndex,columnIndex,aValue,rowData));
+           // Logger.print(Logger.DEBUG, LOG_CATEGORY, "doSetRowEntry", "After setValue at row " + rowIndex + ", col " + columnIndex + ":  value = "
+             //   + aValue + "; rowData = " + rowData);
         }
 
         return success;

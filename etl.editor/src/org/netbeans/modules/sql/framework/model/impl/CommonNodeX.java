@@ -45,13 +45,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-
+import net.java.hulp.i18n.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.w3c.dom.Element;
 
-import com.sun.sql.framework.utils.Logger;
 
 /**
  * 
@@ -77,7 +77,8 @@ public class CommonNodeX {
     protected String name = "unknown" ;
     
     private static final String LOG_CATEGORY = CommonNodeX.class.getName();
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(CommonNodeX.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public CommonNodeX(Element elem) {
         this.name = elem.getAttribute(ATTR_NAME);        
     }
@@ -127,7 +128,8 @@ public class CommonNodeX {
             try { 
                 ret = this.getClass().getResource(attrElement.getAttribute(ATTR_URL_VALUE)); 
             } catch (Exception ex) {
-                Logger.print(Logger.WARN, LOG_CATEGORY, this, ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR107: Exception{0}",LOG_CATEGORY),ex);
+                //Logger.print(Logger.WARN, LOG_CATEGORY, this, ex);
             }
         }
         return ret;

@@ -115,7 +115,9 @@ import org.netbeans.modules.sql.framework.ui.model.SQLUIModel;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinMainDialog;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinUtility;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -127,6 +129,8 @@ public class BasicSQLGraphController implements IGraphController {
 
     private static final String NETBEANS_DBTABLE_MIMETYPE = "application/x-java-netbeans-dbexplorer-table;class=org.netbeans.api.db.explorer.DatabaseMetaDataTransfer$Table";
     private static final String LOG_CATEGORY = BasicSQLGraphController.class.getName();
+    private static transient final Logger mLogger = LogUtil.getLogger(BasicSQLGraphController.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private static DataFlavor[] mDataFlavorArray = new DataFlavor[1];
     static {
         try {
@@ -291,8 +295,8 @@ public class BasicSQLGraphController implements IGraphController {
                                             }
                                         } catch (BaseException ex) {
                                             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Error adding join view.", NotifyDescriptor.INFORMATION_MESSAGE));
-
-                                            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinAction.actionPerformed", "error adding join view", ex);
+                                              mLogger.errorNoloc(mLoc.t("PRSR160: error adding join view{0}",LOG_CATEGORY),ex);
+                                         //   Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinAction.actionPerformed", "error adding join view", ex);
                                         }
                                     }
                                 }
@@ -306,17 +310,21 @@ public class BasicSQLGraphController implements IGraphController {
                     e.rejectDrop();
                 }
             } catch (IOException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught IOException while handling DnD.", ex);
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught IOException while handling DnD.", ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR161: Caught IOException while handling DnD.{0}",LOG_CATEGORY),ex);
                 e.rejectDrop();
             } catch (UnsupportedFlavorException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught UnsupportedFlavorException while handling DnD.", ex);
+                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught UnsupportedFlavorException while handling DnD.", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR162: Caught IOException while handling DnD.{0}",LOG_CATEGORY),ex);
                 e.rejectDrop();
             } catch (BaseException ex) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE));
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught BaseException while handling DnD.", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR163: Caught IOException while handling DnD.{0}",LOG_CATEGORY),ex);
+                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught BaseException while handling DnD.", ex);
                 e.rejectDrop();
             } catch (Exception ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while handling DnD.", ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR164: Caught IOException while handling DnD.{0}",LOG_CATEGORY),ex);
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while handling DnD.", ex);
                 e.rejectDrop();
             } finally {
                 e.dropComplete(dropStatus);
@@ -605,7 +613,8 @@ public class BasicSQLGraphController implements IGraphController {
                     msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERR_object_check_incompatible_no_argnames", srcObjType, destObjType);
                 }
             } catch (Exception e) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while resolving error message.", e);
+                 mLogger.errorNoloc(mLoc.t("PRSR165: Caught Exception while resolving error message{0}",LOG_CATEGORY),e);
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while resolving error message.", e);
                 msg = "Cannot link these objects together.";
             }
 
@@ -844,8 +853,8 @@ public class BasicSQLGraphController implements IGraphController {
             }
             updateActions(collabModel);
         } catch (Exception e) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while removing object.", e);
-
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while removing object.", e);
+            mLogger.errorNoloc(mLoc.t("PRSR166: Caught exception while removing object{0}",LOG_CATEGORY),e);
             NotifyDescriptor d = new NotifyDescriptor.Message(e.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
         }

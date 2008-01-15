@@ -48,10 +48,12 @@ import java.util.Map;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Stores UI attributes.
@@ -61,6 +63,8 @@ import com.sun.sql.framework.utils.Logger;
  */
 public class GUIInfo implements Cloneable {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(GUIInfo.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /** Attribute key: expanded state of UI element */
     public static final String ATTR_EXPANDED = "expanded";
 
@@ -413,7 +417,8 @@ public class GUIInfo implements Cloneable {
                     Attribute copiedAttr = (Attribute) attr.clone();
                     this.attrMap.put(name, copiedAttr);
                 } catch (CloneNotSupportedException ex) {
-                    Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source guinfo attributes", ex);
+                   mLogger.errorNoloc(mLoc.t("PRSR134: Failed to copy source guinfo attributes{0}",LOG_CATEGORY),ex);
+                   // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source guinfo attributes", ex);
                 }
             }
         }

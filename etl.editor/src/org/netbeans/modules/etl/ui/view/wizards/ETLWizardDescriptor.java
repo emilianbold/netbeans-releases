@@ -43,11 +43,12 @@ package org.netbeans.modules.etl.ui.view.wizards;
 import java.awt.Dimension;
 import java.text.MessageFormat;
 import java.util.MissingResourceException;
-
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-import com.sun.sql.framework.utils.Logger;
 
 /**
  * Abstract subclass of NetBeans wizard descriptor. ETL wizard descriptors should be
@@ -56,7 +57,8 @@ import com.sun.sql.framework.utils.Logger;
 public abstract class ETLWizardDescriptor extends WizardDescriptor {
     /* Logging category string */
     private static final String LOG_CATEGORY = ETLWizardDescriptor.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLWizardDescriptor.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /* Manages navigation of wizard panels */
     private WizardDescriptor.Iterator iterator;
 
@@ -96,9 +98,10 @@ public abstract class ETLWizardDescriptor extends WizardDescriptor {
                 NbBundle.getMessage(ETLWizardDescriptor.class, 
                     "MSG_titleformat_wiz_default")));
         } catch (MissingResourceException e) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, 
-                "initializeLookAndFeel()", 
-                "Could not locate key for title format.", e);
+              mLogger.errorNoloc(mLoc.t("PRSR040: Could not locate key for title format.{0}",LOG_CATEGORY),e);
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, 
+             //   "initializeLookAndFeel()", 
+             //   "Could not locate key for title format.", e);
         }
 
         // Number the steps.

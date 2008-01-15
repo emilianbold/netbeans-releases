@@ -88,13 +88,14 @@ import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import jxl.Cell;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Captures information needed to determine the parsing configuration of a file to be
@@ -105,6 +106,8 @@ import jxl.Cell;
  * @version $Revision$
  */
 public class ParseContentPanel implements PropertyChangeListener, VetoableChangeListener, WizardDescriptor.Panel {
+    private static transient final Logger mLogger = LogUtil.getLogger(ParseContentPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     
     private static final String LOG_CATEGORY = ParseContentPanel.class.getName();
     
@@ -474,7 +477,8 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
                 spreadSheetData.close();
             }
         } catch (Exception ioe) {
-            Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to read and parse the file ", ioe);
+             mLogger.errorNoloc(mLoc.t("PRSR074: Failed to read and parse the file{0}",LOG_CATEGORY),ioe);
+           // Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to read and parse the file ", ioe);
         } finally {
             if (br != null) {
                 try {

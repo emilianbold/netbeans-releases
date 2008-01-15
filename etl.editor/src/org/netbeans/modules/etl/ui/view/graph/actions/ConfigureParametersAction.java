@@ -67,8 +67,10 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.XmlUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.awt.StatusDisplayer;
 
 /**
@@ -80,6 +82,8 @@ public final class ConfigureParametersAction extends CookieAction {
 
     private final String PATH_SUFFIX = "\\..\\..\\nbproject\\config\\";
     private final String CONF_FILE = ".conf";
+    private static transient final Logger mLogger = LogUtil.getLogger(ConfigureParametersAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private File configFile;
     ETLDataObject mObj;
 
@@ -214,7 +218,8 @@ public final class ConfigureParametersAction extends CookieAction {
             // write new config data into config file.
             writeToConfigFile(configFile, confDefn);
         } catch (Exception ex) {
-            Logger.print(Logger.ERROR, ConfigureParametersAction.class.getName(), ex.getMessage());
+             mLogger.infoNoloc(mLoc.t("PRSR022: ConfigureParametersAction.class.getName(){0}",ex.getMessage()));
+           //Logger.print(Logger.ERROR, ConfigureParametersAction.class.getName(), ex.getMessage());
         }
     }
 
@@ -290,14 +295,16 @@ public final class ConfigureParametersAction extends CookieAction {
             Element element = XmlUtil.loadXMLFile(new BufferedReader(new FileReader(configFile)));
             rootNode = (org.w3c.dom.Node) element;
         } catch (Exception ex) {
-            Logger.print(Logger.ERROR, ConfigureParametersAction.class.getName(), ex.getMessage());
+             mLogger.infoNoloc(mLoc.t("PRSR023: ConfigureParametersAction.class.getName(){0}",ex.getMessage()));
+           // Logger.print(Logger.ERROR, ConfigureParametersAction.class.getName(), ex.getMessage());
         }
         if (rootNode != null) {
             org.w3c.dom.Node sqlNode = rootNode.getFirstChild();
             try {
                 sqlDefn = new SQLDefinitionImpl((Element) sqlNode);
             } catch (Exception ex) {
-                Logger.print(Logger.ERROR, ConfigureParametersAction.class.getName(), ex.getMessage());
+                     mLogger.infoNoloc(mLoc.t("PRSR024: ConfigureParametersAction.class.getName(){0}",ex.getMessage()));
+                //Logger.print(Logger.ERROR, ConfigureParametersAction.class.getName(), ex.getMessage());
             }
         }
         return sqlDefn;

@@ -67,8 +67,9 @@ import org.netbeans.modules.sql.framework.ui.output.SQLStatementPanel;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions.ValidateGraphAction;
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
 import org.openide.util.NbBundle;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.output.SQLOutputConditionView;
 
 /**
@@ -76,7 +77,9 @@ import org.netbeans.modules.sql.framework.ui.output.SQLOutputConditionView;
  * @version $Revision$
  */
 public class ConditionBuilderRightPanel extends JPanel implements IConditionGraphViewContainer {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderRightPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     private class ValidationThread extends SwingWorker {
         private SQLCondition execModel;
         private List list;
@@ -176,8 +179,8 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
             }
         } catch (Exception ex) {
             String msg = NbBundle.getMessage(ConditionBuilderRightPanel.class, "LBL_validation_error", ex.getMessage());
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "doValidation", "error doing condition validation", ex);
-
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "doValidation", "error doing condition validation", ex);
+             mLogger.errorNoloc(mLoc.t("PRSR154: error doing condition validation{0}",LOG_CATEGORY),ex);
             validationView.appendToView(msg);
         }
     }
@@ -230,8 +233,8 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
             SwingUtilities.invokeLater(layout);
         } catch (Exception ex) {
             // Safely ignore this exception
-            Logger.printThrowable(Logger.WARN, ConditionBuilderRightPanel.class.getName(), null, "Can't refresh condition graph view", ex);
-
+           // Logger.printThrowable(Logger.WARN, ConditionBuilderRightPanel.class.getName(), null, "Can't refresh condition graph view", ex);
+             mLogger.errorNoloc(mLoc.t("PRSR155: Can't refresh condition graph view{0}",LOG_CATEGORY),ex);
         }
     }
 

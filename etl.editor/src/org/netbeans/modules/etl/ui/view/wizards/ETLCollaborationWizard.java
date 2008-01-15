@@ -48,13 +48,15 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import javax.swing.SwingUtilities;
-
+import net.java.hulp.i18n.Logger;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
@@ -66,13 +68,14 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
-import com.sun.sql.framework.utils.Logger;
 
 /**
  * Wizard to collect name and participating tables information to be used in creating a
  * new ETL collaboration.
  */
 public class ETLCollaborationWizard extends ETLWizard {
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizard.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public ETLCollaborationWizard() {
         initialize();
@@ -254,7 +257,8 @@ public class ETLCollaborationWizard extends ETLWizard {
                     NbBundle.getMessage(ETLCollaborationWizard.class, "STEP_tblwizard_targets")
                 };
             } catch (MissingResourceException e) {
-                Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "createPanelTitles()", "Could not locate steps strings.", e);
+                mLogger.errorNoloc(mLoc.t("PRSR029: Could not locate steps strings.{0}",LOG_CATEGORY),e);
+                //Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "createPanelTitles()", "Could not locate steps strings.", e);
                 return new String[]{};
             }
         }

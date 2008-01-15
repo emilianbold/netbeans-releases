@@ -57,9 +57,11 @@ import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Defines joins on tables.
@@ -70,7 +72,8 @@ import com.sun.sql.framework.utils.Logger;
 public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQLJoinOperator {
     
     private static final String LOG_CATEGORY = SQLJoinOperatorImpl.class.getName();
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLJoinOperatorImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /** GUI state information */
     private transient GUIInfo guiInfo = new GUIInfo();
     
@@ -182,8 +185,8 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
         try {
             join = new SQLJoinOperatorImpl(this);
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "clone", "Error while cloniing SQLJoinOperatorImpl", ex);
-            
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "clone", "Error while cloniing SQLJoinOperatorImpl", ex);
+             mLogger.errorNoloc(mLoc.t("PRSR117: can not create clone of{0}",this.toString()),ex);
             throw new CloneNotSupportedException("can not create clone of " + this.toString());
         }
         

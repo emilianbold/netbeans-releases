@@ -63,15 +63,19 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * @author Ritesh Adval
  * @version $Revision$
  */
 public class ConditionBuilderView extends JPanel implements EnhancedCustomPropertyEditor {
+    private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     private class TabChangeAdapter implements ChangeListener {
         private boolean trySync = true;
@@ -159,7 +163,8 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
         try {
             condContainerObj = (SQLCondition) cond.cloneSQLObject();
         } catch (CloneNotSupportedException ex) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "ConditionBuilderView", "error cloning the condition ", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR156: error cloning the condition{0}",LOG_CATEGORY),ex);
+            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "ConditionBuilderView", "error cloning the condition ", ex);
             return;
         }
     }
@@ -245,7 +250,8 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
                 }
             } else {
             // Ignore this safely
-                Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Exception occurred while parsing condition", ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR157: Exception occurred while parsing condition{0}",LOG_CATEGORY),ex);
+               // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Exception occurred while parsing condition", ex);
             }
         }
 

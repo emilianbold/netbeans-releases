@@ -58,8 +58,9 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.netbeans.modules.sql.framework.model.impl.ValidationInfoImpl;
 import org.openide.util.NbBundle;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Girish Patil
@@ -77,7 +78,8 @@ public class SQLOperatorInfoVisitor {
 
     private boolean validate = false;
     private List<ValidationInfo> validationInfoList = new ArrayList<ValidationInfo>();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLOperatorInfoVisitor.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public SQLOperatorInfoVisitor() {
     }
 
@@ -217,8 +219,9 @@ public class SQLOperatorInfoVisitor {
                 visit(sourceTable);
             }
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "targetTable.getSourceTableList()",
-                "Could not find source tables for this target table", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR129: Could not find source tables for this target table{0}",LOG_CATEGORY),ex);
+           //Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "targetTable.getSourceTableList()",
+             //   "Could not find source tables for this target table", ex);
         }
     }
 }

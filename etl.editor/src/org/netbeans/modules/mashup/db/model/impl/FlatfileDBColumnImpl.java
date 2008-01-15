@@ -48,8 +48,10 @@ import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.common.utils.TagParserUtility;
 import org.w3c.dom.Element;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBColumn;
 
 /**
@@ -81,6 +83,9 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
     /* Cardinal Position */
     protected int cardinalPosition;
     private boolean isSelected; // specifies if the column is selected
+    
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileDBColumnImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public FlatfileDBColumnImpl() {
         super();
@@ -403,7 +408,8 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.jdbcType = Integer.parseInt(str);
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_JDBC_TYPE);
+                 mLogger.errorNoloc(mLoc.t("PRSR053: LOG_CATEGORY {0}",ATTR_JDBC_TYPE),ex);
+               // Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_JDBC_TYPE);
             }
         }
 
@@ -412,7 +418,8 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.scale = Integer.parseInt(str);
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_SCALE);
+                 mLogger.errorNoloc(mLoc.t("PRSR054: LOG_CATEGORY {0}",ATTR_SCALE),ex);
+               // Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_SCALE);
             }
         }
 
@@ -421,7 +428,8 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.precision = Integer.parseInt(str);
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_PRECISION);
+                  mLogger.errorNoloc(mLoc.t("PRSR055: LOG_CATEGORY {0}",ATTR_PRECISION),ex);
+                //Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_PRECISION);
             }
         }
 
@@ -430,7 +438,8 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.cardinalPosition = Integer.parseInt(str);
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_CARDINAL_POSITION);
+                  mLogger.errorNoloc(mLoc.t("PRSR056: LOG_CATEGORY {0}",ATTR_CARDINAL_POSITION),ex);
+               // Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_CARDINAL_POSITION);
             }
         }
 
@@ -439,7 +448,8 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.pkFlag = Boolean.valueOf(str).booleanValue();
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_IS_PRIMARY_KEY);
+                mLogger.errorNoloc(mLoc.t("PRSR057: LOG_CATEGORY {0}",ATTR_IS_PRIMARY_KEY),ex);
+                //Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_IS_PRIMARY_KEY);
             }
         }
 
@@ -448,7 +458,8 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.fkFlag = Boolean.valueOf(str).booleanValue();
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_IS_FOREIGN_KEY);
+                 mLogger.errorNoloc(mLoc.t("PRSR058: LOG_CATEGORY {0}",ATTR_IS_FOREIGN_KEY),ex);
+                //Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_IS_FOREIGN_KEY);
             }
         }
 
@@ -457,7 +468,8 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.indexed = Boolean.valueOf(str).booleanValue();
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_INDEXED);
+                 mLogger.errorNoloc(mLoc.t("PRSR059: LOG_CATEGORY {0}",ATTR_INDEXED),ex);
+               // Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_INDEXED);
             }
         }
 
@@ -466,7 +478,8 @@ public class FlatfileDBColumnImpl extends AbstractDBColumn implements FlatfileDB
             try {
                 this.nullable = Boolean.valueOf(str).booleanValue();
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_NULLABLE);
+                 mLogger.errorNoloc(mLoc.t("PRSR060: LOG_CATEGORY {0}",ATTR_NULLABLE),ex);
+                //Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseXML()", ATTR_NULLABLE);
             }
         }
     }

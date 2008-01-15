@@ -44,15 +44,16 @@ import java.awt.Toolkit;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
-
+import net.java.hulp.i18n.Logger;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.PlainDocument;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
-import com.sun.sql.framework.utils.Logger;
 
 /**
  * Used in ColumnMetadata table to render scale and precision
@@ -61,6 +62,8 @@ import com.sun.sql.framework.utils.Logger;
  * @version $Revision$
  */
 public class ColumnSizeTextField extends JTextField {
+    private static transient final Logger mLogger = LogUtil.getLogger(ColumnSizeTextField.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * class IntegerDocument extends a plain document.
      */
@@ -84,7 +87,8 @@ public class ColumnSizeTextField extends JTextField {
                     result[j++] = source[i];
                 } else {
                     toolkit.beep();
-                    Logger.print(Logger.DEBUG, getClass().getName(), "insertString()", "insertString: " + source[i]);
+                  mLogger.infoNoloc(mLoc.t("PRSR073: insertString:{0}"+source[i],getClass().getName()));
+                  //  Logger.print(Logger.DEBUG, getClass().getName(), "insertString()", "insertString: " + source[i]);
                 }
             }
             super.insertString(offs, new String(result, 0, j), a);

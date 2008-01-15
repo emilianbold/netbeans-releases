@@ -85,8 +85,10 @@ import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConstants;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
@@ -99,7 +101,8 @@ import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
  * @version $Revision$
  */
 public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutputPanel {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLStatementPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private JButton[] btn = new JButton[1];
 
     private class SQLViewActionListener implements ActionListener {
@@ -169,8 +172,10 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
             } catch (Exception exp) {
                 this.ex = exp;
                 sqlText = NbBundle.getMessage(SQLStatementPanel.class, "MSG_cant_evaluate_sql", sqlObj.getDisplayName());
-                Logger.printThrowable(Logger.ERROR, this.getClass().getName(), this, "Cannot evaluate SQL for " + sqlObj.getDisplayName(), ex);
-                Logger.printThrowable(Logger.ERROR, SQLStatementPanel.class.getName(), null, "Can't get contents for table " + ((sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR151: Cannot evaluate SQL for{0}",sqlObj.getDisplayName()),ex);
+                 mLogger.errorNoloc(mLoc.t("PRSR152: Can't get contents for table{0}",(sqlObj != null) ? sqlObj.getDisplayName() : ""),ex);
+             //   Logger.printThrowable(Logger.ERROR, this.getClass().getName(), this, "Cannot evaluate SQL for " + sqlObj.getDisplayName(), ex);
+             //   Logger.printThrowable(Logger.ERROR, SQLStatementPanel.class.getName(), null, "Can't get contents for table " + ((sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);
             }
             return "";
         }

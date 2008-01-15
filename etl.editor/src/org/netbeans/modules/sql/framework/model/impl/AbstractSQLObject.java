@@ -54,10 +54,12 @@ import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * This basic class provides sql framework functionality to all SQLObjects
@@ -68,7 +70,8 @@ import com.sun.sql.framework.utils.Logger;
 public abstract class AbstractSQLObject implements SQLObject {
     /* Log4J category string */
     private static final String LOG_CATEGORY = AbstractSQLObject.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(AbstractSQLObject.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Map of attributes; used by concrete implementations to store class-specific fields
      * without hardcoding them as member variables
@@ -137,7 +140,8 @@ public abstract class AbstractSQLObject implements SQLObject {
                     this.attributes.put(name, copiedAttr);
                 } catch (CloneNotSupportedException ex) {
                     // log me
-                    Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source objects", ex);
+                     mLogger.errorNoloc(mLoc.t("PRSR105: Failed to copy source objects{0}",LOG_CATEGORY),ex);
+                   // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source objects", ex);
                 }
             }
         }
@@ -241,7 +245,8 @@ public abstract class AbstractSQLObject implements SQLObject {
         try {
             strType = TagParserUtility.getStringType(this.getObjectType());
         } catch (BaseException e) {
-            Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to get type attr.");
+           // Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to get type attr.");
+            mLogger.infoNoloc(mLoc.t("PRSR106: Failed to get type attr.{0}",LOG_CATEGORY));
             strType = "UNKNOWN_TYPE";
         }
         StringBuilder buffer = new StringBuilder();

@@ -45,7 +45,9 @@ import org.netbeans.modules.sql.framework.codegen.DBFactory;
 import org.netbeans.modules.sql.framework.codegen.StatementContext;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.codegen.AbstractGeneratorFactory;
 
 /**
@@ -56,7 +58,8 @@ public class GeneratorUtil {
 
     private static int currentDbType = DB.BASEDB;
     private static GeneratorUtil instance;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(GeneratorUtil.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Gets an instance of GeneratorUtil.
      *
@@ -93,7 +96,8 @@ public class GeneratorUtil {
         try {
             sql = genFactory.generate(sqlObj, stmtContext);
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.ERROR, GeneratorUtil.class.getName(), "getEvaluatedString", "Could not evaulate object " + sqlObj.getDisplayName(), ex);
+             mLogger.errorNoloc(mLoc.t("PRSR123: Could not evaulate object {0}in{1}",sqlObj.getDisplayName(),GeneratorUtil.class.getName()),ex);
+            //Logger.printThrowable(Logger.ERROR, GeneratorUtil.class.getName(), "getEvaluatedString", "Could not evaulate object " + sqlObj.getDisplayName(), ex);
         }
         return sql;
     }

@@ -50,8 +50,9 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * NetBeans node extension that represents a flatfile or field for purposes of configuring
@@ -62,7 +63,8 @@ import com.sun.sql.framework.utils.Logger;
  * @version $Revision$
  */
 public class FlatfileNode extends BeanNode implements Comparable {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileNode.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Extends FlatfileNode to represent a FlatfileNode with no children.
      */
@@ -348,7 +350,8 @@ public class FlatfileNode extends BeanNode implements Comparable {
      */
     public void updateUserObject() {
         // XXX Update user object.
-        Logger.print(Logger.DEBUG, LOG_CATEGORY, "Current state of user object: " + userObject);
+       mLogger.infoNoloc(mLoc.t("PRSR083: Current state of user object:{0}",userObject));
+       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Current state of user object: " + userObject);
     }
 
     /**

@@ -50,7 +50,9 @@ import org.netbeans.modules.etl.ui.view.wizards.ETLTableSelectionWizard;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Cookie for exposing access to a dialog box for selecting tables to participate in an
@@ -64,7 +66,8 @@ public class SelectTablesCookie implements Node.Cookie {
     private static final boolean DEBUG = false;
     private static final String LOG_CATEGORY = SelectTablesCookie.class.getName();
     private ETLDataObject dataObj;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SelectTablesCookie.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Creates a new instance of SelectTablesCookie associated with the given
      * ProjectElement.
@@ -94,9 +97,12 @@ public class SelectTablesCookie implements Node.Cookie {
                 helper.updateTableSelections(dataObj, sources, targets);
 
                 if (DEBUG) {
-                    Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "Selected source tables:\n" + sources);
-                    Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "Selected target tables:\n" + targets);
-                    Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "New state of ETL Definition:\n" + def.toXMLString(""));
+                    mLogger.infoNoloc(mLoc.t("PRSR019: Selected source tables:\n{0}",sources));
+                    mLogger.infoNoloc(mLoc.t("PRSR020: Selected target tables:\n{0}",targets));
+                    mLogger.infoNoloc(mLoc.t("PRSR021: New state of ETL Definition:\n{0}",def.toXMLString("")));
+                    //Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "Selected source tables:\n" + sources);
+                    //Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "Selected target tables:\n" + targets);
+                    //Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "New state of ETL Definition:\n" + def.toXMLString(""));
                 }
                 dataObj.getETLEditorSupport().synchDocument();
             }

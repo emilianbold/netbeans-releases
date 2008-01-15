@@ -45,10 +45,10 @@ import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.jdbc.SQLUtils;
-import com.sun.sql.framework.utils.Logger;
-
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.GUIInfo;
 import org.netbeans.modules.sql.framework.model.SQLCanvasObject;
 import org.netbeans.modules.sql.framework.model.SQLOperatorArg;
@@ -71,6 +71,8 @@ import org.openide.NotifyDescriptor;
  * @author Srinivasan Rengarajan
  */
 public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
+    private static transient final Logger mLogger = LogUtil.getLogger(CustomSQLOperatorGraphNode.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     
     private JMenuItem editItem;
     
@@ -196,7 +198,8 @@ public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
                 ((ConditionBuilderSQLUIModelImpl) graphModel).restoreUIState();
             }
         } catch (Exception e) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "editCustomOperator", e.getMessage(), e);
+              mLogger.errorNoloc(mLoc.t("PRSR167: editCustomOperator{0}",e.getMessage()),e);
+            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "editCustomOperator", e.getMessage(), e);
         }
     }
     

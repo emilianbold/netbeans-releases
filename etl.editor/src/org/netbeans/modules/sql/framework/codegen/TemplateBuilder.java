@@ -44,8 +44,10 @@ import java.io.StringWriter;
 import java.util.Properties;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ritesh Adval
@@ -61,7 +63,8 @@ public class TemplateBuilder {
     /** Prefix for global Velocity engine * */
     private static final String SQLFRAMEWORK_DB_PREFIX = "org/netbeans/modules/sql/framework/codegen/";
     private static AtomicReference<VelocityEngine> VELOCITY_ENGINE = null;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(TemplateBuilder.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Get VelocityEngine after initializing to use "autoload.Velocity" module's
      * resource loader.
@@ -94,7 +97,8 @@ public class TemplateBuilder {
             ve.mergeTemplate(SQLFRAMEWORK_DB_PREFIX + templateFile, TEMPLATE_ENCODING, context, sw);
             return sw.toString();
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Problem in initializing/merging Velocity template: ", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR090: Problem in initializing/merging Velocity template:{0}",LOG_CATEGORY),ex);
+          //  Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Problem in initializing/merging Velocity template: ", ex);
             return null;
         }
     }

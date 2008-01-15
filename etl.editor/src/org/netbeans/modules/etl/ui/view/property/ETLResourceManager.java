@@ -42,11 +42,13 @@ package org.netbeans.modules.etl.ui.view.property;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
-
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.editor.property.IResource;
 import org.openide.util.NbBundle;
 
-import com.sun.sql.framework.utils.Logger;
+
 
 /**
  * @author Ritesh Adval
@@ -55,9 +57,9 @@ import com.sun.sql.framework.utils.Logger;
 public class ETLResourceManager implements IResource {
 
     private static final boolean DEBUG = false;
-
     private static final String LOG_CATEGORY = ETLResourceManager.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLResourceManager.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private ResourceBundle bundle;
 
     /** Creates a new instance of ResourceManager */
@@ -65,7 +67,8 @@ public class ETLResourceManager implements IResource {
         try {
             bundle = NbBundle.getBundle(ETLResourceManager.class);
         } catch (MissingResourceException ex) {
-            Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Could not locate resource bundle for ETLResourceManager.", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR027: Could not locate resource bundle for ETLResourceManager.{0}",LOG_CATEGORY),ex);
+            //Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Could not locate resource bundle for ETLResourceManager.", ex);
         }
     }
 
@@ -77,8 +80,9 @@ public class ETLResourceManager implements IResource {
                 // Ignore unless explicitly in debug mode for this class; GUI will use
                 // default value.
                 if (DEBUG) {
-                    Logger.print(Logger.DEBUG, LOG_CATEGORY, this, "Could not locate resource string for key " + key
-                        + " in Bundle.properties file associated with " + LOG_CATEGORY + "; using default value.");
+                   mLogger.errorNoloc(mLoc.t("PRSR028: Could not locate resource string for key{0}in Bundle.properties file associated with {1}; using default value.",key,LOG_CATEGORY),ex);
+                  //Logger.print(Logger.DEBUG, LOG_CATEGORY, this, "Could not locate resource string for key " + key
+                    //    + " in Bundle.properties file associated with " + LOG_CATEGORY + "; using default value.");
                 }
             }
         }

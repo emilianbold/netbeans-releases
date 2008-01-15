@@ -65,9 +65,10 @@ import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLGroupBy;
 
 /**
@@ -75,7 +76,8 @@ import org.netbeans.modules.sql.framework.model.SQLGroupBy;
  */
 
 public class SQLJoinViewImpl extends AbstractSQLObject implements SQLJoinView {
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLJoinViewImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     class SecondParseObjectInfo {
         private Element mElm;
         private SQLObject mObj;
@@ -162,7 +164,8 @@ public class SQLJoinViewImpl extends AbstractSQLObject implements SQLJoinView {
         try {
             cond = new SQLJoinViewImpl(this);
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "clone", "Error while cloniing SQLJoinViewImpl", ex);
+              mLogger.errorNoloc(mLoc.t("PRSR119: Error while cloniing SQLJoinViewImpl{0}",this.toString()),ex);
+            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "clone", "Error while cloniing SQLJoinViewImpl", ex);
             throw new CloneNotSupportedException("can not create clone of " + this.toString());
         }
         return cond;

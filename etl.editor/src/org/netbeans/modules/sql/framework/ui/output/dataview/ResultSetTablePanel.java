@@ -68,7 +68,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.sql.framework.ui.utils.BinaryToStringConverter;
 import org.openide.util.NbBundle;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
@@ -82,6 +82,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.model.PrimaryKey;
 import org.netbeans.modules.sql.framework.ui.utils.TableSorter;
@@ -106,7 +108,8 @@ public class ResultSetTablePanel extends JPanel {
     private Map<String, String> changes = new LinkedHashMap<String, String>();
     private Map<String, List> valuesList = new LinkedHashMap<String, List>();
     private Map<String, List> typesList = new LinkedHashMap<String, List>();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ResultSetTablePanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private class DataTableModel extends DefaultTableModel {
 
         /**
@@ -571,7 +574,8 @@ public class ResultSetTablePanel extends JPanel {
                 }
             }
         } catch (Exception e) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to set up table model", e);
+             mLogger.errorNoloc(mLoc.t("PRSR146: Failed to set up table model({0})",LOG_CATEGORY),e);
+            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to set up table model", e);
         }
 
         return sorter;
@@ -763,7 +767,8 @@ public class ResultSetTablePanel extends JPanel {
             }
             table.getTableHeader().setColumnModel(cModel);
         } catch (Exception e) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to set the size of the table headers", e);
+             mLogger.errorNoloc(mLoc.t("PRSR147: Failed to set the size of the table headers({0})",LOG_CATEGORY),e);
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to set the size of the table headers", e);
         }
     }
 
@@ -780,7 +785,8 @@ public class ResultSetTablePanel extends JPanel {
                 columnWidthList.add(colWidth);
             }
         } catch (Exception e) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to set the size of the table headers", e);
+            mLogger.errorNoloc(mLoc.t("PRSR148: Failed to set the size of the table headers({0})",LOG_CATEGORY),e);
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to set the size of the table headers", e);
         }
         return columnWidthList;
     }

@@ -79,9 +79,10 @@ import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.netbeans.modules.sql.framework.ui.event.SQLDataEvent;
 import org.netbeans.modules.sql.framework.ui.event.SQLLinkEvent;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -92,7 +93,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLUIModel  {
 
     private static final String LOG_CATEGORY = CollabSQLUIModelImpl.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(CollabSQLUIModelImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     protected boolean isReloaded = false;
     protected boolean restoring = false;
     protected SQLDefinition sqlDefinition;
@@ -331,8 +333,9 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
                 // reload time we do not want to handle auto join
                 addObjectInGraph(sqlObj, false);
             } catch (BaseException e) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "restoreObjects", "Error caught while restoring object (" + sqlObj.getDisplayName()
-                    + ")", e);
+              mLogger.errorNoloc(mLoc.t("PRSR142: Error caught while restoring object ({0})",sqlObj.getDisplayName()),e);
+               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "restoreObjects", "Error caught while restoring object (" + sqlObj.getDisplayName()
+                 //   + ")", e);
 
                 throw e;
             }
@@ -503,7 +506,8 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
             try {
                 addObjectInGraph((SQLDBTable) it.next(), false);
             } catch (BaseException e) {
-                Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "createTablesInGraph", "Error while adding table to canvas.", e);
+                 mLogger.errorNoloc(mLoc.t("PRSR143: Error while adding table to canvas. ({0})",LOG_CATEGORY),e);
+                //Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "createTablesInGraph", "Error while adding table to canvas.", e);
                 throw e;
             }
         }

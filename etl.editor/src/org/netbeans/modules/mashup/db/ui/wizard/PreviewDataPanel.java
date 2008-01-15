@@ -71,10 +71,10 @@ import org.netbeans.modules.sql.framework.ui.output.dataview.ResultSetTablePanel
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-
-//import com.sun.sql.framework.utils.Logger;
-import java.util.logging.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ahimanikya Satapathy
@@ -84,7 +84,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
     
     private static final String CMD_SHOWDATA = "ShowData"; // NOI18N
     private static final String LOG_CATEGORY = PreviewDataPanel.class.getName();
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(PreviewDataPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private FlatfileDBTable currentTable;
     private JButton previewBtn;
     private JTextField recordCount;
@@ -175,17 +176,16 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             }
             
             String url = FlatfileDBConnectionFactory.DEFAULT_FLATFILE_JDBC_URL_PREFIX + "preview:" + metadataDir;
-            Logger.getLogger(LOG_CATEGORY).info("Preview URL: " + url);
             //Logger.print(Logger.DEBUG, LOG_CATEGORY, "Preview URL: " + url);
-            
+            mLogger.infoNoloc(mLoc.t("PRSR075: Preview URL: {0}",url));
             conn = FlatfileDBConnectionFactory.getInstance().getConnection(url);
             Statement stmt = conn.createStatement();
             
             stmt.execute("DROP TABLE IF EXISTS " + table.getTableName());
             String create = table.getCreateStatementSQL();
             
-            Logger.getLogger(LOG_CATEGORY).info("Generated create statement: " + create);
             //Logger.print(Logger.DEBUG, LOG_CATEGORY, this, "Generated create statement: " + create);
+            mLogger.infoNoloc(mLoc.t("PRSR076: Generated create statement: {0}",create));
             stmt.execute(create);
             
             ResultSet rs = stmt.executeQuery(table.getSelectStatementSQL(ct));
@@ -194,7 +194,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             
             // get the count of all rows
             String countSql = "Select count(*) From " + table.getName();
-            Logger.getLogger(FlatfileResulSetPanel.class.getName()).info( "Select count(*) statement used for total rows: \n" + countSql);
+            mLogger.infoNoloc(mLoc.t("PRSR077: Select count(*) statement used for total rows:{0}",countSql));
+           // Logger.getLogger(FlatfileResulSetPanel.class.getName()).info( "Select count(*) statement used for total rows: \n" + countSql);
             //Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), "Select count(*) statement used for total rows: \n" + countSql);
             
             stmt = conn.createStatement();
@@ -216,7 +217,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             try {
                 errorMsg = NbBundle.getMessage(TableDefinitionPanel.class, "ERROR_bad_preview");
             } catch (MissingResourceException mre) {
-                Logger.getLogger(LOG_CATEGORY).info("Could not locate resource string for ERROR_bad_preview."+ mre);
+               mLogger.infoNoloc(mLoc.t("PRSR078: Could not locate resource string for ERROR_bad_preview:{0}",mre));
+             //  Logger.getLogger(LOG_CATEGORY).info("Could not locate resource string for ERROR_bad_preview."+ mre);
                 //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Could not locate resource string for ERROR_bad_preview.", mre);
             }
             showError("Sample file may be corrupt, or does not match specified datatypes", errorMsg, nse);
@@ -228,7 +230,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
                 sqlExMsg = stripExceptionHeaderFromMessage(se);
                 errorMsg = NbBundle.getMessage(TableDefinitionPanel.class, "ERROR_bad_preview_sqlex", sqlExMsg);
             } catch (MissingResourceException mre) {
-                Logger.getLogger(LOG_CATEGORY).info("Could not locate resource string for ERROR_bad_preview."+ mre);
+                  mLogger.errorNoloc(mLoc.t("PRSR079: Could not locate resource string for ERROR_bad_preview {0}",LOG_CATEGORY),mre);
+               // Logger.getLogger(LOG_CATEGORY).info("Could not locate resource string for ERROR_bad_preview."+ mre);
                 //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Could not locate resource string for ERROR_bad_preview.", mre);
             }
             showError(sqlExMsg, errorMsg, se);
@@ -275,7 +278,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errorMsg, NotifyDescriptor.WARNING_MESSAGE));
         }
         setEnabled(false);
-        Logger.getLogger(LOG_CATEGORY).info(errorMsg);
+          mLogger.errorNoloc(mLoc.t("PRSR080: errorMsg {0}",LOG_CATEGORY),t);
+      //  Logger.getLogger(LOG_CATEGORY).info(errorMsg);
         //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, errorMsg, t);
     }
     

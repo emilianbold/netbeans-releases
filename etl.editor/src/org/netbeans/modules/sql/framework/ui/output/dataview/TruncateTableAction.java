@@ -42,7 +42,7 @@ package org.netbeans.modules.sql.framework.ui.output.dataview;
 
 import com.sun.sql.framework.jdbc.DBConnectionFactory;
 import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.awt.event.ActionEvent;
 import java.sql.Statement;
@@ -51,6 +51,8 @@ import java.sql.ResultSet;
 import java.util.Iterator;
 import java.util.Properties;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.codegen.DB;
 import org.netbeans.modules.sql.framework.codegen.DBFactory;
 import org.netbeans.modules.sql.framework.codegen.StatementContext;
@@ -73,6 +75,8 @@ import org.openide.util.NbBundle;
  * @author Ahimanikya Satapathy
  */
 class TruncateTableAction extends AbstractAction {
+    private static transient final Logger mLogger = LogUtil.getLogger(TruncateTableAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     DataOutputPanel outer;
 
@@ -156,7 +160,8 @@ class TruncateTableAction extends AbstractAction {
                 this.cntRs = stmtCount.executeQuery(countSql);
             } catch (Exception t) {
                 this.ex = t;
-                Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not truncate output for target aTable.", t);
+                 mLogger.errorNoloc(mLoc.t("PRSR149: Could not truncate output for target aTable{0}",DataOutputPanel.class.getName()),t);
+                //Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not truncate output for target aTable.", t);
             }
 
             return "";
@@ -211,7 +216,8 @@ class TruncateTableAction extends AbstractAction {
                         factory.shutdown(conn, false, null);
                     }
                 } catch (Exception t) {
-                    Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not commit truncate action for target aTable...", t);
+                     mLogger.errorNoloc(mLoc.t("PRSR150: Could not commit truncate action for target aTable...{0}",DataOutputPanel.class.getName()),t);
+                   // Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not commit truncate action for target aTable...", t);
                 } finally {
                     outer.queryView.revalidate();
                     outer.queryView.repaint();

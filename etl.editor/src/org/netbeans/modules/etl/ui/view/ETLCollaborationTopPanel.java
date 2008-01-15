@@ -86,10 +86,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import java.io.Externalizable;
 import javax.swing.JComponent;
 import javax.swing.JToolBar;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.impl.BirdsEyeView;
 import org.netbeans.modules.sql.framework.ui.graph.impl.GraphView;
 import org.netbeans.modules.sql.framework.ui.graph.view.impl.SQLToolBar;
@@ -103,6 +105,9 @@ import org.openide.awt.StatusDisplayer;
  * @version $Revision$
  */
 public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Externalizable {
+    
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationTopPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     
     class ValidationThread extends SwingWorker {
 
@@ -242,7 +247,8 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
             String msg = NbBundle.getMessage(ETLCollaborationTopPanel.class, "MSG_must_checkout", DataObjectProvider.getProvider().getActiveDataObject().getName());
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.ERROR, ETLCollaborationTopPanel.class.getName(), null, "Can't get name of data object " + DataObjectProvider.getProvider().getActiveDataObject(), ex);
+               mLogger.errorNoloc(mLoc.t("PRSR044: Can't get name of data object{0}",DataObjectProvider.getProvider().getActiveDataObject()),ex);
+            //Logger.printThrowable(Logger.ERROR, ETLCollaborationTopPanel.class.getName(), null, "Can't get name of data object " + DataObjectProvider.getProvider().getActiveDataObject(), ex);
         }
         
         return false;
@@ -262,8 +268,8 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
                 vThread.start();
             }
         } catch (Exception ex) {
-            Logger.printThrowable(Logger.ERROR, ETLCollaborationTopPanel.class.getName(), "doValidation", NbBundle.getMessage(ETLCollaborationTopPanel.class, "LBL_validation_error"), ex);
-            
+           // Logger.printThrowable(Logger.ERROR, ETLCollaborationTopPanel.class.getName(), "doValidation", NbBundle.getMessage(ETLCollaborationTopPanel.class, "LBL_validation_error"), ex);
+              mLogger.errorNoloc(mLoc.t("PRSR045: \nError occurred during validation:{0}",ex.getMessage()),ex);
             validationView.appendToView(NbBundle.getMessage(ETLCollaborationTopPanel.class, "LBL_validation_error", ex.getMessage()));
         }
     }
@@ -496,8 +502,8 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     }// </editor-fold>//GEN-END:initComponents
     
     private void logReloadException(Exception e) {
-        Logger.printThrowable(Logger.ERROR, ETLCollaborationTopPanel.class.getName(), "handleReload", "Error in executing reload", e);
-        
+       // Logger.printThrowable(Logger.ERROR, ETLCollaborationTopPanel.class.getName(), "handleReload", "Error in executing reload", e);
+          mLogger.errorNoloc(mLoc.t("PRSR046: Error in executing reload {0}",ETLCollaborationTopPanel.class.getName()),e);
         NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(ETLCollaborationTopPanel.class, "MSG_load_error", getName()), NotifyDescriptor.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(d);
     }
@@ -535,7 +541,8 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
      * @see reload()
      */
     public void refresh() {
-        Logger.print(Logger.DEBUG, ETLCollaborationTopPanel.class.getName(), "Refresh called" + new java.util.Date());
+         mLogger.infoNoloc(mLoc.t("PRSR047: Refresh called{0}in {1}",new java.util.Date(),ETLCollaborationTopPanel.class.getName()));
+        //Logger.print(Logger.DEBUG, ETLCollaborationTopPanel.class.getName(), "Refresh called" + new java.util.Date());
         this.reload();
     }
     

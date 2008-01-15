@@ -65,13 +65,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
-
-import com.sun.sql.framework.utils.Logger;
 
 /**
  * @author Ritesh Adval
@@ -79,7 +79,11 @@ import com.sun.sql.framework.utils.Logger;
  */
 public class TableTreeView extends JPanel {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(TableTreeView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     private class ColumnTransferable implements Transferable {
+
         private Object transData;
 
         ColumnTransferable(Object obj) {
@@ -130,6 +134,7 @@ public class TableTreeView extends JPanel {
     }
 
     private class TableTreeCellRenderer extends DefaultTreeCellRenderer {
+
         /**
          * Configures the renderer based on the passed in components. The value is set
          * from messaging the tree with <code>convertValueToText</code>, which
@@ -171,6 +176,7 @@ public class TableTreeView extends JPanel {
     }
 
     private class TreeDragGestureListener implements DragGestureListener {
+
         /**
          * A <code>DragGestureRecognizer</code> has detected a platform-dependent drag
          * initiating gesture and is notifying this listener in order for it to initiate
@@ -190,31 +196,26 @@ public class TableTreeView extends JPanel {
                     try {
                         dge.startDrag(DragSource.DefaultCopyDrop, new ColumnTransferable(obj));
                     } catch (InvalidDnDOperationException ex) {
-                        Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "invalid drag and drop", ex);
+                      //  Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "invalid drag and drop", ex);
+                         mLogger.errorNoloc(mLoc.t("PRSR159: invalid drag and drop{0}",LOG_CATEGORY),ex);
                     }
                 }
             }
         }
     }
-
     private static ImageIcon columnIcon;
-
     private static URL columnImgUrl = TableTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/column.png");
     private static DataFlavor[] mDataFlavorArray = new DataFlavor[1];
     private static ImageIcon runtimeInputIcon;
-
     private static URL runtimeInputImgUrl = TableTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/RuntimeInput.png");
-
     private static ImageIcon srcTableIcon;
-
     private static URL srcTableImgUrl = TableTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/SourceTable.png");
     private static ImageIcon targetTableIcon;
-
     private static URL targetTableImgUrl = TableTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/TargetTable.png");
     private String LOG_CATEGORY = TableTreeView.class.getName();
     private List tables;
-
     private JTree tree;
+    
 
     static {
         try {

@@ -90,8 +90,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.Attribute;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBColumn;
 import org.netbeans.modules.sql.framework.model.DBTable;
 import org.netbeans.modules.sql.framework.model.DatabaseModel;
@@ -111,7 +113,8 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     private static final String STAGING = "Staging";
     private static final String BEST_FIT = "Best Fit";
     private static final String PIPELINE = "Pipeline";
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLDefinitionImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     class SecondParseObjectInfo {
 
         private Element mElm;
@@ -599,7 +602,8 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
             try {
                 this.addObject(runtimeDbModel);
             } catch (BaseException ex) {
-                Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "getRuntimeDbModel", "can not add runtime database model to definition", ex);
+                  mLogger.errorNoloc(mLoc.t("PRSR116: can not add runtime database model to definition{0}",LOG_CATEGORY),ex);
+                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "getRuntimeDbModel", "can not add runtime database model to definition", ex);
                 runtimeDbModel = null;
             }
             return runtimeDbModel;

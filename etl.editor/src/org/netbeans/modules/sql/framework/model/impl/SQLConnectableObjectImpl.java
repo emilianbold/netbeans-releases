@@ -53,9 +53,11 @@ import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLInputObject;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
+
 
 /**
  * Base class implementation of SQLConnectableObject; inherits behavior from
@@ -69,7 +71,8 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
 
     /* Log4J category string */
     private static final String LOG_CATEGORY = SQLConnectableObjectImpl.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLConnectableObjectImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /** Map of SQLInputObjects */
     protected Map inputMap;
 
@@ -325,7 +328,8 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
                         inputObject.setSQLObject(copiedObj);
                     }
                 } catch (CloneNotSupportedException ex) {
-                    Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to cloned input map", ex);
+                      mLogger.errorNoloc(mLoc.t("PRSR111: Failed to cloned input map{0}",LOG_CATEGORY),ex);
+                    //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to cloned input map", ex);
                 }
             }
         }
@@ -355,7 +359,8 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
                         }
 
                     } catch (Exception ex) {
-                        Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Finding expression contains column refs", ex);
+                         mLogger.errorNoloc(mLoc.t("PRSR112: Finding expression contains column refs{0}",LOG_CATEGORY),ex);
+                       // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Finding expression contains column refs", ex);
                     }
                 }
             }
@@ -392,7 +397,8 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
                         }
 
                     } catch (Exception ex) {
-                        Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Finding expression contains column refs", ex);
+                          mLogger.errorNoloc(mLoc.t("PRSR113: Finding expression contains column refs{0}",LOG_CATEGORY),ex);
+                       // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Finding expression contains column refs", ex);
                     }
                 }
             }

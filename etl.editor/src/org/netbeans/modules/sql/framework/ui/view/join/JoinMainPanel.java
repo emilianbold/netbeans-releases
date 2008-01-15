@@ -76,8 +76,9 @@ import org.netbeans.modules.sql.framework.ui.view.TableColumnTreePanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -90,7 +91,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public class JoinMainPanel extends JPanel {
 
     private static final String LOG_CATEGORY = JoinMainPanel.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(JoinMainPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private ListTransferPanel listPanel;
 
     private JTabbedPane bottomTabPane;
@@ -621,8 +623,8 @@ public class JoinMainPanel extends JPanel {
             refreshPreview = true;
 
         } catch (CloneNotSupportedException ex) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinMainPanel", "can not clone existing SQLJoinView", ex);
-
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinMainPanel", "can not clone existing SQLJoinView", ex);
+              mLogger.errorNoloc(mLoc.t("PRSR179: cannot clone existing SQLJoinView{0}",LOG_CATEGORY),ex);
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 
@@ -653,8 +655,8 @@ public class JoinMainPanel extends JPanel {
             this.listPanel.addToDestination(sTable);
 
         } catch (CloneNotSupportedException ex) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinMainPanel", "can not clone existing SQLJoinView", ex);
-
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinMainPanel", "can not clone existing SQLJoinView", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR180: Join View model is corrupted.{0}{1}",ex.getMessage(),NotifyDescriptor.ERROR_MESSAGE),ex);
             DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 

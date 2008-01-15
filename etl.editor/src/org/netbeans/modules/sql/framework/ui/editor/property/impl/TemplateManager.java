@@ -44,12 +44,12 @@ package org.netbeans.modules.sql.framework.ui.editor.property.impl;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
-
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.editor.property.IResource;
 import org.netbeans.modules.sql.framework.ui.editor.property.ITemplate;
 import org.netbeans.modules.sql.framework.ui.editor.property.ITemplateGroup;
-
-import com.sun.sql.framework.utils.Logger;
 
 /**
  * @author Ritesh Adval
@@ -58,7 +58,8 @@ import com.sun.sql.framework.utils.Logger;
 public class TemplateManager {
 
     private static final String LOG_CATEGORY = TemplateManager.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(TemplateManager.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private IResource rManager;
     private ITemplateGroup tg;
 
@@ -102,7 +103,8 @@ public class TemplateManager {
      */
     private void init(TemplateParser parser, TemplateFactory fac) {
         if (parser == null) {
-            Logger.print(Logger.DEBUG, LOG_CATEGORY, "init(TemplateParser)", "TemplateParser is null");
+            mLogger.infoNoloc(mLoc.t("PRSR137: TemplateParser is null{0}",LOG_CATEGORY));
+           // Logger.print(Logger.DEBUG, LOG_CATEGORY, "init(TemplateParser)", "TemplateParser is null");
         }
         tg = fac.getTemplateGroup();
     }

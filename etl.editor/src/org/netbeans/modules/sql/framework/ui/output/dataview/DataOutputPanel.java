@@ -86,8 +86,10 @@ import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.jdbc.DBConstants;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
 import java.sql.PreparedStatement;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.model.RuntimeDatabaseModel;
@@ -104,7 +106,8 @@ import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
  * @version $Revision$
  */
 public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(DataOutputPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public static final String NL = System.getProperty("line.separator", "\n");
     public static final String LOG_CATEGORY = DataOutputPanel.class.getName();
     public JButton commit;
@@ -712,7 +715,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
                 }
             }
         } catch (SQLException ex) {
-            Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not get total row count", ex);
+             mLogger.errorNoloc(mLoc.t("PRSR145: Could not get total row count{0}", DataOutputPanel.class.getName()),ex);
+           // Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not get total row count", ex);
         }
     }
 

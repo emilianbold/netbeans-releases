@@ -59,9 +59,10 @@ import org.netbeans.modules.sql.framework.ui.view.join.JoinUtility;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
-
+import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -73,9 +74,10 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public class JoinAction extends GraphAction {
 
     private static final URL joinImgUrl = ValidationAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/join_view.png");
-
     private static final String LOG_CATEGORY = JoinAction.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(JoinAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     public JoinAction() {
         // action name
         this.putValue(Action.NAME, NbBundle.getMessage(JoinAction.class, "ACTION_JOIN"));
@@ -123,8 +125,8 @@ public class JoinAction extends GraphAction {
                     }
                 } catch (BaseException ex) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("Error adding join view.", NotifyDescriptor.INFORMATION_MESSAGE));
-
-                    Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinAction.actionPerformed", "error adding join view", ex);
+                     mLogger.errorNoloc(mLoc.t("PRSR025: error adding join view{0}",LOG_CATEGORY),ex);
+                    //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinAction.actionPerformed", "error adding join view", ex);
                 }
             }
         }

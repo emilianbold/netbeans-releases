@@ -72,7 +72,9 @@ import org.netbeans.modules.sql.framework.ui.view.TableColumnNode;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLGraphView;
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -81,7 +83,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
 public class JoinUtility {
 
     private static final String LOG_CATEGORY = JoinUtility.class.getName();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(JoinUtility.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /** Creates a new instance of JoinUtility */
     private JoinUtility() {
     }
@@ -153,8 +156,8 @@ public class JoinUtility {
                                 jGraphView.removeColumn(column);
                             }
                         } catch (BaseException ex) {
-                            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "adjustColumnVisiblity", "can not remove column " + column.getName() + " from joinview table.", ex);
-
+                           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "adjustColumnVisiblity", "can not remove column " + column.getName() + " from joinview table.", ex);
+                             mLogger.errorNoloc(mLoc.t("PRSR186: cannot remove column {0}from joinview table.",column.getName()),ex);
                             throw ex;
                         }
                         //user selected a column to become visible on canvas
@@ -199,7 +202,8 @@ public class JoinUtility {
 
             jGraphView.setSize(jGraphView.getMaximumWidth(), jGraphView.getMaximumHeight());
         } catch (BaseException ex) {
-            Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "adjustColumnVisiblity", "can not adjust column visibility for joinview. ", ex);
+              mLogger.errorNoloc(mLoc.t("PRSR187: can not adjust column visibility for joinview.{0}",LOG_CATEGORY),ex);
+           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "adjustColumnVisiblity", "can not adjust column visibility for joinview. ", ex);
             throw ex;
         }
     }

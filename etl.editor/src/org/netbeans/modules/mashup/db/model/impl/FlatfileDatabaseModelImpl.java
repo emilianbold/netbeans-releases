@@ -62,7 +62,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.sql.framework.exception.BaseException;
-import com.sun.sql.framework.utils.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.model.ETLObject;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
@@ -84,7 +86,8 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
     private static final String ATTR_MICRO_VERSION = "microVersion";
     private static final String ATTR_MINOR_VERSION = "minorVersion";
     private static final String ATTR_NAME = "name";
-
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileDatabaseModelImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private static final String DRIVER_NAME = "org.axiondb.jdbc.AxionDriver";
     private static final List DRIVER_LIST;
     static {
@@ -268,14 +271,17 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
             FlatfileDatabaseModelImpl aSrc = (FlatfileDatabaseModelImpl) refObj;
 
             result = ((aSrc.name != null) ? aSrc.name.equals(name) : (name == null));
-            Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do model names match? " + result);
+              mLogger.infoNoloc(mLoc.t("PRSR063: equals(): Do model names match? {0}"+result,LOG_CATEGORY));
+           // Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do model names match? " + result);
 
             boolean connCheck = (aSrc.connectionName != null) ? aSrc.connectionName.equals(connectionName) : (connectionName == null);
-            Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do connection names match? " + connCheck);
+             mLogger.infoNoloc(mLoc.t("PRSR064: equals(): Do connection names match? {0}"+connCheck,LOG_CATEGORY));
+           // Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do connection names match? " + connCheck);
             result &= connCheck;
 
             connCheck = ((aSrc.connectionDefinition != null) ? aSrc.connectionDefinition.equals(connectionDefinition) : (connectionDefinition == null));
-            Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do connection defs match? " + connCheck);
+            mLogger.infoNoloc(mLoc.t("PRSR065: equals(): Do connection defs match? {0}"+connCheck,LOG_CATEGORY));
+            //Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do connection defs match? " + connCheck);
             result &= connCheck;
 
             if (tables != null && aSrc.tables != null) {
@@ -284,13 +290,15 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
 
                 // Must be identical (no subsetting), hence the pair of tests.
                 boolean tblCheck = myTbls.containsAll(objTbls) && objTbls.containsAll(myTbls);
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do table names match? " + tblCheck);
+                 mLogger.infoNoloc(mLoc.t("PRSR066: equals(): Do table names match? {0}"+tblCheck,LOG_CATEGORY));
+               // Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do table names match? " + tblCheck);
 
                 result &= tblCheck;
             }
         }
 
-        Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Is refObj equal to this? " + result);
+          mLogger.infoNoloc(mLoc.t("PRSR067: equals(): Is refObj equal to this? {0}"+result,LOG_CATEGORY));
+        //Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Is refObj equal to this? " + result);
 
         return result;
     }
@@ -647,7 +655,8 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
             try {
                 majorVersion = Integer.parseInt(str);
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseAttributes()", ATTR_MAJOR_VERSION);
+                  mLogger.infoNoloc(mLoc.t("PRSR068: LOG_CATEGORY {0}",ATTR_MAJOR_VERSION),ex);
+                //Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseAttributes()", ATTR_MAJOR_VERSION);
             }
         }
 
@@ -656,7 +665,8 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
             try {
                 minorVersion = Integer.parseInt(str);
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseAttributes()", ATTR_MINOR_VERSION);
+                mLogger.infoNoloc(mLoc.t("PRSR069: LOG_CATEGORY {0}",ATTR_MINOR_VERSION),ex);
+               // Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseAttributes()", ATTR_MINOR_VERSION);
             }
         }
 
@@ -665,7 +675,8 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
             try {
                 microVersion = Integer.parseInt(str);
             } catch (Exception ex) {
-                Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseAttributes()", ATTR_MICRO_VERSION);
+                 mLogger.infoNoloc(mLoc.t("PRSR070: LOG_CATEGORY {0}",ATTR_MICRO_VERSION),ex);
+                //Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseAttributes()", ATTR_MICRO_VERSION);
             }
         }
 

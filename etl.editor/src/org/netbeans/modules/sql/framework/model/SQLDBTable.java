@@ -245,7 +245,7 @@ public interface SQLDBTable extends DBTable, SQLCanvasObject, SQLObject {
      * @param runtimeArgName name of runtime input argument for flat file location
      */
     public void setFlatFileLocationRuntimeInputName(String runtimeArgName);
-
+   
     /**
      * Sets table name to given value.
      * 
