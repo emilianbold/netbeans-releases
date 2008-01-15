@@ -40,14 +40,14 @@
  */
 package org.netbeans.modules.identity.qaf;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.*;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.jemmy.EventTool;
@@ -55,7 +55,13 @@ import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jemmy.JemmyProperties;
-//import org.netbeans.modules.ws.qaf.WsValidation;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.modules.ws.qaf.WsValidation;
+
 /**
  *
  * @author jp154641
