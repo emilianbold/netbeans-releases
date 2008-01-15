@@ -41,6 +41,8 @@
 package org.netbeans.modules.visualweb.dataconnectivity.naming;
 
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Locale;
@@ -67,7 +69,7 @@ import org.openide.ErrorManager;
  * @author John Kline, John Baker
  */
 class DesignTimeContext implements Context {   
-    private Project             currentProj;
+    private Reference<Project>  projectRef;    
     public static final String  ROOT_CTX_TAG = "rootContext"; // NOI18N
     public static final String  CTX_TAG      = "context"; // NOI18N
     public static final String  OBJ_TAG      = "object"; // NOI18N
@@ -95,9 +97,9 @@ class DesignTimeContext implements Context {
 
     /** Creates a new instance of DesignTimeDatasourceContext */
     private DesignTimeContext(Project p,  Hashtable env) {
-        currentProj = p;
-        this.env    = new Hashtable(env);  
+        projectRef = new WeakReference<Project>(p);         
         thisInstance  = this;                                                                    
+        thisInstance.env    = new Hashtable(env); 
     }
     
     private static class DesignTimeContextHolder {
@@ -105,12 +107,7 @@ class DesignTimeContext implements Context {
             return new DesignTimeContext(prj, environment);
         }
     }
-    
-    public static void setDesignTimeContext(Project prj, Hashtable environment) {
-        thisInstance.currentProj = prj;
-        env = environment;
-    }
-    
+        
     public static DesignTimeContext getDesignTimeContext() {
         return thisInstance;
     }
@@ -119,8 +116,8 @@ class DesignTimeContext implements Context {
         DesignTimeContext dtCtx = null;
         
         if (thisInstance != null) {
-            if (thisInstance.currentProj != null && prj != null) {
-                if (!thisInstance.currentProj.equals(prj)) {
+            if (prj != null) {
+                if (!((Project)thisInstance.projectRef.get()).equals(prj)) {
                     dtCtx = DesignTimeContextHolder.setDesignTimeContext(prj, environment);
                 } else {
                     dtCtx = getDesignTimeContext();
@@ -141,7 +138,7 @@ class DesignTimeContext implements Context {
         
         // Update datasources for current project            
         if (name.toString().contains("java:comp/env/jdbc")  || !update) {            
-            return updateBindings(currentProj, name) ;
+            return updateBindings(projectRef, name) ;
         }
                            
         return null;
@@ -282,7 +279,7 @@ class DesignTimeContext implements Context {
     
 
     // Store the datasource info in the Project
-    private Object updateBindings(Project project, Name name) {        
+    private Object updateBindings(Reference projectReference, Name name) {        
         DesignTimeDataSourceHelper dsHelper = null;        
         Object obj = null;
         update = true;
@@ -290,8 +287,8 @@ class DesignTimeContext implements Context {
         try {
             dsHelper = new DesignTimeDataSourceHelper();                        
             
-            if (dsHelper.datasourcesInProject(currentProj)) {
-                bindings = dsHelper.updateDataSource(currentProj);   
+            if (dsHelper.datasourcesInProject((Project)projectReference.get())) {
+                bindings = dsHelper.updateDataSource((Project)projectReference.get());   
                 confirmConnections(bindings, dsHelper);
                 return bindings.get(name.toString());
             }            
