@@ -392,6 +392,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
                 if (formBaseClass != null) {
                     formModel.setFormBaseClass(formBaseClass);
+                    // Force creation of the default instance in the correct L&F context
+                    BeanSupport.getDefaultInstance(formBaseClass);
                 }
             }
             catch (Exception ex) {
