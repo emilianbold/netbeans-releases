@@ -598,6 +598,8 @@ public final class  MarkupServiceImpl {
 //        return false;
 //    }
     
+    private static Map<Node, Boolean> node2jspx = new WeakHashMap<Node, Boolean>(200);
+    
     public static boolean isJspxNode(Node node) {
 //        if (node instanceof RaveRenderNode) {
 //            return ((RaveRenderNode)node).isJspx();
@@ -613,7 +615,8 @@ public final class  MarkupServiceImpl {
 //            return ((AbstractRaveText)node).isJspx();
 //        }
 //        return false;
-        Boolean b = node == null ? null : (Boolean)node.getUserData(KEY_JSPX);
+//        Boolean b = node == null ? null : (Boolean)node.getUserData(KEY_JSPX);
+        Boolean b = node2jspx.get(node);
         return b == null ? false : b.booleanValue();
     }
     
@@ -634,7 +637,8 @@ public final class  MarkupServiceImpl {
         if (node == null) {
             return;
         }
-        node.setUserData(KEY_JSPX, Boolean.valueOf(jspx), JspxDataHandler.getDefault());
+//        node.setUserData(KEY_JSPX, Boolean.valueOf(jspx), JspxDataHandler.getDefault());
+        node2jspx.put(node, Boolean.valueOf(jspx));
     }
     
     public static Node getRenderedNodeForNode(Node node) {
@@ -990,17 +994,17 @@ public final class  MarkupServiceImpl {
     }
 
     
-    private static class JspxDataHandler implements UserDataHandler {
-        private static final JspxDataHandler INSTANCE = new JspxDataHandler();
-        
-        public static JspxDataHandler getDefault() {
-            return INSTANCE;
-        }
-        
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-        }
-    } // End of JspxDataHandler.
+//    private static class JspxDataHandler implements UserDataHandler {
+//        private static final JspxDataHandler INSTANCE = new JspxDataHandler();
+//        
+//        public static JspxDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//        
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//        }
+//    } // End of JspxDataHandler.
 
     
     private static class StyleMapDataHandler implements UserDataHandler {
