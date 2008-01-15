@@ -97,18 +97,13 @@ public class AddRemoveBindingAttributeAction extends AbstractDisplayActionAction
         public Result invoke() {            
             if (designBean instanceof FacesDesignBean) {
                 FacesDesignBean facesDesignBean = (FacesDesignBean) designBean;
-                Bean bean = facesDesignBean.getBean();
-                if (bean instanceof FacesBean) {
-                    FacesBean facesBean = (FacesBean) bean;
-                    FacesModel facesModel = ((LiveUnit)designBean.getDesignContext()).getModel();
-                    UndoEvent undo = null;
-                    try {
-                        undo = facesModel.writeLock(NbBundle.getMessage(AddRemoveBindingAttributeAction.class, "LBL_RemoveBindingAttributeActionName"));
-                        facesBean.addBinding();
-                    }
-                    finally {
-                        facesModel.writeUnlock(undo);
-                    }
+                FacesModel facesModel = ((LiveUnit) designBean.getDesignContext()).getModel();
+                UndoEvent undo = null;
+                try {
+                    undo = facesModel.writeLock(NbBundle.getMessage(AddRemoveBindingAttributeAction.class, "LBL_RemoveBindingAttributeActionName"));
+                    facesDesignBean.addBinding();
+                } finally {
+                    facesModel.writeUnlock(undo);
                 }
             }
             return Result.SUCCESS;
@@ -126,18 +121,13 @@ public class AddRemoveBindingAttributeAction extends AbstractDisplayActionAction
         public Result invoke() {            
             if (designBean instanceof FacesDesignBean) {
                 FacesDesignBean facesDesignBean = (FacesDesignBean) designBean;
-                Bean bean = facesDesignBean.getBean();
-                if (bean instanceof FacesBean) {
-                    FacesBean facesBean = (FacesBean) bean;
-                    FacesModel facesModel = ((LiveUnit)designBean.getDesignContext()).getModel();
-                    UndoEvent undo = null;
-                    try {
-                        undo = facesModel.writeLock(NbBundle.getMessage(AddRemoveBindingAttributeAction.class, "LBL_RemoveBindingAttributeActionName"));
-                        facesBean.removeBinding();
-                    }
-                    finally {
-                        facesModel.writeUnlock(undo);
-                    }
+                FacesModel facesModel = ((LiveUnit) designBean.getDesignContext()).getModel();
+                UndoEvent undo = null;
+                try {
+                    undo = facesModel.writeLock(NbBundle.getMessage(AddRemoveBindingAttributeAction.class, "LBL_RemoveBindingAttributeActionName"));
+                    facesDesignBean.removeBinding();
+                } finally {
+                    facesModel.writeUnlock(undo);
                 }
             }
             return Result.SUCCESS;

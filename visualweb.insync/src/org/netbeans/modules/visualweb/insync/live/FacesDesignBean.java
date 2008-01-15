@@ -50,6 +50,8 @@ import java.beans.BeanInfo;
 
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.DesignInfo;
+import com.sun.rave.designtime.DesignProperty;
+import java.util.List;
 import org.netbeans.modules.visualweb.insync.faces.FacesBean;
 
 /**
@@ -88,5 +90,22 @@ public class FacesDesignBean extends MarkupDesignBean implements com.sun.rave.de
             }
         }
         return null;
+    }
+    
+    public void addBinding() {
+        ((FacesBean)bean).addBinding();
+    }
+    
+    public FacesBean.UsageInfo getUsageInfo() {
+        return ((FacesBean)bean).getUsageInfo();
+    }
+    
+    public void removeBinding() {
+        List<String> propsDeleted = ((FacesBean)bean).removeBinding();
+        for(String name : propsDeleted) {
+            DesignProperty bdp = getProperty(name);
+            bdp.unset();
+        }
+        fireDesignBeanChanged();
     }
 }

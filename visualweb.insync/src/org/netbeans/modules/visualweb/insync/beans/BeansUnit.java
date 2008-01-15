@@ -315,7 +315,7 @@ public class BeansUnit implements Unit {
             }            
             
             for (Bean b : beans) {
-                if(b.unit.getPropertiesInitMethod() != null) {
+                if(b.unit.getPropertiesInitMethod() != null && b.isInserted()) {
                     Method m = b.unit.getPropertiesInitMethod();
                     m.addPropertySetStatements(b);
                     m.addEventSetStatements(b);

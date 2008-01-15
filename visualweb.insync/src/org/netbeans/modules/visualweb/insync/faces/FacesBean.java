@@ -57,11 +57,14 @@ import com.sun.rave.designtime.Constants;
 import com.sun.rave.designtime.DesignBean;
 import com.sun.rave.designtime.Position;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.beans.EventSet;
 import org.netbeans.modules.visualweb.insync.beans.Property;
 import org.openide.filesystems.FileObject;
-import org.netbeans.modules.visualweb.insync.java.JavaClass.UseStatus;
+import org.netbeans.modules.visualweb.insync.java.JavaClass.UsageStatus;
 
 /**
  * A MarkupBean for a JSF component that lives in a FacesPageUnit.
@@ -327,30 +330,53 @@ public class FacesBean extends MarkupBean {
     }
     
     /*
-     * @return The usage status, it returns 
-     *         UseStatus.init_use_only if the bean is used in _init() method
-     *         UseStatus.used if it is used elsewhere in .jsp/.java in addition to _init() method
-     *         UseStatus.not_used if it is not used in .jsp/.java
+     * @return The usage info
      */
-    public UseStatus getUseStatus() {
-        UseStatus status = UseStatus.not_used;
+    public UsageInfo getUsageInfo() {
+        UsageStatus status = UsageStatus.NOT_USED;
         if(isUsedInBindingExpression()) {
-            status = UseStatus.used;
+            status = UsageStatus.USED;
         }
-        if(status != UseStatus.used) {
+        if(status != UsageStatus.USED) {
             List<FileObject> fObjs = new ArrayList<FileObject>();
             fObjs.add(unit.getJavaUnit().getFileObject());
             status = unit.getThisClass().isPropertyUsed(getName(), fObjs);
-            if(status == UseStatus.init_use_only) {
+            if(status == UsageStatus.INIT_USE_ONLY) {
+                Set<String> props = new HashSet<String>();
                 for (Property p : getProperties()) {
                     if (p.isInserted()) {
-                        status.addInitializedProperty(p.getName());
+                        props.add(p.getName());
                     }
-                }                         
+                }
+                return new UsageInfo(status, props);
             }
         }
   
-        return status;
+        return new UsageInfo(status, Collections.<String>emptySet());
+    }
+    /*
+     * Class UsageInfo has the usage status and it has the list of properties 
+     * being initialized if the binding bean is only used to initialize them in 
+     * the _init() method
+     */
+    public class UsageInfo {
+        private UsageStatus useStatus;
+        private Set<String> props;
+        public UsageInfo(UsageStatus status, Set<String> props) {
+            this.useStatus = status;
+            this.props = props;
+        }
+        public UsageStatus getUsageStatus() {
+            return useStatus;
+        }
+        
+        /*
+         * @return the properties initialized in _init() method, set will be empty
+         * if the UseStatus is not init_use_only
+         */        
+        public Set<String> getInitializedProperties() {
+            return props;
+        }
     }
     
     /*
@@ -372,15 +398,21 @@ public class FacesBean extends MarkupBean {
         return false;
     }
     
-    public void removeBinding() {
+    /*
+     * @return the list of properties that needs to be unset because of removing
+     *         the binding
+     */ 
+    public List<String> removeBinding() {
+        List<String> propsToBeDeleted = new ArrayList<String>();
         if (isInserted()) {
             unit.removeBindingBean(getName());
             for (Property p : getProperties()) {
                 if (p.isInserted()) {
-                    unsetProperty(p);
+                    propsToBeDeleted.add(p.getName());
                 }
-            }            
+            }
         }
         clearBindingProperty();
+        return propsToBeDeleted;
     }
  }

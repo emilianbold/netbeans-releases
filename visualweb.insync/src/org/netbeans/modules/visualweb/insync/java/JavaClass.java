@@ -47,7 +47,6 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -749,35 +748,20 @@ public class JavaClass {
      *         UseStatus.used if it is used elsewhere in .java in addition to _init() method
      *         UseStatus.not_used if it is not used in  
      */    
-    public UseStatus isPropertyUsed(final String name, final List<FileObject> fObjs) {
+    public UsageStatus isPropertyUsed(final String name, final List<FileObject> fObjs) {
         final HashMap<ElementHandle, String> elementAndNames = getElementHandlesToReplace(name, name);
-        return (UseStatus)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
+        return (UsageStatus)WriteTaskWrapper.execute( new WriteTaskWrapper.Write() {
             public Object run(WorkingCopy wc) {
                 ElementsUsageFinder usageFinder = new ElementsUsageFinder(wc, elementAndNames);
                 usageFinder.scan(wc.getCompilationUnit(), null);
-                UseStatus result = usageFinder.getUseStatus();
+                UsageStatus result = usageFinder.getUseStatus();
                 return result;
             }
         }, fObjs);
     }
     
-    public enum UseStatus {
-        not_used, init_use_only, used;
-        private List<String> propNames = new ArrayList<String>();
-        
-        /*
-         * @return the properties initialized in _init() method
-         */
-        public List<String> getInitializedProperties() {
-            return propNames;
-        }
-        
-        /*
-         * @param The name of the property initialized in _init() method
-         */        
-        public void addInitializedProperty(String name) {
-            propNames.add(name);
-        }
+    public enum UsageStatus {
+        NOT_USED, INIT_USE_ONLY, USED;
     }
     
     /* Look for the occurence of list of elements and a EL expression string literal
@@ -789,7 +773,7 @@ public class JavaClass {
     class ElementsUsageFinder extends TreePathScanner<Tree, Void> {
         private final CompilationInfo cinfo;
         private HashMap<Element, String> elementAndNames = new HashMap<Element, String>();
-        private UseStatus useStatus = UseStatus.not_used;
+        private UsageStatus useStatus = UsageStatus.NOT_USED;
         private String vbExpression;
 
         /** Creates a new instance of Refactor */
@@ -806,9 +790,9 @@ public class JavaClass {
 
         @Override
         public Tree visitIdentifier(IdentifierTree tree, Void v) {
-            if (useStatus != UseStatus.used) {
-                UseStatus status = getUseStatus(getCurrentPath());
-                if(status != useStatus && status != UseStatus.not_used) {
+            if (useStatus != UsageStatus.USED) {
+                UsageStatus status = getUseStatus(getCurrentPath());
+                if(status != useStatus && status != UsageStatus.NOT_USED) {
                     useStatus = status;
                 }
                 return super.visitIdentifier(tree, v);
@@ -818,7 +802,7 @@ public class JavaClass {
 
         @Override
         public Tree visitMethod(MethodTree tree, Void v) {
-            if (useStatus != UseStatus.used && !canSkip(getCurrentPath())) {
+            if (useStatus != UsageStatus.USED && !canSkip(getCurrentPath())) {
                 return super.visitMethod(tree, v);
             }
             return null;
@@ -826,21 +810,21 @@ public class JavaClass {
 
         @Override
         public Tree visitVariable(VariableTree tree, Void v) {
-            if (useStatus != UseStatus.used && !canSkip(getCurrentPath())) {
+            if (useStatus != UsageStatus.USED && !canSkip(getCurrentPath())) {
                 return super.visitVariable(tree, v);
             }
             return null;
         }
 
-        public UseStatus getUseStatus() {
+        public UsageStatus getUseStatus() {
             return useStatus;
         }
         
         @Override
         public Tree visitLiteral(LiteralTree tree, Void v) {
-            if (useStatus != UseStatus.used) {
-                UseStatus status = getUseStatus(tree);
-                if (status != useStatus && status != UseStatus.not_used) {
+            if (useStatus != UsageStatus.USED) {
+                UsageStatus status = getUseStatus(tree);
+                if (status != useStatus && status != UsageStatus.NOT_USED) {
                     useStatus = status;
                 }
                 return super.visitLiteral(tree, v);
@@ -848,31 +832,31 @@ public class JavaClass {
             return null;
         }
         
-        private UseStatus getUseStatus(LiteralTree tree) {
+        private UsageStatus getUseStatus(LiteralTree tree) {
             if(tree.getKind() == Tree.Kind.STRING_LITERAL && vbExpression.equals(tree.getValue())) {
                 if(getEnclosingMethodName(getCurrentPath()).equals("_init")) {
-                    return UseStatus.init_use_only;
+                    return UsageStatus.INIT_USE_ONLY;
                 }else {
-                    return UseStatus.used;
+                    return UsageStatus.USED;
                 }
             }else {
-                return UseStatus.not_used;
+                return UsageStatus.NOT_USED;
             }
         }        
 
-        private UseStatus getUseStatus(TreePath path) {
+        private UsageStatus getUseStatus(TreePath path) {
             if (cinfo.getTreeUtilities().isSynthetic(path)) {
-                return UseStatus.not_used;
+                return UsageStatus.NOT_USED;
             }
             Element el = cinfo.getTrees().getElement(path);
             if (el != null && elementAndNames.containsKey(el)) {
                 if(getEnclosingMethodName(path).equals("_init")) {
-                    return UseStatus.init_use_only;
+                    return UsageStatus.INIT_USE_ONLY;
                 }else {
-                    return UseStatus.used;
+                    return UsageStatus.USED;
                 }
             }
-            return UseStatus.not_used;
+            return UsageStatus.NOT_USED;
         }
         
         private boolean canSkip(TreePath path) {
