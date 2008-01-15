@@ -41,7 +41,7 @@
 package org.netbeans.modules.j2ee.websphere6;
 
 import java.beans.PropertyVetoException;
-import java.io.ByteArrayInputStream;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -52,18 +52,20 @@ import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.ClientConfiguration;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressListener;
+
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 import java.util.Locale;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+
 import javax.enterprise.deploy.model.DeployableObject;
 import javax.enterprise.deploy.shared.DConfigBeanVersionType;
 import javax.enterprise.deploy.shared.ModuleType;
@@ -77,11 +79,13 @@ import javax.enterprise.deploy.spi.exceptions.InvalidModuleException;
 import javax.enterprise.deploy.spi.exceptions.TargetException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 import javax.enterprise.deploy.spi.status.ProgressObject;
+
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
@@ -97,12 +101,13 @@ import org.openide.util.NbBundle;
  * @author Petr Hejl
  * @author Arathi
  */
+@SuppressWarnings("deprecation")
 public class WSDeploymentManager implements DeploymentManager {
 
     private static final Logger LOGGER = Logger.getLogger(WSDeploymentManager.class.getName());
 
-	// Websphere version
-    public enum WsVersion {WS_60, WS_61};
+    // Websphere version
+    public enum WsVersion { WS_60, WS_61 };
 
     private WsVersion wsVersion;
 
@@ -154,15 +159,15 @@ public class WSDeploymentManager implements DeploymentManager {
      * @param password password for connecting to the server
      */
     public WSDeploymentManager(String uri, String username, String password, WsVersion wsVersion) {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("WSDeploymentManager(" + uri + ", " +       // NOI18N
-                    username + ", " + password + ")");                 // NOI18N
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "WSDeploymentManager(" + uri + ", " + username + ", " + password + ")"); // NOI18N
+        }
 
         // save the connection properties
         this.uri = uri;
         this.username = username;
         this.password = password;
-	this.wsVersion = wsVersion;
+        this.wsVersion = wsVersion;
     }
 
     /**
@@ -371,8 +376,7 @@ public class WSDeploymentManager implements DeploymentManager {
      * this process the classloader for WS classes is initialized.
      */
     private void loadDeploymentFactory() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("loadDeploymentFactory()");                 // NOI18N
+        LOGGER.log(Level.FINEST, "loadDeploymentFactory()"); // NOI18N
 
         // if the factory is not loaded - load it
         if (factory == null) {
@@ -413,8 +417,7 @@ public class WSDeploymentManager implements DeploymentManager {
      * it is disconnected, its deployment application is already defined, etc
      */
     private void updateDeploymentManager() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("updateDeploymentManager()");               // NOI18N
+        LOGGER.log(Level.FINEST, "updateDeploymentManager()"); // NOI18N
 
         // load the deployment factory
         loadDeploymentFactory();
@@ -458,8 +461,7 @@ public class WSDeploymentManager implements DeploymentManager {
      * Returns the InstanceProperties object for the current server instance
      */
     public InstanceProperties getInstanceProperties() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("getInstanceProperties()");                 // NOI18N
+        LOGGER.log(Level.FINEST, "getInstanceProperties()"); // NOI18N
 
         // if the stored instance properties are null - get them via the
         // InstanceProperties' static method
@@ -500,9 +502,9 @@ public class WSDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public ProgressObject distribute(Target[] target, File file, File file2) throws IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("distribute(" + target + ", " + file +      // NOI18N
-                    ", " + file2 + ")");                               // NOI18N
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "distribute(" + target + ", " + file + ", " + file2 + ")"); // NOI18N
+        }
 
         // update the deployment manager
         updateDeploymentManager();
@@ -604,9 +606,9 @@ public class WSDeploymentManager implements DeploymentManager {
      */
     public ProgressObject redeploy(TargetModuleID[] targetModuleID,
             InputStream inputStream, InputStream inputStream2) throws IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("redeploy(" + targetModuleID + ", " +       // NOI18N
-                    inputStream + ", " + inputStream2 + ")");          // NOI18N
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "redeploy(" + targetModuleID + ", " + inputStream + ", " + inputStream2 + ")"); // NOI18N
+        }
 
         // update the deployment manager
         updateDeploymentManager();
@@ -632,10 +634,9 @@ public class WSDeploymentManager implements DeploymentManager {
      */
     public ProgressObject distribute(Target[] target, InputStream inputStream,
             InputStream inputStream2) throws IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("distribute(" + target + ", " +             // NOI18N
-                    inputStream + ", " + inputStream2 + ")");          // NOI18N
-
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "distribute(" + target + ", " + inputStream + ", " + inputStream2 + ")"); // NOI18N
+        }
         // update the deployment manager
         updateDeploymentManager();
 
@@ -670,8 +671,9 @@ public class WSDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public ProgressObject undeploy(TargetModuleID[] targetModuleID) throws IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("undeploy(" + targetModuleID + ")");        // NOI18N
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "undeploy(" + targetModuleID + ")"); // NOI18N
+        }
 
         // update the deployment manager
         updateDeploymentManager();
@@ -700,8 +702,9 @@ public class WSDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public ProgressObject stop(TargetModuleID[] targetModuleID) throws IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("stop(" + targetModuleID + ")");            // NOI18N
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "stop(" + targetModuleID + ")"); // NOI18N
+        }
 
         // update the deployment manager
         updateDeploymentManager();
@@ -726,8 +729,9 @@ public class WSDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public ProgressObject start(TargetModuleID[] targetModuleID) throws IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("start(" + targetModuleID + ")");           // NOI18N
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "start(" + targetModuleID + ")"); // NOI18N
+        }
 
         // update the deployment manager
         updateDeploymentManager();
@@ -753,9 +757,9 @@ public class WSDeploymentManager implements DeploymentManager {
      */
     public TargetModuleID[] getAvailableModules(ModuleType moduleType,
             Target[] target) throws TargetException, IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("getAvailableModules(" + moduleType +       // NOI18N
-                    ", " + target + ")");                              // NOI18N
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "getAvailableModules(" + moduleType + ", " + target + ")"); // NOI18N
+        }
 
         // update the deployment manager
         updateDeploymentManager();
@@ -786,10 +790,10 @@ public class WSDeploymentManager implements DeploymentManager {
      */
     public TargetModuleID[] getNonRunningModules(ModuleType moduleType,
             Target[] target) throws TargetException, IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("getNonRunningModules(" + moduleType +      // NOI18N
-                    ", " + target + ")");                              // NOI18N
-
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "getNonRunningModules(" + moduleType + ", " + target + ")"); // NOI18N
+        }
+        
         // update the deployment manager
         updateDeploymentManager();
 
@@ -819,9 +823,9 @@ public class WSDeploymentManager implements DeploymentManager {
      */
     public TargetModuleID[] getRunningModules(ModuleType moduleType,
             Target[] target) throws TargetException, IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("getRunningModules(" + moduleType +         // NOI18N
-                    ", " + target + ")");                              // NOI18N
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "getRunningModules(" + moduleType + ", " + target + ")"); // NOI18N
+        }
 
         // update the deployment manager
         updateDeploymentManager();
@@ -851,12 +855,11 @@ public class WSDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public ProgressObject redeploy(TargetModuleID[] targetModuleID, File file,
-            File file2) throws UnsupportedOperationException,
-            IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("redeploy(" + targetModuleID + ", " +       // NOI18N
-                    file + ", " + file2 + ")");                        // NOI18N
-
+            File file2) throws UnsupportedOperationException, IllegalStateException {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "redeploy(" + targetModuleID + ", " + file + ", " + file2 + ")"); // NOI18N
+        }
+        
         // update the deployment manager
         updateDeploymentManager();
 
@@ -884,8 +887,7 @@ public class WSDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public void release() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("release()");                               // NOI18N
+        LOGGER.log(Level.FINEST, "release()"); // NOI18N
 
         if (dm != null) {
             // delegate the call and clear the stored deployment manager
@@ -900,8 +902,7 @@ public class WSDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public boolean isRedeploySupported() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("isRedeploySupported()");                   // NOI18N
+        LOGGER.log(Level.FINEST, "isRedeploySupported()"); // NOI18N
 
         // update the deployment manager
         updateDeploymentManager();
@@ -916,8 +917,7 @@ public class WSDeploymentManager implements DeploymentManager {
      * the IllegalStateException is appropriate
      */
     public Target[] getTargets() throws IllegalStateException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("getTargets()");                            // NOI18N
+        LOGGER.log(Level.FINEST, "getTargets()"); // NOI18N
 
         // update the deployment manager
         updateDeploymentManager();

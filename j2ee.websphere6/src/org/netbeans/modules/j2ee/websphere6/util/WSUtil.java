@@ -51,9 +51,13 @@ import org.openide.*;
  *
  * @author Kirill Sorokin
  */
-public class WSUtil {
+public final class WSUtil {
 
-    private static Class clazz = new WSUtil().getClass();
+    private static final Logger LOGGER = Logger.getLogger(WSUtil.class.getName());
+
+    private WSUtil() {
+        super();
+    }
 
     /**
      * Reads an entire text file into a string
@@ -62,30 +66,33 @@ public class WSUtil {
      * @return a string with the file's contents
      */
     public static String readFile(File file) {
-       // init the buffer for storing the file's contents
-       StringBuffer buffer = new StringBuffer();
-       
        try {
            // init the reader
            LineNumberReader reader = new LineNumberReader(new FileReader(file));
-           
-           // init the temp line
-           String temp = "";
-           
-           // read the file
-           while ((temp = reader.readLine()) != null) {
-               buffer.append(temp).append("\n");
+
+           try {
+               StringBuffer buffer = new StringBuffer();
+               // init the temp line
+               String temp = ""; // NOI18N
+
+               // read the file
+               while ((temp = reader.readLine()) != null) {
+                   buffer.append(temp).append("\n"); // NOI18N
+               }
+
+               if (LOGGER.isLoggable(Level.FINEST)) {
+                   LOGGER.log(Level.FINEST, "read string: \n" + buffer.toString()); // NOI18N
+               }
+
+               // return the string
+               return buffer.toString();
+           } finally {
+               reader.close();
            }
-           
-           if (WSDebug.isEnabled()) 
-               WSDebug.notify(clazz, "read string: \n" + buffer.toString());
-           
-           // return the string
-           return buffer.toString();
        } catch (IOException e) {
-           Logger.getLogger("global").log(Level.WARNING, null, e);
+           LOGGER.log(Level.WARNING, null, e);
        }
-       
+
        return null;
     }
     
@@ -96,14 +103,19 @@ public class WSUtil {
      * @param the new file contents
      */
     public static void writeFile(File file, String contents) {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "write string: \n" + contents); // NOI18N
+        }
+
         try {
-            if (WSDebug.isEnabled()) 
-                WSDebug.notify(clazz, "write string: \n" + contents);
-           
-            // create a writer and write the contents
-            new FileOutputStream(file).write(contents.getBytes());
+            FileOutputStream fos = new FileOutputStream(file);
+            try {
+                fos.write(contents.getBytes());
+            } finally {
+                fos.close();
+            }
         } catch (IOException e) {
-            Logger.getLogger("global").log(Level.WARNING, null, e);
+            LOGGER.log(Level.WARNING, null, e);
         }
     }
 }

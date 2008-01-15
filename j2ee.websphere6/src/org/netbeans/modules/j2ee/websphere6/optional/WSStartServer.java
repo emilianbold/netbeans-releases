@@ -71,7 +71,9 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
  * @author Kirill Sorokin
  */
 public class WSStartServer extends StartServer {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(WSStartServer.class.getName());
+
     /**
      * The server's deployment manager, to be exact the plugin's wrapper for it
      */
@@ -117,9 +119,8 @@ public class WSStartServer extends StartServer {
      * @return a progress object that describes the startup process
      */
     public ProgressObject startDebugging(Target target) {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("starting server in debug mode");           // NOI18N
-        
+        LOGGER.log(Level.FINEST, "Starting server in debug mode"); // NOI18N
+
         // create a new progress object
         WSServerProgress serverProgress = new WSServerProgress(this);
         
@@ -238,9 +239,8 @@ public class WSStartServer extends StartServer {
      * @return the progress object describing the shutdown process
      */
     public ProgressObject stopDeploymentManager() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("stopping server");                         // NOI18N
-        
+        LOGGER.log(Level.FINEST, "Stopping server"); // NOI18N
+
         // create a new progress object
         WSServerProgress serverProgress = new WSServerProgress(this);
         
@@ -294,9 +294,8 @@ public class WSStartServer extends StartServer {
      * @return a progress object describing the server startup process
      */
     public ProgressObject startDeploymentManager() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("starting server");                         // NOI18N
-        
+        LOGGER.log(Level.FINEST, "Starting server"); // NOI18N
+
         // create a new progress object
         WSServerProgress serverProgress = new WSServerProgress(this);
         
@@ -446,8 +445,8 @@ public class WSStartServer extends StartServer {
         if (debugEnabled) {
             contents = contents.replaceAll("debugMode=\"false\"", "debugMode=\"true\"");
             contents = contents.replaceFirst("suspend=n,address=[0-9]+\" genericJvmArguments", "suspend=n,address=" + debuggerPort + "\" genericJvmArguments");
-            if (WSDebug.isEnabled()) {
-                WSDebug.notify("setting the address string to: " + "suspend=n,address=" + debuggerPort);
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "Setting the address string to: " + "suspend=n,address=" + debuggerPort);
             }
         } else {
             contents = contents.replaceAll("debugMode=\"true\"", "debugMode=\"false\"");

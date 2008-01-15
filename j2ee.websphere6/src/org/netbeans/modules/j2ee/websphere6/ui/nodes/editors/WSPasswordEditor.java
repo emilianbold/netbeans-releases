@@ -43,6 +43,8 @@ package org.netbeans.modules.j2ee.websphere6.ui.nodes.editors;
 import java.beans.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.border.*;
 
@@ -57,9 +59,10 @@ import org.netbeans.modules.j2ee.websphere6.util.*;
  *
  * @author Kirill Sorokin
  */
-public class WSPasswordEditor extends PropertyEditorSupport
-        implements ExPropertyEditor {
-    
+public class WSPasswordEditor extends PropertyEditorSupport implements ExPropertyEditor {
+
+    private static final Logger LOGGER = Logger.getLogger(WSPasswordEditor.class.getName());
+
     /**
      * The internal store for the edited object, for this editor we assume
      * that it's a string
@@ -72,9 +75,8 @@ public class WSPasswordEditor extends PropertyEditorSupport
      * @return the string representation of the edited object
      */
     public String getAsText() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(), "getAsText()");                 // NOI18N
-        
+        LOGGER.log(Level.FINEST, "getAsText()"); // NOI18N
+
         // return the object masquerading its real value with asterisks
         return value.replaceAll(".", "*");                             // NOI18N
     }
@@ -86,9 +88,10 @@ public class WSPasswordEditor extends PropertyEditorSupport
      * @param string the string representation of the new value
      */
     public void setAsText(String string) throws IllegalArgumentException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(), "setAsText(" + string + ")");   // NOI18N
-        
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "setAsText(" + string + ")"); // NOI18N
+        }
+
         // if the supplied string is not null 0 update the value and notify the
         // listeners
         if (string != null) {
@@ -113,9 +116,10 @@ public class WSPasswordEditor extends PropertyEditorSupport
      * @param object the new value
      */
     public void setValue(Object object) {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(), "setValue(" + object + ")");    // NOI18N
-        
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "setValue(" + object + ")"); // NOI18N
+        }
+
         // if the supplied object is not null - update the value
         if (object != null) {
             value = object.toString();
@@ -128,9 +132,8 @@ public class WSPasswordEditor extends PropertyEditorSupport
      * @return the edited object's value
      */
     public Object getValue() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(), "getValue()");                  // NOI18N
-        
+        LOGGER.log(Level.FINEST, "getValue()"); // NOI18N
+
         // return
         return value;
     }
@@ -142,9 +145,8 @@ public class WSPasswordEditor extends PropertyEditorSupport
      * @return a swing component for editing the object
      */
     public Component getInPlaceCustomEditor() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(), "getInPlaceCustomEditor()");    // NOI18N
-        
+        LOGGER.log(Level.FINEST, "getInPlaceCustomEditor()"); // NOI18N
+
         // init the password field
         JPasswordField textfield = new JPasswordField(value);
         
@@ -169,9 +171,8 @@ public class WSPasswordEditor extends PropertyEditorSupport
      * @return true
      */
     public boolean hasInPlaceCustomEditor() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(), "hasInPlaceCustomEditor()");    // NOI18N
-        
+        LOGGER.log(Level.FINEST, "hasInPlaceCustomEditor()"); // NOI18N
+
         // return
         return true;
     }
@@ -183,10 +184,8 @@ public class WSPasswordEditor extends PropertyEditorSupport
      * @return false
      */
     public boolean supportsEditingTaggedValues() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(),
-                    "supportsEditingTaggedValues()");                  // NOI18N
-        
+        LOGGER.log(Level.FINEST, "supportsEditingTaggedValues()"); // NOI18N
+
         // return
         return false;
     }
@@ -204,10 +203,10 @@ public class WSPasswordEditor extends PropertyEditorSupport
          * @param event the corresponding keyboard event
          */
         public void keyReleased(KeyEvent event) {
-            if (WSDebug.isEnabled()) // debug output
-                WSDebug.notify(getClass(), "keyReleased(" + event +    // NOI18N
-                        ")");                                          // NOI18N
-            
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "keyReleased(" + event + ")"); // NOI18N
+            }
+
             // get the event's source (in out case it would be a password field
             JPasswordField field = (JPasswordField) event.getSource();
             

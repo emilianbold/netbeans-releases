@@ -54,7 +54,6 @@ import org.w3c.dom.*;
 import org.xml.sax.*;
 import org.openide.*;
 import org.openide.util.*;
-import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
 
 /**
  *
@@ -62,6 +61,8 @@ import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
  */
 public class ServerProperties {
 
+    private static final Logger LOGGER = Logger.getLogger(ServerProperties.class.getName());
+    
     private JComboBox serverTypeCombo;
     private JComboBox localInstancesCombo;
     private JTextField domainPathField;
@@ -571,13 +572,15 @@ public class ServerProperties {
         for (int i = 0; i < files.length; i++) {
             String path = cellPath + "/nodes/" + files[i] +            // NOI18N
                     "/servers/" + serverName + "/server.xml";          // NOI18N
+
             if (new File(path).exists()) {
-                if (WSDebug.isEnabled())
-                    WSDebug.notify(path);
+                if (LOGGER.isLoggable(Level.FINEST)) {
+                    LOGGER.log(Level.FINEST, "Config path: " + path); // NOI18N
+                }
                 return path;
             }
         }
-        
+
         return "";
     }
     

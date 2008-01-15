@@ -40,21 +40,20 @@
  */
 package org.netbeans.modules.j2ee.websphere6;
 
-import java.io.*;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
 import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import org.openide.util.NbBundle;
+
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
-import org.netbeans.modules.j2ee.websphere6.WSClassLoader;
+
 import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager.WsVersion;
 
 
@@ -83,6 +82,8 @@ public class WSDeploymentFactory implements DeploymentFactory {
     public static final String DEFAULT_HOST_PORT_ATTR="defaultHostPort";
 
     public final WsVersion version;
+
+    private static final Logger LOGGER = Logger.getLogger(WSDeploymentFactory.class.getName());    
     
     /**
      * The singleton instance of the factory
@@ -133,9 +134,9 @@ public class WSDeploymentFactory implements DeploymentFactory {
      */
     public DeploymentManager getDeploymentManager(String uri, String username, 
             String password) throws DeploymentManagerCreationException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("getDeploymentManager(" + uri + ", " +      // NOI18N
-                    username + ", " + password + ")");                 // NOI18N
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "getDeploymentManager(" + uri + ", " + username + ", " + password + ")"); // NOI18N
+        }
  
         DeploymentManager manager = managers.get(uri);
         
@@ -154,17 +155,17 @@ public class WSDeploymentFactory implements DeploymentFactory {
      */
     public DeploymentManager getDisconnectedDeploymentManager(String uri) 
             throws DeploymentManagerCreationException {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("getDisconnectedDeploymentManager(" + uri + // NOI18N
-                    ")");                                              // NOI18N
-      
+        if (LOGGER.isLoggable(Level.FINEST)) // debug output
+           LOGGER.log(Level.FINEST, "getDisconnectedDeploymentManager(" + uri + ")"); // NOI18N
+
         // return a new deployment manager
         return getDeploymentManager(uri,null,null);
     }
         
    public DeploymentFactory getWSDeploymentFactory(String uri) {
-        if (WSDebug.isEnabled())
-            System.out.println("getWSDeploymentFactory");
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "getWSDeploymentFactory(" + uri + ")");
+        }
 
         DeploymentFactory factory = factories.get(uri);
 
@@ -183,9 +184,10 @@ public class WSDeploymentFactory implements DeploymentFactory {
 
             if (null == domainRoot)
                 domainRoot = NbPreferences.forModule(WSDeploymentFactory.class).get(DOMAIN_ROOT_ATTR, "");
-            
-            if (WSDebug.isEnabled())
-                System.out.println("loadDeplomentFactory: serverRoot=" + serverRoot);
+
+            if (LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "loadDeplomentFactory: serverRoot=" + serverRoot);
+            }
 
             loader = WSClassLoader.getInstance(serverRoot,domainRoot);
             loader.updateLoader();
@@ -221,9 +223,10 @@ public class WSDeploymentFactory implements DeploymentFactory {
      * @return can or cannot handle the URI
      */
     public boolean handlesURI(String uri) {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("handlesURI(" + uri + ")");                 // NOI18N
-        
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "handlesURI(" + uri + ")"); // NOI18N
+        }
+
         //return uri == null ? false : uri.startsWith(
         return uri == null ? false : (uri.indexOf(WSURIManager.WSURI)>-1);                                // NOI18N
     }
@@ -244,8 +247,7 @@ public class WSDeploymentFactory implements DeploymentFactory {
      * @return display name
      */
     public String getDisplayName() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify("getDisplayName()");                        // NOI18N
+        LOGGER.log(Level.FINEST, "getDisplayName()"); // NOI18N
         
 	switch (version) {
             case WS_60:

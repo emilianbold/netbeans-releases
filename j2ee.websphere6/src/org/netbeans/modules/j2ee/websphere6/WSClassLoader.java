@@ -40,11 +40,18 @@
  */
 package org.netbeans.modules.j2ee.websphere6;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
 
-import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
+import java.io.File;
+import java.io.FileFilter;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The singleton classloader that is used for loading the WebSphere classes.
@@ -56,6 +63,8 @@ import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
  */
 public class WSClassLoader extends URLClassLoader {
 
+    private static final Logger LOGGER = Logger.getLogger(WSClassLoader.class.getName());
+    
     /**
      * A <code>HashMap</code> used to store all registered instances of the
      * loader
@@ -72,13 +81,13 @@ public class WSClassLoader extends URLClassLoader {
      */
     public static WSClassLoader getInstance(String serverRoot,
             String domainRoot) {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(WSClassLoader.class, "getInstance(" +       // NOI18N
-                    serverRoot + ", " + domainRoot + ")");             // NOI18N
-        
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "getInstance(" + serverRoot + ", " + domainRoot + ")"); // NOI18N
+        }
+
         // check whether such instance is already registered
         WSClassLoader instance = (WSClassLoader) instances.get(domainRoot);
-        
+
         // if it's not, create a new one and register
         if (instance == null) {
             instance = new WSClassLoader(serverRoot, domainRoot);
@@ -195,9 +204,8 @@ public class WSClassLoader extends URLClassLoader {
      * The old loader is saved so that a restore operation is possible.
      */
     public void updateLoader() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(), "updateLoader()");              // NOI18N
-        
+        LOGGER.log(Level.FINEST, "updateLoader()"); // NOI18N
+
         // set the system properties that are required for correct functioning
         // of WebSphere
         System.setProperty("websphere.home", serverRoot);              // NOI18N
@@ -207,10 +215,10 @@ public class WSClassLoader extends URLClassLoader {
         
         // if debugging is enabled set the system property pointing to the WS
         // debug properties file
-        if (WSDebug.isEnabled())
-            System.setProperty("traceSettingsFile",                    // NOI18N
-                    "TraceSettings.properties");                       // NOI18N
-        
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            System.setProperty("traceSettingsFile", "TraceSettings.properties"); // NOI18N
+        }
+
         // save the current context loader and update the thread if we are not
         // already the context loader
         if (!Thread.currentThread().getContextClassLoader().equals(this)) {
@@ -225,9 +233,8 @@ public class WSClassLoader extends URLClassLoader {
      * <code>oldLoader</code> variable.
      */
     public void restoreLoader() {
-        if (WSDebug.isEnabled()) // debug output
-            WSDebug.notify(getClass(), "restoreLoader()");             // NOI18N
-        
+        LOGGER.log(Level.FINEST, "restoreLoader()"); // NOI18N
+
         // restore the loader if it's not null
         if (oldLoader != null) {
             Thread.currentThread().setContextClassLoader(oldLoader);

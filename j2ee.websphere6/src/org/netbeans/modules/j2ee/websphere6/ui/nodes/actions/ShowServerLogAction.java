@@ -41,10 +41,11 @@
 package org.netbeans.modules.j2ee.websphere6.ui.nodes.actions;
 
 import java.io.File;
+
 import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager;
 import org.netbeans.modules.j2ee.websphere6.ui.nodes.WSManagerNode;
-import org.netbeans.modules.j2ee.websphere6.util.WSDebug;
 import org.netbeans.modules.j2ee.websphere6.util.WSTailer;
+
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -55,36 +56,29 @@ import org.openide.util.actions.CookieAction;
  * @author Kirill Sorokin
  */
 public class ShowServerLogAction extends CookieAction {
+
     protected void performAction(Node[] nodes) {
         if( (nodes == null) || (nodes.length < 1)) {
             return;
         }
-        
+
         for (int i = 0; i < nodes.length; i++) {
             Object node = nodes[i].getLookup().lookup(WSManagerNode.class);
             if (node instanceof WSManagerNode) {
-                try{
-                    File file =
-                            new File(((WSManagerNode) node).getLogFilePath());
-                    
-                    WSDebug.notify(file.getAbsolutePath());
-                    
-                    
-                    WSDeploymentManager dm = ((WSManagerNode) node).
-                            getDeploymentManager();
-                    
-                    new WSTailer(file,
-                            NbBundle.getMessage(
-                            ShowServerLogAction.class,
-                            "LBL_LogWindowTitle",
-                            dm.getServerTitleMessage())).start(); // NOI18N
-                } catch (Exception e){
-                    return;//nothing much to do
-                }
+                File file = new File(((WSManagerNode) node).getLogFilePath());
+
+                WSDeploymentManager dm = ((WSManagerNode) node).
+                        getDeploymentManager();
+
+                new WSTailer(file,
+                        NbBundle.getMessage(
+                        ShowServerLogAction.class,
+                        "LBL_LogWindowTitle", // NOI18N
+                        dm.getServerTitleMessage())).start();
             }
         }
     }
-    
+
     public String getName() {
         return NbBundle.getMessage(ShowAdminConsoleAction.class, "LBL_ShowServerLog");
     }
