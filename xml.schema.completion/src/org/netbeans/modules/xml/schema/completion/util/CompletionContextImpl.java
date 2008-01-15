@@ -504,6 +504,8 @@ public class CompletionContextImpl extends CompletionContext {
     private void specialCompletion() {
         //instance documents with neither schemaLocation nor
         //noNamespaceSchemaLocation attribute, e.g. project.xml
+        if(primaryFile == null)
+            return;
         java.io.File file = FileUtil.toFile(primaryFile);
         String[] schemas = CompletionUtil.getDeclaredNamespaces(file);
         for(String temp : schemas) {
