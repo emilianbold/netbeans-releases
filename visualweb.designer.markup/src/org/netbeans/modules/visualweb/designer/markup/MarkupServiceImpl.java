@@ -45,7 +45,6 @@ package org.netbeans.modules.visualweb.designer.markup;
 
 import org.netbeans.modules.visualweb.api.insync.InSyncService;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
-import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -57,12 +56,10 @@ import org.apache.xerces.dom.DocumentImpl;
 import org.netbeans.modules.visualweb.designer.html.HtmlAttribute;
 import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 import org.w3c.dom.Document;
-import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
-import org.w3c.dom.UserDataHandler;
 
 
 /**
