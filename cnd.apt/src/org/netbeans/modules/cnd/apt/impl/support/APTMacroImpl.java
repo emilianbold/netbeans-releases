@@ -113,6 +113,7 @@ public class APTMacroImpl implements APTMacro {
         return retValue;
     }       
 
+    @Override
     public String toString() {
         StringBuilder retValue = new StringBuilder();
         retValue.append(isSystem() ? "<S>":"<U>"); // NOI18N

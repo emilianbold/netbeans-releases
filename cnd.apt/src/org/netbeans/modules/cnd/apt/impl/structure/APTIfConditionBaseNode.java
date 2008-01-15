@@ -80,11 +80,12 @@ public abstract class APTIfConditionBaseNode extends APTTokenAndChildBasedNode
         super(token);
     }
     
+    @Override
     public String getText() {
         String text = super.getText();
         String condStr;
         if (condition != null) {
-            condStr = APTUtils.toString(getCondition());
+            condStr = APTUtils.debugString(getCondition());
         } else {
             assert(true):"is it ok to have #if/#elif without condition?"; // NOI18N
             condStr = "<no condition>"; // NOI18N

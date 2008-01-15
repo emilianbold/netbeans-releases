@@ -126,6 +126,11 @@ public class APTUtils {
         }
     }
     
+    public static String debugString(TokenStream ts) {
+        // use simple stringize
+        return stringize(ts, false);
+    }
+    
     public static String toString(TokenStream ts) {
         StringBuilder retValue = new StringBuilder();
         try {
@@ -152,7 +157,7 @@ public class APTUtils {
                 assert(token != null) : "list of tokens must not have 'null' elements"; // NOI18N
                 retValue.append(token.getText());
                 APTToken next =(APTToken)ts.nextToken();
-                if (!isEOF(next) && false) { // disable for IZ#124635
+                if (!isEOF(next) && !inIncludeDirective) { // disable for IZ#124635
                     // if tokens were without spaces => no space
                     // if were with spaces => insert only one space
                     retValue.append(next.getOffset() == token.getEndOffset() ? "" : ' ');// NOI18N

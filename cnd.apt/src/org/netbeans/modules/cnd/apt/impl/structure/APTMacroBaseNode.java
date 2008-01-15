@@ -91,7 +91,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
                     System.err.printf("line %d: warning: extra tokens at end of %s directive\n", // NOI18N
                             getToken().getLine(), getToken().getText().trim());
                 } else {
-                    APTUtils.LOG.log(Level.SEVERE, "line {0}: warning: extra tokens at end of {1} directive", // NOI18N
+                    APTUtils.LOG.log(Level.WARNING, "line {0}: warning: extra tokens at end of {1} directive", // NOI18N
                             new Object[] {getToken().getLine(), getToken().getText().trim()} );
                 }
             } else {
@@ -102,6 +102,7 @@ public abstract class APTMacroBaseNode extends APTTokenBasedNode
         return !APTUtils.isEndDirectiveToken(token.getType());
     }
 
+    @Override
     public String getText() {
         assert (getToken() != null) : "must have valid preproc directive"; // NOI18N
         assert (getName() != null) : "must have valid macro"; // NOI18N
