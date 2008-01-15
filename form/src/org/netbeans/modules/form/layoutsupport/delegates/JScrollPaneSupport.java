@@ -73,8 +73,13 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
      */
     @Override
     public boolean checkEmptyContainer(Container cont) {
-        return cont instanceof JScrollPane
-               && ((JScrollPane)cont).getViewport().getView() == null;
+        boolean empty = false;
+        if (cont instanceof JScrollPane) {
+            JScrollPane scrollPane = (JScrollPane)cont;
+            JViewport viewport = scrollPane.getViewport();
+            empty = (viewport == null) || (viewport.getView() == null);
+        }
+        return empty;
     }
 
     /** This method should calculate position (index) for a component dragged
@@ -100,8 +105,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
                            Point posInCont,
                            Point posInComp)
     {
-        assistantParams = (container instanceof JScrollPane
-            && ((JScrollPane)container).getViewport().getView() == null);
+        assistantParams = checkEmptyContainer(container);
         return assistantParams ? 0 : -1;
     }
 
@@ -132,8 +136,7 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
                                      int newIndex,
                                      Graphics g)
     {
-        if (container instanceof JScrollPane
-            && ((JScrollPane)container).getViewport().getView() == null)
+        if (checkEmptyContainer(container))
         {   // empty JScrollPane - it makes sense to add something to it
             Dimension sz = container.getSize();
             Insets insets = container.getInsets();
@@ -193,10 +196,12 @@ public class JScrollPaneSupport extends AbstractLayoutSupport {
     {
         if (container instanceof JScrollPane) {
             JScrollPane scrollPane = (JScrollPane) container;
-            Component comp = scrollPane.getViewport().getView();
-            if (comp != null) {
-                comp.removeNotify();
-                comp.setBounds(0, 0, 0, 0);
+            if (scrollPane.getViewport() != null) {
+                Component comp = scrollPane.getViewport().getView();
+                if (comp != null) {
+                    comp.removeNotify();
+                    comp.setBounds(0, 0, 0, 0);
+                }
             }
             scrollPane.setViewportView(null);
             return true;

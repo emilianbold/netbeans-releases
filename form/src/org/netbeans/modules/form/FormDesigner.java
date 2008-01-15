@@ -1100,7 +1100,8 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                 context = "tableModel"; // NOI18N
             } else if (bean instanceof JScrollPane) {
                 JScrollPane scrollPane = (JScrollPane)bean;
-                if (scrollPane.getViewport().getView() == null) {
+                if ((scrollPane.getViewport() != null)
+                        && (scrollPane.getViewport().getView() == null)) {
                     context = "scrollPaneEmpty"; // NOI18N
                 } else if (Math.random() < 0.5) {
                     context = "scrollPane"; // NOI18N

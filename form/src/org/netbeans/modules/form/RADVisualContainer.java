@@ -182,8 +182,12 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             Method m = getContainerDelegateMethod();
             if (m != null) {
                 try {
-                    containerDelegate =
-                        (Container) m.invoke(container, new Object[0]);
+                    containerDelegate = (Container) m.invoke(container, new Object[0]);
+                    if ((containerDelegate == null) && (container instanceof JScrollPane)) {
+                        JScrollPane scrollPane = (JScrollPane)container;
+                        scrollPane.setViewportView(null); // force recreation of viewport
+                        containerDelegate = (Container) m.invoke(container, new Object[0]);
+                    }
                 }
                 catch (Exception ex) {
                     org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
@@ -264,7 +268,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
             // visual component can be added to visual container
             // exception: avoid adding components to scroll pane that already contains something
             if (JScrollPane.class.isAssignableFrom(getBeanClass())
-                    && ((JScrollPane)getBeanInstance()).getViewport().getView() != null) {
+                    && (((JScrollPane)getBeanInstance()).getViewport() != null)
+                    && (((JScrollPane)getBeanInstance()).getViewport().getView() != null)) {
                 return false;
             }
             return true;
