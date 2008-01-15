@@ -271,7 +271,11 @@ public class ComponentChooserEditor implements PropertyEditor,
               && (nameAttr = attributes.getNamedItem(ATTR_NAME)) != null
               && (name = nameAttr.getNodeValue()) != null)
         {
-            value = new ComponentRef(name);
+            if (NULL_REF.equals(name)) {
+                value = null;
+            } else {
+                value = new ComponentRef(name);
+            }
         }
     }
 
