@@ -803,19 +803,24 @@ public final class  MarkupServiceImpl {
 //        return (StyleMap)element.getUserData(KEY_STYLE_MAP);
         return element2styleMap.get(element);
     }
+
+    
+    private static final Map<Element, CSSStylableElement> element2cssStylableElement = new WeakHashMap<Element, CSSStylableElement>(200);
     
     static void setElementStyleParent(Element element, CSSStylableElement styleParent) {
         if (element == null) {
             return;
         }
-        element.setUserData(KEY_STYLE_PARENT, styleParent, StyleParentDataHandler.getDefault());
+//        element.setUserData(KEY_STYLE_PARENT, styleParent, StyleParentDataHandler.getDefault());
+        element2cssStylableElement.put(element, styleParent);
     }
     
     static CSSStylableElement getElementStyleParent(Element element) {
         if (element == null) {
             return null;
         }
-        return (CSSStylableElement)element.getUserData(KEY_STYLE_PARENT);
+//        return (CSSStylableElement)element.getUserData(KEY_STYLE_PARENT);
+        return element2cssStylableElement.get(element);
     }
     
     static boolean isElementPseudoInstanceOf(Element element, String pseudoClass) {
@@ -1024,17 +1029,17 @@ public final class  MarkupServiceImpl {
 //    } // End of StyleMapDataHandler.
 
     
-    private static class StyleParentDataHandler implements UserDataHandler {
-        private static final StyleParentDataHandler INSTANCE = new StyleParentDataHandler();
-        
-        public static StyleParentDataHandler getDefault() {
-            return INSTANCE;
-        }
-
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-        }
-    } // End of StyleParentDataHandler.
+//    private static class StyleParentDataHandler implements UserDataHandler {
+//        private static final StyleParentDataHandler INSTANCE = new StyleParentDataHandler();
+//        
+//        public static StyleParentDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//        }
+//    } // End of StyleParentDataHandler.
     
     
 //    private static class RenderedTextDataHandler implements UserDataHandler {
