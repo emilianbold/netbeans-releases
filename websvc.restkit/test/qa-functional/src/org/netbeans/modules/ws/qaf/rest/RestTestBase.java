@@ -55,8 +55,18 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.actions.SaveAllAction;
+import org.netbeans.modules.ws.qaf.WebServicesTestBase;
+import org.netbeans.modules.ws.qaf.utilities.ContentComparator;
+import org.netbeans.modules.ws.qaf.utilities.FilteringLineDiff;
+import org.netbeans.modules.ws.qaf.utilities.Utils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,6 +88,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
     private WebConversation wc;
     private Connection connection;
 
+    private static boolean CREATE_GOLDEN_FILES;
     private static final Logger LOGGER = Logger.getLogger(RestTestBase.class.getName());
 
     /**
@@ -323,6 +334,67 @@ public abstract class RestTestBase extends WebServicesTestBase {
         } catch (NoSuchFieldException nsfe) {
             LOGGER.info(nsfe.getMessage());
         }
+    }
+
+    /**
+     * Check files against golden files.
+     *
+     *@param newFiles files to check
+     */
+    protected void checkFiles(Set<File> newFiles) {
+        // save all instead of timeout
+        new SaveAllAction().performAPI();
+        if (!CREATE_GOLDEN_FILES) {
+            Set<String> set = new HashSet<String>(newFiles.size() / 2);
+            for (Iterator<File> i = newFiles.iterator(); i.hasNext();) {
+                File newFile = i.next();
+                File goldenFile = null;
+                try {
+                    goldenFile = getGoldenFile(getName() + "/" + newFile.getName() + ".pass"); //NOI18N
+                    if (newFile.getName().endsWith(".xml") //NOI18N
+                            && !newFile.getName().startsWith("sun-") //NOI18N
+                            && !newFile.getName().startsWith("webservices.xml")) { //NOI18N
+                        assertTrue(ContentComparator.equalsXML(goldenFile, newFile));
+                    } else {
+                        assertFile(newFile, goldenFile,
+                                new File(getWorkDirPath(), newFile.getName() + ".diff"), //NOI18N
+                                new FilteringLineDiff());
+                    }
+                } catch (Throwable t) {
+                    goldenFile = getGoldenFile(getName() + "/" + newFile.getName() + ".pass"); //NOI18N
+                    Utils.copyFile(newFile, new File(getWorkDirPath(), newFile.getName() + ".bad")); //NOI18N
+                    Utils.copyFile(goldenFile,
+                            new File(getWorkDirPath(), newFile.getName() + ".gf")); //NOI18N
+                    set.add(newFile.getName());
+                }
+            }
+            assertTrue("File(s) " + set.toString() + " differ(s) from golden files.", set.isEmpty()); //NOI18N
+        } else {
+            createGoldenFiles(newFiles);
+        }
+    }
+
+    private void createGoldenFiles(Set<File> from) {
+        File f = getDataDir();
+        List<String> names = new ArrayList<String>();
+        names.add("goldenfiles"); //NOI18N
+        while (!f.getName().equals("test")) { //NOI18N
+            if (!f.getName().equals("sys") //NOI18N
+                    && !f.getName().equals("work") //NOI18N
+                    && !f.getName().equals("tests")) { //NOI18N
+                names.add(f.getName());
+            }
+            f = f.getParentFile();
+        }
+        f = new File(f, "qa-functional/data/goldenfiles"); //NOI18N
+        f = new File(f, getClass().getName().replace('.', File.separatorChar));
+        File destDir = new File(f, getName());
+        destDir.mkdirs();
+        for (Iterator<File> i = from.iterator(); i.hasNext();) {
+            File src = i.next();
+            Utils.copyFile(src, new File(destDir, src.getName() + ".pass")); //NOI18N
+        }
+        assertTrue("Golden files generated.", false); //NOI18N
     }
 
     private static int resolveServerPort() {
