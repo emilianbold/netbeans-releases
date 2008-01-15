@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 public class HibernateMappingDataLoader extends UniFileLoader {
 
     public static final String REQUIRED_MIME = "text/x-hibernate-mapping+xml";
-    public static final String REQUIRED_EXTENTION = "xml";
 
     public HibernateMappingDataLoader() {
         super("org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject");
@@ -70,7 +69,6 @@ public class HibernateMappingDataLoader extends UniFileLoader {
     protected void initialize() {
         super.initialize();
         getExtensions().addMimeType(REQUIRED_MIME);
-        getExtensions().addExtension(REQUIRED_EXTENTION);
     }
 
     protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {

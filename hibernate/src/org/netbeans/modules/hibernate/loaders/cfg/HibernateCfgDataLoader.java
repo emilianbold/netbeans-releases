@@ -55,7 +55,6 @@ import org.openide.util.NbBundle;
 public class HibernateCfgDataLoader extends UniFileLoader {
 
     public static final String REQUIRED_MIME = "text/x-hibernate-cfg+xml";
-    private static final long serialVersionUID = 1L;
 
     public HibernateCfgDataLoader() {
         super("org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject");
