@@ -324,7 +324,11 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
             for (ServerWizardProvider wizard
                     : Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class)) {
                 // TODO prefer glassfish ;)
-                serverWizards.add(new WizardAdapter(wizard));
+
+                // safety precaution shouldn't ever happen - used because of bridging
+                if (wizard.getInstantiatingIterator() != null) {
+                    serverWizards.add(new WizardAdapter(wizard));
+                }
             }
             Collections.sort(serverWizards);
         }
