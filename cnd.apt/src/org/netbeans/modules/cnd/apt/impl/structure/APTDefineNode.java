@@ -242,6 +242,7 @@ public final class APTDefineNode extends APTMacroBaseNode
         }
         return false;
     }
+    @Override
     public String getText() {
         String ret = super.getText();
         String paramStr = ""; // NOI18N

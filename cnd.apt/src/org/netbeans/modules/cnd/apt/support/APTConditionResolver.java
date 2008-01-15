@@ -123,7 +123,7 @@ public final class APTConditionResolver {
                 System.err.printf("arithmetic error \"%s\" on resolving expression:\n\t %s\n", // NOI18N
                     ex.getMessage(), expr);
             } else {
-                APTUtils.LOG.log(Level.SEVERE, 
+                APTUtils.LOG.log(Level.WARNING, 
                     "arithmetic error \"{0}\" on resolving expression\n: {1}", // NOI18N
                     new Object[] {ex.getMessage(), expr});
             }
