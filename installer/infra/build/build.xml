@@ -238,9 +238,9 @@
 
         <set property="nb.bundle.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
-        <!--
+        
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/9.1/promoted/fcs/latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/9.1_01/promoted/fcs/latest/bundles/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
@@ -248,7 +248,7 @@
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="sjsas"/>
-	-->
+	<!--
         <set property="glassfish.milestone.number" value="58"/>
         <set property="glassfish.milestone.number.real" value="58g"/>
         <set property="glassfish.build.type" value="fcs"/>
@@ -263,14 +263,13 @@
 
         <set property="openesb.build.number" value="2007073000"/>
         <set property="openesb.build.number.real" value="070730"/>
-	<!--
+	-->
         <get
             src="${openesb.builds.host}/kits/ojc/openesb_as9_fcs/latestSDK/log/"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
             prefix="openesb"/>
-        -->
         <!--        
         <get
             src="${glassfish.builds.host}/java/re/swdp/1.0/promoted/fcs/latest/bundles/"
@@ -1273,7 +1272,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1283,7 +1282,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1293,7 +1292,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1303,7 +1302,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1313,7 +1312,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1323,7 +1322,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
             <component uid="nb-javaee" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
 	    <bundleProperty name="${welcome.type}" value="javaee"/>
         </create-bundle>
@@ -1494,9 +1493,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/>
             <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
             -->
@@ -1513,9 +1512,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
             -->
@@ -1531,9 +1530,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
             -->
@@ -1549,9 +1548,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
             -->
@@ -1567,9 +1566,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
             -->
@@ -1585,9 +1584,9 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-ruby" version="${nb.full.version}"/>
             <component uid="nb-cnd" version="${nb.full.version}"/> 
             <component uid="nb-php" version="${nb.full.version}"/>
-            <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
+            <component uid="glassfish" version="2.0.1.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="tomcat" version="6.0.14.0.0"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <!--
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
             -->
@@ -1618,7 +1617,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>	                
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>	                
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
@@ -1636,7 +1635,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
@@ -1654,7 +1653,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>            
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>            
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>            
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
@@ -1672,7 +1671,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
@@ -1690,7 +1689,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
@@ -1708,7 +1707,7 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa" version="${nb.full.version}"/>
             <component uid="nb-portalpack" version="2.0.0.0.${portalpack.build.number}"/>
             <component uid="glassfish" version="2.0.0.${glassfish.milestone.number}.${glassfish.build.number}"/>
-            <component uid="openesb" version="5.0.3.${glassfish.milestone.number}.${openesb.build.number}"/>
+            <component uid="openesb" version="5.0.4.${glassfish.milestone.number}.${openesb.build.number}"/>
             <component uid="sjsam" version="5.0.3.${glassfish.milestone.number}.${sjsam.build.number}"/>
 	    <component uid="javaeesdk-samples" version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
             <component uid="javaeesdk-blueprints" version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
