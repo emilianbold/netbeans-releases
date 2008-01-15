@@ -598,7 +598,7 @@ public final class  MarkupServiceImpl {
 //        return false;
 //    }
     
-    private static Map<Node, Boolean> node2jspx = new WeakHashMap<Node, Boolean>(200);
+    private static final Map<Node, Boolean> node2jspx = new WeakHashMap<Node, Boolean>(200);
     
     public static boolean isJspxNode(Node node) {
 //        if (node instanceof RaveRenderNode) {
@@ -786,18 +786,22 @@ public final class  MarkupServiceImpl {
         return null;
     }
 
+    private static final Map<Element, StyleMap> element2styleMap = new WeakHashMap<Element, StyleMap>(200);
+    
     static void setElementStyleMap(Element element, StyleMap styleMap) {
         if (element == null) {
             return;
         }
-        element.setUserData(KEY_STYLE_MAP, styleMap, StyleMapDataHandler.getDefault());
+//        element.setUserData(KEY_STYLE_MAP, styleMap, StyleMapDataHandler.getDefault());
+        element2styleMap.put(element, styleMap);
     }
     
     static StyleMap getElementStyleMap(Element element) {
         if (element == null) {
             return null;
         }
-        return (StyleMap)element.getUserData(KEY_STYLE_MAP);
+//        return (StyleMap)element.getUserData(KEY_STYLE_MAP);
+        return element2styleMap.get(element);
     }
     
     static void setElementStyleParent(Element element, CSSStylableElement styleParent) {
@@ -1007,17 +1011,17 @@ public final class  MarkupServiceImpl {
 //    } // End of JspxDataHandler.
 
     
-    private static class StyleMapDataHandler implements UserDataHandler {
-        private static final StyleMapDataHandler INSTANCE = new StyleMapDataHandler();
-        
-        public static StyleMapDataHandler getDefault() {
-            return INSTANCE;
-        }
-
-        public void handle(short operation, String key, Object data, Node src, Node dst) {
-            // No op.
-        }
-    } // End of StyleMapDataHandler.
+//    private static class StyleMapDataHandler implements UserDataHandler {
+//        private static final StyleMapDataHandler INSTANCE = new StyleMapDataHandler();
+//        
+//        public static StyleMapDataHandler getDefault() {
+//            return INSTANCE;
+//        }
+//
+//        public void handle(short operation, String key, Object data, Node src, Node dst) {
+//            // No op.
+//        }
+//    } // End of StyleMapDataHandler.
 
     
     private static class StyleParentDataHandler implements UserDataHandler {
