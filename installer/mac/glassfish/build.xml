@@ -40,11 +40,11 @@
 
 <project name="glassfish" basedir="." default="build-pkg">
 
-  <property name="appname" value="glassfish-v2b58g"/>
+  <property name="appname" value="glassfish-v2-ur1"/>
   <property name="appdir" value="build/app"/>
   <property name="zipname" value="glassfish-macosx.zip"/>
-  <property name="appversion" value="2b58g"/>
-  <property name="version" value="2b58g"/>
+  <property name="appversion" value="2ur1"/>
+  <property name="version" value="2ur1"/>
   <property name="exename" value=""/>
   <property name="icon" value=""/>
   <property name="pmproj" value="pkg/glassfish.pmproj"/>
