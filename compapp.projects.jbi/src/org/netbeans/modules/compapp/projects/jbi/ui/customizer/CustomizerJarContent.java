@@ -68,16 +68,16 @@ public class CustomizerJarContent extends JPanel
         this.jbiProperties = jbiProperties;
         vps = new VisualPropertySupport(jbiProperties);
         vas = new VisualArchiveIncludesSupport(jbiProperties,
-                                            jTableComp,
-                                            jTableAddContent,
-                                            jButtonUpdateComponents,
+                                            jTableTargetComponents,
+                                            jTableDeploymentArtifacts,
+                                            jButtonCheckServer,
                                             jButtonAddProject,
                                             jButtonRemoveProject);
     }
 
     public void initValues() {
         //vps.register(jTextFieldFileName, JbiProjectProperties.DIST_JAR);
-        jTextFieldFileName.setDocument(jbiProperties.DIST_JAR_MODEL);
+        jTextFieldBuildArtifactName.setDocument(jbiProperties.DIST_JAR_MODEL);
         vas.initTableValues();
         vps.register(vas, JbiProjectProperties.JBI_CONTENT_ADDITIONAL);
     }
@@ -90,29 +90,29 @@ public class CustomizerJarContent extends JPanel
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabelFileName = new javax.swing.JLabel();
-        jTextFieldFileName = new javax.swing.JTextField();
-        jLabelExContent = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTableComp = new javax.swing.JTable();
-        jButtonUpdateComponents = new javax.swing.JButton();
-        jLabelAddContent = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTableAddContent = new javax.swing.JTable();
+        jLabelBuildArtifactName = new javax.swing.JLabel();
+        jTextFieldBuildArtifactName = new javax.swing.JTextField();
+        jLabelTargetComponents = new javax.swing.JLabel();
+        jScrollPaneTargetComponents = new javax.swing.JScrollPane();
+        jTableTargetComponents = new javax.swing.JTable();
+        jButtonCheckServer = new javax.swing.JButton();
+        jLabelDeploymentArtifacts = new javax.swing.JLabel();
+        jScrollPaneDeploymentArtifacts = new javax.swing.JScrollPane();
+        jTableDeploymentArtifacts = new javax.swing.JTable();
         jButtonAddProject = new javax.swing.JButton();
         jButtonRemoveProject = new javax.swing.JButton();
 
         setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jLabelFileName.setLabelFor(jTextFieldFileName);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelFileName, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_FileName_JLabel")); // NOI18N
+        jLabelBuildArtifactName.setLabelFor(jTextFieldBuildArtifactName);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelBuildArtifactName, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_FileName_JLabel")); // NOI18N
 
-        jTextFieldFileName.setEditable(false);
+        jTextFieldBuildArtifactName.setEditable(false);
 
-        jLabelExContent.setLabelFor(jTableComp);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelExContent, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Content_JLabel")); // NOI18N
+        jLabelTargetComponents.setLabelFor(jTableTargetComponents);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelTargetComponents, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_Content_JLabel")); // NOI18N
 
-        jTableComp.setModel(new javax.swing.table.DefaultTableModel(
+        jTableTargetComponents.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {"engine", "BPEL Service Engine"},
                 {"binding", "HTTP SOAP Binding Component"}
@@ -136,14 +136,14 @@ public class CustomizerJarContent extends JPanel
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTableComp);
+        jScrollPaneTargetComponents.setViewportView(jTableTargetComponents);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jButtonUpdateComponents, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_CheckComponentsOnTargetServer_JButton")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jButtonCheckServer, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_CheckComponentsOnTargetServer_JButton")); // NOI18N
 
-        jLabelAddContent.setLabelFor(jTableAddContent);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabelAddContent, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddContent_JLabel")); // NOI18N
+        jLabelDeploymentArtifacts.setLabelFor(jTableDeploymentArtifacts);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelDeploymentArtifacts, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddContent_JLabel")); // NOI18N
 
-        jTableAddContent.setModel(new javax.swing.table.DefaultTableModel(
+        jTableDeploymentArtifacts.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -151,8 +151,8 @@ public class CustomizerJarContent extends JPanel
 
             }
         ));
-        jScrollPane2.setViewportView(jTableAddContent);
-        jTableAddContent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_AACH_ProjectJarFiles_JLabel")); // NOI18N
+        jScrollPaneDeploymentArtifacts.setViewportView(jTableDeploymentArtifacts);
+        jTableDeploymentArtifacts.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_AACH_ProjectJarFiles_JLabel")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jButtonAddProject, org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "LBL_CustomizeWAR_AddProject_JButton")); // NOI18N
 
@@ -165,45 +165,45 @@ public class CustomizerJarContent extends JPanel
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabelAddContent, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
+                    .add(jLabelDeploymentArtifacts, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
-                            .add(jLabelExContent))
+                            .add(jScrollPaneTargetComponents, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jScrollPaneDeploymentArtifacts, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 460, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                                 .add(jButtonAddProject)
                                 .add(jButtonRemoveProject))
-                            .add(jButtonUpdateComponents)))
+                            .add(jButtonCheckServer)))
                     .add(layout.createSequentialGroup()
-                        .add(jLabelFileName)
+                        .add(jLabelBuildArtifactName)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextFieldFileName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE)))
+                        .add(jTextFieldBuildArtifactName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 412, Short.MAX_VALUE))
+                    .add(jLabelTargetComponents))
                 .addContainerGap())
         );
 
-        layout.linkSize(new java.awt.Component[] {jButtonAddProject, jButtonRemoveProject, jButtonUpdateComponents}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
+        layout.linkSize(new java.awt.Component[] {jButtonAddProject, jButtonCheckServer, jButtonRemoveProject}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
 
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabelFileName)
-                    .add(jTextFieldFileName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(jLabelBuildArtifactName)
+                    .add(jTextFieldBuildArtifactName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(11, 11, 11)
-                .add(jLabelExContent)
+                .add(jLabelTargetComponents)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jButtonUpdateComponents)
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
+                    .add(jButtonCheckServer)
+                    .add(jScrollPaneTargetComponents, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE))
                 .add(11, 11, 11)
-                .add(jLabelAddContent)
+                .add(jLabelDeploymentArtifacts)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jScrollPane2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
+                    .add(jScrollPaneDeploymentArtifacts, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(jButtonAddProject)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -211,10 +211,10 @@ public class CustomizerJarContent extends JPanel
                 .addContainerGap())
         );
 
-        jLabelFileName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_SERVICE_ASSEMBLY_BUILD_ARTIFACT")); // NOI18N
-        jTextFieldFileName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJarContent.class).getString("ACS_CustomizeWAR_FileName_A11YDesc")); // NOI18N
-        jLabelExContent.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_TARGET_COMPONENT_LIST")); // NOI18N
-        jButtonUpdateComponents.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddFilter_A11YDesc")); // NOI18N
+        jLabelBuildArtifactName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_SERVICE_ASSEMBLY_BUILD_ARTIFACT")); // NOI18N
+        jTextFieldBuildArtifactName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(CustomizerJarContent.class).getString("ACS_CustomizeWAR_FileName_A11YDesc")); // NOI18N
+        jLabelTargetComponents.getAccessibleContext().setAccessibleDescription("List of Target JBI Components");
+        jButtonCheckServer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddFilter_A11YDesc")); // NOI18N
         jButtonAddProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AddProject_A11YDesc")); // NOI18N
         jButtonRemoveProject.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJarContent.class, "ACS_CustomizeWAR_AdditionalRemove_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -222,16 +222,16 @@ public class CustomizerJarContent extends JPanel
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButtonAddProject;
+    private javax.swing.JButton jButtonCheckServer;
     private javax.swing.JButton jButtonRemoveProject;
-    private javax.swing.JButton jButtonUpdateComponents;
-    private javax.swing.JLabel jLabelAddContent;
-    private javax.swing.JLabel jLabelExContent;
-    private javax.swing.JLabel jLabelFileName;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTableAddContent;
-    private javax.swing.JTable jTableComp;
-    private javax.swing.JTextField jTextFieldFileName;
+    private javax.swing.JLabel jLabelBuildArtifactName;
+    private javax.swing.JLabel jLabelDeploymentArtifacts;
+    private javax.swing.JLabel jLabelTargetComponents;
+    private javax.swing.JScrollPane jScrollPaneDeploymentArtifacts;
+    private javax.swing.JScrollPane jScrollPaneTargetComponents;
+    private javax.swing.JTable jTableDeploymentArtifacts;
+    private javax.swing.JTable jTableTargetComponents;
+    private javax.swing.JTextField jTextFieldBuildArtifactName;
     // End of variables declaration//GEN-END:variables
 
     /** Help context where to find more about the paste type action.
