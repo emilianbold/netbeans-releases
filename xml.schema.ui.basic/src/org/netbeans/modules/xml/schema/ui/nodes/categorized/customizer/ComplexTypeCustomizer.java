@@ -1116,7 +1116,8 @@ public class ComplexTypeCustomizer<T extends ComplexType>
                                     getLocalDefinition()).getLocalDefinition();
                         }
                     }
-                    ccr.setDefinition((ComplexTypeDefinition) newInnerDef.copy(ccr));
+                    if(ccr != null)
+                        ccr.setDefinition((ComplexTypeDefinition) newInnerDef.copy(ccr));
                 }
                 break;
         }
