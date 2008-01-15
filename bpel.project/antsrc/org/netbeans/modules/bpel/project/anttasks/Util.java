@@ -58,11 +58,11 @@ public class Util {
         buffer.append(file.getPath());
 
         if (line != -1) {
-          buffer.append(": ");
+          buffer.append(":");
           buffer.append(line);
         }
         if (column != -1) {
-          buffer.append(", ");
+          buffer.append(": ");
           buffer.append(column);
         }
       }
