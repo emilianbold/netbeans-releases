@@ -178,6 +178,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     protected String jmakiResTagList = "";
     private static final int READ_BUF_SIZE = 65536;
     private static final int WRITE_BUF_SIZE = 65536;
+    private FileObject wadlFile;
     
     public ClientStubsGenerator(FileObject root, Project p, boolean createJmaki, boolean overwrite) throws IOException {
         assert root != null;
@@ -200,6 +201,19 @@ public class ClientStubsGenerator extends AbstractGenerator {
         this.createJmaki = createJmaki;
         this.overwrite = overwrite;
         this.projectName = ProjectUtils.getInformation(getProject()).getName();
+    }
+    
+    public ClientStubsGenerator(FileObject root, String folderName, FileObject wadlFile, 
+            boolean createJmaki, boolean overwrite) throws IOException {
+        assert root != null;
+        assert wadlFile != null;
+        this.root = root.getFileObject(folderName);
+        if(this.root == null)
+            this.root = root.createFolder(folderName);
+        this.wadlFile = wadlFile;
+        this.createJmaki = createJmaki;
+        this.overwrite = overwrite;
+        this.projectName = "NewProject";
     }
     
     public FileObject getRootDir() {
@@ -227,10 +241,17 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
 
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
-        initProgressReporting(pHandle, false);
+        if(pHandle != null)
+            initProgressReporting(pHandle, false);
         
         this.model = new ClientStubModel();
-        this.model.buildModel(p);
+        if(p != null)
+            this.model.buildModel(p);
+        else if(wadlFile != null) {
+            String appName = this.model.buildModel(wadlFile);
+            if(appName != null)
+                this.projectName = appName;
+        }
         List<Resource> resourceList = model.getResources();
         
         includeJs = "    "+RDJ+".includeJS('../"+RJS+"/"+getProjectName().toLowerCase()+"/"+getProjectName() + "." + JS+"');\n";
@@ -267,7 +288,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
         updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "");
             
         for (Resource r : resourceList) {
-            reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
+            if(pHandle != null)
+                reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
                     "MSG_GeneratingClass", r.getName(), JS));            
             FileObject fo = new ResourceJavaScript(r, prjStubDir).generate();
             
@@ -285,12 +307,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
         Set<FileObject> files = new HashSet<FileObject>();
         if (createJmaki()) {  
             //copy dojo libs
-            reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
+            if(pHandle != null)
+                reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
                     "MSG_CopyLibs", DJD43, JS));//NoI18n
             copyDojoLibs();
 
             // Create the ZIP file
-            reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
+            if(pHandle != null)
+                reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
                     "MSG_GeneratingZip", getProjectName(), "zip"));            
             File projectDir = FileUtil.toFile(resourcesDir.getParent().getParent());
             File dojoLibs = FileUtil.toFile(dojoDir.getFileObject(RESOURCES));
@@ -1049,9 +1073,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         private String createGetMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
-            String mimeTypes[] = m.getResponse().getRepresentation().getMime().split(",");
-            int length = mimeTypes.length;
-            for(String mimeType:mimeTypes) {
+            int length = m.getResponse().getRepresentation().size();
+            for(Representation rep:m.getResponse().getRepresentation()) {
+                String mimeType = rep.getMime();
                 mimeType = mimeType.replaceAll("\"", "").trim();
                 sb.append("   " + createMethodName(m, mimeType, length) + " : function() {\n" +
                         "      return "+object+"get(this.uri, '" +mimeType+ "');\n" +
@@ -1066,9 +1090,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         private String createPostMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
-            String mimeTypes[] = m.getRequest().getRepresentation().getMime().split(",");
-            int length = mimeTypes.length;
-            for(String mimeType:mimeTypes) {
+            int length = m.getResponse().getRepresentation().size();
+            for(Representation rep:m.getRequest().getRepresentation()) {
+                String mimeType = rep.getMime();
                 mimeType = mimeType.replaceAll("\"", "").trim();
                 sb.append("   " + createMethodName(m, mimeType, length) + " : function(content) {\n" +
                         "      return "+object+"post(this.uri, '" + mimeType + "', content);\n" +
@@ -1083,9 +1107,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         private String createPutMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
-            String mimeTypes[] = m.getRequest().getRepresentation().getMime().split(",");
-            int length = mimeTypes.length;
-            for(String mimeType:mimeTypes) {
+            int length = m.getResponse().getRepresentation().size();
+            for(Representation rep:m.getRequest().getRepresentation()) {
+                String mimeType = rep.getMime();
                 mimeType = mimeType.replaceAll("\"", "").trim();
                 sb.append("   " + createMethodName(m, mimeType, length) + " : function(content) {\n" +
                         "      return "+object+"put(this.uri, '" + mimeType + "', content);\n" +

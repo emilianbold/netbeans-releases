@@ -62,6 +62,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
@@ -158,12 +159,12 @@ public class RestUtils {
     // JavaSourceHelper and the XML/DOM related methods should go into
     // their own utility class.
     //        
-    public static String getAttributeValue(Document doc, String nodePath, String attrName) throws XPathExpressionException {
+    public static String getAttributeValue(Node n, String nodePath, String attrName) throws XPathExpressionException {
         String attrValue = null;
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
         XPathExpression expr3 = xpath.compile(nodePath+"/@"+attrName);
-        Object result3 = expr3.evaluate(doc, XPathConstants.NODESET);
+        Object result3 = expr3.evaluate(n, XPathConstants.NODESET);
         NodeList nodes3 = (NodeList) result3;
         for (int i = 0; i < nodes3.getLength(); i++) {
             attrValue = nodes3.item(i).getNodeValue();
@@ -172,12 +173,12 @@ public class RestUtils {
         return attrValue;
     }
     
-    public static NodeList getNodeList(Document doc, String nodePath) throws XPathExpressionException {
+    public static NodeList getNodeList(Node n, String nodePath) throws XPathExpressionException {
         String attrValue = null;
         XPathFactory factory = XPathFactory.newInstance();
         XPath xpath = factory.newXPath();
         XPathExpression expr3 = xpath.compile(nodePath);
-        Object result3 = expr3.evaluate(doc, XPathConstants.NODESET);
+        Object result3 = expr3.evaluate(n, XPathConstants.NODESET);
         NodeList nodes3 = (NodeList) result3;
         return nodes3;
     }      

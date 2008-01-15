@@ -68,7 +68,9 @@ public class WizardProperties {
     public static final String CONTAINER_RESOURCE_URI = "ContainerResourceURI"; //NOI18N
     
     public static final String PATTERN_SELECTION = "SelectedPattern"; //NOI18N
+    public static final String PROJECT_SELECTION = "ProjectSelection"; //NOI18N
     public static final String PROJECTS_TO_STUB = "ProjectToStub"; //NOI18N
+    public static final String WADL_TO_STUB = "WadlToStub"; //NOI18N
     public static final String STUB_ROOT_FOLDER = "StubRootFolder"; //NOI18N
     public static final String STUB_FOLDER_NAME = "StubFolderName"; //NOI18N
     public static final String OVERWRITE_EXISTING = "OverwriteExisting"; //NOI18N

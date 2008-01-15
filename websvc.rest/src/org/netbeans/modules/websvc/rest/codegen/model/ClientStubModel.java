@@ -52,12 +52,24 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.lang.model.element.AnnotationMirror;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * ClientStubModel
@@ -73,7 +85,8 @@ public class ClientStubModel {
     private List<Resource> resourceList = Collections.emptyList();
     
     private Map<String, RepresentationDocument> documentMap = 
-            new HashMap<String, RepresentationDocument>();    
+            new HashMap<String, RepresentationDocument>();
+    private FileObject wadlFile;
 
     public ClientStubModel() {        
     }
@@ -119,6 +132,110 @@ public class ClientStubModel {
             Resource r = createResource(rSrc);
             addResource(r);
         }
+    }
+    
+    public String buildModel(FileObject wadlFile) throws IOException {
+        String appName = null;
+        this.wadlFile = wadlFile;
+        this.resourceList = new ArrayList<Resource>();
+        List<JavaSource> staticR = new ArrayList<JavaSource>();
+        List<JavaSource> dynamicR = new ArrayList<JavaSource>();
+        List<JavaSource> converters = new ArrayList<JavaSource>();
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(wadlFile.getInputStream());
+
+            //App base
+            appName = RestUtils.getAttributeValue(doc, "//application/resources", "base");
+            appName = appName.replaceAll("http://", "");
+            if(appName.endsWith("/"))
+                appName = appName.substring(0, appName.length()-1);
+            appName = appName.replaceAll("/", "_");
+            appName = appName.replaceAll(":", "_");
+            
+            
+            //Resource
+            NodeList resourceNodes = RestUtils.getNodeList(doc, "//application/resources/resource");
+            if (resourceNodes != null && resourceNodes.getLength() > 0) {
+                for (int i = 0; i < resourceNodes.getLength(); i++) {
+                    Node resource = resourceNodes.item(i);
+                    NamedNodeMap rAttrList = resource.getAttributes();
+                    String path = null;
+                    Attr pathAttr = (Attr) rAttrList.getNamedItem("path");
+                    if (pathAttr != null) {
+                        path = pathAttr.getNodeValue();
+                    }
+                    String name = path.replaceAll("/", "");
+                    name = name.substring(0, 1).toUpperCase()+name.substring(1);
+                    Resource r = new Resource(name, path);
+                    //Methods
+                    NodeList methods = RestUtils.getNodeList(resource, "method");
+                    if (methods != null && methods.getLength() > 0) {
+                        for (int j = 0; j < methods.getLength(); j++) {
+                            Node method = methods.item(j);
+                            NamedNodeMap mAttrList = method.getAttributes();
+                            String mName = null;
+                            Attr nameAttr = (Attr) mAttrList.getNamedItem("name");
+                            if (nameAttr != null) {
+                                mName = nameAttr.getNodeValue();
+                            }
+                            if(mName != null) {
+                                Method m = new Method(mName.toLowerCase());
+                                m.setType(MethodType.valueOf(mName));
+                                NodeList requests = RestUtils.getNodeList(method, "request");
+                                if (requests != null && requests.getLength() > 0) {
+                                    Node request = requests.item(0);
+                                    Request req = new Request();
+                                    NodeList reps = RestUtils.getNodeList(request, "representation");
+                                    if (reps != null && reps.getLength() > 0) {
+                                        for (int l = 0; l < reps.getLength(); l++) {
+                                            Node rep = reps.item(l);
+                                            String media = "application/xml";
+                                            Attr mediaAttr = (Attr) rep.getAttributes().getNamedItem("mediaType");
+                                            if (mediaAttr != null) {
+                                                media = mediaAttr.getNodeValue();
+                                            }
+                                            Representation rep1 = new Representation(media);
+                                            req.addRepresentation(rep1);
+                                        }
+                                    }
+                                    m.setRequest(req);
+                                }
+                                NodeList responses = RestUtils.getNodeList(method, "response");
+                                if (responses != null && responses.getLength() > 0) {
+                                    Node request = responses.item(0);
+                                    Response res = new Response();
+                                    NodeList ress = RestUtils.getNodeList(request, "representation");
+                                    if (ress != null && ress.getLength() > 0) {
+                                        for (int l = 0; l < ress.getLength(); l++) {
+                                            Node rep = ress.item(l);
+                                            String media = "application/xml";
+                                            Attr mediaAttr = (Attr) rep.getAttributes().getNamedItem("mediaType");
+                                            if (mediaAttr != null) {
+                                                media = mediaAttr.getNodeValue();
+                                            }
+                                            Representation rep1 = new Representation(media);
+                                            res.addRepresentation(rep1);
+                                        }
+                                    }
+                                    m.setResponse(res);
+                                }
+                                r.addMethod(m);
+                            }
+                        }
+                    }
+                    addResource(r);
+                }
+            }
+        } catch (XPathExpressionException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return appName;
     }
     
 
@@ -213,8 +330,11 @@ public class ClientStubModel {
                         }
                         for (ExpressionTree eAnon : eAnons) {
                             String value = RestUtils.getValueFromAnnotation(eAnon);
-                            Representation rep = new Representation(value);
-                            m.getResponse().setRepresentation(rep);
+                            String[] mimeTypes = value.split(",");
+                            for(String mimeType:mimeTypes) {
+                                Representation rep = new Representation(mimeType);
+                                m.getResponse().addRepresentation(rep);
+                            }
                         }
                     } else if (RestConstants.CONSUME_MIME_ANNOTATION.equals(mAnonType) || RestConstants.CONSUME_MIME.equals(mAnonType)) {
                         if (m == null) {
@@ -222,8 +342,11 @@ public class ClientStubModel {
                         }
                         for (ExpressionTree eAnon : eAnons) {
                             String value = RestUtils.getValueFromAnnotation(eAnon);
-                            Representation rep = new Representation(value);
-                            m.getRequest().setRepresentation(rep);
+                            String[] mimeTypes = value.split(",");
+                            for(String mimeType:mimeTypes) {
+                                Representation rep = new Representation(mimeType);
+                                m.getRequest().addRepresentation(rep);
+                            }
                         }
                     }
                 }
@@ -239,11 +362,11 @@ public class ClientStubModel {
         Method m = new Method(mName);
         Representation rep1 = new Representation("application/xml");
         Request request = new Request();
-        request.setRepresentation(rep1);
+        request.addRepresentation(rep1);
         m.setRequest(request);
         Representation rep2 = new Representation("application/xml");
         Response response = new Response();
-        response.setRepresentation(rep2);
+        response.addRepresentation(rep2);
         m.setResponse(response);
         m.setTree(tree);
         return m;
@@ -253,11 +376,11 @@ public class ClientStubModel {
         Method m = new NavigationMethod(mName);
         Representation rep1 = new Representation("application/xml");
         Request request = new Request();
-        request.setRepresentation(rep1);
+        request.addRepresentation(rep1);
         m.setRequest(request);
         Representation rep2 = new Representation("application/xml");
         Response response = new Response();
-        response.setRepresentation(rep2);
+        response.addRepresentation(rep2);
         m.setResponse(response);
         return m;
     }
@@ -661,33 +784,41 @@ public class ClientStubModel {
 
     public class Request {
 
-        private Representation rep;
+        private List<Representation> repList = new ArrayList<Representation>();
 
         public Request() {
         }
 
-        public Representation getRepresentation() {
-            return rep;
+        public List<Representation> getRepresentation() {
+            return repList;
         }
 
-        protected void setRepresentation(Representation rep) {
-            this.rep = rep;
+        protected void addRepresentation(Representation rep) {
+            this.repList.add(rep);
+        }
+        
+        protected void setRepresentation(List<Representation> repList) {
+            this.repList = repList;
         }
     }
 
     public class Response {
 
-        private Representation rep;
+        private List<Representation> repList = new ArrayList<Representation>();
 
         public Response() {
         }
 
-        public Representation getRepresentation() {
-            return rep;
+        public List<Representation> getRepresentation() {
+            return repList;
         }
 
-        protected void setRepresentation(Representation rep) {
-            this.rep = rep;
+        protected void addRepresentation(Representation rep) {
+            this.repList.add(rep);
+        }
+        
+        protected void setRepresentation(List<Representation> repList) {
+            this.repList = repList;
         }
     }
 
