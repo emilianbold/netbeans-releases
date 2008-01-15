@@ -175,9 +175,12 @@ public final class PersistentKey {
                     return key.equals(what.key);
                 case NAMESPACE:
                 case DECLARATION:
-                    return project == what.project && key.equals(what.key);
+                    if (project.equals(what.project)) {
+                        return CharSequenceKey.Comparator.compare((CharSequence)key,(CharSequence)what.key)==0;
+                    }
+                    return false;
                 case PROJECT:
-                    return project == what.project;
+                    return project.equals(what.project);
             }
         }
         return super.equals(object);

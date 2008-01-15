@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.*;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  *
@@ -95,7 +96,7 @@ public final class PersistentKey {
             case PROXY:
                 return (CsmIdentifiable) key;
             case DECLARATION:
-                return project.findDeclaration((String)key);
+                return project.findDeclaration((CharSequence)key);
         }
         return null;
     }
@@ -112,7 +113,10 @@ public final class PersistentKey {
                 case UID:
                     return key.equals(what.key);
                 case DECLARATION:
-                    return project == what.project && key.equals(what.key);
+                    if (project.equals(what.project)) {
+                        return CharSequenceKey.Comparator.compare((CharSequence)key,(CharSequence)what.key)==0;
+                    }
+                    return false;
             }
         }
         return super.equals(object);
