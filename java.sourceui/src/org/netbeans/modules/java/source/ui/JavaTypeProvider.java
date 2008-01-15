@@ -43,6 +43,7 @@ package org.netbeans.modules.java.source.ui;
 
 import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import java.util.ArrayList;
@@ -54,6 +55,8 @@ import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
+import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -86,7 +89,8 @@ public class JavaTypeProvider implements TypeProvider {
     private Set<CacheItem> cache;
     private volatile boolean isCanceled = false;
     private final TypeElementFinder.Customizer customizer;
-    private final ClasspathInfo cpInfo;
+    private ClasspathInfo cpInfo;
+    private GlobalPathRegistryListener pathListener;
 
     public String name() {
         return "java"; // NOI18N
@@ -99,14 +103,27 @@ public class JavaTypeProvider implements TypeProvider {
     
     public void cleanup() {
         cache = null;
+        if (pathListener != null)
+            GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(pathListener);
     }
 
     public void cancel() {
         isCanceled = true;
     }
-
+    
     public JavaTypeProvider() {
         this(null, null);
+        pathListener = new GlobalPathRegistryListener() {
+
+            public void pathsAdded(GlobalPathRegistryEvent event) {
+                cache = null; cpInfo = null;
+            }
+
+            public void pathsRemoved(GlobalPathRegistryEvent event) {
+                cache = null; cpInfo = null;
+            }
+        };
+        GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(pathListener);
     }
    
     public JavaTypeProvider(ClasspathInfo cpInfo, TypeElementFinder.Customizer customizer) {
