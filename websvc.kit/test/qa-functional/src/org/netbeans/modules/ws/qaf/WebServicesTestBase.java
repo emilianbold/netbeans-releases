@@ -38,13 +38,11 @@
  */
 package org.netbeans.modules.ws.qaf;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.io.OutputStream;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.jellytools.Bundle;
@@ -56,7 +54,6 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
@@ -67,9 +64,6 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.ws.qaf.utilities.ContentComparator;
-import org.netbeans.modules.ws.qaf.utilities.FilteringLineDiff;
-import org.netbeans.modules.ws.qaf.utilities.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -84,8 +78,6 @@ public abstract class WebServicesTestBase extends JellyTestCase {
     private String projectName;
     private ProjectType projectType;
     private JavaEEVersion javaEEversion;
-
-    private static boolean CREATE_GOLDEN_FILES;
 
     static {
         //First found server will be used by tests
@@ -575,9 +567,8 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 oto = new OutputTabOperator(tabTitle.substring(9, 19).trim());
             }
             oto.requestFocus();
-            Utils.writeToFile(
-                    new File(getWorkDir(), tabTitle.trim().replace(' ', '_') + ".txt"), //NOI18N
-                    oto.getText());
+            writeToFile(oto.getText(),
+                    new File(getWorkDir(), tabTitle.trim().replace(' ', '_') + ".txt")); //NOI18N
         }
     }
 
@@ -596,44 +587,6 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         }
     }
 
-    /**
-     * Check files against golden files.
-     *
-     *@param newFiles files to check
-     */
-    protected void checkFiles(Set<File> newFiles) {
-        // save all instead of timeout
-        new SaveAllAction().performAPI();
-        if (!CREATE_GOLDEN_FILES) {
-            Set<String> set = new HashSet<String>(newFiles.size() / 2);
-            for (Iterator<File> i = newFiles.iterator(); i.hasNext();) {
-                File newFile = i.next();
-                File goldenFile = null;
-                try {
-                    goldenFile = getGoldenFile(getName() + "/" + newFile.getName() + ".pass"); //NOI18N
-                    if (newFile.getName().endsWith(".xml") //NOI18N
-                            && !newFile.getName().startsWith("sun-") //NOI18N
-                            && !newFile.getName().startsWith("webservices.xml")) { //NOI18N
-                        assertTrue(ContentComparator.equalsXML(goldenFile, newFile));
-                    } else {
-                        assertFile(newFile, goldenFile,
-                                new File(getWorkDirPath(), newFile.getName() + ".diff"), //NOI18N
-                                new FilteringLineDiff());
-                    }
-                } catch (Throwable t) {
-                    goldenFile = getGoldenFile(getName() + "/" + newFile.getName() + ".pass"); //NOI18N
-                    Utils.copyFile(newFile, new File(getWorkDirPath(), newFile.getName() + ".bad")); //NOI18N
-                    Utils.copyFile(goldenFile,
-                            new File(getWorkDirPath(), newFile.getName() + ".gf")); //NOI18N
-                    set.add(newFile.getName());
-                }
-            }
-            assertTrue("File(s) " + set.toString() + " differ(s) from golden files.", set.isEmpty()); //NOI18N
-        } else {
-            createGoldenFiles(newFiles);
-        }
-    }
-
     private void performProjectAction(String projectName, String actionName) throws IOException {
         ProjectRootNode node = new ProjectsTabOperator().getProjectRootNode(projectName);
         node.performPopupAction(actionName);
@@ -642,29 +595,6 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         oto.waitText("(total time: "); //NOI18N
         dumpOutput();
         assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
-    }
-
-    private void createGoldenFiles(Set<File> from) {
-        File f = getDataDir();
-        List<String> names = new ArrayList<String>();
-        names.add("goldenfiles"); //NOI18N
-        while (!f.getName().equals("test")) { //NOI18N
-            if (!f.getName().equals("sys") //NOI18N
-                    && !f.getName().equals("work") //NOI18N
-                    && !f.getName().equals("tests")) { //NOI18N
-                names.add(f.getName());
-            }
-            f = f.getParentFile();
-        }
-        f = new File(f, "qa-functional/data/goldenfiles"); //NOI18N
-        f = new File(f, getClass().getName().replace('.', File.separatorChar));
-        File destDir = new File(f, getName());
-        destDir.mkdirs();
-        for (Iterator<File> i = from.iterator(); i.hasNext();) {
-            File src = i.next();
-            Utils.copyFile(src, new File(destDir, src.getName() + ".pass")); //NOI18N
-        }
-        assertTrue("Golden files generated.", false); //NOI18N
     }
 
     private void setProjectName(String projectName) {
@@ -677,5 +607,27 @@ public abstract class WebServicesTestBase extends JellyTestCase {
 
     private void setProjectType(ProjectType projectType) {
         this.projectType = projectType;
+    }
+
+    /**
+     * Write given <code>text</code> into given <code>file</code>.
+     *
+     * @param text text to be written
+     * @param file file to be created
+     */
+    public static void writeToFile(String text, File file) {
+        OutputStream os = null;
+        try {
+            os = new BufferedOutputStream(new FileOutputStream(file));
+            os.write(text.getBytes());
+            os.flush();
+        } catch (IOException ioe) {
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException ioe) {}
+            }
+        }
     }
 }
