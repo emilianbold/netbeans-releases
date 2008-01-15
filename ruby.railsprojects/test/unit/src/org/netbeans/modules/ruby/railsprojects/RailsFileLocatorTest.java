@@ -60,11 +60,7 @@ public class RailsFileLocatorTest extends RailsProjectTestBase {
         FileObject dirFO = project.getProjectDirectory();
         assertNotNull(dirFO);
         for (String path : paths) {
-            File file = new File(path);
-            File dir = new File(FileUtil.toFile(dirFO), file.getParent());
-            dir.mkdirs();
-            File testFile = new File(dir, file.getName());
-            testFile.createNewFile();
+            FileUtil.createData(FileUtil.normalizeFile(new File(FileUtil.toFile(dirFO), path)));
         }
         return new RailsFileLocator(Lookups.singleton(new Object()), project);
     }
