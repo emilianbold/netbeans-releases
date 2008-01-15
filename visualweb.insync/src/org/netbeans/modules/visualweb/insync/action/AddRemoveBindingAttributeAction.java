@@ -45,9 +45,12 @@ package org.netbeans.modules.visualweb.insync.action;
 import org.netbeans.modules.visualweb.insync.UndoEvent;
 import org.netbeans.modules.visualweb.insync.beans.Bean;
 import org.netbeans.modules.visualweb.insync.faces.FacesBean;
+import org.netbeans.modules.visualweb.insync.faces.FacesBean.UsageInfo;
 import org.netbeans.modules.visualweb.insync.live.FacesDesignBean;
 import org.netbeans.modules.visualweb.insync.live.LiveUnit;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 import com.sun.rave.designtime.DesignBean;
@@ -118,9 +121,33 @@ public class AddRemoveBindingAttributeAction extends AbstractDisplayActionAction
             this.designBean = designBean;
         }
         
-        public Result invoke() {            
+        public Result invoke() {
             if (designBean instanceof FacesDesignBean) {
                 FacesDesignBean facesDesignBean = (FacesDesignBean) designBean;
+                UsageInfo usageInfo = facesDesignBean.getUsageInfo();
+                NotifyDescriptor notifyDescriptor;
+                switch (usageInfo.getUsageStatus()) {
+                case USED :
+                    notifyDescriptor = new NotifyDescriptor.Message(
+                            NbBundle.getMessage(AddRemoveBindingAttributeAction.class, "ERROR_BINDING_IN_USE")); // NOI18N
+                    DialogDisplayer.getDefault().notify(notifyDescriptor);
+                    return Result.FAILURE;
+                case INIT_USE_ONLY :
+                    notifyDescriptor = new NotifyDescriptor.Confirmation(
+                                            NbBundle.getMessage(AddRemoveBindingAttributeAction.class,
+                                                                "WARNING_BINDING_IN_USE",  // NOI18N
+                                                                usageInfo.getInitializedProperties().toString())                                     
+                                            ,NbBundle.getMessage(AddRemoveBindingAttributeAction.class,
+                                                                 "TITLE_REMOVE_BINDING_ATTRIBUTE") // NOI18N
+                                            ,NotifyDescriptor.OK_CANCEL_OPTION);
+                    if (DialogDisplayer.getDefault().notify(notifyDescriptor) == NotifyDescriptor.OK_OPTION) {
+                        // fall through
+                    } else {
+                        return Result.FAILURE;
+                    }
+                case NOT_USED :
+                    break;
+                }
                 FacesModel facesModel = ((LiveUnit) designBean.getDesignContext()).getModel();
                 UndoEvent undo = null;
                 try {
