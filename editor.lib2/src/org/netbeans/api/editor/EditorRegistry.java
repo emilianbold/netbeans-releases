@@ -269,7 +269,9 @@ public final class EditorRegistry {
             if (textComponent == null || (item.ignoreAncestorChange && c.isAncestorOf(textComponent))) {
                 // Explicitly call focusLost() before physical removal from the registry.
                 // In practice this notification happens first before focusLost() from focus listener.
-                focusLost(textComponent, null); // Checks if the component is focused and does nothing otherwise
+                if (textComponent != null) {
+                    focusLost(textComponent, null); // Checks if the component is focused and does nothing otherwise
+                }
                 item = removeFromRegistry(item);
             } else {
                 item = item.next;
