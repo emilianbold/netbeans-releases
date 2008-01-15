@@ -111,7 +111,7 @@ public class IdentityValidation extends WsValidation {
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite();
 
-        suite.addTest(new IdentityValidation("addSDKGlassfish")); //NOI18N
+//        suite.addTest(new IdentityValidation("addSDKGlassfish")); //NOI18N
         suite.addTest(new IdentityValidation("prepareWSProject")); //NOI18N
         suite.addTest(new IdentityValidation("prepareWSClientProject")); //NOI18N
 //        suite.addTest(new IdentityValidation("startSDKGlassfish")); //NOI18N
@@ -138,7 +138,7 @@ public class IdentityValidation extends WsValidation {
      */
     public void prepareWSProject() throws IOException {      
         testCreateNewWs();
-        testChangeServer(false);
+//        testChangeServer(false);
         testAddOperation();
         testDeployWsProject();
     }
@@ -151,7 +151,7 @@ public class IdentityValidation extends WsValidation {
      */
     public void prepareWSClientProject() throws IOException {      
         testCreateWsClient();
-        testChangeServer(true);
+//        testChangeServer(true);
         testCallWsOperationInServlet();
         testDeployWsClientProject();
     }

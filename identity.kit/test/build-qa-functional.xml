@@ -48,24 +48,18 @@ made subject to such option by the copyright holder.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
 
-        <!-- Run tests on GlassFish based server -->
-    <target name="set-gf">
-        <condition property="use.appserver">
-            <and>
-                <not><isset property="jboss.home"/></not>
-                <not><isset property="tomcat.home"/></not>
-            </and>
+    <target name="set-appserver-path" unless="j2ee.appserver.path">
+        <!-- Load private.properties where user can set own j2ee.appserver.path. -->
+        <property file="../nbproject/private/private.properties"/>
+        <condition property="j2ee.appserver.path" value="E:\\space\\Sun\\SDK">
+            <os family="windows"/>
         </condition>
+        <condition property="j2ee.appserver.path" value="/space/SDK">
+            <os family="unix"/>
+        </condition>
+        <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>
+        <fail unless="j2ee.appserver.present" message="AppServer was not found in ${j2ee.appserver.path}. Set property j2ee.appserver.path to point to AppServer installation directory."/>
     </target>
-     
-    <target name="-runidetest-with-glassfish" if="use.appserver" depends="set-gf">
-        <antcall target="set-appserver-path"/>
-        <echo>Running tests on GlassFish (using: ${j2ee.appserver.path})</echo>
-        <antcall target="xtest-qa-functional.runidetest-with-appserver" />
-    </target>
-
-    <!-- Override to run tests on more servers at once -->
-    <target name="runidetest-with-appserver" depends="-runidetest-with-glassfish"/>
 
 </project>
 
