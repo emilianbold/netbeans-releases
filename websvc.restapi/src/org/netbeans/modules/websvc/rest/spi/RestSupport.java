@@ -292,7 +292,8 @@ public abstract class RestSupport {
             "MSG_TEST_RESBEANS_Status", "MSG_TEST_RESBEANS_Headers", "MSG_TEST_RESBEANS_HeaderName",
             "MSG_TEST_RESBEANS_HeaderValue", "MSG_TEST_RESBEANS_ErrorHint", "MSG_TEST_RESBEANS_Insert",
             "MSG_TEST_RESBEANS_NoContents", "MSG_TEST_RESBEANS_NoHeaders", "MSG_TEST_RESBEANS_NewParamName",
-            "MSG_TEST_RESBEANS_NewParamValue", "MSG_TEST_RESBEANS_AddParamButton", "MSG_TEST_RESBEANS_Monitor"
+            "MSG_TEST_RESBEANS_NewParamValue", "MSG_TEST_RESBEANS_AddParamButton", "MSG_TEST_RESBEANS_Monitor",
+            "MSG_TEST_RESBEANS_No_SubResources", "MSG_TEST_RESBEANS_SubResources"
         };
         FileObject testFO = copyFile(testdir, TEST_RESBEANS_HTML, replaceKeys1, true);
         copyFile(testdir, TEST_RESBEANS_JS, replaceKeys2, false);

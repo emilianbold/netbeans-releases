@@ -59,7 +59,7 @@ function TestSupport() {
     this.currentXmlHttpReq = '';
     this.tcStr = '';
     this.prettyContent = '';
-    this.colSize = "58";
+    this.colSize = "65";
     this.allcat = [];
     
     this.expand = new Image();
@@ -74,6 +74,7 @@ function TestSupport() {
     this.viewIds = [
         { "id" : "table" , "name":"MSG_TEST_RESBEANS_TabularView", "type":"tableContent"}, 
         { "id" : "raw" , "name":"MSG_TEST_RESBEANS_RawView", "type":"rawContent"}, 
+        { "id" : "structure" , "name":"MSG_TEST_RESBEANS_SubResources", "type":"structureInfo"},
         { "id" : "header" , "name":"MSG_TEST_RESBEANS_Headers", "type":"headerInfo"},
         { "id" : "monitor" , "name":"MSG_TEST_RESBEANS_Monitor", "type":"monitorContent"}];
     
@@ -649,27 +650,29 @@ TestSupport.prototype = {
                 var tableViewStyle = ' ';
                 var nodisp = ' class="nodisp" ';
                 var rawViewStyle = nodisp;
-                var headerViewStyle = nodisp;
-                var monitorViewStyle = nodisp;
                 if(showRaw) {
                     tableViewStyle = nodisp;
                     rawViewStyle = ' ';
-                    headerViewStyle = nodisp;
-                    monitorViewStyle = nodisp;
                 }
+                var structure = this.xhr.options(this.currentValidUrl, 'application/vnd.sun.wadl+xml');
+                var subResources = this.getContainerTable(ts.wdr.evaluateWADLUpdate(this.currentValidUrl, structure));
+                if(subResources == null)
+                    subResources = 'MSG_TEST_RESBEANS_No_SubResources';
                 this.updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Status</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
                     '<span class=bld>MSG_TEST_RESBEANS_Content</span> '+
                     '<div class="menu"><table class="result"><tr>'+
                     this.getTab('table', tableViewStyle)+this.getTab('raw', rawViewStyle)+
-                    this.getTab('header', headerViewStyle)+this.getTab('monitor', monitorViewStyle)+   
+                    this.getTab('structure', nodisp)+
+                    this.getTab('header', nodisp)+this.getTab('monitor', nodisp)+   
                     '</tr></table></div>'+
                     '<div class="tabMain">'+
                     '<div id="menu_bottom" class="stab tabsbottom"></div>'+
-                    '<div id="headerInfo"'+headerViewStyle+'>'+this.getHeaderAsTable(this.currentXmlHttpReq)+'</div>'+
+                    '<div id="headerInfo"'+nodisp+'>'+this.getHeaderAsTable(this.currentXmlHttpReq)+'</div>'+
                     '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
                     '<div id="rawContent"'+rawViewStyle+'>'+
                         '<textarea rows=15 cols='+this.colSize+' align=left readonly>'+this.printPretty(rawContent)+'</textarea></div>'+ 
-                    '<div id="monitorContent"'+monitorViewStyle+'>'+
+                    '<div id="structureInfo"'+nodisp+'>'+subResources+'</div>'+
+                    '<div id="monitorContent"'+nodisp+'>'+
                         '<textarea id="monitorText" rows=15 cols='+this.colSize+' align=left readonly>'+this.currMonitorText+'</textarea></div>')+
                     '</div>';
                 if(showRaw) {
@@ -1189,6 +1192,37 @@ WADLParser.prototype = {
         return cName;
     },
 
+    evaluateWADLUpdate : function (uri, content) {
+        
+        function nsResolver(prefix) {
+            var ns = {
+                'xmlns' : 'http://research.sun.com/wadl/2006/10'
+            };
+            return ns[prefix] || null;
+        }
+        
+        //var path = '/xmlns:application/xmlns:resources/xmlns:resource[@path="/customers/"]/xmlns:resource[@path="{customerId}/"]';
+        //var nodeToAdd = ts.wadlDoc.evaluate(path, ts.wadlDoc, nsResolver, XPathResult.FIRST_ORDERED_NODE_TYPE, null );
+        
+        var xmlDoc = ts.xhr.loadXml(content);
+        var iterator = xmlDoc.evaluate('//xmlns:resource', xmlDoc, nsResolver, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null );
+
+        var str = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><root>';
+        try {
+          var thisNode = iterator.iterateNext();
+          thisNode = iterator.iterateNext();
+          while (thisNode) {
+            str += '<node uri="'+baseURL+ts.getPath(thisNode, '')+'"/>';
+            thisNode = iterator.iterateNext();
+          }	
+          str += '</root>';
+        }
+        catch (e) {
+          dump( 'Error: Document tree modified during iteration ' + e );
+        }
+        return str;
+    },
+    
     showCategory : function (category){
         var categoryNode = document.getElementById(category).style;
         if(categoryNode.display=="block")
@@ -1536,7 +1570,7 @@ XHR.prototype = {
             return null;
         }
         if (mimeType != null) {
-            if(method == 'GET') {
+            if(method == 'GET' || method == 'OPTIONS') {
                 //ts.debug("setting GET accept: "+mimeType);
                 xmlHttpReq.setRequestHeader('Accept', mimeType);
             } else if(method == 'POST' || method == 'PUT'){
@@ -1632,6 +1666,26 @@ XHR.prototype = {
           ts.debug('delete(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
         }
         return 'Delete succeeded for: '+url+'. Server returned: '+xmlHttpReq.responseText;
+    },
+    
+    options : function(url, mime) {
+        var xmlHttpReq = this.connect('OPTIONS', url, mime, 0, false);
+        try {
+            xmlHttpReq.send(null);
+            if (this.isResponseReady(xmlHttpReq, '')) {
+              var rtext = xmlHttpReq.responseText;
+              if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
+                  var err = 'Get failed: Server returned --> Status: (' + status+')\n'+
+                      'Response: {' + xmlHttpReq.responseText + "}";
+                  ts.debug('Failed XHR(GET, '+url+'): '+err);
+                  return err;
+              }
+              return rtext;           
+            }
+        } catch( e ) {
+           ts.debug('get(): Caught Exception; name: [' + e.name + '] message: [' + e.message+']');
+        }
+        return '-1';
     },
     
     loadXml : function(xmlStr) {
