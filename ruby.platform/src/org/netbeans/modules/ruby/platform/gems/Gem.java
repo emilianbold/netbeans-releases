@@ -75,7 +75,7 @@ public final class Gem implements Comparable<Gem> {
     }
 
     public @Override String toString() {
-        // Shown in ListCellRenderer etc.
+        // TODO: Shown in ListCellRenderer => provide appropriate ListCellRenderer for the lists in GemPanel
         StringBuilder sb = new StringBuilder(100);
         sb.append("<html><b>"); // NOI18N
         sb.append(name);
@@ -84,6 +84,9 @@ public final class Gem implements Comparable<Gem> {
         if (installedVersions != null) {
             sb.append(" ("); // NOI18N
             sb.append(installedVersions);
+            if (availableVersions != null) {
+                sb.append(" => ").append(availableVersions); // NOI18N
+            }
             sb.append(") "); // NOI18N
         }
 
