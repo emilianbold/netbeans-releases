@@ -122,6 +122,9 @@ public class WrongPackageSuggestion extends AbstractHint {
                 
             }.scan(tree.getPackageName(), packageNameBuffer);
         }
+        else if (tree.getTypeDecls().isEmpty()){
+            return null;
+        }
         
         String packageName = packageNameBuffer.toString();
         
