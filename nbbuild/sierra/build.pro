@@ -221,6 +221,7 @@
     <property name="test.cvs.modules" value="
         ${test.cvs.path}/assign
         ${test.cvs.path}/benchmark
+        ${test.cvs.path}/blueprints
         ${test.cvs.path}/dynamicpartnerlink
         ${test.cvs.path}/MessageExchange
         ${test.cvs.path}/PartnerLinks

@@ -164,9 +164,8 @@
         <cvs package="${test.cvs.modules}" cvsRoot="${test.cvs.root}" dest="${test}" command="-q co -P ${test.cvs.branch}" failonerror="false"/>
     </target>
 
-    <target name="test" depends="test-0,test-1,test-2,test-3"/>
-
-    <target name="test-0">
+    <target name="project-test-0">
+        <!-- samples -->
         <subant target="default" inheritAll="false">
             <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
             <buildpath location="${soa}/BluePrint1/BluePrint1/build.xml"/>
@@ -180,7 +179,7 @@
         </subant>
     </target>
 
-    <target name="test-1">
+    <target name="project-test-1">
         <!-- assign -->
         <antcall target="do-test-jbi"><param name="dir" value="assign/ActivateBilling_Simple"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="assign/AssignBpel"/></antcall>
@@ -200,7 +199,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="benchmark/TravelReservationService/TravelReservationService"/></antcall>
     </target>
         
-    <target name="test-2">
+    <target name="project-test-2">
         <!-- dynamicpartnerlink -->
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/dynamicPartnerLinkBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/justhttpAndBPEL"/></antcall>
@@ -221,7 +220,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPs"/></antcall>
     </target>
         
-    <target name="test-3">
+    <target name="project-test-3">
         <!-- SchemaElemDecl -->
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithElemRef"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithMsgElement"/></antcall>
@@ -236,6 +235,15 @@
         <antcall target="do-test-jbi"><param name="dir" value="xslt/DoXslTransformBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutBP"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutXSLT"/></antcall>
+    </target>
+
+    <target name="project-test-4">
+        <!-- blueprints -->
+        <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp1/BluePrint1"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp2/BluePrint2"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp3/BluePrint3"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp4/BluePrint4"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp5/BluePrint5"/></antcall>
     </target>
 
     <target name="do-test-jbi">
