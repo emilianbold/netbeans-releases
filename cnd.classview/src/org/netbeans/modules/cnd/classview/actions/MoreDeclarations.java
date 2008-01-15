@@ -53,6 +53,7 @@ import javax.swing.JMenuItem;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.classview.resources.I18n;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -121,14 +122,14 @@ public class MoreDeclarations extends AbstractAction implements Presenter.Popup 
     }
     
     private class ItemWrapper implements Comparable<ItemWrapper>{
-        private String name;
+        private CharSequence name;
         private CsmOffsetableDeclaration decl;
         private ItemWrapper(CsmOffsetableDeclaration decl){
             this.decl = decl;
-            name = decl.getContainingFile().getName().toString();
+            name = decl.getContainingFile().getName();
         }
         public int compareTo(MoreDeclarations.ItemWrapper o) {
-            return name.compareTo(o.name);
+            return CharSequenceKey.Comparator.compare(name,o.name);
         }
     }
 }

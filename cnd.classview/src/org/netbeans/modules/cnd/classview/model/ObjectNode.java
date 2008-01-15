@@ -98,7 +98,7 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
         Action action = createOpenAction();
         if (action != null){
             CsmOffsetableDeclaration decl = getObject();
-            String name = decl.getUniqueName().toString();
+            CharSequence name = decl.getUniqueName();
             CsmProject project = decl.getContainingFile().getProject();
             if (project != null){
                 Collection<CsmOffsetableDeclaration> arr = project.findDeclarations(name);
@@ -107,7 +107,14 @@ public abstract class ObjectNode extends BaseNode implements ChangeListener {
                         arr.add(friend);
                     }
                 }
-
+                if (CsmKindUtilities.isFunctionDeclaration(decl)) {
+                    // add all definitions
+                    CsmFunctionDefinition def = ((CsmFunction)decl).getDefinition();
+                    if (def != null && def != decl) {
+                        arr.addAll(project.findDeclarations(def.getUniqueName()));
+                        
+                    }
+                }
                 if (arr.size() > 1){
                     Action more = new MoreDeclarations(arr);
                     return new Action[] { action, more };
