@@ -386,6 +386,7 @@ class ComponentDragger
             for (int i=0; i < n; i++) {
                 newCompsArray[i] = newComponents.get(i);
                 othersMetaCont.add(newCompsArray[i]);
+                newCompsArray[i].resetConstraintsProperties();
             }
         }
 
@@ -707,8 +708,10 @@ class ComponentDragger
             }
             else {
                 ComponentContainer othersMetaCont = formModel.getModelContainer();
-                for (int i=0; i < targetComponentsAfterMove.length; i++)
+                for (int i=0; i < targetComponentsAfterMove.length; i++) {
                     othersMetaCont.add(targetComponentsAfterMove[i]);
+                    targetComponentsAfterMove[i].resetConstraintsProperties();
+                }
             }
 
             for (int i=0; i < componentsMovedFromOutside.length; i++)

@@ -956,6 +956,9 @@ public class MetaComponentCreator {
                 && !(targetComp instanceof RADMenuComponent) ?
             (ComponentContainer) targetComp : null;
 
+        if (!newlyAdded && (newMetaComp instanceof RADVisualComponent)) {
+            ((RADVisualComponent)newMetaComp).resetConstraintsProperties();
+        }
         formModel.addComponent(newMetaComp, targetCont, newlyAdded);
     }
 

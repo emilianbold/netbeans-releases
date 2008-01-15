@@ -670,16 +670,18 @@ public class FormModelEvent extends EventObject
 
             container.initSubComponents(undoneSubComps);
 
-            if (container instanceof RADVisualContainer
-                && component instanceof RADVisualComponent)
-            {
-                LayoutSupportManager layoutSupport =
-                    ((RADVisualContainer)container).getLayoutSupport();
-                if (layoutSupport != null)
-                    layoutSupport.addComponents(
-                        new RADVisualComponent[] { (RADVisualComponent)component },
-                        new LayoutConstraints[] { getComponentLayoutConstraints() },
-                        componentIndex);
+            if (component instanceof RADVisualComponent) {
+                if (container instanceof RADVisualContainer) {
+                    LayoutSupportManager layoutSupport =
+                        ((RADVisualContainer)container).getLayoutSupport();
+                    if (layoutSupport != null)
+                        layoutSupport.addComponents(
+                            new RADVisualComponent[] { (RADVisualComponent)component },
+                            new LayoutConstraints[] { getComponentLayoutConstraints() },
+                            componentIndex);
+                } else {
+                    ((RADVisualComponent)component).resetConstraintsProperties();
+                }
             }
 
             getFormModel().fireComponentAdded(component, getCreatedDeleted());

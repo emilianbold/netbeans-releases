@@ -401,6 +401,9 @@ public class FormModel
             metacomp.setParentComponent(null);
             otherComponents.add(metacomp);
         }
+        if (!newlyAdded && (metacomp instanceof RADVisualComponent)) {
+            ((RADVisualComponent)metacomp).resetConstraintsProperties();
+        }
 
         fireComponentAdded(metacomp, newlyAdded);
     }
