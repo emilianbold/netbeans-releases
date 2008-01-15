@@ -207,7 +207,7 @@ public class JbiProjectGenerator {
 
         // vlv # 113228
         if (fo == null) {
-          throw new IOException("Can't create " + dir.getName());
+            throw new IOException("Can't create " + dir.getName()); // NOI18N
         }
         assert fo.isFolder() : "Not really a dir: " + dir; // NOI18N
 
@@ -254,7 +254,8 @@ public class JbiProjectGenerator {
 
         if (!FileUtil.isParentOf(parent, child)) {
             throw new IllegalArgumentException(
-                NbBundle.getMessage(JbiProjectGenerator.class, "MSG_Cannot_find_relative_path", parent, child) // NOI18N
+                NbBundle.getMessage(JbiProjectGenerator.class, 
+                "MSG_Cannot_find_relative_path", parent, child) // NOI18N
             );
         }
 
@@ -268,13 +269,13 @@ public class JbiProjectGenerator {
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(
                 JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name" // NOI18N
-            ); // NOI18N
+            ); 
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
 
         Element minant = doc.createElementNS(
                 JbiProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version" // NOI18N
-            ); // NOI18N
+            ); 
         minant.appendChild(doc.createTextNode("1.6")); // NOI18N
         data.appendChild(minant);
         h.putPrimaryConfigurationData(data, true);
@@ -288,15 +289,9 @@ public class JbiProjectGenerator {
             "${" + JbiProjectProperties.DIST_DIR + "}/" + name + ".zip" // NOI18N
         );
         ep.setProperty(JbiProjectProperties.J2EE_PLATFORM, j2eeLevel);
-        //ep.setProperty(JbiProjectProperties.JAR_NAME, name + ".jar"); // NOI18N
         ep.setProperty(JbiProjectProperties.JAR_COMPRESS, "false"); // NOI18N
 
-        //        ep.setProperty(JbiProjectProperties.JAR_CONTENT_ADDITIONAL, "");
         Deployment deployment = Deployment.getDefault();
-//        String serverInstanceID = deployment.getDefaultServerInstanceID();
-//        ep.setProperty(
-//            JbiProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID)
-//        );       
                 
         ep.setProperty(JbiProjectProperties.JAVAC_SOURCE, "1.4"); // NOI18N
         ep.setProperty(JbiProjectProperties.JAVAC_DEBUG, "true"); // NOI18N
@@ -357,9 +352,6 @@ public class JbiProjectGenerator {
             ep.setProperty(JbiProjectProperties.J2EE_SERVER_INSTANCE, serverInstanceIDs[0]);
         }      
 
-        //============= Start of JBI ========================================//
-        //ep.setProperty(JbiProjectProperties.JBI_COMPONENT_CONF_FILE, "ComponentInformation.xml"); // NOI18N
-        //============= End of JBI ========================================//
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         Project p = ProjectManager.getDefault().findProject(dirFO);

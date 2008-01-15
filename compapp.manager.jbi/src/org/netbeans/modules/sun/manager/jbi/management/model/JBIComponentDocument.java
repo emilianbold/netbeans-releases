@@ -68,29 +68,25 @@ public class JBIComponentDocument implements Serializable {
 
     List<JBIComponentStatus> jbiComponentList = new ArrayList<JBIComponentStatus>();
 
-
     /**
      *
      */
     public JBIComponentDocument() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
-
-
-    /**
-     * @return Returns the jbiComponentList.
-     */
-    public List<JBIComponentStatus> getJbiComponentList() {
-        return this.jbiComponentList;
-    }
-    /**
-     * @param jbiComponentList The jbiComponentList to set.
-     */
-    public void setJbiComponentList(List<JBIComponentStatus> jbiComponentList) {
-        this.jbiComponentList = jbiComponentList;
-    }
+//    /**
+//     * @return Returns the jbiComponentList.
+//     */
+//    public List<JBIComponentStatus> getJbiComponentList() {
+//        return this.jbiComponentList;
+//    }
+//    /**
+//     * @param jbiComponentList The jbiComponentList to set.
+//     */
+//    public void setJbiComponentList(List<JBIComponentStatus> jbiComponentList) {
+//        this.jbiComponentList = jbiComponentList;
+//    }
 
     public void dump() {
         Iterator<JBIComponentStatus> iterator = this.jbiComponentList.iterator();
@@ -99,8 +95,5 @@ public class JBIComponentDocument implements Serializable {
             component = iterator.next();
             component.dump();
         }
-    }
-    
-    public static void main(String[] args) {
     }
 }

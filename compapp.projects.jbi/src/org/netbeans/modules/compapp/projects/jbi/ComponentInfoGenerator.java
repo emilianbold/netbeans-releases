@@ -72,9 +72,6 @@ public class ComponentInfoGenerator implements Serializable {
     
     private String confDir;
     private List<JBIComponentStatus> compList;
-        
-    private static final String COMPONENT_INFO_FILENAME = "ComponentInformation.xml"; // NOI18N
-    private static final String BINDING_COMPONENT_INFO_FILENAME = "BindingComponentInformation.xml"; // NOI18N
     
     public ComponentInfoGenerator(String confDir) {
         this(confDir, JbiDefaultComponentInfo.getJbiDefaultComponentInfo().getComponentList());
@@ -87,15 +84,14 @@ public class ComponentInfoGenerator implements Serializable {
     }
     
     public void doIt() {
-        JBIComponentDocument document = new JBIComponentDocument();
-        try {
-            document.getJbiComponentList().addAll(compList);
+        try {            
+            Document componentDocument = buildComponentDOMTree();
+            writeTo(confDir, JbiProject.COMPONENT_INFO_FILE_NAME, 
+                    componentDocument);
             
-            Document componentDocument = buildComponentDOMTree(document);
-            writeTo(confDir, COMPONENT_INFO_FILENAME, componentDocument);
-            
-            Document bindingComponentDocument = buildBindingComponentDOMTree(document);
-            writeTo(confDir, BINDING_COMPONENT_INFO_FILENAME, bindingComponentDocument); 
+            Document bindingComponentDocument = buildBindingComponentDOMTree();
+            writeTo(confDir, JbiProject.BINDING_COMPONENT_INFO_FILE_NAME, 
+                    bindingComponentDocument); 
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -109,7 +105,7 @@ public class ComponentInfoGenerator implements Serializable {
      *
      * @throws ParserConfigurationException DOCUMENT ME!
      */
-    private Document buildComponentDOMTree(JBIComponentDocument container)
+    private Document buildComponentDOMTree()
     throws ParserConfigurationException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -121,7 +117,7 @@ public class ComponentInfoGenerator implements Serializable {
         
         componentDocument.appendChild(root);
         
-        for (JBIComponentStatus jbiComponent : container.getJbiComponentList()) {
+        for (JBIComponentStatus jbiComponent : compList) {
             String type = jbiComponent.getType();
             if ((type.equalsIgnoreCase("Binding") || // NOI18N
                     type.equalsIgnoreCase("Engine")) && // NOI18N
@@ -143,7 +139,7 @@ public class ComponentInfoGenerator implements Serializable {
      *
      * @throws ParserConfigurationException DOCUMENT ME!
      */
-    private Document buildBindingComponentDOMTree(JBIComponentDocument container)
+    private Document buildBindingComponentDOMTree()
     throws ParserConfigurationException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -155,9 +151,9 @@ public class ComponentInfoGenerator implements Serializable {
         
         bindingComponentDocument.appendChild(root);
         
-        for (JBIComponentStatus jbiComponent : container.getJbiComponentList()) {
+        for (JBIComponentStatus jbiComponent : compList) {
             String type = jbiComponent.getType();
-            List nsList = jbiComponent.getNamespaceList();
+            List nsList = jbiComponent.getNamespaces();
             if ((type != null) && (type.equalsIgnoreCase("Binding")) && // NOI18N
                     (nsList != null) && (nsList.size() > 0) &&
                     !jbiComponent.getName().startsWith("com.sun.")) { // NOI18N
@@ -234,7 +230,7 @@ public class ComponentInfoGenerator implements Serializable {
     throws TransformerConfigurationException, TransformerException, Exception {
         File file = new File(directoryPath);
         
-        if ((file.isDirectory() == false) || (file.exists() == false)) {
+        if (!file.isDirectory() || !file.exists()) {
             throw new Exception("Directory Path: " + directoryPath + " is invalid."); // NOI18N
         }
         

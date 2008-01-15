@@ -55,6 +55,8 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -81,7 +83,7 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
     /**
      * DOCUMENT ME!
      */
-    JBIComponentDocument container = new JBIComponentDocument();
+    List<JBIComponentStatus> components = new ArrayList<JBIComponentStatus>();
     
     /**
      *
@@ -92,24 +94,11 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
         // TODO Auto-generated constructor stub
     }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @return Returns the document.
-     */
-    public JBIComponentDocument getDocument() {
-        return this.container;
-    }
     
-    /**
-     * DOCUMENT ME!
-     *
-     * @param jbiDocument The document to set.
-     */
-    public void setDocument(JBIComponentDocument jbiDocument) {
-        this.container = jbiDocument;
+    public List<JBIComponentStatus> getComponents() {
+        return components;
     }
-    
+        
     /**
      * DOCUMENT ME!
      *
@@ -123,10 +112,10 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
      * @throws ParserConfigurationException DOCUMENT ME!
      * @throws SAXException DOCUMENT ME!
      */
-    public static JBIComponentDocument parse(String documentString)
-    throws IOException, SAXException, FileNotFoundException, ParserConfigurationException,
-            SAXException {
-        JBIComponentDocument container = null;
+    public static List<JBIComponentStatus> parse(String documentString)
+            throws IOException, SAXException, FileNotFoundException, 
+            ParserConfigurationException, SAXException {
+        List<JBIComponentStatus> ret = new ArrayList<JBIComponentStatus>();
         
         // Get an instance of the SAX parser factory
         SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -144,10 +133,10 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
         
         if (inputSource != null) {
             saxParser.parse(inputSource, myEventHandler);
-            container = myEventHandler.getDocument();
+            ret = myEventHandler.getComponents();
         }
         
-        return container;
+        return ret; 
     }
     
     /**
@@ -163,18 +152,18 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
      * @throws ParserConfigurationException DOCUMENT ME!
      * @throws SAXException DOCUMENT ME!
      */
-    public static JBIComponentDocument parse(File documentFile)
-    throws IOException, SAXException, FileNotFoundException, ParserConfigurationException,
-            SAXException {
-        JBIComponentDocument container = null;
+    public static List<JBIComponentStatus> parse(File documentFile)
+            throws IOException, SAXException, FileNotFoundException,
+            ParserConfigurationException, SAXException {
+        List<JBIComponentStatus> ret = new ArrayList<JBIComponentStatus>();
         
         // Get an instance of the SAX parser factory
         SAXParserFactory factory = SAXParserFactory.newInstance();
         
         // Get an instance of the SAX parser
         SAXParser saxParser = factory.newSAXParser();
-        saxParser.setProperty("http://apache.org/xml/properties/input-buffer-size",  new Integer(8192));
-
+        saxParser.setProperty("http://apache.org/xml/properties/input-buffer-size",  // NOI18N
+                new Integer(8192));
         
         FileReader reader = new FileReader(documentFile);
         
@@ -184,9 +173,9 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
         // Parse the input XML document stream, using my event handler
         ComponentInformationParser myEventHandler = new ComponentInformationParser();
         saxParser.parse(inputSource, myEventHandler);
-        container = myEventHandler.getDocument();
+        ret = myEventHandler.getComponents();
         
-        return container;
+        return ret;
     }
     
     /**
@@ -194,10 +183,11 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
      *
      * @throws SAXException is any SAX exception, possibly wrapping another exception.
      */
+    @Override
     public void startDocument() throws SAXException {
         parsingInProgress = true;
         qNameStack.removeAllElements();
-        container.getJbiComponentList().clear();
+        components.clear();
     }
     
     /**
@@ -205,16 +195,9 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
      *
      * @throws SAXException is any SAX exception, possibly wrapping another exception.
      */
+    @Override
     public void endDocument() throws SAXException {
-        parsingInProgress = false;
-        
-        // We have encountered the end of the document. Do any processing that
-        // is desired, for example dump all collected element2 values.
-        //        for (int i = 0; i < jbiComponentList.size(); i++) {
-        //            JBIComponentStatus o = (JBIComponentStatus) jbiComponentList.get(i);
-        //            o.dump();
-        //        }
-        //        container.setJbiComponentList(this.jbiComponentList);
+        parsingInProgress = false;        
     }
     
     /**
@@ -231,9 +214,10 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
      *
      * @throws SAXException is any SAX exception, possibly wrapping another exception.
      */
-    public void startElement(String uri, String localName, String qName, Attributes attributes)
-    throws SAXException {
-//        System.out.println("startElement: " + localName);
+    @Override
+    public void startElement(String uri, String localName, String qName, 
+            Attributes attributes)
+            throws SAXException {
         if (JBIComponentDocument.COMP_INFO_LIST_NODE_NAME.equals(qName)) {
             String key = null;
             String value = null;
@@ -295,7 +279,7 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
             }
         }
         
-        //     Keep track of QNames
+        // Keep track of QNames
         qNameStack.push(qName);
     }
     
@@ -308,6 +292,7 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
      *
      * @throws SAXException is any SAX exception, possibly wrapping another exception.
      */
+    @Override
     public void characters(char[] ch, int start, int length)
     throws SAXException {
 
@@ -317,47 +302,23 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
         //
         String qName;
         String chars = new String(ch, start, length);
-//        System.out.println("characters: " + chars);
         
         //  Get current QName
         qName = (String) qNameStack.peek();
-        
-        if (JBIComponentDocument.COMP_INFO_LIST_NODE_NAME.equals(qName)) {
-            //  Nothing to process
-        }
-        
-        if (JBIComponentDocument.COMP_INFO_NODE_NAME.equals(qName)) {
-            //  Keep track of the value of element2
-            //            if (jbiComponentList.size() > 0) {
-            // JBIComponentStatus o = (JBIComponentStatus) jbiComponentList.lastElement();
-            // o.setValue(chars);
-            //            }
-        }
         
         if (JBIComponentDocument.DESCRIPTION_NODE_NAME.equals(qName)) {
             if ((component != null) && (chars != null)) {
                 component.setDescription(chars);
             }
-        }
-        
-        //        if (JBIComponentDocument.ID_NODE_NAME.equals(qName)) {
-        //            if((component != null) && (chars != null)) {
-        //                component.setComponentId(chars);
-        //            }
-        //        }
-        if (JBIComponentDocument.NAME_NODE_NAME.equals(qName)) {
+        } else if (JBIComponentDocument.NAME_NODE_NAME.equals(qName)) {
             if ((component != null) && (chars != null)) {
                 component.setName(chars);
             }
-        }
-        
-        if (JBIComponentDocument.STATUS_NODE_NAME.equals(qName)) {
+        } else if (JBIComponentDocument.STATUS_NODE_NAME.equals(qName)) {
             if ((component != null) && (chars != null)) {
                 component.setState(chars);
             }
-        }
-        
-        if (JBIComponentDocument.TYPE_NODE_NAME.equals(qName)) {
+        } else if (JBIComponentDocument.TYPE_NODE_NAME.equals(qName)) {
             if ((component != null) && (chars != null)) {
                 String type = chars.toLowerCase();
                 
@@ -369,14 +330,11 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
                     component.setType(type);
                 }
             }
-        }
-        
-        if (JBIComponentDocument.NAMESPACE_NODE_NAME.equals(qName)) {
+        } else if (JBIComponentDocument.NAMESPACE_NODE_NAME.equals(qName)) {
             if ((component != null) && (chars != null)) {
                 component.addNamespace(chars);
             }
-        }
-        
+        }        
     }
     
     /**
@@ -391,9 +349,10 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
      *
      * @throws SAXException is any SAX exception, possibly wrapping another exception.
      */
+    @Override
     public void endElement(String uri, String localName, String qName)
-    throws SAXException {
-//        System.out.println("endElement: " + localName);
+        throws SAXException {
+        
         //  Pop QName, since we are done with it
         qNameStack.pop();
         
@@ -401,23 +360,13 @@ public class ComponentInformationParser extends DefaultHandler implements Serial
             //  We have encountered the end of
             // JBIComponentDocument.COMP_INFO_LIST_NODE_NAME
             //  ...
-        } else {
-            if (JBIComponentDocument.COMP_INFO_NODE_NAME.equals(qName)) {
-                //  We have encountered the end of
-                // JBIComponentDocument.COMP_INFO_NODE_NAME
-                //  ...
-                //this.component.dump();
-                this.container.getJbiComponentList().add(this.component);
-                this.component = null;
-            }
+        } else if (JBIComponentDocument.COMP_INFO_NODE_NAME.equals(qName)) {
+            //  We have encountered the end of
+            // JBIComponentDocument.COMP_INFO_NODE_NAME
+            //  ...
+            //this.component.dump();
+            components.add(component);
+            this.component = null;
         }
-    }
-    
-    /**
-     * DOCUMENT ME!
-     *
-     * @param args DOCUMENT ME!
-     */
-    public static void main(String[] args) {
     }
 }

@@ -1089,8 +1089,7 @@ public class JbiProjectProperties {
             File dst = new File(compFileDst);
             
             if (dst.exists()) {
-                JBIComponentDocument compDoc = ComponentInformationParser.parse(dst);
-                List compList = compDoc.getJbiComponentList();
+                List compList = ComponentInformationParser.parse(dst);
                 Iterator iterator = compList.iterator();
                 JBIComponentStatus component = null;
                 
@@ -1136,14 +1135,16 @@ public class JbiProjectProperties {
         String jbiFileLoc = null;
         
         if ((os != null) && (os.size() > 0)) {
-            String path = FileUtil.toFile(project.getProjectDirectory()).getPath() + "/" + os.get(0).toString(); // NOI18N
+            String path = FileUtil.toFile(
+                    project.getProjectDirectory()).getPath() + 
+                    File.separator + os.get(0).toString(); // NOI18N
             /*
             if ((path.indexOf(':') < 0) && (!path.startsWith("/"))) {
                 path = "/" + path; // In unix, it returns an incorrect path..
             }
              */
-            compFileDst = path + "/" + "ComponentInformation.xml"; // NOI18N
-            jbiFileLoc = path + "/" + "AssemblyInformation.xml"; // NOI18N
+            compFileDst = path + File.separator + JbiProject.COMPONENT_INFO_FILE_NAME; 
+            jbiFileLoc = path + File.separator + JbiProject.ASSEMBLY_INFO_FILE_NAME; 
         }
         
         try {

@@ -46,8 +46,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Retrieves the status of JBI components installed on the
- * JBI Container on the Server
+ * JBIComponentInfo with additional namespace information.
  *
  * @author Graj
  */
@@ -62,58 +61,36 @@ public class JBIComponentStatus extends JBIComponentInfo {
     /** Engine Type */
     public static final String ENGINE = "Engine";  // NOI18N
     
-//    /** Namespace Type */
-//    public static final String NAMESPACE = "Namespace";    // NOI18N
+//    /** Shared Library Type */
+//    public static final String LIBRARY = "Namespace";    // NOI18N
     
 
     public JBIComponentStatus() {
         super();
     }
-
-//    /**
-//     * @param componentId
-//     * @param state
-//     * @param name
-//     * @param description
-//     * @param type
-//     */
-//    public JBIComponentStatus(String componentId, String name, 
-//            String description, String type, String state) {
-//        this(componentId, name, description, type, state, null);
-//    }
     
     public JBIComponentStatus(String name, 
-            String description, String type, String state, String[] ns) {
+            String description, String type, String state, 
+            List<String> namespaces) {
         super(type, state, name, description);
-        setNamespace(ns);
+        setNamespaces(namespaces);
     }
         
     /**
      * DOCUMENT ME!
      *
-     * @return the namespace.
+     * @return the namespaces.
      */
-    public List<String> getNamespaceList() {
+    public List<String> getNamespaces() {
         return new ArrayList<String>(namespaceList);
     }
      
     /**
      * DOCUMENT ME!
      *
-     * @param namesapce The namespace to set.
-     */
-    // RENAME ME 
-    public void setNamespace(String namespaces[]) {
-        namespaceList.clear();
-        for (String namespace : namespaces) {
-            if (!namespaceList.contains(namespace)) {
-                namespaceList.add(namespace);
-            }            
-        }
-    }
-    
-    // RENAME ME 
-    public void setNamespace(List<String> namespaces) {
+     * @param namespaces The namespaces to set.
+     */    
+    public void setNamespaces(List<String> namespaces) {
         namespaceList.clear();
         for (String namespace : namespaces) {
             if (!namespaceList.contains(namespace)) {
@@ -132,15 +109,17 @@ public class JBIComponentStatus extends JBIComponentInfo {
     }
     
     public boolean isBindingComponent() {
-        return getType().equalsIgnoreCase(BINDING); 
+        return getType().equalsIgnoreCase(BINDING) ||     // from project config
+                getType().equalsIgnoreCase(BINDING_TYPE); // from runtime (JBIComponentInfo)
     }
     
     public boolean isServiceEngine() {
-        return getType().equalsIgnoreCase(ENGINE);
+        return getType().equalsIgnoreCase(ENGINE) ||      // from project config
+                getType().equalsIgnoreCase(ENGINE_TYPE);  // from runtime (JBIComponentInfo)
     }
     
     public boolean isSharedLibrary() {
-        return getType().equalsIgnoreCase("shared-library"); // NOI18N
+        return getType().equalsIgnoreCase(SHARED_LIBRARY_TYPE); 
     }
 
     public void dump() {

@@ -233,12 +233,11 @@ public class JbiDefaultComponentInfo {
                         }
                     }
                 }
-                String[] nss = nsList.toArray(new String[0]);
                 
                 // check for duplicates first..
                 if (id.length() > 0 && !singleton.componentMap.containsKey(id)) {
                     JBIComponentStatus jcs = 
-                            new JBIComponentStatus(id, desc, type, state, nss);
+                            new JBIComponentStatus(id, desc, type, state, nsList);
                     singleton.componentList.add(jcs);
                     singleton.componentMap.put(id, jcs);
                 }

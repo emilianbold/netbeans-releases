@@ -65,6 +65,7 @@ import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.Endp
 import org.netbeans.modules.compapp.projects.jbi.descriptor.endpoints.model.PtConnection;
 import org.netbeans.modules.compapp.projects.jbi.ui.customizer.JbiProjectProperties;
 import org.netbeans.modules.compapp.javaee.codegen.model.AbstractProject;
+import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validation;
@@ -155,6 +156,7 @@ public class BuildServiceAssembly extends Task {
      *
      * @throws BuildException DOCUMENT ME!
      */
+    @Override
     public void execute() throws BuildException {
         showLog = showLogOption.equalsIgnoreCase("true");
         JarFile genericBCJar = null;
@@ -179,14 +181,12 @@ public class BuildServiceAssembly extends Task {
 //        MigrationHelper.migrateCasaWSDL(jbiasaDirLoc, getProjectName());
 
         // Command-line support
-//            MigrationHelper.migrateCompAppProperties(projDirLoc, null);
+//        MigrationHelper.migrateCompAppProperties(projDirLoc, null);
 
 
         String catalogDirLoc = serviceUnitsDirLoc
-                + File.separator + "META-INF";
-                //+ File.separator + "catalogData";
+                + File.separator + "META-INF"; // NOI18N
 
-        // String mapFileLoc = projPath + confDir + File.separator + "portmap.xml";
         String connectionsFileLoc = confDirLoc + "connections.xml";
         String buildDir = projDirLoc + p.getProperty(JbiProjectProperties.BUILD_DIR);
 
@@ -207,8 +207,8 @@ public class BuildServiceAssembly extends Task {
         validateCompAppProject();
         
         try {   
-            String jbiFileLoc = buildDir + "/META-INF/jbi.xml";
-            String genericBCJarFileLoc = buildDir + "/BCDeployment.jar";            
+            String jbiFileLoc = buildDir + "/META-INF/jbi.xml"; 
+            String genericBCJarFileLoc = buildDir + "/BCDeployment.jar";       
             
             File bDir = new File(buildDir);
             if (!bDir.exists()) {
@@ -218,10 +218,10 @@ public class BuildServiceAssembly extends Task {
             // Get all the bc names
             // Use ComponentInformation.xml instead of BindingComponentInformatino.xml
             // to get all the binding component names!
-            String ciFileLoc = confDirLoc + "ComponentInformation.xml";
+            String ciFileLoc = confDirLoc + JbiProject.COMPONENT_INFO_FILE_NAME;
             bcNames = loadBindingComponentNames(ciFileLoc);
             
-            String asiFileLoc = confDirLoc + "AssemblyInformation.xml";
+            String asiFileLoc = confDirLoc + JbiProject.ASSEMBLY_INFO_FILE_NAME;
             loadAssemblyInfo(asiFileLoc);
             
             // generate the SE jar file list
@@ -404,7 +404,7 @@ public class BuildServiceAssembly extends Task {
         Document mergedCatalogDoc = null;
         
         // src/jbiServiceUnits/catalog.xml
-        mergedCatalogFile = new File(catalogDir.getParentFile(), "catalog.xml"); // NOI18N
+        mergedCatalogFile = new File(catalogDir.getParentFile(), "catalog.xml"); 
         try {
             DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = fact.newDocumentBuilder();

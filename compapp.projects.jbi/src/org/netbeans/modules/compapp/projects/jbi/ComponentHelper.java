@@ -88,7 +88,7 @@ public class ComponentHelper {
         String projPath = pf.getAbsolutePath() + File.separator;
         
         String compFile = projPath + os.get(0).toString() + File.separator +
-                "ComponentInformation.xml"; // NOI18N
+                JbiProject.COMPONENT_INFO_FILE_NAME; 
         
         loadComponentInfo(compFile);
     }
@@ -99,8 +99,8 @@ public class ComponentHelper {
         
         try {
             if (dst.exists()) {
-                JBIComponentDocument compDoc = ComponentInformationParser.parse(dst);
-                List<JBIComponentStatus> compList = compDoc.getJbiComponentList();
+                List<JBIComponentStatus> compList = 
+                        ComponentInformationParser.parse(dst);
                 
                 for (JBIComponentStatus comp : compList) {
                     componentNames.add(comp.getName());

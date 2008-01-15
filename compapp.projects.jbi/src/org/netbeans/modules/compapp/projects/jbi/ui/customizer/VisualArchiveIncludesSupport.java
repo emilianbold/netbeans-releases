@@ -62,7 +62,6 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -88,6 +87,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.modules.compapp.jbiserver.JbiManager;
 import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.compapp.projects.jbi.JbiActionProvider;
+import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.ui.NoSelectedServerWarning;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
@@ -103,9 +103,6 @@ import org.openide.NotifyDescriptor;
  * @author jqian
  */
 final class VisualArchiveIncludesSupport {
-    
-    private static final String COMPONENT_INFO_FILE_NAME = "ComponentInformation.xml"; // NOI18N    
-    private static final String ASSEMBLY_INFO_FILE_NAME = "AssemblyInformation.xml"; // NOI18N
         
     private static final int COMPONENT_TYPE_COLUMN = 0;
     private static final int COMPONENT_NAME_COLUMN = 1;
@@ -185,9 +182,9 @@ final class VisualArchiveIncludesSupport {
         
         List os = (List) projProperties.get(JbiProjectProperties.META_INF);        
         if ((os != null) && (os.size() > 0)) {            
-            String path = pf.getPath() + "/" + os.get(0).toString(); // NOI18N
-            compInfoFileLoc = path + "/" + COMPONENT_INFO_FILE_NAME; // NOI18N
-            assemblyInfoFileLoc = path + "/" + ASSEMBLY_INFO_FILE_NAME; // NOI18N
+            String path = pf.getPath() + File.separator + os.get(0).toString(); 
+            compInfoFileLoc = path + File.separator + JbiProject.COMPONENT_INFO_FILE_NAME; 
+            assemblyInfoFileLoc = path + File.separator + JbiProject.ASSEMBLY_INFO_FILE_NAME; 
         }
         
         AntProjectHelper helper = p.getLookup().lookup(AntProjectHelper.class);
@@ -521,10 +518,7 @@ final class VisualArchiveIncludesSupport {
         
         try {
             if (dst.exists()) {
-                List<JBIComponentInfo> compList =
-                        JBIComponentInfo.readFromXmlText(new FileReader(dst));
-//                JBIComponentDocument compDoc = ComponentInformationParser.parse(dst);
-//                List<JBIComponentInfo> compList = compDoc.getJbiComponentList();
+                List compList = ComponentInformationParser.parse(dst);
                 updateComponentTable(compList);
             }
         } catch (Exception e) {
@@ -536,7 +530,7 @@ final class VisualArchiveIncludesSupport {
      * Update component table with components from the given list.
      * Also rebuild componentNames and bindingVisualClassPathItems.
      */            
-    private void updateComponentTable(List<JBIComponentInfo> compList) {
+    private void updateComponentTable(List<? extends JBIComponentInfo> compList) {
         
         List<ComponentObject> rowData = new ArrayList<ComponentObject>();
         
@@ -546,22 +540,20 @@ final class VisualArchiveIncludesSupport {
         for (JBIComponentInfo component : compList) {
             String type = component.getType();
             
-            //if (component.isSharedLibrary()) {
-            if (type.equals("sharedLibrary")) { //???
+            if (type.equals("sharedLibrary")) { // NOI18N 
                 continue;
             }
             
             ComponentObject comp = new ComponentObject(
-                    type, //component.getType(),
+                    type, 
                     component.getState(),
                     component.getName(),
                     component.getDescription()); // update this when loading assembly info
             rowData.add(comp);
             
             componentNames.add(component.getName());
-            
-            //if (component.isBindingComponent()) {
-            if (type.equals("bindingComponent")) { // ???
+           
+            if (type.equals("bindingComponent")) { // NOI18N ???
                 VisualClassPathItem vi = new VisualClassPathItem(
                         bcJar, VisualClassPathItem.TYPE_ARTIFACT,
                         "BCDeployment.jar", null, // NOI18N
@@ -584,7 +576,8 @@ final class VisualArchiveIncludesSupport {
             if (serverIDs.length < 1) {
                 NotifyDescriptor d =
                         new NotifyDescriptor.Message(
-                        NbBundle.getMessage(JbiActionProvider.class, "MSG_NoInstalledServerError"), // NOI18N
+                        NbBundle.getMessage(JbiActionProvider.class,
+                        "MSG_NoInstalledServerError"), // NOI18N
                         NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
                 return false;
@@ -597,7 +590,8 @@ final class VisualArchiveIncludesSupport {
             };
             DialogDescriptor desc = new DialogDescriptor(
                     panel,
-                    NbBundle.getMessage(NoSelectedServerWarning.class, "CTL_NoSelectedServerWarning_Title"), // NOI18N
+                    NbBundle.getMessage(NoSelectedServerWarning.class, 
+                    "CTL_NoSelectedServerWarning_Title"), // NOI18N
                     true, options, options[0], 
                     DialogDescriptor.DEFAULT_ALIGN, null, null);
             Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
@@ -644,8 +638,8 @@ final class VisualArchiveIncludesSupport {
                 adminService.clearJBIComponentStatusCache(JBIComponentType.SERVICE_ENGINE);
                 adminService.clearJBIComponentStatusCache(JBIComponentType.BINDING_COMPONENT);
                 List<JBIComponentInfo> compList = new ArrayList<JBIComponentInfo>();
-                compList.addAll(adminService.listServiceEngines("server"));
-                compList.addAll(adminService.listBindingComponents("server"));
+                compList.addAll(adminService.listServiceEngines("server")); // NOI18N
+                compList.addAll(adminService.listBindingComponents("server")); // NOI18N
                 updateComponentTable(compList);
             }
         } catch (Exception e) {
@@ -656,7 +650,8 @@ final class VisualArchiveIncludesSupport {
     }
     
     private RuntimeManagementServiceWrapper getAdministrationService() 
-        throws MalformedURLException, IOException, MalformedObjectNameException, ManagementRemoteException {
+        throws MalformedURLException, IOException, 
+        MalformedObjectNameException, ManagementRemoteException {
         
         String serverInstance = (String) projProperties.get(JbiProjectProperties.J2EE_SERVER_INSTANCE);
         

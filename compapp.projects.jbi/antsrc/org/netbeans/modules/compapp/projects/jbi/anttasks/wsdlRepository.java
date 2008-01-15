@@ -62,10 +62,10 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
+import org.netbeans.modules.compapp.projects.jbi.JbiProject;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectConstants;
 import org.netbeans.modules.compapp.projects.jbi.util.MyFileUtil;
 import org.netbeans.modules.sun.manager.jbi.management.model.ComponentInformationParser;
-import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentDocument;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -138,15 +138,16 @@ public class wsdlRepository {
         
         String projPath = project.getProperty("basedir") + File.separator;
         String cnfDir = project.getProperty((JbiProjectProperties.META_INF));
-        String bcInfo = projPath + cnfDir + "/BindingComponentInformation.xml";  // NOI18N
+        String bcInfo = projPath + cnfDir + File.separator +
+                JbiProject.BINDING_COMPONENT_INFO_FILE_NAME;
         File bcFile = new File(bcInfo);
         if (bcFile.exists()) {
             try {
-                JBIComponentDocument compDoc = ComponentInformationParser.parse(bcFile);
-                List<JBIComponentStatus> compList = compDoc.getJbiComponentList();
+                List<JBIComponentStatus> compList = 
+                        ComponentInformationParser.parse(bcFile);
                 for (JBIComponentStatus comp : compList) {
                     String compName = comp.getName();
-                    List<String> nsList = comp.getNamespaceList();
+                    List<String> nsList = comp.getNamespaces();
                     for (String ns : nsList) {
                         bcMap.put(ns, compName);
                     }
@@ -158,11 +159,7 @@ public class wsdlRepository {
         
         return bcMap;
     }
-    
-//    public boolean isLoaded() {
-//        return repoLoaded;
-//    }
-    
+        
     public List<WSDLModel> getWsdlCollection() {
         return wsdlModels;
     }

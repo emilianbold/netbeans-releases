@@ -129,6 +129,10 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
      */
     public static final String MODULE_INSTALL_DIR = "module.install.dir"; // NOI18N
     
+    public static final String COMPONENT_INFO_FILE_NAME = "ComponentInformation.xml"; // NOI18N    
+    public static final String BINDING_COMPONENT_INFO_FILE_NAME = "BindingComponentInformation.xml"; // NOI18N    
+    public static final String ASSEMBLY_INFO_FILE_NAME = "AssemblyInformation.xml"; // NOI18N
+    
 //    /** Last time in ms when the Broken References alert was shown. */
 //    private static long brokenAlertLastTime = 0;
 //    
@@ -718,22 +722,24 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
             
             try {
                 // Load component info..
-                File compFile = new File(confDir + File.separator + "ComponentInformation.xml");
-                JBIComponentDocument compDoc = ComponentInformationParser.parse(compFile);
-                List<JBIComponentStatus> compList = compDoc.getJbiComponentList();
+                File compFile = new File(confDir + File.separator + 
+                        JbiProject.COMPONENT_INFO_FILE_NAME);
+                List<JBIComponentStatus> compList = 
+                        ComponentInformationParser.parse(compFile);
                 
                 // Load binding component info..
-                File bindingCompFile = new File(confDir + File.separator + "BindingComponentInformation.xml");
-                JBIComponentDocument bindingCompDoc = ComponentInformationParser.parse(bindingCompFile);
-                List<JBIComponentStatus> bindingCompList = bindingCompDoc.getJbiComponentList();
+                File bindingCompFile = new File(confDir + File.separator + 
+                        JbiProject.BINDING_COMPONENT_INFO_FILE_NAME);
+                List<JBIComponentStatus> bindingCompList = 
+                        ComponentInformationParser.parse(bindingCompFile);
                 
                 // Update component namespaces using info from binding component doc
                 for (JBIComponentStatus bindingComp : bindingCompList) {
                     String name = bindingComp.getName();
-                    List<String> nsList = bindingComp.getNamespaceList();
+                    List<String> nsList = bindingComp.getNamespaces();
                     for (JBIComponentStatus comp : compList) {
                         if (comp.getName().equals(name)) {
-                            comp.setNamespace(nsList);
+                            comp.setNamespaces(nsList);
                             break;
                         }
                     }
@@ -754,7 +760,7 @@ public final class JbiProject implements Project, AntProjectListener, ProjectPro
                     boolean found = false;
                     for (JBIComponentStatus comp : compList) {
                         if (comp.getName().equals(name)) {
-                            for (String ns : compInMap.getNamespaceList()) {
+                            for (String ns : compInMap.getNamespaces()) {
                                 if (comp.addNamespace(ns)) {
                                     nsListUpdated = true;
                                 }
