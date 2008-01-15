@@ -41,6 +41,7 @@ package org.netbeans.modules.ws.qaf;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
@@ -92,5 +93,9 @@ public class FullWsValidation extends NbTestCase {
         suite.addTest(new AppClientWsValidation("testUndeployClientProject")); //NOI18N
         suite.addTest(new WsValidation("testStopServer")); //NOI18N
         return suite;
+    }
+    
+    public static void main(String... args) {
+        TestRunner.run(suite());
     }
 }
