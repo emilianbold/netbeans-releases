@@ -122,7 +122,7 @@ class DelegatingInputBridge extends CharInput {
                     startIndex,
                     input.getIndex (),
                     new TokenProperties (
-                        "E",
+                        SLexer.INJECTED_CODE,
                         startSkipLength,
                         endSkipLength
                     )

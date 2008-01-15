@@ -56,7 +56,6 @@ import javax.swing.event.EventListenerList;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.languages.lexer.SLexer;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.Parser;
 
@@ -67,6 +66,8 @@ import org.netbeans.modules.languages.parser.Parser;
  */
 public class LanguageImpl extends Language {
 
+    public static final String IMPORT_FEATURE = "IMPORT";
+    
     
     private NBSLanguageReader   reader;
     private String              mimeType;
@@ -282,6 +283,8 @@ public class LanguageImpl extends Language {
             Iterator<Feature> it2 = features.iterator ();
             while (it2.hasNext ()) {
                 Feature feature = it2.next ();
+                if (feature.getFeatureName ().equals (IMPORT_FEATURE))
+                    importLanguage (feature);
                 featureList.add (feature);
             }
             Set<Integer> skipTokenIDs = new HashSet<Integer> ();
@@ -324,6 +327,10 @@ public class LanguageImpl extends Language {
                 event = new PropertyChangeEvent (this, null, null, null);
             ((PropertyChangeListener) l [i+1]).propertyChange (event);
         }
+    }
+    
+    public String toString () {
+        return "LanguageImpl " + mimeType + " (" + hashCode () + ")";
     }
 }
 

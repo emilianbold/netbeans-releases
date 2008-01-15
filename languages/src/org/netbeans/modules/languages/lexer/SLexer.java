@@ -70,6 +70,9 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     public static final String ERROR_TOKEN_TYPE_NAME = "error";
     public static final String EMBEDDING_TOKEN_TYPE_NAME = "PE";
+    public static final Object CONTINUOUS_TOKEN_START = "S";
+    public static final Object CONTINUOUS_TOKEN = "C";
+    public static final Object INJECTED_CODE = "I";
 
     
     private Language                language;
@@ -229,13 +232,13 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
             // no preprocessor imports in token import.
             return tokenFactory.createToken (tokenId);
         Marenka marenka = new Marenka ((Integer) state);
-        String property = "S";
+        Object property = CONTINUOUS_TOKEN_START;
         Iterator it = embeddings.iterator ();
         while(it.hasNext ()) {
             Vojta v = (Vojta) it.next ();
             if (start < v.startOffset) {
                 marenka.add (new Vojta (type, start, v.startOffset, property));
-                property = "C";
+                property = CONTINUOUS_TOKEN;
             }
             marenka.add (v);
             start = v.endOffset;
@@ -253,7 +256,7 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
         if (embeddings.isEmpty ())
             return null;
         Marenka marenka = new Marenka ((Integer) state);
-        String property = "S";
+        Object property = CONTINUOUS_TOKEN_START;
         Iterator it = embeddings.iterator ();
         while(it.hasNext ()) {
             Vojta v = (Vojta) it.next ();
@@ -330,12 +333,12 @@ public class SLexer implements Lexer<STokenId>, Parser.Cookie {
     
     static class TokenProperties implements TokenPropertyProvider {
         
-        private String      type;
+        private Object      type;
         private int         startSkipLength;
         private int         endSkipLength;
         
         TokenProperties (
-            String          type,
+            Object          type,
             int             startSkipLength,
             int             endSkipLength
         ) {

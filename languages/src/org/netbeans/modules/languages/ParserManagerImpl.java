@@ -72,6 +72,7 @@ import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.TokenInput;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
+import org.netbeans.modules.languages.lexer.SLexer;
 import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
 import org.netbeans.modules.languages.parser.SyntaxError;
 import org.netbeans.modules.languages.parser.TokenInputUtils;
@@ -370,23 +371,50 @@ public class ParserManagerImpl extends ParserManager {
     }
     
     private List<ASTToken> getTokens (TokenSequence ts) {
+        if (ts == null) return null;
         Language language = null;
         try {
             language = LanguagesManager.getDefault ().getLanguage (ts.language ().mimeType ());
         } catch (LanguageDefinitionNotFoundException ex) {
         }
         List<ASTToken> tokens = new ArrayList<ASTToken> ();
-        while (ts.moveNext ()) {
+        if (!ts.moveNext ()) return tokens;
+        Token t = ts.token ();
+        int type = t.id ().ordinal ();
+        int offset = ts.offset ();
+        String ttype = (String) t.getProperty ("type");
+        List<ASTToken> firstInjection = null;
+        if (ttype == SLexer.INJECTED_CODE) {
+            // first token can be injected 
+            TokenSequence ts2 = ts.embedded ();
+            firstInjection = getTokens (ts2);
+            if (!ts.moveNext ()) {
+                tokens.add (ASTToken.create (
+                    language,
+                    0, 
+                    "", 
+                    offset,
+                    0,
+                    firstInjection
+                ));
+                return tokens;
+            }
+            t = ts.token ();
+            type = t.id ().ordinal ();
+            offset = ts.offset ();
+            ttype = (String) t.getProperty ("type");
+        }
+        for (;;) {
             if (cancel [0]) return null;
-            Token t = ts.token ();
-            int type = t.id ().ordinal ();
-            int offset = ts.offset ();
-            String ttype = (String) t.getProperty ("type");
-            if (ttype == null || ttype.equals ("E")) {
-                List<ASTToken> children = null;
-                TokenSequence ts2 = ts.embedded ();
-                if (ts2 != null)
-                    children = getTokens (ts2);
+            if (ttype == null) {
+                List<ASTToken> children = getTokens (ts.embedded ());
+                if (firstInjection != null) {
+                    if (children != null)
+                        children.addAll (firstInjection);
+                    else
+                        children = firstInjection;
+                    firstInjection = null;
+                }
                 tokens.add (ASTToken.create (
                     language,
                     type, 
@@ -395,15 +423,12 @@ public class ParserManagerImpl extends ParserManager {
                     t.length (),
                     children
                 ));
+                children = null;
             } else
-            if (ttype.equals ("S")) {
+            if (ttype == SLexer.CONTINUOUS_TOKEN_START) {
                 StringBuilder sb = new StringBuilder (t.text ());
                 List<ASTToken> children = new ArrayList<ASTToken> ();
                 TokenSequence ts2 = ts.embedded ();
-//                if (ts2 != null)
-//                    children.addAll (
-//                        getTokens (ts2)
-//                    );
                 while (ts.moveNext ()) {
                     if (cancel [0]) return null;
                     t = ts.token ();
@@ -412,32 +437,21 @@ public class ParserManagerImpl extends ParserManager {
                         ts.movePrevious ();
                         break;
                     }
-                    if (ttype.equals ("E")) {
+                    if (ttype == SLexer.INJECTED_CODE) {
                         ts2 = ts.embedded ();
-//                        children.add (ASTToken.create (
-//                            ts2.language ().mimeType (),
-//                            t.id ().name (), 
-//                            t.text ().toString (), 
-//                            ts.offset (),
-//                            t.length (),
-//                            getTokens (ts2)
-//                        ));
-                        List<ASTToken> tokens2 = getTokens (ts2);
-                        if (cancel [0]) return null;
-                        children.addAll (tokens2);
+                        if (ts2 != null) {
+                            List<ASTToken> tokens2 = getTokens (ts2);
+                            if (cancel [0]) return null;
+                            children.addAll (tokens2);
+                        }
                         continue;
                     }
-                    if (ttype.equals ("S")) {
+                    if (ttype == SLexer.CONTINUOUS_TOKEN_START) {
                         ts.movePrevious ();
                         break;
                     }
-                    if (!ttype.equals ("C"))
+                    if (ttype != SLexer.CONTINUOUS_TOKEN)
                         throw new IllegalArgumentException ();
-//                    ts2 = ts.embedded ();
-//                    if (ts2 != null)
-//                        children.addAll (
-//                            getTokens (ts2)
-//                        );
                     if (type != t.id ().ordinal ())
                         throw new IllegalArgumentException ();
                     sb.append (t.text ());
@@ -453,8 +467,12 @@ public class ParserManagerImpl extends ParserManager {
                 ));
             } else
                 throw new IllegalArgumentException ();
+            if (!ts.moveNext ()) return tokens;
+            t = ts.token ();
+            type = t.id ().ordinal ();
+            offset = ts.offset ();
+            ttype = (String) t.getProperty ("type");
         }
-        return tokens;
     }
     
     private Language getLanguage (String mimeType) {
