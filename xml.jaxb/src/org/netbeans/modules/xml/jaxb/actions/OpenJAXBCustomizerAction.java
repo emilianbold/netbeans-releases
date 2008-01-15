@@ -42,7 +42,6 @@
 package org.netbeans.modules.xml.jaxb.actions;
 
 import java.awt.Dialog;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,7 +67,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -172,14 +170,14 @@ public class OpenJAXBCustomizerAction extends NodeAction  {
 
             if ( project != null ) {
                 JAXBWizardIterator wizardIter = new JAXBWizardIterator(project);
-                final WizardDescriptor descriptor = new WizardDescriptor(
+                WizardDescriptor wd = new WizardDescriptor(
                         wizardIter );
-                descriptor.putProperty(JAXBWizModuleConstants.WIZ_STYLE_AUTO, 
+                wd.putProperty(JAXBWizModuleConstants.WIZ_STYLE_AUTO, 
                         Boolean.TRUE);                
-                descriptor.putProperty(
+                wd.putProperty(
                         JAXBWizModuleConstants.WIZ_CONTENT_DISPLAYED,
                         Boolean.TRUE);
-                descriptor.putProperty(
+                wd.putProperty(
                         JAXBWizModuleConstants.WIZ_CONTENT_NUMBERED, 
                         Boolean.TRUE);  
                 
@@ -187,33 +185,64 @@ public class OpenJAXBCustomizerAction extends NodeAction  {
                 if (schemaNames != null){
                     schemaNames.remove(schema.getName());
                 }
-                descriptor.putProperty(
+                wd.putProperty(
                         JAXBWizModuleConstants.EXISTING_SCHEMA_NAMES,
                         schemaNames);
+                boolean displayDlg = true;
+                wizardIter.initialize(wd);
+                populateSchemaBindingValues(wd, project, schema);
+                wd.setTitleFormat(new MessageFormat("{0}"));
                 
-                wizardIter.initialize(descriptor);                
-                populateSchemaBindingValues(descriptor, project, schema);
-                descriptor.setTitleFormat(new MessageFormat("{0}"));
                 DialogDisplayer dd = DialogDisplayer.getDefault();
-                Dialog dlg = dd.createDialog( descriptor );
+                Dialog dlg = dd.createDialog(wd);
                 dlg.setTitle(getDialogTitle()); 
                 dlg.getAccessibleContext().setAccessibleDescription(
                         getDialogTitle());
-                dlg.setVisible( true );
                 
-                if ( descriptor.getValue() == WizardDescriptor.FINISH_OPTION ) {
+                while (displayDlg) {
+                    dlg.setVisible(true);                    
+                    // Redisplay only if errors
+                    displayDlg = false;
+                    if ( wd.getValue() == WizardDescriptor.FINISH_OPTION ) {
+                        try {
+                            Schema nSchema = ProjectHelper.importResources(project, 
+                                    wd, schema);
 
-                    try {
-                        Schema nSchema = ProjectHelper.importResources(project, 
-                                descriptor, schema);
-                        
-                        schemaNode.setSchema(nSchema);                        
-                        ProjectHelper.changeSchemaInModel(project, schema, 
-                                nSchema);                        
-                        ProjectHelper.cleanCompileXSDs(project, true);
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }                        
+                            schemaNode.setSchema(nSchema);                        
+                            ProjectHelper.changeSchemaInModel(project, schema, 
+                                    nSchema);                        
+                            ProjectHelper.cleanCompileXSDs(project, true);
+                        } catch (Throwable ex) {
+                            displayDlg = true;
+                            //Exceptions.printStackTrace(ioe);
+                            wd = new WizardDescriptor(wizardIter);
+                            String msg = NbBundle.getMessage(JAXBWizardIterator.class, 
+                                    "MSG_ErrorReadingSchema");//NOI18N
+                            wd.putProperty(JAXBWizModuleConstants.WIZ_ERROR_MSG, msg); 
+                            
+                            wd.putProperty(JAXBWizModuleConstants.WIZ_STYLE_AUTO, 
+                                    Boolean.TRUE);                
+                            wd.putProperty(
+                                    JAXBWizModuleConstants.WIZ_CONTENT_DISPLAYED,
+                                    Boolean.TRUE);
+                            wd.putProperty(
+                                    JAXBWizModuleConstants.WIZ_CONTENT_NUMBERED, 
+                                    Boolean.TRUE);  
+                            wd.putProperty(JAXBWizModuleConstants.EXISTING_SCHEMA_NAMES, 
+                                    schemaNames);
+                            populateSchemaBindingValues(wd, project, schema);
+                            wd.setTitleFormat(new MessageFormat("{0}"));                            
+                            wizardIter.initialize(wd);  
+                            
+                            wd.setValid(false);
+                            wd.setMessage(msg);
+                            
+                            dlg = dd.createDialog(wd);
+                            dlg.setTitle(getDialogTitle()); 
+                            dlg.getAccessibleContext().setAccessibleDescription(
+                                    getDialogTitle());                            
+                        }                        
+                    }
                 }
             }
         }

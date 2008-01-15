@@ -59,7 +59,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -150,7 +149,7 @@ public class JAXBWizardIterator implements TemplateWizard.Iterator  {
         }        
     }
 
-    public Set instantiate() throws IOException {
+    public Set instantiate() throws IOException {        
         return new HashSet();
     }
 

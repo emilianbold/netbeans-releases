@@ -455,20 +455,22 @@ public class ProjectHelper {
     }
      
 
-    private static void deleteStaleResources(Map<String, String> map, 
-            FileObject projRootFo) {
+    private static void deleteStaleResources(FileObject projRootFo, 
+            Map<String, String> map, List<String> files2skip) {
 
         Set<String> keys = map.keySet();
         FileObject fo = null;
         String relPath = null;
         for (String key: keys){
             relPath = map.get(key);
-            fo = projRootFo.getFileObject(relPath);
-            if (fo != null){
-                try {
-                    fo.delete();
-                } catch (Exception ex){
-                    Exceptions.printStackTrace(ex);
+            if (!files2skip.contains(relPath)){
+                fo = projRootFo.getFileObject(relPath);
+                if (fo != null){
+                    try {
+                        fo.delete();
+                    } catch (Exception ex){
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }
@@ -482,6 +484,7 @@ public class ProjectHelper {
         
         Map<String, String> res2Skip = null;
         Map<String, String> tobeRemoved = null;
+        List<String> newProjFiles = new ArrayList<String>();
         String oSchemaName = null;
 
         FileObject projFO = project.getProjectDirectory();
@@ -589,8 +592,11 @@ public class ProjectHelper {
                         }
                         ss.setLocation(FileUtil.getRelativePath(projFO,
                                 newFileFO));
+                        newProjFiles.add(FileUtil.getRelativePath(projFO,
+                                newFileFO));
                     } else {
                         ss.setLocation(res2Skip.get(url));
+                        newProjFiles.add(res2Skip.get(url));
                     }
                 } else {
                     // Local file
@@ -610,8 +616,11 @@ public class ProjectHelper {
                                 srcFile.toURI());
                         ss.setLocation(FileUtil.getRelativePath(projFO, 
                                 newFileFO));
+                        newProjFiles.add(FileUtil.getRelativePath(projFO, 
+                                newFileFO));
                     } else {
                         ss.setLocation(res2Skip.get(xsdFileList.get(i)));
+                        newProjFiles.add(res2Skip.get(xsdFileList.get(i)));
                     }
                 }
             }            
@@ -641,8 +650,11 @@ public class ProjectHelper {
 
                     binding.setLocation(FileUtil.getRelativePath(projFO, 
                             newFileFO));
+                    newProjFiles.add(FileUtil.getRelativePath(projFO, 
+                            newFileFO));
                 } else {
                     binding.setLocation(res2Skip.get(bindingFileList.get(i)));
+                    newProjFiles.add(res2Skip.get(bindingFileList.get(i)));
                 }
             }
         }
@@ -664,12 +676,15 @@ public class ProjectHelper {
                 newFileFO = retrieveResource(schemaDirFO, srcFile.toURI());            
                 catalog.setLocation(FileUtil.getRelativePath(projFO,
                     newFileFO));
+                newProjFiles.add(FileUtil.getRelativePath(projFO,
+                    newFileFO));
             } else {
                 catalog.setLocation(res2Skip.get(catlogFile));
+                newProjFiles.add(res2Skip.get(catlogFile));
             }
         }
         
-        deleteStaleResources(tobeRemoved, projFO);
+        deleteStaleResources(projFO, tobeRemoved, newProjFiles);
         return schema;
     }
 

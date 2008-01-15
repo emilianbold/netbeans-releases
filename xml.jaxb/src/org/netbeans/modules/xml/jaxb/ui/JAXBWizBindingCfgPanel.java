@@ -72,6 +72,7 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();  
     private JAXBBindingInfoPnl bindingInfoPnl = null;
     private List<String> existingSchemaNames = null;
+    private File projDir = null;
     private Logger logger;
     
     public JAXBWizBindingCfgPanel() {
@@ -171,7 +172,47 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
                 //TODO check for valid URL
             }
             
-            // TODO check for valid file
+            //check for valid file
+            if (this.bindingInfoPnl.isFromFSSelected()){
+                String schFl = this.bindingInfoPnl.getSchemaFile();
+                if (schFl != null){
+                    schFl = schFl.trim();
+                } else {
+                    schFl = ""; //NOI18N
+                }
+                
+                if (isEmpty(schFl)){ 
+                    sb.append(NbBundle.getMessage(this.getClass(), 
+                                        "MSG_EnterSchemaFileOrURL")); //NOI18N
+                    valid = false;
+                    setError(sb.toString());
+                    return valid;                    
+                }
+                
+                File file = null;
+                if (schFl.startsWith(".") || schFl.startsWith("..")){ //NOI18N
+                    file = new File(this.projDir, schFl); // relative path
+                } else {
+                    file = new File(schFl); // abs path
+                }
+
+                if (!file.exists()){
+                    sb.append(NbBundle.getMessage(this.getClass(), 
+                                    "MSG_enterValidSchemaFile")); //NOI18N
+                    valid = false;
+                    setError(sb.toString());
+                    return valid;                    
+                }
+
+                if (!file.isFile()){
+                    sb.append(NbBundle.getMessage(this.getClass(), 
+                                    "MSG_enterValidSchemaFile")); //NOI18N
+                    valid = false;
+                    setError(sb.toString());
+                    return valid;                    
+                }                    
+            }
+            
         }
         
         if (!isEmpty(this.bindingInfoPnl.getPackageName())){
@@ -312,6 +353,7 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
             if (wd.getProperty(JAXBWizModuleConstants.PROJECT_DIR) != null) {
                 this.bindingInfoPnl.setProjectDir((File) 
                         wd.getProperty(JAXBWizModuleConstants.PROJECT_DIR));
+                this.projDir = (File) wd.getProperty(JAXBWizModuleConstants.PROJECT_DIR);
             }
 
             if (wd.getProperty(JAXBWizModuleConstants.PACKAGE_NAME) != null) {
