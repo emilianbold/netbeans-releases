@@ -45,9 +45,11 @@ package org.netbeans.modules.j2ee.sun.ide.j2ee;
 import java.io.File;
 import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.Installer;
+import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentFactory;
 import org.openide.util.NbBundle;
 
 public class PlatformValidator {
+    public static final String APPSERVERSJS = "SJS";
     public static final String GLASSFISH_V2 = "GF_V2";
     public static final String GLASSFISH_V1 = "GF_V1";
     public static final String SAILFIN_V1 = "SIP_V1";
@@ -65,13 +67,13 @@ public class PlatformValidator {
                    return false;
                 }
             } else {
-                //V1 or V2
+                //V1 or V2 or SJSAS
                 if (sipDescriminator.exists() || sipDescriminator.isFile()) { //NOI18N
                     retVal = false;
                 }
             }
             if (retVal) {
-                File versionDescriminator = new File(loc, "lib/jxta.jar"); //NOI18N
+                File versionDescriminator = new File(loc, "lib/shoal-gms.jar"); //NOI18N
                 if(serverVersion.equals(GLASSFISH_V1)){
                     if (versionDescriminator.exists() || versionDescriminator.isFile()) {
                         retVal = false;
@@ -84,5 +86,17 @@ public class PlatformValidator {
             }
         }
         return retVal;
+    }
+    
+    public String getServerTypeName(String serverVersion){
+        String serverType = NbBundle.getMessage(SunDeploymentFactory.class, "FACTORY_DISPLAYNAME");
+        if(serverVersion.equals(GLASSFISH_V1)){
+            serverType = NbBundle.getMessage(Installer.class, "LBL_GlassFishV1");
+        }else if(serverVersion.equals(GLASSFISH_V2)){
+            serverType = NbBundle.getMessage(Installer.class, "LBL_GlassFishV2");
+        }else if(serverVersion.equals(SAILFIN_V1)){
+            serverType = NbBundle.getMessage(Installer.class, "LBL_JavaEEPlusSIP");
+        }
+        return serverType;
     }
 }

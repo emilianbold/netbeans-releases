@@ -58,7 +58,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.TargetModuleIDResolver;
-import org.netbeans.modules.j2ee.sun.api.ServerLocationManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDatasourceManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunDeploymentManager;
 import org.netbeans.modules.j2ee.sun.ide.dm.SunJDBCDriverDeployer;
@@ -66,7 +65,6 @@ import org.netbeans.modules.j2ee.sun.ide.dm.SunMessageDestinationDeployment;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.jsps.FindJSPServletImpl;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.incrdeploy.DirectoryDeploymentFacade;
 import org.netbeans.modules.j2ee.sun.ide.j2ee.ui.AddDomainWizardIterator;
-import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
 
 /**
  *
@@ -74,8 +72,8 @@ import org.netbeans.modules.j2ee.sun.ide.j2ee.PlatformValidator;
  */
 public  class OptionalFactory extends OptionalDeploymentManagerFactory {
     
-    private String serverVersion = "";
-    
+    private String serverVersion = PlatformValidator.APPSERVERSJS;
+        
     /** Creates a new instance of OptionalFactory */
     private OptionalFactory (String version) {
         this.serverVersion = version;

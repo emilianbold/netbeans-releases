@@ -160,9 +160,15 @@ class AddDomainPlatformPanel implements WizardDescriptor.FinishablePanel,
                         "Msg_NeedValidInstallEvenForRemote"));
             }else{
                 // not valid install directory
+                String errMsg = NbBundle.getMessage(AddDomainPlatformPanel.class,
+                        "Msg_InValidInstall");
+                if(! serverVersion.equals("")) { //NOI18N
+                    String serverType = platformValidator.getServerTypeName(serverVersion);
+                    errMsg = NbBundle.getMessage(AddDomainPlatformPanel.class,
+                        "Msg_InValidInstallForServerType", serverType);
+                }
                 wiz.putProperty(AddDomainWizardIterator.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(AddDomainPlatformPanel.class,
-                        "Msg_InValidInstall")); // NOI18N
+                        errMsg); 
             }
             getAIVPP().setDomainsList(new Object[0],false);
             getAIVPP().setProfilesList(new Profile[0],false);
