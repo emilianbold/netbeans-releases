@@ -183,6 +183,7 @@ made subject to such option by the copyright holder.
         <jarwithmoduleattributes jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <fileset dir="${build.classes.dir}"/>
         </jarwithmoduleattributes>
+        <touch file="${cluster}/.lastModified"/>
     </target>
     
     <!-- Can insert extra stuff in here: -->
