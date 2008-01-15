@@ -1,89 +1,53 @@
-<project name="php/srcmodel/test" basedir="." default="all">
+<?xml version="1.0"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    <!-- Name of tested module -->
-    <property name="xtest.module" value="php"/>
- 
-    <!-- Imports buildtests, cleantests, runtest, cleanresults, realclean, printconfig targets. -->
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<project name="org.netbeans.modules.xml.schema.model/test" basedir="." default="all">
     <import file="../../../nbbuild/templates/xtest.xml"/>
 
-    <property file="./config.properties"/>
-
-
-    <property name="netbeans.dest.dir" location="../../../nbbuild/netbeans/"/>
-
+    <!-- Name of tested module -->
+    <property name="xtest.module" value="org.netbeans.modules.php.model"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
-    <property name="xtest.attribs" value="ide"/>
-
-
-    <taskdef name="getResults" classname="org.netbeans.xtest.pe.GetResultsTask" classpath="${xtest.home}/lib/xtest.jar"/>
-
-
-    <target name="unit-test">
-
-       <java classname="util.date.DateUtil" outputproperty="time.current">
-          <classpath> <pathelement location="./lib/util-date.jar"/> </classpath>
-       </java>
-
-	<echo message="current time [${time.current}]"/>
- 
-
-	<property name="junit.results" value="${junit.results.dir}/${time.current}"/>
-	<property name="junit.temp.results" value="${junit.results}/temp"/>
-
-
-
-   	<antcall target="junit">  <param name="project.dir" value="project"/> </antcall>
-
-
-	  <junitreport todir="${junit.results}">
-
-	    <fileset dir="${junit.temp.results}">
-	      <include name="TEST-*.xml" />
-	    </fileset>
-
-    	    <report format="frames" todir="${junit.results}"/>
-
-	  </junitreport>
-
-    </target>
-
-
-    <target name="junit">
-        <subant target="test" inheritAll="false" failonerror="false">
-            <buildpath location="../${project.dir}"/>
-        </subant>
-
-        <copy todir="${junit.temp.results}">
-	    <fileset dir="../${project.dir}/build/test/unit/results"/>
-	</copy>
-
-    </target>
-
-    <property name="xtest.mail.mailhost" value="localhost"/>
-
-    <!--property name="xtest.mail.report" value="./report.txt"/-->
-    <!--property name="xtest.mail.mailhost" value="localhost"/-->
-
-    <property name="xtest.mail.from" value="mikhailmatveev@netbeans.org"/>
-    <property name="xtest.mail.to" value="mikhailmatveev@netbeans.org"/>
-    <property name="summary" value="PHP Unit Tests"/>
-
-
-    <target name="send-mail">
-	<clover-report/>
-
-    	<getResults resultsDir="${junit.results.dir}" summaryProperty="summary" 
-                    onlyWhenFailed="false"  
-                    mailReportProperty="xtest.mail.report"/> 
-
-        <mail from="${xtest.mail.from}" tolist="${xtest.mail.to}" 
-              subject="XTest Results: ${summary}" messagefile="${xtest.mail.report}"
-              mailhost="${xtest.mail.mailhost}"/>     
-
-    </target>    
-
-
-
+    <property name="xtest.attribs" value="stable"/>
 </project>
+
