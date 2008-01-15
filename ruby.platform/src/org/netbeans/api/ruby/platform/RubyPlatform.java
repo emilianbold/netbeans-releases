@@ -136,7 +136,7 @@ public final class RubyPlatform {
             }
             return false;
         }
-        return platform.isValidRuby(warn) && platform.getGemManager().isValidRake(warn);
+        return platform.isValidRuby(warn) && platform.hasRubyGemsInstalled() && platform.getGemManager().isValidRake(warn);
     }
     
     public String getID() {
