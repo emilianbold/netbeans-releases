@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.makeproject.api.actions;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -125,7 +126,7 @@ public class AddExistingItemAction extends NodeAction {
 	    return;
 
 	File[] files = fileChooser.getSelectedFiles();
-	Item[] items = new Item[files.length];
+        ArrayList<Item> items = new ArrayList<Item>();
 	for (int i = 0; i < files.length; i++) {
 	    String itemPath;
 	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
@@ -139,15 +140,17 @@ public class AddExistingItemAction extends NodeAction {
 	    if (((MakeConfigurationDescriptor)projectDescriptor).findProjectItemByPath(itemPath) != null) {
 		String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
 		DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
-                return;
+                //return;
 	    }
 	    else {
-		folder.addItemAction(items[i] = new Item(itemPath));
+                Item item = new Item(itemPath);
+		folder.addItemAction(item);
+                items.add(item);
 		if (IpeUtils.isPathAbsolute(itemPath))
 		    notifySources = true;
 	    }
 	}
-	MakeLogicalViewProvider.setVisible(project, items);
+	MakeLogicalViewProvider.setVisible(project, items.toArray(new Item[items.size()]));
 
 	if (notifySources)
 	    ((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
