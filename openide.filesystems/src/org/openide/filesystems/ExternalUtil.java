@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -128,14 +129,43 @@ final class ExternalUtil extends Object {
         }
     }
 
+    private static AtomicReference<FileSystem> ADD_FS;
+    static synchronized final boolean addFileSystemDelayed(FileSystem fs) {
+        if (ADD_FS == null) {
+            return true;
+        }
+        assert ADD_FS.get() == null;
+        ADD_FS.set(fs);
+        return false;
+    }
+    
+    
     /** Initializes the context and errManager
      */
-    private static void initialize() {
-        if (!isInitialized()) {
-            Lookup l = Lookup.getDefault();
-            Repository rep = l.lookup(org.openide.filesystems.Repository.class);
-            setRepository(rep);
+    private static synchronized void initialize() {
+        Repository r;
+        synchronized (ExternalUtil.class) {
+            r = repository;
         }
+        
+        if (r == null) {
+            assert ADD_FS == null;
+            ADD_FS = new AtomicReference<FileSystem>();
+            Repository registeredRepository = Lookup.getDefault().lookup(Repository.class);
+            Repository realRepository = assignRepository(registeredRepository);
+            
+            
+            FileSystem fs = ADD_FS.get();
+            if (fs != null) {
+                addFS(realRepository, fs);
+            }
+            ADD_FS = null;
+        }
+    }
+    
+    @SuppressWarnings("deprecation")
+    private static void addFS(Repository r, FileSystem fs) {
+        r.addFileSystem(fs);
     }
 
     private static synchronized boolean isInitialized() {
@@ -145,13 +175,15 @@ final class ExternalUtil extends Object {
     /**
      * @param rep may be null
      */
-    private static synchronized void setRepository(Repository rep) {
+    private static synchronized Repository assignRepository(Repository rep) {
         repository = rep;
 
         if (repository == null) {
             // if not provided use default one
             repository = new Repository(new MainFS());
         }
+        
+        return repository;
     }
     
     private static final class MainFS extends MultiFileSystem implements LookupListener {

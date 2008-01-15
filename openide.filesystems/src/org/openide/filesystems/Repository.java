@@ -161,7 +161,9 @@ public class Repository implements Serializable {
         // empties the pool
         fileSystems = new ArrayList<FileSystem>();
         names = new Hashtable<String, FileSystem>();
-        addFileSystem(system);
+        if (ExternalUtil.addFileSystemDelayed(system)) {
+            addFileSystem(system);
+        }
     }
 
     /**
