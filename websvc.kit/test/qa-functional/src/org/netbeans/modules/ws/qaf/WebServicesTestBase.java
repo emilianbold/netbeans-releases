@@ -615,7 +615,7 @@ public abstract class WebServicesTestBase extends JellyTestCase {
      * @param text text to be written
      * @param file file to be created
      */
-    public static void writeToFile(String text, File file) {
+    private void writeToFile(String text, File file) {
         OutputStream os = null;
         try {
             os = new BufferedOutputStream(new FileOutputStream(file));
