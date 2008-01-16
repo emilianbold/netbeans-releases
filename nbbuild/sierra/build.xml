@@ -321,6 +321,12 @@
 
         <!-- rethrow -->
         <antcall target="do-test-jbi"><param name="dir" value="rethrow/Rethrow"/></antcall>
+
+        <!-- samples -->
+        <antcall target="do-test-jbi"><param name="dir" value="samples/AsynchronousSample"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="samples/EndToEndScenario"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="samples/samplesBPEL"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
     </target>
 
     <target name="do-test-jbi">

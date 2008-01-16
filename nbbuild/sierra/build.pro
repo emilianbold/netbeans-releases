@@ -243,6 +243,7 @@
         ${test.cvs.path}/pick
         ${test.cvs.path}/repeatuntil
         ${test.cvs.path}/rethrow
+        ${test.cvs.path}/samples
         ${test.cvs.path}/SchemaElemDecl
         ${test.cvs.path}/ScopeTermination
         ${test.cvs.path}/xslt
