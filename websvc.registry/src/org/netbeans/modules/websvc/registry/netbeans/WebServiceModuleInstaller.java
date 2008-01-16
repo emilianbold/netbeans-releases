@@ -39,10 +39,6 @@
  * made subject to such option by the copyright holder.
  */
 
-/**
- * Module installer class that persist the
- * @author Winston Prakash
- */
 package org.netbeans.modules.websvc.registry.netbeans;
 
 import java.io.*;
