@@ -54,7 +54,6 @@ import com.sun.sql.framework.utils.Attribute;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * Stores UI attributes.
  * 
@@ -67,27 +66,19 @@ public class GUIInfo implements Cloneable {
     private static transient final Localizer mLoc = Localizer.get();
     /** Attribute key: expanded state of UI element */
     public static final String ATTR_EXPANDED = "expanded";
-
     /** Attribute key: expanded state of UI element */
     public static final String ATTR_EXPANDED_HEIGHT = "expandedHeight";
-
     /** Attribute key: expanded state of UI element */
     public static final String ATTR_EXPANDED_WIDTH = "expandedWidth";
-
     /** Attribute key: height of UI element */
     public static final String ATTR_HEIGHT = "height";
-
     public static final String ATTR_VISIBLE = "visible";
-
     /** Attribute key: width of UI element */
     public static final String ATTR_WIDTH = "width";
-
     /** Attribute key: x-coordinate */
     public static final String ATTR_X = "x";
-
     /** Attribute key: y-coordinate */
     public static final String ATTR_Y = "y";
-
     /** XML element tag */
     public static String TAG_GUIINFO = "guiInfo";
 
@@ -417,8 +408,7 @@ public class GUIInfo implements Cloneable {
                     Attribute copiedAttr = (Attribute) attr.clone();
                     this.attrMap.put(name, copiedAttr);
                 } catch (CloneNotSupportedException ex) {
-                   mLogger.errorNoloc(mLoc.t("PRSR134: Failed to copy source guinfo attributes{0}",LOG_CATEGORY),ex);
-                   // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source guinfo attributes", ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR134: Failed to copy source guinfo attributes{0}", LOG_CATEGORY), ex);
                 }
             }
         }

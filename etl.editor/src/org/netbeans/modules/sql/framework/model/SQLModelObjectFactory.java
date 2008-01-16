@@ -48,7 +48,6 @@ import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * SQL Framework Object factory
  * 
@@ -61,6 +60,7 @@ public abstract class SQLModelObjectFactory {
     private static final String LOG_CATEGORY = SQLModelObjectFactory.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(SQLModelObjectFactory.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Returns Singlton-instance of SQL Framework Object factory
      * 
@@ -72,8 +72,7 @@ public abstract class SQLModelObjectFactory {
                 Class implClass = Class.forName("org.netbeans.modules.sql.framework.model.impl.SQLModelObjectFactoryImpl");
                 instance = (SQLModelObjectFactory) implClass.newInstance();
             } catch (Exception ex) {
-                 mLogger.errorNoloc(mLoc.t("PRSR135: Can't instantiate factory class{0}",LOG_CATEGORY),ex);
-               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Can't instantiate factory class", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR135: Can't instantiate factory class{0}", LOG_CATEGORY), ex);
             }
         }
         return instance;
@@ -104,12 +103,13 @@ public abstract class SQLModelObjectFactory {
     public abstract SQLDBConnectionDefinition createDBConnectionDefinition(DBConnectionDefinition conf);
 
     public abstract SQLDBConnectionDefinition createDBConnectionDefinition(String name,
-                                                                           String dbType,     
-                                                                           String driverClass, 
-                                                                           String url,
-                                                                           String user,
-                                                                           String password,
-                                                                           String description);
+            String dbType,
+            String driverClass,
+            String url,
+            String user,
+            String password,
+            String description);
+
     /**
      * Create an extended DB Connection Definition from a given XML Element that hold the
      * connection informations.

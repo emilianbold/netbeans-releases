@@ -60,7 +60,6 @@ import com.sun.sql.framework.utils.Attribute;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * Singleton object factory for SQL objects.
  * 
@@ -74,16 +73,12 @@ public class SQLObjectFactory {
     private static transient final Logger mLogger = LogUtil.getLogger(SQLObjectFactory.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static final String OBJECT_TYPE_CLASS = "class";
-
     private static final String OBJECT_TYPE_CLASS_TAG = "objectTypeClass";
-
     private static final String OBJECT_TYPE_MAP_FILE = "org/netbeans/modules/sql/framework/model/impl/objectTypeMap.xml";
-
     private static final String OBJECT_TYPE_NAME = "name";
-
     private static Map objectTagToTypeMap = new HashMap();
-
     private static final String USER_FUNCTION_ID = "userFx";
+    
 
     static {
         init();
@@ -132,15 +127,14 @@ public class SQLObjectFactory {
             operatorDefinition = SQLOperatorFactory.getDefault().getDbSpecficOperatorDefinition(cdbSpName);
             // if it is still null then throw exception
             if (operatorDefinition == null) {
-                operatorDefinition = SQLOperatorFactory.getDefault()
-                        .getDbSpecficOperatorDefinition(dbSpName);
+                operatorDefinition = SQLOperatorFactory.getDefault().getDbSpecficOperatorDefinition(dbSpName);
                 userFunction = true;
             }
         }
 
         // set IOperatorXmlInfo
         String opName = userFunction ? USER_FUNCTION_ID : operatorDefinition.getOperatorName();
-        IOperatorXmlInfo operatorXml = OperatorUtil.findOperatorXmlInfo(opName );
+        IOperatorXmlInfo operatorXml = OperatorUtil.findOperatorXmlInfo(opName);
         if (operatorXml != null) {
             SQLOperator operator = (SQLOperator) createSQLObject(operatorXml.getObjectClassName());
             operator.setDisplayName(opName);
@@ -197,8 +191,7 @@ public class SQLObjectFactory {
         }
 
         int objectType = TagParserUtility.getIntType(objType);
-        if ((SQLConstants.GENERIC_OPERATOR == objectType) || (SQLConstants.VISIBLE_PREDICATE == objectType)
-            || (SQLConstants.CUSTOM_OPERATOR == objectType)) {
+        if ((SQLConstants.GENERIC_OPERATOR == objectType) || (SQLConstants.VISIBLE_PREDICATE == objectType) || (SQLConstants.CUSTOM_OPERATOR == objectType)) {
             sqlObj = createSQLOperator(element);
         } else {
             sqlObj = createObjectForTag(objType);
@@ -261,8 +254,7 @@ public class SQLObjectFactory {
             NodeList objMap = elem.getElementsByTagName(OBJECT_TYPE_CLASS_TAG);
             parseObjectMap(objMap);
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("PRSR136: Failed to load the Object Map{0}",LOG_CATEGORY),e);
-            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Failed to load the Object Map", e);
+            mLogger.errorNoloc(mLoc.t("PRSR136: Failed to load the Object Map{0}", LOG_CATEGORY), e);
         }
     }
 
@@ -302,7 +294,7 @@ public class SQLObjectFactory {
                 if (fieldInfo.isStatic() && argValue instanceof VisibleSQLLiteral) {
                     VisibleSQLLiteral vlit = (VisibleSQLLiteral) argValue;
                     SQLLiteral replacement = SQLModelObjectFactory.getInstance().createSQLLiteral(vlit.getDisplayName(), vlit.getValue(),
-                        vlit.getJdbcType());
+                            vlit.getJdbcType());
                     operatorArgs.set(argIdx, replacement);
                 }
             }
