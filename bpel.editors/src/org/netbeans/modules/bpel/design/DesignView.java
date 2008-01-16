@@ -547,7 +547,7 @@ public class DesignView extends JPanel implements
             getDecorationManager().repositionComponentsRecursive();
             
 
-            revalidate();
+            processView.revalidate();
             consumersView.revalidate();
             providersView.revalidate();
             repaint();
