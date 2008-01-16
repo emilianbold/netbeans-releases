@@ -149,7 +149,7 @@ class SolarisSystemEnvironment extends SystemEnvironment {
                 if (indx < s.length()) {
                     String tmp = s.substring(indx).trim();
                     if (!tmp.equalsIgnoreCase("not available")
-                            && !tmp.equalsIgnoreCase("to be filled by o.e.m")) {
+                            && !tmp.equalsIgnoreCase("to be filled by o.e.m.")) {
                         return tmp;
                     }
                 }
