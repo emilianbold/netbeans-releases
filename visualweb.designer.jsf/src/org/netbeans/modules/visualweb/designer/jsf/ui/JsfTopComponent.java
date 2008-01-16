@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.visualweb.designer.jsf.ui;
 
+import java.util.logging.LogRecord;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
@@ -195,11 +196,19 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     // which would maintain the link to the DataObject correctly).
     private DataObject jspDataObject;
             
+    // memory leak probing
+    private static final Logger TIMERS = Logger.getLogger("TIMER.jsfTopComponents"); // NOI18N
     
     public JsfTopComponent(/*WebForm webform*/ JsfForm jsfForm, Designer designer, DataObject jspDataObject) {
 //        super(webform);
         super(jsfForm, designer);
 
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "JsfTopComponent"); // NOI18N
+            rec.setParameters(new Object[]{ this });
+            TIMERS.log(rec);
+        }
+        
         this.jspDataObject = jspDataObject;
         
         

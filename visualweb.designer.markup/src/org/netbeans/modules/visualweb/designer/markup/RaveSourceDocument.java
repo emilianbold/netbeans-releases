@@ -38,9 +38,11 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.visualweb.designer.markup;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.apache.xerces.dom.CoreDocumentImpl;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
@@ -52,8 +54,16 @@ import org.w3c.dom.Text;
  */
 public class RaveSourceDocument extends AbstractRaveDocument {
 
+    // memory leak probing
+    private static final Logger TIMERS = Logger.getLogger("TIMER.raveSourceDocuments"); // NOI18N
+
     /** Creates a new instance of RaveSourceDocument */
     public RaveSourceDocument() {
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "RaveSourceDocument"); // NOI18N
+            rec.setParameters(new Object[]{this            });
+            TIMERS.log(rec);
+        }
     }
 
     protected Element createDefaultElement(CoreDocumentImpl document, String namespaceURI, String qualifiedName) {
@@ -83,5 +93,4 @@ public class RaveSourceDocument extends AbstractRaveDocument {
 //        return new RaveSourceTextImpl(document, data);
         return new RaveText(document, data);
     }
-
 }
