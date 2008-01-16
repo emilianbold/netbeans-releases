@@ -278,14 +278,14 @@
 
         <!-- exit -->
         <antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall>
+    </target>
 
+    <target name="project-test-6">
         <!-- faulthandling -->
         <antcall target="do-test-jbi"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="faulthandling/StandardFaultsBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="faulthandling/SystemFaultsBpel"/></antcall>
-    </target>
 
-    <target name="project-test-6">
         <!-- flow -->
         <antcall target="do-test-jbi"><param name="dir" value="flow/FlowBpel"/></antcall>
 
@@ -298,7 +298,9 @@
         <!-- implementMultiOperations -->
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/MultipleBPELs"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/OneBPEL"/></antcall>
-
+    </target>
+        
+    <target name="project-test-7">
         <!-- JavaEEIntegration -->
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/BPToJavaEE/JavaEEFault/FaultBP"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/DirectElem/MsgDirectElem"/></antcall>
