@@ -342,6 +342,9 @@
 
         <!-- TerminationHandler -->
         <antcall target="do-test-jbi"><param name="dir" value="TerminationHandler/TerminationHandlerBpel"/></antcall>
+
+        <!-- wait -->
+        <antcall target="do-test-jbi"><param name="dir" value="wait/WaitBpel"/></antcall>
     </target>
 
     <target name="do-test-jbi">
