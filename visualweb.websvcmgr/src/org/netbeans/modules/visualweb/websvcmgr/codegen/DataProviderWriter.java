@@ -58,6 +58,14 @@ import org.netbeans.modules.websvc.manager.util.ManagerUtil;
  * @author  cao
  */
 public class DataProviderWriter extends java.io.PrintWriter {
+
+    private static String[] PRIMITIVE_TYPES = {
+        "char", "byte", "short", "int", "long", "float", "double", "boolean"
+    };
+    
+    private static String[] PRIMITIVE_WRAPPERS = {
+        "Character", "Byte", "Short", "Integer", "Long", "Float", "Double", "Boolean"
+    };
     
     private DataProviderInfo dataProviderInfo;
     private Set imports = new HashSet();
@@ -204,8 +212,8 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println();
 
         for (int i = 0; i < methodArgSize; i++) {
-            String field = dataProviderInfo.getMethod().getParameters().get(i).getName();
-            println("            values[" + i + "] = this." + field + ";");
+            DataProviderParameter field = dataProviderInfo.getMethod().getParameters().get(i);
+            println("            values[" + i + "] = " + convertPrimitiveType(field.getName(), field.getType()) + ";");
         }
 
         println("            return values;");
@@ -378,6 +386,17 @@ public class DataProviderWriter extends java.io.PrintWriter {
         println( "            this.methodResult = result; " );
         println( "        } " );
         println( "    } " );
+    }
+    
+    private String convertPrimitiveType(String name, String type) {
+        for (int i = 0; i < PRIMITIVE_TYPES.length; i++) {
+            String typeName = PRIMITIVE_TYPES[i];
+            if (type != null && typeName.equals(type.trim())) {
+                return PRIMITIVE_WRAPPERS[i] + ".valueOf(this." + name + ")";
+            }
+        }
+
+        return "this." + name;
     }
     
     private String getMethodParamTypes()
