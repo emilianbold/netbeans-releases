@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
             <api name="filesystems"/>
             <summary>Add method FileUtil.refreshFor(File... files)</summary>
             <version major="7" minor="6"/>
-            <date day="17" month="1" year="2008"/>
+            <date day="16" month="1" year="2008"/>
             <author login="rmatous"/>
             <compatibility addition="yes"/>
             <description>
