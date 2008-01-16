@@ -345,6 +345,7 @@ public class ValidateBPELProject extends Task {
             validateBPEL(bpelFile);
         }
         catch (Throwable e) {
+          e.printStackTrace();
           System.out.println();
           System.out.println("Found error: " + e);
 
