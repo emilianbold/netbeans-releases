@@ -124,7 +124,6 @@ public class DataProviderWriter extends java.io.PrintWriter {
         
         
         println( "    protected " + clientWrapperClassName + " " + clientWrapperClassVar + ";" );
-        println( "    protected ArrayList methodArgumentNames = new ArrayList();" );
         println( "    // Properties. One per method parameter." );
 
         for (DataProviderParameter parameter : dataProviderInfo.getMethod().getParameters()) {
@@ -134,10 +133,6 @@ public class DataProviderWriter extends java.io.PrintWriter {
         
         // Default Constructor
         println( "    public " + className + "() {" );
-        // Collect the method parameter names
-        for (DataProviderParameter parameter : dataProviderInfo.getMethod().getParameters()) {
-            println( "        methodArgumentNames.add( \"" + parameter.getName() + "\" );" );
-        }
         println( "    }" );
         println();
         
@@ -201,58 +196,26 @@ public class DataProviderWriter extends java.io.PrintWriter {
         }else {
             println( "    private Object[] getOriginalDataMethodArguments() {" );
         }
+
+        int methodArgSize = dataProviderInfo.getMethod().getParameters().size();
         
-        if( dataProviderInfo.getMethod().getParameters().isEmpty() )
-            println( "        return new Object[0];" );
-        else {
-            println( "        try { " );
-            println( "            Object[] values = new Object[methodArgumentNames.size()];" );
-            println();
-            println( "            // Using the BeanInfo to get the property values" );
-            println( "            BeanInfo beanInfo = Introspector.getBeanInfo( this.getClass() );" );
-            println( "            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();" );
-            println();
-            println( "            for( int i = 0; i < propertyDescriptors.length; i ++ ) {" );
-            println();
-            println( "                String propName = propertyDescriptors[i].getName();" );
-            println();
-            println( "                int argPos = findArgumentPosition( new String(propName) );" );
-            println( "                if( argPos != -1 ) {" );
-            println( "                    Method reader = propertyDescriptors[i].getReadMethod();" );
-            println( "                    if (reader != null) " );
-            println( "                        values[argPos] = reader.invoke(this, new Object[0]);" );
-            println( "                }" );
-            println( "            }" );
-            println();
-            println( "            return values;" );
-            println( "        } catch( Exception e ) { " );
-            println( "            e.printStackTrace();" );
-            println( "            return null; " );
-            println( "        }" );
+        println("        try { ");
+        println("            Object[] values = new Object[" + methodArgSize + "];");
+        println();
+
+        for (int i = 0; i < methodArgSize; i++) {
+            String field = dataProviderInfo.getMethod().getParameters().get(i).getName();
+            println("            values[" + i + "] = this." + field + ";");
         }
+
+        println("            return values;");
+        println("        } catch( Exception e ) { ");
+        println("            e.printStackTrace();");
+        println("            return null; ");
+        println("        }");
         
         println();
         println( "    }" );
-        println();
-        
-        println( "    private int findArgumentPosition( String propName ) {" );
-        println( "        // First try the propName itself" );
-        println( "        int index = methodArgumentNames.indexOf( propName );" );
-        println();    
-        println( "        char chars[] = propName.toCharArray();" );
-        println();  
-        println( "        if( index == -1 ) {" );
-        println( "            // fFlip the capitalization of the first char and try it again" );
-        println( "            if( Character.isUpperCase( chars[0] ) )" );
-        println( "                chars[0] = Character.toLowerCase(chars[0]);" );  
-        println( "            else" );  
-        println( "                chars[0] = Character.toUpperCase(chars[0]);" );  
-        println();
-        println( "            index = methodArgumentNames.indexOf( new String(chars) ); " );
-        println( "        }" );
-        println();    
-        println( "        return index; " );  
-        println( "    }" ); 
         println();
         
         // Override getFieldKeys() method to filter out the class field
