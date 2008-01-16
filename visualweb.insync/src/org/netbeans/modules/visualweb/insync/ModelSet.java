@@ -64,6 +64,9 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -626,9 +629,18 @@ public abstract class ModelSet implements FileChangeListener {
     private static class ProjectClassLoader extends URLClassLoader {
         private final URL[] urls;
         
+        // Memory leak probing
+        private static final Logger TIMERS = Logger.getLogger("TIMER.projectClassLoaders"); // NOI18N
+        
         public ProjectClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
             this.urls = urls;
+            
+            if (TIMERS.isLoggable(Level.FINE)) {
+                LogRecord rec = new LogRecord(Level.FINE, "ModelSet$ProjectClassLoader"); // NOI18N
+                rec.setParameters(new Object[]{ this });
+                TIMERS.log(rec);
+            }
         }
         
         public String toString() {

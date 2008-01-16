@@ -109,9 +109,9 @@ import org.netbeans.api.project.Sources;
 import java.util.List;
 import java.util.Collection;
 import java.util.ArrayList;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.visualweb.insync.java.ReadTaskWrapper;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 
 /**
@@ -395,12 +395,21 @@ public class FacesModelSet extends ModelSet implements FacesDesignProject {
 
     private FacesContainer facesContainer;
 
+    // Memory leak probing
+    private static final Logger TIMERS = Logger.getLogger("TIMER.facesModelSets"); // NOI18N
+    
     /**
      * @param project
      */
     public FacesModelSet(Project project) {
         super(project);
         getFacesContainer();
+        
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "FacesModelSet"); // NOI18N
+            rec.setParameters(new Object[]{this });
+            TIMERS.log(rec);
+        }
         
         facesConfigModel = new FacesConfigModel(this);
         setConfigModel(facesConfigModel);

@@ -112,6 +112,9 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
@@ -368,7 +371,8 @@ public class FacesModel extends Model {
     
 
     //--------------------------------------------------------------------------------- Construction
-
+    private static final Logger TIMERS = Logger.getLogger("TIMER.facesModels"); // NOI18N
+    
     /**
      * Creates a new instance of FacesModel
      *
@@ -379,6 +383,12 @@ public class FacesModel extends Model {
         super(owner, file);
         assert Trace.trace("insync.models", "LFM.FacesModel: file:" + file);  //NOI18N
 
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "FacesModel"); // NOI18N
+            rec.setParameters(new Object[]{this });
+            TIMERS.log(rec);
+        }
+        
         this.facesModelSet = owner;
 
         // Given a java file, grab all the java related info

@@ -53,11 +53,9 @@ import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.beans.BeansUnit;
 import org.netbeans.modules.visualweb.insync.faces.FacesBean;
 import org.netbeans.modules.visualweb.insync.faces.MarkupBean;
-import org.netbeans.modules.visualweb.insync.live.LiveUnit.ClipImage;
 import org.netbeans.modules.visualweb.insync.models.FacesModel;
 import java.awt.EventQueue;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -70,8 +68,6 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -130,6 +126,9 @@ import com.sun.rave.designtime.event.DesignBeanListener;
 import com.sun.rave.designtime.event.DesignContextListener;
 import com.sun.rave.designtime.faces.FacesBindingPropertyEditor;
 import com.sun.rave.designtime.markup.AttributePropertyEditor;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.visualweb.extension.openide.util.Trace;
 import org.netbeans.modules.visualweb.insync.Unit;
 import org.netbeans.modules.visualweb.propertyeditors.binding.ValueBindingAttributePropertyEditor;
@@ -160,6 +159,9 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
     final static public String PROPERTY_ID = "id"; // NOI18N
     //Display name of property id is different to list it at the top
     final static public String PROPERTY_ID_DISPLAY = NbBundle.getMessage(DesignBeanNode.class, "LBL_Id"); // NOI18N
+    
+    // Memory leak probing
+    private static final Logger TIMERS = Logger.getLogger("TIMER.designBeanNodes"); // NOI18N
     
     private final DesignContextListener designContextListener = new DesignBeanNodeDesignContextListener(this);
 
@@ -203,6 +205,12 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
      * @see org.openide.nodes.Node(Children, Lookup) */
     private DesignBeanNode(DesignBean liveBean, Children children, Lookup fixedLookup, DesignBeanNodeLookup designBeanNodeLookup) {
         super(children, new ProxyLookup(new Lookup[] {fixedLookup, designBeanNodeLookup}));
+        
+        if (TIMERS.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "DesignBeanNode"); // NOI18N
+            rec.setParameters(new Object[]{this });
+            TIMERS.log(rec);
+        }
         
         // XXX To init the lookup with the node, see DesignBeanNodeLookup.
         designBeanNodeLookup.setNode(this);
