@@ -74,11 +74,11 @@ import org.w3c.dom.Text;
 public final class  MarkupServiceImpl {
 
     
-    private static final String KEY_JSPX = "vwpJspx"; // NOI18N
+//    private static final String KEY_JSPX = "vwpJspx"; // NOI18N
     
-    private static final String KEY_STYLE_MAP = "vwpStyleMap"; // NOI18N
+//    private static final String KEY_STYLE_MAP = "vwpStyleMap"; // NOI18N
 
-    private static final String KEY_STYLE_PARENT = "vwpStyleParent"; // NOI18N
+//    private static final String KEY_STYLE_PARENT = "vwpStyleParent"; // NOI18N
     
 //    private static final String KEY_RENDERED_TEXT = "vwpRenderedText"; // NOI18N
     
@@ -802,14 +802,14 @@ public final class  MarkupServiceImpl {
     }
 
     
-    private static final Map<Element, CSSStylableElement> element2cssStylableElement = new WeakHashMap<Element, CSSStylableElement>(200);
+    private static final Map<Element, WeakReference<CSSStylableElement>> element2cssStylableElement = new WeakHashMap<Element, WeakReference<CSSStylableElement>>(200);
     
     static void setElementStyleParent(Element element, CSSStylableElement styleParent) {
         if (element == null) {
             return;
         }
 //        element.setUserData(KEY_STYLE_PARENT, styleParent, StyleParentDataHandler.getDefault());
-        element2cssStylableElement.put(element, styleParent);
+        element2cssStylableElement.put(element, new WeakReference<CSSStylableElement>(styleParent));
     }
     
     static CSSStylableElement getElementStyleParent(Element element) {
@@ -817,7 +817,8 @@ public final class  MarkupServiceImpl {
             return null;
         }
 //        return (CSSStylableElement)element.getUserData(KEY_STYLE_PARENT);
-        return element2cssStylableElement.get(element);
+        WeakReference<CSSStylableElement> wRef = element2cssStylableElement.get(element);
+        return wRef == null ? null : wRef.get();
     }
     
     static boolean isElementPseudoInstanceOf(Element element, String pseudoClass) {
