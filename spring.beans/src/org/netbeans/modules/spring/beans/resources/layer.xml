@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <filesystem>
     <folder name="Loaders">
         <folder name="text">
-            <folder name="x-springbeans+xml">
+            <folder name="x-springconfig+xml">
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">
                         <attr name="position" intvalue="100"/>
@@ -95,7 +95,7 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Services">
         <folder name="MIMEResolver">
-            <file name="BeansConfigResolver.xml" url="BeansConfigResolver.xml">
+            <file name="SpringXMLConfigResolver.xml" url="SpringXMLConfigResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/spring.png"/>
                 <attr name="position" intvalue="440"/>
@@ -106,12 +106,12 @@ made subject to such option by the copyright holder.
         <folder name="SpringFramework">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
             <attr name="position" intvalue="1350"/>
-            <file name="BeansConfigTemplate.xml">
+            <file name="SpringXMLConfigTemplate.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/spring.png"/>
-                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.spring.beans.wizards.NewBeansConfigWizardIterator"/>
+                <attr name="instantiatingIterator" newvalue="org.netbeans.modules.spring.beans.wizards.NewSpringXMLConfigWizardIterator"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/newBeansConfig.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/spring/beans/resources/newSpringXMLConfig.html"/>
                 <attr name="templateCategory" stringvalue="gui-java-application,servlet-types,web-types"/>
             </file>
         </folder>
@@ -133,10 +133,10 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Editors">
         <folder name="text">
-            <folder name="x-springbeans+xml">
+            <folder name="x-springconfig+xml">
                 <folder name="HyperlinkProviders">
-                    <file name="BeansConfigHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.spring.beans.hyperlink.BeansConfigHyperlinkProvider"/>
+                    <file name="SpringXMLConfigHyperlinkProvider.instance">
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.spring.beans.hyperlink.SpringXMLConfigHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
@@ -146,7 +146,7 @@ made subject to such option by the copyright holder.
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
-                <folder name="x-springbeans+xml">
+                <folder name="x-springconfig+xml">
                     <file name="org-netbeans-modules-xml-text-navigator-XMLNavigatorPanel.instance"/>
                 </folder>
             </folder>

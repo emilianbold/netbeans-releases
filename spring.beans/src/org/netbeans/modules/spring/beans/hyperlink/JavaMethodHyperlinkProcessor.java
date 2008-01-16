@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import org.netbeans.modules.spring.beans.editor.BeansEditorUtils;
-import org.netbeans.modules.spring.beans.editor.BeansEditorUtils.Public;
-import org.netbeans.modules.spring.beans.editor.BeansEditorUtils.Static;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Public;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils.Static;
 
 /**
  *
@@ -52,8 +52,8 @@ import org.netbeans.modules.spring.beans.editor.BeansEditorUtils.Static;
 public class JavaMethodHyperlinkProcessor implements HyperlinkProcessor {
 
     private int argCount = -1;
-    private BeansEditorUtils.Public publicFlag = BeansEditorUtils.Public.DONT_CARE;
-    private BeansEditorUtils.Static staticFlag = BeansEditorUtils.Static.DONT_CARE;
+    private SpringXMLConfigEditorUtils.Public publicFlag = SpringXMLConfigEditorUtils.Public.DONT_CARE;
+    private SpringXMLConfigEditorUtils.Static staticFlag = SpringXMLConfigEditorUtils.Static.DONT_CARE;
 
     public JavaMethodHyperlinkProcessor(Public publicFlag, Static staticFlag, int argCount) {
         this.publicFlag = publicFlag;
@@ -62,8 +62,8 @@ public class JavaMethodHyperlinkProcessor implements HyperlinkProcessor {
     }
     
     public void process(HyperlinkEnv env) {
-        String classFqn = BeansEditorUtils.getBeanClassName(env.getCurrentTag());
-        BeansEditorUtils.openMethodInEditor(env.getDocument(), classFqn, env.getValueString(), 0,
-                            BeansEditorUtils.Public.DONT_CARE, BeansEditorUtils.Static.NO);
+        String classFqn = SpringXMLConfigEditorUtils.getBeanClassName(env.getCurrentTag());
+        SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), classFqn, env.getValueString(), 0,
+                            SpringXMLConfigEditorUtils.Public.DONT_CARE, SpringXMLConfigEditorUtils.Static.NO);
     }
 }

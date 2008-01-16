@@ -61,11 +61,11 @@ public class PHyperlinkProcessor implements HyperlinkProcessor {
 
     public void process(HyperlinkEnv env) {
         String attribName = env.getAttribName();
-        if(env.getType() == BeansConfigHyperlinkProvider.Type.ATTRIB_VALUE) {
+        if(env.getType() == SpringXMLConfigHyperlinkProvider.Type.ATTRIB_VALUE) {
             if(attribName.endsWith("-ref")) { // NOI18N
                 beansRefHyperlinkProcessor.process(env);
             }
-        } else if(env.getType() == BeansConfigHyperlinkProvider.Type.ATTRIB) {
+        } else if(env.getType() == SpringXMLConfigHyperlinkProvider.Type.ATTRIB) {
             String temp = ContextUtilities.getLocalNameFromTag(attribName);
             if(temp.endsWith("-ref")) {
                 temp = temp.substring(0, temp.indexOf("-ref")); // NOI18N

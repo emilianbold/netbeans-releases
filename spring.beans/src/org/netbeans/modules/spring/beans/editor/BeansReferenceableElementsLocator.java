@@ -60,17 +60,17 @@ public class BeansReferenceableElementsLocator implements
 
     public Map<String, Node> getReferenceableElements(Document document) {
         Map<String, Node> nodes = new HashMap<String, Node>();
-        Tag rootNode = BeansEditorUtils.getDocumentRoot(document);
+        Tag rootNode = SpringXMLConfigEditorUtils.getDocumentRoot(document);
         NodeList childNodes = rootNode.getChildNodes();
 
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
             if ("bean".equals(node.getNodeName())) { // NOI18N
-                if (BeansEditorUtils.hasAttribute(node, "id")) { // NOI18N
-                    nodes.put(BeansEditorUtils.getAttribute(node, "id"), node); // NOI18N
+                if (SpringXMLConfigEditorUtils.hasAttribute(node, "id")) { // NOI18N
+                    nodes.put(SpringXMLConfigEditorUtils.getAttribute(node, "id"), node); // NOI18N
                 }
-                if (BeansEditorUtils.hasAttribute(node, "name")) { // NOI18N
-                    String aliasesString = BeansEditorUtils.getAttribute(node,
+                if (SpringXMLConfigEditorUtils.hasAttribute(node, "name")) { // NOI18N
+                    String aliasesString = SpringXMLConfigEditorUtils.getAttribute(node,
                             "name"); // NOI18N
                     String[] nameArr = StringUtils.tokenizeToStringArray(
                             aliasesString, BEAN_NAME_DELIMITERS);

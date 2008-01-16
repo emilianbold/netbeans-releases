@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import org.netbeans.modules.spring.beans.editor.BeansEditorUtils;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.w3c.dom.Node;
 
@@ -58,9 +58,9 @@ public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
     }
 
     public void process(HyperlinkEnv env) {
-        Node bean = BeansEditorUtils.getFirstReferenceableNodeById(env.getDocument(), env.getValueString());
+        Node bean = SpringXMLConfigEditorUtils.getFirstReferenceableNodeById(env.getDocument(), env.getValueString());
         if (bean != null) {
-            BeansEditorUtils.openDocumentAtOffset(env.getDocument(), getNodeOffset(bean));
+            SpringXMLConfigEditorUtils.openDocumentAtOffset(env.getDocument(), getNodeOffset(bean));
         }
     }
     

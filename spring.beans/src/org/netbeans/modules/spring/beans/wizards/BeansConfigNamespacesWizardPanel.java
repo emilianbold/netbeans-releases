@@ -62,7 +62,7 @@ public class BeansConfigNamespacesWizardPanel implements WizardDescriptor.Panel 
     // create only those which really need to be visible.
     public Component getComponent() {
         if (component == null) {
-            component = new BeansConfigNamespacesVisual();
+            component = new SpringXMLConfigNamespacesVisual();
         }
         return component;
     }
@@ -122,7 +122,7 @@ public class BeansConfigNamespacesWizardPanel implements WizardDescriptor.Panel 
 
     public void storeSettings(Object settings) {
         WizardDescriptor wd = (WizardDescriptor) settings;
-        BeansConfigNamespacesVisual visual = (BeansConfigNamespacesVisual) getComponent();
+        SpringXMLConfigNamespacesVisual visual = (SpringXMLConfigNamespacesVisual) getComponent();
         wd.putProperty(INCLUDED_NAMESPACES, visual.getIncludedNamespaces());
     }
 }

@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import org.netbeans.modules.spring.beans.editor.BeansEditorUtils;
+import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 
 /**
  *
@@ -52,9 +52,9 @@ public class PropertyHyperlinkProcessor implements HyperlinkProcessor {
     }
 
     public void process(HyperlinkEnv env) {
-        String methodName = BeansEditorUtils.getBeanPropertySetterName(env.getValueString());
-        String classFqn = BeansEditorUtils.getBeanClassName(env.getCurrentTag());
-        BeansEditorUtils.openMethodInEditor(env.getDocument(), classFqn, methodName, 1,
-                BeansEditorUtils.Public.YES, BeansEditorUtils.Static.NO);
+        String methodName = SpringXMLConfigEditorUtils.getBeanPropertySetterName(env.getValueString());
+        String classFqn = SpringXMLConfigEditorUtils.getBeanClassName(env.getCurrentTag());
+        SpringXMLConfigEditorUtils.openMethodInEditor(env.getDocument(), classFqn, methodName, 1,
+                SpringXMLConfigEditorUtils.Public.YES, SpringXMLConfigEditorUtils.Static.NO);
     }
 }
