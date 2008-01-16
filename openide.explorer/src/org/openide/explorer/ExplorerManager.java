@@ -343,7 +343,9 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                 setSelectedNodes0(selection);
 
                 oldValue = exploredContext;
+                exploredContext.removeNodeListener(weakListener);
                 exploredContext = value;
+                exploredContext.addNodeListener(weakListener);
 
                 doFire = true;
             }
@@ -828,7 +830,7 @@ bigloop:
         return em.actions;
     }
 
-    private void fireInAWT(final String propName, final Object oldVal, final Object newVal) {
+    final void fireInAWT(final String propName, final Object oldVal, final Object newVal) {
         if (propertySupport != null) {
             Mutex.EVENT.readAccess(
                 new Runnable() {
@@ -926,6 +928,11 @@ bigloop:
                 removeList = new HashSet<Node>();
             }
 
+            if (!isUnderRoot(exploredContext)) {
+                setExploredContext(rootContext);
+                return;
+            }
+            
             LinkedList<Node> newSel = new LinkedList<Node>(Arrays.asList(getSelectedNodes()));
             Iterator<Node> it = remove.iterator();
 
@@ -948,9 +955,11 @@ bigloop:
                 if( !isUnderRoot( n ) )
                     i.remove();
             }
-
+            
             Node[] selNodes = newSel.toArray(new Node[newSel.size()]);
             setSelectedNodes0(selNodes);
+            
+            
         }
     }
 }

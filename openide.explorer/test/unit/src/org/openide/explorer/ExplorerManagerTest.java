@@ -44,6 +44,8 @@ package org.openide.explorer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.LinkedList;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
@@ -59,7 +61,7 @@ public class ExplorerManagerTest extends NbTestCase
     private ExplorerManager em;
     private Keys keys;
     private Node root;
-    private LinkedList events;
+    private LinkedList<PropertyChangeEvent> events;
     
     public ExplorerManagerTest(String testName) {
         super(testName);
@@ -67,17 +69,19 @@ public class ExplorerManagerTest extends NbTestCase
     
     /** This code is supposed to run in AWT test.
      */
+    @Override
     protected boolean runInEQ() {
         return true;
     }
     
+    @Override
     protected void setUp() throws Exception {
         em = new ExplorerManager();
         keys = new Keys();
         root = new AbstractNode(keys);
         Node[] justAsk = root.getChildren().getNodes(true);
         em.setRootContext(root);
-        events = new LinkedList();
+        events = new LinkedList<PropertyChangeEvent>();
     }
     
     public void propertyChange(PropertyChangeEvent ev) {
@@ -203,6 +207,54 @@ public class ExplorerManagerTest extends NbTestCase
         assertEquals("No nodes can be selected", 0, arr.length);
     }
     
+    public void testGarbageCollectOfExploreredContextIssue124712() throws Exception {
+        class K extends Children.Keys<String> {
+            public void keys(String... keys) {
+                setKeys(keys);
+            }
+            
+            @Override
+            protected Node[] createNodes(String key) {
+                AbstractNode an = new AbstractNode(new K());
+                an.setName(key);
+                return new Node[] { an };
+            }
+        }
+        
+        K myKeys = new K();
+        myKeys.keys("a", "b", "c");
+        AbstractNode myRoot = new AbstractNode(myKeys);
+        myRoot.setName("root");
+        em.setRootContext(myRoot);
+        
+        Node b = myRoot.getChildren().getNodes()[1];
+        assertEquals("b", b.getDisplayName());
+        ((K)b.getChildren()).keys("1", "2", "3");
+        
+        em.setExploredContext(b);
+        em.setSelectedNodes(new Node[] { b.getChildren().getNodes()[2] });
+        
+        Reference<?> refB = new WeakReference<Object>(b);
+        Reference<?> ref1 = new WeakReference<Object>(b.getChildren().getNodes()[0]);
+        Reference<?> ref2 = new WeakReference<Object>(b.getChildren().getNodes()[1]);
+        Reference<?> ref3 = new WeakReference<Object>(b.getChildren().getNodes()[2]);
+        
+        myKeys.keys();
+        b = null;
+        
+        ref = em;
+        em.waitFinished();
+        
+        assertEquals("Explored context is the root context", myRoot, em.getExploredContext());
+        assertEquals("No selected nodes", 0, em.getSelectedNodes().length);
+        
+        assertGC("1", ref1);
+        assertGC("2", ref2);
+        assertGC("3", ref3);
+        assertGC("b", refB);
+    }
+    private static Object ref;
+    
     private static final class Keys extends Children.Keys<String> {
         public Node key(String k) {
             keys(new String[] { k });
@@ -238,6 +290,11 @@ public class ExplorerManagerTest extends NbTestCase
             public boolean equals(Object obj) {
                 eqCounter++;
                 return super.equals(obj);
+            }
+
+            @Override
+            public int hashCode() {
+                return super.hashCode();
             }
         }
     }
