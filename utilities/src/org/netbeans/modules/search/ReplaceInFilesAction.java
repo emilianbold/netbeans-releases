@@ -67,6 +67,7 @@ public class ReplaceInFilesAction extends FindInFilesAction {
         return "org/openide/resources/actions/find.gif";    //PENDING   //NOI18N
     }
     
+    @Override
     public String getName() {
         String key = SearchScopeRegistry.getDefault().hasProjectSearchScopes()
                      ? "LBL_Action_ReplaceInProjects"                   //NOI18N
@@ -74,6 +75,7 @@ public class ReplaceInFilesAction extends FindInFilesAction {
         return NbBundle.getMessage(getClass(), key);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(ReplaceInFilesAction.class);
     }
