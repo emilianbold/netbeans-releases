@@ -1032,18 +1032,34 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
     };
     
     // guarded by this, #115809
-    String[] privilegedTemplatesEE5 = null;
-    String[] privilegedTemplates = null;
-    
+    private String[] privilegedTemplatesEE5 = null;
+    private String[] privilegedTemplates = null;
+
     // Path where instances of privileged templates are registered
     private static final String WEBTEMPLATE_PATH = "j2ee/webtier/templates"; //NOI18N
+    
+    synchronized String[] getPrivilegedTemplates() {
+        ensureTemplatesInitialized();
+        return privilegedTemplates;
+    }
+
+    synchronized String[] getPrivilegedTemplatesEE5() {
+        ensureTemplatesInitialized();
+        return privilegedTemplatesEE5;
+    }
     
     public synchronized void resetTemplates() {
         privilegedTemplates = null;
         privilegedTemplatesEE5 = null;
     }
     
-    private synchronized void getRecommendedAndPrivilegedTemplates() {
+    private void ensureTemplatesInitialized() {
+        assert Thread.holdsLock(this);
+        if (privilegedTemplates != null
+                && privilegedTemplatesEE5 != null) {
+            return;
+        }
+        
         ArrayList<String>templatesEE5 = new ArrayList(PRIVILEGED_NAMES_EE5.length + 1);
         ArrayList<String>templates = new ArrayList(PRIVILEGED_NAMES.length + 1);
 
@@ -1100,16 +1116,10 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             if (isArchive) {
                 retVal = PRIVILEGED_NAMES_ARCHIVE;
             } else {
-                synchronized (WebProject.this) {
-                    if (privilegedTemplates == null
-                            || privilegedTemplatesEE5 == null) {
-                        getRecommendedAndPrivilegedTemplates();
-                    }
-                    if (isEE5) {
-                        retVal = privilegedTemplatesEE5;
-                    } else {
-                        retVal = privilegedTemplates;
-                    }
+                if (isEE5) {
+                    retVal = getPrivilegedTemplatesEE5();
+                } else {
+                    retVal = getPrivilegedTemplates();
                 }
             }
             return retVal;
