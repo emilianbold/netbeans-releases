@@ -647,18 +647,8 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                     }
                     break;
             }
-            //no completion inside CDATA or comment section
-            try {
-                int dotPos = target.getCaret().getDot();
-                BaseDocument doc = (BaseDocument)target.getDocument();
-                SyntaxElement sel = getElementChain(dotPos);
-                if(sel instanceof CDATASectionImpl || sel instanceof CommentImpl) {
-                    return COMPLETION_HIDE;
-                }
-            } catch (BadLocationException e) {
-                //ignore
-            }
-            
+            if(noCompletion(target))
+                return COMPLETION_HIDE;            
             if (retVal == COMPLETION_POPUP) requestedAutoCompletion = true;
             return retVal;
         } else { // the pane is already visible
@@ -670,6 +660,27 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
             //requestedAutoCompletion = true;
             return COMPLETION_POST_REFRESH; //requery it
         }
+    }
+    
+    /**
+     * No completion inside CDATA or comment section.
+     * 
+     * @param target
+     */
+    public boolean noCompletion(JTextComponent target) {
+        //no completion inside CDATA or comment section
+        try {
+            int dotPos = target.getCaret().getDot();
+            BaseDocument doc = (BaseDocument)target.getDocument();
+            SyntaxElement sel = getElementChain(dotPos);
+            if(sel instanceof CDATASectionImpl || sel instanceof CommentImpl) {
+                return true;
+            }
+        } catch (BadLocationException e) {
+            //ignore
+        }
+        
+        return false;        
     }
     
     /**
