@@ -8,8 +8,6 @@
  */
 
 package Templates.Classes;
-import javax.ws.rs.UriTemplate;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.QueryParam;
