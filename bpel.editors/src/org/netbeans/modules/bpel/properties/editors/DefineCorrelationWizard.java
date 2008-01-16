@@ -585,15 +585,13 @@ public class DefineCorrelationWizard implements WizardProperties {
             return topTreeNode;
         }
 
-    
         private void defineCorrelationMapperKeyBindings() {
             if (correlationMapper == null) return;
-            InputMap inputMap = correlationMapper.getInputMap(JComponent.WHEN_FOCUSED);
+            InputMap inputMap = correlationMapper.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
             inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), ACTION_KEY_DELETE);
             ActionMap actionMap = correlationMapper.getActionMap();
             actionMap.put(ACTION_KEY_DELETE, new ActionDeleteKey());
         }
-        
         
         @Override
         public boolean isValid() {
@@ -617,9 +615,12 @@ public class DefineCorrelationWizard implements WizardProperties {
         //====================================================================//
         private class ActionDeleteKey extends AbstractAction {
             public void actionPerformed(ActionEvent e) {
-                System.out.println("");
-                System.out.println("Button Delete has been pressed !");
-                System.out.println("");
+                TreePath selectedTreePath = correlationMapper.getSelectionModel().getSelectedPath();
+                List<Link> selectedLinks =  correlationMapper.getSelectionModel().getSelectedLinks();
+                if ((selectedTreePath != null) && (selectedLinks != null) &&
+                    (! selectedLinks.isEmpty())) {
+                    // fireTreeChangedEvent(...); !!!
+                }
             }
         }
         //====================================================================//
