@@ -88,9 +88,14 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import org.openide.filesystems.FileObject;
 
@@ -693,16 +698,25 @@ public class Utils {
     
     public  static void invokeWsImport(Project project, final String serviceName) {
         if (project!=null) {
-            FileObject buildImplFo = project.getProjectDirectory().getFileObject("nbproject/build-impl.xml");
-            try {
-                ExecutorTask wsimportTask =
-                        ActionUtils.runTarget(buildImplFo,
-                        new String[]{"wsimport-service-clean-"+serviceName,"wsimport-service-"+serviceName},null); //NOI18N
-                wsimportTask.waitFinished();
-            } catch (IOException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-            } catch (IllegalArgumentException ex) {
-                ErrorManager.getDefault().log(ex.getLocalizedMessage());
+            JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel != null) {
+                // call wsimport only for services from wsdl
+                Service service = jaxWsModel.findServiceByName(serviceName);
+                if (service != null && service.getWsdlUrl() != null) {
+                    final FileObject buildImplFo = project.getProjectDirectory().getFileObject("nbproject/build-impl.xml"); //NOI18N
+                    try {
+                        ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
+                            public Boolean run() throws IOException {
+                                ExecutorTask wsimportTask =
+                                    ActionUtils.runTarget(buildImplFo,
+                                    new String[]{"wsimport-service-clean-"+serviceName,"wsimport-service-"+serviceName},null); //NOI18N                                       ActionUtils.runTarget(buildImplFo,new String[]{"wsimport-client-"+finalName,"wsimport-client-compile" },null); //NOI18N
+                                return Boolean.TRUE;
+                            }
+                        }).booleanValue();
+                    } catch (MutexException e) {
+                        ErrorManager.getDefault().log(e.getLocalizedMessage());
+                    }
+                }
             }
         }
     }
