@@ -239,8 +239,9 @@
         ${test.cvs.path}/JavaEEIntegration
         ${test.cvs.path}/MessageExchange
         ${test.cvs.path}/misc
-        ${test.cvs.path}/pick
         ${test.cvs.path}/PartnerLinks
+        ${test.cvs.path}/pick
+        ${test.cvs.path}/repeatuntil
         ${test.cvs.path}/SchemaElemDecl
         ${test.cvs.path}/ScopeTermination
         ${test.cvs.path}/xslt
