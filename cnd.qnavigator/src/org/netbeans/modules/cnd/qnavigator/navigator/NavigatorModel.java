@@ -96,7 +96,14 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     public NavigatorModel(DataObject cdo, NavigatorPanelUI ui, NavigatorComponent component) {
         this.cdo = cdo;
         this.ui = ui;
-        actions = new Action[]{new ShowForwardFunctionDeclarationsAction()};
+        actions = new Action[]{
+            new ShowForwardFunctionDeclarationsAction(),
+            new ShowMacroAction(),
+            new ShowIncludeAction(),
+            new ShowTypedefAction(),
+            new ShowVariableAction(),
+            new ShowUsingAction()
+                              };
         root = new AbstractNode(new Children.Array()) {
             @Override
             public Action[] getActions(boolean context) {
@@ -359,6 +366,99 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             menuItem.setSelected(fileModel.getFilter().isShowForwardFunctionDeclarations());
             return menuItem;
         }
+    }
 
+    private class ShowMacroAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowMacroAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowMacroText")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setShowMacro(!fileModel.getFilter().isShowMacro());
+            update(getCsmFile());
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isShowMacro());
+            return menuItem;
+        }
+    }
+
+    private class ShowIncludeAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowIncludeAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowIncludeText")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setShowInclude(!fileModel.getFilter().isShowInclude());
+            update(getCsmFile());
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isShowInclude());
+            return menuItem;
+        }
+    }
+
+    private class ShowTypedefAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowTypedefAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowTypedefText")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setShowTypedef(!fileModel.getFilter().isShowTypedef());
+            update(getCsmFile());
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isShowTypedef());
+            return menuItem;
+        }
+    }
+    
+    private class ShowVariableAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowVariableAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowVariableText")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setShowVariable(!fileModel.getFilter().isShowVariable());
+            update(getCsmFile());
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isShowVariable());
+            return menuItem;
+        }
+    }
+    private class ShowUsingAction extends AbstractAction implements Presenter.Popup {
+        private JCheckBoxMenuItem menuItem;
+        public ShowUsingAction() {
+            putValue(Action.NAME, NbBundle.getMessage(NavigatorModel.class, "ShowUsingText")); // NOI18N
+            menuItem = new JCheckBoxMenuItem((String)getValue(Action.NAME)); 
+            menuItem.setAction(this);
+        }
+ 
+        public void actionPerformed(ActionEvent e) {
+            fileModel.getFilter().setShowUsing(!fileModel.getFilter().isShowUsing());
+            update(getCsmFile());
+        }
+
+        public final JMenuItem getPopupPresenter() {
+            menuItem.setSelected(fileModel.getFilter().isShowUsing());
+            return menuItem;
+        }
     }
 }

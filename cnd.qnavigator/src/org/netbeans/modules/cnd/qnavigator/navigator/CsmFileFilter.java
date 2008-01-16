@@ -44,15 +44,28 @@ public class CsmFileFilter {
     public CsmFileFilter(){
         Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
         showForwardFunctionDeclarations = ps.getBoolean("ShowForwardFunctionDeclarations", showForwardFunctionDeclarations); // NOI18N
+        showMacro = ps.getBoolean("ShowMacro", showMacro); // NOI18N
+        showInclude = ps.getBoolean("ShowInclude", showInclude); // NOI18N
+        showTypedef = ps.getBoolean("ShowTypedef", showTypedef); // NOI18N
+        showVariable = ps.getBoolean("ShowVariable", showVariable); // NOI18N
+        showUsing = ps.getBoolean("ShowMacro", showUsing); // NOI18N
     }
 
     public boolean isApplicable(CsmOffsetable object){
-       if (!isShowForwardFunctionDeclarations() &&CsmKindUtilities.isFunctionDeclaration((CsmObject) object)) {
+       if (!isShowForwardFunctionDeclarations() && CsmKindUtilities.isFunctionDeclaration((CsmObject) object)) {
             CsmFunctionDefinition def = ((CsmFunction) object).getDefinition();
             if (def != null && !def.equals(object) && !CsmKindUtilities.isMethod(def)) {
                 return !object.getContainingFile().equals(def.getContainingFile());
             }
-        }
+       } else if (!isShowTypedef() && CsmKindUtilities.isTypedef((CsmObject) object)) {
+           return false;
+       } else if (!isShowVariable() && CsmKindUtilities.isGlobalVariable((CsmObject) object)) {
+           return false;
+       } else if (!isShowUsing() &&
+                 (CsmKindUtilities.isUsing((CsmObject) object) ||
+                  CsmKindUtilities.isNamespaceAlias((CsmObject) object))) {
+           return false;
+       }
         return true;
     }
     public boolean isApplicableInclude(){
@@ -68,6 +81,8 @@ public class CsmFileFilter {
 
     public void setShowInclude(boolean showInclude) {
         this.showInclude = showInclude;
+        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
+        ps.putBoolean("ShowInclude", showMacro); // NOI18N
     }
 
     public boolean isShowMacro() {
@@ -76,6 +91,8 @@ public class CsmFileFilter {
 
     public void setShowMacro(boolean showMacro) {
         this.showMacro = showMacro;
+        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
+        ps.putBoolean("ShowMacro", showMacro); // NOI18N
     }
 
     public boolean isShowForwardFunctionDeclarations() {
@@ -88,7 +105,40 @@ public class CsmFileFilter {
         ps.putBoolean("ShowForwardFunctionDeclarations", showForwardFunctionDeclarations); // NOI18N
     }
 
+    public boolean isShowTypedef() {
+        return showTypedef;
+    }
+
+    public void setShowTypedef(boolean showTypedef) {
+        this.showTypedef = showTypedef;
+        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
+        ps.putBoolean("ShowTypedef", showTypedef); // NOI18N
+    }
+
+    public boolean isShowVariable() {
+        return showVariable;
+    }
+
+    public void setShowVariable(boolean showVariable) {
+        this.showVariable = showVariable;
+        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
+        ps.putBoolean("ShowVariable", showVariable); // NOI18N
+    }
+
+    public boolean isShowUsing() {
+        return showUsing;
+    }
+
+    public void setShowUsing(boolean showUsing) {
+        this.showUsing = showUsing;
+        Preferences ps = NbPreferences.forModule(CsmFileFilter.class);
+        ps.putBoolean("ShowUsing", showUsing); // NOI18N
+    }
+
     private boolean showInclude = true;
     private boolean showMacro = true;
     private boolean showForwardFunctionDeclarations = false;
+    private boolean showTypedef = true;
+    private boolean showVariable = true;
+    private boolean showUsing = true;
 }
