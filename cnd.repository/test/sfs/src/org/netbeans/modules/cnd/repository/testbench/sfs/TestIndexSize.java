@@ -43,9 +43,9 @@ package org.netbeans.modules.cnd.repository.testbench.sfs;
 
 import java.io.IOException;
 import java.util.List;
-import org.netbeans.modules.cnd.repository.sfs.CompactFileIndex;
-import org.netbeans.modules.cnd.repository.sfs.FileIndex;
-import org.netbeans.modules.cnd.repository.sfs.SimpleFileIndex;
+import org.netbeans.modules.cnd.repository.sfs.index.CompactFileIndex;
+import org.netbeans.modules.cnd.repository.sfs.index.FileIndex;
+import org.netbeans.modules.cnd.repository.sfs.index.SimpleFileIndex;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 

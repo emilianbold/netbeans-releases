@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.repository.testbench.sfs;
 
 import java.io.File;
 import java.util.*;
-import org.netbeans.modules.cnd.repository.sfs.ChunkInfo;
 import org.netbeans.modules.cnd.repository.util.LongHashMap;
 
 /**

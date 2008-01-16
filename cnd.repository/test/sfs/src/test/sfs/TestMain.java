@@ -43,6 +43,7 @@ package test.sfs;
 
 import java.io.IOException;
 import java.util.*;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.testbench.sfs.BaseTest;
 import org.netbeans.modules.cnd.repository.testbench.sfs.TestIndexSize;
 import org.netbeans.modules.cnd.repository.testbench.sfs.TestLongHashMap;
@@ -88,6 +89,7 @@ public class TestMain {
 	    }
 	}
 	try {
+            RepositoryAccessor.getRepository().cleanCaches();
 	    passed &= test.test(params);
 	}
 	catch( Exception e ) {

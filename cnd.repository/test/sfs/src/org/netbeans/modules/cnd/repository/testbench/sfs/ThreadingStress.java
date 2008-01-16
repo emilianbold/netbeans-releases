@@ -196,7 +196,7 @@ public class ThreadingStress extends BaseTest {
 	// waiting for threads to finish
 	while( ! threadsDone() ) {
 	    try {
-		Thread.currentThread().sleep(1000);
+		Thread.sleep(1000);
 	    }
 	    catch( InterruptedException e ) {
 		break;
@@ -217,7 +217,7 @@ public class ThreadingStress extends BaseTest {
     
     private void wait(int millis) {
 	try {
-	    Thread.currentThread().sleep(millis);
+	    Thread.sleep(millis);
 	}
 	catch( InterruptedException e ) {
 	}

@@ -45,7 +45,6 @@ import java.io.*;
 import java.nio.*;
 import java.util.List;
 import org.netbeans.modules.cnd.repository.sfs.BufferDataInput;
-import org.netbeans.modules.cnd.repository.sfs.BufferDataOutput;
 
 /**
  * Testing BufferDataInput and BufferDataOutput.
@@ -64,7 +63,7 @@ public class TestDataInputOutput extends BaseTest {
 	ByteBuffer buffer = ByteBuffer.allocate(1024*1024);
 	readBuffer = buffer.slice();
 	writeBuffer = buffer.slice();
-	out = new BufferDataOutput(writeBuffer);
+	out = new DataOutputStream(new ByteArrayOutputStream());
 	in = new BufferDataInput(readBuffer);
 	return test(in, out);
     }

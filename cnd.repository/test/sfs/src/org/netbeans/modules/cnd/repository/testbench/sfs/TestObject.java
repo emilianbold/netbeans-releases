@@ -76,7 +76,7 @@ public class TestObject implements Persistent {
     
 
     public void write(DataOutput out) throws IOException {
-	out.writeUTF(key.getAt(0));
+	out.writeUTF(key.getAt(0).toString());
 	if( sData == null ) {
 	    out.writeInt(-1);
 	}
@@ -158,7 +158,7 @@ public class TestObject implements Persistent {
 		this.iData == other.iData;
     }
     
-    private boolean equals(String s1, String s2) {
+    private boolean equals(CharSequence s1, CharSequence s2) {
 	if( s1 == null ) {
 	    return s2 == null;
 	}
@@ -167,7 +167,7 @@ public class TestObject implements Persistent {
 	}
     }
     
-    private boolean equals(String[] s1, String[] s2) {
+    private boolean equals(CharSequence[] s1, CharSequence[] s2) {
 	if( s1 == null ) {
 	    return s2 == null;
 	}
