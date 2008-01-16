@@ -159,6 +159,7 @@ tokens {
 	
 	CSM_TEMPLATE_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+	CSM_KR_PARMLIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	
 	CSM_ENUMERATOR_LIST<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
@@ -1360,7 +1361,7 @@ protected
 function_K_R_parameter_list
     :
     (function_K_R_parameter)+
-    {#function_K_R_parameter_list = #(#[CSM_PARMLIST, "CSM_PARMLIST"], #function_K_R_parameter_list);}
+    {#function_K_R_parameter_list = #(#[CSM_KR_PARMLIST, "CSM_KR_PARMLIST"], #function_K_R_parameter_list);}
     ;
 
 protected

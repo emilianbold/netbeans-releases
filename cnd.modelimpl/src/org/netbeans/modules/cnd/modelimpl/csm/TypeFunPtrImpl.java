@@ -135,42 +135,62 @@ public class TypeFunPtrImpl extends TypeImpl {
 	}
 	while( next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR );
 
-	// check that it's followed by CSM_VARIABLE_DECLARATION
-	if( next == null && next.getType() != CPPTokenTypes.CSM_VARIABLE_DECLARATION ) {
+	if( next == null) {
 	    return null;
 	}
 	
-	// last step: verify that it's followed with a closing brace
-	next = next.getNextSibling();
-	if( next == null || next.getType() != CPPTokenTypes.RPAREN ) {
-	    return null;
-	}
-	
-	next = next.getNextSibling();
-	
-	// skip LPAREN (let's not assume it's obligatory)
-	if( next != null && next.getType() == CPPTokenTypes.LPAREN ) {
-	    next = next.getNextSibling();
-	}
-	
-	if( next == null ) {
-	    return null;
-	}
-	if( next.getType() == CPPTokenTypes.CSM_PARMLIST ) {
-	    if( fillText ) {
-		pair.paramList = gatherChildrenText(next);
-	    }
-	    return pair;
-	}
-	else if( next.getType() == CPPTokenTypes.RPAREN ) {
-	    pair.paramList = "";
-	    return pair;
-	}
-	else {
-	    return null;
-	}
-	
-	
+        // check that it's followed by exprected token
+        if (next.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+            // fine. this could be variable of function type
+        } else if (next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+            // check function returns function
+            next = next.getNextSibling();
+            // skip LPAREN (let's not assume it's obligatory)
+            if (next == null || next.getType() != CPPTokenTypes.LPAREN) {
+                return null;
+            }
+            next = next.getNextSibling();
+            if (next == null) {
+                return null;
+            }
+            // skip params of fun itself
+            if (next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                next = next.getNextSibling();
+                if (next == null) {
+                    return null;
+                }
+            }               
+            // params of fun are closed with RPAREN
+            if (next.getType() != CPPTokenTypes.RPAREN) {
+                return null;
+            }
+        }
+        // last step: verify that it's followed with a closing brace
+        next = next.getNextSibling();
+        if (next == null || next.getType() != CPPTokenTypes.RPAREN) {
+            return null;
+        }
+
+        next = next.getNextSibling();
+
+        // skip LPAREN (let's not assume it's obligatory)
+        if (next != null && next.getType() == CPPTokenTypes.LPAREN) {
+            next = next.getNextSibling();
+        }        
+        if (next == null) {
+            return null;
+        }
+        if (next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+            if (fillText) {
+                pair.paramList = gatherChildrenText(next);
+            }
+            return pair;
+        } else if (next.getType() == CPPTokenTypes.RPAREN) {
+            pair.paramList = "";
+            return pair;
+        } else {
+            return null;
+        }         
     }
     
     private static String gatherChildrenText(AST ast) {

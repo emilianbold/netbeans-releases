@@ -102,6 +102,7 @@ public class AstRenderer {
                     renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                     break;
                 }
+                case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                 case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST:
@@ -118,6 +119,7 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_DTOR_TEMPLATE_DEFINITION:
                     container.addDeclaration(new DestructorDefinitionImpl(token, file));
                     break;
+                case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DEFINITION:
                 case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DEFINITION:
 		case CPPTokenTypes.CSM_USER_TYPE_CAST_DEFINITION:
@@ -866,7 +868,8 @@ public class AstRenderer {
     
     public static List<CsmParameter>  renderParameters(AST ast, final CsmFile file, CsmScope scope) {
         List<CsmParameter> parameters = new ArrayList<CsmParameter>();
-        if( ast != null && ast.getType() ==  CPPTokenTypes.CSM_PARMLIST ) {
+        if( ast != null && (ast.getType() ==  CPPTokenTypes.CSM_PARMLIST ||
+                            ast.getType() == CPPTokenTypes.CSM_KR_PARMLIST)) {
             for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.CSM_PARAMETER_DECLARATION ) {
                     List<ParameterImpl> params = AstRenderer.renderParameter(token, file, scope);
@@ -880,7 +883,8 @@ public class AstRenderer {
     }
     
     public static boolean isVoidParameter(AST ast) {
-        if( ast != null && ast.getType() ==  CPPTokenTypes.CSM_PARMLIST ) {
+        if( ast != null && (ast.getType() ==  CPPTokenTypes.CSM_PARMLIST ||
+                            ast.getType() == CPPTokenTypes.CSM_KR_PARMLIST)) {
             AST token = ast.getFirstChild();
             if( token != null && token.getType() == CPPTokenTypes.CSM_PARAMETER_DECLARATION ) {
                 AST firstChild = token.getFirstChild();

@@ -133,6 +133,18 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             registerInProject();
         }
     }
+
+    private AST findParameterNode(AST node) {
+        AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
+        if (ast != null) {
+            // for K&R-style
+            AST ast2 = AstUtil.findSiblingOfType(ast.getNextSibling(), CPPTokenTypes.CSM_KR_PARMLIST);
+            if (ast2 != null) {
+                ast = ast2;
+            }
+        }
+        return ast;
+    }
     
     private void initTemplate(AST node) {
         boolean _template = false, specialization = false;
@@ -453,26 +465,12 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     private List<CsmParameter> initParameters(AST node) {
-        AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
-        if( ast != null ) {
-            // for K&R-style
-            AST ast2 = AstUtil.findSiblingOfType(ast.getNextSibling(), CPPTokenTypes.CSM_PARMLIST);
-            if( ast2 != null ) {
-                ast = ast2;
-            }
-        }
+        AST ast = findParameterNode(node);
         return AstRenderer.renderParameters(ast, getContainingFile(), this);
     }
 
     private boolean isVoidParameter(AST node) {
-        AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
-        if( ast != null ) {
-            // for K&R-style
-            AST ast2 = AstUtil.findSiblingOfType(ast.getNextSibling(), CPPTokenTypes.CSM_PARMLIST);
-            if( ast2 != null ) {
-                ast = ast2;
-            }
-        }
+        AST ast = findParameterNode(node);
         return AstRenderer.isVoidParameter(ast);
     }
     
