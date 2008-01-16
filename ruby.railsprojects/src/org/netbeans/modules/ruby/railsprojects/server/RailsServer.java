@@ -208,7 +208,7 @@ public final class RailsServer {
         desc.postBuild(finishedAction);
         desc.classPath(classPath);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new RailsServerRecognizer(getStartedMessage(serverType)));
+        desc.addOutputRecognizer(new RailsServerRecognizer(getStartedMessagePattern(serverType)));
         desc.frontWindow(false);
         desc.debug(debug);
         desc.fastDebugRequired(debug);
@@ -231,13 +231,20 @@ public final class RailsServer {
         }
     }
     
-    private static String getStartedMessage(ServerType serverType) {
+    /**
+     * Gets the regex pattern representing the message that the server identified
+     * by the given <code>serverType</code> outputs when it is started.
+     * 
+     * @param serverType
+     * @return the pattern for the server started message of the given <code>serverType</code>.
+     */
+    static String getStartedMessagePattern(ServerType serverType) {
         switch (serverType) {
-            case MONGREL: return "** Mongrel available at "; // NOI18N
+            case MONGREL: return "\\*\\* Mongrel.+available at.+"; // NOI18N
             //case LIGHTTPD: return "=> Rails application starting on ";
             case WEBRICK: 
             default:
-                return "=> Rails application started on "; // NOI18N
+                return "=> Rails application started on.+"; // NOI18N
         }
         
     }
@@ -386,10 +393,10 @@ public final class RailsServer {
 
     private class RailsServerRecognizer extends OutputRecognizer {
 
-        private String startedMessage;
+        private final String startedMessagePattern;
         
-        RailsServerRecognizer(String startedMessage) {
-            this.startedMessage = startedMessage;
+        RailsServerRecognizer(String startedMessagePattern) {
+            this.startedMessagePattern = startedMessagePattern;
         }
 
         @Override
@@ -399,8 +406,7 @@ public final class RailsServer {
             // This is ugly, but my attempts to use URLConnection on the URL repeatedly
             // and check for connection.getResponseCode()==HttpURLConnection.HTTP_OK didn't
             // work - try that again later
-            if (outputLine.startsWith(startedMessage)) { // NOI18N
-
+            if (outputLine.matches(startedMessagePattern)) { // NOI18N
                 synchronized (RailsServer.this) {
                     status = ServerStatus.RUNNING;
                 }
