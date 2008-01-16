@@ -61,6 +61,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.batik.css.engine.CSSEngine;
 import org.apache.batik.css.engine.CSSStylableElement;
 import org.apache.batik.css.engine.CSSStyleSheetNode;
@@ -90,7 +92,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.UserDataHandler;
 
 
 /**
@@ -122,8 +123,12 @@ public final class CssEngineServiceImpl implements CssEngineService {
         return instance;
     }
 
+    private static class EngineKey {}
+    private static final Map<EngineKey, XhtmlCssEngine> engineKey2engine = new WeakHashMap<EngineKey, XhtmlCssEngine>();
+    private static final ReadWriteLock engineLock = new ReentrantReadWriteLock();
     
-    private static final Map<Document, XhtmlCssEngine> doc2engine = new WeakHashMap<Document, XhtmlCssEngine>();
+    private static final Map<Document, EngineKey> doc2engineKey = new WeakHashMap<Document, EngineKey>();
+    
 
     private XhtmlCssEngine getCssEngine(Document document) {
         if (document == null) {
@@ -134,7 +139,13 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //            ret = document2engine.get(document);
 //        }
 //        return (XhtmlCssEngine)document.getUserData(KEY_CSS_ENGINE);
-        return doc2engine.get(document);
+        engineLock.readLock().lock();
+        try {
+            EngineKey engineKey = doc2engineKey.get(document);
+            return engineKey2engine.get(engineKey);
+        } finally {
+            engineLock.readLock().unlock();
+        }
     }
 
 //    public void setCssEngine(Document document, XhtmlCssEngine engine) {
@@ -153,7 +164,14 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //            document2engine.put(document, engine);
 //        }
 //        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
-        doc2engine.put(document, engine);
+        engineLock.writeLock().lock();
+        try {
+            EngineKey engineKey = new EngineKey();
+            engineKey2engine.put(engineKey, engine);
+            doc2engineKey.put(document, engineKey);
+        } finally {
+            engineLock.writeLock().unlock();
+        }
     }
 
     /*private*/ static CssUserAgentInfo getUserAgentInfo() {
@@ -217,7 +235,13 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //            engine = document2engine.remove(document);
 //        }
 //        engine = (XhtmlCssEngine) document.getUserData(KEY_CSS_ENGINE);
-        engine = doc2engine.get(document);
+        engineLock.readLock().lock();
+        try {
+            EngineKey engineKey = doc2engineKey.get(document);
+            engine = engineKey2engine.get(engineKey);
+        } finally {
+            engineLock.readLock().unlock();
+        }
         
         if (engine != null) {
             engine.dispose();
@@ -234,8 +258,16 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        }
 //        XhtmlCssEngine engine = (XhtmlCssEngine)originalDocument.getUserData(KEY_CSS_ENGINE);
 //        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
-        XhtmlCssEngine engine = doc2engine.get(originalDocument);
-        doc2engine.put(document, engine);
+        engineLock.writeLock().lock();
+        try {
+            EngineKey originalEngineKey = doc2engineKey.get(originalDocument);
+            XhtmlCssEngine engine = engineKey2engine.get(originalEngineKey);
+            EngineKey engineKey = new EngineKey();
+            engineKey2engine.put(engineKey, engine);
+            doc2engineKey.put(document, engineKey);
+        } finally {
+            engineLock.writeLock().unlock();
+        }
     }
 
     public Collection<String> getCssStyleClassesForDocument(Document document) {
