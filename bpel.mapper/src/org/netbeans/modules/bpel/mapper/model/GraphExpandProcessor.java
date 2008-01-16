@@ -22,6 +22,7 @@ package org.netbeans.modules.bpel.mapper.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.model.CopyToProcessor.CopyToForm;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
@@ -36,9 +37,11 @@ import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.CompletionCondition;
 import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.DeadlineExpression;
 import org.netbeans.modules.bpel.model.api.ElseIf;
+import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.If;
@@ -46,6 +49,7 @@ import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnAlarmPick;
 import org.netbeans.modules.bpel.model.api.RepeatUntil;
 import org.netbeans.modules.bpel.model.api.Process;
+import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.TimeEvent;
 import org.netbeans.modules.bpel.model.api.TimeEventHolder;
 import org.netbeans.modules.bpel.model.api.To;
@@ -70,19 +74,18 @@ public class GraphExpandProcessor {
             MapperTcContext mapperTcContext, BpelDesignContext context) {
         //
         Mapper mapper = mapperTcContext.getMapper();
-        MapperModel mm = mapper.getModel();
-        assert mm instanceof BpelMapperModel;
-        BpelMapperModel mModel = ((BpelMapperModel)mm);
+        MapperModel mModel = mapper.getModel();
         //
         BpelEntity contextEntity = context.getContextEntity();
         expandVariablesNode(mapper, contextEntity.getBpelModel(), true, true);
         //
-        List<TreePath> tPathList = getTargetPathes(mapperTcContext, contextEntity);
+        BpelEntity graphEntity = context.getGraphEntity();
+        List<TreePath> tPathList = getTargetPathes(mapperTcContext, graphEntity);
         boolean expandAll = contextEntity instanceof ForEach;
         boolean isFirst = true;
         for (TreePath tPath : tPathList) {
             //
-            Graph graph = mModel.getNotEmptyGraphs().get(tPath);
+            Graph graph = ((BpelMapperModel)mModel).getGraphsInside(null).get(tPath);
             //
             mapper.setExpandedState(tPath, true);
             if (graph != null) {
@@ -105,6 +108,38 @@ public class GraphExpandProcessor {
         }
     }
     
+    public static void expandAllGraphs(Mapper mapper, MapperModel mModel)  {
+        Map<TreePath, Graph> graphMap = ((BpelMapperModel)mModel).getGraphsInside(null);
+        for (TreePath tPath : graphMap.keySet()) {
+            Graph graph = graphMap.get(tPath);
+            //
+            mapper.setExpandedState(tPath, true);
+            if (graph != null) {
+                mapper.setExpandedGraphState(tPath, true);
+                //
+                // Expand source tree
+                LeftTree leftTree = mapper.getLeftTree();
+                expandIngoingLinks(graph, leftTree);
+            }
+        }
+    }
+    
+    public static void selectGraph(Mapper mapper, TreePath tPath, Graph graph)  {
+        //
+        mapper.setSelected(tPath);
+        //
+        if (graph != null) {
+            mapper.getRightTree().scrollRectToVisible(graph.getBounds());
+        }
+    }
+    
+    /**
+     * Returns the list of TreePath for the specified entity which have to be 
+     * expanded.
+     * @param mapperTcContext
+     * @param bpelEntity
+     * @return
+     */
     private static List<TreePath> getTargetPathes(
             MapperTcContext mapperTcContext, BpelEntity bpelEntity) {
         //
@@ -115,7 +150,8 @@ public class GraphExpandProcessor {
         //
         ArrayList<TreePath> result = new ArrayList<TreePath>();
         //
-        if (bpelEntity instanceof Copy) {
+        Class<? extends BpelEntity> entityType = bpelEntity.getElementType();
+        if (entityType == Copy.class) {
             Copy copy = (Copy)bpelEntity;
             // Expand target tree
             To copyTo = copy.getTo();
@@ -127,7 +163,7 @@ public class GraphExpandProcessor {
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
-        } else if (bpelEntity instanceof Assign) {
+        } else if (entityType == Assign.class) {
             Assign assign = (Assign)bpelEntity;
             List<Copy> copyList = assign.getChildren(Copy.class);
             if (!copyList.isEmpty()) {
@@ -135,9 +171,9 @@ public class GraphExpandProcessor {
                 return getTargetPathes(mapperTcContext, firstCopy);
             }
             //
-        } else if (bpelEntity instanceof Wait || 
-                bpelEntity instanceof OnAlarmPick || 
-                bpelEntity instanceof OnAlarmEvent) {
+        } else if (entityType == Wait.class || 
+                entityType == OnAlarmPick.class || 
+                entityType == OnAlarmEvent.class) {
             //
             TimeEventHolder timeEH = (TimeEventHolder)bpelEntity;
             TimeEvent timeEvent = timeEH.getTimeEvent();
@@ -158,10 +194,10 @@ public class GraphExpandProcessor {
                 }
             }
             //
-        } else if (bpelEntity instanceof If ||
-                bpelEntity instanceof ElseIf || 
-                bpelEntity instanceof While || 
-                bpelEntity instanceof RepeatUntil) {
+        } else if (entityType == If.class ||
+                entityType == ElseIf.class || 
+                entityType == While.class || 
+                entityType == RepeatUntil.class) {
             //
             List<TreeItemFinder> finderList = Collections.singletonList(
                     (TreeItemFinder)new ResultNodeFinder(
@@ -171,7 +207,7 @@ public class GraphExpandProcessor {
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
-        } else if (bpelEntity instanceof ForEach) {
+        } else if (entityType == ForEach.class) {
             //
             List<TreeItemFinder> finderList = Collections.singletonList(
                     (TreeItemFinder)new ResultNodeFinder(
@@ -199,11 +235,44 @@ public class GraphExpandProcessor {
             if (targetTreePath != null) {
                 result.add(targetTreePath);
             }
+        } else if (entityType == StartCounterValue.class) {
+            List<TreeItemFinder> finderList = Collections.singletonList(
+                    (TreeItemFinder)new ResultNodeFinder(
+                    ForEachConditionsTreeModel.START_VALUE));
+            TreePath targetTreePath = mModel.getRightTreeModel().
+                    findFirstNode(finderList);
+            if (targetTreePath != null) {
+                result.add(targetTreePath);
+            }
+        } else if (entityType == FinalCounterValue.class) {
+            List<TreeItemFinder> finderList = Collections.singletonList(
+                    (TreeItemFinder)new ResultNodeFinder(
+                    ForEachConditionsTreeModel.FINAL_VALUE));
+            TreePath targetTreePath = mModel.getRightTreeModel().
+                    findFirstNode(finderList);
+            if (targetTreePath != null) {
+                result.add(targetTreePath);
+            }
+        } else if (entityType == CompletionCondition.class) {
+            List<TreeItemFinder> finderList = Collections.singletonList(
+                    (TreeItemFinder)new ResultNodeFinder(
+                    ForEachConditionsTreeModel.COMPLETION_CONDITION));
+            TreePath targetTreePath = mModel.getRightTreeModel().
+                    findFirstNode(finderList);
+            if (targetTreePath != null) {
+                result.add(targetTreePath);
+            }
         } 
         //
         return result;
     }
     
+    /**
+     * Expands all tree nodes in the source tree to which ingoing links 
+     * of the graph are connected. 
+     * @param graph
+     * @param leftTree
+     */
     public static void expandIngoingLinks(Graph graph, LeftTree leftTree) {
         List<Link> ingoingLinks = graph.getIngoingLinks();
         for (Link link : ingoingLinks) {
@@ -217,6 +286,14 @@ public class GraphExpandProcessor {
         } 
     }
     
+    
+    /**
+     * Expands the tree node "Variables" in the source and (or) the target trees.
+     * @param mapper
+     * @param bpelModel
+     * @param leftTree
+     * @param rightTree
+     */
     public static void expandVariablesNode(Mapper mapper, 
             final BpelModel bpelModel, boolean leftTree, boolean rightTree) {
         //

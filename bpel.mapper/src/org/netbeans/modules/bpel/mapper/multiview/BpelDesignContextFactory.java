@@ -20,12 +20,28 @@
 package org.netbeans.modules.bpel.mapper.multiview;
 
 import org.netbeans.modules.bpel.model.api.Assign;
+import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.Branches;
+import org.netbeans.modules.bpel.model.api.CompletionCondition;
 import org.netbeans.modules.bpel.model.api.Copy;
+import org.netbeans.modules.bpel.model.api.DeadlineExpression;
+import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.Expression;
+import org.netbeans.modules.bpel.model.api.FinalCounterValue;
+import org.netbeans.modules.bpel.model.api.For;
+import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.If;
+import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
+import org.netbeans.modules.bpel.model.api.OnAlarmPick;
+import org.netbeans.modules.bpel.model.api.RepeatEvery;
+import org.netbeans.modules.bpel.model.api.RepeatUntil;
+import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.To;
+import org.netbeans.modules.bpel.model.api.Wait;
+import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -40,8 +56,11 @@ public class BpelDesignContextFactory {
     private final ContextCreator[] contextCreators;
             
     private BpelDesignContextFactory() {
-        contextCreators = new ContextCreator[] {new AssignContextCreator(), 
-                                                 new DefaultContextCreator()};
+        contextCreators = new ContextCreator[] {
+            new AssignContextCreator(), 
+            new BooleanConditionContextCreator(), 
+            new TimeConditionContextCreator(), 
+            new ForEachContextCreator()};
     }
     
     public static BpelDesignContextFactory getInstance() {
@@ -111,59 +130,252 @@ public class BpelDesignContextFactory {
             if (selectedEntity == null) {
                 return false;
             }
-            
+            //
             boolean accept = false;
             Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
             if (entityType == Assign.class) {
                 accept = true;
             } else if (entityType == Copy.class) {
                 BpelEntity parent = selectedEntity.getParent();
-                accept = parent != null && parent.getElementType() == Assign.class;
+                if (parent != null && parent.getElementType() == Assign.class) {
+                    accept = true;
+                }
             } else if (entityType == From.class || entityType ==  To.class) {
                 BpelEntity parent = selectedEntity.getParent();
-                accept = parent != null && parent.getElementType() == Copy.class;
-                if (accept) {
-                    parent = parent.getParent();
-                    accept = parent != null && parent.getElementType() == Assign.class;
+                if (parent != null && parent.getElementType() == Copy.class) {
+                    BpelEntity nextParent = parent.getParent();
+                    if (nextParent != null && 
+                            nextParent.getElementType() == Assign.class) {
+                        accept = true;
+                    }
+                }
+            }
+            //
+            return accept;
+        }
+
+        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
+            if (!accepted(selectedEntity)) {
+                return null;
+            }
+            //
+            BpelDesignContext context =  null;
+            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
+            if (entityType == Assign.class) {
+                context = new BpelDesignContextImpl(selectedEntity, 
+                        selectedEntity, selectedEntity, node, lookup);
+            } else if (entityType == Copy.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null && parent.getElementType() == Assign.class) {
+                    context = new BpelDesignContextImpl(parent, 
+                            selectedEntity, selectedEntity, node, lookup);
+                }
+            } else if (entityType == From.class || entityType ==  To.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null && parent.getElementType() == Copy.class) {
+                    BpelEntity nextParent = parent.getParent();
+                    if (nextParent != null && 
+                            nextParent.getElementType() == Assign.class) {
+                        context = new BpelDesignContextImpl(nextParent, 
+                                parent, selectedEntity, node, lookup);
+                    }
+                }
+            }
+            //
+            return context;
+        }
+    }
+    
+    private class TimeConditionContextCreator implements ContextCreator {
+
+        /**
+         * @param selectedEntity - the selected bpel entity to show mapper
+         */
+        public boolean accepted(BpelEntity selectedEntity) {
+            if (selectedEntity == null) {
+                return false;
+            }
+            
+            boolean accept = false;
+            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
+            if (entityType == Wait.class ||
+                    entityType == OnAlarmPick.class ||
+                    entityType == OnAlarmEvent.class) {
+                accept = true;
+            } else if (entityType == For.class || 
+                    entityType == RepeatEvery.class || 
+                    entityType == DeadlineExpression.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                entityType = parent.getElementType();
+                if (entityType == Wait.class ||
+                    entityType == OnAlarmPick.class ||
+                    entityType == OnAlarmEvent.class) {
+                    accept = true;
                 }
             }
             
             return accept;
         }
 
-        // TODO m
         public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
             if (!accepted(selectedEntity)) {
                 return null;
             }
-            
+            //
             BpelDesignContext context =  null;
-            if (selectedEntity instanceof Assign) {
-                context = new AssignBpelDesignContext((Assign)selectedEntity, node, lookup);
-            } else if (selectedEntity instanceof Copy) {
-                context = new AssignBpelDesignContext((Copy)selectedEntity, node, lookup);
-            } else if (selectedEntity instanceof Expression) {
-                context = new AssignBpelDesignContext((Expression)selectedEntity, node, lookup);
-            } 
-            
+            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
+            if (entityType == Wait.class ||
+                    entityType == OnAlarmPick.class ||
+                    entityType == OnAlarmEvent.class) {
+                context = new BpelDesignContextImpl(selectedEntity, 
+                        selectedEntity, selectedEntity, node, lookup);
+            } else if (entityType == For.class || 
+                    entityType == RepeatEvery.class || 
+                    entityType == DeadlineExpression.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                entityType = parent.getElementType();
+                if (entityType == Wait.class ||
+                    entityType == OnAlarmPick.class ||
+                    entityType == OnAlarmEvent.class) {
+                    //
+                    context = new BpelDesignContextImpl(parent, 
+                            parent, selectedEntity, node, lookup);
+                }
+            }
+            //
             return context;
         }
     }
     
-    private class DefaultContextCreator implements ContextCreator {
+    private class BooleanConditionContextCreator implements ContextCreator {
 
+        /**
+         * @param selectedEntity - the selected bpel entity to show mapper
+         */
         public boolean accepted(BpelEntity selectedEntity) {
-            return selectedEntity != null;
+            if (selectedEntity == null) {
+                return false;
+            }
+            //
+            boolean accept = false;
+            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
+            if (entityType == If.class ||
+                    entityType == ElseIf.class ||
+                    entityType == While.class ||
+                    entityType == RepeatUntil.class) {
+                accept = true;
+            } else if (entityType == BooleanExpr.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                entityType = parent.getElementType();
+                if (entityType == If.class ||
+                    entityType == ElseIf.class ||
+                    entityType == While.class ||
+                    entityType == RepeatUntil.class) {
+                    accept = true;
+                }
+            }
+            //
+            return accept;
         }
 
-        // TODO m
         public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
             if (!accepted(selectedEntity)) {
                 return null;
             }
-            return new SimpleBpelDesignContext(selectedEntity, node, lookup);
+            //
+            BpelDesignContext context =  null;
+            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
+            if (entityType == If.class ||
+                    entityType == ElseIf.class ||
+                    entityType == While.class ||
+                    entityType == RepeatUntil.class) {
+                context = new BpelDesignContextImpl(selectedEntity, 
+                        selectedEntity, selectedEntity, node, lookup);
+            } else if (entityType == BooleanExpr.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                entityType = parent.getElementType();
+                if (entityType == If.class ||
+                    entityType == ElseIf.class ||
+                    entityType == While.class ||
+                    entityType == RepeatUntil.class) {
+                    context = new BpelDesignContextImpl(parent, parent, 
+                            selectedEntity, node, lookup);
+                }
+            }
+            //
+            return context;
         }
     }
     
+    private class ForEachContextCreator implements ContextCreator {
 
+        /**
+         * @param selectedEntity - the selected bpel entity to show mapper
+         */
+        public boolean accepted(BpelEntity selectedEntity) {
+            if (selectedEntity == null) {
+                return false;
+            }
+            //
+            boolean accept = false;
+            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
+            if (entityType == ForEach.class) {
+                accept = true;
+            } else if (entityType == StartCounterValue.class ||
+                    entityType == FinalCounterValue.class || 
+                    entityType == CompletionCondition.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null && parent.getElementType() == ForEach.class) {
+                    accept = true;
+                }
+            } else if (entityType == Branches.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null && 
+                        parent.getElementType() == CompletionCondition.class) {
+                    BpelEntity nextParent = parent.getParent();
+                    if (nextParent != null && 
+                            nextParent.getElementType() == ForEach.class) {
+                        accept = true;
+                    }
+                }
+            }
+            //
+            return accept;
+        }
+
+        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
+            if (!accepted(selectedEntity)) {
+                return null;
+            }
+            //
+            BpelDesignContext context =  null;
+            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
+            if (entityType == ForEach.class) {
+                context = new BpelDesignContextImpl(selectedEntity, 
+                        selectedEntity, selectedEntity, node, lookup);
+            } else if (entityType == StartCounterValue.class ||
+                    entityType == FinalCounterValue.class || 
+                    entityType == CompletionCondition.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null && parent.getElementType() == ForEach.class) {
+                    context = new BpelDesignContextImpl(parent, 
+                            selectedEntity, selectedEntity, node, lookup);
+                }
+            } else if (entityType == Branches.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null && 
+                        parent.getElementType() == CompletionCondition.class) {
+                    BpelEntity nextParent = parent.getParent();
+                    if (nextParent != null && 
+                            nextParent.getElementType() == ForEach.class) {
+                        context = new BpelDesignContextImpl(nextParent, 
+                            parent, selectedEntity, node, lookup);
+                    }
+                }
+            }
+            //
+            return context;
+        }
+    }
+    
 }

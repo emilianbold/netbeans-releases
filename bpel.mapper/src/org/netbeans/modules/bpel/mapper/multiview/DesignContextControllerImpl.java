@@ -284,30 +284,22 @@ public class DesignContextControllerImpl implements DesignContextController {
             } 
             //
             if (!newContext.equals(mContext)) {
-                BpelEntity contextEntity = newContext.getSelectedEntity();
-                boolean needShow = 
-                        BpelMapperModelFactory.needShowMapper(contextEntity);
                 //
-                if (!needShow) {
-                    disableMapper();
-                } else {
-                    //
-                    // Re subscribe to another BPEL model if necessary.
-                    if (newContext.getBpelModel() != getCurrBpelModel()) {
-                        setListenBpelModel(getCurrBpelModel(), false);
-                        setListenBpelModel(newContext.getBpelModel(), true);
-                    }
-                    //
-                    MapperModel newMapperModel = new BpelMapperModelFactory().
-                            constructModel(mMapperTcContext, newContext);
-                    //
-                    mContext = newContext;
-                    setMapperModel(newMapperModel);
-                    //
-                    GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
-                    //
-                    mMapperTcContext.showMapperTcGroup(true);
+                // Re subscribe to another BPEL model if necessary.
+                if (newContext.getBpelModel() != getCurrBpelModel()) {
+                    setListenBpelModel(getCurrBpelModel(), false);
+                    setListenBpelModel(newContext.getBpelModel(), true);
                 }
+                //
+                MapperModel newMapperModel = new BpelMapperModelFactory().
+                        constructModel(mMapperTcContext, newContext);
+                //
+                mContext = newContext;
+                setMapperModel(newMapperModel);
+                //
+                GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
+                //
+                mMapperTcContext.showMapperTcGroup(true);
             } else {
                 //
                 boolean needReload;

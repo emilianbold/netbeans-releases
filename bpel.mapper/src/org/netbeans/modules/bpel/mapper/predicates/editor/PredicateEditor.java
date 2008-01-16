@@ -28,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
@@ -92,6 +93,7 @@ public class PredicateEditor extends EditorLifeCycleAdapter {
         if (mSContext != null) {
             fldContext.setText(mSContext.toString());
             showSchemaContextInSourceTree();
+            GraphExpandProcessor.expandAllGraphs(mMapper, mMapperModel);
         } else {
             fldContext.setText(NbBundle.getMessage(PredicateEditor.class,
             "UNKNOWN_SCHEMA_CONTEXT"));

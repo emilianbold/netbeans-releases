@@ -185,6 +185,7 @@ public class DesignContextControllerImpl2
     }
     
     private void setMapperModel(MapperModel newMapperModel) {
+        assert newMapperModel != null;
         mMapperTcContext.setMapperModel(newMapperModel);
     }
     
@@ -223,29 +224,21 @@ public class DesignContextControllerImpl2
             //
             if (!newContext.equals(mContext)) {
                 myMapperStateManager.storeOldEntityContext(mContext);
-                BpelEntity contextEntity = newContext.getSelectedEntity();
-                boolean needShow = 
-                        BpelMapperModelFactory.needShowMapper(contextEntity);
                 //
-                if (!needShow) {
-                    disableMapper();
-                } else {
-                    //
-                    MapperModel newMapperModel = new BpelMapperModelFactory().
-                            constructModel(mMapperTcContext, newContext);
-                    //
-                    mContext = newContext;
-                    setMapperModel(newMapperModel);
-                    myMapperStateManager.restoreOldEntityContext(mContext);
-                    //
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
-                        }
-                    });
-                    //
-                    mMapperTcContext.showMapperTcGroup(true);
-                }
+                MapperModel newMapperModel = new BpelMapperModelFactory().
+                        constructModel(mMapperTcContext, newContext);
+                //
+                mContext = newContext;
+                setMapperModel(newMapperModel);
+                myMapperStateManager.restoreOldEntityContext(mContext);
+                //
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
+                    }
+                });
+                //
+                mMapperTcContext.showMapperTcGroup(true);
             }
 /*            
             else {

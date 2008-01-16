@@ -83,7 +83,8 @@ public class LoggingContextChangeListener implements PropertyChangeListener {
         
         Lookup lookup = nodes[0].getLookup();
         BpelDesignContext bpelContext = 
-                new SimpleBpelDesignContext(bpelEntity, nodes[0], lookup);
+                new BpelDesignContextImpl(bpelEntity, bpelEntity, bpelEntity, 
+                nodes[0], lookup);
 //                new BpelDesignContext(bpelEntity, nodes[0], lookup);
         return bpelContext;
     }
@@ -110,9 +111,8 @@ public class LoggingContextChangeListener implements PropertyChangeListener {
         }
         
         Lookup lookup = nodes[0].getLookup();
-        BpelDesignContext bpelContext = 
-                new SimpleBpelDesignContext(bpelEntity, nodes[0], lookup);
-//                new BpelDesignContext(bpelEntity, nodes[0], lookup);
+        BpelDesignContext bpelContext = new BpelDesignContextImpl(
+                bpelEntity, bpelEntity, bpelEntity, nodes[0], lookup);
         return bpelContext;
     }
 

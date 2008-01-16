@@ -191,7 +191,7 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
             return;
         }
         //
-        Map<TreePath, Graph> graphsMap = mPredMapperModel.getNotEmptyGraphs();
+        Map<TreePath, Graph> graphsMap = mPredMapperModel.getGraphsInside(null);
         MapperSwingTreeModel rightTreeModel = mPredMapperModel.getRightTreeModel();
         Set<TreePath> unsorted = graphsMap.keySet();
         List<TreePath> sorted = rightTreeModel.sortByLocation(unsorted);

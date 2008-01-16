@@ -118,7 +118,10 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         if (graphInfo.noLinksAtAll()) {
             // Remove copy from the BPEL model
             BpelContainer copyOwner = copy.getParent();
-            copyOwner.remove(copy);
+            if (copyOwner != null) {
+                copyOwner.remove(copy);
+            }
+            getMapperModel().removeGraph(rightTreePath); // Remove empty graph !!!
             return; // NOTHING TO DO FURTHER
         }
         //

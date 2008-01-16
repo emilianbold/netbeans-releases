@@ -131,19 +131,24 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
 
     public void removeGraph(TreePath treePath) {
         Graph graph = mPathGraphMap.get(treePath);
+        boolean modified = false;
         if (graph != null) {
             //
             List<Vertex> vertexList = graph.getVerteces();
             for (Vertex vertex : vertexList) {
                 graph.removeVertex(vertex);
+                modified = true;
             }
             //
             List<Link> linksList = graph.getLinks();
             for (Link link : linksList) {
                 graph.removeLink(link);
+                modified = true;
             }
             //
-            fireGraphChanged(treePath);
+            if (modified) {
+                fireGraphChanged(treePath);
+            }
             //
             mPathGraphMap.remove(treePath);
         }
@@ -163,10 +168,22 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         return graph;
     }
 
-    public Map<TreePath, Graph> getNotEmptyGraphs() {
-        return mPathGraphMap;
+    public Map<TreePath, Graph> getGraphsInside(TreePath root) {
+        if (root == null || 
+                root.getLastPathComponent() == getRightTreeModel().getRoot()) {
+            return mPathGraphMap;
+        }
+        //
+        HashMap<TreePath, Graph> result = new HashMap<TreePath, Graph>();
+        for (TreePath tPath : mPathGraphMap.keySet()) {
+            if (root.isDescendant(tPath)) {
+                Graph graph = mPathGraphMap.get(tPath);
+                result.put(tPath, graph);
+            }
+        }
+        return result;
     }
-
+    
     //==========================================================================
     //   Modification methods
     //==========================================================================
@@ -486,7 +503,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     public List<TreePath> getDependentGraphs(Object leftTreeItemDO) {
         ArrayList<TreePath> result = new ArrayList<TreePath>();
         //
-        Map<TreePath, Graph> graphs = getNotEmptyGraphs();
+        Map<TreePath, Graph> graphs = getGraphsInside(null);
         for (TreePath path : graphs.keySet()) {
             Graph graph = graphs.get(path);
             List<Link> connectedLinksList = 
