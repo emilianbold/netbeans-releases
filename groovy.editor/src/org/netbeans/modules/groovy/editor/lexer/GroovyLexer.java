@@ -112,7 +112,7 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
             if (antlrToken != null) {
                 int intId = antlrToken.getType();
 
-                int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
+                int len = lexerInput.readLengthEOF() - myCharBuffer.getExtraCharCount();
                 if ( antlrToken.getText() != null ) {
                     len = Math.max( len, antlrToken.getText().length() );
                 }
@@ -129,7 +129,8 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
                     }
                 }
 
-                if ( scanner.getStringCtorState() != 0) {
+                // state 8 occured with '}' character closing expression in gstring
+                if ( scanner.getStringCtorState() != 0 && scanner.getStringCtorState() != 8) {
                     intId = GroovyTokenTypes.STRING_LITERAL;
                 }
 
