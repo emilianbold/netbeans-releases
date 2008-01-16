@@ -40,11 +40,14 @@
  */
 package org.netbeans.modules.php.model;
 
-import javax.swing.text.Document;
-
-import org.netbeans.modules.php.model.resources.ResourceMarker;
+import java.io.File;
+import java.net.URL;
 
 import junit.framework.TestCase;
+
+import org.netbeans.modules.php.model.resources.ResourceMarker;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 
 /**
@@ -56,17 +59,19 @@ abstract class BaseCase extends TestCase {
 
     protected PhpModel getModel() throws Exception {
         if ( myModel == null ){
-            Document doc = Utils.loadDocument( ResourceMarker.getStream(
-                    ResourceMarker.STATEMENTS));
-            myModel = ModelAccess.getAccess().getModel(null);
+            myModel = getModel( ResourceMarker.STATEMENTS );
         }
         return myModel;
     }
     
     protected PhpModel getModel( String fileName ) throws Exception {
         PhpModel model;
-        Document doc = Utils.loadDocument(ResourceMarker.getStream(fileName));
-        model = ModelAccess.getAccess().getModel(null);
+        URL url = ResourceMarker.class.getResource( fileName );
+        File file = new File( url.toURI() );
+        FileObject fileObject  = FileUtil.toFileObject( 
+                FileUtil.normalizeFile(file) );
+        model = ModelAccess.getAccess().getModel( 
+                ModelAccess.getModelOrigin(fileObject));
         return model;
     }
     

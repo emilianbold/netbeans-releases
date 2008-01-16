@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="stable" executor="unit-executor" name="Unit tests">
         <testset dir="unit/src">
             <patternset>
-		<include name="**/ConstantRefTest.class"/>
+		<include name="**/*Test.class"/>
             </patternset>
         </testset>
     </testbag>

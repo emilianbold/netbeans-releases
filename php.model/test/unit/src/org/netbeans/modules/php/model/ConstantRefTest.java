@@ -51,7 +51,7 @@ import org.netbeans.modules.php.model.resources.ResourceMarker;
  */
 public class ConstantRefTest extends BaseCase {
 
-    public void testArrayOne() throws Exception {
+    public void testMethodName() throws Exception {
         PhpModel model = getModel( ResourceMarker.CONST_REF );
         model.sync();
         model.readLock();

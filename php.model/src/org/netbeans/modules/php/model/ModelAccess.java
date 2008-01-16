@@ -142,7 +142,7 @@ public abstract class ModelAccess {
                 uce.confirmed();
                 doc = ec.openDocument();
             }
-            assert doc instanceof BaseDocument;
+            //assert doc instanceof BaseDocument;
             result = doc;
         }
         return result;
