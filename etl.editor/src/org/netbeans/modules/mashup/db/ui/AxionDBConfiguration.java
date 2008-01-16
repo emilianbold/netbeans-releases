@@ -32,7 +32,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.mashup.db.ui;
 
 import java.io.File;
@@ -52,35 +51,31 @@ import org.openide.util.NbBundle;
 public class AxionDBConfiguration {
 
     private static final AxionDBConfiguration DEFAULT = new AxionDBConfiguration();
-
     public static final String PROP_DB_LOC = "DBLocation";
-    
     public static final String PROP_DRIVER_LOC = "DriverLocation";
-    
     public static final String PROP_LOC = "location";
-    
     public static final String PROP_DRV_LOC = "driver";
-    
+
     public static AxionDBConfiguration getDefault() {
         return DEFAULT;
     }
-    
+
     public String displayName() {
         return NbBundle.getMessage(AxionDBConfiguration.class, "LBL_AxionConf");
     }
-    
+
     protected final String putProperty(String key, String value, boolean notify) {
         System.setProperty(key, value);
         return System.getProperty(key);
     }
-    
+
     protected final String getProperty(String key) {
         return System.getProperty(key);
     }
-    
+
     public String getDriver() {
         File conf = getConfigFile();
-        if(conf != null) {
+        if (conf != null) {
             Properties prop = new Properties();
             FileInputStream in = null;
             try {
@@ -88,28 +83,24 @@ public class AxionDBConfiguration {
                 prop.load(in);
             } catch (FileNotFoundException ex) {
                 //ignore
-            } catch(IOException ioEx) {
+            } catch (IOException ioEx) {
                 //ignore
             }
             String drv = prop.getProperty(PROP_DRIVER_LOC);
-            if(drv != null)
+            if (drv != null) {
                 return drv;
+            }
         } else {
             // Check for mashup driver under soa cluster.
             String nbHomeDir = System.getProperty("netbeans.home") + File.separator +
-                    ".." + File.separator + "soa1" + File.separator + "modules"
-                    + File.separator + "ext" + File.separator + "etl"
-                    + File.separator + "axiondb.jar";
+                    ".." + File.separator + "soa1" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
             File driver = new File(nbHomeDir);
-            if(!driver.exists()) {
-                
+            if (!driver.exists()) {
+
                 // check for mashup driver under extra cluster.
-                nbHomeDir = System.getProperty("netbeans.home") + File.separator
-                        + ".." + File.separator + "extra" + File.separator + "modules"
-                        + File.separator + "ext" + File.separator + "etl"
-                        + File.separator + "axiondb.jar";
+                nbHomeDir = System.getProperty("netbeans.home") + File.separator + ".." + File.separator + "extra" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
                 driver = new File(nbHomeDir);
-                if(!driver.exists()) {
+                if (!driver.exists()) {
                     nbHomeDir = "";
                 }
                 return nbHomeDir;
@@ -117,7 +108,7 @@ public class AxionDBConfiguration {
         }
         return "";
     }
-    
+
     public void setDriver(String driver) {
         driver = driver.trim();
         File conf = getConfigFile();
@@ -139,7 +130,7 @@ public class AxionDBConfiguration {
             //ignore
         }
     }
-    
+
     /**
      * Returns the AXION location or an empty string if the AXION location
      * is not set. Never returns null.
@@ -147,7 +138,7 @@ public class AxionDBConfiguration {
      */
     public String getLocation() {
         File conf = getConfigFile();
-        if(conf != null) {
+        if (conf != null) {
             Properties prop = new Properties();
             FileInputStream in = null;
             try {
@@ -155,15 +146,14 @@ public class AxionDBConfiguration {
                 prop.load(in);
             } catch (FileNotFoundException ex) {
                 //ignore
-            } catch(IOException ioEx) {
+            } catch (IOException ioEx) {
                 //ignore
             }
             return prop.getProperty(PROP_DB_LOC);
         }
-        return System.getProperty("netbeans.user")
-                + File.separator + "MashupDatabases" + File.separator;        
+        return System.getProperty("netbeans.user") + File.separator + "MashupDatabases" + File.separator;
     }
-    
+
     /**
      * Sets the AXION location.
      *
@@ -174,7 +164,7 @@ public class AxionDBConfiguration {
      */
     public void setLocation(String location) {
         location = location.trim();
-        if(!location.endsWith(File.separator)) {
+        if (!location.endsWith(File.separator)) {
             location = location + File.separator;
         }
         File conf = getConfigFile();
@@ -191,7 +181,7 @@ public class AxionDBConfiguration {
             prop.store(out, "MashupDB Configurations");
             out.close();
             File db = new File(location);
-            if(!db.exists()) {
+            if (!db.exists()) {
                 db.mkdir();
             }
         } catch (FileNotFoundException ex) {
@@ -200,42 +190,35 @@ public class AxionDBConfiguration {
             //ignore
         }
     }
-    
-    
+
     public static File getConfigFile() {
         String nbUsrDir = System.getProperty("netbeans.user");
-        
+
         // Check for mashup driver under soa cluster.
         String nbHomeDir = System.getProperty("netbeans.home") + File.separator +
-                ".." + File.separator + "soa1" + File.separator + "modules"
-                + File.separator + "ext" + File.separator + "etl"
-                + File.separator + "axiondb.jar";
+                ".." + File.separator + "soa1" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
         File driver = new File(nbHomeDir);
-        if(!driver.exists()) {
-            
+        if (!driver.exists()) {
+
             // check for mashup driver under extra cluster.
-            nbHomeDir = System.getProperty("netbeans.home") + File.separator
-                    + ".." + File.separator + "extra" + File.separator + "modules"
-                    + File.separator + "ext" + File.separator + "etl"
-                    + File.separator + "axiondb.jar";
+            nbHomeDir = System.getProperty("netbeans.home") + File.separator + ".." + File.separator + "extra" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
             driver = new File(nbHomeDir);
-            if(!driver.exists()) {
+            if (!driver.exists()) {
                 nbHomeDir = "";
             } else {
                 nbHomeDir = driver.getAbsolutePath();
             }
         }
-        String DEFAULT_DB_LOCATION = System.getProperty("netbeans.user")
-                + File.separator + "MashupDatabases" + File.separator;
+        String DEFAULT_DB_LOCATION = System.getProperty("netbeans.user") + File.separator + "MashupDatabases" + File.separator;
         nbUsrDir = nbUsrDir + File.separator + "config" + File.separator +
                 "Databases" + File.separator + "MashupDB";
         File conf = new File(nbUsrDir);
-        if(!conf.exists()) {
+        if (!conf.exists()) {
             conf.mkdir();
         }
-        nbUsrDir = nbUsrDir + File.separator +"MashupDBConfig.properties";
+        nbUsrDir = nbUsrDir + File.separator + "MashupDBConfig.properties";
         conf = new File(nbUsrDir);
-        if(!conf.exists()) {
+        if (!conf.exists()) {
             try {
                 conf.createNewFile();
                 Properties prop = new Properties();
@@ -248,7 +231,7 @@ public class AxionDBConfiguration {
                     out.close();
                 } catch (FileNotFoundException ex) {
                     //ignore
-                } catch(IOException ioEx) {
+                } catch (IOException ioEx) {
                     //igonre
                 }
             } catch (IOException ex) {
@@ -257,8 +240,7 @@ public class AxionDBConfiguration {
         }
         return conf;
     }
-    
-    
+
     protected static BeanNode createViewNode() throws java.beans.IntrospectionException {
         BeanNode nd = new BeanNode(AxionDBConfiguration.getDefault());
         nd.setName("Mashup Database");

@@ -78,391 +78,409 @@ import org.xml.sax.SAXException;
 import com.sun.etl.engine.impl.ETLEngineImpl;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.RuntimeAttribute;
+import javax.wsdl.Message;
+import javax.wsdl.Part;
 
 /**
  * This class generates an ETL WSDL file given an ETL engine file name
  * 
  */
-
 public class WsdlGenerator {
 
-	private static Logger logger = Logger.getLogger(WsdlGenerator.class.getName());
+    private static Logger logger = Logger.getLogger(WsdlGenerator.class.getName());
+    private static WSDLFactory factory;
+    private String engineFileName;
+    private String wsdlLocation;
+    private Definition def;
+    private File engineFile;
+    
 
-	private static WSDLFactory factory;
+    static {
+        initFactory();
+    }
 
-	private String engineFileName;
+    /**
+     * @param engineFileName
+     * @param wsdlLocation
+     */
+    public WsdlGenerator(String engineFileName, String wsdlLocation) {
+        this.engineFileName = engineFileName;
+        this.wsdlLocation = wsdlLocation;
 
-	private String wsdlLocation;
+    }
 
-	private Definition def;
+    public WsdlGenerator(File f, String wsdlLocation) {
+        engineFile = f;
+        this.engineFileName = f.getName().substring(0, f.getName().indexOf(".xml"));
+        this.wsdlLocation = wsdlLocation;
 
-	private File engineFile;
+    }
 
-	static {
-		initFactory();
-	}
+    /**
+     * 
+     * @param f,
+     *            represents the engine file
+     * @param engineFileName,
+     *            the name used for generation wsdl artifacts, should be
+     *            combination of project + engine file
+     * @param wsdlLocation,
+     *            location of the wsdl file generated
+     */
+    public WsdlGenerator(File f, String engineFileName, String wsdlLocation) {
+        engineFile = f;
+        this.engineFileName = engineFileName;
+        this.wsdlLocation = wsdlLocation;
+    }
 
-	/**
-	 * @param engineFileName
-	 * @param wsdlLocation
-	 */
-	public WsdlGenerator(String engineFileName, String wsdlLocation) {
-		this.engineFileName = engineFileName;
-		this.wsdlLocation = wsdlLocation;
+    /**
+     * generates the etl wsdl file and writes to disk
+     * 
+     * @return Definition
+     * 
+     * @throws WsdlGenerateException
+     */
+    public Definition generateWsdl() throws WsdlGenerateException {
+        this.def = getWsdlTemplate();
 
-	}
+        if (engineFileName == null) {
+            throw new WsdlGenerateException("cannot generate wsdl file as engineFileName is null ");
+        }
+        if (wsdlLocation == null) {
+            throw new WsdlGenerateException("cannot generate wsdl file as wsdlLocation is null ");
+        }
+        modifyWsdl();
+        writeWsdl();
+        return def;
+    }
 
-	public WsdlGenerator(File f, String wsdlLocation) {
-		engineFile = f;
-		this.engineFileName = f.getName().substring(0, f.getName().indexOf(".xml"));
-		this.wsdlLocation = wsdlLocation;
+    /**
+     * @return
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws BaseException
+     */
+    private Map getEngineInputParams() {
+        ETLEngineImpl engine = null;
+        try {
+            DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
+            Element element = df.newDocumentBuilder().parse(engineFile).getDocumentElement();
+            engine = new ETLEngineImpl();
+            engine.parseXML(element);
+        } catch (SAXException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (BaseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return engine.getInputAttrMap();
+    }
 
-	}
+    /**
+     * persist the wsdl file to disk
+     * 
+     * @throws WsdlGenerateException
+     */
+    private void writeWsdl() throws WsdlGenerateException {
+        try {
 
-	/**
-	 * 
-	 * @param f,
-	 *            represents the engine file
-	 * @param engineFileName,
-	 *            the name used for generation wsdl artifacts, should be
-	 *            combination of project + engine file
-	 * @param wsdlLocation,
-	 *            location of the wsdl file generated
-	 */
-	public WsdlGenerator(File f, String engineFileName, String wsdlLocation) {
-		engineFile = f;
-		this.engineFileName = engineFileName;
-		this.wsdlLocation = wsdlLocation;
-	}
+            WSDLWriter writer = factory.newWSDLWriter();
+            Writer sink = new FileWriter(wsdlLocation + "/" + engineFileName + ".wsdl");
 
-	/**
-	 * generates the etl wsdl file and writes to disk
-	 * 
-	 * @return Definition
-	 * 
-	 * @throws WsdlGenerateException
-	 */
-	public Definition generateWsdl() throws WsdlGenerateException {
-		this.def = getWsdlTemplate();
+            writer.writeWSDL(def, sink);
+            sink.flush();
+            sink.close();
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+            throw new WsdlGenerateException(e);
+        }
 
-		if (engineFileName == null)
-			throw new WsdlGenerateException("cannot generate wsdl file as engineFileName is null ");
-		if (wsdlLocation == null)
-			throw new WsdlGenerateException("cannot generate wsdl file as wsdlLocation is null ");
-		modifyWsdl();
-		writeWsdl();
-		return def;
-	}
+    }
 
-	/**
-	 * @return
-	 * @throws SAXException
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws BaseException
-	 */
-	private Map getEngineInputParams() {
-		ETLEngineImpl engine = null;
-		try {
-			DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
-			Element element = df.newDocumentBuilder().parse(engineFile).getDocumentElement();
-			engine = new ETLEngineImpl();
-			engine.parseXML(element);
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (BaseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return engine.getInputAttrMap();
-	}
+    /**
+     * modify the wsdl template
+     */
+    private void modifyWsdl() {
+        modifyName();
+//        modifyMessages();
+        modifyMessageTypes();
+        modifyPortTypes();
+        modifyBinding();
+        modifyServices();
+        modifyPartnerLink();
+    }
 
-	/**
-	 * persist the wsdl file to disk
-	 * 
-	 * @throws WsdlGenerateException
-	 */
-	private void writeWsdl() throws WsdlGenerateException {
-		try {
+    private void modifyBinding() {
+        Binding b = def.getBinding(new QName(def.getTargetNamespace(), "Binding"));
 
-			WSDLWriter writer = factory.newWSDLWriter();
-			Writer sink = new FileWriter(wsdlLocation + "/" + engineFileName + ".wsdl");
+        BindingOperation bo = b.getBindingOperation("execute", null, null);
+        if (getEngineInputParams().isEmpty()) {
+            bo.setBindingInput(null);
+        }
 
-			writer.writeWSDL(def, sink);
-                        sink.flush();
-                        sink.close();
-		} catch (Exception e) {
-			logger.info(e.getMessage());
-			throw new WsdlGenerateException(e);
-		}
+    }
 
-	}
+    private void modifyMessages() {
+        Map msgs = def.getMessages();
+        for (int i = 0; i < msgs.size(); i++) {
+            Object o = msgs.get(i);
+            //if (o instanceof Message) {
+                System.out.println("Message: "+ ((Message)o).toString());
+                modifyMessageElementName((Message)o);               
+            //}
+        }
+    }
 
-	/**
-	 * modify the wsdl template
-	 */
-	private void modifyWsdl() {
-		modifyName();
-		modifyMessageTypes();
-		modifyPortTypes();
-		modifyBinding();
-		modifyServices();
-		modifyPartnerLink();
-	}
+    private void modifyMessageElementName(Message message) {
+        String msgLocalName = message.getQName().getLocalPart();
+        if (message != null) {
+            QName qname = new QName("http://com.sun.jbi/etl/etlengine", engineFileName + "_" + msgLocalName);
+            message.setQName(qname);
+        }
+    }
 
-	private void modifyBinding() {
-		Binding b = def.getBinding(new QName(def.getTargetNamespace(), "Binding")); 
-		
-		BindingOperation bo = b.getBindingOperation("execute", null, null); 
-		if (getEngineInputParams().isEmpty()) {
-			bo.setBindingInput(null);
-		}
-		
-	}
+    private void modifyMessageTypes() {
+        Types types = def.getTypes();
+        types.getDocumentationElement();
+        List schemaList = types.getExtensibilityElements();
 
-	private void modifyMessageTypes() {
-		Types types = def.getTypes();
-		types.getDocumentationElement();
-		List schemaList = types.getExtensibilityElements();
+        for (int i = 0; i < schemaList.size(); i++) {
+            Object o = schemaList.get(i);
+            if (o instanceof Schema) {
+                Schema s = (Schema) o;
+                modifySchema(s);
+            }
 
-		for (int i = 0; i < schemaList.size(); i++) {
-			Object o = schemaList.get(i);
-			if (o instanceof Schema) {
-				Schema s = (Schema) o;
-				modifySchema(s);
-			}
+        }
 
-		}
+    }
 
-	}
+    private void modifySchema(Schema s) {
+        Element root = s.getElement();
+        Document doc = (Document) root.getParentNode().getParentNode().getParentNode();
+        Element inputItem = getElementByName(root, "inputItem");
 
-	private void modifySchema(Schema s) {
-		Element root = s.getElement();
-		Document doc = (Document) root.getParentNode().getParentNode().getParentNode();
-		Element inputItem = getElementByName(root, "inputItem");
+        inputItem.toString();
+        Node sequence = inputItem.getElementsByTagName("xsd:sequence").item(0);
 
-		inputItem.toString();
-		Node sequence = inputItem.getElementsByTagName("xsd:sequence").item(0);
+        Map inputParams = getEngineInputParams();
+        Iterator iterator = inputParams.keySet().iterator();
+        while (iterator.hasNext()) {
+            Object key = iterator.next();
+            RuntimeAttribute ra = (RuntimeAttribute) inputParams.get(key);
 
-		Map inputParams = getEngineInputParams();
-		Iterator iterator = inputParams.keySet().iterator();
-		while (iterator.hasNext()) {
-			Object key = iterator.next();
-			RuntimeAttribute ra = (RuntimeAttribute) inputParams.get(key);
+            Element child = doc.createElementNS("http://www.w3.org/2001/XMLSchema", "xsd:element");
+            child.setAttribute("name", ra.getAttributeName());
+            child.setAttribute("type", getAttributeType(ra));
+            sequence.appendChild(child);
+        }
 
-			Element child = doc.createElementNS("http://www.w3.org/2001/XMLSchema", "xsd:element");
-			child.setAttribute("name", ra.getAttributeName());
-			child.setAttribute("type", getAttributeType(ra));
-			sequence.appendChild(child);
-		}
+    }
 
-	}
+    private String getAttributeType(RuntimeAttribute ra) {
 
-	private String getAttributeType(RuntimeAttribute ra) {
+        String type = null;
 
-		String type = null;
+        switch (ra.getJdbcType()) {
 
-		switch (ra.getJdbcType()) {
+            case java.sql.Types.BOOLEAN:
+                type = "xsd:boolean";
+                break;
+            case java.sql.Types.INTEGER:
+                type = "xsd:integer";
+                break;
+            case java.sql.Types.DECIMAL:
+                type = "xsd:decimal";
+                break;
+            case java.sql.Types.DOUBLE:
+                type = "xsd:double";
+                break;
+            case java.sql.Types.FLOAT:
+                type = "xsd:float";
+                break;
+            case java.sql.Types.DATE:
+                type = "xsd:date";
+                break;
+            case java.sql.Types.TIME:
+                type = "xsd:time";
+                break;
+            case java.sql.Types.TIMESTAMP:
+                type = "xsd:datetime";
+                break;
+            case java.sql.Types.VARCHAR:
+            case java.sql.Types.CHAR:
+            default:
+                type = "xsd:string";
+        }
+        return type;
+    }
 
-		case java.sql.Types.BOOLEAN:
-			type = "xsd:boolean";
-			break;
-		case java.sql.Types.INTEGER:
-			type = "xsd:integer";
-			break;
-		case java.sql.Types.DECIMAL:
-			type = "xsd:decimal";
-			break;
-		case java.sql.Types.DOUBLE:
-			type = "xsd:double";
-			break;
-		case java.sql.Types.FLOAT:
-			type = "xsd:float";
-			break;
-		case java.sql.Types.DATE:
-			type = "xsd:date";
-			break;
-		case java.sql.Types.TIME:
-			type = "xsd:time";
-			break;
-		case java.sql.Types.TIMESTAMP:
-			type = "xsd:datetime";
-			break;
-		case java.sql.Types.VARCHAR:
-		case java.sql.Types.CHAR:
-		default:
-			type = "xsd:string";
-		}
-		return type;
-	}
+    private Element getElementByName(Element e, String elementName) {
+        if (e.getAttribute("name").equalsIgnoreCase(elementName)) {
+            return e;
+        }
+        NodeList list = e.getChildNodes();
+        Element el = null;
+        Element e2 = null;
+        for (int i = 0; i < list.getLength(); i++) {
+            if (e2 == null) {
+                Node n = list.item(i);
+                if (n.getNodeType() == Node.ELEMENT_NODE) {
+                    el = (Element) n;
+                    if (el.getAttribute("name").equalsIgnoreCase(elementName)) {
+                        e2 = el;
+                        break;
+                    } else {
+                        e2 = getElementByName(el, elementName);
+                        if ((e2 != null) && (e2.getAttribute("name").equalsIgnoreCase(elementName))) {
+                            return e2;
+                        }
+                    }
+                }
+            } else {
+                break;
+            }
+        }
+        return e2;
+    }
 
-	private Element getElementByName(Element e, String elementName) {
-		if (e.getAttribute("name").equalsIgnoreCase(elementName)) {
-			return e;
-		}
-		NodeList list = e.getChildNodes();
-		Element el = null;
-		Element e2 = null;
-		for (int i = 0; i < list.getLength(); i++) {
-			if (e2 == null) {
-				Node n = list.item(i);
-				if (n.getNodeType() == Node.ELEMENT_NODE) {
-					el = (Element) n;
-					if (el.getAttribute("name").equalsIgnoreCase(elementName)) {
-						e2 = el;
-						break;
-					} else {
-						e2 = getElementByName(el, elementName);
-						if ((e2 != null) && (e2.getAttribute("name").equalsIgnoreCase(elementName))) {
-							return e2;
-						}
-					}
-				}
-			} else {
-				break;
-			}
-		}
-		return e2;
-	}
+    private void modifyPartnerLink() {
+        List<UnknownExtensibilityElement> l = def.getExtensibilityElements();
+        UnknownExtensibilityElement plinkType = l.get(0);
 
-	private void modifyPartnerLink() {
-		List<UnknownExtensibilityElement> l = def.getExtensibilityElements();
-		UnknownExtensibilityElement plinkType = l.get(0);
+        // set plinkType name
+        plinkType.getElement();
+        String plinkName = plinkType.getElement().getAttribute("name");
+        plinkType.getElement().setAttribute("name", engineFileName + "_" + plinkName);
 
-		// set plinkType name
-		plinkType.getElement();
-		String plinkName = plinkType.getElement().getAttribute("name");
-		plinkType.getElement().setAttribute("name", engineFileName + "_" + plinkName);
+        // set plink:role name and portType
+        NodeList nl = plinkType.getElement().getChildNodes();
+        Element plinkRole = (Element) nl.item(1);
+        plinkRole.setAttribute("name", engineFileName + "_" + plinkRole.getAttribute("name"));
 
-		// set plink:role name and portType
-		NodeList nl = plinkType.getElement().getChildNodes();
-		Element plinkRole = (Element) nl.item(1);
-		plinkRole.setAttribute("name", engineFileName + "_" + plinkRole.getAttribute("name"));
+        String temp = plinkRole.getAttribute("portType").substring("tns:".length());
+        plinkRole.setAttribute("portType", "tns:" + engineFileName + "_" + temp);
 
-		String temp = plinkRole.getAttribute("portType").substring("tns:".length());
-		plinkRole.setAttribute("portType", "tns:" + engineFileName + "_" + temp);
+    }
 
-	}
+    private void modifyName() {
+        QName q = def.getQName();
+        q = new QName(q.getNamespaceURI(), engineFileName);
+        def.setQName(q);
+    }
 
-	private void modifyName() {
-		QName q = def.getQName();
-		q = new QName(q.getNamespaceURI(), engineFileName);
-		def.setQName(q);
-	}
+    /**
+     * sets the service name and SOAP address
+     */
+    @SuppressWarnings("unchecked")
+    private void modifyServices() {
+        Map<QName, Service> m = def.getServices();
+        Iterator<QName> iterator = m.keySet().iterator();
+        while (iterator.hasNext()) {
+            QName key = iterator.next();
+            Service s = m.get(key);
 
-	/**
-	 * sets the service name and SOAP address
-	 */
-	@SuppressWarnings("unchecked")
-	private void modifyServices() {
-		Map<QName, Service> m = def.getServices();
-		Iterator<QName> iterator = m.keySet().iterator();
-		while (iterator.hasNext()) {
-			QName key = iterator.next();
-			Service s = m.get(key);
+            QName qn = new QName(key.getNamespaceURI(), engineFileName + "_" + key.getLocalPart());
 
-			QName qn = new QName(key.getNamespaceURI(), engineFileName + "_" + key.getLocalPart());
+            s.setQName(qn);
+            Port p = s.getPort("etlPort");
+            p.setName(engineFileName + "_" + p.getName());
+            List<SOAPAddress> l = p.getExtensibilityElements();
+            Iterator iterator2 = l.iterator();
+            while (iterator2.hasNext()) {
+                SOAPAddress element = (SOAPAddress) iterator2.next();
+                String loc = element.getLocationURI() + "/" + engineFileName;
+                element.setLocationURI(loc);
 
-			s.setQName(qn);
-			Port p = s.getPort("etlPort");
-			p.setName(engineFileName + "_" + p.getName());
-			List<SOAPAddress> l = p.getExtensibilityElements();
-			Iterator iterator2 = l.iterator();
-			while (iterator2.hasNext()) {
-				SOAPAddress element = (SOAPAddress) iterator2.next();
-				String loc = element.getLocationURI() + "/" + engineFileName;
-				element.setLocationURI(loc);
+            }
+        }
 
-			}
-		}
+    }
 
-	}
+    /**
+     * this sets the portType name according to the given etl engine file
+     */
+    @SuppressWarnings("unchecked")
+    private void modifyPortTypes() {
 
-	/**
-	 * this sets the portType name according to the given etl engine file
-	 */
-	@SuppressWarnings("unchecked")
-	private void modifyPortTypes() {
+        ;
 
-		;
+        Map<QName, PortType> m = def.getPortTypes();
+        Iterator<QName> iterator = m.keySet().iterator();
+        while (iterator.hasNext()) {
+            QName key = iterator.next();
+            PortType pt = m.get(key);
 
-		Map<QName, PortType> m = def.getPortTypes();
-		Iterator<QName> iterator = m.keySet().iterator();
-		while (iterator.hasNext()) {
-			QName key = iterator.next();
-			PortType pt = m.get(key);
-			
-			//if engine input params is empty, then operation has no inputMsg
-			if (getEngineInputParams().isEmpty()) {
-				List ops = pt.getOperations();
-				for (int i = 0; i < ops.size(); i++) {
-					Operation op = (Operation) ops.get(i);
-					op.setInput(null);
-				}
-			}
+            //if engine input params is empty, then operation has no inputMsg
+            if (getEngineInputParams().isEmpty()) {
+                List ops = pt.getOperations();
+                for (int i = 0; i < ops.size(); i++) {
+                    Operation op = (Operation) ops.get(i);
+                    op.setInput(null);
+                }
+            }
 
-			
-			QName qn = new QName(key.getNamespaceURI(), engineFileName + "_" + key.getLocalPart());
 
-			pt.setQName(qn);
-		}
+            QName qn = new QName(key.getNamespaceURI(), engineFileName + "_" + key.getLocalPart());
 
-	}
+            pt.setQName(qn);
+        }
 
-	/**
-	 * reads an etl wsdl template file and genarates the javax.wsdl.Definition
-	 * 
-	 * @return Definition
-	 * @throws WsdlGenerateException
-	 */
-	private Definition getWsdlTemplate() throws WsdlGenerateException {
+    }
 
-		Definition def = null;
-		WSDLReader reader = factory.newWSDLReader();
+    /**
+     * reads an etl wsdl template file and genarates the javax.wsdl.Definition
+     * 
+     * @return Definition
+     * @throws WsdlGenerateException
+     */
+    private Definition getWsdlTemplate() throws WsdlGenerateException {
 
-		try {
-			URL u = WsdlGenerator.class.getResource("etl.wsdl.template");
-			String wsdlURI = u.getFile().indexOf(".jar") > 0 ? "jar:" + u.getFile() : u.getFile();
-			def = reader.readWSDL(wsdlURI);
-		} catch (WSDLException e) {
-			logger.info(e.getMessage());
-			throw new WsdlGenerateException(e);
-		}
-		return def;
-	}
+        Definition def = null;
+        WSDLReader reader = factory.newWSDLReader();
 
-	/**
-	 * initialize the WSDLFactory
-	 * 
-	 * @throws WsdlGenerateException
-	 */
-	private static void initFactory() {
-		if (factory == null) {
-			try {
-				factory = WSDLFactory.newInstance();
-			} catch (WSDLException e) {
-				logger.info(e.getMessage());
-			}
-		}
-	}
+        try {
+            URL u = WsdlGenerator.class.getResource("etl.wsdl.template");
+            String wsdlURI = u.getFile().indexOf(".jar") > 0 ? "jar:" + u.getFile() : u.getFile();
+            def = reader.readWSDL(wsdlURI);
+        } catch (WSDLException e) {
+            logger.info(e.getMessage());
+            throw new WsdlGenerateException(e);
+        }
+        return def;
+    }
 
-	public static void main(String[] args) {
-		File f = new File("test/xxx_engine.xml");
+    /**
+     * initialize the WSDLFactory
+     * 
+     * @throws WsdlGenerateException
+     */
+    private static void initFactory() {
+        if (factory == null) {
+            try {
+                factory = WSDLFactory.newInstance();
+            } catch (WSDLException e) {
+                logger.info(e.getMessage());
+            }
+        }
+    }
 
-		WsdlGenerator wg = new WsdlGenerator(f, "xxx_engine", "test");
-		try {
-			wg.generateWsdl();
-		} catch (WsdlGenerateException e) {
-			e.printStackTrace();
-		}
+    public static void main(String[] args) {
+        File f = new File("test/xxx_engine.xml");
 
-	}
+        WsdlGenerator wg = new WsdlGenerator(f, "xxx_engine", "test");
+        try {
+            wg.generateWsdl();
+        } catch (WsdlGenerateException e) {
+            e.printStackTrace();
+        }
 
+    }
 }

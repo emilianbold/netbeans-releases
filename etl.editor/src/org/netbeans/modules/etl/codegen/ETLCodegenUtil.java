@@ -174,7 +174,6 @@ public class ETLCodegenUtil {
 
     public static FlatfileDefinition getFFDefinition(DBTable table) {
         if (table.getParent().getSource() == null) {
-            if (table.getParent().getSource() instanceof FlatfileDefinition) {
                 DatabaseModel model = table.getParent();
                 DBConnectionDefinition condef = model.getConnectionDefinition();
                 try {
@@ -210,7 +209,7 @@ public class ETLCodegenUtil {
                     return fd;
                 }
             }
-        }
+        
         return null;
     }
 

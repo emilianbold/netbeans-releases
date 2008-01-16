@@ -31,10 +31,10 @@
 		</xsd:schema>
 	</types>
 	<message name="input">
-		<part name="part" element="tns:inputItem" />
+		<part name="part" element="tns:inputItem"/>
 	</message>
 	<message name="output">
-		<part name="part" element="tns:outputItem"></part>
+		<part name="part" element="tns:outputItem"/>
 	</message>
 	<portType name="etlPortType">
 		<operation name="execute">

@@ -74,6 +74,7 @@ import org.w3c.dom.NodeList;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConnectionParameters;
+import com.sun.sql.framework.utils.Attribute;
 import java.io.File;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
@@ -918,50 +919,26 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
     @SuppressWarnings("unchecked")
     public HashMap<String, Property> getTableMetaData(DBConnectionDefinition conndef, SQLDBTable element) {
         HashMap<String, Property> map = new HashMap<String, Property>();
-        Connection conn = null;
-
-        try {
-            conn = DBExplorerUtil.createConnection(conndef.getDriverClass(), conndef.getConnectionURL(), conndef.getUserName(), conndef.getPassword());
-            Statement stmt = conn.createStatement();
-            String query = "select PROPERTY_NAME, PROPERTY_VALUE from AXION_TABLE_PROPERTIES " + "where TABLE_NAME = '" + element.getName() + "' ORDER BY PROPERTY_NAME";
-            stmt.execute(query);
-            ResultSet rs = stmt.getResultSet();
-            while (rs.next()) {
-                rs.getMetaData().getColumnCount();
-                String value1 = rs.getString(1);
-                String value2 = rs.getString(2);
-
+        final String prefix = "ORGPROP_";
+        Collection<String> attrNames = (Collection<String>) element.getAttributeNames();
+        for (String attrName : attrNames) {
+            Object attrValue = element.getAttributeObject(attrName);
+            if (attrName.startsWith(prefix)) {
+                attrName = attrName.substring(attrName.indexOf(prefix) + prefix.length());
                 Property prop = new Property();
-                if (value2.equals("true") || value2.equals("false")) {
-                    prop = new Property(value1, Boolean.class, true);
-                    prop.setValue(Boolean.valueOf(value2));
-                    map.put(value1, prop);
+                if (attrValue instanceof java.lang.Boolean) {
+                    prop = new Property(attrName, Boolean.class, true);
+                    prop.setValue((Boolean) attrValue);
+                    map.put(attrName, prop);
+                } else if (attrValue instanceof java.lang.Integer) {
+                    prop = new Property(attrName, Integer.class, true);
+                    prop.setValue((Integer) attrValue);
+                    map.put(attrName, prop);
                 } else {
-                    try {
-                        Integer.parseInt(value2);
-                        prop = new Property(value1, Integer.class, true);
-                        prop.setValue(Integer.valueOf(value2));
-                        map.put(value1, prop);
-
-                    } catch (NumberFormatException e) {
-                        prop = new Property(value1, String.class, true);
-                        prop.setValue(value2);
-                        map.put(value1, prop);
-                    }
+                    prop = new Property(attrName, String.class, true);
+                    prop.setValue((String) attrValue);
+                    map.put(attrName, prop);
                 }
-            }
-        } catch (DBSQLException ex) {
-            Exceptions.printStackTrace(ex);
-            StatusDisplayer.getDefault().setStatusText("SQLDBModelImpl.getTableMetaData(): " + ex.getMessage());
-        } catch (SQLException ex) {
-            StatusDisplayer.getDefault().setStatusText("SQLDBModelImpl.getTableMetaData(): " + ex.getMessage());
-        } finally {
-            try {
-                if (conn != null) {
-                    conn.close();
-                }
-            } catch (SQLException ex) {
-                conn = null;
             }
         }
         return map;

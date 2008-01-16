@@ -97,7 +97,7 @@ public class EtlproProjectGenerator {
 
         databases = new File(rootF.getPath() + fo.getPath() + "\\" + DEFAULT_NBPROJECT_DIR + "\\" + "private" + "\\" + DEFAULT_DATABASES_DIR);
         dbObj = FileUtil.createFolder(databases);
-        dbObj.lock();  
+        //dbObj.lock();  
         MashupTableWizardIterator.setProjectInfo(name,fo.getPath(), true);
         
 
