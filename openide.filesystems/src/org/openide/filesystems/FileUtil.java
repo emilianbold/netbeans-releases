@@ -126,6 +126,27 @@ public final class FileUtil extends Object {
     }
     
     /**
+     * Refreshes all necessary filesystems. Not all instances of <code>FileObject</code> are refreshed
+     * but just those that represent passed <code>files</code> and their children recursively.
+     * @param files
+     * @since 7.6
+     */
+    public static void refreshFor(File... files) {
+        for (File file : files) {
+            //TODO: files should be filtered (1/remove duplicates 2/to keep just the most top parents) 
+            //not to refresh some fileobjects many times
+            FileObject fo = toFileObject(file);
+            if (fo != null) {
+                try {
+                    fo.setAttribute("request_for_refreshing_files_be_aware_this_is_not_public_api", file); //NOI18N
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }         
+    
+    /**
      * Executes atomic action. For more info see {@link FileSystem#runAtomicAction}. 
      * <p>
      * All events about filesystem changes (related to events on all affected instances of <code>FileSystem</code>)

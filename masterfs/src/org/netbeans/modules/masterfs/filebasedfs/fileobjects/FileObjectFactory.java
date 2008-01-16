@@ -40,21 +40,15 @@
  */
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
-import java.io.ByteArrayInputStream;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
-import org.openide.filesystems.FileLock;
 
 /**
  * 
@@ -114,22 +108,20 @@ public final class FileObjectFactory {
         if (name == null) return null;
 
         if (name.isFile() && !name.isDirectory()) {
-            //assert name.getFile() != null &&  (name.getFile().isFile() || !name.getFile().isDirectory()) : name;
             final FileObj realRoot = new FileObj(file, name);
-            /*FolderObj par = (FolderObj)realRoot.getExistingParent();
+            FolderObj par = (FolderObj)realRoot.getExistingParent();
             if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
-                return null;
-            }*/
+                par.refresh(true);
+            }
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
         
         if (!name.isFile() && name.isDirectory()) {            
-            //assert name.getFile() != null &&  (!name.getFile().isFile() || name.getFile().isDirectory()) : name;
             final FolderObj realRoot = new FolderObj(file, name);
-            /*FolderObj par = (FolderObj)realRoot.getExistingParent();            
+            FolderObj par = (FolderObj)realRoot.getExistingParent();
             if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
-                return null;
-            }*/            
+                par.refresh(true);
+            }
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
 
@@ -138,36 +130,67 @@ public final class FileObjectFactory {
     }
     
     public final void refreshAll(final boolean expected) {
+        Set all2Refresh = collectForRefresh();
+        refresh(all2Refresh, expected);
+    }
+
+    public void refreshFor(File f) {
+        Set all2Refresh = collectForRefresh();
+        refresh(all2Refresh, f);        
+    }    
+        
+    private Set collectForRefresh() {
         final Set all2Refresh = new HashSet();
         synchronized (allInstances) {
             final Iterator it = allInstances.values().iterator();
             while (it.hasNext()) {
                 final Object obj = it.next();
                 if (obj instanceof List) {
-                    for (Iterator iterator = ((List)obj).iterator(); iterator.hasNext();) {
+                    for (Iterator iterator = ((List) obj).iterator(); iterator.hasNext();) {
                         WeakReference ref = (WeakReference) iterator.next();
                         final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
-                        if (fo != null)  {
+                        if (fo != null) {
                             all2Refresh.add(fo);
-                        }                                            
+                        }
                     }
                 } else {
                     final WeakReference ref = (WeakReference) obj;
                     final BaseFileObj fo = (BaseFileObj) ((ref != null) ? ref.get() : null);
-                    if (fo != null)  {
+                    if (fo != null) {
                         all2Refresh.add(fo);
-                    }                    
+                    }
                 }
             }
         }
-
-
+        return all2Refresh;
+    }
+    
+    private void refresh(final Set all2Refresh, File file) {
+        for (Iterator iterator = all2Refresh.iterator(); iterator.hasNext();) {
+            final BaseFileObj fo = (BaseFileObj) iterator.next();
+            if (isParentOf(file, fo.getFileName().getFile())) {
+                fo.refresh(true);
+            }
+        }
+    }    
+       
+    private void refresh(final Set all2Refresh, final boolean expected) {
         for (Iterator iterator = all2Refresh.iterator(); iterator.hasNext();) {
             final BaseFileObj fo = (BaseFileObj) iterator.next();
             fo.refresh(expected);
         }
+    }    
+    
+    public static boolean isParentOf(final File dir, final File file) {
+        Stack stack = new Stack();
+        File tempFile = file;
+        while (tempFile != null && !tempFile.equals(dir)) {
+            stack.push(tempFile.getName());
+            tempFile = tempFile.getParentFile();
+        }
+        return tempFile != null;
     }
-
+    
     public final void rename () {
         final Map toRename = new HashMap();
         synchronized (allInstances) {
