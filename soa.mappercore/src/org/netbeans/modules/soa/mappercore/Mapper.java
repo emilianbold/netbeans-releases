@@ -26,6 +26,8 @@ import java.awt.Point;
 import java.awt.Stroke;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,6 +59,9 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
 import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.graphics.XRange;
 import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.Link;
+import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
+import org.netbeans.modules.soa.mappercore.model.VertexItem;
 
 /**
  *
@@ -474,6 +479,200 @@ public class Mapper extends JPanel {
     public RightTreeCellRenderer getRightTreeCellRenderer() {
         return rightTree.getTreeCellRenderer();
     }
+    
+    public TreePath getReghtTreePathForLink(Link link) {
+        return getReghtTreePathForLink(link, getRoot().getTreePath());
+    }
+    
+    private TreePath getReghtTreePathForLink(Link link, TreePath initialTreePath) {
+        if (link == null || initialTreePath == null) return null; 
+        
+        MapperNode node = getNode(initialTreePath, true);
+        
+        if (link.getGraph() == node.getGraph()) {
+            return initialTreePath;
+        }
+        
+        for (int i = 0; i < node.getChildCount(); i++) {
+            MapperNode childNode = node.getChild(i);
+            if (childNode.isLeaf()) {
+                if (link.getGraph() == childNode.getGraph()) {
+                    return childNode.getTreePath();
+                }
+            } else {
+                if (getReghtTreePathForLink(link, childNode.getTreePath()) != null) {
+                    return getReghtTreePathForLink(link, childNode.getTreePath());
+                }
+            }
+        }
+        return null;
+    }
+
+    
+    public Link getPrevIngoingLink(Link link) {
+        Set<Graph> graphs = canvas.getMapper().getRoot().getChildGraphs();
+
+        List<Link> ingoingLinks = new ArrayList<Link>();
+        for (Graph g : graphs) {
+            ingoingLinks.addAll(g.getIngoingLinks());
+        }
+        if (!ingoingLinks.contains(link)) return null;
+
+        TreePath leftPath;
+        leftPath = ((TreeSourcePin) link.getSource()).getTreePath();
+        int currentRow = getLeftTree().getParentsRowForPath(leftPath);
+        Graph currentGraph = null;
+        if (link.getTarget() instanceof Graph) currentGraph = (Graph) link.getTarget();
+        if (link.getTarget() instanceof VertexItem) currentGraph = ((VertexItem) link.getTarget()).getVertex().getGraph();
+
+        List<Link> linksCandidateRow = new ArrayList<Link>();
+        List<Link> linksCandidateGraph = new ArrayList<Link>();
+        // find links with rows == currentRow
+        for (Link l : ingoingLinks) {
+            leftPath = ((TreeSourcePin) l.getSource()).getTreePath();
+            int row = getLeftTree().getParentsRowForPath(leftPath);
+            if (row == currentRow) {
+                linksCandidateRow.add(l);
+            }
+        }
+        
+        
+        if (linksCandidateRow.size() > 1) {
+            // find prevLinks in own Row with nearest Graph
+            linksCandidateGraph.clear();
+            Graph maxGraph = null;
+            Graph graph = null;
+            for (Link l : linksCandidateRow) {
+                if (l.getTarget() instanceof Graph) graph = (Graph) l.getTarget();
+                if (l.getTarget() instanceof VertexItem) graph = ((VertexItem) l.getTarget()).getVertex().getGraph();
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
+                // poisk naibolshego grapha menshe tecuahego v!!!!!!!!!!!! perepisat
+                if (compare(currentGraph, graph, getRoot().getTreePath()) >= 0) {
+                    if (maxGraph == null) {
+                        maxGraph = graph;
+                        linksCandidateGraph.add(l);
+                    } else {
+                        if (compare(maxGraph, graph, getRoot().getTreePath()) < 0) {
+                            linksCandidateGraph.clear();
+                            maxGraph = graph;
+                            linksCandidateGraph.add(l);
+                        }
+                        if (compare(maxGraph, graph, getRoot().getTreePath()) == 0) {
+                            linksCandidateGraph.add(l);
+                        }
+                    }
+                }
+            }
+            // find links in own Graph
+            if (linksCandidateGraph.size() == 1) {
+                return linksCandidateGraph.get(0);
+            } 
+            if (linksCandidateGraph.size() > 1) {
+                // find prevLink in one graph
+                if (linksCandidateGraph.contains(link)) {
+                    Link prevLink = maxGraph.getPrevLink(link, linksCandidateGraph);
+                    if (prevLink != null) return prevLink;
+                    if (maxGraph.getPrevLink(link) == null) {
+                        // find prevLinks in own Row with nearest Graph
+                        linksCandidateGraph.clear();
+                        maxGraph = null;
+                        graph = null;
+                        for (Link l : linksCandidateRow) {
+                            if (l.getTarget() instanceof Graph) graph = (Graph) l.getTarget();
+                            if (l.getTarget() instanceof VertexItem) graph = ((VertexItem) l.getTarget()).getVertex().getGraph();
+                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
+                            // poisk naibolshego grapha menshe tecuahego v!!!!!!!!!!!! perepisat
+                            if (compare(currentGraph, graph, getRoot().getTreePath()) > 0) {
+                                if (maxGraph == null) {
+                                    maxGraph = graph;
+                                    linksCandidateGraph.add(l);
+                                } else {
+                                    if (compare(maxGraph, graph, getRoot().getTreePath()) < 0) {
+                                        linksCandidateGraph.clear();
+                                        maxGraph = graph;
+                                        linksCandidateGraph.add(l);
+                                    }
+                                    if (compare(maxGraph, graph, getRoot().getTreePath()) == 0) {
+                                        linksCandidateGraph.add(l);
+                                    }
+                                }
+                            }
+                        }
+                        prevLink = maxGraph.getPrevLink(null, linksCandidateGraph);
+                        return prevLink;
+                    }    
+                } else {
+                    Link prevLink = maxGraph.getPrevLink(null, linksCandidateGraph);
+                    if (prevLink != null) return prevLink;
+                }
+            }
+        } 
+        
+        //find links with nearest Row < currentRow
+        linksCandidateRow.clear();        
+        int maxRow = 0;
+        for (Link l : ingoingLinks) {
+            leftPath = ((TreeSourcePin) l.getSource()).getTreePath();
+            int row = getLeftTree().getParentsRowForPath(leftPath);
+            if (row < currentRow && row > maxRow) {
+                linksCandidateRow.clear();
+                maxRow = row;
+                linksCandidateRow.add(l);
+            }
+            if (row < currentRow && row == maxRow) {
+                linksCandidateRow.add(l);
+            }
+        }
+        if (maxRow == 0) {
+            return null;
+        }
+        if (linksCandidateRow.size() == 1) {
+            return linksCandidateRow.get(0);
+        }
+        // find prevLinks in own Row with nearest Graph
+        linksCandidateGraph.clear();
+        Graph maxGraph = null;
+        Graph graph = null;
+        for (Link l : linksCandidateRow) {
+            if (l.getTarget() instanceof Graph) graph = (Graph) l.getTarget();
+            if (l.getTarget() instanceof VertexItem) graph = ((VertexItem) l.getTarget()).getVertex().getGraph();
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!            
+            // poisk naibolshego grapha menshe tecuahego v!!!!!!!!!!!! perepisat
+            if (compare(currentGraph, graph, getRoot().getTreePath()) >= 0) {
+                if (maxGraph == null) {
+                    maxGraph = graph;
+                    linksCandidateGraph.add(l);
+                } else {
+                    if (compare(maxGraph, graph, getRoot().getTreePath()) < 0) {
+                        linksCandidateGraph.clear();
+                        maxGraph = graph;
+                        linksCandidateGraph.add(l);
+                    }
+                    if (compare(maxGraph, graph, getRoot().getTreePath()) == 0) {
+                        linksCandidateGraph.add(l);
+                    }
+                }
+            }
+        }
+        if (linksCandidateGraph.size() == 1) {
+            return linksCandidateGraph.get(0);
+        } 
+        if (linksCandidateGraph.size() > 1) {
+            // find prevLink in one graph
+            if (linksCandidateGraph.contains(link)) {
+                Link prevLink = maxGraph.getPrevLink(link, linksCandidateGraph);
+                if (prevLink != null) return prevLink;
+                
+                prevLink =maxGraph.getPrevLink(link);
+                return prevLink;
+            } else {
+                return maxGraph.getPrevLink(null, linksCandidateGraph);
+            }
+        }
+        return null;
+    }
+        
+    
 
     int getTextHeight() {
         return getFontMetrics(getFont()).getHeight();
@@ -663,6 +862,26 @@ public class Mapper extends JPanel {
         collapsedIcon = UIManager.getIcon("Tree.collapsedIcon");
     }
 
+    private int compare(Graph graph1, Graph graph2, TreePath treePath) {
+        if (graph1 == graph2) return 0;
+        
+        MapperNode node = getNode(treePath, true);
+        if (node.getGraph() == graph1) return -1;
+        if (node.getGraph() == graph2) return 1;
+        
+        for (int i = 0; i < node.getChildCount(); i++) {
+            MapperNode nodeChild = node.getChild(i);
+            if (nodeChild.isLeaf()) {
+                if (nodeChild.getGraph() == graph1) return -1;
+                if (nodeChild.getGraph() == graph2) return 1;
+            } else {
+                int r = compare(graph1, graph2, nodeChild.getTreePath());
+                if (r != 0) return r;
+            }
+        }
+        return 0;
+    }
+
     private class TreeModelListenerImpl implements TreeModelListener {
 
         public void treeNodesChanged(TreeModelEvent e) {
@@ -766,4 +985,10 @@ public class Mapper extends JPanel {
     public static final VerticalGradient SELECTED_BACKGROUND_NOT_IN_FOCUS = new VerticalGradient(
             Utils.gray(Mapper.SELECTED_BACKGROUND_COLOR_TOP, 75),
             Utils.gray(Mapper.SELECTED_BACKGROUND_COLOR_BOTTOM, 75));
+    
+    private static final Comparator<Graph> GRAPH_COMPARATOR = new Comparator<Graph>() {
+        public int compare(Graph graph1, Graph graph2) {
+            return 0;
+        }
+    };
 }

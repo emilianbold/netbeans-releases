@@ -21,7 +21,6 @@ package org.netbeans.modules.soa.mappercore;
 import java.awt.Dimension;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Graph;
@@ -36,12 +35,12 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
     private MouseEvent initialEvent = null;
     private TreePath initialPath = null;
     private Graph initialTargetGraph = null;
-    private AutoScrollSelection autoScrollSelection;
+    private AutoScrollSelectionRightTree autoScrollSelection;
 
     /** Creates a new instance of RightTreeEventHandler */
     public RightTreeEventHandler(RightTree rightTree) {
         super(rightTree.getMapper(), rightTree);
-        autoScrollSelection = new AutoScrollSelection(rightTree);
+        new AutoScrollSelectionRightTree(rightTree);
     }
 
     private void reset() {

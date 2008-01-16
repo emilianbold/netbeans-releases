@@ -43,7 +43,8 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
  */
 public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
         implements MouseMotionListener, MouseListener,
-        DnDHandler, DnDConstants {
+        DnDHandler, DnDConstants 
+{
 
     private JComponent component;
     private DnDSupport dndSupport;
@@ -154,16 +155,16 @@ public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
             if (!Utils.equal(point, oldPoint)) {
                 removeTimer();
             }
-// expand with a delay
+            // expand with a delay
             if (((timer == null) || !timer.isRunning()) && (treePath != null) &&
                     //      !tree.isLeaf(treePath) &&
                     !leftTree.isExpanded(treePath)) {
-// node is candidate for expand
+                // node is candidate for expand
                 final TreePath fTreePath = treePath;
                 final JTree fTree = leftTree;
-// remove old timer
+                // remove old timer
                 removeTimer();
-// create new timer                
+                // create new timer                
                 timer = new Timer(DELAY_TIME_FOR_EXPAND,
                         new ActionListener() {
 
@@ -183,16 +184,16 @@ public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
             if (!Utils.equal(point, oldPoint)) {
                 removeTimer();
             }
-// expand with a delay
+            // expand with a delay
             if (((timer == null) || !timer.isRunning()) && (treePath != null) &&
                     !dropNode.isLeaf() &&
                     !dropNode.isExpanded()) {
-// node is candidate for expand
+                // node is candidate for expand
                 final TreePath fTreePath = treePath;
                 final MapperNode node = dropNode;
-// remove old timer
+                // remove old timer
                 removeTimer();
-// create new timer                
+                // create new timer                
                 timer = new Timer(DELAY_TIME_FOR_EXPAND,
                         new ActionListener() {
 
@@ -212,16 +213,16 @@ public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
             if (!Utils.equal(point, oldPoint)) {
                 removeTimer();
             }
-// expand with a delay
+            // expand with a delay
             if (((timer == null) || !timer.isRunning()) && (treePath != null) 
                     && !dropNode.isGraphExpanded()) 
             {
-// node is candidate for expand
+                // node is candidate for expand
                 final TreePath fTreePath = treePath;
                 final Mapper maper = rightTree.getMapper();
-// remove old timer
+                // remove old timer
                 removeTimer();
-// create new timer                
+                // create new timer                
                 timer = new Timer(DELAY_TIME_FOR_EXPAND,
                         new ActionListener() {
 
@@ -255,13 +256,12 @@ public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
         if (component == canvas) {
             Point p = dtde.getLocation();
             CanvasSearchResult searchResult = getCanvas().find(p.x, p.y);
+            if (searchResult == null) return; 
             
-            if (searchResult != null) {
-                 GraphItem selectedItem = searchResult.getGraphItem();
-                if (selectedItem != null) {
-                    selectedItem.moveOnTop();
-                }
-            }
+            GraphItem selectedItem = searchResult.getGraphItem();
+            if (selectedItem == null) return; 
+            
+             selectedItem.moveOnTop();
         }
     }
     

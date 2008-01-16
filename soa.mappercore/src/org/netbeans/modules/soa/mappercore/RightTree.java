@@ -108,6 +108,14 @@ public class RightTree extends MapperPanel implements
                 "press-moveSelectionUp");
         aMap.put("press-moveSelectionUp", new MoveSelectionUp());
         
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 2), 
+                "press-moveSelectionDown+Control");
+        aMap.put("press-moveSelectionDown+Control", new MoveSelectionDown());
+        
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 2),
+                "press-moveSelectionUp+Control");
+        aMap.put("press-moveSelectionUp+Control", new MoveSelectionUp());
+        
         iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
                 "press-left-expand");
         aMap.put("press-left-expand", new PressLeftExpand());
@@ -788,14 +796,27 @@ public class RightTree extends MapperPanel implements
             
             Mapper mapper = RightTree.this.getMapper();
             MapperNode node = mapper.getNode(treePath, true);
-            if (node.isGraphCollapsed() && !node.isLeaf()) {
+            if (node.getGraph() == null) return;
+            
+            if (node.isGraphCollapsed()) {
                 mapper.setExpandedGraphState(node.getTreePath(), true);
             } else {
                 getCanvas().requestFocus();
+                Graph graph = node.getGraph();
+                if (graph.hasOutgoingLinks()) {
+                    List<Link> links = graph.getLinks();
+                    for (Link l : links) {
+                        if (l.getTarget().getClass() == Graph.class) {
+                            mapper.getSelectionModel().setSelected(treePath, l);
+                            break;
+                        }
+                    }
+                    return; 
+                }
                 List<Vertex> verteces = node.getGraph().getVerteces();
                 if (verteces == null || verteces.size() <= 0) return;
                 
-                Vertex vertex = verteces.get(verteces.size() - 1);
+                Vertex vertex = node.getGraph().getPrevVertex(null);
                 mapper.getSelectionModel().setSelected(treePath, vertex);
             }
         }

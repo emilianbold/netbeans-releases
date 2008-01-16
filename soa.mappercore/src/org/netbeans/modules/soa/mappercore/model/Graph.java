@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
-import org.netbeans.modules.soa.mappercore.Mapper;
 
 /**
  *
@@ -75,7 +74,41 @@ public class Graph implements TargetPin {
     public Object getDataObject() {
         return dataObject;
     }
+
+    public Link getPrevLink(Link link, List<Link> links) {
+        if (links == null || links.size() == 0) return null;
+        
+        Link maxLink = null;
+        if (link == null) {
+            maxLink = links.get(0);
+            for (Link l : links) {
+                if (LINK_COMPARATOR.compare(maxLink, l) < 0) {
+                    maxLink = l;
+                }
+            }
+            return maxLink;
+        } else {
+            if (!links.contains(link)) {
+                return null;
+            }
+            for (Link l : links) {
+                if (LINK_COMPARATOR.compare(link, l) > 0) {
+                    if (maxLink == null) {
+                        maxLink = l;
+                    } else {
+                        if (LINK_COMPARATOR.compare(maxLink, l) < 0) {
+                            maxLink = l;
+                        }
+                    }
+                }
+            }
+            return maxLink;
+        }
+    }
     
+    public Link getPrevLink(Link link) {
+        return getPrevLink(link, ingoingLinks);
+    }
     
     public void setDataObject(Object dataObject) {
         this.dataObject = dataObject;
@@ -473,6 +506,16 @@ public class Graph implements TargetPin {
         
         Vertex minVertex = null;
         
+        if (currentVertex == null) {
+            minVertex = verteces.get(0);
+            for (Vertex v : verteces) {
+                if (VERTEX_COMPARATOR.compare(v, minVertex) < 0 ) {
+                    minVertex = v;
+                }
+            }
+            return minVertex;
+        }
+        
         for (int i = 0; i < count; i++) {
             Vertex vertex = verteces.get(i);
             if (vertex == currentVertex) continue;
@@ -498,6 +541,15 @@ public class Graph implements TargetPin {
         
         Vertex maxVertex = null;
         
+        if (currentVertex == null) {
+            maxVertex = verteces.get(0);
+            for (Vertex v : verteces) {
+                if (VERTEX_COMPARATOR.compare(v, maxVertex) > 0 ) {
+                    maxVertex = v;
+                }
+            }
+            return maxVertex;
+        }
         for (int i = 0; i < count; i++) {
             Vertex vertex = verteces.get(i);
             if (vertex == currentVertex) continue;
@@ -617,6 +669,36 @@ public class Graph implements TargetPin {
             cmp = vertex1.getY() - vertex2.getY();
             if (cmp != 0) return cmp;
             
+            long cmp2 = vertex1.uid - vertex2.uid;
+            if (cmp2 > 0) return 1;
+            if (cmp2 < 0) return -1;
+            return 0;
+        }
+    };
+    
+    private static final Comparator<Link> LINK_COMPARATOR 
+            = new Comparator<Link>()
+    {
+        public int compare(Link link1, Link link2) {
+            if (link1 == link2) return 0;
+            
+            if (link1.getTarget() instanceof Graph) return -1;
+            if (link2.getTarget() instanceof Graph) return 1;
+            
+            Vertex vertex1 = ((VertexItem) link1.getTarget()).getVertex();
+            Vertex vertex2 = ((VertexItem) link2.getTarget()).getVertex();
+            
+            if (vertex1 == vertex2) {
+                int index1 = vertex1.getItemIndex((VertexItem)link1.getTarget());
+                int index2 = vertex2.getItemIndex((VertexItem)link2.getTarget());
+                return index1 - index2;
+            }
+            int cmp = vertex1.getY() - vertex2.getY();
+            if (cmp != 0) return cmp;
+                        
+            cmp = vertex1.getX() - vertex2.getX();
+            if (cmp != 0) return cmp;
+  
             long cmp2 = vertex1.uid - vertex2.uid;
             if (cmp2 > 0) return 1;
             if (cmp2 < 0) return -1;

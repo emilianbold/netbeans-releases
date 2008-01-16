@@ -57,6 +57,7 @@ import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
+import org.netbeans.modules.soa.mappercore.utils.Utils;
 import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 
 /**
@@ -307,7 +308,7 @@ public class LeftTree extends JTree implements
         return true;
     }
 
-    private Set<TreePath> getConnectedTreePathes() {
+    public  Set<TreePath> getConnectedTreePathes() {
         MapperNode root = getRoot();
         MapperModel model = getMapperModel();
 
@@ -364,6 +365,69 @@ public class LeftTree extends JTree implements
         }
         return context.getLeftDysplayText(model, value);
     }
+    
+    public Link getOutgoingLinkForPath(TreePath treePath) {
+        MapperNode root = getRoot();
+        MapperModel model = getMapperModel();
+        Link link = null;
+        
+        if (root != null && model != null) {
+            Set<Graph> connectedGraphs = getRoot().getChildGraphs();
+
+            Graph rootGraph = getRoot().getGraph();
+            if (rootGraph != null) {
+                connectedGraphs.add(rootGraph);
+            }
+
+            if (connectedGraphs != null) {
+                List<Link> edges = new ArrayList<Link>();
+
+                for (Graph graph : connectedGraphs) {
+                    edges = graph.getIngoingLinks();
+
+                    for (int j = edges.size() - 1; j >= 0; j--) {
+                        link = edges.get(j);
+                        if (Utils.equal(treePath, ((TreeSourcePin) link.getSource()).getTreePath())) {
+                        //if (treePath == ((TreeSourcePin) link.getSource()).getTreePath()) {    
+                            return link;
+                        }
+                    }
+                    edges.clear();
+                }
+            }
+        }
+        return null;
+    }
+    
+    public List<Link> getOutgoingLinksForRow(int row) {
+        TreePath treePath = getPathForRow(row);
+        return getAllOutgoingLinksForTreePath(treePath);
+    }
+    
+    private List<Link> getAllOutgoingLinksForTreePath(TreePath treePath) {
+        List<Link> links = new ArrayList<Link>();
+        links.add(getOutgoingLinkForPath(treePath));
+        TreeModel model = getModel();
+        TreePath treePath1;
+                        
+        for (int i = 0; i < model.getChildCount(treePath);) {
+            treePath1 = (TreePath) model.getChild(treePath, i);
+            if (!model.isLeaf(treePath1)) {
+                 links.addAll(getAllOutgoingLinksForTreePath(treePath1));  
+            } else {
+                links.add(getOutgoingLinkForPath(treePath1));
+            }
+        }
+            
+        return links;
+    }
+    
+    public int getParentsRowForPath(TreePath treePath) {
+        int row = getRowForPath(treePath);
+        if (row > -1) return row;
+        
+        return getParentsRowForPath(treePath.getParentPath());
+    }
 
     public Insets getAutoscrollInsets() {
         Rectangle rect = scrollPane.getViewport().getViewRect();
@@ -405,13 +469,14 @@ public class LeftTree extends JTree implements
     private class RightControlAction extends AbstractAction {
         public void actionPerformed(ActionEvent event) {
             Mapper mapper = LeftTree.this.getMapper();
-                mapper.getCanvas().requestFocus();
-                //getSelectionPath()
-                //List<Vertex> verteces = node.getGraph().getVerteces();
-                //if (verteces == null || verteces.size() <= 0) return;
-                
-                //Vertex vertex = verteces.get(verteces.size() - 1);
-                //mapper.getSelectionModel().setSelected(treePath, vertex);
+            TreePath path = LeftTree.this.getSelectionPath();
+            
+            Link link = LeftTree.this.getOutgoingLinkForPath(path);
+            if (link == null) return;
+            
+            path = mapper.getReghtTreePathForLink(link);
+            mapper.getCanvas().requestFocus();
+            mapper.getSelectionModel().setSelected(path, link);    
             
         }
     }
