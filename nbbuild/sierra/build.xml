@@ -329,6 +329,11 @@
         <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
     </target>
 
+    <target name="project-test-8">
+        <!-- scalability -->
+        <antcall target="do-test-jbi"><param name="dir" value="scalability/ScalabilityBpel"/></antcall>
+    </target>
+
     <target name="do-test-jbi">
         <ant antfile="${jbi}/${dir}/build.xml" target="clean" inheritAll="false">
             <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
