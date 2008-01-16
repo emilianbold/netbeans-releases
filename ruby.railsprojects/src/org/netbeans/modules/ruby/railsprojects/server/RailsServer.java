@@ -312,8 +312,8 @@ public final class RailsServer {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    // Try connecting repeatedly, up to 20 seconds, then bail
-                    for (int i = 0; i < 20; i++) {
+                    // Try connecting repeatedly, up to 60 seconds, then bail
+                    for (int i = 0; i < 60; i++) {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException ie) {
