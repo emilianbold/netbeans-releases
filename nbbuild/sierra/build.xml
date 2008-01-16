@@ -259,6 +259,17 @@
         <antcall target="do-test-jbi"><param name="dir" value="compensation/NestedScope"/></antcall>
     </target>
 
+    <target name="project-test-5">
+        <!-- correlation -->
+        <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL2"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="correlation/CorrelationOnePropBPEL"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="correlation/CorrelationTwoPropBPEL"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="correlation/FlowAsStartActivity"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="correlation/MatchingInstanceTwoCorrBPEL"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="correlation/ThreeCorrSetsBpel"/></antcall>
+    </target>
+
     <target name="do-test-jbi">
         <ant antfile="${jbi}/${dir}/build.xml" target="clean" inheritAll="false">
             <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>

@@ -226,6 +226,7 @@
         ${test.cvs.path}/BpelToBpel
         ${test.cvs.path}/clusterSupport
         ${test.cvs.path}/compensation
+        ${test.cvs.path}/correlation
         ${test.cvs.path}/dynamicpartnerlink
         ${test.cvs.path}/MessageExchange
         ${test.cvs.path}/PartnerLinks
