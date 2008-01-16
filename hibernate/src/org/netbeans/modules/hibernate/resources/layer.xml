@@ -180,7 +180,7 @@ made subject to such option by the copyright holder.
         <folder name="Hibernate">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             <attr name="position" intvalue="1400"/>
-            <file name="HibernateCfgTemplate.xml" url="HibernateCfgTemplate.xml>
+            <file name="HibernateCfgTemplate.xml" url="HibernateCfgTemplate.xml">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>                
                 <attr name="instantiatingIterator" methodvalue=""/>
