@@ -298,10 +298,15 @@ public class CommentGather implements ICommentGather
 	}
 	String values = ln.substring(start, end);
         initPos += start;
-        int pairStart = 0;
-        int commaAt = values.indexOf(",");
-        while(commaAt > -1) {
-	    String pair = values.substring(pairStart, commaAt);
+        int pnt = 0;
+        int len = end - start;
+        while(pnt < len) {
+            int commaAt = values.indexOf(",", pnt);
+	    String pair = null;
+            if (commaAt < 0) {                
+                commaAt = values.length();
+            }
+            pair = values.substring(pnt, commaAt);            
 	    if (pair != null) {
 		pair = pair.trim();
 		int ind = pair.indexOf("=");
@@ -310,13 +315,12 @@ public class CommentGather implements ICommentGather
 		    String value = pair.substring(ind + 1, pair.length()).trim();
                     MarkerKeyTokenDescriptor desc = new MarkerKeyTokenDescriptor();
                     desc.value = value;
-                    desc.length = commaAt - pairStart;
-                    desc.startPos = initPos + pairStart;
+                    desc.length = commaAt - pnt;
+                    desc.startPos = initPos + pnt;
 		    result.put(key, desc);
 		}
 	    }
-            pairStart = commaAt + 1;
-            commaAt = values.indexOf(",", pairStart);
+            pnt = commaAt + 1;
 	}
 	return true;
     }
