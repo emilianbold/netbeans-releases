@@ -398,6 +398,9 @@ public abstract class RestSupport {
         }
 
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs == null || sgs.length < 1) {
+            throw new IOException("Project has no Java sources"); //NOI18N
+        }
         FileObject sourceRoot = sgs[0].getRootFolder();
         for (String type : classPathTypes) {
             try {
