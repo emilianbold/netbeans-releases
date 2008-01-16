@@ -58,6 +58,8 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 
+import org.netbeans.modules.xml.wsdl.model.ExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.model.Port;
 import org.openide.filesystems.FileSystem;
 
 
@@ -337,5 +339,33 @@ public class JbiDefaultComponentInfo {
      */
     public static boolean isJavaEEProject(Project proj){
         return ProjectUtil.isJavaEEProject(proj);
+    }
+        
+    /**
+     * Utility method to get the JBI binding info for the given WSDL Port.
+     * 
+     * @param port given WSDL Port
+     * @return the corresponding JBI binding info
+     */
+    public static JbiBindingInfo getBindingInfo(final Port port) {
+        JbiDefaultComponentInfo bcinfo = getJbiDefaultComponentInfo();
+        if (bcinfo == null) {
+            return null;
+        }
+
+        List<ExtensibilityElement> xts = port.getExtensibilityElements();
+        if (xts.size() > 0) {
+            ExtensibilityElement ex = xts.get(0);
+            String qns = ex.getQName().getNamespaceURI();
+            if (qns != null) {
+                for (JbiBindingInfo bi : bcinfo.getBindingInfoList()) {
+                    String ns = bi.getNameSpace();
+                    if (qns.equalsIgnoreCase(ns)) {
+                        return bi;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

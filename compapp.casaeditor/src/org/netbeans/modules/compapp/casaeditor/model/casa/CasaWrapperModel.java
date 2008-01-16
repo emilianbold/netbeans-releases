@@ -96,7 +96,6 @@ import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.DialogDisplayer;
@@ -272,9 +271,10 @@ public class CasaWrapperModel extends CasaModelImpl {
         if (bindingType == null) {
             //IZ: 113545
             try {
-                JbiBindingInfo bi = getBindingInfo(getLinkedWSDLPort(casaPort));
+                Port port = getLinkedWSDLPort(casaPort);
+                JbiBindingInfo bi = JbiDefaultComponentInfo.getBindingInfo(port);
                 if (bi != null) {
-                    return bi.getBindingName();
+                    return bi.getBindingType();
                 }
             } catch (Exception ex) {
                 // skip to use the default one..
@@ -1124,10 +1124,10 @@ public class CasaWrapperModel extends CasaModelImpl {
 //        assert bcinfo != null;
 //
 //        for (JbiBindingInfo bi : bcinfo.getBindingInfoList()) {
-//            String bcName = bi.getBcName();
-//            String bindingName = bi.getBindingName();
-//            bcName2BindingType.put(bcName, bindingName);
-//            bindingType2BcName.put(bindingName, bcName);
+//            String bcName = bi.getBindingComponentName();
+//            String bindingType = bi.getBindingType();
+//            bcName2BindingType.put(bcName, bindingType);
+//            bindingType2BcName.put(bindingType, bcName);
 //        }
 //    }
 
@@ -1146,7 +1146,7 @@ public class CasaWrapperModel extends CasaModelImpl {
 
             List<JbiBindingInfo> bcList = bcinfo.getBindingInfoList();
             for (JbiBindingInfo bi : bcList) {
-                bcNameMap.put(bi.getBcName(), bi.getBindingName());
+                bcNameMap.put(bi.getBindingComponentName(), bi.getBindingType());
             }
         }
         return bcNameMap;
@@ -1438,34 +1438,6 @@ public class CasaWrapperModel extends CasaModelImpl {
         }
     }
 
-    private JbiBindingInfo getBindingInfo(final Port port) {
-        JbiDefaultComponentInfo bcinfo =
-                JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
-        if (bcinfo == null) {
-            return null;
-        }
-
-        List<JbiBindingInfo> bclist = bcinfo.getBindingInfoList();
-        List<ExtensibilityElement> xts = port.getExtensibilityElements();
-        if (xts.size() > 0) {
-            ExtensibilityElement ex = xts.get(0);
-            String qns = ex.getQName().getNamespaceURI();
-            if (qns != null) {
-                for (JbiBindingInfo bi : bclist) {
-                    String[] ns = bi.getNameSpaces();
-                    if (ns != null) {
-                        for (String n : ns) {
-                            if (n.equalsIgnoreCase(qns)) {
-                                return bi;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
     /**
      * Add a WSDL port from WSDL file into CASA. This is to restore user-deleted
      * CASA port from component projects.
@@ -1481,7 +1453,7 @@ public class CasaWrapperModel extends CasaModelImpl {
     public CasaPort addCasaPortFromWsdlPort(final Port port,
             final File wsdlFile) {
         try {
-            JbiBindingInfo bi = getBindingInfo(port);
+            JbiBindingInfo bi = JbiDefaultComponentInfo.getBindingInfo(port);
             if (bi == null) {
                 return null;
             }
@@ -1507,8 +1479,8 @@ public class CasaWrapperModel extends CasaModelImpl {
             String newInterfaceName = port.getBinding().get().getType().get().getName();
             String newPortTypeHref = getPortTypeHref(relativePath, newInterfaceName);
 
-            String bindingType = bi.getBindingName();
-            String componentName = bi.getBcName();
+            String bindingType = bi.getBindingType();
+            String componentName = bi.getBindingComponentName();
 
             return addCasaPortToModel(componentName, bindingType,
                     new QName(tns, newInterfaceName),

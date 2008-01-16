@@ -91,14 +91,14 @@ public class CasaBasePlugin implements CasaPalettePlugin {
         if (bcinfo != null) {
             List<JbiBindingInfo> bclist = bcinfo.getBindingInfoList();
             for (JbiBindingInfo bi : bclist) {
-                String biName = bi.getBindingName().toUpperCase();
-                if (bcTemplates.get(biName) != null) {
+                String bindingType = bi.getBindingType().toUpperCase();
+                if (bcTemplates.get(bindingType) != null) {
                     CasaPaletteItemID item = new CasaPaletteItemID(
                             this,
                             CasaPalette.CATEGORY_ID_WSDL_BINDINGS, 
-                            bi.getBindingName(),
+                            bi.getBindingType(),
                             bi.getIcon().getFile());
-                    item.setDataObject(bi.getBcName()); // set the component name
+                    item.setDataObject(bi.getBindingComponentName()); // set the component name
                     bcItems.add(item);
                 }
             }

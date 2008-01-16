@@ -124,9 +124,9 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
                             " (" + "Binding=\"" + binding.getName() + "\")"; // NOI18N
                     label.setText(labelText);
                     
-                    JbiBindingInfo bi = getBindingInfo(port);
+                    JbiBindingInfo bi = JbiDefaultComponentInfo.getBindingInfo(port);
                     if (bi != null) {   
-                        label.setToolTipText("binding type: " + bi.getBindingName()); // NOI18N
+                        label.setToolTipText("binding type: " + bi.getBindingType()); // NOI18N
                     } else {
                         label.setToolTipText(null);
                     }
@@ -315,33 +315,5 @@ public class NewTestcaseOperationVisualPanel extends javax.swing.JPanel  {
             sb.append("void");  // NOI18N
         }
         return sb.toString();
-    }
-    
-    private static JbiBindingInfo getBindingInfo(final Port port) {
-        JbiDefaultComponentInfo bcinfo =
-                JbiDefaultComponentInfo.getJbiDefaultComponentInfo();
-        if (bcinfo == null) {
-            return null;
-        }
-        
-        List<JbiBindingInfo> bclist = bcinfo.getBindingInfoList();
-        List<ExtensibilityElement> xts = port.getExtensibilityElements();
-        if (xts.size() > 0) {
-            ExtensibilityElement ex = xts.get(0);
-            String qns = ex.getQName().getNamespaceURI();
-            if (qns != null) {
-                for (JbiBindingInfo bi : bclist) {
-                    String[] ns = bi.getNameSpaces();
-                    if (ns != null) {
-                        for (String n : ns) {
-                            if (n.equalsIgnoreCase(qns)) {
-                                return bi;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return null;
     }
 }

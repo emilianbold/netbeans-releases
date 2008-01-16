@@ -159,9 +159,9 @@ public class AddWSDLPortsAction extends NodeAction {
             Map<String, LocalizedTemplateGroup> bcTemplates = getWsdlTemplates();
             List<JbiBindingInfo> bclist = bcinfo.getBindingInfoList();
             for (JbiBindingInfo bi : bclist) {
-                String biName = bi.getBindingName().toUpperCase();
-                if (bcTemplates.get(biName) != null) {
-                    portMap.put(bi.getBindingName(), bi);
+                String bindingType = bi.getBindingType().toUpperCase();
+                if (bcTemplates.get(bindingType) != null) {
+                    portMap.put(bi.getBindingType(), bi);
                 }
             }
         }
@@ -184,8 +184,8 @@ public class AddWSDLPortsAction extends NodeAction {
                     for (String selectedItem : panel.getSelectedItems()) {
                         JbiBindingInfo info = portMap.get(selectedItem);
                         model.addCasaPort(
-                                info.getBindingName(),
-                                info.getBcName(),
+                                info.getBindingType(),
+                                info.getBindingComponentName(),
                                 x,
                                 y);
                     }

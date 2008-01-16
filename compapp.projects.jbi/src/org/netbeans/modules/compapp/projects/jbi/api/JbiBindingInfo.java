@@ -45,7 +45,8 @@ import java.io.Serializable;
 import java.net.URL;
 
 /**
- * JBI binding info, a Binding Component may implment multiple bindings.
+ * JBI binding info. A Binding Component may implement multiple binding types. 
+ * A JbiBindingInfo is for one binding type of a Binding Component.
  *
  * @author tli
  */
@@ -54,7 +55,7 @@ public class JbiBindingInfo implements Serializable {
     /**
      * Name of the binding component, e.x., "sun-http-binding".
      */
-    private String bcName;
+    private String bindingComponentName;
 
     /**
      * Type of the binding, e.x., "http", or "soap".
@@ -72,26 +73,26 @@ public class JbiBindingInfo implements Serializable {
     private URL icon;
 
     /**
-     * DOCUMENT ME!
+     * Namespace of the binding type.
      */
-    private String ns;
+    private String namespace;
 
     /**
      * DOCUMENT ME!
      *
-     * @param bcName
+     * @param bindingComponentName
      * @param bindingType
      * @param icon
      * @param description 
-     * @param ns 
+     * @param namespace 
      */
-    public JbiBindingInfo(String bcName, String bindingType, URL icon, 
-            String description, String ns) {
-        this.bcName = bcName;
+    public JbiBindingInfo(String bindingComponentName, String bindingType, 
+            URL icon, String description, String namespace) {
+        this.bindingComponentName = bindingComponentName;
         this.bindingType = bindingType;
         this.icon = icon;
         this.description = description;
-        this.ns = ns;
+        this.namespace = namespace;
     }
 
     /**
@@ -99,8 +100,8 @@ public class JbiBindingInfo implements Serializable {
      *
      * @return the binding compoent name
      */
-    public String getBcName() {
-        return this.bcName;
+    public String getBindingComponentName() {
+        return this.bindingComponentName;
     }
 
     /**
@@ -108,8 +109,7 @@ public class JbiBindingInfo implements Serializable {
      *
      * @return the binding type
      */
-    // RENAME ME: API change
-    public String getBindingName() {
+    public String getBindingType() {
         return this.bindingType;
     }
 
@@ -136,8 +136,7 @@ public class JbiBindingInfo implements Serializable {
      *
      * @return the binding component namespaces
      */
-    // FIXME
-    public String[] getNameSpaces() {
-        return new String[] { this.ns };
+    public String getNameSpace() {
+        return this.namespace;
     }
 }
