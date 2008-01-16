@@ -318,12 +318,15 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             }
         });
 
+        String result = null;
         try {
-            mgmtService.startServiceAssembly(assemblyName, SERVER_TARGET);
+            result = mgmtService.startServiceAssembly(assemblyName, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
+            result = e.getMessage();
+        } finally {
             JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                     GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
-                    assemblyName, e.getMessage());
+                    assemblyName, result);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -387,12 +390,15 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             }
         });
 
+        String result = null;
         try {
-            mgmtService.stopServiceAssembly(assemblyName, SERVER_TARGET);
+            result = mgmtService.stopServiceAssembly(assemblyName, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
+            result = e.getMessage();
+        } finally {
             JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                     GenericConstants.STOP_SERVICE_ASSEMBLY_OPERATION_NAME,
-                    assemblyName, e.getMessage());
+                    assemblyName, result);
         }
         
         SwingUtilities.invokeLater(new Runnable() {
@@ -462,13 +468,16 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             }
         });
 
+        String result = null;
         try {
-            mgmtService.shutdownServiceAssembly(
+            result = mgmtService.shutdownServiceAssembly(
                     assemblyName, force, SERVER_TARGET);
         } catch (ManagementRemoteException e) {            
+            result = e.getMessage();
+        } finally {
             JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                     GenericConstants.SHUTDOWN_SERVICE_ASSEMBLY_OPERATION_NAME,
-                    assemblyName, e.getMessage());
+                    assemblyName, result);
         }
         
         SwingUtilities.invokeLater(new Runnable() {
@@ -521,13 +530,16 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             }
         });
 
+        String result = null;
         try {
-            deploymentService.undeployServiceAssembly(
+            result = deploymentService.undeployServiceAssembly(
                     assemblyName, force, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
+            result = e.getMessage();
+        } finally {
             JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                     GenericConstants.UNDEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
-                    assemblyName, e.getMessage());
+                    assemblyName, result);
         }
         
         SwingUtilities.invokeLater(new Runnable() {

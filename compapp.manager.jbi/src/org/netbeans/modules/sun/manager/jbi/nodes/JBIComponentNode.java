@@ -739,12 +739,15 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             }
         });
 
+        String result = null;
         try {
-            mgmtService.startComponent(componentName, SERVER_TARGET);           
+            result = mgmtService.startComponent(componentName, SERVER_TARGET);           
         } catch (ManagementRemoteException e) {
+            result = e.getMessage();
+        } finally {
             JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                 GenericConstants.START_COMPONENT_OPERATION_NAME,
-                componentName, e.getMessage());
+                componentName, result);
         }
         
         SwingUtilities.invokeLater(new Runnable() {
@@ -783,12 +786,15 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             }
         });
 
+        String result = null;
         try {
-            mgmtService.stopComponent(componentName, SERVER_TARGET);
+            result = mgmtService.stopComponent(componentName, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
+            result = e.getMessage();
+        } finally {
              JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                     GenericConstants.STOP_COMPONENT_OPERATION_NAME,
-                    componentName, e.getMessage());
+                    componentName, result);
         }
         
         SwingUtilities.invokeLater(new Runnable() {
@@ -833,12 +839,15 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             }
         });
 
+        String result = null;
         try {
-            mgmtService.shutdownComponent(componentName, force, SERVER_TARGET);
+            result = mgmtService.shutdownComponent(componentName, force, SERVER_TARGET);
         } catch (ManagementRemoteException e) {
+            result = e.getMessage();
+        } finally {
             JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                     GenericConstants.SHUTDOWN_COMPONENT_OPERATION_NAME,
-                    componentName, e.getMessage());
+                    componentName, result);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -897,12 +906,15 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             }
         });
 
+        String result = null;
         try {
-            uninstallComponent(mgmtService, componentName, force);
+            result = uninstallComponent(mgmtService, componentName, force);
         } catch (ManagementRemoteException e) {
+            result = e.getMessage();
+        } finally {
             JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                     GenericConstants.UNINSTALL_COMPONENT_OPERATION_NAME,
-                    componentName, e.getMessage());
+                    componentName, result);
         }
 
         SwingUtilities.invokeLater(new Runnable() {
@@ -985,15 +997,17 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 });
 
                 String jarFilePath = files.get(0).getAbsolutePath();
+                String result = null;
                 try {
-                    installationService.upgradeComponent(
+                    result = installationService.upgradeComponent(
                             componentName, jarFilePath);
                 } catch (ManagementRemoteException e) {
-                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                            GenericConstants.UPGRADE_COMPONENT_OPERATION_NAME,
-                            jarFilePath, e.getMessage());
+                    result = e.getMessage();                    
                     return;
                 } finally {                
+                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                            GenericConstants.UPGRADE_COMPONENT_OPERATION_NAME,
+                            jarFilePath, result);
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             progressUI.finish();

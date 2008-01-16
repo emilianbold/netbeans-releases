@@ -190,40 +190,40 @@ public class JBIServiceAssembliesNode extends AppserverJBIMgmtContainerNode
             final String zipFilePath = file.getAbsolutePath();
 
             try {
-                final String result = deploymentService.deployServiceAssembly(
+                String result = deploymentService.deployServiceAssembly(
                         zipFilePath, SERVER_TARGET);
                 assert result != null;
-                
-                if (start) {                    
-                    // Start component automatically only upon 
-                    // successful installation
-                    String lowerCaseResult = result.toLowerCase();
-                    if (!lowerCaseResult.contains("error") &&        // NOI18N
-                            !lowerCaseResult.contains("warning") &&  // NOI18N
-                            !lowerCaseResult.contains("exception") &&  // NOI18N
-                            !lowerCaseResult.contains("info")) {     // NOI18N
-
+             
+                String lowerCaseResult = result.toLowerCase();
+                if (!lowerCaseResult.contains("error") && // NOI18N
+                        !lowerCaseResult.contains("warning") && // NOI18N
+                        !lowerCaseResult.contains("exception") && // NOI18N
+                        !lowerCaseResult.contains("info")) {     // NOI18N
+                    if (start) {
+                        // Start component automatically only upon 
+                        // successful installation.
                         // The successful installation result is the 
                         // service assembly name.
-                        final String assembly = result;
-                        try {
-                            RuntimeManagementServiceWrapper mgmtService = 
-                                    getRuntimeManagementServiceWrapper();
-                            mgmtService.startServiceAssembly(
-                                    assembly, SERVER_TARGET);
-                        } catch (ManagementRemoteException e) {
-                            // Failed to start
-                            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                        String assembly = result;
+                        RuntimeManagementServiceWrapper mgmtService =
+                                getRuntimeManagementServiceWrapper();
+                        result = mgmtService.startServiceAssembly(
+                                assembly, SERVER_TARGET);
+                        
+                        JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                                 GenericConstants.START_SERVICE_ASSEMBLY_OPERATION_NAME,
-                                assembly, e.getMessage());
-                        }
+                                assembly, result);
                     }
+                } else {
+                    // Failed to deploy
+                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                            GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
+                            zipFilePath, result);                    
                 }
             } catch (ManagementRemoteException e) {
-                // Failed to deploy
                 JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                        GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
-                        zipFilePath, e.getMessage());
+                            GenericConstants.DEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
+                            zipFilePath, e.getMessage());   
             }
         }
 

@@ -310,11 +310,14 @@ public class DeployServiceAssembly extends Task {
         log("        port=" + port);
         log("        file=" + serviceAssemblyLocation);
         
+        String result = null;
         try {
-            adminService.deployServiceAssembly(serviceAssemblyLocation, "server");
+            result = adminService.deployServiceAssembly(serviceAssemblyLocation, "server");
         } catch (ManagementRemoteException e) {
+            result = e.getMessage();
+        } finally {
             Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Deploy", serviceAssemblyLocation, e.getMessage(), false);
+                "Deploy", serviceAssemblyLocation, result, false);
             if (value[0] != null) {
                 throw new BuildException((String)value[0]);
             }
@@ -330,11 +333,14 @@ public class DeployServiceAssembly extends Task {
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
           
+        String result = null;
         try {
-            adminService.startServiceAssembly(serviceAssemblyID, "server");
+            result = adminService.startServiceAssembly(serviceAssemblyID, "server");
         } catch (ManagementRemoteException e) {
+             result = e.getMessage();
+        } finally {
             Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Start", serviceAssemblyID, e.getMessage(), false);
+                "Start", serviceAssemblyID, result, false);
             if (value[0] != null) {
                 throw new BuildException((String)value[0]);
             }
@@ -349,11 +355,14 @@ public class DeployServiceAssembly extends Task {
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
         
+        String result = null;
         try {
-            adminService.stopServiceAssembly(serviceAssemblyID, "server");
+            result = adminService.stopServiceAssembly(serviceAssemblyID, "server");
         } catch (ManagementRemoteException e) {
+             result = e.getMessage();
+        } finally {
             Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Stop", serviceAssemblyID, e.getMessage(), false);
+                "Stop", serviceAssemblyID, result, false);
             if (value[0] != null) {
                 throw new BuildException((String)value[0]);
             }
@@ -368,11 +377,14 @@ public class DeployServiceAssembly extends Task {
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
         
+        String result = null;
         try {
-            adminService.shutdownServiceAssembly(serviceAssemblyID, FORCE, "server");
+            result = adminService.shutdownServiceAssembly(serviceAssemblyID, FORCE, "server");
         } catch (ManagementRemoteException e) {
+             result = e.getMessage();
+        } finally {
             Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Shutdown", serviceAssemblyID, e.getMessage(), false);
+                "Shutdown", serviceAssemblyID, result, false);
             if (value[0] != null) {
                 throw new BuildException((String)value[0]);
             }
@@ -387,11 +399,14 @@ public class DeployServiceAssembly extends Task {
         log("        port=" + port);
         log("        name=" + serviceAssemblyID);
         
-         try {
-            adminService.undeployServiceAssembly(serviceAssemblyID, FORCE, "server");
+        String result = null;
+        try {
+            result = adminService.undeployServiceAssembly(serviceAssemblyID, FORCE, "server");
         } catch (ManagementRemoteException e) {
+             result = e.getMessage();
+        } finally {
             Object[] value = JBIMBeanTaskResultHandler.getProcessResult(
-                "Undeploy", serviceAssemblyID, e.getMessage(), false);
+                "Undeploy", serviceAssemblyID, result, false);
             if (value[0] != null) {
                 throw new BuildException((String)value[0]);
             }

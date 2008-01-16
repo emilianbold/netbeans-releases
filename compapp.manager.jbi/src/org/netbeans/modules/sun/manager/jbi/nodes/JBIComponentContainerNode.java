@@ -173,32 +173,39 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
                 String result = installJBIComponent(jarFilePath);
                 assert result != null;
 
-                if (start) {
-                    // Start component automatically only upon 
-                    // successful installation
-                    String lowerCaseResult = result.toLowerCase();
-                    if (!lowerCaseResult.contains("error") && // NOI18N
-                            !lowerCaseResult.contains("warning") && // NOI18N
-                            !lowerCaseResult.contains("exception") &&// NOI18N
-                            !lowerCaseResult.contains("info")) {     // NOI18N
-
+                String lowerCaseResult = result.toLowerCase();
+                if (!lowerCaseResult.contains("error") && // NOI18N
+                        !lowerCaseResult.contains("warning") && // NOI18N
+                        !lowerCaseResult.contains("exception") &&// NOI18N
+                        !lowerCaseResult.contains("info")) {     // NOI18N
+                    if (start) {
+                        // Start component automatically only upon 
+                        // successful installation.
                         // The successful installation result is the 
                         // component ID.
-                        final String componentID = result;
                         try {
+                            String componentID = result;
                             RuntimeManagementServiceWrapper mgmtService =
                                     getRuntimeManagementServiceWrapper();
-                            mgmtService.startComponent(componentID, SERVER_TARGET);
-                        } catch (ManagementRemoteException e) {
-                            // Failed to start
+                            result = mgmtService.startComponent(
+                                    componentID, SERVER_TARGET);
+
                             JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                                     GenericConstants.START_COMPONENT_OPERATION_NAME,
-                                    componentID, e.getMessage());
+                                    componentID, result);
+                        } catch (ManagementRemoteException e) {
+                            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                    GenericConstants.START_COMPONENT_OPERATION_NAME,
+                                    jarFilePath, e.getMessage());
                         }
                     }
+                } else {
+                    // Failed to install
+                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                        GenericConstants.INSTALL_COMPONENT_OPERATION_NAME,
+                        jarFilePath, result);
                 }
             } catch (ManagementRemoteException e) {
-                // Failed to install
                 JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                         GenericConstants.INSTALL_COMPONENT_OPERATION_NAME,
                         jarFilePath, e.getMessage());

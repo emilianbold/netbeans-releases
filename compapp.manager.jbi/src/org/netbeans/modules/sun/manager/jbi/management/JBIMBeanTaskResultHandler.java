@@ -111,12 +111,10 @@ public class JBIMBeanTaskResultHandler {
             return new Object[] {null, true};
         }
         
-//        System.out.println(result);
-        
         StringBuffer msg = new StringBuffer();
         
         if (html) {
-            msg = msg.append("<html>"); // NOI18N
+            msg = msg.append("<html><table width=\"800\"> <tr><td>"); // NOI18N
         }
         
         boolean failed = false;
@@ -173,7 +171,7 @@ public class JBIMBeanTaskResultHandler {
                 }
 
                 msg = msg.append("</ul>");   // NOI18N
-                msg = msg.append("</html>"); // NOI18N
+                msg = msg.append("</td></tr></table></html>"); // NOI18N
                 
             } else {
                 for (TaskResult frameworkTaskResult : frameworkTaskResults) {
