@@ -1592,13 +1592,6 @@ public class UMLXMLManip
    public static void setNodeTextValue(Node curNode, String query, String newVal, boolean useCData)
    {
       XMLManip.setNodeTextValue(curNode, query, newVal, useCData);
-      
-      INamespace space = getProject(curNode);
-      if (space instanceof IProject)
-      {
-          IProject project = (IProject)space;
-          project.setDirty(true);
-      }
    }
 
    public static void setNodeTextValue(IVersionableElement elem, String query, String newVal, boolean useCData)

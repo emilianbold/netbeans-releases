@@ -146,7 +146,7 @@ public class UseCaseDetail extends NamedElement implements IUseCaseDetail
     {
         if(body == null || body.trim().length() == 0)
             body = "";
-        UMLXMLManip.setNodeTextValue(m_Node, "UML:UseCaseDetail.body", body, false);
+        UMLXMLManip.setNodeTextValue(this, "UML:UseCaseDetail.body", body, false);
 
     }
 

@@ -93,11 +93,11 @@ public class Expression extends ValueSpecification implements IExpression{
 		{
 			if (newVal.length() > 0)
 			{
-				UMLXMLManip.setNodeTextValue(m_Node, "UML:Expression.body", newVal, false);
+				UMLXMLManip.setNodeTextValue(this, "UML:Expression.body", newVal, false);
 			}
 			else
 			{
-				UMLXMLManip.setNodeTextValue(m_Node, "UML:Expression.body", "", false);
+				UMLXMLManip.setNodeTextValue(this, "UML:Expression.body", "", false);
 			}
                         
 			if (listener != null)
