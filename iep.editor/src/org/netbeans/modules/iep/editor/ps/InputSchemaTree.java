@@ -78,7 +78,7 @@ public class InputSchemaTree extends JTree {
                 } else {
                     if(obj instanceof AttributeInfo) {
                         AttributeInfo ai = (AttributeInfo)obj;
-                        lab.setText(ai.getColumnMetadata().getName());
+                        lab.setText(ai.getColumnMetadata().getAttributeName());
                     } else {
                         lab.setText(node.toString());
                     }

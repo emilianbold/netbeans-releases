@@ -56,8 +56,13 @@ public class IEPAttributeConfigurationPanel extends javax.swing.JPanel {
         while(it.hasNext()) {
             XSDToIEPAttributeNameVisitor.AttributeNameToType attrNameToType = it.next();
             PlaceholderSchemaAttribute attr = new PlaceholderSchemaAttribute();
-            attr.setAttributeName(attrNameToType.getAttributeName());
-            attr.setAttributeType(attrNameToType.getAttributeType());
+            String attrName = attrNameToType.getAttributeName();
+            String attrType = attrNameToType.getAttributeType();
+            attr.setAttributeName(attrName);
+            attr.setAttributeType(attrType);
+            if(SharedConstants.SQL_TYPE_VARCHAR.equals(attrType)) {
+                attr.setAttributeSize("50"); //by default use 50 for size. size is required for VARCHAR
+            }
             
             mTableModel.addRow(attr);
         }
