@@ -58,6 +58,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -166,6 +168,19 @@ public final class RubyPlatformManager {
             String hardcodedRuby = System.getProperty("ruby.interpreter");
             if (hardcodedRuby != null) {
                 Info info = new Info("User-specified Ruby", "0.1");
+
+                FileObject gems = FileUtil.toFileObject(new File(hardcodedRuby)).getParent().getParent().getFileObject("lib/ruby/gems/1.8");
+                if (gems != null) {
+                    Properties props = new Properties();
+                    props.setProperty(Info.RUBY_KIND, "User-specified Ruby");
+                    props.setProperty(Info.RUBY_VERSION, "0.1");
+                    String gemHome = FileUtil.toFile(gems).getAbsolutePath();
+                    props.setProperty(Info.GEM_HOME, gemHome);
+                    props.setProperty(Info.GEM_PATH, gemHome);
+                    props.setProperty(Info.GEM_VERSION, "1.0.1 (1.0.1)");
+                    info = new Info(props);
+                }
+
                 platforms.add(new RubyPlatform(PLATFORM_ID_DEFAULT, hardcodedRuby, info));
                 return platforms;
             }
