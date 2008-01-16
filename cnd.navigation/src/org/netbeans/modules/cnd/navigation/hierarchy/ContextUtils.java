@@ -44,12 +44,14 @@ package org.netbeans.modules.cnd.navigation.hierarchy;
 import java.util.Iterator;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -107,6 +109,12 @@ public class ContextUtils {
                 decl = ref.getReferencedObject();
                 if (CsmKindUtilities.isClass(decl)){
                     return (CsmClass)decl;
+                } else if (CsmKindUtilities.isVariable(decl)){
+                    CsmVariable v = (CsmVariable)decl;
+                    CsmClassifier cls = v.getType().getClassifier();
+                    if (CsmKindUtilities.isClass(cls)){
+                        return (CsmClass)cls;
+                    }
                 }
             }
         }

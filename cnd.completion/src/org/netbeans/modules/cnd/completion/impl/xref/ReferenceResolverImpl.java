@@ -89,7 +89,7 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
         if (cookie != null) {
             JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(cookie);
             if (panes != null && panes.length>0) {
-                int offset = panes[0].getCaret().getDot();
+                int offset = panes[0].getCaret().getMark();
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 StyledDocument doc = null;
                 try {
