@@ -165,11 +165,11 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
             boolean startIncludes = false;
             while ((line = reader.readLine()) != null) {
                 //System.out.println(line);
-                if (line.startsWith("#include <...>")) { // NOI18N
+                if (line.contains("#include <...>")) { // NOI18N
                     startIncludes = true;
                     continue;
                 }
-                if (line.startsWith("End of search")) { // NOI18N
+                if (line.startsWith("End of search") || ! line.trim().startsWith(File.separator)) { // NOI18N
                     startIncludes = false;
                     continue;
                 }
