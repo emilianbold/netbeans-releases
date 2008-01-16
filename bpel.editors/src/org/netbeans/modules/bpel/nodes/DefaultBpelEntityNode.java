@@ -19,6 +19,7 @@
 package org.netbeans.modules.bpel.nodes;
 
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.xml.xam.Named;
@@ -70,6 +71,10 @@ public class DefaultBpelEntityNode extends BpelNode<BpelEntity> {
             if (ref instanceof ContentElement) {
                 name = ((ContentElement)ref).getContent();
             }
+            
+            // content of the element could contain html-elements, e.g.: documentation:
+            name = Util.getCorrectedHtmlRenderedString(name);
+            
             if (name != null && name.length() > MAX_CONTENT_NAME_LENGTH) {
                 name = name.substring(0, MAX_CONTENT_NAME_LENGTH);
             }
