@@ -65,7 +65,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst:///modules/ext/rest/rome-0.9.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jdom-1.0.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/jettison-1.0-RC1.jar!/</resource>
-        <resource>jar:nbinst:///modules/ext/rest/asm-3.0.jar!/</resource>
+        <resource>jar:nbinst:///modules/ext/rest/asm-3.1.jar!/</resource>
         <resource>jar:nbinst:///modules/ext/rest/grizzly-http-webserver-1.7.0.jar!/</resource>
     </volume>  
 </library>

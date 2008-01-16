@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/rest/wadl2java.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/asm-3.0.jar</runtime-relative-path>
+                <runtime-relative-path>ext/rest/asm-3.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/rest/http.jar</runtime-relative-path>
