@@ -268,8 +268,8 @@
     <target name="build" depends="build-fcs,build-dev"/>
     <target name="clean" depends="clean-fcs,clean-dev"/>
 
-    <target name="build-fcs" depends="build-print,build-libs,build-compapp,build-soa,build-bpel, build-etl, build-xslt"/>
-    <target name="clean-fcs" depends="build-print,clean-libs,clean-compapp,clean-soa,clean-bpel, clean-etl, clean-xslt"/>
+    <target name="build-fcs" depends="build-print,build-libs,build-compapp,build-soa,build-bpel, build-dataintegrator, build-xslt"/>
+    <target name="clean-fcs" depends="build-print,clean-libs,clean-compapp,clean-soa,clean-bpel, clean-dataintegrator, clean-xslt"/>
 
     <target name="build-dev" depends="build-iep,build-openesbaddons,build-sql,build-wsdlextensions"/>
     <target name="clean-dev" depends="clean-iep,clean-openesbaddons,clean-sql,clean-wsdlextensions"/>
@@ -345,10 +345,10 @@
         </subant>
     </target>
 
-    <!-- etl -->
-    <target name="build-etl"><antcall target="do-etl"><param name="action" value="netbeans"/></antcall></target>
-    <target name="clean-etl"><antcall target="do-etl"><param name="action" value="clean"/></antcall></target>
-    <target name="do-etl">
+    <!-- dataintegrator -->
+    <target name="build-dataintegrator"><antcall target="do-dataintegrator"><param name="action" value="netbeans"/></antcall></target>
+    <target name="clean-dataintegrator"><antcall target="do-dataintegrator"><param name="action" value="clean"/></antcall></target>
+    <target name="do-dataintegrator">
         <subant target="${action}" inheritAll="false">
             <buildpath location="${enterprise}/dataintegrator/eTLEditor/build.xml"/>
             <buildpath location="${enterprise}/dataintegrator/etlpro/build.xml"/>

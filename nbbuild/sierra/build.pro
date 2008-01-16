@@ -56,7 +56,8 @@
       print
       enterprise/bpel
       enterprise/compapp
-      enterprise/dataintegrator
+      enterprise/dataintegrator/eTLEditor
+      enterprise/dataintegrator/etlpro
       enterprise/iep
       enterprise/libs
       enterprise/openesbaddons/configextension
