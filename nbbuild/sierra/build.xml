@@ -271,6 +271,10 @@
 
         <!-- empty -->
         <antcall target="do-test-jbi"><param name="dir" value="empty/EmptyBpel"/></antcall>
+
+        <!-- eventHandlers -->
+        <antcall target="do-test-jbi"><param name="dir" value="eventHandlers/onAlarm"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="eventHandlers/onEvent"/></antcall>
     </target>
 
     <target name="do-test-jbi">
