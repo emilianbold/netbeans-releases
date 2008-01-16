@@ -204,23 +204,23 @@ public class UMLElementNode extends AbstractModelElementNode
 	
 	public String getName()
 	{
-		IElement element = getModelElement();
+            IElement element = getModelElement();
 		
-        if (element instanceof INamedElement)
-		{
-			// return unformatted name for attributes and operations, so that
-			// rename action on those nodes will display the bare name without
-			// visibility modifier and type information, since we only support 
-			// rename the name part of these two types of elements from project
-			// tree
-			if (element.getElementType().equals(ELEMENT_TYPE_ATTRIBUTE) ||
-				element.getElementType().equals(ELEMENT_TYPE_OPERATION))
+            if (element instanceof INamedElement)
             {
-				return (((INamedElement)element).getName());
+                // return unformatted name for attributes and operations, so that
+                // rename action on those nodes will display the bare name without
+                // visibility modifier and type information, since we only support 
+                // rename the name part of these two types of elements from project
+                // tree
+                if (element.getElementType().equals(ELEMENT_TYPE_ATTRIBUTE) ||
+                        element.getElementType().equals(ELEMENT_TYPE_OPERATION))
+                {
+                    return (((INamedElement)element).getName());
+                }
             }
-		}
         
-		return super.getName();
+            return super.getName();
 	}
 
     
@@ -237,6 +237,7 @@ public class UMLElementNode extends AbstractModelElementNode
     */
         public void setDisplayedName(String name, boolean buildProperties)
         {
+            setDisplayName(name, buildProperties);
             if (getData() != null)
                 getData().setItemText(name);
             
@@ -251,8 +252,6 @@ public class UMLElementNode extends AbstractModelElementNode
             
 //        else
 //            setName(name);
-            
-            setDisplayName(name, buildProperties);
         }
     
     
@@ -279,7 +278,7 @@ public class UMLElementNode extends AbstractModelElementNode
     public String getDisplayedName()
     {
         return getDisplayName();
-	}
+    }
 	
 	
 	
@@ -480,7 +479,7 @@ public class UMLElementNode extends AbstractModelElementNode
 			Children children = getChildren();
 			
 			if (children != null)
-				children.remove(node);
+                            children.remove(node);
 		}
 	}
 	
@@ -797,7 +796,7 @@ public class UMLElementNode extends AbstractModelElementNode
 	{
 		boolean retVal = false;
 		
-		if (this.hashCode() == obj.hashCode())
+		if (obj != null && this.hashCode() == obj.hashCode())
 		    return true;
         
 		IProjectTreeItem myItem = getData();

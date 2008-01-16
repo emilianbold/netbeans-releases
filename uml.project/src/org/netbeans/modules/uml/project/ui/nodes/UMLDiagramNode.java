@@ -378,14 +378,13 @@ public class UMLDiagramNode extends UMLElementNode
         // its name assigned to it as it is initialized. This appears to be
         // a rename scenario, but it's not, so don't do the "save before rename"
         String nodeName = getName();
-        IProxyDiagram pDiagram = null;
+        IProxyDiagram pDiagram = getDiagram();
         IDiagram diagram = null;
         boolean isNoNulls = false;
         
-        if (getDiagram() != null && getDiagram().getDiagram() != null)
+        if (pDiagram != null && pDiagram.getDiagram() != null)
         {
             isNoNulls = true;
-            pDiagram = getDiagram();
             diagram = pDiagram.getDiagram();
         }
         
@@ -426,13 +425,13 @@ public class UMLDiagramNode extends UMLElementNode
         
         // diagram was saved or wasn't open/modified, continue with rename
         // setDisplayedName(val);
-        setDisplayName(val);
+        setDiagramName(val);
         super.setName(val);
         
         firePropertySetsChange(null, retreiveProperties());
     }
     
-    public void setDisplayName(String val)
+    private void setDiagramName(String val)
     {
         IProjectTreeItem item = getData();
         if (item != null)
@@ -451,7 +450,7 @@ public class UMLDiagramNode extends UMLElementNode
 			dia.setAlias(val);
                     }
                     //dia.setNameWithAlias(val);
-                    
+                    item.setItemText(val);
                     fireNameChange(curName, val);
                     fireDisplayNameChange(curName, val);
                     
@@ -469,24 +468,24 @@ public class UMLDiagramNode extends UMLElementNode
     }
     
     
-    public String getDisplayName()
-    {
-        String retVal = ""; // NOI18N
-        IProjectTreeItem item = getData();
-        
-        if (item != null)
-        {
-            IProxyDiagram dia = item.getDiagram();
-            
-            if (dia != null)
-            {
-                //its an unopen diagram
-                retVal = dia.getNameWithAlias();
-            }
-        }
-        
-        return retVal;
-    }
+//    public String getDisplayName()
+//    {
+//        String retVal = ""; // NOI18N
+//        IProjectTreeItem item = getData();
+//        
+//        if (item != null)
+//        {
+//            IProxyDiagram dia = item.getDiagram();
+//            
+//            if (dia != null)
+//            {
+//                //its an unopen diagram
+//                retVal = dia.getNameWithAlias();
+//            }
+//        }
+//        
+//        return retVal;
+//    }
     
     
     public String getElementType()

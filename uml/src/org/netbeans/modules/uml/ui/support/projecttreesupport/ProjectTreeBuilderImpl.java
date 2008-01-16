@@ -59,6 +59,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.List;
 
+import java.util.logging.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
@@ -90,6 +91,8 @@ import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
  */
 public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
 {
+   private static final Logger LOG = 
+                Logger.getLogger("org.netbeans.modules.uml.ui.support.projecttreesupport.ProjectTreeBuilderImpl");
    private HashMap < String, Integer > m_SortMap = new HashMap < String, Integer >();
    //private HashMap m_SortMap = new HashMap();
    private IPropertyDefinitionFactory m_DefFactory = null;
@@ -1604,18 +1607,21 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
             ETList<IProxyDiagram> diagrams = manager.getDiagramsInNamespace(space);
             if((diagrams != null) && diagrams != null)
             {
+               String diagName = null;
                for (int index = 0; index < diagrams.size(); index++)
                {
                   //ITreeDiagram newItem = new ProjectTreeDiagramNode(diagrams.get(index));
                   if(getNodeFactory() != null)
                   {
+                     diagName = diagrams.get(index).getNameWithAlias();
+                     LOG.info("*** projectTreebuilderImpl.retrieveDiagramsForElement: diagramNameWithAlias = "+ diagName);
                      ITreeDiagram newItem = getNodeFactory().createDiagramNode(diagrams.get(index));
-                     newItem.setDisplayedName(diagrams.get(index).getNameWithAlias());
-					 // cvc - CR#6265213   
-					 // the tree node's and the diagram's name was constantly 
-					 //  being reset to the diagram type name ???
-					 // newItem.setName(diagrams.get(index).getDiagramKindName());
-                     newItem.setName(diagrams.get(index).getNameWithAlias());
+                     newItem.setDisplayedName(diagName);
+                     // cvc - CR#6265213   
+                     // the tree node's and the diagram's name was constantly 
+                     // being reset to the diagram type name ???
+                     // newItem.setName(diagrams.get(index).getDiagramKindName());
+                     newItem.setName(diagName);
                      newItem.setSortPriority(getSortPriority(diagrams.get(index).getDiagramKindName()));
                      setTreeItemParent(newItem, parent);
                      retList.add(newItem);
@@ -1690,6 +1696,8 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
             String topType = types.nextToken();
             IPropertyDefinition def = factory.getPropertyDefinitionForElement(topType, null);
             if(def != null)
+
+
             {
                IPropertyDefinition curDef = def;
                

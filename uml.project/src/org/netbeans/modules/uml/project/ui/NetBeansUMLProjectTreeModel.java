@@ -90,6 +90,7 @@ import org.netbeans.modules.uml.project.UMLProjectHelper;
 import org.netbeans.modules.uml.project.ui.nodes.UMLDiagramNode;
 import org.netbeans.modules.uml.project.ui.nodes.NBNodeFactory;
 import java.util.Enumeration;
+import java.util.logging.Logger;
 
 /**
  *
@@ -98,6 +99,8 @@ import java.util.Enumeration;
 public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 	implements ISCMEventsSink
 {
+        private static final Logger LOG = 
+                Logger.getLogger("org.netbeans.modules.uml.project.ui.NetBeansUMLProjectTreeModel");
 	private ITreeItemExpandContext mContext = null;
 	private DispatchHelper m_DispatcherHelper = new DispatchHelper();
 	private ProjectTreeNodeFactory mFactory = new NBNodeFactory();
@@ -262,7 +265,7 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                     parent.addChild(node);
 
                     if (!(node instanceof ITreeFolder))
-                    addNode(node);
+                        addNode(node);
             }
 	}
 	
@@ -815,10 +818,6 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                         String filename = diagram.getFilename();
                         mDiagramNodeMap.put(filename, key);
                         
-                        // cvc - 6294480 (start)
-                        // if Diagrams node is expanded before Model node, things
-                        // get out of whack and diagram nodes don't get removed
-                        // when deleted.
                         UMLModelRootNode modelRootNode = getModelRootNode(node);
                         
                         if (modelRootNode != null && mDiagramsNodeMap != null)
@@ -829,14 +828,20 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                             
                             if (diagramsNode != null)
                             {
-                                ITreeItem nodeCopy =
-                                        mFactory.createDiagramNode(diagram);
-                                
-                                diagramsNode.removeChild(node);
-                                diagramsNode.addChild(nodeCopy);
+                                if ( !alreadyHasChild(diagramsNode, node)) 
+                                {
+                                    ITreeItem nodeCopy = 
+                                            mFactory.createDiagramNode(diagram);
+
+                                    String diagramName = diagram.getNameWithAlias();
+                                    LOG.info("*** addNode: diagramNameWithAlias = "+
+                                            diagramName);
+                                    nodeCopy.setDisplayedName(diagramName, false);
+                                    nodeCopy.setName(diagramName);
+                                    diagramsNode.addChild(nodeCopy);
+                                }
                             }
                         }
-                        // cvc - 6294480 (end)
                     }
                 }
                 
@@ -883,7 +888,10 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                                 
                                 ITreeDiagram node =
                                         factory.createDiagramNode(proxy);
-                                
+                                String diagramName = proxy.getNameWithAlias();
+                                LOG.info("*** DrawingAreaSink.onDrawingAreaPostCreated: diagramNameWithAlias = "+ diagramName);
+                                node.setDisplayedName(diagramName, false);
+                                node.setName(diagramName);
                                 diagramsNode.addChild(node);
                             }
                         }

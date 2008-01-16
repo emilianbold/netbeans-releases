@@ -50,6 +50,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramDetails;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
 import org.netbeans.modules.uml.core.support.umlsupport.StringUtilities;
@@ -64,6 +65,8 @@ import org.netbeans.modules.uml.ui.support.archivesupport.ProductArchiveImpl;
  */
 public class CachedDiagrams implements FileExtensions, IProductArchiveDefinitions
 {
+   private static final Logger LOG =
+           Logger.getLogger("org.netbeans.modules.uml.ui.controls.drawingarea.CachedDiagrams");
    private static CachedDiagrams m_Instance = null;
    private HashMap < String , DiagramDetails > m_CachedInfo = new HashMap< String , DiagramDetails >();
    
@@ -133,7 +136,12 @@ public class CachedDiagrams implements FileExtensions, IProductArchiveDefinition
                   addToCache(sDiagramFilename, retVal);
                }
             }
-         }
+            if ( retVal != null)  //TODO: delete this if block after done debugging
+            {
+                LOG.info("** getInfo: load diagram detail from diagram file." +
+                        "diagram alias|name= "+ retVal.getDiagramAlias() + "|" + retVal.getName());
+            }
+         } 
       }
       
       return retVal;
