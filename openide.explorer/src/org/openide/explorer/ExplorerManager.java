@@ -51,8 +51,6 @@ import java.beans.*;
 import java.io.*;
 
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 
 /**
@@ -165,7 +163,8 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     /** Clones the manager.
     * @return manager with the same settings like this one
     */
-    public Object clone() {
+    @Override
+    public ExplorerManager clone() {
         ExplorerManager em = new ExplorerManager();
         em.rootContext = rootContext;
         em.exploredContext = exploredContext;
@@ -249,29 +248,9 @@ public final class ExplorerManager extends Object implements Serializable, Clone
 
             private void updateSelection() {
                 oldValue = selectedNodes;
-
-                Collection<Node> currentNodes = new HashSet<Node>(Arrays.asList(oldValue));
-
-                Collection<Node> newSelection = new HashSet<Node>(Arrays.asList(value));
-
-                Collection<Node> nodesToAdd = new HashSet<Node>(newSelection);
-                nodesToAdd.removeAll(currentNodes);
-
-                Collection<Node> nodesToRemove = new HashSet<Node>(currentNodes);
-                nodesToRemove.removeAll(newSelection);
-
+                addRemoveListeners(false);
                 selectedNodes = value;
-
-                // remove listeners from nodes that are being deselected
-                for (Node n: nodesToRemove) {
-                    n.removeNodeListener(weakListener);
-                }
-
-                // and add listeners to nodes that become selected
-                for (Node n: nodesToAdd) {
-                    n.removeNodeListener(weakListener);
-                    n.addNodeListener(weakListener);
-                }
+                addRemoveListeners(true);
 
                 doFire = true;
             }
@@ -343,22 +322,10 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                 setSelectedNodes0(selection);
 
                 oldValue = exploredContext;
-                {
-                    Node n = exploredContext;
-                    while (n != null && n != rootContext) {
-                        n.removeNodeListener(weakListener);
-                        n = n.getParentNode();
-                    }
-                }
+                addRemoveListeners(false);
                 exploredContext = value;
-                {
-                    Node n = exploredContext;
-                    while (n != null && n != rootContext) {
-                        n.addNodeListener(weakListener);
-                        n = n.getParentNode();
-                    }
-                }
-
+                addRemoveListeners(true);
+                
                 doFire = true;
             }
             public void fire() {
@@ -400,7 +367,9 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                     setSelectedNodes(selection);
 
                     oldValue = exploredContext;
+                    addRemoveListeners(false);
                     exploredContext = value;
+                    addRemoveListeners(true);
 
                     doFire = true;
                 } catch (PropertyVetoException ex) {
@@ -421,6 +390,30 @@ public final class ExplorerManager extends Object implements Serializable, Clone
 
         if (set.veto != null) {
             throw set.veto;
+        }
+    }
+    
+    final void addRemoveListeners(boolean add) {
+        Map<Node,Void> collect = new IdentityHashMap<Node,Void>(333);
+        
+        collectNodes(exploredContext, collect);
+        for (Node n : selectedNodes) {
+            collectNodes(n, collect);
+        }
+
+        for (Node n : collect.keySet()) {
+            if (add) {
+                n.addNodeListener(weakListener);
+            } else {
+                n.removeNodeListener(weakListener);
+            }
+        }
+    }
+    private final void collectNodes(Node n, Map<Node,?> collect) {
+        assert Children.MUTEX.isReadAccess();
+        while (n != null && n != rootContext) {
+            collect.put(n, null);
+            n = n.getParentNode();
         }
     }
 
@@ -452,7 +445,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     * @param value the new node to serve as a root
     * @throws IllegalArgumentException if it is <code>null</code>
     */
-    public final void setRootContext(Node value) {
+    public final void setRootContext(final Node value) {
         if (value == null) {
             throw new IllegalArgumentException(getString("EXC_CannotHaveNullRootContext"));
         }
@@ -461,29 +454,28 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             return;
         }
 
-        Node oldValue = rootContext;
-        rootContext = value;
+        class SetRootContext implements Runnable {
+            public void run() {
+                addRemoveListeners(false);
+                Node oldValue = rootContext;
+                rootContext = value;
 
-        oldValue.removeNodeListener(weakListener);
-        rootContext.addNodeListener(weakListener);
+                oldValue.removeNodeListener(weakListener);
+                rootContext.addNodeListener(weakListener);
 
-        fireInAWT(PROP_ROOT_CONTEXT, oldValue, rootContext);
+                fireInAWT(PROP_ROOT_CONTEXT, oldValue, rootContext);
 
-        Node[] newselection = getSelectedNodes();
+                Node[] newselection = getSelectedNodes();
 
-        if (!areUnderTarget(newselection, rootContext)) {
-            newselection = new Node[0];
+                if (!areUnderTarget(newselection, rootContext)) {
+                    newselection = new Node[0];
+                }
+                setExploredContext(rootContext, newselection);
+            }
         }
-
-        try {
-            setExploredContext(rootContext, newselection);
-        } catch (IllegalArgumentException x) {
-            // XXX not supposed to happen, yet does on occasion for as yet unknown reasons (race condition?), e.g.
-            // http://beetle.czech.sun.com/automatedtests/xtest/netbeans_dev/200707111200/qa-unit_stable/qa-t4u-sol6_1/testrun_070712-051438/testbag_65/htmlresults/suites/TEST-org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerModuleListTest.html#testDisableCluster
-            // Could protect setRootContext with Children.MUTEX.readAccess like setExploredContext already does,
-            // but readAccess would anyway not prevent a two-thread race condition (not clear why sEC uses it).
-            Logger.getLogger(ExplorerManager.class.getName()).log(Level.INFO, null, x);
-        }
+        
+        SetRootContext run = new SetRootContext();
+        Children.MUTEX.readAccess(run);
     }
 
     /** @return true iff all nodes are under the target node */
@@ -885,6 +877,7 @@ bigloop:
         /** Fired when the node is deleted.
          * @param ev event describing the node
          */
+        @Override
         public void nodeDestroyed(NodeEvent ev) {
             if (ev.getNode().equals(getRootContext())) {
                 // node has been deleted
@@ -900,6 +893,7 @@ bigloop:
         /* Change in a node.
          * @param ev the event
          */
+        @Override
         public void propertyChange(java.beans.PropertyChangeEvent ev) {
             fireInAWT(PROP_NODE_CHANGE, null, null);
         }

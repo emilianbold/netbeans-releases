@@ -302,6 +302,58 @@ public class ExplorerManagerTest extends NbTestCase
         assertGC("3", ref3);
         assertGC("b", refB);
     }
+    public void testGarbageCollectWithStrangeSelectionIssue124712() throws Exception {
+        class K extends Children.Keys<String> {
+            public void keys(String... keys) {
+                setKeys(keys);
+            }
+            
+            @Override
+            protected Node[] createNodes(String key) {
+                AbstractNode an = new AbstractNode(new K());
+                an.setName(key);
+                return new Node[] { an };
+            }
+        }
+        
+        K myKeys = new K();
+        myKeys.keys("a", "b", "c");
+        AbstractNode myRoot = new AbstractNode(myKeys);
+        myRoot.setName("root");
+        em.setRootContext(myRoot);
+        
+        Node mezi = myRoot.getChildren().getNodes()[1];
+        ((K)mezi.getChildren()).keys("a", "b", "c");
+        
+        Node b = mezi.getChildren().getNodes()[1];
+        assertEquals("b", b.getDisplayName());
+        ((K)b.getChildren()).keys("1", "2", "3");
+        
+        em.setExploredContext(b);
+        em.setSelectedNodes(new Node[] { mezi });
+        em.setSelectedNodes(new Node[0]);
+        
+        em.waitFinished();
+        
+        Reference<?> refB = new WeakReference<Object>(b);
+        Reference<?> ref1 = new WeakReference<Object>(b.getChildren().getNodes()[0]);
+        Reference<?> ref2 = new WeakReference<Object>(b.getChildren().getNodes()[1]);
+        Reference<?> ref3 = new WeakReference<Object>(b.getChildren().getNodes()[2]);
+        
+        myKeys.keys();
+        b = null;
+        
+        ref = em;
+        em.waitFinished();
+        
+        assertEquals("Explored context is the root context", myRoot, em.getExploredContext());
+        assertEquals("No selected nodes", 0, em.getSelectedNodes().length);
+        
+        assertGC("1", ref1);
+        assertGC("2", ref2);
+        assertGC("3", ref3);
+        assertGC("b", refB);
+    }
     private static Object ref;
     
     private static final class Keys extends Children.Keys<String> {
