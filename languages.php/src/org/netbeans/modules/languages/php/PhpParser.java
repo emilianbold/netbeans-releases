@@ -140,7 +140,6 @@ public class PhpParser implements Parser {
             }
             PhpModel model = ModelAccess.getAccess().getModel( 
                     ModelAccess.getModelOrigin( file.getFileObject() ));
-            System.out.println( model );
             model.sync();
             
             try {
