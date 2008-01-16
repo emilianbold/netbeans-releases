@@ -231,6 +231,7 @@
         ${test.cvs.path}/empty
         ${test.cvs.path}/eventHandlers
         ${test.cvs.path}/exit
+        ${test.cvs.path}/faulthandling
         ${test.cvs.path}/MessageExchange
         ${test.cvs.path}/PartnerLinks
         ${test.cvs.path}/SchemaElemDecl

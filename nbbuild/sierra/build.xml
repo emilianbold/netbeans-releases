@@ -278,6 +278,11 @@
 
         <!-- exit -->
         <antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall>
+
+        <!-- faulthandling -->
+        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/StandardFaultsBpel"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/SystemFaultsBpel"/></antcall>
     </target>
 
     <target name="do-test-jbi">
