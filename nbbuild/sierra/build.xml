@@ -352,6 +352,9 @@
         <!-- xpathfunctions -->
         <antcall target="do-test-jbi"><param name="dir" value="xpathfunctions/XPathFunctionsBpel"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="xpathfunctions/XSDFunctions"/></antcall>
+
+        <!-- xsddatatypes -->
+        <antcall target="do-test-jbi"><param name="dir" value="xsddatatypes/XSDDataTypesBpel"/></antcall>
     </target>
 
     <target name="do-test-jbi">
