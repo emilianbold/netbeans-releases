@@ -48,6 +48,7 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.GenericResourceGenerator;
@@ -76,6 +77,7 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
         final Set<FileObject> result = new HashSet<FileObject>();
         try {
             Project project = Templates.getProject(wizard);
+            RestUtils.ensureRestDevelopmentReady(project);
             final FileObject targetFolder = Templates.getTargetFolder(wizard);
             final GenericResourceBean[] resourceBeans = getResourceBeans(wizard);
             final ProgressDialog dialog = new ProgressDialog(NbBundle.getMessage(

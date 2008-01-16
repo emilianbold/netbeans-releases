@@ -75,6 +75,7 @@ public class EntityResourcesIterator implements TemplateWizard.Iterator {
     
     public Set instantiate(TemplateWizard wizard) throws IOException {
         final Project project = Templates.getProject(wizard);
+        RestUtils.ensureRestDevelopmentReady(project);
         FileObject targetFolder = Templates.getTargetFolder(wizard);
         String targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
         String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
