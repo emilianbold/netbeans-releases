@@ -102,6 +102,7 @@ import org.netbeans.modules.visualweb.insync.Util;
 import org.netbeans.modules.visualweb.insync.faces.FacesBean;
 import org.netbeans.modules.visualweb.insync.faces.FacesPageUnit;
 import org.netbeans.modules.visualweb.insync.faces.MarkupBean;
+import org.netbeans.modules.visualweb.insync.java.JavaUnit;
 import org.netbeans.spi.palette.PaletteController;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
@@ -1845,6 +1846,33 @@ public class JsfForm {
 
     public DomDocumentImpl getDomDocumentImpl() {
         return domDocumentImpl;
+    }
+    
+    
+    public boolean isModelInSync() {
+        if (isValid()) {
+            FacesModel facesModel = getFacesModel();
+            if (facesModel == null) {
+                return false;    
+            }
+            MarkupUnit markupUnit = facesModel.getMarkupUnit();
+            if (markupUnit == null) {
+                return false;
+            }
+            if (markupUnit.getState() == Unit.State.SOURCEDIRTY) {
+                return false;
+            }
+            JavaUnit javaUnit = facesModel.getJavaUnit();
+            if (javaUnit == null) {
+                return false;
+            }
+            if (javaUnit.getState() == Unit.State.SOURCEDIRTY) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
     
     public /*private*/ void syncModel() {

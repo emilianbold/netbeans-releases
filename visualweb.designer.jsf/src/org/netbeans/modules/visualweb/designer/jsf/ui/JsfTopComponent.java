@@ -2643,17 +2643,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             designer.setPaneCaret(DomPosition.NONE);
         }
 
-        jsfForm.syncModel();
+        if (jsfForm.isModelInSync()) {
+            if (designer.getPageBox() == null) {
+                resetDesigner();
+            }
+        } else {
+            jsfForm.syncModel();
 
-        // XXX #6474723 If sync was alredy synced we need to assure rebuild the boxes.
-        // FIXME If sync() also rebuilds the model then this is redundant. The boxes
-        // will be rebuild twice. Consider suspending listening during sync() call above.
-        designer.resetPanePageBox();
-
-        // It's not enough to do showErrors and showTray in contextChanged
-        // because contextChanged is not run when the form is first opened.
-        // XXX perhaps I can do this in componentOpened instead?
-        updateErrors(); // XXX shouldn't the contextChanged ensure this?
+            resetDesigner();
+        }
 
         // Refresh layout for fragments and for pages that contain fragments whenever
         // they are exposed
@@ -2673,6 +2671,14 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //        // after page layout instead.
 //        designer.paneRequestFocus();
     }   
+    
+    private void resetDesigner() {
+        designer.resetPanePageBox();
+        // It's not enough to do showErrors and showTray in contextChanged
+        // because contextChanged is not run when the form is first opened.
+        // XXX perhaps I can do this in componentOpened instead?
+        updateErrors(); // XXX shouldn't the contextChanged ensure this?
+    }
 
     private void designerHidden() {
         // No op.
