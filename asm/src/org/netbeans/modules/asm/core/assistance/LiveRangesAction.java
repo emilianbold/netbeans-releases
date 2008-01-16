@@ -43,6 +43,7 @@
 package org.netbeans.modules.asm.core.assistance;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -172,19 +173,13 @@ public class LiveRangesAction {
             return state;
         }
 
-        public int[] getRangesForRegister(Register reg) {
+        public List<Integer> getRangesForRegister(Register reg) {
             List<Integer> rangesReg = ranges.get(reg);
             if (rangesReg == null || rangesReg.size() == 0) {
-                return new int[0];
+                return Collections.emptyList();
             }
             
-            int i = 0;
-            int []res = new int[rangesReg.size()];
-            for (Integer in : rangesReg) {
-                res[i++] = in;
-            }
-            
-            return res;
+            return rangesReg;
         }        
     }     
 }

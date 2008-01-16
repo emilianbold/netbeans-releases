@@ -54,11 +54,10 @@ import org.netbeans.modules.asm.model.lang.Register;
 import org.netbeans.modules.asm.model.lang.syntax.FunctionBoundsResolver;
 
 public class RegisterUsageAction {
+    private final RegisterUsageAccesor accessor;
     
-    private RegisterUsageAccesor acc;
-    
-    public RegisterUsageAction(RegisterUsageAccesor acc) {
-        this.acc = acc;
+    public RegisterUsageAction(RegisterUsageAccesor accessor) {
+        this.accessor = accessor;
     }
     
     public void computeUsage(AsmState state, int pos) {        
@@ -73,7 +72,7 @@ public class RegisterUsageAction {
         int count = 0;
         int inInstruction = -1;
                 
-  L1:   for (AsmElement el : comp.getCompounds()) {
+        for (AsmElement el : comp.getCompounds()) {
       
             if (el.getStartOffset() <= pos && el.getEndOffset() > pos &&
                 el instanceof InstructionElement) {
@@ -92,7 +91,7 @@ public class RegisterUsageAction {
             count++;
         }
   
-        acc.clearStatuses();
+        accessor.clearStatuses();
     } 
     
     
@@ -160,16 +159,16 @@ public class RegisterUsageAction {
         }    
                 
         
-        acc.clearStatuses();                                                                             
-        acc.setRegisterStatus(wasWrite, RegisterUsageAccesor.PredefinedStatuses.STATUS_USED);
-        acc.setRegisterStatus(args, RegisterUsageAccesor.PredefinedStatuses.STATUS_ARG);
+        accessor.clearStatuses();                                                                             
+        accessor.setRegisterStatus(wasWrite, RegisterUsageAccesor.PredefinedStatuses.STATUS_USED);
+        accessor.setRegisterStatus(args, RegisterUsageAccesor.PredefinedStatuses.STATUS_ARG);
 
         if (inInstruction >= 0) {
            InstructionElement instr = (InstructionElement) comp.get(inInstruction);   
            Collection<Register> locReaded = getRegistersClosure(instr.getReadRegs());
            Collection<Register> locWrited = getRegistersClosure(instr.getWriteRegs());
-           acc.setRegisterStatus(locReaded, RegisterUsageAccesor.PredefinedStatuses.STATUS_READ);
-           acc.setRegisterStatus(locWrited, RegisterUsageAccesor.PredefinedStatuses.STATUS_WRITE);
+           accessor.setRegisterStatus(locReaded, RegisterUsageAccesor.PredefinedStatuses.STATUS_READ);
+           accessor.setRegisterStatus(locWrited, RegisterUsageAccesor.PredefinedStatuses.STATUS_WRITE);
         }
     }  
     

@@ -56,7 +56,6 @@ import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
 
 import org.netbeans.modules.asm.core.dataobjects.AsmObjectUtilities;
 import org.netbeans.modules.asm.model.AsmModelAccessor;
-import org.netbeans.modules.asm.model.AsmState;
 import org.netbeans.modules.asm.model.lang.OperandElement;
 import org.netbeans.modules.asm.model.util.IntervalSet;
 import org.netbeans.modules.asm.core.assistance.RegisterHighlightAction.HighlightEntry;
@@ -71,17 +70,14 @@ public class RegisterHighlightAssistance extends AbstractHighlightsContainer
     public static final Color READ_COLORING = RegisterUsagesPanel.READ_COLOR;
     public static final Color WRITE_COLORING = RegisterUsagesPanel.WRITE_COLOR;
 
-    private JTextComponent pane;
+    private final JTextComponent pane;
   
-    private IntervalSet<HighlightEntry> lastHighlight;
+    private IntervalSet<HighlightEntry> highlight = new IntervalSet<HighlightEntry>();
     
-    private RegisterHighlightAction act;    
+    private final RegisterHighlightAction action = new RegisterHighlightAction();
 
     public RegisterHighlightAssistance(JTextComponent pane, Document doc) {                     
         this.pane = pane;
-       
-        lastHighlight = new IntervalSet<HighlightEntry>();
-        act = new RegisterHighlightAction();
         
         pane.addCaretListener(this);                                               
         
@@ -98,31 +94,28 @@ public class RegisterHighlightAssistance extends AbstractHighlightsContainer
             return;
         }  
         
-        AsmState state = acc.getState();
-                
-        int pos = pane.getCaretPosition();
-                      
-        IntervalSet<HighlightEntry> newHighlight = act.getHighlight(state, pos);
+        IntervalSet<HighlightEntry> newHighlight = action.getHighlight(acc.getState(), pane.getCaretPosition());
         
-        int start = 0, end = 0;
-        if (newHighlight.isEmpty() && lastHighlight.isEmpty()) {
+        if (newHighlight.isEmpty() && highlight.isEmpty()) {
             return;
         }
         
+        // Determining update bounds (max of new and old)
+        int start = 0, end = 0;
         if (newHighlight.isEmpty()) {
-            start = lastHighlight.getLowerBound();
-            end = lastHighlight.getUpperBound();
-        } else if (lastHighlight.isEmpty()) {
+            start = highlight.getLowerBound();
+            end = highlight.getUpperBound();
+        } else if (highlight.isEmpty()) {
             start = newHighlight.getLowerBound();
             end = newHighlight.getUpperBound();
         } else {
-            start = Math.min(lastHighlight.getLowerBound(), 
+            start = Math.min(highlight.getLowerBound(), 
                              newHighlight.getLowerBound());
-            end = Math.max(lastHighlight.getUpperBound(), 
+            end = Math.max(highlight.getUpperBound(), 
                              newHighlight.getUpperBound());
         }
           
-        lastHighlight = newHighlight;
+        highlight = newHighlight;
         
         super.fireHighlightsChange(start, end);        
     }
@@ -136,17 +129,15 @@ public class RegisterHighlightAssistance extends AbstractHighlightsContainer
     }
     
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {                
-        return new RegHighlightsSequence(
-                    lastHighlight.getFromBounds(startOffset, endOffset)
-                                        );
+        return new RegisterHighlightsSequence(
+                    highlight.getFromBounds(startOffset, endOffset));
     }
        
-    private static class RegHighlightsSequence implements HighlightsSequence {
-
+    private static class RegisterHighlightsSequence implements HighlightsSequence {
         private HighlightEntry cur;
         private Iterator<HighlightEntry> it;
                 
-        public RegHighlightsSequence(IntervalSet<HighlightEntry> acc) {
+        public RegisterHighlightsSequence(IntervalSet<HighlightEntry> acc) {
             it = acc.iterator();           
         }
         

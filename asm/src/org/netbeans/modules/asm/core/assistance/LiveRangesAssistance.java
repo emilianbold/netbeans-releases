@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.asm.core.assistance;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JEditorPane;
@@ -67,17 +68,17 @@ public class LiveRangesAssistance implements AsmModelAccessor.ParseListener,
                                              CaretListener,
                                              RegisterChooserListener    {
       
-    private CodeAnnotationSidebar sideBar;    
-    private LiveRangesAction lrAct;
-    private LiveRangesAccessor lrAcc;
+    private final CodeAnnotationSidebar sideBar;    
+    private final LiveRangesAction action;
+    private LiveRangesAccessor accessor;
     private RegisterChooser lastChooser;
     
     private AsmOffsetable lastRangeStart;
     private AsmOffsetable lastRangeEnd;
     
-    private BaseDocument doc;
-    private JEditorPane pane;
-    private EditorCookie cookie;
+    private final BaseDocument doc;
+    private final JEditorPane pane;
+    private final EditorCookie cookie;
         
     public LiveRangesAssistance(BaseDocument doc) {                                
         this.doc = doc;                                       
@@ -87,7 +88,7 @@ public class LiveRangesAssistance implements AsmModelAccessor.ParseListener,
         
         pane = cookie.getOpenedPanes()[0];        
         pane.addCaretListener(this);                            
-        lrAct = new LiveRangesAction();
+        action = new LiveRangesAction();
         
         sideBar = (CodeAnnotationSidebar) 
                 pane.getClientProperty(LiveRangeSidebarFactory.LIVE_RANGE_SIDEBAR);
@@ -103,7 +104,7 @@ public class LiveRangesAssistance implements AsmModelAccessor.ParseListener,
     
     public void notifyParsed() {
         AsmState state = AsmObjectUtilities.getAccessor(doc).getState();
-        lrAcc = lrAct.calculateRanges(state); 
+        accessor = action.calculateRanges(state); 
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 calcLiveRanges(getCaretPosition());                
@@ -147,20 +148,19 @@ public class LiveRangesAssistance implements AsmModelAccessor.ParseListener,
               
         AsmState state = AsmObjectUtilities.getAccessor(doc).getState();
         
-        if (lrAcc == null) {            
-            lrAcc = lrAct.calculateRanges(state); 
+        if (accessor == null) {            
+            accessor = action.calculateRanges(state); 
         }                   
                        
-   L1:  for (Register reg: lastChooser.getRegisters()) {
-            int []ranges = lrAcc.getRangesForRegister(reg);
+        for (Register reg: lastChooser.getRegisters()) {
             lastRangeStart = lastRangeEnd = null;
             
-            for (int i = 0; i < ranges.length; i += 2) {                                                
-                                                        
+            List<Integer> ranges = accessor.getRangesForRegister(reg);
+            for (Iterator<Integer> iter = ranges.iterator(); iter.hasNext();) {
                 AsmOffsetable offStart = state.getElements().
-                                            getCompounds().get(ranges[i]);
+                                            getCompounds().get(iter.next());
                 AsmOffsetable offEnd = state.getElements().
-                                            getCompounds().get(ranges[i + 1]);
+                                            getCompounds().get(iter.next());
 
                 addAnnotation(offStart, offEnd, res);                
             }

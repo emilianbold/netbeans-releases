@@ -55,12 +55,11 @@ import org.netbeans.modules.asm.model.AsmState;
 import static org.netbeans.modules.asm.model.util.AsmModelUtilities.getRegistersClosure;
 
 public class RegisterUsageAssistance implements CaretListener {
-    
-    private JTextComponent pane;
-    private RegisterUsageAction act;
+    private final JTextComponent pane;
+    private final RegisterUsageAction action;
     
     public RegisterUsageAssistance(JTextComponent pane, RegisterUsageAccesor acc) {        
-        this.act = new RegisterUsageAction(acc);
+        this.action = new RegisterUsageAction(acc);
         this.pane = pane;
         
         pane.addCaretListener(this);                                
@@ -80,6 +79,6 @@ public class RegisterUsageAssistance implements CaretListener {
             return ;
         }
         
-        act.computeUsage(state, e.getDot());       
+        action.computeUsage(state, e.getDot());       
     }       
 }

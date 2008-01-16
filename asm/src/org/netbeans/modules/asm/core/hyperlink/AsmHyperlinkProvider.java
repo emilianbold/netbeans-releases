@@ -65,10 +65,9 @@ public class AsmHyperlinkProvider implements HyperlinkProvider {
     private Document lastDocument;
     private int []lastResult;
          
-    private GoToLabelAction labelResolver;
+    private final GoToLabelAction labelResolver = new GoToLabelAction();
        
     public AsmHyperlinkProvider() {
-        labelResolver = new GoToLabelAction();
         lastResult = new int[] { -1, -1, -1 };
     }
     

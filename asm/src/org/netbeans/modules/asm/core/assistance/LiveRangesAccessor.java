@@ -42,10 +42,11 @@
 
 package org.netbeans.modules.asm.core.assistance;
 
+import java.util.List;
 import org.netbeans.modules.asm.model.AsmState;
 import org.netbeans.modules.asm.model.lang.Register;
 
 public interface LiveRangesAccessor {
      AsmState getState();
-     int[] getRangesForRegister(Register reg);
+     List<Integer> getRangesForRegister(Register reg);
 }

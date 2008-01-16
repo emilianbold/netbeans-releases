@@ -68,7 +68,7 @@ public class RegisterHighlightAction {
                          Register t_reg = ((RegisterElement) comp).getRegister();
                          if (reg.getChildren().contains(t_reg) || reg == t_reg || 
                              t_reg.getChildren().contains(reg)) {
-                             list.add(new HighlightEntry(comp, ((OperandElement) comp).getUsingFlag()));                                                       
+                             list.add(new HighlightEntry(comp, ((OperandElement) comp).getUsage()));                                                       
                          }
                      }
                      return true;

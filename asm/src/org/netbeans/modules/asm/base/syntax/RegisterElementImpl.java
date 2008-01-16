@@ -63,7 +63,7 @@ public class RegisterElementImpl extends LeafAsmElement
         this.reg = reg;
     }   
 
-    public Usage getUsingFlag() {
+    public Usage getUsage() {
         return rwMask;
     }
 

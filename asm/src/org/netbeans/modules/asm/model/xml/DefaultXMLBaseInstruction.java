@@ -66,20 +66,20 @@ public class DefaultXMLBaseInstruction extends XMLBaseInstruction {
     public void setWrite(String write) {
         this.writeArgsIdx = parseArgs(Util.descriptionTokenizer(write));
         if (this.readArgsIdx == DEFAULT_READ) {
-            this.readArgsIdx = Collections.EMPTY_LIST;
+            this.readArgsIdx = Collections.emptyList();
         }
     }
     
     public void setRead(String read) {
         this.readArgsIdx = parseArgs(Util.descriptionTokenizer(read));
         if (this.writeArgsIdx == DEFAULT_WRITE) {
-            this.writeArgsIdx = Collections.EMPTY_LIST;
+            this.writeArgsIdx = Collections.emptyList();
         }
     }
     
     private static final String ARG_PREFIX = "%arg";
     private static Collection<Integer> parseArgs(List<String> args) {
-        Collection<Integer> res = new ArrayList();
+        Collection<Integer> res = new ArrayList<Integer>();
         for (String arg : args) {
             if (arg.startsWith(ARG_PREFIX)) {
                 String argNo = arg.substring(ARG_PREFIX.length(), arg.length()-1);

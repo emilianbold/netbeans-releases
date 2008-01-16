@@ -44,7 +44,7 @@ package org.netbeans.modules.asm.model.lang;
 import org.netbeans.modules.asm.model.util.BitMask;
 
 public interface OperandElement extends AsmElement {       
-    Usage getUsingFlag();
+    Usage getUsage();
     
     // "type safe" bit mask for argument usage
     public final static class Usage extends BitMask<Usage> {
