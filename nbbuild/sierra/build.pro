@@ -245,6 +245,7 @@
         ${test.cvs.path}/rethrow
         ${test.cvs.path}/samples
         ${test.cvs.path}/scalability
+        ${test.cvs.path}/scenarios
         ${test.cvs.path}/SchemaElemDecl
         ${test.cvs.path}/ScopeTermination
         ${test.cvs.path}/xslt
