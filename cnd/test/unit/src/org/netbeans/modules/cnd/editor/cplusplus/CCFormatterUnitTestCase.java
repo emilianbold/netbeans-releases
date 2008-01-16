@@ -1062,4 +1062,19 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "|\n"
                 );
     }
+
+    public void testIZ122489() {
+        setLoadDocumentText(
+                "Cpu::Cpu(int units) :\n"+
+                "   Module(units) {\n"+
+                "}|\n"
+                );
+        indentNewLine();
+        assertDocumentTextAndCaret("Incorrect new-line indent IZ122489",
+                "Cpu::Cpu(int units) :\n"+
+                "   Module(units) {\n"+
+                "}\n"+
+                "|\n"
+                );
+    }
 }

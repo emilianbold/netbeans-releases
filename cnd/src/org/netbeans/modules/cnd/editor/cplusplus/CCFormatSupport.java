@@ -262,6 +262,11 @@ public class CCFormatSupport extends ExtFormatSupport {
                                     return (lit != null) ? lit : t;
                             }
                         }
+                        TokenItem prev = findImportantToken(t, null, true, true);
+                        if (prev != null && prev.getTokenID().getNumericID()==CCTokenContext.RPAREN_ID) {
+                            t = prev;
+                            break;
+                        }
                         if (lit != null && firstColon && tt == null){
                             return lit;
                         }
