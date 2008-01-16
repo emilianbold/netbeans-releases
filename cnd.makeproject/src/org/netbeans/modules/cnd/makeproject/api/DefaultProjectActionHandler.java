@@ -265,6 +265,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                                     }
                                 }
                                 args = b.toString();
+                                exe = "\\\"" + pae.getExecutable() + "\\\""; // NOI18N
                             }
                             args = MessageFormat.format(pae.getProfile().getTerminalOptions(), rcfile, exe, args);
                             exe = pae.getProfile().getTerminalPath();
