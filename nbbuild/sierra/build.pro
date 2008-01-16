@@ -248,6 +248,7 @@
         ${test.cvs.path}/scenarios
         ${test.cvs.path}/SchemaElemDecl
         ${test.cvs.path}/ScopeTermination
+        ${test.cvs.path}/TerminationHandler
         ${test.cvs.path}/xslt
     "/>
     <property name="home" value="../.."/>

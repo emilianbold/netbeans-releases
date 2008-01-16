@@ -339,6 +339,9 @@
         <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CatalogWildcard"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CDCatalog"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="scenarios/PurchaseOrder/OrderTransformer"/></antcall>
+
+        <!-- TerminationHandler -->
+        <antcall target="do-test-jbi"><param name="dir" value="TerminationHandler/TerminationHandlerBpel"/></antcall>
     </target>
 
     <target name="do-test-jbi">
