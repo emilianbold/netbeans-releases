@@ -155,6 +155,7 @@ public class RevertModificationsAction extends AbstractAction {
     }
 
     public boolean isEnabled() {
+        if(!Mercurial.getInstance().isGoodVersion()) return false;
         return HgRepositoryContextCache.hasHistory(context);
     }
 }

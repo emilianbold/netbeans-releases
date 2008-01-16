@@ -102,6 +102,7 @@ public class CommitAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
             HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE")); // NOI18N

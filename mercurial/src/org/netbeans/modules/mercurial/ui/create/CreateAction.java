@@ -128,6 +128,8 @@ public class CreateAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         final Mercurial hg = Mercurial.getInstance();
+        if(!hg.isGoodVersionAndNotify()) return;
+
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if(files == null || files.length == 0) return;
         

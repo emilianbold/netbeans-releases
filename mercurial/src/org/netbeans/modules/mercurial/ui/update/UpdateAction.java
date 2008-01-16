@@ -74,6 +74,7 @@ public class UpdateAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         update(context, null);
     }
     

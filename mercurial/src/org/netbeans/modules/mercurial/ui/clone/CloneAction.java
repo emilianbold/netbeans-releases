@@ -228,6 +228,7 @@ public class CloneAction extends AbstractAction {
     }
 
     public boolean isEnabled() {
+        if(!Mercurial.getInstance().isGoodVersion()) return false;
         // If it's a mercurial managed repository with history
         // enable clone of this repository
         return HgRepositoryContextCache.hasHistory(context);

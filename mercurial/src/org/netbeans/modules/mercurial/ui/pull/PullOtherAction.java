@@ -78,6 +78,7 @@ public class PullOtherAction extends AbstractAction implements PropertyChangeLis
     }
 
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
 

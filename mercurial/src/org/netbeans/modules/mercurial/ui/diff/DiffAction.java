@@ -70,6 +70,7 @@ public class DiffAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         String contextName = Utils.getContextDisplayName(context);
                 
         File root = HgUtils.getRootFile(context);

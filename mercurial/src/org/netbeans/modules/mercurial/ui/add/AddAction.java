@@ -79,6 +79,7 @@ public class AddAction extends AbstractAction {
     } 
     
     public void actionPerformed(ActionEvent ev) {     
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         Mercurial hg = Mercurial.getInstance();
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if (files == null || files.length == 0) return;

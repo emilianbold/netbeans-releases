@@ -105,6 +105,7 @@ public class AnnotateAction extends AbstractAction {
     } 
 
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
         if (visible(nodes)) {
             JEditorPane pane = activatedEditorPane(nodes);

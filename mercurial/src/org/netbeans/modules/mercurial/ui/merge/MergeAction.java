@@ -83,6 +83,7 @@ public class MergeAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
             HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N

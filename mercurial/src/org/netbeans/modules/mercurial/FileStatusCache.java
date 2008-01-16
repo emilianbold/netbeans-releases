@@ -724,6 +724,9 @@ public class FileStatusCache {
             return folderFiles;
         }
         
+        if(!Mercurial.getInstance().isGoodVersion()) 
+            return folderFiles;
+        
         if(interestingFiles == null){
             try {
                 interestingFiles = HgCommand.getInterestingStatus(rootManagedFolder, dir);

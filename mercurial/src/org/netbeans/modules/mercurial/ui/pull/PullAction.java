@@ -93,6 +93,7 @@ public class PullAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
             HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N

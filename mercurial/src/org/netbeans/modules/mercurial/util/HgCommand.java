@@ -332,14 +332,9 @@ public class HgCommand {
      * @return String
      */
     public static String getHgVersion() {
-        List<String> command = new ArrayList<String>();
-
-        command.add(getHgCommand());
-        command.add(HG_VERSION_CMD);
-
         List<String> list = new LinkedList<String>();
         try {
-            list = exec(command);
+            list = execForVersionCheck();
         } catch (HgException ex) {
             // Ignore Exception
             return null;
@@ -1994,14 +1989,7 @@ public class HgCommand {
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_ARG_LIST_TOO_LONG_ERR", 
                             command.get(1), command.size() -2 ));
             }else if (isErrorNoHg(e.getMessage()) || isErrorCannotRun(e.getMessage())){
-                WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
-                    public void run() {
-                        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                            NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));              
-                        DialogDisplayer.getDefault().notifyLater(msg);
-                    }
-                });
-                throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_NO_HG_CMD_ERR"));
+                throw new HgException(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_MSG"));
             }else{
                 throw new HgException(NbBundle.getMessage(HgCommand.class, "MSG_UNABLE_EXECUTE_COMMAND"));
             }
@@ -2025,6 +2013,16 @@ public class HgCommand {
      * @return List of the command's output or an exception if one occured
      */
     private static List<String> exec(List<String> command) throws HgException{
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()){
+            return new ArrayList<String>();
+        }
+        return execEnv(command, null);
+    }
+    private static List<String> execForVersionCheck() throws HgException{
+        List<String> command = new ArrayList<String>();
+        command.add(getHgCommand());
+        command.add(HG_VERSION_CMD);
+
         return execEnv(command, null);
     }
     

@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.util.RequestProcessor;
 import org.openide.filesystems.FileObject;
@@ -58,7 +57,6 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.NbBundle;
 import javax.swing.JOptionPane;
 import java.util.prefs.Preferences;
-import org.openide.util.Utilities;
 
 /**
  * Main entry point for Mercurial functionality, use getInstance() to get the Mercurial object.
@@ -156,16 +154,20 @@ public class Mercurial {
                         NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM_QUERY", version, MERCURIAL_BETTER_VERSION), // NOI18N
                         NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM"), // NOI18N
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-
                 if (response == JOptionPane.YES_OPTION) {
                     goodVersion = true;
                     prefs.put(HgModuleConfig.PROP_RUN_VERSION, version);
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(Mercurial.class, "MSG_USING_VERSION_MSG", version)); // NOI18N);
                 } else {
                     prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(Mercurial.class, "MSG_NOT_USING_VERSION_MSG", version)); // NOI18N);
                 }
             } else {
                 goodVersion = true;
             }
+        } else if (version == null) {
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_OUTPUT_MSG")); // NOI18N);
+            HgUtils.warningDialog(Mercurial.class, "MSG_VERSION_NONE_TITLE", "MSG_VERSION_NONE_MSG");// NOI18N
         }
     }
 
@@ -262,6 +264,9 @@ public class Mercurial {
     }
 
     public boolean isGoodVersion() {
+        return goodVersion;
+    }
+    public boolean isGoodVersionAndNotify() {
         if (checkedVersion == false) {
             checkVersionNotify();
             checkedVersion = true;

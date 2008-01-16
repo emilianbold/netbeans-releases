@@ -74,6 +74,7 @@ public class CloneExternalAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent ev){
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         CloneWizardAction wiz = CloneWizardAction.getInstance();
         wiz.performAction();
     }

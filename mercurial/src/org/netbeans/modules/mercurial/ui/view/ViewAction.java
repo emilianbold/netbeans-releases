@@ -74,6 +74,7 @@ public class ViewAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
         String repository = root.getAbsolutePath();

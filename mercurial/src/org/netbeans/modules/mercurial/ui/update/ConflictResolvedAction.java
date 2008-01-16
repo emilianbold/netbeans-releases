@@ -72,6 +72,7 @@ public class ConflictResolvedAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         resolved(context);
     }
 

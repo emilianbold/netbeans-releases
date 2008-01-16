@@ -114,12 +114,12 @@ public class IgnoreAction extends AbstractAction {
     }
     
     public boolean isEnabled() {
-        FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         File[] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         return getActionStatus(files) != UNDEFINED;
     }
 
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         final File[] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         final int actionStatus = getActionStatus(files);
 

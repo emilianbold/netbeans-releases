@@ -48,6 +48,7 @@ import java.io.File;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.mercurial.Mercurial;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -68,6 +69,7 @@ public class PropertiesAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
         File root = HgUtils.getRootFile(context);
         if (root == null) {
             return;

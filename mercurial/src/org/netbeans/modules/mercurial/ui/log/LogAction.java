@@ -185,6 +185,7 @@ public class LogAction extends AbstractAction {
     }
     
     public boolean isEnabled() {
+        if(!Mercurial.getInstance().isGoodVersion()) return false;
         // If it's a mercurial managed repository enable log action - Show History
         return HgRepositoryContextCache.hasHistory(context);
     } 

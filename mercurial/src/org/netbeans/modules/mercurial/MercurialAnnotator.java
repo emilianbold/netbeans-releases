@@ -337,7 +337,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         boolean onlyProjects = onlyProjects(nodes);
 
         List<Action> actions = new ArrayList<Action>(INITIAL_ACTION_ARRAY_LENGTH);
-        if (goodVersion && destination == VCSAnnotator.ActionDestination.MainMenu) {
+        if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             actions.add(new CreateAction(loc.getString("CTL_MenuItem_Create"), ctx)); // NOI18N
             actions.add(null);
             actions.add(new StatusAction(loc.getString("CTL_PopupMenuItem_Status"), ctx)); // NOI18N
@@ -378,7 +378,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(tempIA);
             actions.add(null);
             actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx)); // NOI18N
-        } else if (goodVersion) {
+        } else {
             if (noneVersioned){
                 actions.add(new CreateAction(loc.getString("CTL_PopupMenuItem_Create"), ctx)); // NOI18N
             }else{
