@@ -339,33 +339,47 @@ public class ProxyLookup extends Lookup {
         /** initializes the results
          */
         private Result<T>[] initResults() {
-            synchronized (this) {
-                if (weakL.results != null) {
-                    return weakL.results;
+            BIG_LOOP: for (;;) {
+                Lookup[] myLkps;
+                synchronized (this) {
+                    if (weakL.results != null) {
+                        return weakL.results;
+                    }
+                    myLkps = getLookups(false);
                 }
-            }
 
-            Lookup[] myLkps = getLookups(false);
-            Result<T>[] arr = newResults(myLkps.length);
-
-            for (int i = 0; i < arr.length; i++) {
-                arr[i] = myLkps[i].lookup(template);
-            }
-
-            synchronized (this) {
-                // some other thread might compute the result mean while. 
-                // if not finish the computation yourself
-                if (weakL.results != null) {
-                    return weakL.results;
-                }
+                getLookups(false);
+                Result<T>[] arr = newResults(myLkps.length);
 
                 for (int i = 0; i < arr.length; i++) {
-                    arr[i].addLookupListener(weakL);
+                    arr[i] = myLkps[i].lookup(template);
                 }
 
-                weakL.results = arr;
+                synchronized (this) {
+                    Lookup[] currentLkps = getLookups(false);
+                    if (currentLkps.length != myLkps.length) {
+                        continue BIG_LOOP;
+                    }
+                    for (int i = 0; i < currentLkps.length; i++) {
+                        if (currentLkps[i] != myLkps[i]) {
+                            continue BIG_LOOP;
+                        }
+                    }
+                    
+                    // some other thread might compute the result mean while. 
+                    // if not finish the computation yourself
+                    if (weakL.results != null) {
+                        return weakL.results;
+                    }
 
-                return arr;
+                    for (int i = 0; i < arr.length; i++) {
+                        arr[i].addLookupListener(weakL);
+                    }
+
+                    weakL.results = arr;
+
+                    return arr;
+                }
             }
         }
 
