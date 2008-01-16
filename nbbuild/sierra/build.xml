@@ -298,6 +298,15 @@
         <!-- implementMultiOperations -->
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/MultipleBPELs"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/OneBPEL"/></antcall>
+
+        <!-- JavaEEIntegration -->
+        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/BPToJavaEE/JavaEEFault/FaultBP"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/DirectElem/MsgDirectElem"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/JavaEEToBPProj"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/ProdMngmntSamples/CreditApplicationProcessorBusinessProcess"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/TwoWayEjbToBP/TwoWay"/></antcall>
     </target>
 
     <target name="do-test-jbi">
