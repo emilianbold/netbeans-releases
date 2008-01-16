@@ -56,9 +56,11 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmQualifiedNamedElement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.modelutil.AbstractCsmNode;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -438,14 +440,44 @@ abstract public class HostKeyArray extends Children.Keys<PersistentKey> implemen
         if (object == null) {
             return list[0];
         }
+        Node res = null;
+        CharSequence qname = null;
+        if (CsmKindUtilities.isQualified(object)){
+            qname = ((CsmQualifiedNamedElement)object).getQualifiedName();
+        }
+        CharSequence signature = null;
+        if (CsmKindUtilities.isFunction(object)){
+            signature = ((CsmFunction)object).getSignature();
+        }
         for (int i = 0; i < list.length; i++) {
             if (list[i] instanceof AbstractCsmNode){
-                if (object.equals(((AbstractCsmNode)list[i]).getCsmObject())){
+                CsmObject tested = ((AbstractCsmNode)list[i]).getCsmObject();
+                if (object.equals(tested)){
+                    // exact search
                     return list[i];
+                } else if (res == null && tested != null && qname != null) {
+                    // unique name search
+                    if (CsmKindUtilities.isQualified(tested)){
+                        CharSequence testedName = ((CsmQualifiedNamedElement)tested).getQualifiedName();
+                        if (CharSequenceKey.Comparator.compare(qname, testedName)==0){
+                            if (CsmKindUtilities.isFunction(object) || CsmKindUtilities.isFunction(tested)){
+                                if (CsmKindUtilities.isFunction(object) && CsmKindUtilities.isFunction(tested)){
+                                    CharSequence testedSignature = ((CsmFunction)tested).getSignature();
+                                    if (CharSequenceKey.Comparator.compare(signature, testedSignature)==0){
+                                        return list[i];
+                                    }
+                                    // for pure C
+                                    res = list[i];
+                                }
+                            } else {
+                                res = list[i];
+                            }
+                        }
+                    }
                 }
             }
         }
-        return null;
+        return res;
     }
 
     public void ensureInited(){
