@@ -626,16 +626,11 @@ public class DefineCorrelationWizard implements WizardProperties {
                         targetGraph.removeLink(link);
 
                         CorrelationMapperModel mapperModel = (CorrelationMapperModel) correlationMapper.getModel();
+                        TreePath targetTreePath = mapperModel.getTreePathByGraph(targetGraph);                        
+                        if (targetTreePath == null) break;
                         CorrelationMapperTreeModel rightTreeModel = 
                             (CorrelationMapperTreeModel) mapperModel.getRightTreeModel();
-                        Map<TreePath, Graph> mapTreePathGraph = mapperModel.getMapTreePathGraphs();
-                        for (Map.Entry<TreePath, Graph> mapEntry : mapTreePathGraph.entrySet()) {
-                            if (mapEntry.getValue().equals(targetGraph)) {
-                                TreePath treePath = mapEntry.getKey();
-                                rightTreeModel.fireTreeChanged(this, treePath);
-                                break;
-                            }
-                        }
+                        rightTreeModel.fireTreeChanged(this, targetTreePath);
                     }
                 }
             }
@@ -805,10 +800,6 @@ public class DefineCorrelationWizard implements WizardProperties {
                 TMP_FAKE_GRAPH = new Graph(this);
             }
 
-            public Map<TreePath, Graph> getMapTreePathGraphs() {
-                return mapTreePathGraphs;
-            }
-
             public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target) {
                 boolean result = false;
                 CorrelationMapperTreeNode treeNode = null;
@@ -843,11 +834,26 @@ public class DefineCorrelationWizard implements WizardProperties {
                 ((CorrelationMapperTreeModel) rightTreeModel).fireTreeChanged(this, treePath);
             }
 
+            public Map<TreePath, Graph> getMapTreePathGraphs() {
+                return mapTreePathGraphs;
+            }
+
             protected Graph createNewGraph(TreePath treePath) {
                 Graph treePathGraph = new Graph(this);
                 mapTreePathGraphs.put(treePath, treePathGraph);
                 ((CorrelationMapperTreeModel) rightTreeModel).fireTreeChanged(this, treePath);
                 return treePathGraph;
+            }
+            
+            public TreePath getTreePathByGraph(Graph graph) {
+                if (graph == null) return null;
+                TreePath treePath = null;
+                for (Map.Entry<TreePath, Graph> mapEntry : mapTreePathGraphs.entrySet()) {
+                    if (mapEntry.getValue().equals(graph)) {
+                        return mapEntry.getKey();
+                    }
+                }
+                return treePath;
             }
             
             public Graph getGraph(TreePath treePath) {
