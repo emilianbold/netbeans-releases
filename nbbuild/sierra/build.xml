@@ -309,6 +309,10 @@
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/JavaEEToBPProj"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/ProdMngmntSamples/CreditApplicationProcessorBusinessProcess"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/TwoWayEjbToBP/TwoWay"/></antcall>
+
+        <!-- misc -->
+        <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
+        
     </target>
 
     <target name="do-test-jbi">

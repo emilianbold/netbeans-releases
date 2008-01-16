@@ -238,6 +238,7 @@
         ${test.cvs.path}/implementMultiOperations
         ${test.cvs.path}/JavaEEIntegration
         ${test.cvs.path}/MessageExchange
+        ${test.cvs.path}/misc
         ${test.cvs.path}/PartnerLinks
         ${test.cvs.path}/SchemaElemDecl
         ${test.cvs.path}/ScopeTermination
