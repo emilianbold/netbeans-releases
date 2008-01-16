@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -41,15 +41,15 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="xtest-qa-functional" basedir="." default="all">
+<project name="xtest-qa-performance" basedir="." default="all">
 
     <import file="xtest-init.xml"/>
     
     <condition property="do.we.need.to.parse.project.xml.file" >
         <and>
             <or>
-                <not><isset property="test.qa-functional.runtime.cp" /></not>
-                <not><isset property="test.qa-functional.compile.cp" /></not>
+                <not><isset property="test.qa-performance.runtime.cp" /></not>
+                <not><isset property="test.qa-performance.compile.cp" /></not>
             </or>
             <isfalse value="${xtest.distexec}"/>
         </and>
@@ -60,13 +60,13 @@ made subject to such option by the copyright holder.
         <property name="harness.dir" location="${netbeans.dest.dir}/harness"/>
         <taskdef name="parseprojectxml" classname="org.netbeans.nbbuild.ParseProjectXml" classpath="${harness.dir}/tasks.jar"/>
         <parseprojectxml project="..">
-            <testtype name="qa-functional" 
-                      folder="test.qa-functional.folder" 
-                      runtimecp="test.qa-functional.runtime.cp" 
-                      compilecp="test.qa-functional.cp"/>         
+            <testtype name="qa-performance" 
+                      folder="test.qa-performance.folder" 
+                      runtimecp="test.qa-performance.runtime.cp" 
+                      compilecp="test.qa-performance.cp"/>         
         </parseprojectxml>
     </target>
-            
+        
     <target name="init-cp" depends="init,build-jellytools">
         <!-- Used built jar preferably. If not available use the latest from CVS. -->
         <available file="${nb_all}/jellytools/jelly2-nb.jar" property="jelly.jar" value="${nb_all}/jellytools/jelly2-nb.jar"/>
@@ -79,21 +79,21 @@ made subject to such option by the copyright holder.
             <pathelement location="${jelly.jar}"/>
         </path>
         <!-- These properties cannot be undefined. -->
-        <property name="test.qa-functional.cp" value=""/>
-        <property name="test.qa-functional.cp.extra" value=""/>
-        <path id="test.qa-functional.compile.cp">
-            <pathelement path="${test.qa-functional.cp}"/>
+        <property name="test.qa-performance.cp" value=""/>
+        <property name="test.qa-performance.cp.extra" value=""/>
+        <path id="test.qa-performance.compile.cp">
+            <pathelement path="${test.qa-performance.cp}"/>
             <path refid="jemmy.and.jelly.path"/>
-            <pathelement path="${test.qa-functional.cp.extra}"/>
+            <pathelement path="${test.qa-performance.cp.extra}"/>
         </path>
         <!-- These properties cannot be undefined. -->
-        <property name="test.qa-functional.run.cp.extra" value=""/>
-        <property name="test.qa-functional.runtime.cp" value=""/>
-        <path id="test.qa-functional.run.cp">
+        <property name="test.qa-performance.run.cp.extra" value=""/>
+        <property name="test.qa-performance.runtime.cp" value=""/>
+        <path id="test.qa-performance.run.cp">
 <!--  don't add modules to xtest classpath when tests are run in test mode          
-<pathelement path="${test.qa-functional.runtime.cp}"/>-->
+<pathelement path="${test.qa-performance.runtime.cp}"/>-->
             <path refid="jemmy.and.jelly.path"/>
-            <pathelement path="${test.qa-functional.run.cp.extra}"/>
+            <pathelement path="${test.qa-performance.run.cp.extra}"/>
         </path>
     </target>
     
@@ -101,9 +101,9 @@ made subject to such option by the copyright holder.
     <!-- Compilers -->
     <!-- ========= -->
     
-    <target name="qa-functional-compiler" depends="build-jellytools">
+    <target name="qa-performance-compiler" depends="build-jellytools">
         <!-- Build tests but don't build module sources. -->
-        <ant dir=".." target="do-test-build-qa-functional" />
+        <ant dir=".." target="do-test-build-qa-performance" />
         <packageTests/>
     </target>
     
@@ -112,9 +112,9 @@ made subject to such option by the copyright holder.
     <!-- ========= -->
     
     <target name="runidetest" depends="init-cp">
-        <property name="test.qa-functional.run.cp.extra" value=""/>
+        <property name="test.qa-performance.run.cp.extra" value=""/>
         <executeTests pluginname="ide">
-            <classpath refid="test.qa-functional.run.cp"/>
+            <classpath refid="test.qa-performance.run.cp"/>
         </executeTests>
     </target>
     
@@ -140,7 +140,7 @@ made subject to such option by the copyright holder.
             You have -->
         <internalExecution classname="${classname}">
             <classpath>
-                <path refid="test.qa-functional.run.cp"/>
+                <path refid="test.qa-performance.run.cp"/>
                 <pathelement path="${compile.destdir}"/>
                 <pathelement path="${junit.classpath}"/>
             </classpath>
@@ -171,9 +171,9 @@ made subject to such option by the copyright holder.
         <property file="${test.dist.dir}/unit/${cluster.dir}/${code.name.base.dashes}/test.properties"/>
         <executeTests pluginname="jvm">
             <classpath>
-                <path path="${test.qa-functional.runtime.cp}"/>
-                <pathelement path="${test.qa-functional.cp.extra}"/>
-                <pathelement path="${test.qa-functional.run.cp.extra}"/>
+                <path path="${test.qa-performance.runtime.cp}"/>
+                <pathelement path="${test.qa-performance.cp.extra}"/>
+                <pathelement path="${test.qa-performance.run.cp.extra}"/>
             </classpath>
         </executeTests>
     </target>

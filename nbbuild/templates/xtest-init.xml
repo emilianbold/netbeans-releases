@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+
+<project name="xtest-init" basedir=".">
+
+    <!-- Root folder of modules -->
+    <dirname property="nb_all" file="${ant.file.xtest-init}/../.."/>
+
+    <!-- If jellytools repository available and jar not up to date, build jelly2-nb.jar -->
+    <condition property="need.to.build.jellytools">
+        <and>
+            <available file="${nb_all}/jellytools/src" type="dir"/>
+            <not>
+                <uptodate targetfile="${nb_all}/jellytools/jelly2-nb.jar" >
+                    <srcfiles dir= "${nb_all}/jellytools/src"/>
+                </uptodate>
+            </not>
+        </and>
+    </condition>
+                
+    <target name="init" depends="init-parse-project-xml,init-distribution-env">
+        <property file="../nbproject/private/private.properties"/>
+        <property file="../nbproject/project.properties"/>
+        <property name="build.compiler.debug" value="true"/>
+        <property name="javac.source" value="1.5"/>
+        <property name="build.compiler.source" value="${javac.source}"/> 
+        <property name="build.compiler.deprecation" value="true"/>
+        <property name="build.sysclasspath" value="ignore"/>
+    </target>
+    
+   <target name="init-distribution-env" if="exists.test.properties" depends="check-distribution">
+        <property name="test.dist.dir" location="../.."/>
+        <property name="extra.test.libs" location="${test.dist.dir}/extralibs"/>
+        <property name="jemmy.jar" location="${extra.test.libs}/jemmy.jar"/>
+        <property name="jelly.jar" location="${extra.test.libs}/jelly2-nb.jar"/>
+        <property file="test.properties"/>
+    </target>
+    
+    <target name="check-distribution">
+        <available file="test.properties" property="exists.test.properties"/>
+    </target>
+
+    <target name="build-jellytools" if="need.to.build.jellytools">
+        <!-- <ant dir="${nb_all}/jellytools" target="jar-library" inheritAll="false"/> -->
+        <!-- The following is used instead of above because inheritAll="false"
+        doesn't work for all properties. Properties xtest.home and xtest.testtype
+        has to be null to not scan module binaries because modules jemmy.module and
+        nbjunit are not within IDE binaries (see
+        nbbuild/antsrc/org/netbeans/nbbuild/ModuleListParser.java).
+        -->
+        <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
+            <arg value="-f"/>
+            <arg value="${nb_all}/jellytools/build.xml"/>
+            <arg value="jar-library"/>
+        </java>
+    </target>
+
+    <!-- ====================== -->
+    <!-- Run IDE with AppServer -->
+    <!-- ====================== -->
+    
+    <!--  Run IDE with special property pointing to Sun Application server installation.
+          AppServer has to be installed at expected location and if there exist
+          a cleaning script, default domain is deleted and re-created.  -->
+    <target name="runidetest-with-appserver" depends="set-appserver-path,clean-appserver-domain">
+        <antcall target="runidetest">
+            <!-- Property is propagated to IDE command line. -->
+            <param name="xtest.userdata|com.sun.aas.installRoot" value="&quot;${j2ee.appserver.path}&quot;"/>
+        </antcall>   
+    </target>
+
+    <target name="set-appserver-path" unless="j2ee.appserver.path">
+        <!-- Load private.properties where user can set own j2ee.appserver.path. -->
+        <property file="../nbproject/private/private.properties"/>
+        <condition property="j2ee.appserver.path" value="e:\\space\\AppServer">
+            <os family="windows"/>
+        </condition>
+        <condition property="j2ee.appserver.path" value="/space/appserver">
+            <os family="unix"/>
+        </condition>
+        <available file="${j2ee.appserver.path}/domains/domain1" property="j2ee.appserver.present"/>
+        <fail unless="j2ee.appserver.present" message="AppServer was not found in ${j2ee.appserver.path}. Set property j2ee.appserver.path to point to AppServer installation directory."/>
+    </target>
+
+    <!-- Stop all running domains, clear and create default AppServer domain. -->
+    <target name="clean-appserver-domain" depends="-init-clean-appserver-domain, -run-clean-appserver-domain, -inform-user"/>
+        
+    <target name="-init-clean-appserver-domain">
+        <condition property="windows">
+            <os family="windows" />
+        </condition>
+        <condition property="unix">
+            <os family="unix" />
+        </condition>
+        <condition property="clean.script.exec" value="e:\\space\\scripts\\cleanAS.bat">
+            <os family="windows" />
+        </condition>
+        <condition property="clean.script.exec" value="/space/scripts/cleanAS.sh">
+            <os family="unix" />
+        </condition>
+        <available file="${clean.script.exec}" property="clean.script.exists" type="file"/>
+    </target>
+    
+    <target name="-run-clean-domain-windows" if="windows">
+        <exec executable="${clean.script.exec}"/>
+    </target>
+    
+    <target name="-run-clean-domain-unix" if="unix">
+        <exec executable="sh" >
+            <arg value="${clean.script.exec}"/>
+        </exec>
+    </target>
+
+    <target name="-run-clean-appserver-domain" if="clean.script.exists">
+        <echo>Cleaning default domains...</echo>
+        <antcall target="-run-clean-domain-windows" inheritall="true"/>
+        <antcall target="-run-clean-domain-unix" inheritall="true"/>
+    </target>
+    
+    <target name="-inform-user" unless="clean.script.exists">
+        <echo>Continuing with default domain, data in this domain will be modified....</echo>
+    </target>
+</project>
+

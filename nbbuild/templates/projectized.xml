@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -96,6 +96,10 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                       folder="test.qa-functional.folder" 
                       runtimecp="test.qa-functional.runtime.cp" 
                       compilecp="test.qa-functional.compile.cp"/>         
+            <testtype name="qa-performance" 
+                      folder="test.qa-performance.folder" 
+                      runtimecp="test.qa-performance.runtime.cp" 
+                      compilecp="test.qa-performance.compile.cp"/>         
         </parseprojectxml>
         <condition property="is.regular">
             <not>
@@ -670,7 +674,108 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
            <zip destfile="${test.qa-functional.out.folder}/data.zip" basedir="${test.qa-functional.dir}/data"/> 
     </target>
 
-    <target name="test-clean" depends="test-unit-clean,test-qa-functional-clean" description="Clean all tests"/>
+    <target name="test-init-qa-performance" depends="init,test-preinit,test-lib-init">
+        <property name="test.qa-performance.dir" location="test/qa-performance"/>
+        <property name="test.qa-performance.src.dir" location="${test.qa-performance.dir}/src"/>
+        <property name="build.test.qa-performance.dir" location="build/test/qa-performance"/>
+        <property name="build.test.qa-performance.classes.dir" location="${build.test.qa-performance.dir}/classes"/>
+        <property name="build.test.qa-performance.results.dir" location="${build.test.qa-performance.dir}/results"/>
+        
+        <property name="test.filter.trace" value="true"/>
+        <property name="test.dist.dir" location="${nb_all}/nbbuild/build/testdist"/>
+           <!-- if project.xml doesn't contain test dependencies -->
+        <property name="test.qa-performance.folder" location="build/test/qa-performance/dist"/>
+        <property name="test.qa-performance.out.folder" location="${test.qa-performance.folder}"/>
+        <property name="extra.test.libs.dir" location="${test.dist.dir}/extralibs"/> 
+        
+        <!-- path reference used in both compiler and executor -->
+        <path id="test.qa-performance.cp">
+            <!-- Cannot use <path refid="cp"/> since that uses ${module.classpath} and we want ${module.run.classpath}: -->
+            <pathelement path="${test.qa-performance.compile.cp}"/>
+            <pathelement path="${cp.extra}"/>
+            <pathelement location="${cluster}/${module.jar}"/>
+            <path refid="test.unit.lib.cp"/>
+            <pathelement path="${test.qa-performance.cp.extra}"/>
+            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
+        </path>
+        <path id="test.qa-performance.run.cp">
+            <pathelement path="${test.qa-performance.runtime.cp}"/>
+            <pathelement path="${test.qa-performance.run.cp.extra}"/>
+            <pathelement path="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+            <pathelement location="${nb_all}/jemmy/builds/jemmy.jar"/>
+        </path>
+    </target>
+
+    <target name="test-build-qa-performance" depends="jar,do-test-build-qa-performance,test-build-datajar-qa-performance"/>
+        
+
+    <target name="do-test-build-qa-performance" depends="init,test-init-qa-performance">
+        <fail>
+          Missing test dependency
+          Runtime classpath: ${test.qa-performance.runtime.cp}
+          Compile classpath: ${test.qa-performance.cp}
+          <condition>
+            <or>
+              <contains string="${test.qa-performance.runtime.cp}" substring="-missing-Module-Entries-:" />
+              <contains string="${test.qa-performance.compile.cp}" substring="-missing-Module-Entries-:" />
+            </or>
+          </condition>
+        </fail>
+
+        <mkdir dir="${build.test.qa-performance.classes.dir}"/>
+        <javac srcdir="${test.qa-performance.src.dir}" destdir="${build.test.qa-performance.classes.dir}"
+               debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
+               source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
+               <exclude name="**/jars/**"/><!-- XXX for core only; fix in core, not here -->
+               <exclude name="**/data/**"/><!-- XXX for openide/util and co. -->
+            <classpath refid="test.qa-performance.cp"/>
+            <compilerarg line="${javac.compilerargs}"/>
+        </javac>
+        <copy todir="${build.test.qa-performance.classes.dir}">
+            <fileset dir="${test.qa-performance.src.dir}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.test.qa-performance.dir}">
+            <fileset dir="${test.qa-performance.dir}">
+                <include name="data/**"/>
+            </fileset>
+        </copy>
+        
+        <available file="${test.qa-performance.dir}/data" type="dir" property="exists.test.qa-performance.data"/>
+        <!-- test distribution -->
+               <mkdir dir="${nb_all}/nbbuild/build/testdist"/>
+               <mkdir dir="${test.dist.dir}/extralibs"/>
+           <mkdir dir="${test.qa-performance.out.folder}"/>
+           <jar destfile="${test.qa-performance.out.folder}/tests.jar" basedir="${build.test.qa-performance.classes.dir}"/>            
+           <!-- create properties -->
+           <taskdef name="shorterpaths" classname="org.netbeans.nbbuild.ShorterPaths" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+            <shorterpaths inref="test.qa-performance.run.cp" 
+                           out="test.qa-performance.run.cp.short" 
+                           extralibs="extra.test.libs.short" 
+                           extralibsdir="${extra.test.libs.dir}"
+                           testproperties="${test.qa-performance.out.folder}/test.properties">
+
+                <replacement dir="${netbeans.dest.dir}" name="netbeans.dest.dir"/>
+                <replacement dir="${test.dist.dir}" name="test.dist.dir"/>
+                <replacement dir="${java.home}" name="java.home"/>
+                <replacement dir="${java.home.parent}" name="java.home.parent"/>
+            </shorterpaths>
+             <copy todir="${test.qa-performance.out.folder}">
+                <fileset dir="${test.qa-performance.dir}/..">
+                  <include name="build-qa-performance.xml"/>
+                  <include name="build.xml"/>
+                  <include name="cfg-qa-performance.xml"/>
+                </fileset>
+            </copy>
+    </target>
+    
+    <target name="test-build-datajar-qa-performance" depends="do-test-build-qa-performance" if="exists.test.qa-performance.data">
+           <zip destfile="${test.qa-performance.out.folder}/data.zip" basedir="${test.qa-performance.dir}/data"/> 
+    </target>
+
+    <target name="test-clean" depends="test-unit-clean,test-qa-functional-clean,test-qa-performance-clean" description="Clean all tests"/>
 
     <target name="test-unit-clean" >
         <property name="test.unit.out.folder" location="${test.dist.dir}/unit/${cluster.dir}/${code.name.base.dashes}"/>
@@ -682,23 +787,31 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <delete dir="${test.qa-functional.out.folder}"/>
     </target>
     
-    <target name="build-all-tests" depends="test-condition,test-build-condition,test-build-qa-functional-condition" if="contains.test" description="build all test types">
+    <target name="test-qa-performance-clean" >
+        <property name="test.qa-performance.out.folder" location="${test.dist.dir}/qa-performance/${cluster.dir}/${code.name.base.dashes}"/>
+        <delete dir="${test.qa-performance.out.folder}"/>
+    </target>
+
+    <target name="build-all-tests" depends="test-condition,test-build-condition,test-build-qa-functional-condition,test-build-qa-performance-condition" if="contains.test" description="build all test types">
     </target>
     
         <!-- it sets these conditions 
            1. contains.unit.test  - contains unit tests
            2. contains.qa-functional.test - contains tests
-           3. contains.test - project contains at least one test type
+           3. contains.qa-performance.test - contains tests
+           4. contains.test - project contains at least one test type
         -->
     <target name="test-condition" depends="init">
         <available file="test/cfg-unit.xml" property="contains.unit.test.cfg"/>
         <available file="test/cfg-qa-functional.xml" property="contains.qa-functional.test.cfg"/>
+        <available file="test/cfg-qa-performance.xml" property="contains.qa-performance.test.cfg"/>
         <available file="test/build-unit.xml" property="contains.unit.test.build"/>
         <available file="test/build-qa-functional.xml" property="contains.qa-functional.test.build"/>
-        <available file="test/build-unit.xml" property="contains.unit.test.build"/>
+        <available file="test/build-qa-performance.xml" property="contains.qa-performance.test.build"/>
         <available file="test/build.xml" property="contains.test.build"/>
         <available file="test/unit/src" property="contains.unit.test.src"/>
         <available file="test/qa-functional/src" property="contains.qa-functional.test.src"/>
+        <available file="test/qa-performance/src" property="contains.qa-performance.test.src"/>
 
         <condition property="contains.unit.test">
             <and>
@@ -718,10 +831,20 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             </and>
         </condition>
 
+        <condition property="contains.qa-performance.test">
+            <and>
+                <isset property="contains.qa-performance.test.cfg"/>
+                <isset property="contains.qa-performance.test.build"/>
+                <isset property="contains.test.build"/>
+                <isset property="contains.qa-performance.test.src"/>
+            </and>
+        </condition>
+
         <condition property="contains.test">
              <or>
                  <isset property="contains.unit.test"/>
                  <isset property="contains.qa-functional.test"/>
+                 <isset property="contains.qa-performance.test"/>
              </or>
          </condition>          
     </target>
@@ -742,6 +865,16 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                        oldname="xtest-qa-functional.xml"
                        newpath="../../../nbbuild/templates/xtest-qa-functional.xml"/>
         <convertimport file="${test.qa-functional.out.folder}/build.xml" 
+                       oldname="xtest.xml"
+                       newpath="../../../nbbuild/templates/xtest.xml"/>
+    </target>
+
+    <target name="test-build-qa-performance-condition" if="contains.qa-performance.test" depends="test-init-qa-performance" description="build qa-performance test if exists">
+        <antcall target="test-build-datajar-qa-performance"/>
+        <convertimport file="${test.qa-performance.out.folder}/build-qa-performance.xml" 
+                       oldname="xtest-qa-performance.xml"
+                       newpath="../../../nbbuild/templates/xtest-qa-performance.xml"/>
+        <convertimport file="${test.qa-performance.out.folder}/build.xml" 
                        oldname="xtest.xml"
                        newpath="../../../nbbuild/templates/xtest.xml"/>
     </target>
