@@ -285,6 +285,11 @@
         <antcall target="do-test-jbi"><param name="dir" value="faulthandling/SystemFaultsBpel"/></antcall>
     </target>
 
+    <target name="project-test-6">
+        <!-- flow -->
+        <antcall target="do-test-jbi"><param name="dir" value="flow/FlowBpel"/></antcall>
+    </target>
+
     <target name="do-test-jbi">
         <ant antfile="${jbi}/${dir}/build.xml" target="clean" inheritAll="false">
             <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
