@@ -195,6 +195,7 @@ public class AstUtilities {
         if (root instanceof ModuleNode) {
             ModuleNode moduleNode = (ModuleNode) root;
             children.addAll(moduleNode.getClasses());
+            children.add(moduleNode.getStatementBlock());
         } else if (root instanceof ClassNode) {
             ClassNode classNode = (ClassNode) root;
             for (Object object : classNode.getMethods()) {
