@@ -53,12 +53,13 @@ public class AddPropertyConfig {
     public enum GENERATE {GETTER_AND_SETTER, GETTER, SETTER, NONE};
     
     private String name;
+    private String initializer;
     private String type;
 
     private ACCESS access = AddPropertyConfig.ACCESS.PRIVATE;
     
     private boolean _static;
-    private boolean _finale;
+    private boolean _final;
     
     private GENERATE generateGetterSetter = AddPropertyConfig.GENERATE.GETTER_AND_SETTER;
     
@@ -83,10 +84,11 @@ public class AddPropertyConfig {
     
     public AddPropertyConfig(
             String name,
+            String initializer,
             String type,
             ACCESS access,
             boolean _static,
-            boolean _finale,
+            boolean _final,
             GENERATE generateGetterSetter,
             boolean generateJavadoc,
             boolean bound,
@@ -98,10 +100,11 @@ public class AddPropertyConfig {
             boolean generatePropertyChangeSupport,
             boolean generateVetoableChangeSupport) {
         this.name = name;
+        this.initializer = initializer;
         this.type = type;
         this.access = access;
         this._static = _static;
-        this._finale = _finale;
+        this._final = _final;
         this.generateGetterSetter = generateGetterSetter;
         this.generateJavadoc = generateJavadoc;
         this.bound = bound;
@@ -123,11 +126,11 @@ public class AddPropertyConfig {
     }        
 
     public boolean isFinale() {
-        return _finale;
+        return _final;
     }
 
     public void setFinale(boolean _finale) {
-        this._finale = _finale;
+        this._final = _finale;
     }
 
     public boolean isStatic() {
@@ -209,6 +212,14 @@ public class AddPropertyConfig {
     public void setIndexed(boolean indexed) {
         this.indexed = indexed;
     }
+
+    public String getInitializer() {
+        return initializer;
+    }
+
+    public void setInitializer(String initializer) {
+        this.initializer = initializer;
+    }       
 
     public String getName() {
         return name;

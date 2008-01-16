@@ -64,6 +64,7 @@ public class AddPropertyGenerator {
             if (template != null && template.isValid()) {
                 final String type = addPropertyConfig.getType().trim();
                 final String name = addPropertyConfig.getName().trim();
+                final String initializer = addPropertyConfig.getInitializer().trim();
                 String access = "";
                 switch (addPropertyConfig.getAccess()) {
                     case PRIVATE:
@@ -88,6 +89,7 @@ public class AddPropertyGenerator {
                 scriptContext.setAttribute("access", access, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("type", type, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("name", name, ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("initializer", initializer, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("capitalizedName", capitalize(name), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("static", Boolean.valueOf(addPropertyConfig.isStatic()), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("final", Boolean.valueOf(addPropertyConfig.isFinale()), ScriptContext.ENGINE_SCOPE); // NOI18N

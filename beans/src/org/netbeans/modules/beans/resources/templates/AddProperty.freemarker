@@ -5,7 +5,7 @@
     <#assign vetoableChangeSupport="vetoableChangeSupport">
 </#if>
 
-    ${access}<#if static >static </#if><#if final >final </#if>${type}<#if indexed >[]</#if> ${name}<#if final > = /* initializer */</#if>;
+    ${access}<#if static >static </#if><#if final >final </#if>${type}<#if indexed >[]</#if> ${name}<#if final > = ${initializer}<#else><#if initializer != "" > = ${initializer}</#if></#if>;
 <#if bound >
 
     public static final String ${PROP_NAME} = "${name}";

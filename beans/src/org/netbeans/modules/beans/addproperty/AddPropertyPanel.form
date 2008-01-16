@@ -82,7 +82,15 @@
                               <EmptySpace min="-2" max="-2" attributes="0"/>
                               <Component id="browseTypeButton" min="-2" pref="86" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="nameTextField" alignment="0" pref="651" max="32767" attributes="2"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="nameTextField" min="-2" pref="228" max="-2" attributes="2"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="equalsLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="initializerTextField" pref="374" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="semicolonLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
@@ -105,7 +113,10 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="nameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="semicolonLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="nameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="equalsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="initializerTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -173,6 +184,22 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.nameTextField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="equalsLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.equalsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="initializerTextField">
+    </Component>
+    <Component class="javax.swing.JLabel" name="semicolonLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/beans/addproperty/Bundle.properties" key="AddPropertyPanel.semicolonLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
