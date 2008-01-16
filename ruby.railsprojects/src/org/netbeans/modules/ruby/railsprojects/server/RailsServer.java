@@ -391,6 +391,15 @@ public final class RailsServer {
         }
     }
 
+    /**
+     * @param outputLine the output line to check.
+     * @return true if the given <code>outputLine</code> represented 'address in use'
+     * message.
+     */
+    static boolean isAddressInUseMsg(String outputLine){
+        return outputLine.matches(".*in.*: Address.+in use.+(Errno::EADDRINUSE).*"); //NOI18N
+    }
+    
     private class RailsServerRecognizer extends OutputRecognizer {
 
         private final String startedMessagePattern;
@@ -406,11 +415,11 @@ public final class RailsServer {
             // This is ugly, but my attempts to use URLConnection on the URL repeatedly
             // and check for connection.getResponseCode()==HttpURLConnection.HTTP_OK didn't
             // work - try that again later
-            if (outputLine.matches(startedMessagePattern)) { // NOI18N
+            if (outputLine.matches(startedMessagePattern)) {
                 synchronized (RailsServer.this) {
                     status = ServerStatus.RUNNING;
                 }
-            } else if (outputLine.contains("in `new': Address in use (Errno::EADDRINUSE)")) { // NOI18N
+            } else if (isAddressInUseMsg(outputLine)) {
                 portConflict = true;
             }
 

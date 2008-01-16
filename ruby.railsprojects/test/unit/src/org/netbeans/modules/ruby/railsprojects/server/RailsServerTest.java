@@ -64,6 +64,12 @@ public class RailsServerTest extends TestCase {
 
         assertTrue(webBrick.matches(RailsServer.getStartedMessagePattern(RailsServer.ServerType.WEBRICK)));
         assertTrue(webBrick2.matches(RailsServer.getStartedMessagePattern(RailsServer.ServerType.WEBRICK)));
-                
+
+    }
+    
+    public void testIsAddressInUseMsg(){
+        assertTrue(RailsServer.isAddressInUseMsg("/usr/local/lib/ruby/1.8/webrick/utils.rb:62:in `initialize': Address already in use - bind(2) (Errno::EADDRINUSE)"));
+        assertTrue(RailsServer.isAddressInUseMsg("/usr/lib/ruby/gems/1.8/gems/mongrel-0.3.13.4/lib/mongrel/tcphack.rb:12:in `initialize_without_backlog': Address already in use - bind(2) (Errno::EADDRINUSE)"));
+        assertFalse(RailsServer.isAddressInUseMsg("Address not in use"));
     }
 }
