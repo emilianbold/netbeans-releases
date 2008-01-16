@@ -94,9 +94,9 @@ made subject to such option by the copyright holder.
                 Friend contract for <code>org.netbeans.modules.vcscore</code> broken. Following classes deleted:
                 <code>MountSupport</code>, <code>FileSystemProvider</code>, <code>AutoMountProvider</code>
             </description>
-            <class package="org.netbeans.modules.masterfs.providers" name="MountSupport"/>
-            <class package="org.netbeans.modules.masterfs.providers" name="FileSystemProvider"/>
-            <class package="org.netbeans.modules.masterfs.providers" name="AutoMountProvider"/>            
+            <class package="org.netbeans.modules.masterfs.providers" name="MountSupport"  link="no"/>
+            <class package="org.netbeans.modules.masterfs.providers" name="FileSystemProvider"  link="no"/>
+            <class package="org.netbeans.modules.masterfs.providers" name="AutoMountProvider"  link="no"/>            
             <issue number="123542"/>
         </change>                        
         
