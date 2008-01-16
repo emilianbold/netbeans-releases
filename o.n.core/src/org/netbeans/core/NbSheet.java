@@ -454,7 +454,7 @@ public final class NbSheet extends TopComponent {
     
     protected void componentClosed() {
         updateGlobalListening (false);
-        this.nodes = null;
+        this.nodes = new Node[0];
     }
     
     protected void componentDeactivated() {
