@@ -66,15 +66,12 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.settings.CppSettings;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.loaders.ExtensionList;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
     private final String path;
@@ -222,7 +219,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public File getFile() {
-        return FileUtil.normalizeFile(new File(getAbsPath()));
+        String aPath = getAbsPath();
+        if (aPath != null) {
+            return FileUtil.normalizeFile(new File(aPath));
+        }
+        return null;
     }
     
     public File getCanonicalFile() {
