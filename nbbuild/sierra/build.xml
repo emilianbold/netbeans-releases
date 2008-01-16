@@ -311,10 +311,10 @@
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/TwoWayEjbToBP/TwoWay"/></antcall>
 
         <!-- misc -->
-        <!--todo a antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall-->
+        <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
 
         <!-- pick -->
-        <!-- todo a antcall target="do-test-jbi"><param name="dir" value="pick/PickBpel"/></antcall-->
+        <antcall target="do-test-jbi"><param name="dir" value="pick/PickBpel"/></antcall>
 
         <!-- repeatuntil -->
         <antcall target="do-test-jbi"><param name="dir" value="repeatuntil/RepeatUntilBpel"/></antcall>
