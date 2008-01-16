@@ -159,17 +159,21 @@ public class MercurialAnnotator extends VCSAnnotator {
     public void refresh() {
         String string = HgModuleConfig.getDefault().getAnnotationFormat(); //System.getProperty("netbeans.experimental.svn.ui.statusLabelFormat");  // NOI18N
         if (string != null && !string.trim().equals("")) { // NOI18N
-            if (string.indexOf("{revision}") != -1 ) { // NOI18N
-                needRevisionForFormat = true;
-            } else {
-                needRevisionForFormat = false;
-            }
+            needRevisionForFormat = isRevisionInAnnotationFormat(string); 
             string = string.replaceAll("\\{revision\\}",  "\\{0\\}");           // NOI18N
             string = string.replaceAll("\\{status\\}",    "\\{1\\}");           // NOI18N
             string = string.replaceAll("\\{folder\\}",    "\\{2\\}");           // NOI18N
             format = new MessageFormat(string);
             emptyFormat = format.format(new String[] {"", "", ""} , new StringBuffer(), null).toString().trim(); // NOI18N
         }
+    }
+    
+    public static boolean isRevisionInAnnotationFormat(String str){
+        if (str.indexOf("{revision}") != -1) { // NOI18N
+            return true;
+        } else {
+            return false;
+        }        
     }
 
     private void initDefaultColor(String name) {
