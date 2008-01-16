@@ -43,7 +43,6 @@ package customerdb.service;
 
 import customerdb.Customer;
 import javax.ws.rs.Path;
-import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
@@ -55,12 +54,14 @@ import customerdb.DiscountCode;
 import customerdb.converter.CustomerConverter;
 import javax.ws.rs.core.UriInfo;
 
+
 /**
  *
  * @author Peter Liu
  */
 
 public class CustomerResource {
+    private Integer id;
     private UriInfo context;
     
     /** Creates a new instance of CustomerResource */
@@ -72,7 +73,8 @@ public class CustomerResource {
      *
      * @param context HttpContext inherited from the parent resource
      */
-    public CustomerResource(UriInfo context) {
+    public CustomerResource(Integer id, UriInfo context) {
+        this.id = id;
         this.context = context;
     }
 
@@ -84,10 +86,9 @@ public class CustomerResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public CustomerConverter get(@UriParam("customerId")
-    Integer id) {
+    public CustomerConverter get() {
         try {
-            return new CustomerConverter(getEntity(id), context.getAbsolutePath());
+            return new CustomerConverter(getEntity(), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -101,12 +102,11 @@ public class CustomerResource {
      */
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
-    public void put(@UriParam("customerId")
-    Integer id, CustomerConverter data) {
+    public void put(CustomerConverter data) {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            updateEntity(getEntity(id), data.getEntity());
+            updateEntity(getEntity(), data.getEntity());
             service.commitTx();
         } finally {
             service.close();
@@ -119,12 +119,11 @@ public class CustomerResource {
      * @param id identifier for the entity
      */
     @DELETE
-    public void delete(@UriParam("customerId")
-    Integer id) {
+    public void delete() {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            Customer entity = getEntity(id);
+            Customer entity = getEntity();
             service.removeEntity(entity);
             service.commitTx();
         } finally {
@@ -139,13 +138,12 @@ public class CustomerResource {
      * @return an instance of DiscountCodeResource
      */
     @Path("discountCode/")
-    public customerdb.service.DiscountCodeResource getDiscountCodeResource(@UriParam("customerId")
-    Integer id) {
-        final Customer parent = getEntity(id);
-        return new DiscountCodeResource(context) {
+    public DiscountCodeResource getDiscountCodeResource() {
+        final Customer parent = getEntity();
+        return new DiscountCodeResource(null, context) {
 
             @Override
-            protected DiscountCode getEntity(String id) {
+            protected DiscountCode getEntity() {
                 DiscountCode entity = parent.getDiscountCode();
                 if (entity == null) {
                     throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
@@ -161,9 +159,9 @@ public class CustomerResource {
      * @param id identifier for the entity
      * @return an instance of Customer
      */
-    protected Customer getEntity(Integer id) {
+    protected Customer getEntity() {
         try {
-            return (Customer) PersistenceService.getInstance().createNamedQuery("Customer.findByCustomerId").setParameter("customerId", id).getSingleResult();
+            return (Customer) PersistenceService.getInstance().createQuery("SELECT e FROM Customer e where e.customerId = :customerId").setParameter("customerId", id).getSingleResult();
         } catch (NoResultException ex) {
             throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
         }

@@ -48,13 +48,16 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Builder;
 import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
 import customerdb.Customer;
 import customerdb.converter.DiscountCodesConverter;
 import customerdb.converter.DiscountCodeConverter;
+
 
 /**
  *
@@ -86,9 +89,13 @@ public class DiscountCodesResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public DiscountCodesConverter get() {
+    public DiscountCodesConverter get(@QueryParam("start")
+    @DefaultValue("0")
+    int start, @QueryParam("max")
+    @DefaultValue("10")
+    int max) {
         try {
-            return new DiscountCodesConverter(getEntities(), context.getAbsolutePath());
+            return new DiscountCodesConverter(getEntities(start, max), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -121,8 +128,9 @@ public class DiscountCodesResource {
      * @return an instance of DiscountCodeResource
      */
     @Path("{discountCode}/")
-    public customerdb.service.DiscountCodeResource getDiscountCodeResource() {
-        return new DiscountCodeResource(context);
+    public DiscountCodeResource getDiscountCodeResource(@UriParam("discountCode")
+    String id) {
+        return new DiscountCodeResource(id, context);
     }
 
     /**
@@ -130,8 +138,8 @@ public class DiscountCodesResource {
      *
      * @return a collection of DiscountCode instances
      */
-    protected Collection<DiscountCode> getEntities() {
-        return PersistenceService.getInstance().createQuery("SELECT e FROM DiscountCode e").getResultList();
+    protected Collection<DiscountCode> getEntities(int start, int max) {
+        return PersistenceService.getInstance().createQuery("SELECT e FROM DiscountCode e").setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**

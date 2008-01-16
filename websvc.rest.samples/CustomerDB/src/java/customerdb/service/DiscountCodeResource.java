@@ -43,7 +43,6 @@ package customerdb.service;
 
 import customerdb.DiscountCode;
 import javax.ws.rs.Path;
-import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
@@ -56,12 +55,14 @@ import java.util.Collection;
 import customerdb.converter.DiscountCodeConverter;
 import javax.ws.rs.core.UriInfo;
 
+
 /**
  *
  * @author Peter Liu
  */
 
 public class DiscountCodeResource {
+    private String id;
     private UriInfo context;
     
     /** Creates a new instance of DiscountCodeResource */
@@ -73,7 +74,8 @@ public class DiscountCodeResource {
      *
      * @param context HttpContext inherited from the parent resource
      */
-    public DiscountCodeResource(UriInfo context) {
+    public DiscountCodeResource(String id, UriInfo context) {
+        this.id = id;
         this.context = context;
     }
 
@@ -85,10 +87,9 @@ public class DiscountCodeResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public DiscountCodeConverter get(@UriParam("discountCode")
-    String id) {
+    public DiscountCodeConverter get() {
         try {
-            return new DiscountCodeConverter(getEntity(id), context.getAbsolutePath());
+            return new DiscountCodeConverter(getEntity(), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -102,12 +103,11 @@ public class DiscountCodeResource {
      */
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
-    public void put(@UriParam("discountCode")
-    String id, DiscountCodeConverter data) {
+    public void put(DiscountCodeConverter data) {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            updateEntity(getEntity(id), data.getEntity());
+            updateEntity(getEntity(), data.getEntity());
             service.commitTx();
         } finally {
             service.close();
@@ -120,12 +120,11 @@ public class DiscountCodeResource {
      * @param id identifier for the entity
      */
     @DELETE
-    public void delete(@UriParam("discountCode")
-    String id) {
+    public void delete() {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            DiscountCode entity = getEntity(id);
+            DiscountCode entity = getEntity();
             service.removeEntity(entity);
             service.commitTx();
         } finally {
@@ -140,14 +139,21 @@ public class DiscountCodeResource {
      * @return an instance of CustomersResource
      */
     @Path("customers/")
-    public CustomersResource getCustomersResource(@UriParam("discountCode")
-    String id) {
-        final DiscountCode parent = getEntity(id);
+    public CustomersResource getCustomersResource() {
+        final DiscountCode parent = getEntity();
         return new CustomersResource(context) {
 
             @Override
-            protected Collection<Customer> getEntities() {
-                return parent.getCustomerCollection();
+            protected Collection<Customer> getEntities(int start, int max) {
+                Collection<Customer> result = new java.util.ArrayList<Customer>();
+                int index = 0;
+                for (Customer e : parent.getCustomerCollection()) {
+                    if (index >= start && (index - start) < max) {
+                        result.add(e);
+                    }
+                    index++;
+                }
+                return result;
             }
 
             @Override
@@ -164,9 +170,9 @@ public class DiscountCodeResource {
      * @param id identifier for the entity
      * @return an instance of DiscountCode
      */
-    protected DiscountCode getEntity(String id) {
+    protected DiscountCode getEntity() {
         try {
-            return (DiscountCode) PersistenceService.getInstance().createNamedQuery("DiscountCode.findByDiscountCode").setParameter("discountCode", id).getSingleResult();
+            return (DiscountCode) PersistenceService.getInstance().createQuery("SELECT e FROM DiscountCode e where e.discountCode = :discountCode").setParameter("discountCode", id.charAt(0)).getSingleResult();
         } catch (NoResultException ex) {
             throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
         }

@@ -48,12 +48,15 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Builder;
 import javax.ws.rs.core.HttpContext;
 import javax.ws.rs.core.UriInfo;
 import customerdb.converter.CustomersConverter;
 import customerdb.converter.CustomerConverter;
+
 
 /**
  *
@@ -85,9 +88,13 @@ public class CustomersResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public CustomersConverter get() {
+    public CustomersConverter get(@QueryParam("start")
+    @DefaultValue("0")
+    int start, @QueryParam("max")
+    @DefaultValue("10")
+    int max) {
         try {
-            return new CustomersConverter(getEntities(), context.getAbsolutePath());
+            return new CustomersConverter(getEntities(start, max), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -120,8 +127,9 @@ public class CustomersResource {
      * @return an instance of CustomerResource
      */
     @Path("{customerId}/")
-    public customerdb.service.CustomerResource getCustomerResource() {
-        return new CustomerResource(context);
+    public CustomerResource getCustomerResource(@UriParam("customerId")
+    Integer id) {
+        return new CustomerResource(id, context);
     }
 
     /**
@@ -129,8 +137,8 @@ public class CustomersResource {
      *
      * @return a collection of Customer instances
      */
-    protected Collection<Customer> getEntities() {
-        return PersistenceService.getInstance().createQuery("SELECT e FROM Customer e").getResultList();
+    protected Collection<Customer> getEntities(int start, int max) {
+        return PersistenceService.getInstance().createQuery("SELECT e FROM Customer e").setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
