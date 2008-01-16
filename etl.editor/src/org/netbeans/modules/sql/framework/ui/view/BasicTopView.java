@@ -123,8 +123,10 @@ import org.openide.windows.WindowManager;
  * @version $Revision$
  */
 public abstract class BasicTopView extends JPanel implements IGraphViewContainer {
+
     private static transient final Logger mLogger = LogUtil.getLogger(BasicTopView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     protected static abstract class ConditionValidator implements ActionListener {
 
         static final class DataValidation extends ConditionValidator {
@@ -294,7 +296,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             IGraphNode graphNode = (IGraphNode) args[0];
             this.showProperties(graphNode);
         } else if (command.equals(ICommand.CONFIG_CMD)) {
-        // Integer tableType = (Integer) args[0];
+            // Integer tableType = (Integer) args[0];
         } else if (command.equals(ICommand.EDIT_JOINVIEW)) {
             editJoinView((SQLJoinView) args[0]);
         } else if (command.equals(ICommand.DATA_VALIDATION)) {
@@ -422,7 +424,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
     private String getTemplateName(SQLObject bean) {
         String template = null;
         Attribute attr = bean.getAttribute("ORGPROP_LOADTYPE");
-        if(attr == null) {
+        if (attr == null) {
             try {
                 SQLObjectUtil.setOrgProperties((SQLDBTable) bean);
                 attr = bean.getAttribute("ORGPROP_LOADTYPE");
@@ -430,13 +432,13 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                 StatusDisplayer.getDefault().setStatusText(ex.getMessage());
                 if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
                     template = "FFSourceTable";
-                } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE){
+                } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
                     template = "FFTargetTable";
                 }
                 return template;
             }
         }
-        
+
         if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
             if (((String) attr.getAttributeValue()).equals("RSS")) {
                 template = "RSSSourceTable";
@@ -518,8 +520,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                         TemplateFactory.invokeSetter(pb, evt.getPropertyName(), evt.getNewValue());
                         DataObjectProvider.getProvider().getActiveDataObject().setModified(true);
                     } catch (Exception ex) {
-                          mLogger.errorNoloc(mLoc.t("PRSR194: Failed to save changes {0}",LOG_CATEGORY),ex);
-                       // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "editProperties", "Failed to save changes", ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR194: Failed to save changes {0}", LOG_CATEGORY), ex);
                     }
                 }
             }
@@ -579,8 +580,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             try {
                 JoinUtility.editJoinView(jView, modifiedJoinView, modifiedJoinView.getSourceTables(), tableNodes, this.getGraphView());
             } catch (BaseException ex) {
-               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "editJoinView", "Caught Exception while commiting join view edits.", ex);
-                mLogger.errorNoloc(mLoc.t("PRSR195: Caught Exception while commiting join view edits.{0}",LOG_CATEGORY),ex);
+
+                mLogger.errorNoloc(mLoc.t("PRSR195: Caught Exception while commiting join view edits.{0}", LOG_CATEGORY), ex);
                 NotifyDescriptor d = new NotifyDescriptor.Message(ex.toString(), NotifyDescriptor.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }
@@ -735,7 +736,7 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                 ETLEditorSupport editor = etlDataObject.getETLEditorSupport();
                 editor.synchDocument();
             } catch (Exception e) {
-            //ignore
+                //ignore
             }
         }
     }

@@ -75,11 +75,13 @@ import org.netbeans.modules.sql.framework.model.SQLJoinOperator;
  * @author Jonathan Giron
  * @version $Revision$
  */
-
 public class ConditionPropertyEditor extends PropertyEditorSupport implements IPropertyEditor {
+
     private static transient final Logger mLogger = LogUtil.getLogger(ConditionPropertyEditor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     public static class Validation extends ConditionPropertyEditor {
+
         public Validation(IGraphViewContainer editor, SQLDBTable table) {
             super(editor, table);
         }
@@ -92,44 +94,46 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
             throw new UnsupportedOperationException("Validation Condition is not supported for target table");
         }
     }
-    
+
     public static class OuterFilter extends ConditionPropertyEditor {
+
         public OuterFilter(IGraphViewContainer editor, SQLDBTable table) {
             super(editor, table);
         }
 
         protected Component getCustomEditorForSource() {
-        	throw new UnsupportedOperationException("Validation Condition is not supported for target table");
+            throw new UnsupportedOperationException("Validation Condition is not supported for target table");
         }
 
         protected Component getCustomEditorForTarget() {
-        	return ConditionBuilderUtil.getFilterConditionBuilderView((TargetTable) table, editor);
+            return ConditionBuilderUtil.getFilterConditionBuilderView((TargetTable) table, editor);
         }
     }
-    
+
     public static class JoinConditionEditor extends ConditionPropertyEditor {
+
         private SQLJoinOperator joinOp;
+
         public JoinConditionEditor(IGraphViewContainer editor, SQLJoinOperator joinOp) {
             super(editor, null);
             this.joinOp = joinOp;
         }
-        
+
         public Component getCustomEditor() {
             return ConditionBuilderUtil.getConditionBuilderView(joinOp, editor);
         }
 
         protected Component getCustomEditorForSource() {
-        	throw new UnsupportedOperationException("not supported ");
+            throw new UnsupportedOperationException("not supported ");
         }
 
         protected Component getCustomEditorForTarget() {
-        	throw new UnsupportedOperationException("not supported ");
+            throw new UnsupportedOperationException("not supported ");
         }
     }
 
     /* log4j logger category */
     private static final String LOG_CATEGORY = ConditionPropertyEditor.class.getName();
-
     protected ConditionBuilderView cView;
     protected IGraphViewContainer editor;
     protected SQLDBTable table;
@@ -142,7 +146,7 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
         this.editor = editor;
         this.table = table;
     }
-    
+
     /**
      * Register a listener for the PropertyChange event. The class will fire a
      * PropertyChange value whenever the value is updated.
@@ -201,8 +205,7 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
             try {
                 this.conditionContainer = (SQLCondition) conditionContainer.cloneSQLObject();
             } catch (CloneNotSupportedException ex) {
-                 mLogger.errorNoloc(mLoc.t("PRSR196: error cloning the condition {0}",LOG_CATEGORY),ex);
-                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setAsText", "error cloning the condition ", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR196: error cloning the condition {0}", LOG_CATEGORY), ex);
                 return;
             }
 
@@ -218,8 +221,7 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
                     warnForInvalidCondition();
                 }
             } catch (Exception ex) {
-                 mLogger.errorNoloc(mLoc.t("PRSR197: Error finding root predicate from text condition{0}",text),ex);
-               // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "setAsText", "Error finding root predicate from text condition " + text, ex);
+                mLogger.errorNoloc(mLoc.t("PRSR197: Error finding root predicate from text condition{0}", text), ex);
                 warnForInvalidCondition();
             }
 
@@ -230,9 +232,7 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
                     this.property.setValue(this.conditionContainer);
                 }
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR198: Error occurred in setting the property value for condition{0}from joinview table.",text),ex);
-               // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "setAsText", "Error occurred in setting the property value for condition " + text,
-                 //   ex);
+                mLogger.errorNoloc(mLoc.t("PRSR198: Error occurred in setting the property value for condition{0}from joinview table.", text), ex);
             }
         }
     }
@@ -280,7 +280,7 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
 
     private void warnForInvalidCondition() {
         DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Message(NbBundle.getMessage(ConditionPropertyEditor.class, "ERR_condition_invalid"),
+                new NotifyDescriptor.Message(NbBundle.getMessage(ConditionPropertyEditor.class, "ERR_condition_invalid"),
                 NotifyDescriptor.WARNING_MESSAGE));
     }
 }

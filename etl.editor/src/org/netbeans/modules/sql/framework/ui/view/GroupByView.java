@@ -90,9 +90,12 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor {
+
     private static transient final Logger mLogger = LogUtil.getLogger(GroupByView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     class ButtonActionListener implements ActionListener {
+
         /**
          * Invoked when an action occurs.
          */
@@ -184,22 +187,21 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         private void showCondBuilder() {
             String text = havingText.getText();
             SQLGroupBy groupBy = targetTable.getSQLGroupBy();
-            if (groupBy == null){
-            	groupBy = SQLModelObjectFactory.getInstance().createGroupBy();
-            	targetTable.setSQLGroupBy(groupBy);
+            if (groupBy == null) {
+                groupBy = SQLModelObjectFactory.getInstance().createGroupBy();
+                targetTable.setSQLGroupBy(groupBy);
             }
             SQLCondition conditionContainer = groupBy.getHavingCondition();
             String oldText = null;
-            if ( conditionContainer != null){
-            	oldText = conditionContainer.getConditionText();                        
+            if (conditionContainer != null) {
+                oldText = conditionContainer.getConditionText();
             }
-            
+
             if (conditionContainer != null && text != null && !text.equals(oldText)) {
                 try {
                     conditionContainer = (SQLCondition) conditionContainer.cloneSQLObject();
                 } catch (CloneNotSupportedException ex) {
-                   mLogger.errorNoloc(mLoc.t("PRSR200: error cloning the condition {0}",LOG_CATEGORY),ex);
-                   // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "showCondBuilder", "error cloning the condition ", ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR200: error cloning the condition {0}", LOG_CATEGORY), ex);
                     return;
                 }
 
@@ -215,9 +217,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
                         warnForInvalidCondition();
                     }
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR201: Error finding root predicate from text condition{0}from joinview table.",text),ex);
-                   // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "showCondBuilder", "Error finding root predicate from text condition " + text,
-                   //     ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR201: Error finding root predicate from text condition{0}from joinview table.", text), ex);
                     warnForInvalidCondition();
                 }
 
@@ -241,14 +241,14 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
 
         private void warnForInvalidCondition() {
             DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(ConditionPropertyEditor.class, "ERR_condition_invalid"),
+                    new NotifyDescriptor.Message(NbBundle.getMessage(ConditionPropertyEditor.class, "ERR_condition_invalid"),
                     NotifyDescriptor.WARNING_MESSAGE));
         }
     }
 
     class GroupByTableModel extends AbstractTableModel {
-        private String[] columnNames = { "Column Name"};
 
+        private String[] columnNames = {"Column Name"};
         private List rowList = new ArrayList();
 
         public GroupByTableModel() {
@@ -339,6 +339,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
     }
 
     class GroupTableCellRenderer extends DefaultTableCellRenderer {
+
         /**
          * Returns the default table cell renderer.
          * 
@@ -353,12 +354,9 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         public Component getTableCellRendererComponent(JTable aTable, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             return super.getTableCellRendererComponent(aTable, value.toString(), isSelected, hasFocus, row, column);
         }
-
     }
-
     private static final String LOG_CATEGORY = GroupByView.class.getName();
     private IGraphViewContainer editor;
-
     private GroupPanel groupPanel;
     private JTextField havingText;
     private GroupByTableModel model;
@@ -432,7 +430,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
         mainPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Available Group By Columns"),
-            BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+                BorderFactory.createEmptyBorder(4, 4, 4, 4)));
         this.add(mainPanel, c);
 
         // List of source/target columns
@@ -458,7 +456,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
         // order or remove selected columns panel
         JPanel orderOrRemoveSelectedColumn = new JPanel();
         orderOrRemoveSelectedColumn.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Selected Group By Columns"),
-            BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+                BorderFactory.createEmptyBorder(4, 4, 4, 4)));
         orderOrRemoveSelectedColumn.setLayout(new BorderLayout());
         this.add(orderOrRemoveSelectedColumn, c);
 
@@ -487,7 +485,7 @@ public class GroupByView extends JPanel implements EnhancedCustomPropertyEditor 
 
         havingPanel.setLayout(fl);
         havingPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("Define Having Clause"),
-            BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+                BorderFactory.createEmptyBorder(4, 4, 4, 4)));
 
         String havingCondition = "";
         if (targetTable.getSQLGroupBy() != null && targetTable.getSQLGroupBy().getHavingCondition() != null) {

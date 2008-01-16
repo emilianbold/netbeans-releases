@@ -148,8 +148,7 @@ public class GroupByPropertyEditor extends PropertyEditorSupport implements IPro
                     this.property.setValue(this.getValue());
                 }
             } catch (Exception ex) {
-                 mLogger.errorNoloc(mLoc.t("PRSR199: Error occured in setting the property value for Group By{0}from joinview table.",text),ex);
-               // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "setAsText", "Error occured in setting the property value for Group By " + text, ex);
+                mLogger.errorNoloc(mLoc.t("PRSR199: Error occured in setting the property value for Group By{0}from joinview table.", text), ex);
             }
         }
     }
@@ -175,7 +174,7 @@ public class GroupByPropertyEditor extends PropertyEditorSupport implements IPro
 
     private void warnForInValidColumn(String columnName) {
         DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Message("The column " + columnName + " is invalid, please specify a valid column name.",
+                new NotifyDescriptor.Message("The column " + columnName + " is invalid, please specify a valid column name.",
                 NotifyDescriptor.WARNING_MESSAGE));
     }
 }
