@@ -406,7 +406,7 @@ public class WebProjectProperties {
                             ((WebModuleExtender) newExtenders.get(i)).extend(project.getAPIWebModule());
                         }
                         newExtenders.clear();
-                        project.fixRecommendedAndPrivilegedTemplates();
+                        project.resetTemplates();
                         
                         // ui logging of the added frameworks
                         if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {

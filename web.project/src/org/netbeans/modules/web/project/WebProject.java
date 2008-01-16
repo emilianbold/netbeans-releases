@@ -797,7 +797,6 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             }
             webPagesFileWatch.init();
             webInfFileWatch.init();
-            fixRecommendedAndPrivilegedTemplates();
         }
         
         private void updateProject() {
@@ -1032,13 +1031,19 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
         "Templates/JSP_Servlet/webXml",     // NOI18N  --- 
     };
     
+    // guarded by this, #115809
     String[] privilegedTemplatesEE5 = null;
     String[] privilegedTemplates = null;
     
     // Path where instances of privileged templates are registered
     private static final String WEBTEMPLATE_PATH = "j2ee/webtier/templates"; //NOI18N
     
-    public void fixRecommendedAndPrivilegedTemplates(){
+    public synchronized void resetTemplates() {
+        privilegedTemplates = null;
+        privilegedTemplatesEE5 = null;
+    }
+    
+    private synchronized void getRecommendedAndPrivilegedTemplates() {
         ArrayList<String>templatesEE5 = new ArrayList(PRIVILEGED_NAMES_EE5.length + 1);
         ArrayList<String>templates = new ArrayList(PRIVILEGED_NAMES.length + 1);
 
@@ -1094,10 +1099,18 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             checkEnvironment();
             if (isArchive) {
                 retVal = PRIVILEGED_NAMES_ARCHIVE;
-            } else if (isEE5) {
-                retVal = privilegedTemplatesEE5;
             } else {
-                retVal = privilegedTemplates;
+                synchronized (WebProject.this) {
+                    if (privilegedTemplates == null
+                            || privilegedTemplatesEE5 == null) {
+                        getRecommendedAndPrivilegedTemplates();
+                    }
+                    if (isEE5) {
+                        retVal = privilegedTemplatesEE5;
+                    } else {
+                        retVal = privilegedTemplates;
+                    }
+                }
             }
             return retVal;
         }
