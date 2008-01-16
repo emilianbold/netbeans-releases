@@ -294,6 +294,10 @@
 
         <!-- if -->
         <antcall target="do-test-jbi"><param name="dir" value="if/ifBpel"/></antcall>
+
+        <!-- implementMultiOperations -->
+        <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/MultipleBPELs"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/OneBPEL"/></antcall>
     </target>
 
     <target name="do-test-jbi">
