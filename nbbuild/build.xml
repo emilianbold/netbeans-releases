@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -2037,8 +2037,9 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
 
   <target name="build-test-dist" depends="bootstrap,init-module-list,init-tasks" description="Built test distribution">
-     <property name="config.modules.test" value="${config.test.extra},${config.fixedmodules.stable},${config.modules.stable}"/>
-     <!-- if is 'false' it will ignore compilation error in subant  -->
+      <property name="config.modules.test"
+                value="${config.test.extra},${config.fixedmodules.stable},${config.modules.stable},${config.fixedmodules.ruby}"/>
+      <!-- if is 'false' it will ignore compilation error in subant  -->
      <property name= "test.fail.on.error" value="true"/>
      <pathconvert property="modules.fullpath" >
           <path>
