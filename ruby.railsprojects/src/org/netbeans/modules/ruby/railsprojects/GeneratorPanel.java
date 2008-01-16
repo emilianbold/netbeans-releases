@@ -309,7 +309,7 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         assert gemManager != null : "Invalid platform for project [" + project + ']';
         
         // 3. Add in RubyGem generators
-        File gemDir = new File(gemManager.getGemDir() + File.separator + "gems"); // NOI18N
+        File gemDir = new File(gemManager.getGemHome() + File.separator + "gems"); // NOI18N
         if (gemDir.exists()) {
             Set<String> gems = gemManager.getInstalledGemsFiles();
             for (String gem : gems) {

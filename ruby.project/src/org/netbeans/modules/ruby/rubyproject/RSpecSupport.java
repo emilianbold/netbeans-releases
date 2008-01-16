@@ -115,7 +115,7 @@ public class RSpecSupport {
         String version = gemManager.getVersion(RSPEC_GEM_NAME); // NOI18N
 
         if (version != null) {
-            String libGemDir = gemManager.getGemDir();
+            String libGemDir = gemManager.getGemHome();
 
             if (libGemDir != null) {
                 File gemDir = new File(libGemDir, "gems"); // NOI18N

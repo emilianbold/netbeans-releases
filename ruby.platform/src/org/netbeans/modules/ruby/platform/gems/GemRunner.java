@@ -260,9 +260,13 @@ final class GemRunner {
         
         String[] args = argList.toArray(new String[argList.size()]);
         ProcessBuilder pb = new ProcessBuilder(args);
-        if (!Utilities.isWindows()) {
-            pb.environment().put("GEM_HOME", platform.getGemManager().getGemDir()); // NOI18N
+        String gemHome;
+        if (Utilities.isWindows()) {
+            gemHome = platform.getGemManager().getGemHomeF().getAbsolutePath().replace('\\', '/');
+        } else {
+            gemHome = platform.getGemManager().getGemHome();
         }
+        pb.environment().put("GEM_HOME", gemHome); // NOI18N
         pb.directory(cmd.getParentFile());
         pb.redirectErrorStream(true);
 

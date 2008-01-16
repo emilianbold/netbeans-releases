@@ -119,7 +119,6 @@ public final class GemManager {
     private List<Gem> remote;
 
     private String gemTool;
-    private FileObject gemHomeFo;
     private String gemHomeUrl;
     private String rake;
     private String rails;
@@ -152,39 +151,54 @@ public final class GemManager {
             return getGemMissingMessage();
         }
         
-        String gemDirPath = getGemDir();
-        if (gemDirPath == null) {
+        String gemHomePath = getGemHome();
+        if (gemHomePath == null) {
             // edge case, misconfiguration? gem tool is installed but repository is not found
             return NbBundle.getMessage(GemAction.class, "CannotFindGemRepository");
         }
 
-        File gemDir = new File(gemDirPath);
+        File gemHome = new File(gemHomePath);
         
-        if (!gemDir.exists()) {
+        if (!gemHome.exists()) {
             // Is this possible? (Installing gems, but no gems installed yet
             return null;
         }
         
-        if (!gemDir.canWrite()) {
+        if (!gemHome.canWrite()) {
             return NbBundle.getMessage(GemAction.class, "GemNotWritable");
         }
         
         return null;
     }
     
-    public String getGemDir() {
-        return getGemDir(true);
+    public String getGemHome() {
+        return platform.getInfo().getGemHome();
     }
     
-    /**
-     * Return the gem directory for the current ruby installation.
-     * Returns the gem root, not the gem subdirectory.
-     * Not cached.
-     */
-    public String getGemDir(boolean canonical) {
-        String gemHome = platform.getInfo().getGemHome();
-        gemHomeFo = FileUtil.toFileObject(new File(gemHome));
-        return gemHome;
+    public File getGemHomeF() {
+        return FileUtil.normalizeFile(new File(platform.getInfo().getGemHome()));
+    }
+    
+    public FileObject getGemHomeFO() {
+        return FileUtil.toFileObject(getGemHomeF());
+    }
+
+    public String getGemHomeUrl() {
+        if (gemHomeUrl == null) {
+            String gemHome = getGemHome();
+            if (gemHome != null) {
+                try {
+                    File r = new File(gemHome);
+                    if (r != null) {
+                        gemHomeUrl = r.toURI().toURL().toExternalForm();
+                    }
+                } catch (MalformedURLException mue) {
+                    Exceptions.printStackTrace(mue);
+                }
+            }
+        }
+
+        return gemHomeUrl;
     }
 
     /** Return > 0 if version1 is greater than version 2, 0 if equal and -1 otherwise */
@@ -275,7 +289,7 @@ public final class GemManager {
     private void initGemList() {
         if (gemFiles == null) {
             // Initialize lazily
-            String gemDir = getGemDir();
+            String gemDir = getGemHome();
             if (gemDir == null) {
                 return;
             }
@@ -376,6 +390,7 @@ public final class GemManager {
     public void reset() {
         installed = null;
         remote = null;
+        gemHomeUrl = null;
     }
     
     public void resetRemote() {
@@ -661,24 +676,6 @@ public final class GemManager {
         }
     }
 
-    public String getGemHomeUrl() {
-        if (gemHomeUrl == null) {
-            String libGemDir = getGemDir();
-            if (libGemDir != null) {
-                try {
-                    File r = new File(libGemDir);
-                    if (r != null) {
-                        gemHomeUrl = r.toURI().toURL().toExternalForm();
-                    }
-                } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(mue);
-                }
-            }
-        }
-
-        return gemHomeUrl;
-    }
-
     public String getAutoTest() {
         return platform.findExecutable("autotest"); // NOI18N
     }
@@ -722,11 +719,6 @@ public final class GemManager {
         return gemTool;
     }
     
-    public FileObject getRubyLibGemDirFo() {
-        initGemList(); // Ensure getRubyLibGemDir has been called, which initialized gemHomeFo
-        return gemHomeFo;
-    }
-
     public String getRake() {
         if (rake == null) {
             rake = platform.findExecutable("rake"); // NOI18N
@@ -867,7 +859,7 @@ public final class GemManager {
             if (!SKIP_INDEX_GEMS) {
                 initGemList();
                 if (PREINDEXING) {
-                    String gemDir = getGemDir();
+                    String gemDir = getGemHome();
                     File specDir = new File(gemDir, "gems"); // NOI18N
 
                     if (specDir.exists()) {

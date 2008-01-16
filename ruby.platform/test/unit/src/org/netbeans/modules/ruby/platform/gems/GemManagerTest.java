@@ -67,7 +67,7 @@ public class GemManagerTest extends RubyTestBase {
     public void testGetRubyLibGemDir() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
-        assertEquals("righ gem dir", new File(platform.getLib(), "ruby/gems/1.8"), new File(gemManager.getGemDir()));
+        assertEquals("righ gem dir", new File(platform.getLib(), "ruby/gems/1.8"), new File(gemManager.getGemHome()));
     }
     
     public void testGetGem() throws Exception {

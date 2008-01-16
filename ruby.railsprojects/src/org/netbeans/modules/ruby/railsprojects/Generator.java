@@ -157,7 +157,7 @@ public class Generator {
                 String version = platform.getGemManager().getVersion("rails"); // NOI18N
                 if (version != null) {
                     gemLocation =
-                        new File(platform.getGemManager().getGemDir() + File.separator +
+                        new File(platform.getGemManager().getGemHome() + File.separator +
                             "gems" + File.separator + "rails" + "-" + version); // NOI18N
                 } else if (!Utilities.isWindows()) {
                     // XXX This is suspicious

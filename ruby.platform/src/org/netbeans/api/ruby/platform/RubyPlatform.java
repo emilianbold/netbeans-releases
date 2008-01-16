@@ -480,7 +480,7 @@ public final class RubyPlatform {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
             }
             if (exec == null && hasRubyGemsInstalled()) {
-                String libGemBinDir = getGemManager().getGemDir(canonical) + File.separator + "bin"; // NOI18N
+                String libGemBinDir = getGemManager().getGemHome() + File.separator + "bin"; // NOI18N
                 exec = RubyPlatform.findExecutable(libGemBinDir, toFind);
             }
             canonical ^= true;
@@ -559,7 +559,7 @@ public final class RubyPlatform {
         // See if the file is under the Ruby libraries
         FileObject rubyLibFo = getLibFO();
         FileObject rubyStubs = getRubyStubs();
-        FileObject gemHome = gemManager != null ? gemManager.getRubyLibGemDirFo() : null;
+        FileObject gemHome = gemManager != null ? gemManager.getGemHomeFO() : null;
 
         //        FileObject jar = FileUtil.getArchiveFile(file);
         //        if (jar != null) {
@@ -588,8 +588,7 @@ public final class RubyPlatform {
             org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(FileUtil.toFileObject(getHome(true)));
 
             if (hasRubyGemsInstalled()) {
-                String gemDir = getGemManager().getGemDir(true);
-                FileObject gemFo = FileUtil.toFileObject(new File(gemDir));
+                FileObject gemFo = getGemManager().getGemHomeFO();
                 org.netbeans.modules.gsfret.source.usages.Index.addPreindexRoot(gemFo);
             }
 
@@ -632,6 +631,12 @@ public final class RubyPlatform {
         if (pcs != null) {
             pcs.removePropertyChangeListener(listener);
         }
+    }
+
+    public void setGemHome(File gemHome) {
+        assert hasRubyGemsInstalled() : "has RubyGems installed";
+        info.setGemHome(gemHome.getAbsolutePath());
+        gemManager.reset();
     }
 
     /**
@@ -716,11 +721,15 @@ public final class RubyPlatform {
         public boolean isJRuby() {
             return "JRuby".equals(kind);
         }
-        
+
 //        public String getExecutable() {
 //            return executable;
 //        }
 
+        public void setGemHome(String gemHome) {
+            this.gemHome = gemHome;
+        }
+        
         public String getGemHome() {
             return gemHome;
         }

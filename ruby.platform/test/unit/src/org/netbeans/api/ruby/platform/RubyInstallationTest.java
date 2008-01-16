@@ -77,8 +77,8 @@ public class RubyInstallationTest extends RubyTestBase {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
         
-        String gemLibs = gemManager.getGemDir();
-        File specs = new File(new File(gemManager.getGemDir()), "specifications");
+        String gemLibs = gemManager.getGemHome();
+        File specs = new File(new File(gemManager.getGemHome()), "specifications");
 
         // Put gems into the gemLibs dir
         String[] gemDirs = new String[]{"foo-1.0.0",

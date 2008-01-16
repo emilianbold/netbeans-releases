@@ -31,21 +31,26 @@
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
-                      <Component id="rubyPlatformLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="gemHomeValue" alignment="0" pref="675" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="platforms" pref="587" max="32767" attributes="0"/>
+                              <Component id="rubyPlatformLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="manageButton" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="1" attributes="0">
+                                  <Component id="gemHomeValue" alignment="0" pref="587" max="32767" attributes="0"/>
+                                  <Component id="platforms" alignment="0" pref="587" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Group type="102" attributes="0">
+                              <Component id="gemHome" pref="77" max="32767" attributes="1"/>
+                              <EmptySpace min="-2" pref="613" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="gemHome" pref="83" max="32767" attributes="1"/>
-                      <EmptySpace min="-2" pref="707" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="manageButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="browseGemHome" linkSize="1" min="-2" pref="80" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -64,9 +69,10 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="gemHome" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="gemHomeValue" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="browseGemHome" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="gemsTab" pref="398" max="32767" attributes="0"/>
+              <Component id="gemsTab" pref="392" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -136,8 +142,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="updatedSP" pref="285" max="32767" attributes="0"/>
-                          <Component id="jScrollPane6" alignment="1" pref="285" max="32767" attributes="0"/>
+                          <Component id="updatedSP" pref="279" max="32767" attributes="0"/>
+                          <Component id="jScrollPane6" alignment="1" pref="279" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -354,8 +360,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="installedSP" pref="285" max="32767" attributes="0"/>
-                          <Component id="jScrollPane5" alignment="1" pref="285" max="32767" attributes="0"/>
+                          <Component id="installedSP" pref="279" max="32767" attributes="0"/>
+                          <Component id="jScrollPane5" alignment="1" pref="279" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -554,8 +560,8 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="newSP" pref="285" max="32767" attributes="0"/>
-                          <Component id="jScrollPane4" alignment="0" pref="285" max="32767" attributes="0"/>
+                          <Component id="newSP" pref="279" max="32767" attributes="0"/>
+                          <Component id="jScrollPane4" alignment="0" pref="279" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -728,7 +734,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="proxyButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="334" max="32767" attributes="0"/>
+                      <EmptySpace pref="328" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -786,6 +792,16 @@
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="browseGemHome">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/platform/gems/Bundle.properties" key="GemPanel.browseGemHome.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseGemHomeActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

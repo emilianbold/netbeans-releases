@@ -56,6 +56,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory.RubyPlatformListModel;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.platform.gems.GemPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -108,6 +109,10 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         }
     }
 
+    private RubyPlatform getSelectedPlatform() {
+        return (RubyPlatform) platformsList.getSelectedValue();
+    }
+
     private void refreshPlatformList() {
         if (platformsList.getModel().getSize() > 0) {
             platformsList.setSelectedIndex(0);
@@ -143,7 +148,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     }
 
     private void refreshPlatform() {
-        RubyPlatform plaf = (RubyPlatform) platformsList.getSelectedValue();
+        RubyPlatform plaf = getSelectedPlatform();
 
         if (plaf == null) {
             removeButton.setEnabled(false);
@@ -152,16 +157,18 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         plfNameValue.setText(plaf.getInfo().getLongDescription());
         plfInterpreterValue.setText(plaf.getInterpreter());
         Color color;
-        if (plaf.hasRubyGemsInstalled()) {
-            gemHomeValue.setText(plaf.getGemManager().getGemDir());
+        boolean gemsInstalled = plaf.hasRubyGemsInstalled();
+        if (gemsInstalled) {
+            gemHomeValue.setText(plaf.getGemManager().getGemHome());
             gemToolValue.setText(plaf.getGemManager().getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
             color = UIManager.getColor("Label.foreground");
         } else {
             color = PlatformComponentFactory.INVALID_PLAF_COLOR;
-            String notInstalled = GemManager.getNotInstalledMessage();
-            gemHomeValue.setText(notInstalled);
-            gemToolValue.setText(notInstalled);
+            String notInstalledMsg = GemManager.getNotInstalledMessage();
+            gemHomeValue.setText(notInstalledMsg);
+            gemToolValue.setText(notInstalledMsg);
         }
+        browseGemHome.setEnabled(gemsInstalled);
         gemHomeValue.setForeground(color);
         gemToolValue.setForeground(color);
         removeButton.setEnabled(!plaf.isDefault());
@@ -174,20 +181,24 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         platformsListSP = new javax.swing.JScrollPane();
         platformsList = PlatformComponentFactory.getRubyPlatformsList();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
-        plfName = new javax.swing.JLabel();
-        plfNameValue = new javax.swing.JTextField();
-        plfInterpreter = new javax.swing.JLabel();
-        plfInterpreterValue = new javax.swing.JTextField();
-        gemHome = new javax.swing.JLabel();
-        gemHomeValue = new javax.swing.JTextField();
+        autoDetectButton = new javax.swing.JButton();
+        configPanel = new javax.swing.JPanel();
         gemTool = new javax.swing.JLabel();
         gemToolValue = new javax.swing.JTextField();
-        autoDetectButton = new javax.swing.JButton();
+        gemHomeValue = new javax.swing.JTextField();
+        gemHome = new javax.swing.JLabel();
+        browseGemHome = new javax.swing.JButton();
+        plfInterpreter = new javax.swing.JLabel();
+        plfInterpreterValue = new javax.swing.JTextField();
+        plfNameValue = new javax.swing.JTextField();
+        plfName = new javax.swing.JLabel();
+        progressPanel = new javax.swing.JPanel();
         autoDetectLabel = new javax.swing.JLabel();
         autoDetectProgress = new javax.swing.JProgressBar();
 
@@ -208,26 +219,6 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
             }
         });
 
-        plfName.setLabelFor(plfNameValue);
-        org.openide.awt.Mnemonics.setLocalizedText(plfName, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.plfName.text")); // NOI18N
-
-        plfNameValue.setEditable(false);
-
-        plfInterpreter.setLabelFor(plfInterpreterValue);
-        org.openide.awt.Mnemonics.setLocalizedText(plfInterpreter, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.plfInterpreter.text")); // NOI18N
-
-        plfInterpreterValue.setEditable(false);
-
-        gemHome.setLabelFor(gemHomeValue);
-        org.openide.awt.Mnemonics.setLocalizedText(gemHome, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemHome.text")); // NOI18N
-
-        gemHomeValue.setEditable(false);
-
-        gemTool.setLabelFor(gemToolValue);
-        org.openide.awt.Mnemonics.setLocalizedText(gemTool, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemTool.text")); // NOI18N
-
-        gemToolValue.setEditable(false);
-
         org.openide.awt.Mnemonics.setLocalizedText(autoDetectButton, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.autoDetectButton.text")); // NOI18N
         autoDetectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -235,9 +226,100 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
             }
         });
 
+        configPanel.setLayout(new java.awt.GridBagLayout());
+
+        gemTool.setLabelFor(gemToolValue);
+        org.openide.awt.Mnemonics.setLocalizedText(gemTool, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemTool.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 6);
+        configPanel.add(gemTool, gridBagConstraints);
+
+        gemToolValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
+        configPanel.add(gemToolValue, gridBagConstraints);
+
+        gemHomeValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(9, 0, 0, 1);
+        configPanel.add(gemHomeValue, gridBagConstraints);
+
+        gemHome.setLabelFor(gemHomeValue);
+        org.openide.awt.Mnemonics.setLocalizedText(gemHome, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemHome.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(9, 0, 0, 6);
+        configPanel.add(gemHome, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(browseGemHome, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.browseGemHome.text")); // NOI18N
+        browseGemHome.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseGemHomeActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(9, 6, 0, 1);
+        configPanel.add(browseGemHome, gridBagConstraints);
+
+        plfInterpreter.setLabelFor(plfInterpreterValue);
+        org.openide.awt.Mnemonics.setLocalizedText(plfInterpreter, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.plfInterpreter.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 6);
+        configPanel.add(plfInterpreter, gridBagConstraints);
+
+        plfInterpreterValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
+        configPanel.add(plfInterpreterValue, gridBagConstraints);
+
+        plfNameValue.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 0);
+        configPanel.add(plfNameValue, gridBagConstraints);
+
+        plfName.setLabelFor(plfNameValue);
+        org.openide.awt.Mnemonics.setLocalizedText(plfName, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.plfName.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(3, 0, 0, 6);
+        configPanel.add(plfName, gridBagConstraints);
+
         org.openide.awt.Mnemonics.setLocalizedText(autoDetectLabel, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.autoDetectLabel.text")); // NOI18N
+        progressPanel.add(autoDetectLabel);
 
         autoDetectProgress.setIndeterminate(true);
+        progressPanel.add(autoDetectProgress);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -248,73 +330,39 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(platformsListSP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(6, 6, 6)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(plfName)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(plfInterpreter, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(gemHome, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE))
-                            .add(layout.createSequentialGroup()
-                                .add(gemTool, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 95, Short.MAX_VALUE)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 573, Short.MAX_VALUE))))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(configPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(autoDetectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 216, Short.MAX_VALUE)
-                        .add(autoDetectLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(autoDetectProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 44, Short.MAX_VALUE)
+                        .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
-
-        layout.linkSize(new java.awt.Component[] {gemHome, gemTool, plfInterpreter, plfName}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
-
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(12, 12, 12)
-                .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(addButton)
-                    .add(removeButton)
-                    .add(autoDetectButton))
-                .addContainerGap())
-            .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(plfNameValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(plfName))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(configPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(plfInterpreter))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(gemHomeValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(gemHome))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(gemToolValue, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(gemTool))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 211, Short.MAX_VALUE)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(autoDetectProgress, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(autoDetectLabel))
-                .add(20, 20, 20))
+                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                        .add(addButton)
+                        .add(removeButton)
+                        .add(autoDetectButton))
+                    .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
         );
+
+        layout.linkSize(new java.awt.Component[] {addButton, autoDetectButton, progressPanel, removeButton}, org.jdesktop.layout.GroupLayout.VERTICAL);
+
     }// </editor-fold>//GEN-END:initComponents
 
     private PlatformComponentFactory.RubyPlatformListModel getPlafListModel() {
@@ -348,7 +396,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     }//GEN-LAST:event_addButtonaddPlatform
 
     private void removeButtonremovePlatform(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonremovePlatform
-        RubyPlatform plaf = (RubyPlatform) platformsList.getSelectedValue();
+        RubyPlatform plaf = getSelectedPlatform();
         if (plaf != null) {
             getPlafListModel().removePlatform(plaf);
             platformsList.setSelectedValue(RubyPlatformManager.getDefaultPlatform(), true);
@@ -360,11 +408,20 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         performPlatformDetection();
 }//GEN-LAST:event_autoDetectButtonremovePlatform
 
+    private void browseGemHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseGemHomeActionPerformed
+        boolean changed = GemPanel.browseGemHome(this, getSelectedPlatform());
+        if (changed) {
+            refreshPlatform();
+        }
+    }//GEN-LAST:event_browseGemHomeActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton autoDetectButton;
     private javax.swing.JLabel autoDetectLabel;
     private javax.swing.JProgressBar autoDetectProgress;
+    private javax.swing.JButton browseGemHome;
+    private javax.swing.JPanel configPanel;
     private javax.swing.JLabel gemHome;
     private javax.swing.JTextField gemHomeValue;
     private javax.swing.JLabel gemTool;
@@ -375,6 +432,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     private javax.swing.JTextField plfInterpreterValue;
     private javax.swing.JLabel plfName;
     private javax.swing.JTextField plfNameValue;
+    private javax.swing.JPanel progressPanel;
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 }

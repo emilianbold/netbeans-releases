@@ -78,7 +78,7 @@ public class RubyPlatformTest extends RubyTestBase {
     public void testFindGemExecutableInGemRepo() throws Exception {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         GemManager gemManager = platform.getGemManager();
-        touch("rdebug-ide", new File(gemManager.getGemDir(), "bin").getPath());
+        touch("rdebug-ide", new File(gemManager.getGemHome(), "bin").getPath());
         assertNotNull(platform.findExecutable("rdebug-ide"));
     }
 
