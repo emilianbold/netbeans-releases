@@ -95,9 +95,7 @@ public abstract class AbstractTestCase extends TestCase {
         for(int i=0; i<expectedResult.length; i++) {
             boolean found = false;
             for(CompletionResultItem item : result) {
-                String resultItem = item.getReplacementText();
-                if(item instanceof AttributeResultItem)
-                    resultItem = resultItem.substring(0, resultItem.indexOf("="));
+                String resultItem = item.getItemText();
                 if(resultItem.equals(expectedResult[i])) {
                     found = true;
                     break;

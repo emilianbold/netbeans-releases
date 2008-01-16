@@ -51,12 +51,14 @@ import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.Attri
  */
 public class AttributeResultItem extends CompletionResultItem {
     
+    public static final String ATTRIBUTE_EQUALS_AND_VALUE_STRING = "=\"\"";
+    
     /**
      * Creates a new instance of AttributeResultItem
      */
     public AttributeResultItem(AbstractAttribute attribute, CompletionContext context) {
         super(attribute, context);
-        replacementText = attribute.getName();
+        itemText = attribute.getName();
         icon = new ImageIcon(CompletionResultItem.class.
                 getResource(ICON_LOCATION + ICON_ATTRIBUTE));
     }
@@ -66,7 +68,7 @@ public class AttributeResultItem extends CompletionResultItem {
      */
     public AttributeResultItem(AbstractAttribute attribute, String prefix, CompletionContext context) {
         super(attribute, context);
-        replacementText = prefix + ":" + attribute.getName();
+        itemText = prefix + ":" + attribute.getName();
         icon = new ImageIcon(CompletionResultItem.class.
                 getResource(ICON_LOCATION + ICON_ATTRIBUTE));
     }
@@ -74,14 +76,15 @@ public class AttributeResultItem extends CompletionResultItem {
     /**
      * Overwrites getReplacementText of base class.
      */
+    @Override
     public String getReplacementText(){
-        return replacementText+"=\"\"";
+        return itemText+ATTRIBUTE_EQUALS_AND_VALUE_STRING;
     }
-    
-    public String getItemText() {
-        displayText = replacementText;        
-        return displayText;
-    }    
+        
+    @Override
+    public String getDisplayText() {
+        return getItemText();
+    }
     
     public CompletionPaintComponent getPaintComponent() {
         if(component == null) {

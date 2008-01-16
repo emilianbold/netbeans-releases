@@ -584,6 +584,27 @@ public class CompletionContextImpl extends CompletionContext {
                (prevNS != null && prevNS.equals(thisNS));
     }
     
+    /**
+     * Issue 108636 : Eliminate existing attibutes.
+     */
+    List<String> getExistingAttributes() {
+        if(existingAttributes != null)
+            return existingAttributes;
+        existingAttributes = new ArrayList<String>();
+        TokenItem item = token.getPrevious();
+        while(item != null) {
+            if(item.getTokenID().getNumericID() ==
+                    XMLDefaultTokenContext.TAG_ID)
+                break;
+            if(item.getTokenID().getNumericID() ==
+                    XMLDefaultTokenContext.ARGUMENT_ID) {
+                existingAttributes.add(item.getImage());
+            }
+            item = item.getPrevious();
+        }
+        return existingAttributes;
+    }
+    
     private int completionAtOffset = -1;
     private FileObject primaryFile;
     private String typedChars;
@@ -607,6 +628,7 @@ public class CompletionContextImpl extends CompletionContext {
             new HashMap<String, String>();
     private boolean fromNoNamespace = false;
     private CompletionModel noNamespaceModel;
+    private transient List<String> existingAttributes;
     
     public static final String PREFIX                   = "ns"; //NOI18N
     public static final String XSI_SCHEMALOCATION       = "schemaLocation"; //NOI18N

@@ -224,7 +224,9 @@ public class CompletionUtil {
         for(AbstractAttribute aa: element.getAttributes()) {
             AXIComponent original = aa.getOriginal();
             if(original.getTargetNamespace() == null) {  //no namespace
-                results.add(createResultItem(original, null, context));
+                CompletionResultItem item = createResultItem(original, null, context);
+                if(item != null)
+                    results.add(item);
                 continue;
             }            
             if(original instanceof AnyAttribute) {
@@ -249,7 +251,9 @@ public class CompletionUtil {
         for(AbstractElement ae: element.getChildElements()) {
             AXIComponent original = ae.getOriginal();
             if(original.getTargetNamespace() == null) {  //no namespace
-                results.add(createResultItem(original, null, context));
+                CompletionResultItem item = createResultItem(original, null, context);
+                if(item != null)
+                    results.add(item);
                 continue;
             }            
             if(original instanceof AnyElement) {
@@ -272,6 +276,8 @@ public class CompletionUtil {
         CompletionResultItem item = null;
         if(!isFormQualified(axi)) {
             item = createResultItem(axi, null, context);
+            if(item == null)
+                return;
             if(typedChars == null) {
                 results.add(item);
             } else if(item.getReplacementText().startsWith(typedChars)) {
@@ -286,6 +292,8 @@ public class CompletionUtil {
         }
         for(String prefix: prefixes) {
             item = createResultItem(axi, prefix, context);
+            if(item == null)
+                continue;
             if(typedChars == null) {
                 results.add(item);
             } else if(item.getReplacementText().startsWith(typedChars)) {
@@ -305,10 +313,14 @@ public class CompletionUtil {
         }
         
         if(axi instanceof AbstractAttribute) {
-            if(prefix == null)
-                item = new AttributeResultItem((AbstractAttribute)axi, context);
-            else
-                item = new AttributeResultItem((AbstractAttribute)axi, prefix, context);
+            Attribute a = (Attribute)axi;
+            if(prefix == null) {
+                if(!context.getExistingAttributes().contains(a.getName()))
+                    item = new AttributeResultItem((AbstractAttribute)axi, context);
+            } else {
+                if(!context.getExistingAttributes().contains(prefix+":"+a.getName()))
+                    item = new AttributeResultItem((AbstractAttribute)axi, prefix, context);
+            }
         }
         
         return item;

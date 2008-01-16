@@ -65,13 +65,13 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
     }
     
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        int type = ((XMLSyntaxSupport)Utilities.getDocument(component).
-                getSyntaxSupport()).checkCompletion(component, typedText, false);
+        XMLSyntaxSupport support = ((XMLSyntaxSupport)Utilities.
+                getDocument(component).getSyntaxSupport());
+        if(support.noCompletion(component)) {
+            return 0;
+        }
         
-        if(type == ExtSyntaxSupport.COMPLETION_POPUP)
-            return COMPLETION_QUERY_TYPE;
-        
-        return 0;
+        return COMPLETION_QUERY_TYPE;
     }
     
     public CompletionTask createTask(int queryType, JTextComponent component) {

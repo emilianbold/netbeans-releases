@@ -41,9 +41,13 @@
 package org.netbeans.modules.xml.schema.completion;
 
 import javax.swing.ImageIcon;
+import org.netbeans.modules.xml.axi.AbstractAttribute;
 import org.netbeans.modules.xml.axi.AbstractElement;
+import org.netbeans.modules.xml.axi.AnyAttribute;
+import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.ElementPaintComponent;
+import org.netbeans.modules.xml.schema.model.Attribute.Use;
 
 /**
  *
@@ -56,7 +60,7 @@ public class ElementResultItem extends CompletionResultItem {
      */
     public ElementResultItem(AbstractElement element, CompletionContext context) {
         super(element, context);
-        replacementText = element.getName();
+        itemText = element.getName();
         icon = new ImageIcon(CompletionResultItem.class.
                 getResource(ICON_LOCATION + ICON_ELEMENT));
     }
@@ -66,12 +70,12 @@ public class ElementResultItem extends CompletionResultItem {
      */
     public ElementResultItem(AbstractElement element, String prefix, CompletionContext context) {
         super(element, context);        
-        replacementText = prefix + ":" + element.getName();
+        itemText = prefix + ":" + element.getName();
         icon = new ImageIcon(CompletionResultItem.class.
                 getResource(ICON_LOCATION + ICON_ELEMENT));
     }
         
-    public String getItemText() {
+    public String getDisplayText() {
         AbstractElement element = (AbstractElement)axiComponent;
         String cardinality = null;
         if(axiComponent.supportsCardinality() &&
@@ -79,13 +83,33 @@ public class ElementResultItem extends CompletionResultItem {
            element.getMaxOccurs() != null) {
             cardinality = "["+element.getMinOccurs()+".."+element.getMaxOccurs()+"]";
         }
-        displayText = getReplacementText();
+        String displayText = itemText;
         if(cardinality != null)
             displayText = displayText + " " + cardinality;
         
         return displayText;
     }
     
+    /**
+     * Overwrites getReplacementText of base class.
+     * Add mandatory attributes. See issue: 108720
+     */
+    @Override
+    public String getReplacementText(){
+        AbstractElement element = (AbstractElement)axiComponent;
+        StringBuffer buffer = new StringBuffer();
+        for(AbstractAttribute aa : element.getAttributes()) {
+            if(aa instanceof AnyAttribute)
+                continue;
+            Attribute a = (Attribute)aa;
+            if(a.getUse() == Use.REQUIRED) {
+                buffer.append(" " + a.getName()+
+                        AttributeResultItem.ATTRIBUTE_EQUALS_AND_VALUE_STRING);
+            }
+        }
+        return itemText + buffer.toString();
+    }
+        
     public CompletionPaintComponent getPaintComponent() {
         if(component == null) {
             component = new ElementPaintComponent(this);

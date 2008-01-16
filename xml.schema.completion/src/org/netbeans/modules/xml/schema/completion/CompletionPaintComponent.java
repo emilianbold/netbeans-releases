@@ -81,7 +81,7 @@ public abstract class CompletionPaintComponent extends JPanel {
 
     protected void draw(Graphics g) {
         drawIcon(g, completionItem.getIcon());
-        drawString(g, completionItem.getItemText(), completionItem.getPaintColor(),
+        drawString(g, completionItem.getDisplayText(), completionItem.getPaintColor(),
             getDrawFont());
     }
 

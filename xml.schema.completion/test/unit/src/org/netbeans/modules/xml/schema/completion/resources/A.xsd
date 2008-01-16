@@ -13,6 +13,9 @@
             </xsd:sequence>
             <xsd:attribute name="attrA11" type="xsd:string"/>
             <xsd:attribute name="attrA12" type="xsd:string"/>
+            <xsd:attribute name="attrA13" type="xsd:string"/>
+            <xsd:attribute name="attrA14" type="xsd:string"/>
+            <xsd:attribute name="attrA15" type="xsd:string"/>
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="rootA2">

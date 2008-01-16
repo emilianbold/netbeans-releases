@@ -84,17 +84,24 @@ public abstract class CompletionResultItem implements CompletionItem {
     }
     
     /**
-     * The text user sees in the CC list.
-     * Implementors should initialize the displayText here and return.
+     * The completion item's name.
      */
-    public abstract String getItemText();
+    public String getItemText() {
+        return itemText;
+    }
     
     /**
-     * Insert following text into document.
+     * The text user sees in the CC list. Normally some additional info
+     * such as cardinality etc. are added to the item's name.
+     * 
      */
-    public String getReplacementText(){
-        return replacementText;
-    }
+    public abstract String getDisplayText();
+    
+    /**
+     * Replacement text is the one that gets inserted into the document when
+     * user selects this item from the CC list.
+     */
+    public abstract String getReplacementText();
     
     public String toString() {
         return getItemText();
@@ -202,8 +209,7 @@ public abstract class CompletionResultItem implements CompletionItem {
         
     protected boolean shift = false;
     protected String typedChars;
-    protected String replacementText;
-    protected String displayText;
+    protected String itemText;
     protected javax.swing.Icon icon;
     protected CompletionPaintComponent component;
     protected AXIComponent axiComponent;
