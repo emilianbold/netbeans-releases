@@ -47,8 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.TreeModelFilter;
 import org.netbeans.spi.viewmodel.ModelListener;

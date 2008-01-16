@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.JPanel;
-import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -52,12 +51,9 @@ import org.netbeans.api.debugger.DebuggerManager;
 //import org.netbeans.api.debugger.jpda.LineBreakpoint;
 //import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 //import org.netbeans.modules.debugger.jpda.ui.FilteredKeymap;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
-import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.spi.debugger.ui.Controller;
 
-import java.net.URI;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -129,49 +125,47 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         pActions.add (actionsPanel, "Center"); // NOI18N
     }
     
-    private static int findNumLines(String url) {
-        FileObject file;
-        try {
-            file = URLMapper.findFileObject (new URL(url));
-        } catch (MalformedURLException e) {
-            return 0;
-        }
-        if (file == null) return 0;
-        DataObject dataObject;
-        try {
-            dataObject = DataObject.find (file);
-        } catch (DataObjectNotFoundException ex) {
-            return 0;
-        }
-        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
-        if (ec == null) return 0;
-        ec.prepareDocument().waitFinished();
-        Document d = ec.getDocument();
-        if (!(d instanceof StyledDocument)) return 0;
-        StyledDocument sd = (StyledDocument) d;
-        return NbDocument.findLineNumber(sd, sd.getLength());
-    }
+//    private static int findNumLines(String url) {
+//        FileObject file;
+//        try {
+//            file = URLMapper.findFileObject (new URL(url));
+//        } catch (MalformedURLException e) {
+//            return 0;
+//        }
+//        if (file == null) return 0;
+//        DataObject dataObject;
+//        try {
+//            dataObject = DataObject.find (file);
+//        } catch (DataObjectNotFoundException ex) {
+//            return 0;
+//        }
+//        EditorCookie ec = (EditorCookie) dataObject.getCookie(EditorCookie.class);
+//        if (ec == null) return 0;
+//        ec.prepareDocument().waitFinished();
+//        Document d = ec.getDocument();
+//        if (!(d instanceof StyledDocument)) return 0;
+//        StyledDocument sd = (StyledDocument) d;
+//        return NbDocument.findLineNumber(sd, sd.getLength());
+//    }
     
     private void setupConditionPane() {
-        /* Not implemented yet
-        tfCondition.setKeymap(new FilteredKeymap(tfCondition.getKeymap()));
-        String url = breakpoint.getURL();
-        DataObject dobj = null;
-        FileObject file;
-        try {
-            file = URLMapper.findFileObject (new URL (url));
-            if (file != null) {
-                try {
-                    dobj = DataObject.find (file);
-                } catch (DataObjectNotFoundException ex) {
-                    // null dobj
-                }
-            }
-        } catch (MalformedURLException e) {
-            // null dobj
-        }
-        tfCondition.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
-        */
+//        tfCondition.setKeymap(new FilteredKeymap(tfCondition.getKeymap()));
+//        String url = breakpoint.getURL();
+//        DataObject dobj = null;
+//        FileObject file;
+//        try {
+//            file = URLMapper.findFileObject (new URL (url));
+//            if (file != null) {
+//                try {
+//                    dobj = DataObject.find (file);
+//                } catch (DataObjectNotFoundException ex) {
+//                    // null dobj
+//                }
+//            }
+//        } catch (MalformedURLException e) {
+//            // null dobj
+//        }
+//        tfCondition.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, dobj);
     }
     
     /** 
@@ -300,10 +294,10 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
         String Condition = tfCondition.getText();
         //breakpoint.setLineNumber(Integer.parseInt(tfLineNumber.getText().trim()));
         breakpoint.setFunctionName(functionName);
-        breakpoint.setCondition (Condition);
+        breakpoint.setCondition(Condition);
         // Check if this breakpoint already set
-        DebuggerManager dm = DebuggerManager.getDebuggerManager ();
-        Breakpoint[] bs = dm.getBreakpoints ();
+        DebuggerManager dm = DebuggerManager.getDebuggerManager();
+        Breakpoint[] bs = dm.getBreakpoints();
         int i, k = bs.length;
         for (i = 0; i < k; i++) {
             if (bs[i] instanceof FunctionBreakpoint) {
@@ -349,6 +343,7 @@ public class FunctionBreakpointPanel extends JPanel implements Controller, org.o
      * @return <code>true</code> whether value of this customizer 
      * is valid
      */
+    @Override
     public boolean isValid () {
         return true;
     }

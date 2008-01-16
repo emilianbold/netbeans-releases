@@ -125,7 +125,7 @@ public class BreakpointsNodeModel implements NodeModel {
 		}
             }
         } else {
-            throw new UnknownTypeException (o);
+            throw new UnknownTypeException(o);
         }
     }
     

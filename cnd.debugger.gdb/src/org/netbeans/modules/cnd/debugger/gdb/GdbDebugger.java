@@ -144,7 +144,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private CallStackFrame currentCallStackFrame;
     public final Object LOCK = new Object();
     private long programPID = 0;
-    private double gdbVersion = 0.0;
+    private double gdbVersion = 6.4;
     private boolean continueAfterFirstStop = true;
     private ArrayList<GdbVariable> localVariables = new ArrayList<GdbVariable>();
     private Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
@@ -767,12 +767,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (cb != null) {
             cb.append(omsg);
-        } else if (gdbVersion < 1.0 && msg.startsWith("GNU gdb ")) { // NOI18N
+        } else if (msg.startsWith("GNU gdb ") && startupTimer != null) { // NOI18N
             // Cancel the startup timer - we've got our first response from gdb
-            if (startupTimer != null) {
-                startupTimer.cancel();
-                startupTimer = null;
-            }
+            startupTimer.cancel();
+            startupTimer = null;
             
             // Now process the version information
             int first = msg.indexOf('.');
