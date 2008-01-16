@@ -1620,8 +1620,8 @@ public class TableCustomizer extends JPanel implements Customizer, FormAwareEdit
             lastSelectedColumn = index[0];
             ColumnInfo info = columns.get(index[0]);
             editableColumnChoice.setSelected(info.isEditable());
-            expressionCombo.setSelectedItem(info.getExpression());
             if (modelBoundChoice.isSelected()) {
+                expressionCombo.setSelectedItem(info.getExpression());
                 columnTypeCombo.setSelectedItem(info.getClazz());
                 if (columnTypeCombo.getEditor().getEditorComponent().hasFocus()) {
                     columnTypeCombo.getEditor().setItem(info.getClazz());
