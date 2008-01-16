@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <mconfig name="Form config">
-
+    
     <testbag testattribs="issues" executor="ide" name="testbag_issues">
         <testset dir="qa-functional/src">
             <patternset>               
@@ -54,8 +54,34 @@ made subject to such option by the copyright holder.
             </patternset>
         </testset>
     </testbag>
-
-    <testbag testattribs="validation" executor="ide" name="testbag_binding">
+    
+    <testbag testattribs="stable" executor="ide" name="testbag_FormStable">      
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/beans/*.*"/>
+                <include name="org/netbeans/qa/form/options/*.*"/>
+                <include name="org/netbeans/qa/form/OpenForm.class"/>
+                <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="validation" executor="ide" name="testbag_validation">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/binding/*.*"/>
+                <include name="org/netbeans/qa/form/refactoring/*.*"/>                
+                <include name="org/netbeans/qa/form/beans/*.*"/>
+                <include name="org/netbeans/qa/form/options/*.*"/>
+                <include name="org/netbeans/qa/form/OpenForm.class"/>
+                <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/>
+                <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>
+                <include name="org/netbeans/test/editor/formatting/*.*"/>
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="binding" executor="ide" name="testbag_binding">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
@@ -64,7 +90,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation,_jv" executor="ide" name="testbag_refactoring">
+    <testbag testattribs="refactoring" executor="ide" name="testbag_refactoring">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/refactoring/RenameComponentVariableTest.class"/>
@@ -75,7 +101,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>    
     
-    <testbag testattribs="validation,jv" executor="ide" name="testbag_jda">
+    <testbag testattribs="jda" executor="ide" name="testbag_jda">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/jda/SimpleJDAProjectTest.class"/>
@@ -85,7 +111,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="_jv" executor="ide" name="testbag_databinding">
+    <testbag testattribs="databiding" executor="ide" name="testbag_databinding">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/databinding/SetUpDerbyDatabaseTest.class"/>
@@ -93,9 +119,9 @@ made subject to such option by the copyright holder.
             </patternset>
         </testset>
     </testbag>
-
-   <testbag testattribs="validation" executor="ide" name="testbag_beans">
-
+    
+    <testbag testattribs="beans" executor="ide" name="testbag_beans">
+        
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/beans/*.*"/>
@@ -103,7 +129,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation" executor="ide" name="testbag_options">
+    <testbag testattribs="options" executor="ide" name="testbag_options">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/options/*.*"/>
@@ -111,8 +137,8 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-   <testbag testattribs="jm" executor="ide" name="testbag_visualdevelopment">
-
+    <testbag testattribs="visual" executor="ide" name="testbag_visualdevelopment">
+        
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/visualDevelopment/FormGenerateCodeTest.class"/>
@@ -123,7 +149,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation" executor="ide" name="testbag_openforms">
+    <testbag testattribs="openforms" executor="ide" name="testbag_openforms">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/OpenForm.class"/>
@@ -131,7 +157,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="validation" executor="ide" name="testbag_undoredo">
+    <testbag testattribs="undo_redo" executor="ide" name="testbag_undoredo">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/undoredo/BaseTest.class"/> 
@@ -141,16 +167,23 @@ made subject to such option by the copyright holder.
     
     
     <!-- Jana Maleckova -->
-
-    <testbag testattribs="validation, test" executor="ide" name="testbag_opentempl_defaultpack">
+    <testbag testattribs="openforms" executor="ide" name="testbag_opentempl_defaultpack">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/qa/form/OpenTempl_defaultPack.*"/>                
             </patternset>
         </testset>
     </testbag>
-
-    <testbag testattribs="validation" executor="ide" name="testbag_editor_basictest">
+    
+    <testbag testattribs="test" executor="ide" name="testbag_bean">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/qa/form/beans/*.*"/>            
+            </patternset>
+        </testset>
+    </testbag>
+    
+    <testbag testattribs="formatting" executor="ide" name="testbag_editor_basictest">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/editor/formatting/BasicTest.*"/>                
@@ -158,18 +191,8 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag> 
     
-    <testbag testattribs="stable" executor="ide" name="testbag_FormStable">
-
-        <testset dir="qa-functional/src">
-            <patternset>
-                <include name="org/netbeans/qa/form/beans/*.*"/>
-                <include name="org/netbeans/qa/form/options/*.*"/>
-                <include name="org/netbeans/qa/form/OpenForm.class"/>
-                <include name="org/netbeans/qa/form/binding/SimpleBeansBinding.class"/>
-            </patternset>
-        </testset>
-    </testbag>
-
+    
+    
     <executor name="code" antfile="build-qa-functional.xml" target="runcodetest"/>
     <executor name="ide" antfile="build-qa-functional.xml" target="runidetest" default="true"/>
     <compiler name="qa-functional-compiler" antfile="build-qa-functional.xml" target="qa-functional-compiler" default="true" />
