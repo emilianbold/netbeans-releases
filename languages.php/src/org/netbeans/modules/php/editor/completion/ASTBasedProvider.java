@@ -58,9 +58,15 @@ import org.netbeans.modules.php.model.PhpModel;
  */
 public abstract class ASTBasedProvider {
     protected CodeCompletionContext myContext;
-
+    
     @SuppressWarnings("unchecked")
     protected static final Set<ExpectedToken> ANY_TOKEN = Collections.EMPTY_SET;
+    
+    /**
+     * A service that is used as the key to recognize a given project as the
+     * PHP Project.
+     */
+//    private static final Class PHP_PROJECT_KEY_SERVICE = null;
         
     /**
      * Wrapps info about expected token.
@@ -145,6 +151,35 @@ public abstract class ASTBasedProvider {
             return ts;
         
     }
+
+    /**
+     * Assert that a given <code>CodeCompletionContext</code> in the scope of a 
+     * PHP project.
+     * @throws java.lang.Exception if a given <code>CodeCompletionContext</code> 
+     * is not in the scope of a PHP project.
+     */
+    protected void assertPHPProject() throws Exception {
+//        FileObject fo = myContext.getCompilationInfo().getFileObject();
+//        Project project = FileOwnerQuery.getOwner(fo);
+//        if (project == null || 
+//                project.getLookup().lookup(PHP_PROJECT_KEY_SERVICE) == null) {
+            throw new Exception();
+//        }
+    }
+    /**
+     * Assert that a given <code>CodeCompletionContext</code> in the file that 
+     * has a MIME type registered in the IDE for PHP processing.
+     * @throws java.lang.Exception if a given <code>CodeCompletionContext</code> 
+     * is not in the in the file that has a MIME type registered in the IDE for 
+     * PHP processing.
+     */
+    protected void assertMIMETypePHP() throws Exception {
+        String type = myContext.getCompilationInfo().getFileObject().getMIMEType();
+        if (!type.equals("text/x-php5")) {
+            throw new Exception();
+        }
+    }
+
 
     protected void assertPHPContext() throws IOException, Exception {
         Document doc = getDocument();

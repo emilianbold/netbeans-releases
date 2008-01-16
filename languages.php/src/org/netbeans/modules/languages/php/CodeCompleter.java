@@ -65,6 +65,7 @@ import org.netbeans.modules.php.editor.TokenUtils;
 import org.netbeans.modules.php.editor.completion.CodeTemplateProvider;
 import org.netbeans.modules.php.editor.completion.CompletionResultProvider;
 import org.netbeans.modules.php.editor.completion.DocumentableElement;
+import org.netbeans.modules.php.editor.completion.ForeignScope;
 import org.netbeans.modules.php.editor.completion.SelectionTemplates;
 import org.netbeans.modules.php.editor.completion.TemplateContext;
 import org.netbeans.modules.php.model.Literal;
@@ -89,9 +90,11 @@ public class CodeCompleter implements Completable {
         PhpModel model;
         try {
             model = getPhpModel(info, caretOffset); // IAE
+            checkPhp(model, caretOffset);
         } catch (IllegalArgumentException ioe) {
-//            error(ioe);
-            return null;
+            // process foreign scope
+            return getProposals(null, info, caretOffset, prefix, kind, 
+                    queryType, caseSensitive, formatter);
         }
         model.writeLock();
         try {
@@ -166,6 +169,7 @@ public class CodeCompleter implements Completable {
         try {
             Document doc = info.getDocument(); // IOException
             PhpModel model = getPhpModel(info, caretOffset); // check args IllegalArgumentException
+            checkPhp(model, caretOffset);
             return TokenUtils.getEnteredEmbeddedTokenText(doc, caretOffset, 
                     upToOffset);
         }
@@ -217,8 +221,9 @@ public class CodeCompleter implements Completable {
         PhpModel model;
         try {
             model = getPhpModel(info, caretOffset); // IAE
+            checkPhp(model, caretOffset);
         } catch (IllegalArgumentException ioe) {
-            error(ioe);
+//            error(ioe);
             return ParameterInfo.NONE;
         }
         model.writeLock();
@@ -362,7 +367,6 @@ public class CodeCompleter implements Completable {
             throw new IllegalArgumentException();
         }
         PhpModel model = ((PhpParseResult) result).getModel();
-        checkPhp(model, caretOffset);
         return model;
     }
     
