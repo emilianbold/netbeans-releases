@@ -825,6 +825,14 @@ public class JarClassLoader extends ProxyClassLoader {
             }
         }
 
+        public String getContentType() {
+            String contentType = guessContentTypeFromName(name);
+            if (contentType == null) {
+                contentType = "content/unknown";
+            }
+            return contentType;
+        }
+
         public @Override int getContentLength() {
             try {
                 this.connect();
