@@ -288,6 +288,9 @@
     <target name="project-test-6">
         <!-- flow -->
         <antcall target="do-test-jbi"><param name="dir" value="flow/FlowBpel"/></antcall>
+
+        <!-- foreach-bpel20 -->
+        <antcall target="do-test-jbi"><param name="dir" value="foreach-bpel20/ForEachBpel"/></antcall>
     </target>
 
     <target name="do-test-jbi">
