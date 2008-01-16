@@ -55,14 +55,14 @@ public class TABLE implements ActiveEditorDrop {
     private static final int ROWS_DEFAULT = 2;
     private static final int COLS_DEFAULT = 2;
     private static final int BORDER_DEFAULT = 1;
-    private static final String WIDTH_DEFAULT = "";
+    private static final int WIDTH_DEFAULT = 0;
     private static final int CSPAC_DEFAULT = 0;
     private static final int CPADD_DEFAULT = 0;
     
     private int rows = ROWS_DEFAULT;
     private int cols = COLS_DEFAULT;
     private int border = BORDER_DEFAULT;
-    private String width = WIDTH_DEFAULT;
+    private int width = WIDTH_DEFAULT;
     private int cspac = CSPAC_DEFAULT;
     private int cpadd = CPADD_DEFAULT;
             
@@ -93,7 +93,7 @@ public class TABLE implements ActiveEditorDrop {
         String strBorder = " border=\"" + border + "\""; // NOI18N
         
         String strWidth = "";
-        if (!width.equals(WIDTH_DEFAULT))
+        if (width != WIDTH_DEFAULT)
             strWidth = " width=\"" + width + "\""; // NOI18N
 
         String strCspac = "";
@@ -152,7 +152,7 @@ public class TABLE implements ActiveEditorDrop {
         this.border = border;
     }
 
-    public void setWidth(String width) {
+    public void setWidth(int width) {
         this.width = width;
     }
 
@@ -176,7 +176,7 @@ public class TABLE implements ActiveEditorDrop {
         return border;
     }
 
-    public String getWidth() {
+    public int getWidth() {
         return width;
     }
 
