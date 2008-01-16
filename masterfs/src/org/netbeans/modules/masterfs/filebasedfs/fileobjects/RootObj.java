@@ -42,9 +42,7 @@
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
-import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.*;
-import org.openide.util.Utilities;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -61,11 +59,11 @@ public final class RootObj extends FileObject {
     }
 
     public final String getName() {
-        return "";//NOI18N
+        return getRealRoot().getName();//NOI18N
     }
 
     public final String getExt() {
-        return "";//NOI18N
+        return getRealRoot().getExt();//NOI18N
     }
 
     public final FileSystem getFileSystem() throws FileStateInvalidException {
@@ -113,29 +111,23 @@ public final class RootObj extends FileObject {
     }
 
     public final Object getAttribute(final String attrName) {
-        return null;
+        return getRealRoot().getAttribute(attrName);
     }
 
     public final void setAttribute(final String attrName, final Object value) throws IOException {
-        throw new IOException(getPath());
+        getRealRoot().setAttribute(attrName, value);
     }
 
     public final Enumeration getAttributes() {
-        return new Enumeration() {
-            public boolean hasMoreElements() {
-                return false;
-            }
-
-            public Object nextElement() {
-                return null;
-            }
-        };
+        return getRealRoot().getAttributes();
     }
 
     public final void addFileChangeListener(final FileChangeListener fcl) {
+        getRealRoot().addFileChangeListener(fcl);
     }
 
     public final void removeFileChangeListener(final FileChangeListener fcl) {
+        getRealRoot().removeFileChangeListener(fcl);
     }
 
     public final long getSize() {
@@ -143,20 +135,19 @@ public final class RootObj extends FileObject {
     }
 
     public final InputStream getInputStream() throws FileNotFoundException {
-        throw new FileNotFoundException(getPath());
+        return getRealRoot().getInputStream();
     }
 
     public final OutputStream getOutputStream(final FileLock lock) throws IOException {
-        throw new FileNotFoundException(getPath());
+        return getRealRoot().getOutputStream(lock);
     }
 
     public final FileLock lock() throws IOException {
-        //throw new IOException(getPath());
-        FSException.io("EXC_CannotLockRoot"); // NOI18N
-        return null;
+        return getRealRoot().lock();
     }
 
     public final void setImportant(final boolean b) {
+        getRealRoot().setImportant(b); 
     }
 
     public final FileObject[] getChildren() {
@@ -164,49 +155,23 @@ public final class RootObj extends FileObject {
     }
 
     public final FileObject getFileObject(final String name, final String ext) {
-        FileObject retVal = null;
-
-        /*if (name.equals(getRealRoot().getName())) {
-            final String ext2 = getRealRoot().getExt();
-            if (ext == null || ext.length() == 0) {
-                retVal = (ext2 == null || ext2.length() == 0) ? getRealRoot() : null;
-            } else {
-                retVal = (ext.equals(ext2)) ? getRealRoot() : null;
-            }
-        }*/
-
-        //return retVal;
         return getRealRoot().getFileObject(name, ext);
     }
 
     public final FileObject getFileObject(String relativePath) {
-        final FileInfo fInfo = new FileInfo(getRealRoot().getFileName().getFile());
-        FileObject retVal;
-
-        if ((!Utilities.isWindows()) || fInfo.isUNCFolder()) {
-            retVal = getRealRoot();
-            if (fInfo.isUNCFolder() && relativePath.startsWith("//") || relativePath.startsWith("\\\\")) {//NOI18N
-                relativePath = relativePath.substring(2);
-            }
-            retVal = retVal.getFileObject(relativePath);
-        } else {
-            retVal = super.getFileObject(relativePath);
-        }
-
-        return retVal;
+        return getRealRoot().getFileObject(relativePath);
     }
 
-
     public final FileObject createFolder(final String name) throws IOException {
-        return realRoot.createFolder(name);
+        return getRealRoot().createFolder(name);
     }
 
     public final FileObject createData(final String name, final String ext) throws IOException {
-        return realRoot.createData(name, ext);
+        return getRealRoot().createData(name, ext);
     }
 
     public final boolean isReadOnly() {
-        return true;
+        return getRealRoot().isReadOnly();
     }
 
     public final BaseFileObj getRealRoot() {
@@ -214,13 +179,6 @@ public final class RootObj extends FileObject {
     }
 
     public String toString() {
-        String retVal;
-        try {
-            FileSystem fileSystem = getFileSystem();
-            retVal = fileSystem.getDisplayName();
-        } catch (FileStateInvalidException e) {
-            retVal = super.toString();
-        }
-        return retVal;
+        return getRealRoot().toString();
     }
 }
