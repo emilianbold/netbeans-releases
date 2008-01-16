@@ -136,6 +136,10 @@ public class ReadOnlyAccess extends DocumentModelAccess {
         int start = fragment.indexOf(">");
         start++;
         int end = fragment.lastIndexOf("<");
+
+        if (start == -1 || end == -1) {
+            return null;
+        }
         return fragment.substring(start, end);
     }
     
