@@ -251,6 +251,7 @@
         ${test.cvs.path}/TerminationHandler
         ${test.cvs.path}/wait
         ${test.cvs.path}/while
+        ${test.cvs.path}/xpathfunctions
         ${test.cvs.path}/xslt
     "/>
     <property name="home" value="../.."/>

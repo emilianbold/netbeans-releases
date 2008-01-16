@@ -348,6 +348,10 @@
 
         <!-- while -->
         <antcall target="do-test-jbi"><param name="dir" value="while/WhileBpel"/></antcall>
+
+        <!-- xpathfunctions -->
+        <antcall target="do-test-jbi"><param name="dir" value="xpathfunctions/XPathFunctionsBpel"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="xpathfunctions/XSDFunctions"/></antcall>
     </target>
 
     <target name="do-test-jbi">
