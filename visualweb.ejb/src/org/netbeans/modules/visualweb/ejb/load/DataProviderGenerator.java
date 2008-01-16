@@ -66,6 +66,13 @@ import java.util.Iterator;
  * @author  dongmei cao
  */
 public class DataProviderGenerator {
+    private static String[] PRIMITIVE_TYPES = {
+        "char", "byte", "short", "int", "long", "float", "double", "boolean"
+    };
+    
+    private static String[] PRIMITIVE_WRAPPERS = {
+        "Character", "Byte", "Short", "Integer", "Long", "Float", "Double", "Boolean"
+    };
     
     private String packageName;
     private String clientWrapperClassName;
@@ -188,7 +195,6 @@ public class DataProviderGenerator {
             // Memeber variables
             String clientWrapperClassVar = Util.decapitalize( clientWrapperClassName );
             out.println( "    protected " + clientWrapperClassName + " " + clientWrapperClassVar + ";" );
-            out.println( "    protected ArrayList methodArgumentNames = new ArrayList();" );
             out.println( "    // Properties. One per method parameter." );
             ArrayList methodParams = methodInfo.getParameters();
             for( int i = 0; i < methodParams.size(); i ++ ) {
@@ -201,10 +207,6 @@ public class DataProviderGenerator {
             
             // Default Constructor
             out.println( "    public " + className + "() {" );
-            for( int i = 0; i < methodParams.size(); i ++ ) {
-                MethodParam p = (MethodParam)methodParams.get( i );
-                out.println( "        methodArgumentNames.add( \"" + p.getName() + "\" );" );
-            }
             out.println( "    }" );
             out.println();
             
@@ -282,56 +284,26 @@ public class DataProviderGenerator {
                 out.println( "    public Object[] getDataMethodArguments() {" );
             }
             
-            if( methodInfo.getParameters() == null || methodInfo.getParameters().isEmpty() )
-                out.println( "        return new Object[0];" );
-            else {
-                out.println( "        try { " );
-                out.println( "            Object[] values = new Object[methodArgumentNames.size()];" );
-                out.println();
-                out.println( "            // Using the BeanInfo to get the property values" );
-                out.println( "            BeanInfo beanInfo = Introspector.getBeanInfo( this.getClass() );" );
-                out.println( "            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();" );
-                out.println();
-                out.println( "            for( int i = 0; i < propertyDescriptors.length; i ++ ) {" );
-                out.println();
-                out.println( "                String propName = propertyDescriptors[i].getName();" );
-                out.println();
-                out.println( "                int argPos = findArgumentPosition( new String(propName) );" );
-                out.println( "                if( argPos != -1 ) {" );
-                out.println( "                    Method reader = propertyDescriptors[i].getReadMethod();" );
-                out.println( "                    if (reader != null) " );
-                out.println( "                        values[argPos] = reader.invoke(this, new Object[0]);" );
-                out.println( "                }" );
-                out.println( "            }" );
-                out.println();
-                out.println( "            return values;" );
-                out.println( "        } catch( Exception e ) { " );
-                out.println( "            e.printStackTrace();" );
-                out.println( "            return null; " );
-                out.println( "        }" );
+            int methodArgSize = (methodInfo.getParameters() == null) ? 0 : methodInfo.getParameters().size();
+
+            out.println("        try { ");
+            out.println("            Object[] values = new Object[" + methodArgSize + "];");
+            out.println();
+
+            for (int i = 0; i < methodArgSize; i++) {
+                
+                
+                MethodParam parameter = (MethodParam) methodInfo.getParameters().get(i);
+                out.println("            values[" + i + "] = " + convertPrimitiveType(parameter.getName(), parameter.getType()) + ";");
             }
+
+            out.println("            return values;");
+            out.println("        } catch( Exception e ) { ");
+            out.println("            e.printStackTrace();");
+            out.println("            return null; ");
+            out.println("        }");
             
             out.println();
-            out.println( "    }" );
-            out.println();
-            
-            out.println( "    private int findArgumentPosition( String propName ) {" );
-            out.println( "        // First try the propName itself" );
-            out.println( "        int index = methodArgumentNames.indexOf( propName );" );
-            out.println();
-            out.println( "        char chars[] = propName.toCharArray();" );
-            out.println();
-            out.println( "        if( index == -1 ) {" );
-            out.println( "            // fFlip the capitalization of the first char and try it again" );
-            out.println( "            if( Character.isUpperCase( chars[0] ) )" );
-            out.println( "                chars[0] = Character.toLowerCase(chars[0]);" );
-            out.println( "            else" );
-            out.println( "                chars[0] = Character.toUpperCase(chars[0]);" );
-            out.println();
-            out.println( "            index = methodArgumentNames.indexOf( new String(chars) ); " );
-            out.println( "        }" );
-            out.println();
-            out.println( "        return index; " );
             out.println( "    }" );
             out.println();
             
@@ -411,6 +383,17 @@ public class DataProviderGenerator {
             // Throw up as a SYSTEM_ERROR
             throw new EjbLoadException( ex.getMessage() );
         }
+    }
+
+    private String convertPrimitiveType(String name, String type) {
+        for (int i = 0; i < PRIMITIVE_TYPES.length; i++) {
+            String typeName = PRIMITIVE_TYPES[i];
+            if (type != null && typeName.equals(type.trim())) {
+                return PRIMITIVE_WRAPPERS[i] + ".valueOf(this." + name + ")";
+            }
+        }
+
+        return "this." + name;
     }
     
     private String getMethodParamTypes() {
