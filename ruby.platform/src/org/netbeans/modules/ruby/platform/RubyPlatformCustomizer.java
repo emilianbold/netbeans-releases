@@ -388,8 +388,8 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
             // XXX store last used directory into the settings
             RubyPlatform platform = getPlafListModel().addPlatform(intepreter);
             if (platform == null) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.invalid.platform.added", intepreter.getAbsolutePath())));
+                Util.notifyLocalized(RubyPlatformCustomizer.class,
+                        "RubyPlatformCustomizer.invalid.platform.added", intepreter.getAbsolutePath());
             }
             refreshPlatform();
         }

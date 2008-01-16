@@ -95,4 +95,12 @@ public class GemManagerTest extends RubyTestBase {
         assertTrue("no errros", errors.isEmpty());
     }
 
+    public void testIsValidGemHome() throws Exception {
+        assertFalse("not valid", GemManager.isValidGemHome(getWorkDir()));
+        assertTrue("valid", GemManager.isValidGemHome(
+                new File(RubyPlatformManager.getDefaultPlatform().getInfo().getGemHome())));
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        assertTrue("valid", GemManager.isValidGemHome(
+                new File(platform.getInfo().getGemHome())));
+    }
 }

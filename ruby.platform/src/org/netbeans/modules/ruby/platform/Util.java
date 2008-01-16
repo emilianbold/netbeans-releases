@@ -43,6 +43,9 @@ package org.netbeans.modules.ruby.platform;
 import java.io.File;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 public final class Util {
@@ -161,4 +164,10 @@ public final class Util {
         }
         return null;
     }
+
+    public static void notifyLocalized(Class aClass, String resName, Object... params) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                NbBundle.getMessage(aClass, resName, params)));
+    }
+
 }

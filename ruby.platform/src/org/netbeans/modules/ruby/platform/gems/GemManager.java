@@ -67,6 +67,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -948,5 +949,11 @@ public final class GemManager {
 
     public static String getNotInstalledMessage() {
         return NbBundle.getMessage(GemManager.class, "GemManager.rubyGemsNotInstalled");
+    }
+
+    static boolean isValidGemHome(final File gemHomeF) {
+        Parameters.notNull("gemHomeF", gemHomeF);
+        return gemHomeF.isDirectory() && new File(gemHomeF, "gems").isDirectory()
+                && new File(gemHomeF, "specifications").isDirectory();
     }
 }

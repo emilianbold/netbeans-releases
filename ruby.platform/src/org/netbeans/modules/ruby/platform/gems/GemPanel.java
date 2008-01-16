@@ -74,7 +74,6 @@ import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
@@ -1046,6 +1045,10 @@ public final class GemPanel extends JPanel implements Runnable {
         int ret = chooser.showOpenDialog(parent);
         if (ret == JFileChooser.APPROVE_OPTION) {
             File gemHomeF = FileUtil.normalizeFile(chooser.getSelectedFile());
+            if (!GemManager.isValidGemHome(gemHomeF)) {
+                Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath());
+                return false;
+            }
             // XXX perform some sanity check whether it is valid Gem Repository
             // XXX if not a valid repo, offer to create/initialize it there
             platform.setGemHome(gemHomeF);
