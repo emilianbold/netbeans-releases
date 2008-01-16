@@ -100,11 +100,13 @@ import org.openide.awt.StatusDisplayer;
  * @author Ahimanikya Satapathy
  */
 public class SQLObjectUtil {
+
     public static final String FILE_LOC = "FILE_LOC";
     /* Log4J category string */
     private static final String LOG_CATEGORY = SQLObjectUtil.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(SQLObjectUtil.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     public static Map<String, String> getTableMetaData(SQLDBTable table) throws SQLException, BaseException {
         SQLDBModel dbModel = (SQLDBModel) table.getParent();
         HashMap<String, String> map = new HashMap<String, String>();
@@ -132,19 +134,19 @@ public class SQLObjectUtil {
             try {
                 rs.close();
             } catch (Exception ex) {
-            //ignore
+                //ignore
             }
 
             try {
                 stmt.close();
             } catch (Exception ex) {
-            //ignore
+                //ignore
             }
 
             try {
                 conn.close();
             } catch (Exception ex) {
-            //ignore
+                //ignore
             }
         }
         return map;
@@ -265,7 +267,7 @@ public class SQLObjectUtil {
                 try {
                     conn.close();
                 } catch (SQLException ex) {
-                // ignore
+                    // ignore
                 }
             }
         }
@@ -279,11 +281,11 @@ public class SQLObjectUtil {
             FlatfileDBTableImpl fftbl = new FlatfileDBTableImpl(aTable);
             Attribute attr = aTable.getAttribute("ORGPROP_LOADTYPE");
 
-            if(attr != null) {
+            if (attr != null) {
                 DBConnectionDefinition conndef = model.getETLDBConnectionDefinition();
                 conn = DBExplorerUtil.createConnection(conndef.getDriverClass(), conndef.getConnectionURL(), conndef.getUserName(), conndef.getPassword());
                 stmt = conn.createStatement();
-            
+
                 String parseType = attr.getAttributeValue().toString();
                 fftbl.setParseType(parseType);
                 String createSQL = fftbl.getCreateStatementSQL(fftbl);
@@ -311,11 +313,11 @@ public class SQLObjectUtil {
                     "Reason: " + ex.getMessage());
         } finally {
             try {
-                if(conn != null){
+                if (conn != null) {
                     conn.close();
                 }
             } catch (Exception ex) {
-            // ignore
+                // ignore
             }
         }
     }
@@ -386,9 +388,7 @@ public class SQLObjectUtil {
                 }
             }
         } catch (Exception ex) {
-             mLogger.errorNoloc(mLoc.t("PRSR124: Error while retrieving file name{0}",SQLDefinition.class.getName()),ex);
-           // Logger.printThrowable(Logger.ERROR, SQLDefinition.class.getName(),
-             //       "Error while retrieving file name", null, ex);
+            mLogger.errorNoloc(mLoc.t("PRSR124: Error while retrieving file name{0}", SQLDefinition.class.getName()), ex);
         } finally {
             try {
                 if (conn != null) {
@@ -403,8 +403,7 @@ public class SQLObjectUtil {
 
     public static String generateFFRuntimeInputName(String prefix, SQLDBTable table) {
         String genName = prefix + "_" + table.getUniqueTableName();
-        mLogger.infoNoloc(mLoc.t("PRSR125: table name{0} for table",genName,table.getName()));
-        //Logger.print(Logger.DEBUG, SQLDefinition.class.getName(), prefix + " table name " + genName + " for table " + table.getName());
+        mLogger.infoNoloc(mLoc.t("PRSR125: table name{0} for table", genName, table.getName()));
         return genName;
     }
 
@@ -416,8 +415,8 @@ public class SQLObjectUtil {
         if (sysName.length() > 18) {
             sysName = sysName.substring(0, 18);
         }
-        //Logger.print(Logger.DEBUG, SQLDefinition.class.getName(), "temp table name " + sysName + " for table " + tableName);
-        mLogger.infoNoloc(mLoc.t("PRSR126: temp table name{0} for table",sysName,tableName));
+
+        mLogger.infoNoloc(mLoc.t("PRSR126: temp table name{0} for table", sysName, tableName));
         return sysName;
     }
 
@@ -428,8 +427,8 @@ public class SQLObjectUtil {
         if (sysName.length() > 18) {
             sysName = sysName.substring(0, 18);
         }
-       // Logger.print(Logger.DEBUG, SQLDefinition.class.getName(), "temp table name " + sysName + " for table " + tableName);
-          mLogger.infoNoloc(mLoc.t("PRSR127: temp table name{0} for table",sysName,tableName));
+
+        mLogger.infoNoloc(mLoc.t("PRSR127: temp table name{0} for table", sysName, tableName));
         return sysName;
     }
 
@@ -840,8 +839,8 @@ public class SQLObjectUtil {
                 jmd.addInput(SQLJoinOperator.LEFT, left);
                 jmd.addInput(SQLJoinOperator.RIGHT, right);
             } catch (BaseException sqlEx) {
-                 mLogger.errorNoloc(mLoc.t("PRSR128: Failed to create auto-join{0}",LOG_CATEGORY),sqlEx);
-                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "discoverJoinPredicate", "Failed to create auto-join", sqlEx); // NOI18N
+                mLogger.errorNoloc(mLoc.t("PRSR128: Failed to create auto-join{0}", LOG_CATEGORY), sqlEx);
+
                 jmd = null;
             }
         }

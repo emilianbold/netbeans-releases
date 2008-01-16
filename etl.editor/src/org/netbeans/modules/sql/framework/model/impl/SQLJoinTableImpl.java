@@ -56,7 +56,6 @@ import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * @author Ritesh Adval
  */
@@ -116,8 +115,7 @@ public class SQLJoinTableImpl extends AbstractSQLObject implements SQLJoinTable 
         try {
             cond = new SQLJoinTableImpl(this);
         } catch (Exception ex) {
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "clone", "Error while cloniing SQLJoinTableImpl", ex);
-            mLogger.errorNoloc(mLoc.t("PRSR118: can not create clone of{0}",this.toString()),ex);
+            mLogger.errorNoloc(mLoc.t("PRSR118: can not create clone of{0}", this.toString()), ex);
             throw new CloneNotSupportedException("can not create clone of " + this.toString());
         }
         return cond;

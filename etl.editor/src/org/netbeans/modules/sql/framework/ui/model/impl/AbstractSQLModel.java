@@ -79,6 +79,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  * @author Ritesh Adval
  */
 public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel {
+
     private static final String LOG_CATEGORY = AbstractSQLModel.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(AbstractSQLModel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
@@ -86,7 +87,6 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
     protected boolean isDirty = false;
     protected List<SQLDataListener> listeners = new ArrayList<SQLDataListener>();
     protected SQLUndoManager undoManager = new SQLUndoManager();
-
     private List<SQLOperator> javaOperatorList = new ArrayList<SQLOperator>();
 
     protected AbstractSQLModel() {
@@ -200,6 +200,7 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
         while (it.hasNext()) {
             final SQLDataListener l = (SQLDataListener) it.next();
             Runnable run = new Runnable() {
+
                 public void run() {
                     l.childObjectCreated(evt);
                 }
@@ -214,6 +215,7 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
         while (it.hasNext()) {
             final SQLDataListener l = (SQLDataListener) it.next();
             Runnable run = new Runnable() {
+
                 public void run() {
                     l.childObjectDeleted(evt);
                 }
@@ -237,6 +239,7 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
         while (it.hasNext()) {
             final SQLDataListener l = (SQLDataListener) it.next();
             Runnable run = new Runnable() {
+
                 public void run() {
                     l.objectDeleted(evt);
                 }
@@ -251,6 +254,7 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
         while (it.hasNext()) {
             final SQLDataListener l = (SQLDataListener) it.next();
             Runnable run = new Runnable() {
+
                 public void run() {
                     l.objectUpdated(evt);
                 }
@@ -265,6 +269,7 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
         while (it.hasNext()) {
             final SQLDataListener l = (SQLDataListener) it.next();
             Runnable run = new Runnable() {
+
                 public void run() {
                     l.linkCreated(evt);
                 }
@@ -279,6 +284,7 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
         while (it.hasNext()) {
             final SQLDataListener l = (SQLDataListener) it.next();
             Runnable run = new Runnable() {
+
                 public void run() {
                     l.linkDeleted(evt);
                 }
@@ -461,9 +467,7 @@ public abstract class AbstractSQLModel implements SQLObjectListener, SQLUIModel 
                 // reload time we do not want to handle auto join
                 addObjectInGraph(sqlObj, false);
             } catch (BaseException e) {
-                 mLogger.errorNoloc(mLoc.t("PRSR141: Error caught while restoring object ({0})",sqlObj.getDisplayName()),e);
-                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "restoreObjects", "Error caught while restoring object (" + sqlObj.getDisplayName()
-                  //  + ")", e);
+                mLogger.errorNoloc(mLoc.t("PRSR141: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
                 throw e;
             }
         }

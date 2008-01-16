@@ -76,11 +76,11 @@ public class DelimitedBootstrapParser implements FlatfileBootstrapParser {
 
     private static transient final Logger mLogger = LogUtil.getLogger(DelimitedBootstrapParser.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     class CharTokenizer {
+
         char[] _charArray;
-
         private int _currentPosition;
-
         private String _delimiters;
         private int _maxPosition;
         private Pattern _qqPattern = null;
@@ -242,17 +242,12 @@ public class DelimitedBootstrapParser implements FlatfileBootstrapParser {
             return qualifierFound;
         }
     }
-
     private static final String EMPTY_STRING = "";
-
     private static final int EOF = -1;
 
     //private static final char FILLER = ' ';
-
     private static AxionFileSystem FS = new AxionFileSystem();
-
     private static final String LOG_CATEGORY = DelimitedBootstrapParser.class.getName();
-
     private static final char NL = Character.MAX_VALUE;
 
     /** Creates a new default instance of DelimitedBootstrapParser. */
@@ -346,8 +341,7 @@ public class DelimitedBootstrapParser implements FlatfileBootstrapParser {
 
             return colList;
         } catch (Exception e) {
-        mLogger.errorNoloc(mLoc.t("PRSR050: Failed to read and parse the file {0}",LOG_CATEGORY),e);
-           // Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to read and parse the file ", e);
+            mLogger.errorNoloc(mLoc.t("PRSR050: Failed to read and parse the file {0}", LOG_CATEGORY), e);
             throw new FlatfileDBException("Failed to read and parse the sample file." + e.getMessage());
         } finally {
             FS.closeInputStream(data);
@@ -433,11 +427,9 @@ public class DelimitedBootstrapParser implements FlatfileBootstrapParser {
     }
 
     public void makeGuess(FlatfileDBTable table) {
-
     }
 
     public boolean acceptable(FlatfileDBTable table) {
         return true; // since Delimited is default guess
     }
-
 }

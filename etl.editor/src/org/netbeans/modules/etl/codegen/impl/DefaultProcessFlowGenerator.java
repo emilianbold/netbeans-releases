@@ -36,7 +36,6 @@ import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * Builds ETLProcess Flow and delegate to appropriate ETLStrategy Builder as required
  *
@@ -44,6 +43,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class DefaultProcessFlowGenerator extends BaseFlowGenerator {
+
     private static final String LOG_CATEGORY = DefaultProcessFlowGenerator.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(DefaultProcessFlowGenerator.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
@@ -58,8 +58,7 @@ public class DefaultProcessFlowGenerator extends BaseFlowGenerator {
      * Called during Test run codegen.
      */
     public ETLEngine getScript() throws BaseException {
-        mLogger.infoNoloc(mLoc.t("PRSR003: In getScript(){0}",LOG_CATEGORY));
-        //Logger.print(Logger.DEBUG, LOG_CATEGORY, "In getScript()");
+        mLogger.infoNoloc(mLoc.t("PRSR003: In getScript(){0}", LOG_CATEGORY));
         generateScript();
         return builderModel.getEngine();
     }
@@ -83,8 +82,7 @@ public class DefaultProcessFlowGenerator extends BaseFlowGenerator {
         ETLStrategyBuilderContext context = new ETLStrategyBuilderContext(initTask, globalCleanupTask, this.statsUpdateTask, this.builderModel);
 
         while (it.hasNext()) {
-             mLogger.infoNoloc(mLoc.t("PRSR004: Looping through target tables:{0}",LOG_CATEGORY));
-           //Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
+            mLogger.infoNoloc(mLoc.t("PRSR004: Looping through target tables:{0}", LOG_CATEGORY));
             TargetTable tt = (TargetTable) it.next();
             // Create commit node to collect transformer connections and commit/close
             // them.

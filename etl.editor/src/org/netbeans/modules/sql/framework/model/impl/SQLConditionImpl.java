@@ -82,7 +82,6 @@ import com.sun.sql.framework.utils.Attribute;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * This class represents the condition set at source table, target table and at each case
  * when condition. This holds predicates used in this condition and columnref used in it
@@ -90,9 +89,12 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @author Ritesh Adval
  */
 public class SQLConditionImpl implements SQLCondition, Cloneable {
+
     private static transient final Logger mLogger = LogUtil.getLogger(SQLConditionImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     class SecondParseObjectInfo {
+
         private Element mElm;
         private SQLObject mObj;
 
@@ -109,30 +111,20 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
             return mObj;
         }
     }
-
     private static final String GUIMODE = "guiMode";
-
     private static final String LOG_CATEGORY = SQLConditionImpl.class.getName();
-
     private static final String PARENTHESIS = "parenthesis";
-
     /**
      * Map of attributes; used by concrete implementations to store class-specific fields
      * without hardcoding them as member variables
      */
     private Map attributes = new HashMap();
     private String conditionText;
-
     private String dispName;
-
     private GUIInfo guiInfo = new GUIInfo();
-
     private ArrayList objectList;
-
     private Object parent;
-
     private SQLPredicate root;
-
     private transient List secondPassList = new ArrayList();
 
     public SQLConditionImpl(SQLCondition src) throws BaseException {
@@ -526,8 +518,7 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
     }
 
     public boolean isConditionDefined() {
-        if (this.getAllObjects().size() == 0
-            && ((this.getConditionText() == null) || (this.getConditionText() != null && this.getConditionText().trim().equals("")))) {
+        if (this.getAllObjects().size() == 0 && ((this.getConditionText() == null) || (this.getConditionText() != null && this.getConditionText().trim().equals("")))) {
             return false;
         }
 
@@ -1100,8 +1091,7 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
                     Attribute copiedAttr = (Attribute) attr.clone();
                     this.attributes.put(name, copiedAttr);
                 } catch (CloneNotSupportedException ex) {
-                   // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source objects attributes", ex);
-                     mLogger.errorNoloc(mLoc.t("PRSR108: Failed to copy source objects attributes{0}",LOG_CATEGORY),ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR108: Failed to copy source objects attributes{0}", LOG_CATEGORY), ex);
                 }
             }
         }
@@ -1125,8 +1115,7 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
                 this.addObject(clonedObj);
                 origToCloneMap.put(obj, clonedObj);
             } catch (CloneNotSupportedException ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR109: Failed to copy source objects attributes{0}",LOG_CATEGORY),ex);
-                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source objects attributes", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR109: Failed to copy source objects attributes{0}", LOG_CATEGORY), ex);
             }
         }
 
@@ -1328,9 +1317,7 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
             ConditionUtil.populateCondition(this, obj);
             this.root = findRootPredicate();
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR110: Error finding root predicate from text condition{0}in {1}",this.conditionText,LOG_CATEGORY),ex);
-           // Logger.printThrowable(Logger.WARN, LOG_CATEGORY, "populateObjectsFromConditionText", "Error finding root predicate from text condition "
-             //   + this.conditionText, ex);
+            mLogger.errorNoloc(mLoc.t("PRSR110: Error finding root predicate from text condition{0}in {1}", this.conditionText, LOG_CATEGORY), ex);
         }
     }
 
@@ -1420,5 +1407,4 @@ public class SQLConditionImpl implements SQLCondition, Cloneable {
 
         return xml.toString();
     }
-
 }

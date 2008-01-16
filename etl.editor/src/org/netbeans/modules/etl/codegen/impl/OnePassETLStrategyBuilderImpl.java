@@ -49,11 +49,12 @@ import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
  * @author Ahimanikya Satapathy
  * @version $Revision$
  */
-
 public class OnePassETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
+
     private static final String LOG_CATEGORY = OnePassETLStrategyBuilderImpl.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(OnePassETLStrategyBuilderImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     public OnePassETLStrategyBuilderImpl(ETLScriptBuilderModel model) throws BaseException {
         super(model);
     }
@@ -65,22 +66,21 @@ public class OnePassETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
         ETLTaskNode onePassETLNode = context.getModel().getEngine().createETLTaskNode(ETLEngine.EXTRACTOR);
         String displayName = msgMgr.getString("TEMPLATE_dn", msgMgr.getString("LBL_dn_onepass"), context.getTargetTable().getName());
         onePassETLNode.setDisplayName(displayName);
-        
+
         context.getPredecessorTask().addNextETLTaskNode(ETLTask.SUCCESS, onePassETLNode.getId());
 
-        TargetTable tgtTable = context.getTargetTable();        
+        TargetTable tgtTable = context.getTargetTable();
         StatementContext tgtStmtContext = new StatementContext();
-        if ( (this.builderModel.isConnectionDefinitionOverridesApplied()) 
-                && (PatternFinder.isInternalDBTable(tgtTable))){
+        if ((this.builderModel.isConnectionDefinitionOverridesApplied()) && (PatternFinder.isInternalDBTable(tgtTable))) {
             tgtStmtContext.setUsingUniqueTableName(tgtTable, true);
         }
-        createTargetTableIfNotExists(context.getTargetTable(), onePassETLNode, targetConnDef.getName(), targetDB, tgtStmtContext);        
+        createTargetTableIfNotExists(context.getTargetTable(), onePassETLNode, targetConnDef.getName(), targetDB, tgtStmtContext);
         truncateTargetTableIfExists(context.getTargetTable(), onePassETLNode, targetConnDef.getName(), targetDB.getStatements(), tgtStmtContext);
 
 
         List sourceTables = context.getTargetTable().getSourceTableList();
         if (sourceTables != null && !sourceTables.isEmpty()) {
-            StatementContext stmtContext = new StatementContext();            
+            StatementContext stmtContext = new StatementContext();
             SourceTable srcTable = (SourceTable) sourceTables.get(0);
             DBConnectionDefinition srcConDef = context.getModel().getConnectionDefinition(srcTable);
             String sourceConnName = getConDefnName(srcConDef);
@@ -88,13 +88,12 @@ public class OnePassETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
 
             DB db = DBFactory.getInstance().getDatabase(dbType);
 
-            if ( (this.builderModel.isConnectionDefinitionOverridesApplied()) 
-                    && (dbType == DBConstants.AXION)){
+            if ((this.builderModel.isConnectionDefinitionOverridesApplied()) && (dbType == DBConstants.AXION)) {
                 stmtContext.setUsingUniqueTableName(true);
-            }        
-            
+            }
+
             SQLPart selectPart = db.getStatements().getOnePassSelectStatement(tgtTable, stmtContext);
-            stmtContext.setUsingUniqueTableName(false);            
+            stmtContext.setUsingUniqueTableName(false);
             selectPart.setConnectionPoolName(sourceConnName);
             onePassETLNode.addStatement(selectPart);
 
@@ -137,8 +136,7 @@ public class OnePassETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
      * Before calling apply appropriate applyConnections
      */
     public void generateScriptForTable(ETLStrategyBuilderContext context) throws BaseException {
-       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
-        mLogger.infoNoloc(mLoc.t("PRSR005: Looping through target tables:{0}",LOG_CATEGORY));
+        mLogger.infoNoloc(mLoc.t("PRSR005: Looping through target tables:{0}", LOG_CATEGORY));
         populateInitTask(context.getInitTask(), context.getGlobalCleanUpTask(), context.getTargetTable());
 
         // Create cleanup task for this execution thread.
@@ -147,11 +145,11 @@ public class OnePassETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
         // Create commit node to collect transformer connections and commit/close
         // them.
         ETLTaskNode commitTask = context.getNextTaskOnSuccess();
-        
+
         checkTargetConnectionDefinition(context);
 
         createTransformerTask(context);
-        
+
         // Add statements to create execution summary table if it does not exist, and
         // update the associated execution record upon successful execution
         addCreateIfNotExistsSummaryTableStatement(context.getInitTask());

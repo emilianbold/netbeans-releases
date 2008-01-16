@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.model.visitors;
 
 import java.util.ArrayList;
@@ -67,19 +66,19 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class SQLOperatorInfoVisitor {
-    private static final String LOG_CATEGORY = SQLOperatorInfoVisitor.class.getName();
 
+    private static final String LOG_CATEGORY = SQLOperatorInfoVisitor.class.getName();
     private boolean foundJavaOperator = false;
     private boolean foundUserFunction = false;
     private boolean foundValidationCondition = false;
     private boolean pipelineForced = false;
 
     // TODO Add flag to warn when Hex operator is being used on SQLServer or Sybase.
-
     private boolean validate = false;
     private List<ValidationInfo> validationInfoList = new ArrayList<ValidationInfo>();
     private static transient final Logger mLogger = LogUtil.getLogger(SQLOperatorInfoVisitor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     public SQLOperatorInfoVisitor() {
     }
 
@@ -200,7 +199,7 @@ public class SQLOperatorInfoVisitor {
         // Visit Target Join Condition
         SQLCondition joinCondition = targetTable.getJoinCondition();
         visit(joinCondition);
-        
+
         // Visit Target Filter Condition
         SQLCondition filterCondition = targetTable.getFilterCondition();
         visit(filterCondition);
@@ -219,9 +218,7 @@ public class SQLOperatorInfoVisitor {
                 visit(sourceTable);
             }
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR129: Could not find source tables for this target table{0}",LOG_CATEGORY),ex);
-           //Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "targetTable.getSourceTableList()",
-             //   "Could not find source tables for this target table", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR129: Could not find source tables for this target table{0}", LOG_CATEGORY), ex);
         }
     }
 }

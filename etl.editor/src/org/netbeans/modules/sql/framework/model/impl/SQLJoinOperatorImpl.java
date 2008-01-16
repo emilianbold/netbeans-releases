@@ -62,7 +62,6 @@ import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * Defines joins on tables.
  *
@@ -70,31 +69,29 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQLJoinOperator {
-    
+
     private static final String LOG_CATEGORY = SQLJoinOperatorImpl.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(SQLJoinOperatorImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /** GUI state information */
     private transient GUIInfo guiInfo = new GUIInfo();
-    
     private SQLCondition jCondition;
-    
     // ref to root join ie join whose one input is this join.
     private SQLJoinOperator rootJoin;
-    
+
     /** Creates a new default instance of SQLJoin */
     public SQLJoinOperatorImpl() {
         super();
-        
+
         type = SQLConstants.JOIN;
         setJoinType(SQLConstants.INNER_JOIN);
-        
+
         SQLInputObjectImpl inputObject = new SQLInputObjectImpl(LEFT, LEFT, null);
         inputMap.put(LEFT, inputObject);
-        
+
         inputObject = new SQLInputObjectImpl(RIGHT, RIGHT, null);
         inputMap.put(RIGHT, inputObject);
-        
+
         this.jCondition = SQLModelObjectFactory.getInstance().createSQLCondition(JOIN_CONDITION);
         this.jCondition.setParent(this);
         // set condition to empty string, if it is not set then it is null
@@ -103,7 +100,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
         // properly we need to set it to empty string
         this.jCondition.setConditionText("");
     }
-    
+
     /**
      * Creates a new instance of SQLJoinOperatorImpl using information from the given
      * SQLJoinOperator object.
@@ -114,18 +111,18 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
      */
     public SQLJoinOperatorImpl(SQLJoinOperator src) throws BaseException {
         this();
-        
+
         if (src == null) {
             throw new IllegalArgumentException("Must supply non-null SQLJoinOperator instance for src param.");
         }
-        
+
         try {
             copyFrom(src);
         } catch (Exception ex) {
             throw new BaseException("can not create SQLJoinOperatorImpl " + "using copy constructor", ex);
         }
     }
-    
+
     /**
      * @see org.netbeans.modules.sql.framework.model.SQLConnectableObject#addInput
      */
@@ -133,39 +130,38 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
         if (argName == null || newInput == null) {
             throw new BaseException("Input arguments not specified");
         }
-        
+
         int newType = newInput.getObjectType();
         String objType = TagParserUtility.getDisplayStringFor(newType);
-        
+
         switch (newType) {
-        case SQLConstants.JOIN_TABLE:
-            if (!(LEFT.equals(argName) || RIGHT.equals(argName))) {
-                throw new BaseException(objType + " is valid only for LEFT and RIGHT input fields.");
-            }
-            break;
-            
-        case SQLConstants.SOURCE_TABLE:
-        case SQLConstants.TARGET_TABLE:
-            if (!(LEFT.equals(argName) || RIGHT.equals(argName))) {
-                throw new BaseException(objType + " is valid only for LEFT and RIGHT input fields.");
-            }
-            break;
-            
-        case SQLConstants.JOIN:
-            if (!(LEFT.equals(argName) || RIGHT.equals(argName))) {
-                throw new BaseException(objType + " is valid only for LEFT and RIGHT input fields.");
-            }
-            // join which is added to this join is no longer a root join
-            // add the this object as parent to newInput join
-            ((SQLJoinOperator) newInput).setRoot(this);
-            break;
-        default:
-            // Redundant, as isInputValid should have caught any
-            // unrecognized types...but left in as a backstop.
-            throw new BaseException("Cannot link " + objType + " '" + newInput.getDisplayName() + "' as input to '" + argName + "' in "
-                    + TagParserUtility.getDisplayStringFor(this.type) + " '" + this.getDisplayName() + "'");
+            case SQLConstants.JOIN_TABLE:
+                if (!(LEFT.equals(argName) || RIGHT.equals(argName))) {
+                    throw new BaseException(objType + " is valid only for LEFT and RIGHT input fields.");
+                }
+                break;
+
+            case SQLConstants.SOURCE_TABLE:
+            case SQLConstants.TARGET_TABLE:
+                if (!(LEFT.equals(argName) || RIGHT.equals(argName))) {
+                    throw new BaseException(objType + " is valid only for LEFT and RIGHT input fields.");
+                }
+                break;
+
+            case SQLConstants.JOIN:
+                if (!(LEFT.equals(argName) || RIGHT.equals(argName))) {
+                    throw new BaseException(objType + " is valid only for LEFT and RIGHT input fields.");
+                }
+                // join which is added to this join is no longer a root join
+                // add the this object as parent to newInput join
+                ((SQLJoinOperator) newInput).setRoot(this);
+                break;
+            default:
+                // Redundant, as isInputValid should have caught any
+                // unrecognized types...but left in as a backstop.
+                throw new BaseException("Cannot link " + objType + " '" + newInput.getDisplayName() + "' as input to '" + argName + "' in " + TagParserUtility.getDisplayStringFor(this.type) + " '" + this.getDisplayName() + "'");
         }
-        
+
         SQLInputObject inputObject = (SQLInputObject) this.inputMap.get(argName);
         if (inputObject != null) {
             inputObject.setSQLObject(newInput);
@@ -173,7 +169,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
             throw new BaseException("Input with argName '" + argName + "' does not exist.");
         }
     }
-    
+
     /**
      * Overrides default implementation.
      *
@@ -185,14 +181,13 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
         try {
             join = new SQLJoinOperatorImpl(this);
         } catch (Exception ex) {
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "clone", "Error while cloniing SQLJoinOperatorImpl", ex);
-             mLogger.errorNoloc(mLoc.t("PRSR117: can not create clone of{0}",this.toString()),ex);
+            mLogger.errorNoloc(mLoc.t("PRSR117: can not create clone of{0}", this.toString()), ex);
             throw new CloneNotSupportedException("can not create clone of " + this.toString());
         }
-        
+
         return join;
     }
-    
+
     /**
      * All SQL objects are cloneable.
      *
@@ -202,7 +197,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public Object cloneSQLObject() throws CloneNotSupportedException {
         return this.clone();
     }
-    
+
     /**
      * Overrides parent implementation to use special rules for determining equality of
      * two SQLJoinOperators.
@@ -218,50 +213,50 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
         } else if (!(o instanceof SQLJoinOperator)) {
             return false;
         }
-        
+
         SQLJoinOperatorImpl target = (SQLJoinOperatorImpl) o;
-        
+
         // Must re-implement selected portions of equals(Object) methods in the
         // AbstractSQLObject hierarchy, rather than calling super.equals(),
         // as join is a special case.
         boolean response = (type == target.type);
         // check for display name
         response &= (this.getDisplayName() != null) ? this.getDisplayName().equals(target.getDisplayName()) : (target.getDisplayName() == null);
-        
+
         response &= (attributes != null) ? attributes.equals(target.attributes) : (target.attributes == null);
-        
+
         response &= (this.getJoinType() == target.getJoinType());
         response &= (this.isRoot() == target.isRoot());
-        
+
         SQLInputObject leftIn = getInput(LEFT);
         SQLObject left = (leftIn != null) ? leftIn.getSQLObject() : null;
         SQLInputObject rightIn = getInput(RIGHT);
         SQLObject right = (rightIn != null) ? rightIn.getSQLObject() : null;
-        
+
         SQLInputObject targetLeftIn = target.getInput(LEFT);
         SQLObject targetLeft = (targetLeftIn != null) ? targetLeftIn.getSQLObject() : null;
         SQLInputObject targetRightIn = target.getInput(RIGHT);
         SQLObject targetRight = (targetRightIn != null) ? targetRightIn.getSQLObject() : null;
-        
+
         boolean leftEqualsTargetLeft = (left != null) ? left.equals(targetLeft) : (targetLeft == null);
         boolean rightEqualsTargetRight = (right != null) ? right.equals(targetRight) : (targetRight == null);
         boolean leftEqualsTargetRight = (left != null) ? left.equals(targetRight) : (targetRight == null);
         boolean rightEqualsTargetLeft = (right != null) ? right.equals(targetLeft) : (targetLeft == null);
-        
+
         switch (getJoinType()) {
-        case SQLConstants.INNER_JOIN:
-            response &= (leftEqualsTargetLeft && rightEqualsTargetRight) || (rightEqualsTargetLeft && leftEqualsTargetRight);
-            break;
-            
-        default:
-            response &= leftEqualsTargetLeft && rightEqualsTargetRight;
-            break;
+            case SQLConstants.INNER_JOIN:
+                response &= (leftEqualsTargetLeft && rightEqualsTargetRight) || (rightEqualsTargetLeft && leftEqualsTargetRight);
+                break;
+
+            default:
+                response &= leftEqualsTargetLeft && rightEqualsTargetRight;
+                break;
         }
-        
+
         response &= (target.getJoinCondition() != null) ? target.getJoinCondition().equals(this.getJoinCondition()) : (this.getJoinCondition() == null);
         return response;
     }
-    
+
     /**
      * get a list of all tables which are used in this join or any of its input join. This
      * method recursively goes through LEFT and RIGHT inputs if they are join operator and
@@ -272,7 +267,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public List getAllSourceTables() {
         return getAllSourceTables(this);
     }
-    
+
     /**
      * Gets GUI-related attributes for this instance in the form of a GuiInfo instance.
      *
@@ -282,7 +277,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public GUIInfo getGUIInfo() {
         return guiInfo;
     }
-    
+
     /**
      * get join condition
      *
@@ -291,7 +286,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public SQLCondition getJoinCondition() {
         return jCondition;
     }
-    
+
     /**
      * get the type for join condition it will be one of following
      * SYSTEM_DEFINED_CONDITION USER_DEFINED_CONDITION NO_CONDITION
@@ -303,10 +298,10 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
         if (jConditionType != null) {
             return jConditionType.intValue();
         }
-        
+
         return NO_CONDITION;
     }
-    
+
     /**
      * Get type of join (inner, left outer, right outer, full outer)
      *
@@ -316,37 +311,37 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public int getJoinType() {
         return ((Integer) getAttributeObject(ATTR_JOINTYPE)).intValue();
     }
-    
+
     public String getJoinTypeString() {
         String joinType = "";
-        switch(getJoinType()) {
-        case SQLConstants.INNER_JOIN:
-            joinType = "INNER JOIN";
-            break;
-        case SQLConstants.RIGHT_OUTER_JOIN:
-            joinType = "RIGHT OUTER JOIN";
-            break;
-        case SQLConstants.LEFT_OUTER_JOIN:
-            joinType = "LEFT OUTER JOIN";
-            break;
-        case SQLConstants.FULL_OUTER_JOIN:
-            joinType = "FULL OUTER JOIN";
+        switch (getJoinType()) {
+            case SQLConstants.INNER_JOIN:
+                joinType = "INNER JOIN";
+                break;
+            case SQLConstants.RIGHT_OUTER_JOIN:
+                joinType = "RIGHT OUTER JOIN";
+                break;
+            case SQLConstants.LEFT_OUTER_JOIN:
+                joinType = "LEFT OUTER JOIN";
+                break;
+            case SQLConstants.FULL_OUTER_JOIN:
+                joinType = "FULL OUTER JOIN";
         }
         return joinType;
     }
-    
+
     public void setJoinType(String joinType) {
-        if(joinType.equals("INNER JOIN")) {
+        if (joinType.equals("INNER JOIN")) {
             setJoinType(SQLConstants.INNER_JOIN);
-        } else if(joinType.equals("RIGHT OUTER JOIN")) {
+        } else if (joinType.equals("RIGHT OUTER JOIN")) {
             setJoinType(SQLConstants.RIGHT_OUTER_JOIN);
-        } else if(joinType.equals("LEFT OUTER JOIN")) {
+        } else if (joinType.equals("LEFT OUTER JOIN")) {
             setJoinType(SQLConstants.LEFT_OUTER_JOIN);
-        } else if(joinType.equals("FULL OUTER JOIN")) {
+        } else if (joinType.equals("FULL OUTER JOIN")) {
             setJoinType(SQLConstants.FULL_OUTER_JOIN);
         }
     }
-    
+
     /**
      * Overrides default implementation to compute hashcode based on values of
      * non-transient member variables.
@@ -355,26 +350,26 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
      */
     public int hashCode() {
         int hashCode = 0;
-        
+
         hashCode = super.hashCode();
-        
+
         if (this.getJoinCondition() != null) {
             hashCode += this.getJoinCondition().hashCode();
         }
-        
+
         hashCode += this.getJoinConditionType();
-        
+
         hashCode += ((this.isRoot()) ? 1 : 0);
         return hashCode;
     }
-    
+
     /**
      * @see org.netbeans.modules.sql.framework.model.SQLConnectableObject#isInputValid
      */
     public int isInputCompatible(String argName, SQLObject input) {
         return super.isInputCompatible(argName, input);
     }
-    
+
     /**
      * @see org.netbeans.modules.sql.framework.model.SQLConnectableObject#isInputValid
      */
@@ -382,18 +377,18 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
         if (input == null) {
             return false;
         }
-        
+
         switch (input.getObjectType()) {
-        case SQLConstants.SOURCE_TABLE:
-        case SQLConstants.TARGET_TABLE:
-        case SQLConstants.JOIN:
-            return (LEFT.equals(argName) || RIGHT.equals(argName));
-            
-        default:
-            return false;
+            case SQLConstants.SOURCE_TABLE:
+            case SQLConstants.TARGET_TABLE:
+            case SQLConstants.JOIN:
+                return (LEFT.equals(argName) || RIGHT.equals(argName));
+
+            default:
+                return false;
         }
     }
-    
+
     /**
      * method isRoot returns true if the root is set.
      *
@@ -402,7 +397,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public boolean isRoot() {
         return rootJoin == null ? true : false;
     }
-    
+
     /**
      * Parses the given Element
      *
@@ -411,7 +406,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
      */
     public void parseXML(Element xmlElement) throws BaseException {
         super.parseXML(xmlElement);
-        
+
         NodeList conditionNodeList = xmlElement.getElementsByTagName(SQLCondition.TAG_CONDITION);
         if (conditionNodeList != null && conditionNodeList.getLength() != 0) {
             Element elem = (Element) conditionNodeList.item(0);
@@ -419,9 +414,9 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
             this.jCondition.setParent(this);
             this.jCondition.parseXML(elem);
         }
-        
+
         NodeList inputNodeList = xmlElement.getChildNodes();
-        
+
         if (inputNodeList != null && inputNodeList.getLength() != 0) {
             for (int i = 0; i < inputNodeList.getLength(); i++) {
                 Node node = inputNodeList.item(i);
@@ -430,14 +425,14 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
                 }
             }
         }
-        
+
         NodeList guiInfoList = xmlElement.getElementsByTagName(GUIInfo.TAG_GUIINFO);
         if (guiInfoList != null && guiInfoList.getLength() != 0) {
             Element elem = (Element) guiInfoList.item(0);
             guiInfo = new GUIInfo(elem);
         }
     }
-    
+
     /**
      * @see org.netbeans.modules.sql.framework.model.SQLConnectableObject#removeInputByArgName
      */
@@ -450,7 +445,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
         }
         return retObj;
     }
-    
+
     /**
      * Second parse, being called, if not found in first pass
      *
@@ -460,7 +455,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public void secondPassParse(Element element) throws BaseException {
         TagParserUtility.parseInputTag(this, element);
     }
-    
+
     /**
      * set the join condition
      *
@@ -473,7 +468,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
             this.jCondition.setParent(this);
         }
     }
-    
+
     /**
      * Sets join condition type to the given value.
      *
@@ -482,7 +477,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public void setJoinConditionType(int jConditionType) {
         this.setAttribute(ATTR_JOINCONDITION_TYPE, new Integer(jConditionType));
     }
-    
+
     /**
      * Sets the join type to the given value
      *
@@ -491,7 +486,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public void setJoinType(int newType) {
         setAttribute(ATTR_JOINTYPE, new Integer(newType));
     }
-    
+
     /**
      * Sets root join operator to which this join operator is attached.
      *
@@ -500,7 +495,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
     public void setRoot(SQLJoinOperator rJoin) {
         this.rootJoin = rJoin;
     }
-    
+
     /**
      * Overrides parent implementation to append GUIInfo information.
      *
@@ -510,32 +505,32 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
      */
     public String toXMLString(String prefix) throws BaseException {
         StringBuilder buffer = new StringBuilder();
-        
+
         buffer.append(prefix).append(getHeader());
         buffer.append(toXMLAttributeTags(prefix));
-        
+
         if (this.jCondition != null) {
             buffer.append(this.jCondition.toXMLString(prefix + "\t"));
         }
-        
+
         buffer.append(TagParserUtility.toXMLInputTag(prefix + "\t", this.inputMap));
         buffer.append(this.guiInfo.toXMLString(prefix + "\t"));
         buffer.append(prefix).append(getFooter());
-        
+
         return buffer.toString();
     }
-    
+
     public void visit(SQLVisitor visitor) {
         visitor.visit(this);
     }
-    
+
     private void copyFrom(SQLJoinOperator src) throws BaseException {
         super.copyFromSource(src);
         try {
             // copy gui info
             GUIInfo gInfo = src.getGUIInfo();
             this.guiInfo = gInfo != null ? (GUIInfo) gInfo.clone() : null;
-            
+
             // copy join type
             // copy join condition
             SQLCondition srcCondition = src.getJoinCondition();
@@ -546,16 +541,16 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
             throw new BaseException("exception occured while cloning SQLJoinOperator", ex);
         }
     }
-    
+
     private ArrayList getAllSourceTables(SQLJoinOperator join) {
         ArrayList sTables = new ArrayList();
-        
+
         SQLInputObject leftInObj = join.getInput(SQLJoinOperator.LEFT);
         SQLInputObject rightInObj = join.getInput(SQLJoinOperator.RIGHT);
-        
+
         SQLObject leftObj = leftInObj.getSQLObject();
         SQLObject rightObj = rightInObj.getSQLObject();
-        
+
         if (leftObj != null) {
             if (leftObj.getObjectType() == SQLConstants.JOIN) {
                 sTables.addAll(getAllSourceTables((SQLJoinOperator) leftObj));
@@ -565,7 +560,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
                 sTables.add(sTable);
             }
         }
-        
+
         if (rightObj != null) {
             if (rightObj.getObjectType() == SQLConstants.JOIN) {
                 sTables.addAll(getAllSourceTables((SQLJoinOperator) rightObj));
@@ -575,7 +570,7 @@ public class SQLJoinOperatorImpl extends SQLConnectableObjectImpl implements SQL
                 sTables.add(sTable);
             }
         }
-        
+
         return sTables;
     }
 }

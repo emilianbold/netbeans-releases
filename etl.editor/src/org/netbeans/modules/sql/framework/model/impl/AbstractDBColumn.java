@@ -71,88 +71,61 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
     private static transient final Localizer mLoc = Localizer.get();
     /** Constant for indicating unknown ordinal position for this column. */
     public static final int POSITION_UNKNOWN = Integer.MIN_VALUE;
-
     /** Constant for column metadata name tag. */
     static final String ELEMENT_TAG = "dbColumn"; // NOI18N
-
     /** Constant for catalog name tag. */
     protected static final String COLUMN_CATALOGNAME_ATTR = "catalogName"; // NOI18N
-
     /** Constant for column default value tag. */
     protected static final String COLUMN_DEFAULTVALUE_ATTR = "defaultValue"; // NOI18N
-
     /** Constant for column isForeignKey name tag. */
     protected static final String COLUMN_INDEXED_ATTR = "indexed"; // NOI18N
-
     /** Constant for column isForeignKey name tag. */
     protected static final String COLUMN_ISFK_ATTR = "isForeignKey"; // NOI18N
-
     /** Constant for column isPrimaryKey name tag. */
     protected static final String COLUMN_ISPK_ATTR = "isPrimaryKey"; // NOI18N
-
     /** Constant for column model name tag. */
     protected static final String COLUMN_MODEL_ATTR = "dbModelName"; // NOI18N
-
     /** Constant for column name tag. */
     protected static final String COLUMN_NAME_ATTR = "name"; // NOI18N
-
     /** Constant for column nullable name tag. */
     protected static final String COLUMN_NULLABLE_ATTR = "nullable"; // NOI18N
-
     /** Constant for column ordinal position tag. */
     protected static final String COLUMN_ORDINAL_POSITION_ATTR = "ordinalPosition"; // NOI18N
-
     /** Constant for column precision name tag. */
     protected static final String COLUMN_PRECISION_ATTR = "precision"; // NOI18N
-
     /** Constant for column scale name tag. */
     protected static final String COLUMN_SCALE_ATTR = "scale"; // NOI18N
-
     /** Constant for schema name tag. */
     protected static final String COLUMN_SCHEMANAME_ATTR = "schemaName"; // NOI18N
-
     /** Constant for column table name tag. */
     protected static final String COLUMN_TABLENAME_ATTR = "tableName"; // NOI18N
-
     /** Constant for column type name tag. */
     protected static final String COLUMN_TYPE_ATTR = "type"; // NOI18N
-
     /** String constant for unknown SQL type */
     protected static final String UNKNOWN_TYPE = "unknown"; // NOI18N
 
     /* Log4J category name */
     private static final String LOG_CATEGORY = AbstractDBColumn.class.getName();
-
     /** default value */
     protected String defaultValue;
-
     /** whether this column is part of a foreign key */
     protected boolean fkFlag;
-
     /** whether this column is indexed */
     protected boolean indexed;
-
     /** JDBC SQL type, as enumerated in java.sql.Types */
     protected int jdbcType;
-
     /** name of column */
     protected String name;
-
     /** whether this column can accept null as a valid value */
     protected boolean nullable;
-
     /** Cardinal Position */
     protected int ordinalPosition = POSITION_UNKNOWN;
-
     /** DBTable to which this PK belongs */
     protected DBTable parent;
-
     /** whether this column is part of a primary key */
     protected boolean pkFlag;
-
     /** column precision (for numeric types) / width (for char types) */
     protected int precision;
-
     /** column scale (meaningful only for numeric types) */
     protected int scale;
 
@@ -314,9 +287,7 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
 
         result &= (name != null) ? name.equals(refMeta.getName()) : (refMeta.getName() == null);
 
-        result &= (jdbcType == refMeta.getJdbcType()) && (pkFlag == refMeta.isPrimaryKey()) && (fkFlag == refMeta.isForeignKey()) && (indexed == refMeta.isIndexed())
-            && (nullable == refMeta.isNullable()) && (scale == refMeta.getScale()) && (precision == refMeta.getPrecision())
-            && (ordinalPosition == refMeta.getOrdinalPosition());
+        result &= (jdbcType == refMeta.getJdbcType()) && (pkFlag == refMeta.isPrimaryKey()) && (fkFlag == refMeta.isForeignKey()) && (indexed == refMeta.isIndexed()) && (nullable == refMeta.isNullable()) && (scale == refMeta.getScale()) && (precision == refMeta.getPrecision()) && (ordinalPosition == refMeta.getOrdinalPosition());
 
         result &= (type == refMeta.getObjectType());
 
@@ -514,15 +485,11 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
         try {
             this.jdbcType = Integer.parseInt(jdbcTypeStr);
         } catch (NumberFormatException e) {
-           mLogger.infoNoloc(mLoc.t("PRSR102: Cannot determine JDBC int type for column{0}({1}); will try parsing as string.",name,jdbcTypeStr));
-           // Logger.print(Logger.INFO, LOG_CATEGORY, "parseXML", "Cannot determine JDBC int type for column " + name + " (" + jdbcTypeStr
-            //    + "); will try parsing as string.");
+            mLogger.infoNoloc(mLoc.t("PRSR102: Cannot determine JDBC int type for column{0}({1}); will try parsing as string.", name, jdbcTypeStr));
             try {
                 this.jdbcType = SQLUtils.getStdJdbcType(jdbcTypeStr);
             } catch (IllegalArgumentException iae) {
-               // Logger.print(Logger.ERROR, LOG_CATEGORY, "parseXML", "Could not determine JDBC int type for column " + name
-                 //   + " by parsing as string; giving up..");
-              mLogger.infoNoloc(mLoc.t("PRSR103: Cannot determine JDBC int type for column{0}by parsing as string; giving up..",name));   
+                mLogger.infoNoloc(mLoc.t("PRSR103: Cannot determine JDBC int type for column{0}by parsing as string; giving up..", name));
                 this.jdbcType = SQLConstants.JDBCSQL_TYPE_UNDEFINED;
             }
         }
@@ -649,8 +616,7 @@ public abstract class AbstractDBColumn extends AbstractSQLObject implements SQLD
                     }
                 }
             } catch (BaseException ex) {
-                 mLogger.errorNoloc(mLoc.t("PRSR104: could not set parent object or id for column{0}",this.getName()),ex);
-               // Logger.print(Logger.ERROR, LOG_CATEGORY, "setParent", "could not set parent object or id for column " + this.getName());
+                mLogger.errorNoloc(mLoc.t("PRSR104: could not set parent object or id for column{0}", this.getName()), ex);
             }
         }
     }

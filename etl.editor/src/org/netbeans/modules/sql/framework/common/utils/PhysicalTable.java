@@ -64,6 +64,7 @@ public class PhysicalTable {
     private static boolean SKIP_DB_NAME = true;
     private static transient final Logger mLogger = LogUtil.getLogger(PhysicalTable.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Creates new instance of PhysicalTable for given DBTable.
      *
@@ -139,8 +140,7 @@ public class PhysicalTable {
 
         if (!(other instanceof PhysicalTable)) {
             eql = false;
-           mLogger.infoNoloc(mLoc.t("PRSR101: Class cast request for:{0}",other));
-           // Logger.print(Logger.DEBUG, PhysicalTable.class.getName(), "Class cast request for:" + other);
+            mLogger.infoNoloc(mLoc.t("PRSR101: Class cast request for:{0}", other));
         } else {
             otherTable = (PhysicalTable) other;
         }

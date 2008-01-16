@@ -101,11 +101,11 @@ import org.netbeans.modules.sql.framework.model.DBTableCookie;
 public class SQLGraphController implements IGraphController {
 
     private static final String NETBEANS_NODE_MIMETYPE = "application/x-java-openide-nodednd; class=org.openide.nodes.Node";
-
     private static final String LOG_CATEGORY = SQLGraphController.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(SQLGraphController.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static DataFlavor[] mDataFlavorArray = new DataFlavor[1];
+    
 
     static {
         try {
@@ -114,13 +114,10 @@ public class SQLGraphController implements IGraphController {
             ex.printStackTrace();
         }
     }
-
     protected SQLUIModel collabModel;
     protected IGraphView viewC;
-
     private String srcParam = null;
     private String destParam = null;
-
     private transient int tableTypeSelected = SQLConstants.SOURCE_TABLE;
 
     /** Creates a new instance of SQLGraphController */
@@ -157,7 +154,7 @@ public class SQLGraphController implements IGraphController {
                         // Recall and use most recently selected table type.
                         TypeSelectorPanel selectorPnl = new TypeSelectorPanel(tableTypeSelected);
                         DialogDescriptor dlgDesc = new DialogDescriptor(selectorPnl, dlgTitle, true, NotifyDescriptor.OK_CANCEL_OPTION,
-                            NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                                NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                         Dialog dlg = DialogDisplayer.getDefault().createDialog(dlgDesc);
                         dlg.setVisible(true);
 
@@ -176,17 +173,17 @@ public class SQLGraphController implements IGraphController {
                     }
                 }
             } catch (IOException ex) {
-                  mLogger.errorNoloc(mLoc.t("PRSR170: Caught IOException while handling DnD{0}",LOG_CATEGORY),ex);
-               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught IOException while handling DnD.", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR170: Caught IOException while handling DnD{0}", LOG_CATEGORY), ex);
+
                 e.rejectDrop();
             } catch (UnsupportedFlavorException ex) {
-                 mLogger.errorNoloc(mLoc.t("PRSR171: Caught UnsupportedFlavorException while handling DnD{0}",LOG_CATEGORY),ex);
-               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught UnsupportedFlavorException while handling DnD.", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR171: Caught UnsupportedFlavorException while handling DnD{0}", LOG_CATEGORY), ex);
+
                 e.rejectDrop();
             } catch (BaseException ex) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE));
-                 mLogger.errorNoloc(mLoc.t("PRSR172: Caught BaseException while handling DnD{0}",LOG_CATEGORY),ex);
-               //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught BaseException while handling DnD.", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR172: Caught BaseException while handling DnD{0}", LOG_CATEGORY), ex);
+
                 e.rejectDrop();
             }
         } else {
@@ -284,14 +281,15 @@ public class SQLGraphController implements IGraphController {
                 String srcName = destObj.getDisplayName();
 
                 if (srcName != null && destParam1 != null) {
-                    msg = NbBundle.getMessage(SQLGraphController.class, "ERR_object_check_incompatible_with_argnames", new String[] { srcObjType,
-                            destObjType, destObj.getDisplayName(), destParam1});
+                    msg = NbBundle.getMessage(SQLGraphController.class, "ERR_object_check_incompatible_with_argnames", new String[]{srcObjType,
+                        destObjType, destObj.getDisplayName(), destParam1
+                    });
                 } else {
                     msg = NbBundle.getMessage(SQLGraphController.class, "ERR_object_check_incompatible_no_argnames", srcObjType, destObjType);
                 }
             } catch (Exception e) {
-                mLogger.errorNoloc(mLoc.t("PRSR173: Caught Exception while resolving error message{0}",LOG_CATEGORY),e);
-               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught Exception while resolving error message.", e);
+                mLogger.errorNoloc(mLoc.t("PRSR173: Caught Exception while resolving error message{0}", LOG_CATEGORY), e);
+
                 msg = "Cannot link these objects together.";
             }
 
@@ -329,7 +327,7 @@ public class SQLGraphController implements IGraphController {
                 }
 
                 NotifyDescriptor.Confirmation d = new NotifyDescriptor.Confirmation(msg, title, NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE);
+                        NotifyDescriptor.QUESTION_MESSAGE);
 
                 return (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION);
 
@@ -406,31 +404,31 @@ public class SQLGraphController implements IGraphController {
             //do special processing for following objects
             switch (sqlObj.getObjectType()) {
                 case SQLConstants.CAST_OPERATOR:
-                    CastAsDialog castDlg = new CastAsDialog(WindowManager.getDefault().getMainWindow(), 
-                        NbBundle.getMessage(SQLGraphController.class, "TITLE_new_castas"), true);
+                    CastAsDialog castDlg = new CastAsDialog(WindowManager.getDefault().getMainWindow(),
+                            NbBundle.getMessage(SQLGraphController.class, "TITLE_new_castas"), true);
                     castDlg.show();
                     if (castDlg.isCanceled()) {
                         return;
                     }
-                
+
                     SQLCastOperator castOp = (SQLCastOperator) sqlObj;
                     castOp.setOperatorXmlInfo(xmlInfo);
-                    
+
                     castOp.setJdbcType(castDlg.getJdbcType());
-                    
+
                     int precision = castDlg.getPrecision();
                     castOp.setPrecision(precision);
-                    
+
                     int scale = castDlg.getScale();
-                    castOp.setScale(scale);                    
-                    
-                    break;                  
-                
+                    castOp.setScale(scale);
+
+                    break;
+
                 case SQLConstants.CUSTOM_OPERATOR:
                     CustomOperatorPane customOptPane = new CustomOperatorPane(new ArrayList());
                     String title = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_user_function");
                     DialogDescriptor dlgDesc = new DialogDescriptor(customOptPane, title, true, NotifyDescriptor.OK_CANCEL_OPTION,
-                        NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                            NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                     Dialog customOptDialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
                     customOptDialog.setVisible(true);
                     if (NotifyDescriptor.CANCEL_OPTION == dlgDesc.getValue()) {
@@ -445,13 +443,13 @@ public class SQLGraphController implements IGraphController {
                     custOp.getOperatorDefinition().setArgList(inputArgs);
                     custOp.initializeInputs(inputArgs.size());
                     /**
-                	CustomOperatorDialog custOprDlg = new CustomOperatorDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(
-                        BasicSQLGraphController.class, "TITLE_user_function"), true);
+                    CustomOperatorDialog custOprDlg = new CustomOperatorDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(
+                    BasicSQLGraphController.class, "TITLE_user_function"), true);
                     custOprDlg.show();
                     if (custOprDlg.isCanceled()) {
-                        return;
+                    return;
                     }
-
+                    
                     SQLCustomOperatorImpl custOp = (SQLCustomOperatorImpl) sqlObj;
                     custOp.setOperatorXmlInfo(xmlInfo);
                     custOp.setCustomOperatorName(custOprDlg.getFunctionName());
@@ -461,7 +459,7 @@ public class SQLGraphController implements IGraphController {
 
                 case SQLConstants.VISIBLE_PREDICATE:
                     ((SQLPredicate) sqlObj).setOperatorXmlInfo(xmlInfo);
-                    // fall through to set XML info (using common SQLOperator interface)
+                // fall through to set XML info (using common SQLOperator interface)
 
                 case SQLConstants.GENERIC_OPERATOR:
                 case SQLConstants.DATE_ARITHMETIC_OPERATOR:
@@ -472,8 +470,8 @@ public class SQLGraphController implements IGraphController {
                     break;
 
                 case SQLConstants.VISIBLE_LITERAL:
-                    LiteralDialog dlg = new LiteralDialog(WindowManager.getDefault().getMainWindow(), 
-                        NbBundle.getMessage(SQLGraphController.class, "TITLE_new_literal"), true);
+                    LiteralDialog dlg = new LiteralDialog(WindowManager.getDefault().getMainWindow(),
+                            NbBundle.getMessage(SQLGraphController.class, "TITLE_new_literal"), true);
                     dlg.show();
 
                     // OK button is not pressed so return
@@ -492,7 +490,7 @@ public class SQLGraphController implements IGraphController {
 
             //now add the object
             collabModel.addObject(sqlObj);
-            //also flag if java operators are to be used
+        //also flag if java operators are to be used
         } catch (BaseException e) {
             NotifyDescriptor d = new NotifyDescriptor.Message(e.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
@@ -524,8 +522,8 @@ public class SQLGraphController implements IGraphController {
                 collabModel.removeObject(sqlObj);
             }
         } catch (Exception e) {
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught exception while removing object.", e);
-           mLogger.errorNoloc(mLoc.t("PRSR174: Caught exception while removing object{0}",LOG_CATEGORY),e);
+
+            mLogger.errorNoloc(mLoc.t("PRSR174: Caught exception while removing object{0}", LOG_CATEGORY), e);
             NotifyDescriptor d = new NotifyDescriptor.Message(e.toString(), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
         }
@@ -546,6 +544,7 @@ public class SQLGraphController implements IGraphController {
     }
 
     class TypeSelectorPanel extends JPanel {
+
         private ButtonGroup bg;
         private JRadioButton source;
         private JRadioButton target;

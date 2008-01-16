@@ -52,61 +52,57 @@ import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 import org.w3c.dom.Element;
 
-
 /**
  * 
  */
 public class CommonNodeX {
-    public  static final String ATTR_NAME = "name";
-    public  static final String TAG_ATTRIBUTE = "attr";
-    
-    private static final String ATTR_STRING_VALUE = "stringvalue" ;
-    private static final String ATTR_BOOLEAN_VALUE = "boolvalue" ;
-    private static final String ATTR_INT_VALUE = "intvalue" ;
-    private static final String ATTR_URL_VALUE = "urlvalue" ;
-   
-    private static final String KEY_RESOURCE_BUNDLE = "localizingBundle" ;    
+
+    public static final String ATTR_NAME = "name";
+    public static final String TAG_ATTRIBUTE = "attr";
+    private static final String ATTR_STRING_VALUE = "stringvalue";
+    private static final String ATTR_BOOLEAN_VALUE = "boolvalue";
+    private static final String ATTR_INT_VALUE = "intvalue";
+    private static final String ATTR_URL_VALUE = "urlvalue";
+    private static final String KEY_RESOURCE_BUNDLE = "localizingBundle";
     private static final String KEY_TOOLBARCATEGORY = "ToolbarCategory";
     private static final String KEY_TOOLTIP = "ToolTip";
     private static final String KEY_DISPLAY_NAME = "DisplayName";
-    private static final String KEY_ICON_URL = "iconURL" ;
-    
+    private static final String KEY_ICON_URL = "iconURL";
     private ResourceBundle resBundle = null;
     protected Map attributes = new HashMap();
-    
-    protected String name = "unknown" ;
-    
+    protected String name = "unknown";
     private static final String LOG_CATEGORY = CommonNodeX.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(CommonNodeX.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     public CommonNodeX(Element elem) {
-        this.name = elem.getAttribute(ATTR_NAME);        
+        this.name = elem.getAttribute(ATTR_NAME);
     }
 
-    private void setResourceBundle(){
-        if (resBundle == null){
+    private void setResourceBundle() {
+        if (resBundle == null) {
             String resBundleName = (String) this.attributes.get(KEY_RESOURCE_BUNDLE);
-            if (resBundleName != null){
+            if (resBundleName != null) {
                 synchronized (this) {
                     resBundle = ResourceBundle.getBundle(resBundleName);
                 }
             }
         }
     }
-    
+
     protected String getLocalizedValue(String key) {
         if (key == null) {
             return key;
-        } 
+        }
 
         if (resBundle == null) {
             setResourceBundle();
         }
 
-        if (resBundle == null){
+        if (resBundle == null) {
             return key;
         }
-        
+
         try {
             key = resBundle.getString(key);
         } catch (MissingResourceException ex) {
@@ -116,25 +112,24 @@ public class CommonNodeX {
         return key;
     }
 
-    protected Object getAttributeValue(Element attrElement){
+    protected Object getAttributeValue(Element attrElement) {
         Object ret = null;
-        if (attrElement.getAttributeNode(ATTR_STRING_VALUE) != null){
+        if (attrElement.getAttributeNode(ATTR_STRING_VALUE) != null) {
             ret = attrElement.getAttribute(ATTR_STRING_VALUE);
-        } else if (attrElement.getAttributeNode(ATTR_BOOLEAN_VALUE) != null){
+        } else if (attrElement.getAttributeNode(ATTR_BOOLEAN_VALUE) != null) {
             ret = Boolean.valueOf(attrElement.getAttribute(ATTR_BOOLEAN_VALUE));
-        } else if (attrElement.getAttributeNode(ATTR_INT_VALUE) != null){
+        } else if (attrElement.getAttributeNode(ATTR_INT_VALUE) != null) {
             ret = Integer.valueOf(attrElement.getAttribute(ATTR_INT_VALUE));
-        } else if (attrElement.getAttributeNode(ATTR_URL_VALUE) != null){
-            try { 
-                ret = this.getClass().getResource(attrElement.getAttribute(ATTR_URL_VALUE)); 
+        } else if (attrElement.getAttributeNode(ATTR_URL_VALUE) != null) {
+            try {
+                ret = this.getClass().getResource(attrElement.getAttribute(ATTR_URL_VALUE));
             } catch (Exception ex) {
-                 mLogger.errorNoloc(mLoc.t("PRSR107: Exception{0}",LOG_CATEGORY),ex);
-                //Logger.print(Logger.WARN, LOG_CATEGORY, this, ex);
+                mLogger.errorNoloc(mLoc.t("PRSR107: Exception{0}", LOG_CATEGORY), ex);
             }
         }
         return ret;
     }
-    
+
     /**
      * Returns Operator or Category name. No I18N
      * @return name
@@ -142,8 +137,8 @@ public class CommonNodeX {
     public String getName() {
         return this.name;
     }
-    
-    public String getDisplayName(){
+
+    public String getDisplayName() {
         return this.getLocalizedValue((String) this.attributes.get(KEY_DISPLAY_NAME));
     }
 
@@ -175,7 +170,7 @@ public class CommonNodeX {
     public Icon getIcon() {
         return new ImageIcon((URL) this.attributes.get(KEY_ICON_URL));
     }
-    
+
     public String toString() {
         return this.getDisplayName();
     }

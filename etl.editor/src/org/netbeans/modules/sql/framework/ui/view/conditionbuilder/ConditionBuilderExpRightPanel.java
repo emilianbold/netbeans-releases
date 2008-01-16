@@ -103,11 +103,13 @@ import org.netbeans.modules.sql.framework.ui.output.SQLEditorPanel;
  * @author Ritesh Adval
  * @version $Revision$
  */
-public class ConditionBuilderExpRightPanel extends TopComponent  {
+public class ConditionBuilderExpRightPanel extends TopComponent {
+
     private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderExpRightPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private class ConditionDocumentListener implements DocumentListener {
+
         /**
          * Gives notification that an attribute or set of attributes changed.
          * 
@@ -136,7 +138,6 @@ public class ConditionBuilderExpRightPanel extends TopComponent  {
         public void removeUpdate(DocumentEvent e) {
             setDirty(true);
         }
-
     }
 
     private class TextDropTargetListener implements DropTargetListener {
@@ -308,13 +309,10 @@ public class ConditionBuilderExpRightPanel extends TopComponent  {
             }
         }
     }
-
     protected static DataFlavor[] mDataFlavorArray = new DataFlavor[1];
-
     private static final double PREFERRED_DIVIDER_RATIO = 3.0 / 5.0;
     private static final double SPLITPANE_RESIZE_WEIGHT = PREFERRED_DIVIDER_RATIO;
     private static final String LOG_CATEGORY = ConditionBuilderExpRightPanel.class.getName();
-
     private boolean dirty;
     private ConditionBuilderRightPanel gPanel;
     private JSplitPane hSplitPane;
@@ -322,11 +320,10 @@ public class ConditionBuilderExpRightPanel extends TopComponent  {
     //private SQLOutputConditionView outputView;
     public SQLEditorPanel pane;
     private JSplitPane splitPane;
-
     private TableTreeView tableTreeView;
-
     private JTextArea valArea;
     private IGraphViewContainer viewContainer;
+    
 
     static {
         try {
@@ -421,8 +418,8 @@ public class ConditionBuilderExpRightPanel extends TopComponent  {
             }
             showSplitPaneView(logView);
         } catch (Exception ex) {
-             mLogger.errorNoloc(mLoc.t("PRSR153: Error({0})",LOG_CATEGORY),ex);
-           // Logger.print(Logger.ERROR, LOG_CATEGORY, this, ex);
+            mLogger.errorNoloc(mLoc.t("PRSR153: Error({0})", LOG_CATEGORY), ex);
+
             if (ex instanceof ParseException) {
                 logView.refreshView("Condition is invalid - cannot parse text.");
             } else {
@@ -505,6 +502,7 @@ public class ConditionBuilderExpRightPanel extends TopComponent  {
         }
 
         Runnable layout = new Runnable() {
+
             public void run() {
                 pane.repaint();
             }
@@ -527,7 +525,7 @@ public class ConditionBuilderExpRightPanel extends TopComponent  {
         splitPane.setBottomComponent(c);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(PREFERRED_DIVIDER_RATIO);
-        //outputView.addComponent(c);
+    //outputView.addComponent(c);
     }
 
     /**

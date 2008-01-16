@@ -93,8 +93,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  * @version $Revision$
  */
 public class DBModelTreeView extends JPanel implements PropertyChangeListener {
-    private String LOG_CATEGORY = DBModelTreeView.class.getName();
 
+    private String LOG_CATEGORY = DBModelTreeView.class.getName();
     private JTree tree;
     private List dbModels;
     private EditDBModelPanel editPanel;
@@ -104,22 +104,15 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
     private static transient final Logger mLogger = LogUtil.getLogger(DBModelTreeView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private static URL rootImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/root.png");
-
     private static URL columnImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/column.png");
-
     private static URL tableImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/SourceTable.png");
-
     private static URL targetTableImgUrl = DBModelTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/TargetTable.png");
-
     private static ImageIcon rootIcon;
-
     private static ImageIcon tableIcon;
-
     private static ImageIcon targetTableIcon;
-
     private static ImageIcon columnIcon;
-
     private IPropertyGroup pGroup;
+    
 
     static {
         try {
@@ -159,6 +152,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
 
         tree.setCellRenderer(new TableTreeCellRenderer());
         tree.addTreeSelectionListener(new TreeSelectionListener() {
+
             public void valueChanged(TreeSelectionEvent e) {
                 if (propSheet != null) {
                     propSheet.commitChanges();
@@ -260,6 +254,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
     }
 
     private class TableNode extends DefaultMutableTreeNode {
+
         private SQLDBTable table;
 
         public TableNode(Object userObj) {
@@ -310,8 +305,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
                     try {
                         dge.startDrag(DragSource.DefaultCopyDrop, new ColumnTransferable(obj));
                     } catch (InvalidDnDOperationException ex) {
-                         mLogger.errorNoloc(mLoc.t("PRSR043: invalid drag and drop{0}",LOG_CATEGORY),ex);
-                       // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "invalid drag and drop", ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR043: invalid drag and drop{0}", LOG_CATEGORY), ex);
                     }
                 }
             }
@@ -319,6 +313,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
     }
 
     private class ColumnTransferable implements Transferable {
+
         private Object transData;
 
         ColumnTransferable(Object obj) {
@@ -374,6 +369,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
      * implementations.
      */
     public class DBModelObj {
+
         private SQLDBModel dbModel;
 
         /**
@@ -446,6 +442,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
      * and setter access to AbstractDBTable instances by PropertySheet implementations.
      */
     public class DBTableObj {
+
         private SQLDBTable dbTable;
 
         /**
@@ -495,6 +492,7 @@ public class DBModelTreeView extends JPanel implements PropertyChangeListener {
     }
 
     private class TableTreeCellRenderer extends DefaultTreeCellRenderer {
+
         /**
          * Configures the renderer based on the passed in components. The value is set
          * from messaging the tree with <code>convertValueToText</code>, which

@@ -77,6 +77,7 @@ import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomInAction;
 import org.netbeans.modules.sql.framework.ui.graph.actions.ZoomOutAction;
 import org.netbeans.modules.sql.framework.ui.output.SQLStatementPanel;
 import org.openide.util.NbBundle;
+
 /**
  * ETL Editor top view. This class just provides ETL specfic actions in toolbar and graph
  * right click.
@@ -84,13 +85,13 @@ import org.openide.util.NbBundle;
  * @author Ritesh Adval
  */
 public class ETLEditorTopView extends BasicTopView {
+
     public static final String OPERATOR_FOLDER = "ETLOperators";
     private static transient final Logger mLogger = LogUtil.getLogger(ETLEditorTopView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private ETLCollaborationTopPanel topPanel;
     //private UndoAction undoAction;
     //private RedoAction redoAction;
-    
     /**
      * Creates a new instance of ETLEditorTopView.
      *
@@ -106,11 +107,11 @@ public class ETLEditorTopView extends BasicTopView {
      * Creates a new instance of ETLEditorTopView.
      *
      * @param model CollabSQLUIModelImpl containing collab model info
-     */    
+     */
     public ETLEditorTopView(CollabSQLUIModel model) {
         super(model);
     }
-    
+
     /**
      * Indicates whether this view is editable.
      *
@@ -120,7 +121,7 @@ public class ETLEditorTopView extends BasicTopView {
     public boolean canEdit() {
         return topPanel.canEdit();
     }
-    
+
     /**
      * Execute a command
      *
@@ -138,7 +139,7 @@ public class ETLEditorTopView extends BasicTopView {
         }
         return null;
     }
-    
+
     /**
      * Gets List of Actions associated with the graph canvas.
      *
@@ -170,43 +171,43 @@ public class ETLEditorTopView extends BasicTopView {
         //        actions.add(redoAction);
         //        //null is used for seperator
         //        actions.add(null);
-        
+
         actions.add(GraphAction.getAction(ExpandAllAction.class));
         actions.add(GraphAction.getAction(CollapseAllAction.class));
         actions.add(GraphAction.getAction(ToggleOutputAction.class));
         actions.add(GraphAction.getAction(RefreshMetadataAction.class));
         actions.add(GraphAction.getAction(RemountCollaborationAction.class));
         actions.add(GraphAction.getAction(SelectTableAction.class));
-        
+
         //null is used for seperator
         actions.add(null);
-        
+
         actions.add(GraphAction.getAction(JoinAction.class));
         actions.add(GraphAction.getAction(EditDbModelAction.class));
         actions.add(GraphAction.getAction(RuntimeInputAction.class));
         actions.add(GraphAction.getAction(RuntimeOutputAction.class));
-       
+
         //null is used for seperator
         actions.add(null);
-        
+
         actions.add(GraphAction.getAction(ZoomInAction.class));
         actions.add(GraphAction.getAction(ZoomOutAction.class));
         //actions.add(GraphAction.getAction(ZoomAction.class));
         // null is used for seperator
         actions.add(null);
-    
+
         actions.add(GraphAction.getAction(AutoLayoutAction.class));
         actions.add(GraphAction.getAction(ValidationAction.class));
         actions.add(GraphAction.getAction(TestRunAction.class));
         // actions.add(GraphAction.getAction(PrintAction.class));
         //null is used for seperator
         actions.add(null);
-        
+
         actions.add(GraphAction.getAction(CollabPropertiesAction.class));
-        
+
         return actions;
     }
-    
+
     /**
      * Gets name of operator folder.
      *
@@ -215,7 +216,7 @@ public class ETLEditorTopView extends BasicTopView {
     public String getOperatorFolder() {
         return OPERATOR_FOLDER;
     }
-    
+
     /**
      * Gets List of Actions associated with the editor toolbar.
      *
@@ -237,14 +238,14 @@ public class ETLEditorTopView extends BasicTopView {
         //        actions.add(undoAction);
         //        actions.add(redoAction);
         //        actions.add(null);
-        
+
         actions.add(GraphAction.getAction(ExpandAllAction.class));
         actions.add(GraphAction.getAction(CollapseAllAction.class));
         actions.add(GraphAction.getAction(ToggleOutputAction.class));
         actions.add(GraphAction.getAction(RefreshMetadataAction.class));
         actions.add(GraphAction.getAction(RemountCollaborationAction.class));
         actions.add(GraphAction.getAction(SelectTableAction.class));
-      
+
         // null is used for seperator
         actions.add(null);
         actions.add(GraphAction.getAction(JoinAction.class));
@@ -253,7 +254,7 @@ public class ETLEditorTopView extends BasicTopView {
         actions.add(GraphAction.getAction(RuntimeOutputAction.class));
         // null is used for seperator
         actions.add(null);
-       
+
         actions.add(GraphAction.getAction(ZoomInAction.class));
         actions.add(GraphAction.getAction(ZoomOutAction.class));
         actions.add(GraphAction.getAction(ZoomAction.class));
@@ -265,7 +266,7 @@ public class ETLEditorTopView extends BasicTopView {
         actions.add(GraphAction.getAction(TestRunAction.class));
         return actions;
     }
-    
+
     /**
      * Generates and displays associated SQL statement for the given SQLObject.
      *
@@ -275,7 +276,10 @@ public class ETLEditorTopView extends BasicTopView {
     protected void showSql(SQLObject obj) {
         if (obj.getObjectType() == SQLConstants.TARGET_TABLE) {
             SQLStatementPanel statementPanel = super.getOrCreateSQLStatementPanel(obj);
-            SQLStatementPanel.ShowSQLWorkerThread showSqlThread = statementPanel.new ShowSQLWorkerThread() {
+            SQLStatementPanel.ShowSQLWorkerThread showSqlThread =  statementPanel 
+
+                   
+                       .new ShowSQLWorkerThread() {
                 @Override
                 public Object construct() {
                     TargetTable targetTable = null;
@@ -285,31 +289,29 @@ public class ETLEditorTopView extends BasicTopView {
                             targetTable = (TargetTable) sqlObjectLocalRef;
                             // Show SQL which will be executed during run time
                             SQLDefinition sqlDefn = sqlModel.getSQLDefinition();
-                            
+
                             ETLStrategyBuilderContext context = new ETLStrategyBuilderContext(sqlDefn, targetTable);
                             ETLStrategyBuilder tableScriptBuilder = ETLProcessFlowGeneratorFactory.getTargetTableScriptBuilder(context);
-                            
+
                             if (!hasValidationErrors()) {
                                 this.sqlText = tableScriptBuilder.getScriptToDisplay(context);
                             }
                         }
                     } catch (BaseException be) {
-                        //Logger.printThrowable(Logger.ERROR, ETLEditorTopView.class.getName(), this, "Failed to generate Core SQL", be);
-                         mLogger.errorNoloc(mLoc.t("PRSR048: Failed to generate Core SQL{0}",ETLEditorTopView.class.getName()),be);
+                        mLogger.errorNoloc(mLoc.t("PRSR048: Failed to generate Core SQL{0}", ETLEditorTopView.class.getName()), be);
                         StringBuilder msg = new StringBuilder();
                         if (targetTable != null) {
                             msg.append(targetTable.getQualifiedName()).append(": ");
                         }
-                        
+
                         if (StringUtil.isNullString(be.getMessage())) {
                             msg.append("Unknown error occurred while generating SQL.");
                         } else {
                             msg.append(be.getMessage());
                         }
                         this.sqlText = NbBundle.getMessage(SQLStatementPanel.class, "MSG_cant_evaluate_sql", msg);
-                    }catch (Exception exp) {
-                        mLogger.errorNoloc(mLoc.t("PRSR049: Failed to generate Core SQL{0}",ETLEditorTopView.class.getName()),ex);
-                       // Logger.printThrowable(Logger.ERROR, ETLEditorTopView.class.getName(), this, "Failed to generate Core SQL", ex);
+                    } catch (Exception exp) {
+                        mLogger.errorNoloc(mLoc.t("PRSR049: Failed to generate Core SQL{0}", ETLEditorTopView.class.getName()), ex);
                         this.sqlText = NbBundle.getMessage(SQLStatementPanel.class, "MSG_cant_evaluate_sql", exp.getMessage());
                     }
                     return "";
@@ -317,7 +319,7 @@ public class ETLEditorTopView extends BasicTopView {
             };
             showSqlThread.start();
             showSplitPaneView(statementPanel);
-            
+
         } else {
             super.showSql(obj);
         }

@@ -186,7 +186,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
             // if table already exists then we should throw exception
             String fqName = getFullyQualifiedTableName(table);
             if (this.getTable(fqName) != null) {
-            //throw new IllegalStateException("Cannot add table " + fqName + ", it already exist!");
+                //throw new IllegalStateException("Cannot add table " + fqName + ", it already exist!");
             }
 
             table.setParent(this);
@@ -506,9 +506,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
      */
     public DBConnectionDefinition getETLDBConnectionDefinition() throws BaseException {
         if (connectionDefinition == null) {
-            //Logger.print(Logger.DEBUG, LOG_CATEGORY, this,
-              //      "Lazy loading connection definition for DB model " + getDisplayName());
-             mLogger.infoNoloc(mLoc.t("PRSR114: Lazy loading connection definition for DB model{0}",getDisplayName()));
+            mLogger.infoNoloc(mLoc.t("PRSR114: Lazy loading connection definition for DB model{0}", getDisplayName()));
             connectionDefinition = createETLDBConnectionDefinition();
         }
         return connectionDefinition;
@@ -1128,8 +1126,7 @@ public class SQLDBModelImpl extends AbstractSQLObject implements Cloneable, SQLD
             try {
                 etlConnDef.setName(this.getModelName());
             } catch (Exception ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR115: Exception{0}",LOG_CATEGORY),ex);
-               // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "", "", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR115: Exception{0}", LOG_CATEGORY), ex);
             }
         } else {
             etlConnDef = new SQLDBConnectionDefinitionImpl();

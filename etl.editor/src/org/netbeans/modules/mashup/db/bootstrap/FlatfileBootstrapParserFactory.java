@@ -53,7 +53,6 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * Factory for creating instances of FlatfileBootstrapParser.
  *
@@ -63,38 +62,36 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @see org.netbeans.modules.mashup.db.bootstrap.FlatfileBootstrapParser
  */
 public final class FlatfileBootstrapParserFactory {
+
     private static transient final Logger mLogger = LogUtil.getLogger(FlatfileBootstrapParserFactory.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+
     class NullBootstrapParser implements FlatfileBootstrapParser {
+
         public List buildFlatfileDBColumns(FlatfileDBTable table) {
             return Collections.EMPTY_LIST;
         }
-        
+
         public void makeGuess(FlatfileDBTable file) {
         }
-        
+
         public boolean acceptable(FlatfileDBTable table) {
             return false;
         }
     }
-    
     /* Singleton instance of FlatfileBootstrapParserFactory */
     private static FlatfileBootstrapParserFactory instance;
-    
     /* Log4J category string */
     private static final String LOG_CATEGORY = FlatfileBootstrapParserFactory.class.getName();
-    
-    private static final String[][] PARSER_MAP_INFO = new String[][] {
-        { PropertyKeys.DELIMITED, "org.netbeans.modules.mashup.db.bootstrap.DelimitedBootstrapParser"},
-        { PropertyKeys.FIXEDWIDTH, "org.netbeans.modules.mashup.db.bootstrap.FixedWidthBootstrapParser"},
-        { PropertyKeys.XML, "org.netbeans.modules.mashup.db.bootstrap.XMLBootstrapParser"},
-        { PropertyKeys.RSS, "org.netbeans.modules.mashup.db.bootstrap.RSSBootstrapParser"},
-        { PropertyKeys.WEB, "org.netbeans.modules.mashup.db.bootstrap.WebBootstrapParser"},
-        { PropertyKeys.WEBROWSET, "org.netbeans.modules.mashup.db.bootstrap.WebrowsetBootstrapParser"},
-        { PropertyKeys.SPREADSHEET, "org.netbeans.modules.mashup.db.bootstrap.SpreadsheetBootstrapParser"}
-    };
-    
+    private static final String[][] PARSER_MAP_INFO = new String[][]{
+        {PropertyKeys.DELIMITED, "org.netbeans.modules.mashup.db.bootstrap.DelimitedBootstrapParser"},
+        {PropertyKeys.FIXEDWIDTH, "org.netbeans.modules.mashup.db.bootstrap.FixedWidthBootstrapParser"},
+        {PropertyKeys.XML, "org.netbeans.modules.mashup.db.bootstrap.XMLBootstrapParser"},
+        {PropertyKeys.RSS, "org.netbeans.modules.mashup.db.bootstrap.RSSBootstrapParser"},
+        {PropertyKeys.WEB, "org.netbeans.modules.mashup.db.bootstrap.WebBootstrapParser"},
+        {PropertyKeys.WEBROWSET, "org.netbeans.modules.mashup.db.bootstrap.WebrowsetBootstrapParser"},
+        {PropertyKeys.SPREADSHEET, "org.netbeans.modules.mashup.db.bootstrap.SpreadsheetBootstrapParser"}    };
+
     /**
      * Gets an instance of FlatfileBootstrapParserFactory.
      *
@@ -106,7 +103,7 @@ public final class FlatfileBootstrapParserFactory {
         }
         return instance;
     }
-    
+
     public static Collection getParserTypes() {
         List<String> types = new ArrayList<String>(7);
         types.add(PropertyKeys.FIXEDWIDTH);
@@ -114,32 +111,30 @@ public final class FlatfileBootstrapParserFactory {
         types.add(PropertyKeys.WEBROWSET);
         types.add(PropertyKeys.SPREADSHEET);
         types.add(PropertyKeys.XML);
-        types.add(PropertyKeys.WEB);        
+        types.add(PropertyKeys.WEB);
         types.add(PropertyKeys.DELIMITED);
         return types;
     }
-    
     /* Map of parser type to FlatfileBootstrapParser instance */
     private Map keynameToClassMap;
-    
+
     /** Creates a private default instance of FlatfileBootstrapParserFactory. */
     private FlatfileBootstrapParserFactory() {
         keynameToClassMap = new HashMap();
-        
+
         for (int i = 0; i < PARSER_MAP_INFO.length; i++) {
             String key = PARSER_MAP_INFO[i][0];
             String parserClass = PARSER_MAP_INFO[i][1];
-            
+
             try {
                 keynameToClassMap.put(key, Class.forName(parserClass));
             } catch (Exception ignore) {
-                  mLogger.errorNoloc(mLoc.t("PRSR051: Caught error while loading parser class names. {0}",LOG_CATEGORY),ignore);
-                // Ignore: Log but continue
-              //  Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Caught error while loading parser class names.", ignore);
+                mLogger.errorNoloc(mLoc.t("PRSR051: Caught error while loading parser class names. {0}", LOG_CATEGORY), ignore);
+            // Ignore: Log but continue
             }
         }
     }
-    
+
     /**
      * Gets an instance of FlatfileBootstrapParser, if any, associated with the given type
      * name.
@@ -153,26 +148,26 @@ public final class FlatfileBootstrapParserFactory {
         if (parserClass == null) {
             return null;
         }
-        
+
         try {
             return (FlatfileBootstrapParser) parserClass.newInstance();
         } catch (Exception e) {
             return new NullBootstrapParser();
         }
     }
-    
+
     public String getParserType(FlatfileDBTable table) {
         String result = PropertyKeys.DELIMITED;
         FlatfileBootstrapParser bootstrapParser = null;
         String[] parsers = (String[]) getParserTypes().toArray(new String[0]);
-        for(String parser : parsers) {
+        for (String parser : parsers) {
             bootstrapParser = getBootstrapParser(parser);
             try {
-                if(bootstrapParser.acceptable(table)) {
+                if (bootstrapParser.acceptable(table)) {
                     result = parser;
                     break;
                 }
-            } catch(Exception e) {
+            } catch (Exception e) {
                 // ignore
             }
         }

@@ -53,10 +53,12 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @author Ahimanikya Satapathy
  */
 public class SimpleETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
+
     private static final String LOG_CATEGORY = SimpleETLStrategyBuilderImpl.class.getName();
     private static final String SQL_INDENT = "";
     private static transient final Logger mLogger = LogUtil.getLogger(SimpleETLStrategyBuilderImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     public SimpleETLStrategyBuilderImpl(ETLScriptBuilderModel model) throws BaseException {
         super(model);
     }
@@ -65,8 +67,7 @@ public class SimpleETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
      * Before calling apply appropriate applyConnections
      */
     public void generateScriptForTable(ETLStrategyBuilderContext context) throws BaseException {
-         mLogger.infoNoloc(mLoc.t("PRSR009: Looping through target tables:{0}",LOG_CATEGORY));
-       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
+        mLogger.infoNoloc(mLoc.t("PRSR009: Looping through target tables:{0}", LOG_CATEGORY));
         populateInitTask(context.getInitTask(), context.getGlobalCleanUpTask(), context.getTargetTable());
 
         checkTargetConnectionDefinition(context);
@@ -107,10 +108,7 @@ public class SimpleETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
 
         // TODO Need to refactor/redesign interfaces between sql-codegen and etl-codgen framework
         // such that we will avoid code like "IF ELSE" like below.
-        if ((targetDB.getDBType() == DB.JDBCDB)
-                && (targetTable.getSourceTableList().size() != 0)
-                && ((statementType == SQLConstants.UPDATE_STATEMENT)
-                     || (statementType == SQLConstants.INSERT_UPDATE_STATEMENT))){
+        if ((targetDB.getDBType() == DB.JDBCDB) && (targetTable.getSourceTableList().size() != 0) && ((statementType == SQLConstants.UPDATE_STATEMENT) || (statementType == SQLConstants.INSERT_UPDATE_STATEMENT))) {
             transformerTask = builderModel.getEngine().createETLTaskNode(ETLEngine.CORRELATED_QUERY_EXECUTOR);
             transformerTask.addNextETLTaskNode(ETLTask.SUCCESS, context.getNextTaskOnSuccess().getId());
             transformerTask.addNextETLTaskNode(ETLTask.EXCEPTION, context.getNextTaskOnException().getId());
@@ -123,7 +121,7 @@ public class SimpleETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
             context.getDependentTasksForNextTask().append(transformerTask.getId());
 
             createCorrelatedUpdateSQLParts(targetTable, transformerTask, getTargetConnName(), targetDB,
-                                            statsDB, (statementType == SQLConstants.INSERT_UPDATE_STATEMENT));
+                    statsDB, (statementType == SQLConstants.INSERT_UPDATE_STATEMENT));
         } else {
             // for each target table create a transformer task node
             transformerTask = builderModel.getEngine().createETLTaskNode(ETLEngine.TRANSFORMER);
@@ -145,7 +143,7 @@ public class SimpleETLStrategyBuilderImpl extends BaseETLStrategyBuilder {
         // of transform nodes; ordinarily the extractor wait node, but could
         // be START if no extractor nodes exist.
         ETLTaskNode xformPredecessor = context.getPredecessorTask();
-        
+
         // Set dependent list for predecessor to transform nodes
         xformPredecessor.addNextETLTaskNode(ETLTask.SUCCESS, transformerTask.getId());
 

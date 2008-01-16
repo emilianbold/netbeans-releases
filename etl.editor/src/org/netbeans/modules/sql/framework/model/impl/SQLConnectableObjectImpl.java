@@ -58,7 +58,6 @@ import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * Base class implementation of SQLConnectableObject; inherits behavior from
  * AbstractSQLObject. Subclasses should override addInput and other methods as required for
@@ -95,13 +94,11 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
         String objType = TagParserUtility.getDisplayStringFor(newType);
 
         if (isInputCompatible(argName, newInput) == SQLConstants.TYPE_CHECK_INCOMPATIBLE) {
-            throw new BaseException("Input type " + objType + " is incompatible with input argument '" + argName + "' of "
-                + TagParserUtility.getDisplayStringFor(this.type) + " '" + this.getDisplayName() + "'.");
+            throw new BaseException("Input type " + objType + " is incompatible with input argument '" + argName + "' of " + TagParserUtility.getDisplayStringFor(this.type) + " '" + this.getDisplayName() + "'.");
         }
 
         if (!isInputValid(argName, newInput)) {
-            throw new BaseException("Cannot link " + objType + " '" + newInput.getDisplayName() + "' as input to '" + argName + "' in "
-                + TagParserUtility.getDisplayStringFor(this.type) + " '" + this.getDisplayName() + "'");
+            throw new BaseException("Cannot link " + objType + " '" + newInput.getDisplayName() + "' as input to '" + argName + "' in " + TagParserUtility.getDisplayStringFor(this.type) + " '" + this.getDisplayName() + "'");
         }
 
         SQLInputObject inputObject = (SQLInputObject) inputMap.get(argName);
@@ -133,8 +130,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
 
             // This convoluted logic is here because inputMap.equals(impl.inputMap)
             // apparently delegates to the Object.equals() method. Go figure.
-            response &= (inputMap != null) && (impl.inputMap != null) ? (inputMap.entrySet().equals(impl.inputMap.entrySet())) : (inputMap == null)
-                && (impl.inputMap == null);
+            response &= (inputMap != null) && (impl.inputMap != null) ? (inputMap.entrySet().equals(impl.inputMap.entrySet())) : (inputMap == null) && (impl.inputMap == null);
         } else {
             response = false;
         }
@@ -285,7 +281,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
             inputObj.getSQLObject().reset();
         }
     }
-    
+
     /**
      * Overrides parent implementation to append XML elements for any input objects
      * associated with this expression.
@@ -328,8 +324,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
                         inputObject.setSQLObject(copiedObj);
                     }
                 } catch (CloneNotSupportedException ex) {
-                      mLogger.errorNoloc(mLoc.t("PRSR111: Failed to cloned input map{0}",LOG_CATEGORY),ex);
-                    //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to cloned input map", ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR111: Failed to cloned input map{0}", LOG_CATEGORY), ex);
                 }
             }
         }
@@ -359,8 +354,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
                         }
 
                     } catch (Exception ex) {
-                         mLogger.errorNoloc(mLoc.t("PRSR112: Finding expression contains column refs{0}",LOG_CATEGORY),ex);
-                       // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Finding expression contains column refs", ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR112: Finding expression contains column refs{0}", LOG_CATEGORY), ex);
                     }
                 }
             }
@@ -397,8 +391,7 @@ public abstract class SQLConnectableObjectImpl extends AbstractSQLObject impleme
                         }
 
                     } catch (Exception ex) {
-                          mLogger.errorNoloc(mLoc.t("PRSR113: Finding expression contains column refs{0}",LOG_CATEGORY),ex);
-                       // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Finding expression contains column refs", ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR113: Finding expression contains column refs{0}", LOG_CATEGORY), ex);
                     }
                 }
             }

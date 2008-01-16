@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.view.conditionbuilder;
 
 import java.awt.BorderLayout;
@@ -68,16 +67,17 @@ import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * @author Ritesh Adval
  * @version $Revision$
  */
 public class ConditionBuilderView extends JPanel implements EnhancedCustomPropertyEditor {
+
     private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
     private class TabChangeAdapter implements ChangeListener {
+
         private boolean trySync = true;
 
         /**
@@ -94,7 +94,7 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
             if (selComp instanceof ConditionBuilderRightPanel) {
                 if (trySync && !ConditionBuilderView.this.synchronizeGraphView()) {
                     DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
+                            new NotifyDescriptor.Message(
                             NbBundle.getMessage(ConditionBuilderView.class, "ERR_conditionbuilder_text_to_graph_sync_failed"),
                             NotifyDescriptor.INFORMATION_MESSAGE));
                     trySync = false;
@@ -109,7 +109,7 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
             } else if (selComp instanceof ConditionBuilderExpRightPanel) {
                 if (trySync && !ConditionBuilderView.this.synchronizeSQLCodeView()) {
                     DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
+                            new NotifyDescriptor.Message(
                             NbBundle.getMessage(ConditionBuilderView.class, "ERR_conditionbuilder_graph_to_text_sync_failed"),
                             NotifyDescriptor.INFORMATION_MESSAGE));
                     trySync = false;
@@ -124,21 +124,13 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
             }
         }
     }
-
     private static final String LOG_CATEGORY = ConditionBuilderView.class.getName();
-
     private SQLCondition condContainerObj;
-
     private IGraphViewContainer editor;
-
     private boolean reLoad = false;
-
     private ConditionBuilderRightPanel rightGraphPanel;
-
     private JTabbedPane rightPanel = new JTabbedPane();
-
     private ConditionBuilderExpRightPanel rightTextPanel;
-
     private boolean showError = true;
 
     /**
@@ -163,8 +155,7 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
         try {
             condContainerObj = (SQLCondition) cond.cloneSQLObject();
         } catch (CloneNotSupportedException ex) {
-                mLogger.errorNoloc(mLoc.t("PRSR156: error cloning the condition{0}",LOG_CATEGORY),ex);
-            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "ConditionBuilderView", "error cloning the condition ", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR156: error cloning the condition{0}", LOG_CATEGORY), ex);
             return;
         }
     }
@@ -198,7 +189,7 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
         boolean result = setGuiMode();
         if (showError && !result) {
             DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(ConditionBuilderView.class, "ERR_conditionbuilder_invalid_condition"),
+                    new NotifyDescriptor.Message(NbBundle.getMessage(ConditionBuilderView.class, "ERR_conditionbuilder_invalid_condition"),
                     NotifyDescriptor.WARNING_MESSAGE));
         }
 
@@ -242,23 +233,22 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
         SQLObject obj = null;
         try {
             obj = rightTextPanel.getConditionRootPredicate();
-        
+
         } catch (Exception ex) {
-            if( ex instanceof BaseException) {
-                if( ((BaseException)ex).getErrorCode() == BaseException.OPERATOR_NOT_DEFINED) {
+            if (ex instanceof BaseException) {
+                if (((BaseException) ex).getErrorCode() == BaseException.OPERATOR_NOT_DEFINED) {
                     customOperator = true;
                 }
             } else {
-            // Ignore this safely
-                 mLogger.errorNoloc(mLoc.t("PRSR157: Exception occurred while parsing condition{0}",LOG_CATEGORY),ex);
-               // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, this, "Exception occurred while parsing condition", ex);
+                // Ignore this safely
+                mLogger.errorNoloc(mLoc.t("PRSR157: Exception occurred while parsing condition{0}", LOG_CATEGORY), ex);
             }
         }
 
         // For custom operator, disable any further validation 
         // as it can be properly validated only at query time using
         // test colloboration
-        if( customOperator ) {
+        if (customOperator) {
             rightGraphPanel.setModifiable(true);
             rightGraphPanel.setDirty(false);
             rightTextPanel.setDirty(false);
@@ -270,7 +260,7 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
             condContainerObj.setConditionText("");
             rightGraphPanel.clearView();
             graphChanged = true;
-            // Then check if there is a valid root predicate
+        // Then check if there is a valid root predicate
         } else if (obj instanceof SQLPredicate) {
             SQLValidationVisitor visitor = new SQLValidationVisitor();
             SQLPredicate predicate = (SQLPredicate) obj;
@@ -293,8 +283,6 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
 
         return false;
     }
-    
-   
 
     public boolean synchronizeSQLCodeView() {
         SQLObject obj = null;
@@ -317,15 +305,15 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
             // There are objects but failed to get Predicate.
             Iterator iter = objC.iterator();
             boolean customOperatorCheck = false;
-            while(iter.hasNext()) {
+            while (iter.hasNext()) {
                 Object localObj = iter.next();
-                if( localObj instanceof SQLCustomOperatorImpl) {
+                if (localObj instanceof SQLCustomOperatorImpl) {
                     customOperatorCheck = true;
                 }
             }
             //disabling custom operator validation as 
             //custom operator validation is done only at Test colloboration level
-            if(!customOperatorCheck) {
+            if (!customOperatorCheck) {
                 synchronizedSqlText = false;
             }
         }

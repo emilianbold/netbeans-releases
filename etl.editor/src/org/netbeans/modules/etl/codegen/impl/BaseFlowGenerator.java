@@ -34,7 +34,6 @@ import com.sun.sql.framework.jdbc.SQLPart;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * @author Girish Patil
  * @version $Revision$
@@ -51,6 +50,7 @@ public abstract class BaseFlowGenerator implements ETLProcessFlowGenerator {
     protected ETLTaskNode threadCollectorWaitNode = null;
     private static transient final Logger mLogger = LogUtil.getLogger(BaseFlowGenerator.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     public BaseFlowGenerator(SQLDefinition sqlD) throws BaseException {
         init(sqlD);
     }
@@ -112,8 +112,7 @@ public abstract class BaseFlowGenerator implements ETLProcessFlowGenerator {
 
     protected void createInitTask() throws BaseException {
         final MessageManager dnLabelMgr = MessageManager.getManager(ETLTaskNode.class);
-        mLogger.infoNoloc(mLoc.t("PRSR001: createInitTask():{0}",LOG_CATEGORY));
-        //Logger.print(Logger.DEBUG, LOG_CATEGORY, "createInitTask(): ");
+        mLogger.infoNoloc(mLoc.t("PRSR001: createInitTask():{0}", LOG_CATEGORY));
         // START task
         startTask = builderModel.getEngine().getStartETLTaskNode();
 
@@ -165,8 +164,7 @@ public abstract class BaseFlowGenerator implements ETLProcessFlowGenerator {
     }
 
     protected void initEngine() {
-         mLogger.infoNoloc(mLoc.t("PRSR002: initEngine():{0}",LOG_CATEGORY));
-       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "initEngine(): ");
+        mLogger.infoNoloc(mLoc.t("PRSR002: initEngine():{0}", LOG_CATEGORY));
         // Create an empty engine.
         ETLEngineContext engineContext = new ETLEngineContext();
         ETLEngine engine = this.builderModel.getEngine();

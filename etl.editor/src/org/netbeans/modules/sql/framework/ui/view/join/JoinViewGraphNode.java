@@ -124,7 +124,7 @@ public class JoinViewGraphNode extends BasicCanvasArea {
     private static final int PREFERRED_JOIN_VIEW_WIDTH = 140;
     private static transient final Logger mLogger = LogUtil.getLogger(JoinViewGraphNode.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+
     /** Creates a new instance of JoinViewGraphNode */
     public JoinViewGraphNode(SQLJoinView jView) {
         initGUI(jView);
@@ -652,7 +652,6 @@ public class JoinViewGraphNode extends BasicCanvasArea {
     //            }
     //        }
     //    }
-
     public void addTable(SourceTable sTable) {
         SQLJoinTableArea tableArea = new SQLJoinTableArea(sTable);
         tableArea.setDataObject(sTable);
@@ -747,8 +746,7 @@ public class JoinViewGraphNode extends BasicCanvasArea {
             //so that join view can refresh
             this.layoutChildren();
         } catch (BaseException ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR188: Error removing source table {0}from join view",sTable.getName()),ex);
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "removeTable", "Error removing source table " + sTable.getName() + " from join view", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR188: Error removing source table {0}from join view", sTable.getName()), ex);
             throw ex;
         }
     }
@@ -828,8 +826,7 @@ public class JoinViewGraphNode extends BasicCanvasArea {
 
             this.removeTable(jTable.getSourceTable());
         } catch (BaseException ex) {
-              mLogger.errorNoloc(mLoc.t("PRSR189: Error removing source table {0}from join view",sTable.getName()),ex);
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "removeChildNode", "Error removing source table " + sTable.getName() + " from join view", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR189: Error removing source table {0}from join view", sTable.getName()), ex);
         }
     }
 

@@ -60,7 +60,6 @@ import com.sun.sql.framework.utils.Attribute;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * This basic class provides sql framework functionality to all SQLObjects
  * 
@@ -69,6 +68,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  */
 public abstract class AbstractSQLObject implements SQLObject {
     /* Log4J category string */
+
     private static final String LOG_CATEGORY = AbstractSQLObject.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(AbstractSQLObject.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
@@ -77,22 +77,16 @@ public abstract class AbstractSQLObject implements SQLObject {
      * without hardcoding them as member variables
      */
     protected Map attributes = new HashMap();
-
     /** User-modifiable display name for this object */
     protected transient String displayName;
-
     /** Unique handle for SQLObject-related referencing purposes */
     protected transient String id;
-
     /** String representation of object type */
     protected transient String objectType;
-
     /** Object instance that "owns" this AbstractSQLObject instance. */
     protected transient Object parentObject;
-
     /** int representation of object type */
     protected int type;
-
     private transient boolean isIdSet = false;
 
     /** Creates a new instance of SQLBasicObject */
@@ -140,8 +134,7 @@ public abstract class AbstractSQLObject implements SQLObject {
                     this.attributes.put(name, copiedAttr);
                 } catch (CloneNotSupportedException ex) {
                     // log me
-                     mLogger.errorNoloc(mLoc.t("PRSR105: Failed to copy source objects{0}",LOG_CATEGORY),ex);
-                   // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to copy source objects", ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR105: Failed to copy source objects{0}", LOG_CATEGORY), ex);
                 }
             }
         }
@@ -245,8 +238,7 @@ public abstract class AbstractSQLObject implements SQLObject {
         try {
             strType = TagParserUtility.getStringType(this.getObjectType());
         } catch (BaseException e) {
-           // Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to get type attr.");
-            mLogger.infoNoloc(mLoc.t("PRSR106: Failed to get type attr.{0}",LOG_CATEGORY));
+            mLogger.infoNoloc(mLoc.t("PRSR106: Failed to get type attr.{0}", LOG_CATEGORY));
             strType = "UNKNOWN_TYPE";
         }
         StringBuilder buffer = new StringBuilder();

@@ -101,6 +101,7 @@ import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
  * @version $Revision$
  */
 public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutputPanel {
+
     private static transient final Logger mLogger = LogUtil.getLogger(SQLStatementPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private JButton[] btn = new JButton[1];
@@ -172,16 +173,14 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
             } catch (Exception exp) {
                 this.ex = exp;
                 sqlText = NbBundle.getMessage(SQLStatementPanel.class, "MSG_cant_evaluate_sql", sqlObj.getDisplayName());
-                 mLogger.errorNoloc(mLoc.t("PRSR151: Cannot evaluate SQL for{0}",sqlObj.getDisplayName()),ex);
-                 mLogger.errorNoloc(mLoc.t("PRSR152: Can't get contents for table{0}",(sqlObj != null) ? sqlObj.getDisplayName() : ""),ex);
-             //   Logger.printThrowable(Logger.ERROR, this.getClass().getName(), this, "Cannot evaluate SQL for " + sqlObj.getDisplayName(), ex);
-             //   Logger.printThrowable(Logger.ERROR, SQLStatementPanel.class.getName(), null, "Can't get contents for table " + ((sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR151: Cannot evaluate SQL for{0}", sqlObj.getDisplayName()), ex);
+                mLogger.errorNoloc(mLoc.t("PRSR152: Can't get contents for table{0}", (sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);
+
             }
             return "";
         }
 
         // Runs on the event-dispatching thread.
-
         @Override
         public void finished() {
             SQLStatementPanel.this.textArea.setText(this.sqlText);
@@ -266,7 +265,7 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
         tableList.addAll(sqlDefinition.getSourceTables());
         tableList.addAll(sqlDefinition.getTargetTables());
         textArea.setTables(tableList);
-        
+
         JScrollPane sPane = new JScrollPane(textArea);
         this.add(sPane, BorderLayout.CENTER);
     }
@@ -280,7 +279,7 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
         try {
             textArea.getDocument().insertString(textArea.getDocument().getLength(), str, null);
         } catch (BadLocationException e) {
-        //ignore
+            //ignore
         }
     }
 
@@ -361,7 +360,7 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
                 try {
                     dbType = DBMetaDataFactory.getDBTypeFromURL(connDef.getConnectionURL());
                 } catch (Exception ex) {
-                //Ignore, assume JDBC/ANSI
+                    //Ignore, assume JDBC/ANSI
                 }
             }
         }

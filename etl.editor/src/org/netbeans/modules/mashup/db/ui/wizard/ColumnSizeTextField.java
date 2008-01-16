@@ -54,7 +54,6 @@ import javax.swing.text.PlainDocument;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * Used in ColumnMetadata table to render scale and precision
  * 
@@ -62,8 +61,10 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class ColumnSizeTextField extends JTextField {
+
     private static transient final Logger mLogger = LogUtil.getLogger(ColumnSizeTextField.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * class IntegerDocument extends a plain document.
      */
@@ -87,16 +88,13 @@ public class ColumnSizeTextField extends JTextField {
                     result[j++] = source[i];
                 } else {
                     toolkit.beep();
-                  mLogger.infoNoloc(mLoc.t("PRSR073: insertString:{0}"+source[i],getClass().getName()));
-                  //  Logger.print(Logger.DEBUG, getClass().getName(), "insertString()", "insertString: " + source[i]);
+                    mLogger.infoNoloc(mLoc.t("PRSR073: insertString:{0}" + source[i], getClass().getName()));
                 }
             }
             super.insertString(offs, new String(result, 0, j), a);
         }
     }
-
     private NumberFormat integerFormatter;
-
     private Toolkit toolkit;
 
     /**

@@ -82,6 +82,7 @@ import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
  * @version $Revision$
  */
 public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTable, Cloneable, Comparable {
+
     /** Constants used in XML tags * */
     private static final String ATTR_ENCODING = "encoding";
     private static final String ATTR_FILE_NAME = "fileName";
@@ -90,63 +91,51 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     /* Constant: character indicating end of ORGANIZATION property clause */
     private static final String END_PROPS_DELIMITER = ")";
     private static final String END_QUOTE_SPACE = "\" ";
-    
     private static final String EQUAL_START_QUOTE = "=\"";
     private static transient final Logger mLogger = LogUtil.getLogger(FlatfileDBTableImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     /* Log4J category string */
     private static final String LOG_CATEGORY = FlatfileDBTableImpl.class.getName();
-    
     /* Constant: separator between key-value properties in ORGANIZATION clause */
     private static final String PROP_SEPARATOR = ", ";
-    
     /* Constant: keyword signaling start of properties clause */
     private static final String PROPS_KEYWORD = "ORGANIZATION"; // NOI18N
-    
     /* Constant: character indicating start of ORGANIZATION property clause */
     private static final String START_PROPS_DELIMITER = "(";
-    
     private static final String TAB = "\t";
-    
     private static final String TAG_STCDB_COLUMN = "stcdbColumn";
     // private static final String TAG_STCDB_COLUMN = "FlatfileColumn";
-    
     private static final String TAG_STCDB_TABLE = "stcdbTable";
     // private static final String TAG_STCDB_TABLE = "FlatfileTable";
-    
     /**
      * Holds property keys which are only used by the wizard and will cause errors in
      * Axion during validation of table properties.
      */
     private static final Set WIZARD_ONLY_PROPERTIES = new HashSet();
     
+
     static {
         WIZARD_ONLY_PROPERTIES.add("DEFAULTSQLTYPE");
         WIZARD_ONLY_PROPERTIES.add("FILEPATH");
         WIZARD_ONLY_PROPERTIES.add("FIELDCOUNT");
     }
-    
     /* Encoding of file contents, e.g., utf-8, cp500, etc. */
     private String encoding = "";
-    
     /* Sample file name (no path) */
     private String fileName = "";
-    
     /* Path to sample file locally */
     private transient String localPath = File.separator;
-    
     private String parserType;
-    
     /* Parse configurator for this flatfile */
     private Map properties;
-    
+
     /* No-arg constructor; initializes Collections-related member variables. */
     public FlatfileDBTableImpl() {
         super();
         columns = new LinkedHashMap<String, DBColumn>();
         properties = new HashMap();
     }
-    
+
     /**
      * Creates a new instance of FlatfileDBTableImpl, cloning the contents of the given
      * DBTable implementation instance.
@@ -155,14 +144,14 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      */
     public FlatfileDBTableImpl(DBTable src) {
         this();
-        
+
         if (src == null) {
             throw new IllegalArgumentException("Must supply non-null DBTable instance for src param.");
         }
-        
+
         copyFrom(src);
     }
-    
+
     /**
      * Creates a new instance of FlatfileDBTableImpl, cloning the contents of the given
      * FlatfileDBTable implementation instance.
@@ -171,23 +160,22 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
      */
     public FlatfileDBTableImpl(FlatfileDBTable src) {
         this();
-        
+
         if (src == null) {
             throw new IllegalArgumentException("Must supply non-null FlatfileDBTable instance for src param.");
         }
-        
+
         copyFrom(src);
     }
-    
+
     public FlatfileDBTableImpl(String aName) {
         this();
         this.name = (aName != null) ? aName.trim() : null;
     }
-    
+
     /*
      * Implementation of DBTable interface.
      */
-    
     /**
      * Creates a new instance of FlatfileDBTableImpl with the given name.
      *
@@ -199,7 +187,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         this();
         this.name = (aName != null) ? aName.trim() : null;
     }
-    
+
     /**
      * Adds a DBColumn instance to this table.
      *
@@ -216,23 +204,21 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             this.columns.put(theColumn.getName(), theColumn);
             return true;
         }
-        
+
         return false;
     }
-    
+
     /**
      * Adds a DBColumn instance to this table.
      *
      * @param theColumn column to be added.
      * @return true if successful. false if failed.
      */
-    
     @Override
     public boolean addColumn(SQLDBColumn theColumn) {
         return addColumn(theColumn, false);
     }
-    
-    
+
     /**
      * Clone a deep copy of DBTable.
      *
@@ -244,13 +230,13 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             FlatfileDBTableImpl table = (FlatfileDBTableImpl) super.clone();
             table.columns = new LinkedHashMap();
             table.deepCopyReferences(this);
-            
+
             return table;
         } catch (CloneNotSupportedException e) {
             throw new InternalError(e.toString());
         }
     }
-    
+
     /**
      * Compares DBTable with another object for lexicographical ordering. Null objects and
      * those DBTables with null names are placed at the end of any ordered collection
@@ -265,16 +251,16 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         if (refObj == null) {
             return -1;
         }
-        
+
         if (refObj == this) {
             return 0;
         }
-        
+
         String refName = (parentDBModel != null) ? parentDBModel.getFullyQualifiedTableName((DBTable) refObj) : ((DBTable) refObj).getName();
         String myName = (parentDBModel != null) ? parentDBModel.getFullyQualifiedTableName(this) : name;
         return (myName != null) ? myName.compareTo(refName) : (refName != null) ? 1 : -1;
     }
-    
+
     /**
      * Performs deep copy of contents of given DBTable. We deep copy (that is, the method
      * clones all child objects such as columns) because columns have a parent-child
@@ -289,13 +275,13 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         } else if (source == this) {
             return;
         }
-        
+
         name = source.getName();
         description = source.getDescription();
-        
+
         deepCopyReferences(source);
     }
-    
+
     /**
      * Performs deep copy of contents of given FlatfileDBTable. We deep copy (that is, the
      * method clones all child objects such as columns) because columns have a
@@ -310,11 +296,11 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             encoding = impl.encoding;
             fileName = impl.fileName;
             name = impl.name;
-            
+
             deepCopyReferences(impl);
         }
     }
-    
+
     /**
      * Convenience class to create FlatfileDBColumnImpl instance (with the given column
      * name, data source name, JDBC type, scale, precision, and nullable), and add it to
@@ -337,7 +323,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         this.columns.put(columnName, impl);
         return impl;
     }
-    
+
     /**
      * Overrides default implementation to return value based on memberwise comparison.
      *
@@ -348,12 +334,12 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     @Override
     public boolean equals(Object obj) {
         boolean result = false;
-        
+
         // Check for reflexivity first.
         if (this == obj) {
             return true;
         }
-        
+
         // Check for castability (also deals with null instance)
         boolean response = false;
         if (obj instanceof FlatfileDBTable) {
@@ -361,14 +347,14 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             String aTableName = aTable.getName();
             // DatabaseModel aTableParent = aTable.getParent();
             Map aTableColumns = aTable.getColumns();
-            
+
             result = (aTableName != null && name != null && name.equals(aTableName));
             // && (parent != null && aTableParent != null && parent.equals(aTableParent));
-            
+
             if (columns != null && aTableColumns != null) {
                 Set objCols = aTableColumns.keySet();
                 Set myCols = columns.keySet();
-                
+
                 // Must be identical (no subsetting), hence the pair of tests.
                 result &= myCols.containsAll(objCols) && objCols.containsAll(myCols);
             } else if (!(columns == null && aTableColumns == null)) {
@@ -376,12 +362,12 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             }
             response &= (encoding != null) ? encoding.equals(aTable.encoding) : (aTable.encoding == null);
             response &= (fileName != null) ? fileName.equals(aTable.fileName) : (aTable.fileName == null);
-            
+
         }
-        
+
         return result & response;
     }
-    
+
     /**
      * @see org.netbeans.modules.model.database.DBTable#getCatalog
      */
@@ -389,7 +375,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public String getCatalog() {
         return "";
     }
-    
+
     /**
      * Gets the Create Statement SQL for creating table for a flat file
      *
@@ -398,7 +384,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public String getCreateStatementSQL() {
         return getCreateStatementSQL(this) + getFlatfilePropertiesSQL();
     }
-    
+
     /**
      * Gets the SQL create statement to create a text table representing this flatfile.
      *
@@ -444,8 +430,6 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         return buffer.toString();
     }
 
-    
-    
     /**
      * Gets the SQL create statement to create a text table representing this flatfile.
      *
@@ -491,8 +475,6 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         return buffer.toString();
     }
 
-    
-
     /**
      * Gets the SQL create statement to create a text table representing this flatfile.
      *
@@ -505,41 +487,38 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         try {
             if (runtimeName != null && runtimeName.trim().length() != 0) {
                 setOrPutProperty(FlatfileDBTable.PROP_FILENAME, "$" + runtimeName);
-                /**
-                if (isDynamicFilePath) {
-                    setOrPutProperty(FlatfileDBTable.PROP_FILENAME, "$" + runtimeName);
-                } else {
-                    // NOTE: DO NOT USE java.io.File to generate the file path,
-                    // as getCanonicalPath() is platform-centric and will hard-code
-                    // platform-specific root-drive info (e.g., "C:" for M$-Window$)
-                    // where it's inappropriate.
-                    setOrPutProperty(FlatfileDBTable.PROP_FILENAME, getFullFilePath(directory, "$" + runtimeName));
-                }**/
+            /**
+            if (isDynamicFilePath) {
+            setOrPutProperty(FlatfileDBTable.PROP_FILENAME, "$" + runtimeName);
+            } else {
+            // NOTE: DO NOT USE java.io.File to generate the file path,
+            // as getCanonicalPath() is platform-centric and will hard-code
+            // platform-specific root-drive info (e.g., "C:" for M$-Window$)
+            // where it's inappropriate.
+            setOrPutProperty(FlatfileDBTable.PROP_FILENAME, getFullFilePath(directory, "$" + runtimeName));
+            }**/
             } else {
                 setOrPutProperty(FlatfileDBTable.PROP_FILENAME, getFullFilePath(directory, fileName));
             }
-            
+
             setOrPutProperty(FlatfileDBTable.PROP_CREATE_IF_NOT_EXIST, new Boolean(createDataFileIfNotExist));
             sql = this.getCreateStatementSQL(this, theTableName) + this.getFlatfilePropertiesSQL();
         } catch (Exception e) {
-             mLogger.errorNoloc(mLoc.t("PRSR061: Failed to set the file path.{0}",LOG_CATEGORY),e);
-          //  Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to set the file path", e);
+            mLogger.errorNoloc(mLoc.t("PRSR061: Failed to set the file path.{0}", LOG_CATEGORY), e);
         }
         return sql;
     }
-    
+
     public String getDropStatementSQL() {
         return getDropStatementSQL(this);
     }
-    
+
     public static String getDropStatementSQL(String generatedTableName) {
-         StringBuilder buffer = new StringBuilder("DROP TABLE IF EXISTS \"");
+        StringBuilder buffer = new StringBuilder("DROP TABLE IF EXISTS \"");
         // NOI18N
         return buffer.append(generatedTableName).append("\"").toString();
     }
-    
-    
-     
+
     /**
      * Gets the SQL Drop statement to drop the text table representing this flatfile.
      *
@@ -554,7 +533,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         // NOI18N
         return buffer.append(tableName).append("\"").toString();
     }
-    
+
     /**
      * Gets the encoding scheme.
      *
@@ -563,7 +542,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public String getEncodingScheme() {
         return encoding;
     }
-    
+
     /**
      * Gets the file name.
      *
@@ -572,64 +551,62 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public String getFileName() {
         return fileName;
     }
-    
+
     public String getFlatfilePropertiesSQL() {
         StringBuilder buf = new StringBuilder(100);
-        
+
         // Create local copy of Map whose elements can be removed without
         // affecting the master copy.
         Map localProps = new HashMap(properties);
-        
+
         // Now emit key-value pairs in the localProps Map.
         Iterator iter = localProps.values().iterator();
         if (!iter.hasNext()) {
             return "";
         }
-        
+
         buf.append(" " + PROPS_KEYWORD + " "); // NOI18N
         buf.append(START_PROPS_DELIMITER); // NOI18N
-        
+
         int i = 0;
         while (iter.hasNext()) {
             Property aProp = (Property) iter.next();
-            
+
             // Don't write out properties which are meant only for use inside the wizard.
             if (WIZARD_ONLY_PROPERTIES.contains(aProp.getName().toUpperCase()) || aProp.getName().toUpperCase().startsWith(FlatfileDBTable.PROP_WIZARD)) {
                 continue;
             }
-            
+
             if (parserType != null) {
                 if (((!(parserType.equals(PropertyKeys.WEB) ||
-                    parserType.equals(PropertyKeys.RSS))) &&
+                        parserType.equals(PropertyKeys.RSS))) &&
                         aProp.getName().equals(PropertyKeys.URL)) ||
-                    (((parserType.equals(PropertyKeys.WEB) ||
-                    parserType.equals(PropertyKeys.RSS))) && aProp.getName().equals(PropertyKeys.FILENAME))) {
-                continue;
+                        (((parserType.equals(PropertyKeys.WEB) ||
+                        parserType.equals(PropertyKeys.RSS))) && aProp.getName().equals(PropertyKeys.FILENAME))) {
+                    continue;
+                }
             }
-            }
-            
+
             if (!aProp.isValid()) {
                 if (aProp.isRequired()) {
                     return ""; // Required property is invalid; fail.
                 }
-                  mLogger.infoNoloc(mLoc.t("PRSR062: Value for property {0}is invalid:{1}; skipping.",aProp.getName(),aProp.getValue()));
-               // Logger.print(Logger.ERROR, LOG_CATEGORY, this, "Value for property '" + aProp.getName() + "' is invalid: " + aProp.getValue()
-               // + "; skipping.");
+                mLogger.infoNoloc(mLoc.t("PRSR062: Value for property {0}is invalid:{1}; skipping.", aProp.getName(), aProp.getValue()));
                 continue; // Log and skip this parameter.
             }
-            
+
             if (i++ != 0) {
                 buf.append(PROP_SEPARATOR);
             }
-            
+
             buf.append(aProp.getKeyValuePair());
         }
-        
+
         buf.append(END_PROPS_DELIMITER); // NOI18N
-        
+
         return buf.toString();
     }
-    
+
     /**
      * Gets local path to sample file.
      *
@@ -638,7 +615,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public String getLocalFilePath() {
         return localPath;
     }
-    
+
     /**
      * Gets parse type, if any, associated with this flatfile. To set this type, call
      * setParseConfigurator with an appropriate ParseConfigurator instance from the
@@ -650,11 +627,11 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public String getParserType() {
         return parserType;
     }
-    
+
     public Map getProperties() {
         return (properties != null) ? properties : Collections.EMPTY_MAP;
     }
-    
+
     /**
      * Gets property string associated with the given name.
      *
@@ -665,7 +642,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         Property aProp = (Property) properties.get(key);
         return (aProp != null) ? (aProp.getValue() != null) ? aProp.getValue().toString() : null : null;
     }
-    
+
     /**
      * @see org.netbeans.modules.model.database.DBTable#getSchema
      */
@@ -673,7 +650,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public String getSchema() {
         return "";
     }
-    
+
     /**
      * Gets the SQL select statement to retrieve a result set displaying this file's
      * contents, using the given value as a limit to the number of rows returned.
@@ -686,10 +663,10 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         if (rows < 0) {
             throw new IllegalArgumentException("Must supply non-negative int value for parameter rows.");
         }
-        
+
         StringBuilder buffer = new StringBuilder(100);
         buffer.append("SELECT ");
-        
+
         Iterator it = getColumnList().iterator();
         int i = 0;
         while (it.hasNext()) {
@@ -697,19 +674,19 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             if (i++ != 0) {
                 buffer.append(", ");
             }
-            
+
             buffer.append("\"").append(colDef.getName()).append("\"");
         }
-        
+
         buffer.append(" FROM ").append("\"").append(getTableName()).append("\"");
-        
+
         if (rows > 0) {
             buffer.append(" LIMIT ").append(rows);
         }
-        
+
         return buffer.toString();
     }
-    
+
     /**
      * Gets the table name.
      *
@@ -718,7 +695,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public String getTableName() {
         return this.getName();
     }
-    
+
     /**
      * Overrides default implementation to compute hashCode value for those members used
      * in equals() for comparison.
@@ -730,17 +707,17 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public int hashCode() {
         int myHash = (name != null) ? name.hashCode() : 0;
         // myHash += (parent != null) ? parent.hashCode() : 0;
-        
+
         // Include hashCodes of all column names.
         if (columns != null) {
             myHash += columns.keySet().hashCode();
         }
         myHash += (encoding != null) ? encoding.hashCode() : 0;
         myHash += (fileName != null) ? fileName.hashCode() : 0;
-        
+
         return myHash;
     }
-    
+
     @Override
     public void parseXML(Element xmlElement) throws BaseException {
         // In order to be compliant with lagacy JIBX generated XML, following structure
@@ -762,7 +739,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         this.name = (String) attrs.get(ATTR_NAME);
         this.encoding = (String) attrs.get(ATTR_ENCODING);
         this.fileName = (String) attrs.get(ATTR_FILE_NAME);
-        
+
         // Get child "map" elements.
         NodeList childNodes = xmlElement.getElementsByTagName("map");
         parseColumns((Element) (childNodes.item(0)));
@@ -770,18 +747,17 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         upgradeProperties();
         setPK();
     }
-    
-    
+
     /**
      *Set defaults for any new property added in the UI property sheet
      *for flatfile db creation
      **/
     private void upgradeProperties() {
-        if( !properties.containsKey(PropertyKeys.TRIMWHITESPACE) ) {
-            setOrPutProperty(PropertyKeys.TRIMWHITESPACE,"true");
+        if (!properties.containsKey(PropertyKeys.TRIMWHITESPACE)) {
+            setOrPutProperty(PropertyKeys.TRIMWHITESPACE, "true");
         }
     }
-    
+
     /**
      * Sets the encoding scheme.
      *
@@ -790,7 +766,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public void setEncodingScheme(String newEncoding) {
         encoding = newEncoding;
     }
-    
+
     /**
      * Sets the file name.
      *
@@ -800,7 +776,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         fileName = newName;
         setOrPutProperty(PropertyKeys.FILENAME, newName);
     }
-    
+
     /**
      * Sets local path to sample file.
      *
@@ -810,15 +786,15 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     public void setLocalFilePath(File localFile) {
         localPath = (localFile.isFile()) ? localFile.getParentFile().getAbsolutePath() : localFile.getAbsolutePath();
     }
-    
+
     public void setOrPutProperty(String key, Object value) {
-        if (value!= null && !setProperty(key, value)) {
+        if (value != null && !setProperty(key, value)) {
             Property prop = new Property(key, value.getClass(), true);
             prop.setValue(value);
             properties.put(key, prop);
         }
     }
-    
+
     /**
      * Sets MutableParseConfigurator instance associated with this flatfile.
      *
@@ -828,13 +804,13 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         parserType = type;
         setOrPutProperty(PropertyKeys.LOADTYPE, type);
     }
-    
+
     public void setProperties(Map newProps) {
         if (newProps != null) {
             properties = newProps;
         }
     }
-    
+
     /**
      * Sets the property associated with the given String key to the given value.
      *
@@ -849,7 +825,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         }
         return false;
     }
-    
+
     /**
      * Overrides default implementation to return fully-qualified name of this DBTable
      * (including name of parent DatabaseModel).
@@ -859,7 +835,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder(50);
-        
+
         if (parentDBModel != null) {
             buf.append(parentDBModel.getModelName());
             buf.append(":");
@@ -867,10 +843,10 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         } else {
             buf.append(getName());
         }
-        
+
         return buf.toString();
     }
-    
+
     /**
      * Marshall this object to XML string.
      *
@@ -883,7 +859,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         if (prefix == null) {
             prefix = "";
         }
-        
+
         sb.append(prefix);
         sb.append("<");
         sb.append(TAG_STCDB_TABLE);
@@ -895,26 +871,26 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         sb.append("</");
         sb.append(TAG_STCDB_TABLE);
         sb.append(">\n");
-        
+
         return sb.toString();
     }
-    
+
     public void updateProperties(Map newProps) {
         if (newProps != null) {
             Iterator iter = newProps.keySet().iterator();
             while (iter.hasNext()) {
-                String key = (String)iter.next();
+                String key = (String) iter.next();
                 Object value = newProps.get(key);
-                setOrPutProperty(key,value);
+                setOrPutProperty(key, value);
             }
         }
     }
-    
+
     // use for test purpose only
     void setTableDefinition(Map props) {
         this.properties = props;
     }
-    
+
     /**
      * Perform deep copy of columns.
      *
@@ -925,14 +901,14 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         if (source != null && source != this) {
             columns.clear();
             Iterator iter = source.getColumnList().iterator();
-            
+
             // Must do deep copy to ensure correct parent-child relationship.
             while (iter.hasNext()) {
                 addColumn(new FlatfileDBColumnImpl((DBColumn) iter.next()));
             }
         }
     }
-    
+
     protected void parseColumns(Element mapNode) throws BaseException {
         NodeList entryNodeList = mapNode.getElementsByTagName("entry");
         NodeList columnNodeList = null;
@@ -940,7 +916,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         Element columnElement = null;
         String key = null;
         FlatfileDBColumn column = null;
-        
+
         int length = entryNodeList.getLength();
         for (int i = 0; i < length; i++) {
             entry = (Element) entryNodeList.item(i);
@@ -953,7 +929,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             columns.put(key, column);
         }
     }
-    
+
     protected void parseProperties(Element mapNode) {
         // <map size="8">
         // <entry key="LOADTYPE">Delimited</entry>
@@ -963,7 +939,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         Element entry = null;
         String key = null;
         String value = null;
-        
+
         int length = entryNodeList.getLength();
         for (int i = 0; i < length; i++) {
             entry = (Element) entryNodeList.item(i);
@@ -973,31 +949,31 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
             this.setOrPutProperty(key, StringUtil.unescapeControlChars(value));
         }
     }
-    
+
     private String getAttributeNameValues() {
         StringBuilder sb = new StringBuilder(" ");
         sb.append(ATTR_NAME);
         sb.append(EQUAL_START_QUOTE);
         sb.append(this.name);
         sb.append(END_QUOTE_SPACE);
-        
+
         sb.append(ATTR_ENCODING);
         sb.append(EQUAL_START_QUOTE);
         sb.append(this.encoding);
         sb.append(END_QUOTE_SPACE);
-        
+
         sb.append(ATTR_FILE_NAME);
         sb.append(EQUAL_START_QUOTE);
         sb.append(this.fileName);
         sb.append(END_QUOTE_SPACE);
-        
+
         sb.append(ATTR_PARENT);
         sb.append(EQUAL_START_QUOTE);
         sb.append(this.parentDBModel.getModelName());
         sb.append("\"");
         return sb.toString();
     }
-    
+
     /**
      * @param directory
      * @param runtimeName
@@ -1006,22 +982,22 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     private String getFullFilePath(String directory, String filename) {
         StringBuilder fullpath = new StringBuilder(50);
         fullpath.append((StringUtil.isNullString(directory)) ? "" : directory);
-        
+
         char separator = '/';
         if (directory.indexOf('\\') != -1) {
             separator = '\\';
         }
-        
+
         // Append a separator to the end of full path if directory doesn't
         // already end with it.
         if (!directory.endsWith(Character.toString(separator))) {
             fullpath.append(separator);
         }
         fullpath.append(filename);
-        
+
         return fullpath.toString().trim();
     }
-    
+
     private String getXMLColumnMap(String prefix) throws BaseException {
         StringBuilder sb = new StringBuilder(prefix);
         sb.append("<map size=\"");
@@ -1032,7 +1008,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         sb.append("</map>\n");
         return sb.toString();
     }
-    
+
     private String getXMLColumnMapEntries(String prefix) throws BaseException {
         StringBuilder sb = new StringBuilder();
         FlatfileDBColumn column = null;
@@ -1051,10 +1027,10 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
                 sb.append("</entry>\n");
             }
         }
-        
+
         return sb.toString();
     }
-    
+
     private String getXMLTableProperties(String prefix) {
         StringBuilder sb = new StringBuilder();
         sb.append(prefix);
@@ -1062,7 +1038,7 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         if ((this.properties != null) && (this.properties.size() > 0)) {
             sb.append(this.properties.size());
             sb.append("\">\n");
-            
+
             Iterator itr = properties.keySet().iterator();
             String key = null;
             String val = null;
@@ -1080,27 +1056,27 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
         } else {
             sb.append("0\">\n");
         }
-        
+
         sb.append(prefix);
         sb.append("</map>\n");
-        
+
         return sb.toString();
     }
-    
-    private void setPK(){
+
+    private void setPK() {
         List pkList = new ArrayList();
         SortedSet fields = new TreeSet(this.columns.values());
         Iterator it = fields.iterator();
         FlatfileDBColumn colDef = null;
-        
+
         while (it.hasNext()) {
             colDef = (FlatfileDBColumn) it.next();
             if (colDef.isPrimaryKey()) {
                 pkList.add(colDef.getName());
             }
         }
-        
-        if (pkList.size() > 0){
+
+        if (pkList.size() > 0) {
             this.primaryKey = new PrimaryKeyImpl("pk" + this.name, pkList);
         }
     }
@@ -1118,5 +1094,4 @@ public class FlatfileDBTableImpl extends AbstractDBTable implements FlatfileDBTa
     protected void parseChildren(NodeList childNodeList) throws BaseException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
 }

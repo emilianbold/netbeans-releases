@@ -6,7 +6,6 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
-
 package org.netbeans.modules.etl.ui.view;
 
 import java.awt.BorderLayout;
@@ -57,12 +56,12 @@ import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
-
 /**
  *
  * @author karthik
  */
 public class ConfigParamsTreeView extends JPanel implements PropertyChangeListener {
+
     private String LOG_CATEGORY = DBModelTreeView.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(ConfigParamsTreeView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
@@ -75,64 +74,40 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
     private ETLDataObject dObj;
     private File confFile;
     private SQLDefinition sqlDefn;
-    
     private final String CONFIG_FILE_PATH = "\\..\\..\\nbproject\\config\\";
-    
     private final String CONFIG_FILE = ".conf";
-    
     private final String ETL_CONFIG_TAG = "ETLConfig";
-    
     private final String ETL_COLLAB_TAG = "ETLCollaboration";
-    
     private final String ETL_COLLAB_ATTR_1 = "name";
-    
     private final String ETL_SOURCE_TAG = "source";
-    
     private final String ETL_TARGET_TAG = "target";
-    
     private final String ETL_CONNECTION_TAG = "jdbcConnection";
-    
     private final String ETL_CONNECTION_ATTR_1 = "name";
-    
     private final String ETL_CONNECTION_ATTR_2 = "url";
-    
     private final String ETL_CONNECTION_ATTR_3 = "username";
-    
     private final String ETL_CONNECTION_ATTR_4 = "password";
-    
     private final String ETL_CONNECTION_ATTR_5 = "schema";
-    
     private final String ETL_CONNECTION_ATTR_6 = "catalog";
-    
     private final String ETL_CONNECTION_ATTR_7 = "dbTable";
-    
     private final String ETL_CONNECTION_ATTR_8 = "dataDir";
-    
     private static URL rootImgUrl = ConfigParamsTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/root.png");
-    
     private static URL columnImgUrl = ConfigParamsTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/column.png");
-    
     private static URL tableImgUrl = ConfigParamsTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/SourceTable.png");
-    
     private static URL targetTableImgUrl = ConfigParamsTreeView.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/TargetTable.png");
-    
     private static ImageIcon rootIcon;
-    
     private static ImageIcon tableIcon;
-    
     private static ImageIcon targetTableIcon;
-    
     private static ImageIcon columnIcon;
-    
     private IPropertyGroup pGroup;
     
+
     static {
         rootIcon = new ImageIcon(rootImgUrl);
         tableIcon = new ImageIcon(tableImgUrl);
         columnIcon = new ImageIcon(columnImgUrl);
         targetTableIcon = new ImageIcon(targetTableImgUrl);
     }
-    
+
     /**
      * Creates a new instance of ConfigParamsTreeView.
      *
@@ -148,15 +123,16 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         this.tgtdbModels = getDBModels(false);
         initGui();
     }
-    
+
     private void initGui() {
-        
+
         this.setLayout(new BorderLayout());
         DefaultTreeModel treeModel = createTreeModel();
         tree = new JTree();
-        
+
         tree.setCellRenderer(new TableTreeCellRenderer());
         tree.addTreeSelectionListener(new TreeSelectionListener() {
+
             public void valueChanged(TreeSelectionEvent e) {
                 if (propSheet != null) {
                     propSheet.commitChanges();
@@ -165,12 +141,12 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
                     }
                     tree.repaint();
                 }
-                
+
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
                 if (node == null) {
                     return;
                 }
-                
+
                 Object nodeInfo = node.getUserObject();
                 if (nodeInfo instanceof SQLDBModel) {
                     if (comp != null) {
@@ -202,26 +178,26 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
                 }
             }
         });
-        
+
         tree.setModel(treeModel);
-        
+
         tree.setRootVisible(false);
         tree.setDragEnabled(true);
         tree.setShowsRootHandles(true);
-        
+
         Object root = treeModel.getRoot();
         Object rootFirstChild = treeModel.getChild(root, 0);
-        
+
         Object pathArray[] = new Object[2];
         pathArray[0] = root;
         pathArray[1] = rootFirstChild;
-        
+
         TreePath tpath = new TreePath(pathArray);
         tree.setSelectionPath(tpath);
         JScrollPane treePane = new JScrollPane(tree);
         this.add(BorderLayout.CENTER, treePane);
     }
-    
+
     /**
      * Gets current IPropertySheet instance, if any.
      *
@@ -230,7 +206,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
     public IPropertySheet getPropSheet() {
         return propSheet;
     }
-    
+
     /**
      * Gets sql definition data corresponding to the collab.
      *
@@ -239,7 +215,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
     public SQLDefinition getData() {
         return sqlDefn;
     }
-    
+
     private DefaultTreeModel createTreeModel() {
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Configuration");
         DefaultTreeModel treeModel = new DefaultTreeModel(rootNode);
@@ -263,7 +239,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         }
         return treeModel;
     }
-    
+
     private void createTableNodes(SQLDBModel dbModel, DefaultMutableTreeNode dbModelNode) {
         Iterator it = dbModel.getTables().iterator();
         while (it.hasNext()) {
@@ -272,23 +248,24 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
             dbModelNode.add(tableNode);
         }
     }
-    
+
     private class TableNode extends DefaultMutableTreeNode {
+
         private SQLDBTable table;
-        
+
         public TableNode(Object userObj) {
             super(userObj);
             this.table = (SQLDBTable) userObj;
         }
-        
+
         public String toString() {
             String displayPrefix = table.getSchema();
             displayPrefix += (((displayPrefix != null) && displayPrefix.trim().length() != 0) ? "." : "");
-            
+
             return displayPrefix + table.getQualifiedName();
         }
     }
-    
+
     /**
      * This method gets called when a bound property is changed.
      *
@@ -301,8 +278,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         }
         tree.repaint();
     }
-    
-    
+
     /**
      * get the DBModels list from the config file if present or from the etl definition file.
      *
@@ -315,34 +291,34 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
             Element element = XmlUtil.loadXMLFile(new BufferedReader(new FileReader(this.confFile)));
             rootNode = (Node) element;
         } catch (Exception ex) {
-             mLogger.infoNoloc(mLoc.t("PRSR041: ConfigParamsTreeView.class.getName(){0}",ex.getMessage()));
-            //Logger.print(Logger.ERROR, ConfigParamsTreeView.class.getName(), ex.getMessage());
+            mLogger.infoNoloc(mLoc.t("PRSR041: ConfigParamsTreeView.class.getName(){0}", ex.getMessage()));
         }
         Node node;
-        if(rootNode != null) {
+        if (rootNode != null) {
             Node sqlNode = rootNode.getFirstChild();
             try {
-                sqlDefn = new SQLDefinitionImpl((Element)sqlNode);
+                sqlDefn = new SQLDefinitionImpl((Element) sqlNode);
             } catch (Exception ex) {
-                 mLogger.infoNoloc(mLoc.t("PRSR042: ConfigParamsTreeView.class.getName(){0}",ex.getMessage()));
-                //Logger.print(Logger.ERROR, ConfigParamsTreeView.class.getName(), ex.getMessage());
+                mLogger.infoNoloc(mLoc.t("PRSR042: ConfigParamsTreeView.class.getName(){0}", ex.getMessage()));
             }
         }
-        if(isSource) {
+        if (isSource) {
             return sqlDefn.getSourceDatabaseModels();
         } else {
             return sqlDefn.getTargetDatabaseModels();
         }
     }
-    
+
     /**
      * Wrapper object around an instance of SQLDBModel. Required to restrict
      * getter and setter access to SQLDBModel instances by PropertySheet
      * implementations.
      */
     public class DBModelObj {
+
         private SQLDBModel dbModel;
         private SQLDBModel orgDBModel;
+
         /**
          * Creates an instance of DBModelObj associated with the given
          * SQLDBModel.
@@ -353,7 +329,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
             this.dbModel = dbModel;
             this.orgDBModel = dbModel;
         }
-        
+
         /**
          * Gets user name.
          *
@@ -362,7 +338,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         public String getUserName() {
             return dbModel.getConnectionDefinition().getUserName();
         }
-        
+
         /**
          * Sets username with given String.
          *
@@ -376,9 +352,9 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
                 orgDBModel = dbModel;
             } catch (Exception ex) {
                 // ignore
-            }             
+            }
         }
-        
+
         /**
          * Gets current password.
          *
@@ -387,7 +363,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         public String getPassword() {
             return dbModel.getConnectionDefinition().getPassword();
         }
-        
+
         /**
          * Sets password with given String.
          *
@@ -401,9 +377,9 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
                 orgDBModel = dbModel;
             } catch (Exception ex) {
                 // ignore
-            }             
+            }
         }
-        
+
         /**
          * Gets current connection URL.
          *
@@ -412,7 +388,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         public String getConnectionURL() {
             return dbModel.getConnectionDefinition().getConnectionURL();
         }
-        
+
         /**
          * Sets connection URL with given String.
          *
@@ -426,17 +402,19 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
                 orgDBModel = dbModel;
             } catch (Exception ex) {
                 // ignore
-            } 
+            }
         }
     }
-    
+
     /**
      * Wrapper object around an instance of AbstractDBTable. Required to restrict getter
      * and setter access to AbstractDBTable instances by PropertySheet implementations.
      */
     public class DBTableObj {
+
         private SQLDBTable dbTable;
         private SQLDBTable orgDBTable;
+
         /**
          * Creates an instance of DBTableObj associated with the given AbstractDBTable.
          *
@@ -446,7 +424,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
             this.orgDBTable = dbTable;
             this.dbTable = dbTable;
         }
-        
+
         /**
          * Sets current schema name.
          *
@@ -455,16 +433,16 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         public void setSchema(String newSchema) {
             dbTable.setSchema(newSchema);
             try {
-                SQLDBModel dbModel = (SQLDBModel)dbTable.getParent();
+                SQLDBModel dbModel = (SQLDBModel) dbTable.getParent();
                 sqlDefn.removeObject(dbModel);
-                dbModel.deleteTable(dbTable.getName());               
+                dbModel.deleteTable(dbTable.getName());
                 sqlDefn.addObject(dbModel);
                 orgDBTable = dbTable;
             } catch (Exception ex) {
                 // ignore
-            }            
+            }
         }
-        
+
         /**
          * Gets current schema name.
          *
@@ -473,7 +451,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         public String getSchema() {
             return dbTable.getSchema();
         }
-        
+
         /**
          * Gets current catalog name.
          *
@@ -482,7 +460,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         public String getCatalog() {
             return dbTable.getCatalog();
         }
-        
+
         /**
          * Sets current catalog name.
          *
@@ -491,18 +469,19 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
         public void setCatalog(String newCatalog) {
             dbTable.setCatalog(newCatalog);
             try {
-                SQLDBModel dbModel = (SQLDBModel)dbTable.getParent();
+                SQLDBModel dbModel = (SQLDBModel) dbTable.getParent();
                 sqlDefn.removeObject(dbModel);
-                dbModel.deleteTable(dbTable.getName());                              
+                dbModel.deleteTable(dbTable.getName());
                 sqlDefn.addObject(dbModel);
                 orgDBTable = dbTable;
             } catch (Exception ex) {
                 // ignore
-            }                            
+            }
         }
     }
-    
+
     private class TableTreeCellRenderer extends DefaultTreeCellRenderer {
+
         /**
          * Configures the renderer based on the passed in components. The value is set
          * from messaging the tree with <code>convertValueToText</code>, which
@@ -512,7 +491,7 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
          */
         public Component getTreeCellRendererComponent(JTree tree1, Object value, boolean sel, boolean expanded, boolean leaf, int row,
                 boolean hasFocus1) {
-            
+
             JLabel renderer = (JLabel) super.getTreeCellRendererComponent(tree1, value, sel, expanded, leaf, row, hasFocus1);
             if (value instanceof DefaultMutableTreeNode) {
                 DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) value;
@@ -524,11 +503,11 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
                         case SQLConstants.SOURCE_DBMODEL:
                             dbName = NbBundle.getMessage(ConfigParamsTreeView.class, "TEMPLATE_source_model_label", dbName);
                             break;
-                            
+
                         case SQLConstants.TARGET_DBMODEL:
                             dbName = NbBundle.getMessage(ConfigParamsTreeView.class, "TEMPLATE_target_model_label", dbName);
                             break;
-                            
+
                         default:
                             break;
                     }

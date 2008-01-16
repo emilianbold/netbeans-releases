@@ -64,6 +64,7 @@ import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
  * @version $Revision$
  */
 public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
+
     private static final String LOG_CATEGORY = PipelinedStrategyBuilderImpl.class.getName();
     private static final MessageManager msgMgr = MessageManager.getManager(ETLTaskNode.class);
     private static transient final Logger mLogger = LogUtil.getLogger(PipelinedStrategyBuilderImpl.class.getName());
@@ -147,8 +148,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
      * Before calling apply appropriate applyConnections
      */
     public void generateScriptForTable(ETLStrategyBuilderContext context) throws BaseException {
-        mLogger.infoNoloc(mLoc.t("PRSR008: Looping through target tables:{0}",LOG_CATEGORY));
-       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Looping through target tables: ");
+        mLogger.infoNoloc(mLoc.t("PRSR008: Looping through target tables:{0}", LOG_CATEGORY));
         checkTargetConnectionDefinition(context);
 
         TargetTable tt = context.getTargetTable();
@@ -203,7 +203,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
             SQLDBTable dbTable = (SQLDBTable) it.next();
             FlatfileDefinition srcRepObj = ETLCodegenUtil.getStcdbObjectTypeDefinition(dbTable);
             if (srcRepObj != null) {
-                FlatfileDefinition srcFFDef =  srcRepObj;
+                FlatfileDefinition srcFFDef = srcRepObj;
                 InternalDBMetadata srcInternalMetadata = model.getInternalMetadata(dbTable);
                 if (srcInternalMetadata != null) {
                     getFlatfileInitSQLParts(srcFFDef, srcInternalMetadata, initTask, cleanupTask, dbTable, false);
@@ -220,7 +220,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
         StatementContext sc = new StatementContext();
         sc.setUsingUniqueTableName(true);
         sc.putClientProperty(StatementContext.USE_FULLY_QUALIFIED_TABLE, Boolean.FALSE);
-        
+
         truncateTargetTableIfExists(tt, pipeline, ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME, db.getAxionPipelineStatements(), sc);
         SQLPart insertSelectPart = createTransformStatement(tt, sc);
 
@@ -262,7 +262,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
     }
 
     protected void buildInitializationStatements(SQLDBTable table, ETLTaskNode initTask, Map connDefToLinkName) throws BaseException {
-        DBConnectionDefinition connDef = this.builderModel.getConnectionDefinition(table); 
+        DBConnectionDefinition connDef = this.builderModel.getConnectionDefinition(table);
 
         if (requiresRemoteAccess(table)) {
             // Generate a unique name for the DB link, ensuring that the link name is a
@@ -277,7 +277,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
                 SQLDBConnectionDefinition etlConnDef = SQLModelObjectFactory.getInstance().createDBConnectionDefinition(connDef);
                 etlConnDef.setDriverClass(connDef.getDriverClass());
                 SQLPart initPart = new SQLPart(getCreateDBLinkSQL(etlConnDef, linkName), SQLPart.STMT_INITIALIZESTATEMENTS,
-                    ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME);
+                        ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME);
 
                 initTask.addOptionalTask(initPart);
                 connDefToLinkName.put(connDef, linkName);
@@ -298,13 +298,13 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
             String localName = db.getUnescapedName(db.getGeneratorFactory().generate(table, context));
 
             SQLPart initPart = new SQLPart(getCreateRemoteTableSQL(table, localName, linkName), SQLPart.STMT_INITIALIZESTATEMENTS,
-                ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME);
+                    ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME);
             initTask.addOptionalTask(initPart);
 
             // FIXME: create remount statement in Axion statement Generator
             // FIXME: Do we need remount here ?
             SQLPart remountPart = new SQLPart("REMOUNT EXTERNAL TABLE " + (StringUtil.isNullString(localName) ? table.getName() : localName),
-                SQLPart.STMT_INITIALIZESTATEMENTS, ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME);
+                    SQLPart.STMT_INITIALIZESTATEMENTS, ETLScriptBuilderModel.ETL_INSTANCE_DB_CONN_DEF_NAME);
             initTask.addOptionalTask(remountPart);
         }
     }
@@ -390,7 +390,7 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
     @Override
     protected String getCommentForTransformer(TargetTable targetTable) throws BaseException {
         return MSG_MGR.getString("DISPLAY_INSERT_TARGET_PIPELINE", targetTable.getParent().getModelName(), this.builderModel.getConnectionDefinition(
-            targetTable).getDBType());
+                targetTable).getDBType());
     }
 
     protected String getCreateDBLinkSQL(DBConnectionDefinition connDef, String linkName) throws BaseException {
@@ -446,5 +446,4 @@ public class PipelinedStrategyBuilderImpl extends BaseETLStrategyBuilder {
         stmtBuf.append(stmts.getCreateRemoteTableStatement(table, localName, linkName).getSQL());
         return stmtBuf.toString();
     }
-
 }

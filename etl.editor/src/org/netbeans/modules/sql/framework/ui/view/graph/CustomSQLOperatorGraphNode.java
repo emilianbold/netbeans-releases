@@ -64,62 +64,60 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
-
 /**
  * Graphical representation of a custom operator
  *
  * @author Srinivasan Rengarajan
  */
 public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
+
     private static transient final Logger mLogger = LogUtil.getLogger(CustomSQLOperatorGraphNode.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
     private JMenuItem editItem;
-    
     private IOperatorXmlInfo info;
-    
     private static final String LOG_CATEGORY = CustomSQLOperatorGraphNode.class.getName();
-    
+
     /** Creates a new instance of OperatorGraphNode */
     public CustomSQLOperatorGraphNode(IOperatorXmlInfo info) {
-        
+
         super(info, false);
         this.info = info;
     }
-    
+
     public CustomSQLOperatorGraphNode(IOperatorXmlInfo info, boolean show) {
-        
+
         super(info, show);
         this.info = info;
     }
-    
+
     public CustomSQLOperatorGraphNode(IOperatorXmlInfo info, boolean show,
             String nameOverride) {
-        
+
         super(info, show, nameOverride);
         this.info = info;
     }
-    
+
     /**
      * populates the menu and adds the edit option
      */
     protected void initializePopUpMenu() {
-        
+
         CustomOperatorActionListener aListener = new CustomOperatorActionListener();
         // remove menu
-        if( popUpMenu == null ) {
+        if (popUpMenu == null) {
             popUpMenu = new JPopupMenu();
         }
-       
+
         editItem = new JMenuItem("Edit", new ImageIcon(editUrl));
         editItem.addActionListener(aListener);
         popUpMenu.add(editItem);
         popUpMenu.addSeparator();
         super.initializePopUpMenu();
-        
+
     }
-    
+
     private class CustomOperatorActionListener extends OperatorActionListener {
+
         public void actionPerformed(ActionEvent e) {
             super.actionPerformed(e);
             Object source = e.getSource();
@@ -128,7 +126,7 @@ public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
             }
         }
     }
-    
+
     /**
      * method invoked to edit a custom operator definition
      *
@@ -198,11 +196,10 @@ public class CustomSQLOperatorGraphNode extends SQLOperatorGraphNode {
                 ((ConditionBuilderSQLUIModelImpl) graphModel).restoreUIState();
             }
         } catch (Exception e) {
-              mLogger.errorNoloc(mLoc.t("PRSR167: editCustomOperator{0}",e.getMessage()),e);
-            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "editCustomOperator", e.getMessage(), e);
+            mLogger.errorNoloc(mLoc.t("PRSR167: editCustomOperator{0}", e.getMessage()), e);
         }
     }
-    
+
     /**
      * Invoked when an action occurs.
      */

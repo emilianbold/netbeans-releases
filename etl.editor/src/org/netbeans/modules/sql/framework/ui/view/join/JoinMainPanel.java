@@ -94,31 +94,18 @@ public class JoinMainPanel extends JPanel {
     private static transient final Logger mLogger = LogUtil.getLogger(JoinMainPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private ListTransferPanel listPanel;
-
     private JTabbedPane bottomTabPane;
-
     private JSplitPane splitPane;
-
     private JoinPreviewPanel previewPanel;
-
     private TableColumnTreePanel tableColumnPanel;
-
     private Collection sources = new ArrayList();
-
     private Collection<DBTable> targets = new ArrayList<DBTable>();
-
     private URL tableImgUrl = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/SourceTable.png");
-
     private SQLJoinView initialJoinView;
-
     private SQLJoinView copiedJoinView;
-
     private IGraphView mainGraphView;
-
     private transient boolean refreshPreview = true;
-
     private transient boolean showInstruction = true;
-
     private boolean isReordering = false;
 
     /** Creates a new instance of JoinMainPanel */
@@ -191,7 +178,7 @@ public class JoinMainPanel extends JPanel {
 
         // initialize list transfer panel
         listPanel = new ListTransferPanel(this, NbBundle.getMessage(JoinMainPanel.class, "JOIN_LIST_TRANSFER_PANEL_SOURCE_LABEL"),
-            NbBundle.getMessage(JoinMainPanel.class, "JOIN_LIST_TRANSFER_PANEL_TARGET_LABEL"), sources, targets);
+                NbBundle.getMessage(JoinMainPanel.class, "JOIN_LIST_TRANSFER_PANEL_TARGET_LABEL"), sources, targets);
 
         // set the target list to allow continuous selection for up and down purpose
         listPanel.getDestinationJList().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -362,7 +349,6 @@ public class JoinMainPanel extends JPanel {
 
             return renderer;
         }
-
     }
 
     class TargetListRenderer extends DefaultListCellRenderer {
@@ -402,7 +388,7 @@ public class JoinMainPanel extends JPanel {
             // numLabel.setSize(16, 16);
             numLabel.setBackground(Color.blue);
             numLabel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(Color.black), BorderFactory.createEmptyBorder(0, 2,
-                0, 2)));
+                    0, 2)));
 
             cellRenderer.add(numLabel, gc);
 
@@ -420,7 +406,6 @@ public class JoinMainPanel extends JPanel {
 
             return renderer;
         }
-
     }
 
     void moveUp() {
@@ -578,7 +563,6 @@ public class JoinMainPanel extends JPanel {
         public void intervalRemoved(ListDataEvent e) {
             // refreshPanels(e);
         }
-
     }
 
     class ListTransferChangeListener implements ChangeListener {
@@ -597,7 +581,6 @@ public class JoinMainPanel extends JPanel {
                 }
             }
         }
-
     }
 
     public SQLJoinView getSQLJoinView() {
@@ -623,10 +606,9 @@ public class JoinMainPanel extends JPanel {
             refreshPreview = true;
 
         } catch (CloneNotSupportedException ex) {
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinMainPanel", "can not clone existing SQLJoinView", ex);
-              mLogger.errorNoloc(mLoc.t("PRSR179: cannot clone existing SQLJoinView{0}",LOG_CATEGORY),ex);
+            mLogger.errorNoloc(mLoc.t("PRSR179: cannot clone existing SQLJoinView{0}", LOG_CATEGORY), ex);
             DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 
             return;
         }
@@ -655,10 +637,9 @@ public class JoinMainPanel extends JPanel {
             this.listPanel.addToDestination(sTable);
 
         } catch (CloneNotSupportedException ex) {
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "JoinMainPanel", "can not clone existing SQLJoinView", ex);
-            mLogger.errorNoloc(mLoc.t("PRSR180: Join View model is corrupted.{0}{1}",ex.getMessage(),NotifyDescriptor.ERROR_MESSAGE),ex);
+            mLogger.errorNoloc(mLoc.t("PRSR180: Join View model is corrupted.{0}{1}", ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE), ex);
             DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    new NotifyDescriptor.Message("Join View model is corrupted. " + ex.getMessage(), NotifyDescriptor.ERROR_MESSAGE));
 
             return;
         }

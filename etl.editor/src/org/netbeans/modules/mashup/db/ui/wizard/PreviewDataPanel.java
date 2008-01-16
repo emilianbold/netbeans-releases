@@ -81,7 +81,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class PreviewDataPanel extends JPanel implements ActionListener {
-    
+
     private static final String CMD_SHOWDATA = "ShowData"; // NOI18N
     private static final String LOG_CATEGORY = PreviewDataPanel.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(PreviewDataPanel.class.getName());
@@ -93,10 +93,10 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
     private FlatfileColumnTableModel tableModel;
     private JLabel parseErrorMessage;
     private JLabel totalRowsLabel;
-    
+
     public PreviewDataPanel(FlatfileDBTable table) {
         currentTable = table;
-        
+
         String previewLabel = NbBundle.getMessage(TableDefinitionPanel.class, "LBL_import_preview_table");
         setBorder(BorderFactory.createTitledBorder(previewLabel));
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
@@ -105,7 +105,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         recordViewer = new ResultSetTablePanel();
         add(recordViewer);
     }
-    
+
     /**
      * Invoked when an action occurs.
      *
@@ -113,7 +113,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
      */
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
-        
+
         if (src == recordCount) {
             previewBtn.requestFocusInWindow();
             previewBtn.doClick();
@@ -121,86 +121,82 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             tryResulSet();
         }
     }
-    
+
     public boolean tryResulSet() {
         int ct = 25;
         boolean isValid = true;
-        
+
         try {
             ct = Integer.parseInt(recordCount.getText());
         } catch (NumberFormatException nfe) {
             recordCount.setText(String.valueOf(25));
         }
-        
+
         // Call helper to obtain result set and display.
         if (tableModel != null && !tableModel.getRowEntries().isEmpty()) {
             tableModel.updateColumns(currentTable);
         }
-        
+
         FlatfileDBTable table = (FlatfileDBTable) currentTable.clone();
-        
+
         table.setProperty(PropertyKeys.WIZARDFIELDCOUNT, new Integer(table.getColumnList().size()));
         String fname = table.getProperty(PropertyKeys.FILENAME);
-        if(fname == null || fname.equals("")) {
-            if(table.getLocalFilePath() != null && !table.getLocalFilePath().equals("") &&
+        if (fname == null || fname.equals("")) {
+            if (table.getLocalFilePath() != null && !table.getLocalFilePath().equals("") &&
                     table.getFileName() != null && !table.getFileName().equals("")) {
-                ((FlatfileDBTableImpl)table).setOrPutProperty(PropertyKeys.FILENAME, 
+                ((FlatfileDBTableImpl) table).setOrPutProperty(PropertyKeys.FILENAME,
                         (new File(table.getLocalFilePath(), table.getFileName())).getAbsolutePath());
             }
         }
         String fileName = StringUtil.escapeControlChars(table.getProperty("URL"));
-        ((FlatfileDBTableImpl)table).setOrPutProperty(PropertyKeys.FILENAME, fileName);
-        if(table.getParserType().equalsIgnoreCase(PropertyKeys.WEB) || 
+        ((FlatfileDBTableImpl) table).setOrPutProperty(PropertyKeys.FILENAME, fileName);
+        if (table.getParserType().equalsIgnoreCase(PropertyKeys.WEB) ||
                 table.getParserType().equalsIgnoreCase(PropertyKeys.RSS)) {
-            Map properties = ((FlatfileDBTableImpl)table).getProperties();
-            properties.remove(PropertyKeys.FILENAME);            
-            ((FlatfileDBTableImpl)table).setProperties(properties);
+            Map properties = ((FlatfileDBTableImpl) table).getProperties();
+            properties.remove(PropertyKeys.FILENAME);
+            ((FlatfileDBTableImpl) table).setProperties(properties);
         }
-        
+
         Connection conn = null;
         File previewDir = new File(System.getProperty("java.io.tmpdir"), ".preview");
         File metadataDir = new File(previewDir, ".metadata");
-        
+
         File lockFile = new File(metadataDir, "lockfile.txt");
         FlatfileDBConnectionFactory factory = FlatfileDBConnectionFactory.getInstance();
         Object oldLockFlag = factory.getIgnoreLockProperty();
         try {
             factory.setIgnoreLockProperty("true");
-            
+
             if (lockFile.exists()) {
                 lockFile.delete();
             }
-            
+
             if (!metadataDir.exists()) {
                 metadataDir.mkdirs();
             }
-            
+
             String url = FlatfileDBConnectionFactory.DEFAULT_FLATFILE_JDBC_URL_PREFIX + "preview:" + metadataDir;
-            //Logger.print(Logger.DEBUG, LOG_CATEGORY, "Preview URL: " + url);
-            mLogger.infoNoloc(mLoc.t("PRSR075: Preview URL: {0}",url));
+            mLogger.infoNoloc(mLoc.t("PRSR075: Preview URL: {0}", url));
             conn = FlatfileDBConnectionFactory.getInstance().getConnection(url);
             Statement stmt = conn.createStatement();
-            
+
             stmt.execute("DROP TABLE IF EXISTS " + table.getTableName());
             String create = table.getCreateStatementSQL();
-            
-            //Logger.print(Logger.DEBUG, LOG_CATEGORY, this, "Generated create statement: " + create);
-            mLogger.infoNoloc(mLoc.t("PRSR076: Generated create statement: {0}",create));
+
+            mLogger.infoNoloc(mLoc.t("PRSR076: Generated create statement: {0}", create));
             stmt.execute(create);
-            
+
             ResultSet rs = stmt.executeQuery(table.getSelectStatementSQL(ct));
             recordViewer.clearView();
             recordViewer.setResultSet(rs);
-            
+
             // get the count of all rows
             String countSql = "Select count(*) From " + table.getName();
-            mLogger.infoNoloc(mLoc.t("PRSR077: Select count(*) statement used for total rows:{0}",countSql));
-           // Logger.getLogger(FlatfileResulSetPanel.class.getName()).info( "Select count(*) statement used for total rows: \n" + countSql);
-            //Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), "Select count(*) statement used for total rows: \n" + countSql);
-            
+            mLogger.infoNoloc(mLoc.t("PRSR077: Select count(*) statement used for total rows:{0}", countSql));
+
             stmt = conn.createStatement();
             ResultSet cntRs = stmt.executeQuery(countSql);
-            
+
             // set the count
             if (cntRs == null) {
                 totalRowsLabel.setText("");
@@ -210,16 +206,15 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
                     totalRowsLabel.setText(String.valueOf(count));
                 }
             }
-            
+
             stmt.execute("DROP TABLE " + table.getTableName());
         } catch (NoSuchElementException nse) {
             String errorMsg = "ERROR: Current sample file may be corrupt, or does not match specified datatypes.";
             try {
                 errorMsg = NbBundle.getMessage(TableDefinitionPanel.class, "ERROR_bad_preview");
             } catch (MissingResourceException mre) {
-               mLogger.infoNoloc(mLoc.t("PRSR078: Could not locate resource string for ERROR_bad_preview:{0}",mre));
-             //  Logger.getLogger(LOG_CATEGORY).info("Could not locate resource string for ERROR_bad_preview."+ mre);
-                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Could not locate resource string for ERROR_bad_preview.", mre);
+                mLogger.infoNoloc(mLoc.t("PRSR078: Could not locate resource string for ERROR_bad_preview:{0}", mre));
+
             }
             showError("Sample file may be corrupt, or does not match specified datatypes", errorMsg, nse);
             isValid = false;
@@ -230,9 +225,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
                 sqlExMsg = stripExceptionHeaderFromMessage(se);
                 errorMsg = NbBundle.getMessage(TableDefinitionPanel.class, "ERROR_bad_preview_sqlex", sqlExMsg);
             } catch (MissingResourceException mre) {
-                  mLogger.errorNoloc(mLoc.t("PRSR079: Could not locate resource string for ERROR_bad_preview {0}",LOG_CATEGORY),mre);
-               // Logger.getLogger(LOG_CATEGORY).info("Could not locate resource string for ERROR_bad_preview."+ mre);
-                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Could not locate resource string for ERROR_bad_preview.", mre);
+                mLogger.errorNoloc(mLoc.t("PRSR079: Could not locate resource string for ERROR_bad_preview {0}", LOG_CATEGORY), mre);
             }
             showError(sqlExMsg, errorMsg, se);
             isValid = false;
@@ -250,25 +243,25 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
                     // ignore
                 }
             }
-            
+
             if (lockFile != null && lockFile.exists()) {
                 lockFile.delete();
             }
-            
+
             if (metadataDir != null && metadataDir.exists()) {
                 metadataDir.deleteOnExit();
             }
-            
+
             if (previewDir != null && previewDir.exists()) {
                 previewDir.deleteOnExit();
             }
-            
+
             FlatfileDBConnectionFactory.getInstance().setIgnoreLockProperty(oldLockFlag);
         }
-        
+
         return isValid;
     }
-    
+
     private void showError(String shortErrMsg, String errorMsg, Throwable t) {
         if (parseErrorMessage != null) {
             parseErrorMessage.setText(shortErrMsg);
@@ -278,11 +271,9 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errorMsg, NotifyDescriptor.WARNING_MESSAGE));
         }
         setEnabled(false);
-          mLogger.errorNoloc(mLoc.t("PRSR080: errorMsg {0}",LOG_CATEGORY),t);
-      //  Logger.getLogger(LOG_CATEGORY).info(errorMsg);
-        //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, errorMsg, t);
+        mLogger.errorNoloc(mLoc.t("PRSR080: errorMsg {0}", LOG_CATEGORY), t);
     }
-    
+
     /**
      * Overrides parent implementation to allow for addition of this instance as a
      * listener for various child components.
@@ -295,13 +286,13 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             previewBtn.addActionListener(this);
         }
     }
-    
+
     public void clearData() {
         if (recordViewer != null) {
             recordViewer.clearView();
         }
     }
-    
+
     /**
      * Overrides parent implementation to allow for removal of this instance as a listener
      * for various child components.
@@ -313,41 +304,41 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         }
         super.removeNotify();
     }
-    
+
     @Override
     public void setEnabled(boolean enabled) {
         if (previewBtn != null) {
             previewBtn.setEnabled(enabled);
         }
-        
+
         if (recordCount != null) {
             recordCount.setEnabled(enabled);
         }
     }
-    
+
     public void setTable(FlatfileDBTable table) {
         currentTable = table;
     }
-    
+
     public void setTableModel(FlatfileColumnTableModel model) {
         tableModel = model;
     }
-    
+
     public boolean showData(JLabel parseErrMsg) {
-        if(currentTable != null && !currentTable.getColumnList().isEmpty()) {
+        if (currentTable != null && !currentTable.getColumnList().isEmpty()) {
             parseErrorMessage = parseErrMsg;
             return tryResulSet();
         }
         return false;
     }
-    
+
     /*
      * Creates preview button and row count text field to control display of parsed output
      * colMetaTable.
      */
     private JPanel createPreviewControls() {
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        
+
         // add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh16.png");
         previewBtn = new JButton(new ImageIcon(url));
@@ -355,10 +346,10 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         previewBtn.setToolTipText("Show data for this table definition");
         previewBtn.setActionCommand(CMD_SHOWDATA);
         previewBtn.addActionListener(this);
-        
+
         JPanel recordCountPanel = new JPanel();
         recordCountPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-        
+
         JLabel lbl = new JLabel("Limit rows:");
         lbl.setDisplayedMnemonic('l');
         recordCountPanel.add(lbl);
@@ -366,27 +357,27 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         recordCountPanel.add(recordCount);
         lbl.setLabelFor(recordCount);
         recordCount.addActionListener(this);
-        
+
         // add total row count label
         JPanel totalRowsPanel = new JPanel();
         FlowLayout fl = new FlowLayout();
         fl.setAlignment(FlowLayout.LEFT);
         totalRowsPanel.setLayout(fl);
-        
+
         JLabel totalRowsNameLabel = new JLabel("Total rows:");
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
         totalRowsPanel.add(totalRowsNameLabel);
-        
+
         totalRowsLabel = new JLabel();
         totalRowsPanel.add(totalRowsLabel);
-        
+
         controlPanel.add(previewBtn);
         controlPanel.add(recordCountPanel);
         controlPanel.add(totalRowsPanel);
-        
+
         return controlPanel;
     }
-    
+
     private String stripExceptionHeaderFromMessage(Exception e) {
         String cookedMsg = null;
         String rawSqlMsg = e.getMessage();
@@ -396,7 +387,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             if (rawSqlMsg.length() == beginIndex) {
                 beginIndex = -1;
             }
-            
+
             if (endIndex < beginIndex || endIndex == -1) {
                 endIndex = rawSqlMsg.length();
             }
@@ -404,7 +395,7 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
         }
         return cookedMsg;
     }
-    
+
     private Throwable unwrapThrowable(Throwable t) {
         // Drill down to the root cause, if available.
         while (t.getCause() != null) {

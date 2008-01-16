@@ -81,6 +81,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
     private TableModel dataModel;
     private static transient final Logger mLogger = LogUtil.getLogger(SQLTableArea.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Creates a new instance of SQLTableArea
      *
@@ -313,8 +314,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
             //first try to remove column refs
             removeColumnReference(column);
         } catch (BaseException ex) {
-            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "makeColumnInVisible", "Error making column invisible, unable to remove column references." + column.getName(), ex);
-            mLogger.errorNoloc(mLoc.t("PRSR193: Error making column invisible, unable to remove column references.{0}",column.getName()),ex);
+            mLogger.errorNoloc(mLoc.t("PRSR193: Error making column invisible, unable to remove column references.{0}", column.getName()), ex);
             throw ex;
         }
 

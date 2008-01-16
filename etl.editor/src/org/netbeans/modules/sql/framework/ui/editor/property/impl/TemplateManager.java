@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.editor.property.impl;
 
 import java.io.InputStream;
@@ -87,7 +86,7 @@ public class TemplateManager {
         Iterator it = map.keySet().iterator();
         while (it.hasNext()) {
             String name = (String) it.next();
-            if(name.equals(templateName)){
+            if (name.equals(templateName)) {
                 ITemplate template = (ITemplate) map.get(name);
                 PropertyNode node = new PropertyNode(template);
                 return node;
@@ -103,11 +102,9 @@ public class TemplateManager {
      */
     private void init(TemplateParser parser, TemplateFactory fac) {
         if (parser == null) {
-            mLogger.infoNoloc(mLoc.t("PRSR137: TemplateParser is null{0}",LOG_CATEGORY));
-           // Logger.print(Logger.DEBUG, LOG_CATEGORY, "init(TemplateParser)", "TemplateParser is null");
+            mLogger.infoNoloc(mLoc.t("PRSR137: TemplateParser is null{0}", LOG_CATEGORY));
         }
         tg = fac.getTemplateGroup();
     }
-
 }
 

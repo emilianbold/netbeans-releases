@@ -121,7 +121,7 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     private JMenuItem removeItem;
     private static transient final Logger mLogger = LogUtil.getLogger(SQLBasicTableArea.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+
     public SQLBasicTableArea() {
         super();
         this.setSelectable(true);
@@ -676,8 +676,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             try {
                 setConditionFlag(BasicCellArea.IMAGE_EXTRACTION, metTabMod, extractionPredicate);
             } catch (BaseException ex) {
-                  mLogger.errorNoloc(mLoc.t("PRSR168: Error setting filter icon for ({0})",table.getDisplayName()),ex);
-              //  Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setTableConditionIcons", "Error setting filter icon for (" + table.getDisplayName() + ")", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR168: Error setting filter icon for ({0})", table.getDisplayName()), ex);
+
                 return;
             }
         }
@@ -692,8 +692,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
             try {
                 setConditionFlag(BasicCellArea.IMAGE_VALIDATION, metTabMod, validationPredicate);
             } catch (BaseException ex) {
-                 mLogger.errorNoloc(mLoc.t("PRSR169: Error setting validation icon for ({0})",table.getDisplayName()),ex);
-               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "setTableConditionIcons", "Error setting validation icon for (" + table.getDisplayName() + ")", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR169: Error setting validation icon for ({0})", table.getDisplayName()), ex);
+
                 return;
             }
         }

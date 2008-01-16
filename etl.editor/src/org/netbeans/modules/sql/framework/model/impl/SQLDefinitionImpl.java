@@ -115,6 +115,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     private static final String PIPELINE = "Pipeline";
     private static transient final Logger mLogger = LogUtil.getLogger(SQLDefinitionImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     class SecondParseObjectInfo {
 
         private Element mElm;
@@ -215,7 +216,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     public void addObject(SQLObject newObject) throws BaseException {
         // check if object already exist -- Do we still need this check ?? -- Ahi
         if (objectMap.get(newObject.getId()) != null) {
-        //throw new BaseException("Object " + newObject.getDisplayName() + "already exists.");
+            //throw new BaseException("Object " + newObject.getDisplayName() + "already exists.");
         }
 
         // always set the id first.
@@ -427,14 +428,14 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     }
 
     public String getDBWorkingFolder() {
-        String workingFolder = (String)this.getAttributeValue(AXION_DB_WORKING_FOLDER);
-        workingFolder = (workingFolder == null ) ? "":workingFolder;
+        String workingFolder = (String) this.getAttributeValue(AXION_DB_WORKING_FOLDER);
+        workingFolder = (workingFolder == null) ? "" : workingFolder;
         return workingFolder;
     }
 
     public String getDbInstanceName() {
-        String dbName = (String)this.getAttributeValue(AXION_DB_INSTANCE_NAME);
-        dbName = (dbName == null) ? "":dbName;
+        String dbName = (String) this.getAttributeValue(AXION_DB_INSTANCE_NAME);
+        dbName = (dbName == null) ? "" : dbName;
         return dbName;
     }
 
@@ -602,8 +603,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
             try {
                 this.addObject(runtimeDbModel);
             } catch (BaseException ex) {
-                  mLogger.errorNoloc(mLoc.t("PRSR116: can not add runtime database model to definition{0}",LOG_CATEGORY),ex);
-                //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "getRuntimeDbModel", "can not add runtime database model to definition", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR116: can not add runtime database model to definition{0}", LOG_CATEGORY), ex);
                 runtimeDbModel = null;
             }
             return runtimeDbModel;
@@ -1020,7 +1020,7 @@ public class SQLDefinitionImpl implements SQLDefinition, Serializable {
     public void setWorkingFolder(String appDataRoot) {
         this.setAttribute(AXION_DB_WORKING_FOLDER, appDataRoot);
     }
-    
+
     /**
      * sets the axion database instance name
      * @param dbInstanceName

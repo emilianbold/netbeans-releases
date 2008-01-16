@@ -74,40 +74,28 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class SQLUtils {
+
     private static transient final Logger mLogger = LogUtil.getLogger(SQLUtils.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
     /* Log4J cateogry */
     static final String LOG_CATEGORY = SQLUtils.class.getName();
-    
     /* System constant : basically an unqoted varchar */
     public static final int VARCHAR_UNQUOTED = 3345336;
-
     private static final int ANYTYPE_CONSTANT = VARCHAR_UNQUOTED - 1;
-
     public static final String VARCHAR_UNQUOTED_STR = "varchar:unquoted";
-    
     /** Undefined jdbc type */
     public static final int JDBCSQL_TYPE_UNDEFINED = -65535;
-
     private static HashMap<Integer, Integer> dataTypePrecedenceMap = new HashMap<Integer, Integer>();
-
-    private static Map<Integer,String> dbIdNameMap = new TreeMap<Integer,String>();
+    private static Map<Integer, String> dbIdNameMap = new TreeMap<Integer, String>();
     private static Map<String, Integer> dbNameIdMap = new TreeMap<String, Integer>();
-    
     private static Map<String, String> JDBC_SQL_MAP = new HashMap<String, String>();
-
     private static Map<String, String> SQL_JDBC_MAP = new HashMap<String, String>();
-
     private static final List<String> SUPPORTED_DATE_FORMATS = new ArrayList<String>();
-
     private static final List<String> SUPPORTED_DATE_PARTS = new ArrayList<String>();
-
     private static final List<String> SUPPORTED_INTERVAL_TYPES = new ArrayList<String>();
-
     private static final List<String> SUPPORTED_LITERAL_JDBC_TYPES = new ArrayList<String>();
-
     private static final List<String> SUPPORTED_CAST_JDBC_TYPES = new ArrayList<String>();
+    
 
     static {
         dbNameIdMap.put(DBConstants.ANSI92_STR, new Integer(DBConstants.ANSI92));
@@ -124,21 +112,23 @@ public class SQLUtils {
         dbNameIdMap.put(DBConstants.POSTGRES_STR, new Integer(DBConstants.POSTGRESQL));
     }
     
+
     static {
         dbIdNameMap.put(new Integer(DBConstants.ANSI92), DBConstants.ANSI92_STR);
         dbIdNameMap.put(new Integer(DBConstants.ORACLE8), DBConstants.ORACLE8_STR);
         dbIdNameMap.put(new Integer(DBConstants.ORACLE9), DBConstants.ORACLE9_STR);
-        dbIdNameMap.put(new Integer(DBConstants.AXION),DBConstants.AXION_STR);
-        dbIdNameMap.put(new Integer(DBConstants.MSSQLSERVER),DBConstants.MSSQLSERVER_STR);
-        dbIdNameMap.put(new Integer(DBConstants.DB2V7),DBConstants.DB2V7_STR);
+        dbIdNameMap.put(new Integer(DBConstants.AXION), DBConstants.AXION_STR);
+        dbIdNameMap.put(new Integer(DBConstants.MSSQLSERVER), DBConstants.MSSQLSERVER_STR);
+        dbIdNameMap.put(new Integer(DBConstants.DB2V7), DBConstants.DB2V7_STR);
         dbIdNameMap.put(new Integer(DBConstants.DB2V8), DBConstants.DB2V8_STR);
         dbIdNameMap.put(new Integer(DBConstants.DB2V5), DBConstants.DB2V5_STR);
         dbIdNameMap.put(new Integer(DBConstants.SYBASE), DBConstants.SYBASE_STR);
         dbIdNameMap.put(new Integer(DBConstants.DERBY), DBConstants.DERBY_STR);
         dbIdNameMap.put(new Integer(DBConstants.MYSQL), DBConstants.MYSQL_STR);
         dbIdNameMap.put(new Integer(DBConstants.POSTGRESQL), DBConstants.POSTGRES_STR);
-        
+
     }
+    
 
     static {
         SUPPORTED_LITERAL_JDBC_TYPES.add("char");
@@ -149,6 +139,7 @@ public class SQLUtils {
 
         Collections.sort(SUPPORTED_LITERAL_JDBC_TYPES);
     }
+    
 
     static {
         SUPPORTED_CAST_JDBC_TYPES.add("bigint");
@@ -173,6 +164,7 @@ public class SQLUtils {
 
         Collections.sort(SUPPORTED_CAST_JDBC_TYPES);
     }
+    
 
     static {
         SUPPORTED_INTERVAL_TYPES.add("second");
@@ -186,6 +178,7 @@ public class SQLUtils {
 
         Collections.sort(SUPPORTED_INTERVAL_TYPES);
     }
+    
 
     static {
         SUPPORTED_DATE_FORMATS.add("MON DD YYYY HH:MIAM");
@@ -221,6 +214,7 @@ public class SQLUtils {
         SUPPORTED_DATE_FORMATS.add("DD/MM/YYYY HH:MI:SS.FFFAM");
         Collections.sort(SUPPORTED_DATE_FORMATS);
     }
+    
 
     static {
         SUPPORTED_DATE_PARTS.add("WEEKDAY");
@@ -241,6 +235,7 @@ public class SQLUtils {
         SUPPORTED_DATE_PARTS.add("MILLISECOND");
         SUPPORTED_DATE_PARTS.add("AMPM");
     }
+    
 
     static {
         SQL_JDBC_MAP.put("array", String.valueOf(Types.ARRAY));
@@ -299,10 +294,11 @@ public class SQLUtils {
         JDBC_SQL_MAP.put(String.valueOf(VARCHAR_UNQUOTED), VARCHAR_UNQUOTED_STR);
         JDBC_SQL_MAP.put(String.valueOf(ANYTYPE_CONSTANT), "anytype");
     }
-
     /**
      * Data types in decreasing order of precedence 1 is hightest
      */
+    
+
     static {
         dataTypePrecedenceMap.put(new Integer(Types.DOUBLE), new Integer(1));
         dataTypePrecedenceMap.put(new Integer(Types.FLOAT), new Integer(2));
@@ -371,8 +367,7 @@ public class SQLUtils {
                 rawSql = processedSql;
             } while (flag);
         } while (iter.hasNext());
-        mLogger.infoNoloc(mLoc.t("PRSR091: >>> Generated PreparedStatement: \n {0}",processedSql));
-       // Logger.print(Logger.DEBUG, LOG_CATEGORY, ">>> Generated PreparedStatement: \n" + processedSql);
+        mLogger.infoNoloc(mLoc.t("PRSR091: >>> Generated PreparedStatement: \n {0}", processedSql));
         return processedSql;
     }
 
@@ -389,7 +384,7 @@ public class SQLUtils {
      * @return preparedStatement string with binding parameter (?) for each occurence of the symbols.
      */
     public static String createPreparedStatement(String rawSql, final List symbols, List<String> orderedSymbols) {
-        String  symbol = null;
+        String symbol = null;
         boolean noMore = false;
         Iterator iter = symbols.iterator();
         if (!iter.hasNext()) {
@@ -405,7 +400,7 @@ public class SQLUtils {
 
         do {
             symbol = (String) iter.next();
-            if ((symbol != null) && (symbol.startsWith("$"))){
+            if ((symbol != null) && (symbol.startsWith("$"))) {
                 symbol = "\\" + symbol;
             }
 
@@ -422,8 +417,7 @@ public class SQLUtils {
             } while (noMore);
         } while (iter.hasNext());
 
-         mLogger.infoNoloc(mLoc.t("PRSR092: >>> Generated PreparedStatement: \n {0}",processedSql));
-      //  Logger.print(Logger.DEBUG, LOG_CATEGORY, ">>> Generated PreparedStatement: \n" + processedSql);
+        mLogger.infoNoloc(mLoc.t("PRSR092: >>> Generated PreparedStatement: \n {0}", processedSql));
         return processedSql;
     }
 
@@ -683,7 +677,7 @@ public class SQLUtils {
 
         return DBConstants.JDBC;
     }
-    
+
     public static String getSupportedDBType(int dbType) {
         String dbName = dbIdNameMap.get(new Integer(dbType));
         if (dbName != null) {
@@ -742,7 +736,7 @@ public class SQLUtils {
     public static String makeStringOracleSafe(String value) {
         if (value.indexOf("'") == -1) {
             return value;
-            // nothing to escape
+        // nothing to escape
         }
 
         // the string contains a "'"
@@ -788,8 +782,7 @@ public class SQLUtils {
 
                     case Types.TIMESTAMP:
                         long ts = com.sun.sql.framework.jdbc.SQLUtils.convertFromIso8601(valueObj.toString());
-                         mLogger.infoNoloc(mLoc.t("PRSR093: **** timestamp ****  {0}",ts));
-                       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "**** timestamp **** " + ts);
+                        mLogger.infoNoloc(mLoc.t("PRSR093: **** timestamp ****  {0}", ts));
                         try {
                             ps.setTimestamp(index, new java.sql.Timestamp(ts));
                         } catch (java.sql.SQLException e) {
@@ -810,26 +803,24 @@ public class SQLUtils {
             if (StringUtil.isNullString(details)) {
                 details = e.toString();
             }
-              mLogger.errorNoloc(mLoc.t("PRSR094: details{0}",LOG_CATEGORY),e);
-           // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, null, details, e);
+            mLogger.errorNoloc(mLoc.t("PRSR094: details{0}", LOG_CATEGORY), e);
             throw new BaseException(details, e);
         }
     }
 
-
-    public static Map getRuntimeInputNameValueMap(Map attribMap){
+    public static Map getRuntimeInputNameValueMap(Map attribMap) {
         Map<String, Object> values = new HashMap<String, Object>();
         RuntimeAttribute ra = null;
         int jdbcType = 0;
         Object valueObj = null;
         Number numberObj = null;
 
-        if (attribMap != null){
+        if (attribMap != null) {
             Set keys = attribMap.keySet();
             Iterator itr = keys.iterator();
             String name = null;
 
-            while (itr.hasNext()){
+            while (itr.hasNext()) {
                 name = (String) itr.next();
                 ra = (RuntimeAttribute) attribMap.get(name);
                 jdbcType = ra.getJdbcType();
@@ -855,8 +846,7 @@ public class SQLUtils {
 
                     case Types.TIMESTAMP:
                         long ts = com.sun.sql.framework.jdbc.SQLUtils.convertFromIso8601(valueObj.toString());
-                        mLogger.infoNoloc(mLoc.t("PRSR095: **** timestamp ****  {0}",ts));
-                        //Logger.print(Logger.DEBUG, LOG_CATEGORY, "**** timestamp **** " + ts);
+                        mLogger.infoNoloc(mLoc.t("PRSR095: **** timestamp ****  {0}", ts));
                         try {
                             values.put(name, new java.sql.Timestamp(ts));
                         } catch (Exception e) {
@@ -876,53 +866,49 @@ public class SQLUtils {
         return values;
     }
 
-
     public static void setAttributeValue(PreparedStatement ps, int index, int jdbcType, Object valueObj) throws BaseException {
         Number numberObj = null;
 
         try {
             switch (jdbcType) {
 
-            case Types.DOUBLE:
-                numberObj = (valueObj instanceof Number) ? (Number) valueObj : Double.valueOf(valueObj.toString());
-                ps.setDouble(index, numberObj.doubleValue());
-                break;
+                case Types.DOUBLE:
+                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Double.valueOf(valueObj.toString());
+                    ps.setDouble(index, numberObj.doubleValue());
+                    break;
 
-            case Types.FLOAT:
-                numberObj = (valueObj instanceof Number) ? (Number) valueObj : Float.valueOf(valueObj.toString());
-                ps.setFloat(index, numberObj.floatValue());
-                break;
+                case Types.FLOAT:
+                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Float.valueOf(valueObj.toString());
+                    ps.setFloat(index, numberObj.floatValue());
+                    break;
 
-            case Types.INTEGER:
-                numberObj = (valueObj instanceof Number) ? (Number) valueObj : Integer.valueOf(valueObj.toString());
-                ps.setInt(index, numberObj.intValue());
-                break;
+                case Types.INTEGER:
+                    numberObj = (valueObj instanceof Number) ? (Number) valueObj : Integer.valueOf(valueObj.toString());
+                    ps.setInt(index, numberObj.intValue());
+                    break;
 
-            case Types.TIMESTAMP:
-                long ts = com.sun.sql.framework.jdbc.SQLUtils.convertFromIso8601(valueObj.toString());
-                mLogger.infoNoloc(mLoc.t("PRSR096: **** timestamp ****  {0}",ts));
-               // Logger.print(Logger.DEBUG, LOG_CATEGORY, "**** timestamp **** "
-               //         + ts);
-                try {
-                    ps.setTimestamp(index, new java.sql.Timestamp(ts));
-                } catch (java.sql.SQLException e) {
-                    ps.setDate(index, new java.sql.Date(ts));
-                }
-                break;
+                case Types.TIMESTAMP:
+                    long ts = com.sun.sql.framework.jdbc.SQLUtils.convertFromIso8601(valueObj.toString());
+                    mLogger.infoNoloc(mLoc.t("PRSR096: **** timestamp ****  {0}", ts));
+                    try {
+                        ps.setTimestamp(index, new java.sql.Timestamp(ts));
+                    } catch (java.sql.SQLException e) {
+                        ps.setDate(index, new java.sql.Date(ts));
+                    }
+                    break;
 
-            case Types.CHAR:
-            case Types.VARCHAR:
-            default:
-                ps.setString(index, valueObj.toString());
-                break;
+                case Types.CHAR:
+                case Types.VARCHAR:
+                default:
+                    ps.setString(index, valueObj.toString());
+                    break;
             }
         } catch (Exception e) {
             String details = e.getMessage();
             if (StringUtil.isNullString(details)) {
                 details = e.toString();
             }
-              mLogger.errorNoloc(mLoc.t("PRSR097: details{0}",LOG_CATEGORY),e);
-           // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, null, details, e);
+            mLogger.errorNoloc(mLoc.t("PRSR097: details{0}", LOG_CATEGORY), e);
             throw new BaseException(details, e);
         }
 
@@ -958,7 +944,7 @@ public class SQLUtils {
                 return true;
         }
     }
-    
+
     public static boolean isNumeric(int jdbcType) {
         switch (jdbcType) {
             case Types.BIT:
@@ -1087,5 +1073,4 @@ public class SQLUtils {
     /* Private no-arg constructor; this class should not be instantiable. */
     private SQLUtils() {
     }
-
 }

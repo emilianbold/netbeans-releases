@@ -90,31 +90,32 @@ import org.openide.util.actions.SystemAction;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
+
 /**
  * @author Ritesh Adval
  * @version $Revision$
  */
 public class SQLGraphView extends GraphView implements SQLDataListener, UndoableEditListener {
-    
+
     private static ClipBoard clipBoard = new ClipBoard();
     private static final String LOG_CATEGORY = SQLGraphView.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(SQLGraphView.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     Color pColor;
     Color sColor;
-    
+
     /** Creates a new instance of SQLGraphView */
     public SQLGraphView() {
         super();
         setDropEnabled(true);
     }
-    
+
     /**
      * perform the layout
      */
     public void performLayout() {
     }
-    
+
     /**
      * find the link selected by the user
      *
@@ -123,54 +124,54 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
      * @return -
      */
     public IGraphLink findLink(Object srcObj, String srcParam, Object destObj, String destParam) {
-        
+
         Collection linkCol = getAllGraphLinks();
         Iterator it = linkCol.iterator();
-        
+
         while (it.hasNext()) {
             IGraphLink link = (IGraphLink) it.next();
-            
+
             IGraphPort from = link.getFromGraphPort();
             IGraphPort to = link.getToGraphPort();
-            
+
             IGraphNode srcGraphNode = from.getDataNode();
             IGraphNode destGraphNode = to.getDataNode();
-            
+
             IGraphPort linkSrcPort = srcGraphNode.getOutputGraphPort(srcParam);
             IGraphPort linkDestPort = destGraphNode.getInputGraphPort(destParam);
-            
+
             Object linkSrcObj = srcGraphNode.getDataObject();
             Object linkDestObj = destGraphNode.getDataObject();
-            
+
             if (linkSrcObj == srcObj && linkDestObj == destObj && linkSrcPort == from && linkDestPort == to) {
                 return link;
             }
         }
-        
+
         return null;
     }
-    
+
     protected void createGraphNode(SQLDataEvent event) throws BaseException {
         SQLCanvasObject canvasObj = event.getCanvasObject();
-        
+
         GUIInfo gInfo = canvasObj.getGUIInfo();
         if (gInfo != null && !gInfo.isVisible()) {
             return;
         }
-        
+
         IGraphNode canvasNode = this.findGraphNode(canvasObj);
         //if graph node already exists then simply return
         if (canvasNode != null) {
             return;
         }
-        
+
         AbstractGraphFactory factory = (AbstractGraphFactory) this.getGraphFactory();
         if (factory == null) {
             return;
         }
-        
+
         canvasNode = factory.createGraphNode(canvasObj);
-        
+
         if (canvasNode != null) {
             this.addNode(canvasNode);
             //Per QAI 94710 - disable join type combo box
@@ -180,7 +181,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                 ((JoinPreviewGraphNode) canvasNode).setModifiable(this.getDocument().isModifiable());
             }
         }
-        
+
         //      now check if we have a java operator
         if (canvasObj instanceof SQLOperator) {
             SQLOperator operator = (SQLOperator) canvasObj;
@@ -188,22 +189,22 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             if (opXmlInfo == null) {
                 throw new IllegalArgumentException("Operator layer xml info is null.");
             }
-            
+
             if (opXmlInfo.isJavaOperator()) {
                 SQLUIModel model = (SQLUIModel) this.getGraphModel();
                 model.addJavaOperator(operator);
             }
         }
     }
-    
+
     private void deleteGraphNode(SQLDataEvent event) {
         SQLCanvasObject canvasObj = event.getCanvasObject();
-        
+
         IGraphNode canvasNode = this.findGraphNode(canvasObj);
         if (canvasNode != null) {
             removeNode(canvasNode);
         }
-        
+
         //      now check if we have a java operator
         if (canvasObj instanceof SQLOperator) {
             SQLOperator operator = (SQLOperator) canvasObj;
@@ -211,67 +212,67 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             if (opXmlInfo == null) {
                 throw new IllegalArgumentException("Operator layer xml info is null.");
             }
-            
+
             if (opXmlInfo.isJavaOperator()) {
                 SQLUIModel model = (SQLUIModel) this.getGraphModel();
                 model.removeJavaOperator(operator);
             }
         }
     }
-    
+
     public void objectCreated(SQLDataEvent evt) throws BaseException {
         createGraphNode(evt);
     }
-    
+
     public void objectDeleted(SQLDataEvent evt) {
         deleteGraphNode(evt);
     }
-    
+
     public void linkCreated(SQLLinkEvent evt) {
         SQLCanvasObject srcObj = evt.getSourceCanvasObject();
         SQLConnectableObject expObj = evt.getTargetCanvasObject();
         String srcParam = evt.getSourceFieldName();
         String destParam = evt.getDestinationFieldName();
-        
+
         createLink(srcObj, expObj, srcParam, destParam);
     }
-    
+
     public void createLink(SQLCanvasObject srcObj, SQLConnectableObject expObj, String srcParam, String destParam) {
-        
+
         //if link already exist then simply return
         IGraphLink link = findLink(srcObj, srcParam, expObj, destParam);
         if (link != null) {
             return;
         }
-        
+
         SQLCanvasObject destObj = getTopSQLCanvasObject(expObj);
-        
+
         IGraphNode srcNode = findGraphNode(srcObj);
         IGraphNode destNode = findGraphNode(destObj);
-        
+
         //if top object is differnt than expObj then we need to get child GraphNode
         if (destObj != expObj) {
             destNode = destNode.getChildNode(expObj);
         }
-        
+
         if (srcNode == null || destNode == null) {
             return;
         }
-        
+
         IGraphPort srcPort = srcNode.getOutputGraphPort(srcParam);
-        
+
         IGraphPort destPort = destNode.getInputGraphPort(destParam);
-        
+
         if (srcPort == null || destPort == null) {
             return;
         }
-        
+
         link = new SQLGraphLink(srcPort, destPort);
-        
+
         //add link
         this.getDocument().addObjectAtTail((JGoObject) link);
         performLayout();
-        
+
         if (expObj instanceof TargetTable) {
             SQLTargetTableArea tt = (SQLTargetTableArea) destNode;
             SQLInputObject inputObj = expObj.getInput(destParam);
@@ -281,79 +282,79 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             }
         }
     }
-    
+
     public void linkDeleted(SQLLinkEvent evt) {
         SQLCanvasObject srcObj = evt.getSourceCanvasObject();
         SQLConnectableObject destObj = evt.getTargetCanvasObject();
         String srcParam = evt.getSourceFieldName();
         String destParam = evt.getDestinationFieldName();
-        
+
         IGraphLink link = findLink(srcObj, srcParam, destObj, destParam);
         if (link != null) {
             this.getDocument().removeObject((JGoObject) link);
             performLayout();
         }
-        
+
         if (destObj instanceof TargetTable) {
-            SQLTargetTableArea tt = (SQLTargetTableArea)findGraphNode(destObj);
+            SQLTargetTableArea tt = (SQLTargetTableArea) findGraphNode(destObj);
             SQLInputObject inputObj = destObj.getInput(destParam);
-            if(inputObj != null){
-            TargetColumn tCol = (TargetColumn) inputObj.getSQLObject();
-            if ((tCol != null) && (tCol.isPrimaryKey())) {
-                tt.setConditionIcons();
+            if (inputObj != null) {
+                TargetColumn tCol = (TargetColumn) inputObj.getSQLObject();
+                if ((tCol != null) && (tCol.isPrimaryKey())) {
+                    tt.setConditionIcons();
+                }
             }
         }
     }
-    }
-    
+
     private SQLCanvasObject getTopSQLCanvasObject(SQLObject sqlObj) {
         if (sqlObj instanceof SQLCanvasObject) {
             return (SQLCanvasObject) sqlObj;
         }
-        
+
         Object parentObj = sqlObj.getParentObject();
         while (parentObj != null && parentObj instanceof SQLObject && !(parentObj instanceof SQLCanvasObject)) {
             parentObj = ((SQLObject) parentObj).getParentObject();
         }
-        
+
         if (parentObj instanceof SQLCanvasObject) {
             return (SQLCanvasObject) parentObj;
         }
-        
+
         return null;
     }
-    
+
     public boolean doMouseUp(int modifiers, java.awt.Point dc, java.awt.Point vc) {
-        
+
         boolean mClick = super.doMouseUp(modifiers, dc, vc);
-        
+
         if (this.pickDocObject(dc, false) != null) {
             return mClick;
         }
-        
+
         int onmask = java.awt.event.InputEvent.BUTTON3_MASK;
-        
+
         if ((modifiers & onmask) != 0 && popUpMenu != null) {
             //if element is not checked out then ask user to check it out before
             // modifiying it
-            
+
             if (!((IGraphViewContainer) this.getGraphViewContainer()).canEdit()) {
                 return false;
             }
-            
+
             if (popUpMenu != null) {
                 popUpMenu.show(this, vc.x, vc.y);
                 return true;
             }
         }
-        
+
         return false;
     }
-    
+
     public void reset() {
         resetSelectionColors();
     }
-    
+
     public void childObjectCreated(SQLDataEvent evt) {
         SQLCanvasObject canvasObj = evt.getCanvasObject();
         IGraphNode node = this.findGraphNode(canvasObj);
@@ -362,7 +363,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             node.removeChildObject(chldObj);
         }
     }
-    
+
     public void childObjectDeleted(SQLDataEvent evt) {
         SQLCanvasObject canvasObj = evt.getCanvasObject();
         IGraphNode node = this.findGraphNode(canvasObj);
@@ -371,16 +372,16 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             node.addChildObject(chldObj);
         }
     }
-    
+
     public void objectUpdated(SQLDataEvent evt) {
         SQLCanvasObject canvasObj = evt.getCanvasObject();
         IGraphNode node = this.findGraphNode(canvasObj);
-        
+
         if (node != null) {
             node.updateUI();
         }
     }
-    
+
     /**
      * Handles key event
      *
@@ -388,12 +389,12 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
      */
     public void onKeyEvent(KeyEvent evt) {
         int t = evt.getKeyCode();
-        
+
         if (t == KeyEvent.VK_Z && evt.isControlDown()) {
             undo();
         } else if (t == KeyEvent.VK_Y && evt.isControlDown()) {
             redo();
-        }else if (t == KeyEvent.VK_P && evt.isControlDown()) {
+        } else if (t == KeyEvent.VK_P && evt.isControlDown()) {
             printDoc();
         } else if (t == KeyEvent.VK_C && evt.isControlDown()) {
             copyToClipboard();
@@ -403,11 +404,11 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             super.onKeyEvent(evt);
         }
     }
-        
+
     private void printDoc() {
         Action printAction = SystemAction.get(PrintAction.class);
     }
-    
+
     private void undo() {
         SQLUIModel model = (SQLUIModel) this.getGraphModel();
         UndoManager undoManager = model.getUndoManager();
@@ -416,7 +417,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             updateActions();
         }
     }
-    
+
     private void redo() {
         SQLUIModel model = (SQLUIModel) this.getGraphModel();
         UndoManager undoManager = model.getUndoManager();
@@ -425,7 +426,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             updateActions();
         }
     }
-    
+
     private void updateActions() {
         SQLUIModel model = (SQLUIModel) this.getGraphModel();
         Action undoAction = SystemAction.get(UndoAction.class);
@@ -437,21 +438,21 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             undoAction.setEnabled(undoManager.canUndo());
             redoAction.setEnabled(undoManager.canRedo());
         }
-        try{
+        try {
             ETLDataObject etlDataObject = DataObjectProvider.getProvider().getActiveDataObject();
-            if(model.isDirty()){
+            if (model.isDirty()) {
                 ETLEditorSupport editor = etlDataObject.getETLEditorSupport();
                 editor.synchDocument();
             }
-        } catch(Exception e){
+        } catch (Exception e) {
             //ignore
         }
     }
-    
+
     private void copyToClipboard() {
         clipBoard.setNodes(this.getSelectedNodes());
     }
-    
+
     private void pasteFromClipboard() {
         Collection nodes = clipBoard.getNodes();
         if (nodes != null) {
@@ -459,7 +460,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             pasteLinks(nodeMap);
         }
     }
-    
+
     private Map pasteNodes(Collection nodes) {
         Rectangle bounds = computeBounds(nodes);
         Map nodeMap = new HashMap();
@@ -479,10 +480,10 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                         guiInfo.setX(mousePoint.x + x - (int) bounds.getX());
                         guiInfo.setY(mousePoint.y + y - (int) bounds.getY());
                     }
-                    
+
                     SQLUIModel sqlModel = (SQLUIModel) this.getGraphController().getDataModel();
                     //sqlModel.addObject(clonedObj);
-                    
+
                     if (clonedObj instanceof SQLDBTable) {
                         SQLDefinition sqlDef = ((CollabSQLUIModel) sqlModel).getSQLDefinition();
                         SQLDBTable dbTable = (SQLDBTable) clonedObj;
@@ -504,14 +505,13 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                     }
                     nodeMap.put(node, clonedObj);
                 } catch (Exception ex) {
-                    //Logger.print(Logger.DEBUG, LOG_CATEGORY, ex.getMessage(), ex);
-                      mLogger.errorNoloc(mLoc.t("PRSR175: Exception{0}",ex.getMessage()),ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR175: Exception{0}", ex.getMessage()), ex);
                 }
             }
         }
         return nodeMap;
     }
-    
+
     private void pasteLinks(Map nodeMap) {
         Collection srcNodes = nodeMap.keySet();
         //ArrayList relatedLinks = new ArrayList();
@@ -526,8 +526,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                 IGraphNode toNode = toPort.getDataNode();
                 if (toNode != node && srcNodes.contains(toNode)) {
                     //copy the link
-                      mLogger.infoNoloc(mLoc.t("PRSR176: Find a link between{0} and {1}", node,toNode));
-                   // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Find a link between " + node + " and " + toNode);
+                    mLogger.infoNoloc(mLoc.t("PRSR176: Find a link between{0} and {1}", node, toNode));
                     Object clonedSrcObj = nodeMap.get(node);
                     Object clonedDestObj = nodeMap.get(toNode);
                     if (clonedSrcObj != null && clonedDestObj != null) {
@@ -538,15 +537,14 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
                             SQLConnectableObject exprObj = (SQLConnectableObject) clonedDestObj;
                             sqlModel.createLink((SQLCanvasObject) clonedSrcObj, srcFieldName, exprObj, destFieldName);
                         } catch (Exception ex) {
-                            //Logger.print(Logger.DEBUG, LOG_CATEGORY, ex.getMessage(), ex);
-                              mLogger.errorNoloc(mLoc.t("PRSR177: Exception{0}",ex.getMessage()),ex);
+                            mLogger.errorNoloc(mLoc.t("PRSR177: Exception{0}", ex.getMessage()), ex);
                         }
                     }
                 }
             }
         }
     }
-    
+
     private Rectangle computeBounds(Collection nodes) {
         int minx = Integer.MAX_VALUE;
         int miny = Integer.MAX_VALUE;
@@ -569,11 +567,12 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
         }
         return new Rectangle(minx, miny, (maxx - minx), (maxy - miny));
     }
-    
+
     private static class ClipBoard {
+
         private Collection nodes;
         private Collection links;
-        
+
         /**
          * Copy nodes to this clipboard
          *
@@ -582,7 +581,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
         public void setNodes(Collection nodes) {
             this.nodes = nodes;
         }
-        
+
         /**
          * Copy links to this clipboard
          *
@@ -591,7 +590,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
         public void setLinks(Collection links) {
             this.links = links;
         }
-        
+
         /**
          * Return nodes in this clipboard
          *
@@ -600,7 +599,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
         public Collection getNodes() {
             return nodes;
         }
-        
+
         /**
          * Return links in this clipboard
          *
@@ -610,7 +609,7 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
             return links;
         }
     }
-    
+
     /**
      * can this graph be edited
      *
@@ -619,11 +618,11 @@ public class SQLGraphView extends GraphView implements SQLDataListener, Undoable
     public boolean canEdit() {
         return ((IGraphViewContainer) this.getGraphViewContainer()).canEdit();
     }
-    
+
     public void undoableEditHappened(UndoableEditEvent e) {
         updateActions();
     }
-    
+
     /**
      * Execute a command
      *

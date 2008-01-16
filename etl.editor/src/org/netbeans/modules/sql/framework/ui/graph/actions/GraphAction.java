@@ -48,8 +48,6 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
-
 /**
  * @author Ritesh Adval
  * @version $Revision$
@@ -90,11 +88,9 @@ public abstract class GraphAction extends AbstractAction {
             action = (GraphAction) actionClass.newInstance();
             actionMap.put(actionClass, action);
         } catch (InstantiationException e1) {
-             mLogger.errorNoloc(mLoc.t("PRSR138: Error creating instance of action{0}",actionClass.getName()),e1);
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "createAction", "Error creating instance of action" + actionClass.getName(), e1);
+            mLogger.errorNoloc(mLoc.t("PRSR138: Error creating instance of action{0}", actionClass.getName()), e1);
         } catch (IllegalAccessException e2) {
-             mLogger.errorNoloc(mLoc.t("PRSR139: Error creating instance of action{0}",actionClass.getName()),e2);
-            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "createAction", "Error creating instance of action" + actionClass.getName(), e2);
+            mLogger.errorNoloc(mLoc.t("PRSR139: Error creating instance of action{0}", actionClass.getName()), e2);
         }
 
         return action;

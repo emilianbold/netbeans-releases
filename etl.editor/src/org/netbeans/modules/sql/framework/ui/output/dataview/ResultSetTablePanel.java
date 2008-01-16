@@ -110,6 +110,7 @@ public class ResultSetTablePanel extends JPanel {
     private Map<String, List> typesList = new LinkedHashMap<String, List>();
     private static transient final Logger mLogger = LogUtil.getLogger(ResultSetTablePanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     private class DataTableModel extends DefaultTableModel {
 
         /**
@@ -142,7 +143,7 @@ public class ResultSetTablePanel extends JPanel {
                 try {
                     Object oldVal = getValueAt(row, col);
                     if (oldVal == null && StringUtil.isNullString(value.toString())) {
-                    // do nothing
+                        // do nothing
                     } else if (!oldVal.equals(value)) {
                         changes.put(changeData, updateStmt);
                         valuesList.put(changeData, values);
@@ -153,7 +154,7 @@ public class ResultSetTablePanel extends JPanel {
                         fireTableDataChanged();
                     }
                 } catch (Exception ex) {
-                //ignore
+                    //ignore
                 }
             }
             table.revalidate();
@@ -514,7 +515,7 @@ public class ResultSetTablePanel extends JPanel {
                 columnWidthList = getColumnWidthList(rsmd);
             }
         } catch (SQLException ignore) {
-        // Could not obtain metadata - headers will not be displayed.
+            // Could not obtain metadata - headers will not be displayed.
         }
 
         model = createModelFrom(rs, maxRowsToShow, startFrom);
@@ -557,7 +558,7 @@ public class ResultSetTablePanel extends JPanel {
 
             Object[] row = new Object[colCt];
             int rowCnt = 0;
-            
+
             boolean lastRowPicked = rs.next();
             while (lastRowPicked && rs.getRow() < (startFrom - 1)) {
                 lastRowPicked = rs.next();
@@ -574,8 +575,7 @@ public class ResultSetTablePanel extends JPanel {
                 }
             }
         } catch (Exception e) {
-             mLogger.errorNoloc(mLoc.t("PRSR146: Failed to set up table model({0})",LOG_CATEGORY),e);
-            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to set up table model", e);
+            mLogger.errorNoloc(mLoc.t("PRSR146: Failed to set up table model({0})", LOG_CATEGORY), e);
         }
 
         return sorter;
@@ -767,8 +767,7 @@ public class ResultSetTablePanel extends JPanel {
             }
             table.getTableHeader().setColumnModel(cModel);
         } catch (Exception e) {
-             mLogger.errorNoloc(mLoc.t("PRSR147: Failed to set the size of the table headers({0})",LOG_CATEGORY),e);
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to set the size of the table headers", e);
+            mLogger.errorNoloc(mLoc.t("PRSR147: Failed to set the size of the table headers({0})", LOG_CATEGORY), e);
         }
     }
 
@@ -785,8 +784,7 @@ public class ResultSetTablePanel extends JPanel {
                 columnWidthList.add(colWidth);
             }
         } catch (Exception e) {
-            mLogger.errorNoloc(mLoc.t("PRSR148: Failed to set the size of the table headers({0})",LOG_CATEGORY),e);
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Failed to set the size of the table headers", e);
+            mLogger.errorNoloc(mLoc.t("PRSR148: Failed to set the size of the table headers({0})", LOG_CATEGORY), e);
         }
         return columnWidthList;
     }
@@ -823,7 +821,7 @@ public class ResultSetTablePanel extends JPanel {
                 pstmt.close();
             }
         } catch (SQLException ex) {
-        //ignore
+            //ignore
         }
 
         try {
@@ -831,7 +829,7 @@ public class ResultSetTablePanel extends JPanel {
                 conn.close();
             }
         } catch (SQLException ex) {
-        //ignore
+            //ignore
         }
     }
 

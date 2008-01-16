@@ -100,20 +100,16 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
      * 
      */
     public static final String ATTR_STATEMENT_TYPE = "statementType";
-    
     private static final String ATTR_BATCHSIZE = "batchSize";
-    
     private static final String ATTR_FULLY_QUALIFIED_NAME = "fullyQualifiedName";
-
     private static final String ATTR_CREATE_TARGET_TABLE = "createTargetTable";
-
     private static final String ATTR_TRUNCATE_BEFORE_LOAD = "truncateBeforeLoad";
     private static transient final Logger mLogger = LogUtil.getLogger(TargetTableImpl.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private SQLCondition joinCondition;
     private SQLCondition filterCondition;
     private SQLCondition havingCondition;
-     /** having condition tag */
+    /** having condition tag */
     public static final String HAVING_CONDITION = "havingCondition";
     private SQLGroupBy groupBy;
 
@@ -153,7 +149,6 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     /*
      * Implementation of DBTable interface.
      */
-
     /**
      * Adds a TargetColumn instance to this table.
      * 
@@ -187,8 +182,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         String objType = TagParserUtility.getStringType(newType);
 
         if (!isInputValid(argName, newInput)) {
-            throw new BaseException("Cannot link " + objType + " '" + newInput.getDisplayName() + "' as input to '" + argName + "' in "
-                + TagParserUtility.getDisplayStringFor(this.type) + " '" + this.getDisplayName() + "'");
+            throw new BaseException("Cannot link " + objType + " '" + newInput.getDisplayName() + "' as input to '" + argName + "' in " + TagParserUtility.getDisplayStringFor(this.type) + " '" + this.getDisplayName() + "'");
         }
 
         // Now locate associated column and set newInput as its value.
@@ -211,9 +205,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
             } catch (BaseException ex) {
                 // we should not throw this exception; this is just fail to
                 // create an automatic filter so we can ignore now.
-                  mLogger.errorNoloc(mLoc.t("PRSR120: Could not create auto joinCondition for target table.{0}",TargetTableImpl.class.getName()),ex);
-               // Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "addInput", "Could not create auto joinCondition for target table.",
-                 //   ex);
+                mLogger.errorNoloc(mLoc.t("PRSR120: Could not create auto joinCondition for target table.{0}", TargetTableImpl.class.getName()), ex);
             }
         }
     }
@@ -264,7 +256,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
                     // ignore
                 }
             }
-            
+
             SQLCondition srcFilterCondition = tgtSource.getFilterCondition();
             if (srcFilterCondition != null) {
                 try {
@@ -275,8 +267,8 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
             }
 
             SQLGroupBy grpBy = tgtSource.getSQLGroupBy();
-            if(grpBy != null) {
-                groupBy =  new SQLGroupByImpl(grpBy);
+            if (grpBy != null) {
+                groupBy = new SQLGroupByImpl(grpBy);
             }
         }
     }
@@ -418,9 +410,9 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
                 }
             }
         } catch (BaseException ex) {
-             mLogger.errorNoloc(mLoc.t("PRSR121: Could not find a join view for this target table{0}",this.getName()),ex);
-          // Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "getJoinView", "Could not find a join view for this target table "
-            //    + this.getName(), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR121: Could not find a join view for this target table{0}", this.getName()), ex);
+        // Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "getJoinView", "Could not find a join view for this target table "
+        //    + this.getName(), ex);
         }
 
         return joinView;
@@ -567,10 +559,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
      * @see java.lang.Object#hashCode
      */
     public int hashCode() {
-        return super.hashCode() + ((joinCondition != null) ? joinCondition.hashCode() : 0)
-            + ((getJoinConditionText() != null) ? getJoinConditionText().hashCode() : 0)
-            + ((filterCondition != null) ? filterCondition.hashCode() : 0)
-            + ((getFilterConditionText() != null) ? getFilterConditionText().hashCode() : 0);
+        return super.hashCode() + ((joinCondition != null) ? joinCondition.hashCode() : 0) + ((getJoinConditionText() != null) ? getJoinConditionText().hashCode() : 0) + ((filterCondition != null) ? filterCondition.hashCode() : 0) + ((getFilterConditionText() != null) ? getFilterConditionText().hashCode() : 0);
     }
 
     public boolean hasSourceColumn() {
@@ -622,8 +611,8 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
                 case SQLConstants.CASE:
                     srcType = input.getJdbcType();
                     break;
-                case SQLConstants.CUSTOM_OPERATOR:                      
-                    srcType = ((SQLCustomOperatorImpl)input).getOutputJdbcType();
+                case SQLConstants.CUSTOM_OPERATOR:
+                    srcType = ((SQLCustomOperatorImpl) input).getOutputJdbcType();
                     break;
                 case SQLConstants.LITERAL:
                     return SQLConstants.TYPE_CHECK_SAME;
@@ -648,7 +637,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         switch (input.getObjectType()) {
             case SQLConstants.GENERIC_OPERATOR:
             case SQLConstants.CAST_OPERATOR:
-            case SQLConstants.CUSTOM_OPERATOR:            	
+            case SQLConstants.CUSTOM_OPERATOR:
             case SQLConstants.DATE_DIFF_OPERATOR:
             case SQLConstants.DATE_ADD_OPERATOR:
             case SQLConstants.LITERAL:
@@ -670,7 +659,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         Boolean shouldTruncate = (Boolean) this.getAttributeObject(ATTR_TRUNCATE_BEFORE_LOAD);
         return (shouldTruncate != null) ? shouldTruncate.booleanValue() : false;
     }
-    
+
     public boolean isUsingFullyQualifiedName() {
         Boolean fullName = (Boolean) this.getAttributeObject(ATTR_FULLY_QUALIFIED_NAME);
         if (fullName != null) {
@@ -729,7 +718,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
             // we should not throw this exception; this is just fail to
             // create an automatic filter so we can ignore now.
             //Logger.printThrowable(Logger.ERROR, TargetTableImpl.class.getName(), "addInput", "Could not create auto joinCondition for target table.", ex);
-            mLogger.errorNoloc(mLoc.t("PRSR122: Could not create auto joinCondition for target table.{0}",TargetTableImpl.class.getName()),ex);
+            mLogger.errorNoloc(mLoc.t("PRSR122: Could not create auto joinCondition for target table.{0}", TargetTableImpl.class.getName()), ex);
         }
 
         return victim;
@@ -797,8 +786,8 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     public void setCreateTargetTable(boolean create) {
         this.setAttribute(ATTR_CREATE_TARGET_TABLE, new Boolean(create));
     }
-    
-     /**
+
+    /**
      * Sets whether to create target table if it does not already exist.
      * 
      * @param create whether to create target table
@@ -846,11 +835,10 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
     public void setTruncateBeforeLoad(boolean flag) {
         this.setAttribute(ATTR_TRUNCATE_BEFORE_LOAD, (flag ? Boolean.TRUE : Boolean.FALSE));
     }
-    
+
     public void setTruncateBeforeLoad(Boolean flag) {
         this.setAttribute(ATTR_TRUNCATE_BEFORE_LOAD, (flag ? Boolean.TRUE : Boolean.FALSE));
     }
- 
 
     /**
      * Returns XML representation of table metadata.
@@ -895,7 +883,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         if (joinCondition != null) {
             xml.append(joinCondition.toXMLString(prefix + INDENT));
         }
-        
+
         // write out filterCondition
         if (filterCondition != null) {
             xml.append(filterCondition.toXMLString(prefix + INDENT));
@@ -1130,7 +1118,7 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
             case SQLConstants.PREDICATE:
             case SQLConstants.VISIBLE_PREDICATE:
             case SQLConstants.GENERIC_OPERATOR:
-            case SQLConstants.CUSTOM_OPERATOR:            	
+            case SQLConstants.CUSTOM_OPERATOR:
             case SQLConstants.CAST_OPERATOR:
             case SQLConstants.DATE_DIFF_OPERATOR:
             case SQLConstants.DATE_ADD_OPERATOR:
@@ -1192,15 +1180,15 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         type = SQLConstants.TARGET_TABLE;
         setDefaultAttributes();
         groupBy = new SQLGroupByImpl();
-        
+
         joinCondition = SQLModelObjectFactory.getInstance().createSQLCondition(JOIN_CONDITION);
         setJoinCondition(joinCondition);
-        
+
         filterCondition = SQLModelObjectFactory.getInstance().createSQLCondition(FILTER_CONDITION);
         setFilterCondition(filterCondition);
     }
 
-	public SQLCondition getFilterCondition() {
+    public SQLCondition getFilterCondition() {
         // if there are no objects in graph then populate graph with the objects
         // obtained from sql text
         Collection objC = filterCondition.getAllObjects();
@@ -1214,29 +1202,29 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         }
 
         return filterCondition;
-	}
+    }
 
-	public String getFilterConditionText() {
-		return filterCondition.getConditionText();
-	}
+    public String getFilterConditionText() {
+        return filterCondition.getConditionText();
+    }
 
-	public void setFilterCondition(SQLCondition cond) {
-		this.filterCondition = cond;
+    public void setFilterCondition(SQLCondition cond) {
+        this.filterCondition = cond;
         if (this.filterCondition != null) {
             this.filterCondition.setParent(this);
             this.filterCondition.setDisplayName(TargetTable.FILTER_CONDITION);
         }
-		
-	}
 
-	public void setFilterConditionText(String cond) {
-		filterCondition.setConditionText(cond);
-	}
+    }
 
-    public SQLCondition getHavingCondition(){
+    public void setFilterConditionText(String cond) {
+        filterCondition.setConditionText(cond);
+    }
+
+    public SQLCondition getHavingCondition() {
         return havingCondition;
     }
-   
+
     public void setHavingCondition(SQLCondition having) {
         this.havingCondition = having;
         if (this.havingCondition != null) {
@@ -1245,20 +1233,19 @@ public class TargetTableImpl extends AbstractDBTable implements TargetTable {
         }
     }
 
-   public void setBatchSize(int newsize){
-        this.setAttribute(ATTR_BATCHSIZE,new Integer(newsize));
+    public void setBatchSize(int newsize) {
+        this.setAttribute(ATTR_BATCHSIZE, new Integer(newsize));
     }
-            
+
     public void setBatchSize(Integer newsize) {
-         this.setAttribute(ATTR_BATCHSIZE,newsize);
+        this.setAttribute(ATTR_BATCHSIZE, newsize);
     }
-    
-     public void setUsingFullyQualifiedName(boolean usesFullName) {
+
+    public void setUsingFullyQualifiedName(boolean usesFullName) {
         this.setAttribute(ATTR_FULLY_QUALIFIED_NAME, new Boolean(usesFullName));
     }
-    
+
     public void setUsingFullyQualifiedName(Boolean usesFullName) {
-        this.setAttribute(ATTR_FULLY_QUALIFIED_NAME,usesFullName);
-    } 
-      
+        this.setAttribute(ATTR_FULLY_QUALIFIED_NAME, usesFullName);
+    }
 }

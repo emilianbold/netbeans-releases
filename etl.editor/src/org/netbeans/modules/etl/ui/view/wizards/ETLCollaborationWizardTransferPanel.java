@@ -262,8 +262,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
             try {
                 selectedTableModel.removeRow(rowIndex);
             } catch (ArrayIndexOutOfBoundsException aix) {
-                mLogger.errorNoloc(mLoc.t("PRSR030: Failed to remove row from selected tables{0}",LOG_CATEGORY),aix);
-                //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Failed to remove row from selected tables", aix);
+                mLogger.errorNoloc(mLoc.t("PRSR030: Failed to remove row from selected tables{0}", LOG_CATEGORY), aix);
             }
         }
 
@@ -800,8 +799,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
 
                     }
                 } catch (Exception ex) {
-                    mLogger.errorNoloc(mLoc.t("PRSR031: Error retrieving schemas{0}",LOG_CATEGORY),ex);
-                    //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error retrieving schemas", ex);
+                    mLogger.errorNoloc(mLoc.t("PRSR031: Error retrieving schemas{0}", LOG_CATEGORY), ex);
                     throw new RuntimeException(ex.getCause());
                 } finally {
                     meta.disconnectDB();
@@ -922,8 +920,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         DBMetaDataFactory dbMeta = new DBMetaDataFactory();
         try {
             if (ETLCollaborationWizardTransferPanel.this.selectedConnection == null) {
-                  mLogger.infoNoloc(mLoc.t("PRSR032: selectedConn is null{0}",LOG_CATEGORY));
-                //Logger.print(Logger.INFO, LOG_CATEGORY, null, "selectedConn is null");
+                mLogger.infoNoloc(mLoc.t("PRSR032: selectedConn is null{0}", LOG_CATEGORY));
             }
 
             if ((selectedConnection != null)) {
@@ -948,8 +945,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 schemaTablesList.setListData(tableNameList);
             }
         } catch (Exception ex) {
-              mLogger.errorNoloc(mLoc.t("PRSR033: Error trying to retrieve tables and views{0}",LOG_CATEGORY),ex);
-            //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error trying to retrieve tables and views", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR033: Error trying to retrieve tables and views{0}", LOG_CATEGORY), ex);
         } finally {
             dbMeta.disconnectDB();
         }
@@ -989,8 +985,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
         // add selected tables from the list to table
         try {
             if (ETLCollaborationWizardTransferPanel.this.selectedConnection == null) {
-                mLogger.infoNoloc(mLoc.t("PRSR034: selectedConn is null{0}",LOG_CATEGORY));
-                //Logger.print(Logger.INFO, LOG_CATEGORY, null, "selectedConn is null");
+                mLogger.infoNoloc(mLoc.t("PRSR034: selectedConn is null{0}", LOG_CATEGORY));
             }
 
             Object[] selectedTables = schemaTablesList.getSelectedValues();
@@ -1030,9 +1025,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                 this.removeButton.setEnabled(true);
             }
         } catch (Exception ex) {
-           mLogger.errorNoloc(mLoc.t("PRSR035: Error trying to get selected table metadata{0}",LOG_CATEGORY),ex);
-           //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null,
-             //       "Error trying to get selected table metadata", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR035: Error trying to get selected table metadata{0}", LOG_CATEGORY), ex);
         }
     }
 
@@ -1207,8 +1200,7 @@ public class ETLCollaborationWizardTransferPanel extends JPanel implements Actio
                         wizard.putProperty(ETLCollaborationWizard.TARGET_DB, list);
                     }
                 } catch (Exception e) {
-                     mLogger.errorNoloc(mLoc.t("PRSR036: Error trying to get selected table metadata{0}",LOG_CATEGORY),e);
-                    //Logger.printThrowable(Logger.INFO, LOG_CATEGORY, null, "Error trying to get selected table metadata", e);
+                    mLogger.errorNoloc(mLoc.t("PRSR036: Error trying to get selected table metadata{0}", LOG_CATEGORY), e);
                 }
             }
         }

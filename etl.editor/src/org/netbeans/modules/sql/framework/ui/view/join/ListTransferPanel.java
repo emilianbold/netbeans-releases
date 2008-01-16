@@ -137,8 +137,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
     private ArrayList<SourceTable> newTables = new ArrayList<SourceTable>();
     private static transient final Logger mLogger = LogUtil.getLogger(ListTransferPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
-    
+
     public ListTransferPanel(JoinMainPanel jMainPanel, String sLabelStr, String dLabelStr, Collection sCollection, Collection dCollection) {
 
         this.jmPanel = jMainPanel;
@@ -579,8 +578,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             }
         } catch (BaseException ex) {
             String tableName = sTable != null ? sTable.getName() : "";
-             mLogger.errorNoloc(mLoc.t("PRSR190: Error Occured while removing the table{0}which user has added using more table dialog",tableName),ex);
-            //Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "isRemoveAllowed", "Error Occured while removing the table " + tableName + " which user has added using more table dialog", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR190: Error Occured while removing the table{0}which user has added using more table dialog", tableName), ex);
             NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
             return false;
@@ -674,8 +672,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             }
         } catch (BaseException ex) {
             String tableName = sTable != null ? sTable.getName() : "";
-            mLogger.errorNoloc(mLoc.t("PRSR191: Error Occured while adding the table {0}to model, which user has added using more table dialog",tableName),ex);
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "isAddAllowed", "Error Occured while adding the table " + tableName + " to model, which user has added using more table dialog", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR191: Error Occured while adding the table {0}to model, which user has added using more table dialog", tableName), ex);
             NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be added to the model.", NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
 
@@ -709,7 +706,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         listModel.updateButtonState();
     }
 
-/**
+    /**
      * Container for ListModels associated with source and destination lists of a list
      * transfer panel. Holds ButtonModels for controls that indicate selected addition and
      * bulk addition to destination list and selected removal and bulk removal of items
@@ -889,7 +886,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
             synchronized (dest) {
                 dest.trimToSize();
                 for (int i = 0; i < dest.size(); i++) {
-                    dstList.add((SQLDBTable)dest.get(i));
+                    dstList.add((SQLDBTable) dest.get(i));
                 }
             }
 
@@ -1123,7 +1120,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
         }
     }
 
-/**
+    /**
      * Extends ChangeEvent to convey information on an item being transferred to or from
      * the source of the event.
      *
@@ -1217,8 +1214,7 @@ public class ListTransferPanel extends JPanel implements ActionListener, ListSel
                 }
             } catch (BaseException ex) {
                 String tableName = sTable != null ? sTable.getName() : "";
-                 mLogger.errorNoloc(mLoc.t("PRSR192: Error Occured while removing the table {0}which user has added using more table dialog",tableName),ex);
-               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "removeMoreTablesOnCancel", "Error Occured while removing the table " + tableName + " which user has added using more table dialog", ex);
+                mLogger.errorNoloc(mLoc.t("PRSR192: Error Occured while removing the table {0}which user has added using more table dialog", tableName), ex);
                 NotifyDescriptor d = new NotifyDescriptor.Message("Table " + tableName + " which was added using more table dialog, can not be deleted from the model.", NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
             }

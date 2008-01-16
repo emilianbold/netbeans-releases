@@ -60,6 +60,7 @@ public class GeneratorUtil {
     private static GeneratorUtil instance;
     private static transient final Logger mLogger = LogUtil.getLogger(GeneratorUtil.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Gets an instance of GeneratorUtil.
      *
@@ -96,8 +97,8 @@ public class GeneratorUtil {
         try {
             sql = genFactory.generate(sqlObj, stmtContext);
         } catch (Exception ex) {
-             mLogger.errorNoloc(mLoc.t("PRSR123: Could not evaulate object {0}in{1}",sqlObj.getDisplayName(),GeneratorUtil.class.getName()),ex);
-            //Logger.printThrowable(Logger.ERROR, GeneratorUtil.class.getName(), "getEvaluatedString", "Could not evaulate object " + sqlObj.getDisplayName(), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR123: Could not evaulate object {0}in{1}", sqlObj.getDisplayName(), GeneratorUtil.class.getName()), ex);
+
         }
         return sql;
     }

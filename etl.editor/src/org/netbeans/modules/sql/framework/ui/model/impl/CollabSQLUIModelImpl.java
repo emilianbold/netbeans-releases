@@ -90,7 +90,7 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  * 
  * @author Ritesh Adval
  */
-public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLUIModel  {
+public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLUIModel {
 
     private static final String LOG_CATEGORY = CollabSQLUIModelImpl.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(CollabSQLUIModelImpl.class.getName());
@@ -333,10 +333,7 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
                 // reload time we do not want to handle auto join
                 addObjectInGraph(sqlObj, false);
             } catch (BaseException e) {
-              mLogger.errorNoloc(mLoc.t("PRSR142: Error caught while restoring object ({0})",sqlObj.getDisplayName()),e);
-               // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "restoreObjects", "Error caught while restoring object (" + sqlObj.getDisplayName()
-                 //   + ")", e);
-
+                mLogger.errorNoloc(mLoc.t("PRSR142: Error caught while restoring object ({0})", sqlObj.getDisplayName()), e);
                 throw e;
             }
         }
@@ -382,8 +379,7 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
             SQLDataEvent evt = new SQLDataEvent(this, (SQLCanvasObject) sqlObject);
             fireSQLDataCreationEvent(evt);
             isDirty = true;
-        } else if (sqlObject.getObjectType() == SQLConstants.SOURCE_DBMODEL || sqlObject.getObjectType() == SQLConstants.TARGET_DBMODEL
-            || sqlObject.getObjectType() == SQLConstants.RUNTIME_DBMODEL) {
+        } else if (sqlObject.getObjectType() == SQLConstants.SOURCE_DBMODEL || sqlObject.getObjectType() == SQLConstants.TARGET_DBMODEL || sqlObject.getObjectType() == SQLConstants.RUNTIME_DBMODEL) {
             createTablesInGraph((SQLDBModel) sqlObject);
         }
     }
@@ -506,8 +502,7 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
             try {
                 addObjectInGraph((SQLDBTable) it.next(), false);
             } catch (BaseException e) {
-                 mLogger.errorNoloc(mLoc.t("PRSR143: Error while adding table to canvas. ({0})",LOG_CATEGORY),e);
-                //Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "createTablesInGraph", "Error while adding table to canvas.", e);
+                mLogger.errorNoloc(mLoc.t("PRSR143: Error while adding table to canvas. ({0})", LOG_CATEGORY), e);
                 throw e;
             }
         }
@@ -547,7 +542,7 @@ public class CollabSQLUIModelImpl extends AbstractSQLModel implements CollabSQLU
             if (cond != null) {
                 cond.removeDanglingColumnRef(column);
             }
-            
+
             SQLCondition fcond = sTable.getFilterCondition();
             if (fcond != null) {
                 fcond.removeDanglingColumnRef(column);

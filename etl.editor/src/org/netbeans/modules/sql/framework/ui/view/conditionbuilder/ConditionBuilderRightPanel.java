@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.view.conditionbuilder;
 
 import java.awt.BorderLayout;
@@ -77,10 +76,12 @@ import org.netbeans.modules.sql.framework.ui.output.SQLOutputConditionView;
  * @version $Revision$
  */
 public class ConditionBuilderRightPanel extends JPanel implements IConditionGraphViewContainer {
+
     private static transient final Logger mLogger = LogUtil.getLogger(ConditionBuilderRightPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+
     private class ValidationThread extends SwingWorker {
+
         private SQLCondition execModel;
         private List list;
 
@@ -115,7 +116,6 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
             showSplitPaneView(validationView);
         }
     }
-
     private static final String LOG_CATEGORY = ConditionBuilderRightPanel.class.getName();
     private SQLCondition cond;
     private IGraphViewContainer editor;
@@ -124,9 +124,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
     private ConditionBuilderSQLUiModel model;
     private SQLOutputConditionView outputView;
     private JSplitPane splitPane;
-
     private HashMap sqlViewMap = new HashMap();
-
     private TableTreeView tableTreeView;
     private SQLValidationView validationView;
     private int toolbarType;
@@ -179,8 +177,8 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
             }
         } catch (Exception ex) {
             String msg = NbBundle.getMessage(ConditionBuilderRightPanel.class, "LBL_validation_error", ex.getMessage());
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "doValidation", "error doing condition validation", ex);
-             mLogger.errorNoloc(mLoc.t("PRSR154: error doing condition validation{0}",LOG_CATEGORY),ex);
+
+            mLogger.errorNoloc(mLoc.t("PRSR154: error doing condition validation{0}", LOG_CATEGORY), ex);
             validationView.appendToView(msg);
         }
     }
@@ -226,6 +224,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
             ConditionUtil.populateCondition(cond1, rootObj);
             model.restoreUIState();
             Runnable layout = new Runnable() {
+
                 public void run() {
                     graphView.autoLayout();
                 }
@@ -233,8 +232,8 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
             SwingUtilities.invokeLater(layout);
         } catch (Exception ex) {
             // Safely ignore this exception
-           // Logger.printThrowable(Logger.WARN, ConditionBuilderRightPanel.class.getName(), null, "Can't refresh condition graph view", ex);
-             mLogger.errorNoloc(mLoc.t("PRSR155: Can't refresh condition graph view{0}",LOG_CATEGORY),ex);
+
+            mLogger.errorNoloc(mLoc.t("PRSR155: Can't refresh condition graph view{0}", LOG_CATEGORY), ex);
         }
     }
 
@@ -300,7 +299,7 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
     public void showSQL() {
         if (splitPane.getBottomComponent() == null) {
             showSql();
-        } 
+        }
     }
 
     public void showTableTree() {

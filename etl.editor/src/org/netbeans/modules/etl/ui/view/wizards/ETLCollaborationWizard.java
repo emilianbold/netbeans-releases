@@ -68,12 +68,12 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
-
 /**
  * Wizard to collect name and participating tables information to be used in creating a
  * new ETL collaboration.
  */
 public class ETLCollaborationWizard extends ETLWizard {
+
     private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizard.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
@@ -257,8 +257,7 @@ public class ETLCollaborationWizard extends ETLWizard {
                     NbBundle.getMessage(ETLCollaborationWizard.class, "STEP_tblwizard_targets")
                 };
             } catch (MissingResourceException e) {
-                mLogger.errorNoloc(mLoc.t("PRSR029: Could not locate steps strings.{0}",LOG_CATEGORY),e);
-                //Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "createPanelTitles()", "Could not locate steps strings.", e);
+                mLogger.errorNoloc(mLoc.t("PRSR029: Could not locate steps strings.{0}", LOG_CATEGORY), e);
                 return new String[]{};
             }
         }

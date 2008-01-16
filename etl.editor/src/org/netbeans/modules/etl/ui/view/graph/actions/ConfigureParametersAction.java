@@ -30,7 +30,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import java.awt.BorderLayout;
@@ -218,8 +217,7 @@ public final class ConfigureParametersAction extends CookieAction {
             // write new config data into config file.
             writeToConfigFile(configFile, confDefn);
         } catch (Exception ex) {
-             mLogger.infoNoloc(mLoc.t("PRSR022: ConfigureParametersAction.class.getName(){0}",ex.getMessage()));
-           //Logger.print(Logger.ERROR, ConfigureParametersAction.class.getName(), ex.getMessage());
+            mLogger.infoNoloc(mLoc.t("PRSR022: ConfigureParametersAction.class.getName(){0}", ex.getMessage()));
         }
     }
 
@@ -295,16 +293,14 @@ public final class ConfigureParametersAction extends CookieAction {
             Element element = XmlUtil.loadXMLFile(new BufferedReader(new FileReader(configFile)));
             rootNode = (org.w3c.dom.Node) element;
         } catch (Exception ex) {
-             mLogger.infoNoloc(mLoc.t("PRSR023: ConfigureParametersAction.class.getName(){0}",ex.getMessage()));
-           // Logger.print(Logger.ERROR, ConfigureParametersAction.class.getName(), ex.getMessage());
+            mLogger.infoNoloc(mLoc.t("PRSR023: ConfigureParametersAction.class.getName(){0}", ex.getMessage()));
         }
         if (rootNode != null) {
             org.w3c.dom.Node sqlNode = rootNode.getFirstChild();
             try {
                 sqlDefn = new SQLDefinitionImpl((Element) sqlNode);
             } catch (Exception ex) {
-                     mLogger.infoNoloc(mLoc.t("PRSR024: ConfigureParametersAction.class.getName(){0}",ex.getMessage()));
-                //Logger.print(Logger.ERROR, ConfigureParametersAction.class.getName(), ex.getMessage());
+                mLogger.infoNoloc(mLoc.t("PRSR024: ConfigureParametersAction.class.getName(){0}", ex.getMessage()));
             }
         }
         return sqlDefn;

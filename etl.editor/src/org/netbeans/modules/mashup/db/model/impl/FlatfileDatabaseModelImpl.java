@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.mashup.db.model.impl;
 
-
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -90,12 +89,13 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
     private static transient final Localizer mLoc = Localizer.get();
     private static final String DRIVER_NAME = "org.axiondb.jdbc.AxionDriver";
     private static final List DRIVER_LIST;
+    
+
     static {
         List aList = new ArrayList(1);
         aList.add(DRIVER_NAME);
         DRIVER_LIST = Collections.unmodifiableList(aList);
     }
-
     private static final int DRIVER_TYPE = 4;
     private static final String END_QUOTE_SPACE = "\" ";
     private static final String EQUAL_START_QUOTE = "=\"";
@@ -104,21 +104,13 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
      * table name.
      */
     private static final String FQ_TBL_NAME_SEPARATOR = ".";
-
     private static final String LOG_CATEGORY = FlatfileDatabaseModelImpl.class.getName();
-
     private static final String QUOTE = "\"";
-
     private static final String TAB = "\t";
-
     private static final String TAG_CONNECTION_DEFINITION = "connectionDefinition";
-
     private static final String TAG_MODEL = "stcdbDatabaseModel";
-
     private static final String TAG_STCDB_TABLE = "stcdbTable";
-
     private static final String XML_DOC_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-
     /** Connection name */
     protected volatile String connectionName;
 
@@ -197,18 +189,18 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
      * @return shallow copy of this ETLDataSource
      */
     public Object clone() {
-            FlatfileDatabaseModelImpl myClone = (FlatfileDatabaseModelImpl) super.clone();
+        FlatfileDatabaseModelImpl myClone = (FlatfileDatabaseModelImpl) super.clone();
 
-            myClone.name = name;
-            myClone.description = description;
-            myClone.source = source;
+        myClone.name = name;
+        myClone.description = description;
+        myClone.source = source;
 
-            myClone.tables = new HashMap<String, FlatfileDBTable>();
-            tables.putAll(tables);
+        myClone.tables = new HashMap<String, FlatfileDBTable>();
+        tables.putAll(tables);
 
-            myClone.connectionName = connectionName;
+        myClone.connectionName = connectionName;
 
-            return myClone;
+        return myClone;
     }
 
     /**
@@ -271,17 +263,14 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
             FlatfileDatabaseModelImpl aSrc = (FlatfileDatabaseModelImpl) refObj;
 
             result = ((aSrc.name != null) ? aSrc.name.equals(name) : (name == null));
-              mLogger.infoNoloc(mLoc.t("PRSR063: equals(): Do model names match? {0}"+result,LOG_CATEGORY));
-           // Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do model names match? " + result);
+            mLogger.infoNoloc(mLoc.t("PRSR063: equals(): Do model names match? {0}" + result, LOG_CATEGORY));
 
             boolean connCheck = (aSrc.connectionName != null) ? aSrc.connectionName.equals(connectionName) : (connectionName == null);
-             mLogger.infoNoloc(mLoc.t("PRSR064: equals(): Do connection names match? {0}"+connCheck,LOG_CATEGORY));
-           // Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do connection names match? " + connCheck);
+            mLogger.infoNoloc(mLoc.t("PRSR064: equals(): Do connection names match? {0}" + connCheck, LOG_CATEGORY));
             result &= connCheck;
 
             connCheck = ((aSrc.connectionDefinition != null) ? aSrc.connectionDefinition.equals(connectionDefinition) : (connectionDefinition == null));
-            mLogger.infoNoloc(mLoc.t("PRSR065: equals(): Do connection defs match? {0}"+connCheck,LOG_CATEGORY));
-            //Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do connection defs match? " + connCheck);
+            mLogger.infoNoloc(mLoc.t("PRSR065: equals(): Do connection defs match? {0}" + connCheck, LOG_CATEGORY));
             result &= connCheck;
 
             if (tables != null && aSrc.tables != null) {
@@ -290,21 +279,17 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
 
                 // Must be identical (no subsetting), hence the pair of tests.
                 boolean tblCheck = myTbls.containsAll(objTbls) && objTbls.containsAll(myTbls);
-                 mLogger.infoNoloc(mLoc.t("PRSR066: equals(): Do table names match? {0}"+tblCheck,LOG_CATEGORY));
-               // Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Do table names match? " + tblCheck);
-
+                mLogger.infoNoloc(mLoc.t("PRSR066: equals(): Do table names match? {0}" + tblCheck, LOG_CATEGORY));
                 result &= tblCheck;
             }
         }
 
-          mLogger.infoNoloc(mLoc.t("PRSR067: equals(): Is refObj equal to this? {0}"+result,LOG_CATEGORY));
-        //Logger.print(Logger.DEBUG, LOG_CATEGORY, "equals()", "equals(): Is refObj equal to this? " + result);
-
+        mLogger.infoNoloc(mLoc.t("PRSR067: equals(): Is refObj equal to this? {0}" + result, LOG_CATEGORY));
         return result;
     }
-    
+
     public DBConnectionDefinition getFlatfileDBConnectionDefinition(boolean download) {
-        if(download) {
+        if (download) {
             return getConnectionDefinition();
         } else {
             return connectionDefinition;
@@ -538,7 +523,7 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
 
                 if (TAG_CONNECTION_DEFINITION.equals(tmpElement.getNodeName())) {
                     this.connectionDefinition = new FlatfileDBConnectionDefinitionImpl();
-                    ((FlatfileDBConnectionDefinition)connectionDefinition).parseXML(tmpElement);
+                    ((FlatfileDBConnectionDefinition) connectionDefinition).parseXML(tmpElement);
                 }
             }
         }
@@ -655,8 +640,7 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
             try {
                 majorVersion = Integer.parseInt(str);
             } catch (Exception ex) {
-                  mLogger.infoNoloc(mLoc.t("PRSR068: LOG_CATEGORY {0}",ATTR_MAJOR_VERSION),ex);
-                //Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseAttributes()", ATTR_MAJOR_VERSION);
+                mLogger.infoNoloc(mLoc.t("PRSR068: LOG_CATEGORY {0}", ATTR_MAJOR_VERSION), ex);
             }
         }
 
@@ -665,8 +649,7 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
             try {
                 minorVersion = Integer.parseInt(str);
             } catch (Exception ex) {
-                mLogger.infoNoloc(mLoc.t("PRSR069: LOG_CATEGORY {0}",ATTR_MINOR_VERSION),ex);
-               // Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseAttributes()", ATTR_MINOR_VERSION);
+                mLogger.infoNoloc(mLoc.t("PRSR069: LOG_CATEGORY {0}", ATTR_MINOR_VERSION), ex);
             }
         }
 
@@ -675,8 +658,7 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
             try {
                 microVersion = Integer.parseInt(str);
             } catch (Exception ex) {
-                 mLogger.infoNoloc(mLoc.t("PRSR070: LOG_CATEGORY {0}",ATTR_MICRO_VERSION),ex);
-                //Logger.print(Logger.DEBUG, LOG_CATEGORY, "parseAttributes()", ATTR_MICRO_VERSION);
+                mLogger.infoNoloc(mLoc.t("PRSR070: LOG_CATEGORY {0}", ATTR_MICRO_VERSION), ex);
             }
         }
 
@@ -713,15 +695,15 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
             connectionDefinition = new FlatfileDBConnectionDefinitionImpl((FlatfileDBConnectionDefinition) src.getConnectionDefinition());
         } else {
             connectionDefinition = (connDef != null) ? new FlatfileDBConnectionDefinitionImpl(connDef.getName(), connDef.getDriverClass(),
-                connDef.getConnectionURL(), connDef.getUserName(), connDef.getPassword(), connDef.getDescription()) : new FlatfileDBConnectionDefinitionImpl(
-                src.getModelName(), FlatfileDBConnectionFactory.DRIVER_NAME, null, "", "", src.getModelName());
+                    connDef.getConnectionURL(), connDef.getUserName(), connDef.getPassword(), connDef.getDescription()) : new FlatfileDBConnectionDefinitionImpl(
+                    src.getModelName(), FlatfileDBConnectionFactory.DRIVER_NAME, null, "", "", src.getModelName());
         }
     }
 
     private void copyPrimitivesFrom(DatabaseModel src) {
         name = src.getModelName();
         description = src.getModelDescription();
-        source = (FlatfileDefinition)src.getSource();
+        source = (FlatfileDefinition) src.getSource();
     }
 
     private void copyTablesFrom(DatabaseModel src) {
@@ -772,7 +754,7 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
 
     private String getXMLConnectionDefition(String prefix) {
         if (this.connectionDefinition != null) {
-            return ((FlatfileDBConnectionDefinition)connectionDefinition).toXMLString(prefix);
+            return ((FlatfileDBConnectionDefinition) connectionDefinition).toXMLString(prefix);
         } else {
             return "";
         }
@@ -856,6 +838,5 @@ public class FlatfileDatabaseModelImpl extends SQLDBModelImpl implements Flatfil
 
         return null;
     }
-
 }
 

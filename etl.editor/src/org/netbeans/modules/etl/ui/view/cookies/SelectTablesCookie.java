@@ -68,6 +68,7 @@ public class SelectTablesCookie implements Node.Cookie {
     private ETLDataObject dataObj;
     private static transient final Logger mLogger = LogUtil.getLogger(SelectTablesCookie.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Creates a new instance of SelectTablesCookie associated with the given
      * ProjectElement.
@@ -97,12 +98,9 @@ public class SelectTablesCookie implements Node.Cookie {
                 helper.updateTableSelections(dataObj, sources, targets);
 
                 if (DEBUG) {
-                    mLogger.infoNoloc(mLoc.t("PRSR019: Selected source tables:\n{0}",sources));
-                    mLogger.infoNoloc(mLoc.t("PRSR020: Selected target tables:\n{0}",targets));
-                    mLogger.infoNoloc(mLoc.t("PRSR021: New state of ETL Definition:\n{0}",def.toXMLString("")));
-                    //Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "Selected source tables:\n" + sources);
-                    //Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "Selected target tables:\n" + targets);
-                    //Logger.print(Logger.DEBUG, LOG_CATEGORY, "showDialog()", "New state of ETL Definition:\n" + def.toXMLString(""));
+                    mLogger.infoNoloc(mLoc.t("PRSR019: Selected source tables:\n{0}", sources));
+                    mLogger.infoNoloc(mLoc.t("PRSR020: Selected target tables:\n{0}", targets));
+                    mLogger.infoNoloc(mLoc.t("PRSR021: New state of ETL Definition:\n{0}", def.toXMLString("")));
                 }
                 dataObj.getETLEditorSupport().synchDocument();
             }

@@ -104,20 +104,20 @@ import org.openide.awt.StatusDisplayer;
  * @author Ritesh Adval
  * @version $Revision$
  */
-public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Externalizable {
-    
+public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport, Externalizable {
+
     private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationTopPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+
     class ValidationThread extends SwingWorker {
 
         private SQLDefinition execModel;
         private List list;
-        
+
         public ValidationThread(SQLDefinition execModel) {
             this.execModel = execModel;
         }
-        
+
         /**
          * Compute the value to be returned by the <code>get</code> method.
          *
@@ -125,10 +125,10 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
          */
         public Object construct() {
             list = execModel.validate();
-            
+
             return "";
         }
-        
+
         //Runs on the event-dispatching thread.
         @Override
         public void finished() {
@@ -140,9 +140,9 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
                 StatusDisplayer.getDefault().setStatusText("\n" + msg);
             } else if (list.size() == 0) {
                 StatusDisplayer.getDefault().setStatusText("\nCollaboration is valid.");
-            } 
-            
-            if(list.size() > 0) {
+            }
+
+            if (list.size() > 0) {
                 validationView.setValidationInfos(list);
                 showSplitPaneView(validationView);
             }
@@ -161,7 +161,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     private SQLLogView logView;
     private SQLValidationView validationView;
     private JToolBar toolBar;
-    
+
     // REMEMBER: You should have a public default constructor!
     // This is for externalization. If you have a non-default
     // constructor for normal creation of the component, leave
@@ -173,18 +173,18 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
      */
     public ETLCollaborationTopPanel() {
         initComponents();
-        
+
         //do not show tab view if there is only one tab
         putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
         putClientProperty("PersistenceType", "Never"); //NOI18N
         this.setFont(new Font("Dialog", Font.PLAIN, 12)); //NOI18N
         registerActions();
-        // Use the Component Inspector to set tool-tip text. This will be saved
-        // automatically. Other JComponent properties you may need to save yuorself.
-        // At any time you can affect the node selection:
-        // setActivatedNodes(new Node[] { ... } );
+    // Use the Component Inspector to set tool-tip text. This will be saved
+    // automatically. Other JComponent properties you may need to save yuorself.
+    // At any time you can affect the node selection:
+    // setActivatedNodes(new Node[] { ... } );
     }
-    
+
     /**
      * Constructs new instance of ETLCollaborationTopPanel, using the given
      * data object to populate its contents.
@@ -197,25 +197,25 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
         dObj = mObj;
         //DataObjectProvider provider = DataObjectProvider.getProvider();
         String collaborationName = dObj.getName();
-        
+
         cLayout = new CardLayout();
         this.setLayout(cLayout);
         ETLCollaborationModel collabModel = dObj.getModel();
         etlTopView = new ETLEditorTopView(collabModel, this);
         etlTopView.setName(collaborationName);
         this.add(etlTopView, GRAPHPANEL_NAME);
-        
+
         cLayout.first(this);
-        
+
         validationView = new SQLValidationView(this.getGraphView());
         String validationLabel = NbBundle.getMessage(ETLCollaborationTopPanel.class, "LBL_validationview_tab");
         validationView.setName(validationLabel);
-        
+
         logView = new SQLLogView();
         String logLabel = NbBundle.getMessage(ETLCollaborationTopPanel.class, "LBL_logview_tab");
         logView.setName(logLabel);
     }
-    
+
     /**
      * Adds input table
      *
@@ -230,7 +230,6 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
-    
     // Printing, saving, compiling, etc.: use cookies on some appropriate node and
     // use this node as the node selection.
     /**
@@ -242,25 +241,24 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
         if (isEditable()) {
             return true;
         }
-        
+
         try {
             String msg = NbBundle.getMessage(ETLCollaborationTopPanel.class, "MSG_must_checkout", DataObjectProvider.getProvider().getActiveDataObject().getName());
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
         } catch (Exception ex) {
-               mLogger.errorNoloc(mLoc.t("PRSR044: Can't get name of data object{0}",DataObjectProvider.getProvider().getActiveDataObject()),ex);
-            //Logger.printThrowable(Logger.ERROR, ETLCollaborationTopPanel.class.getName(), null, "Can't get name of data object " + DataObjectProvider.getProvider().getActiveDataObject(), ex);
+            mLogger.errorNoloc(mLoc.t("PRSR044: Can't get name of data object{0}", DataObjectProvider.getProvider().getActiveDataObject()), ex);
         }
-        
+
         return false;
     }
-    
+
     /**
      * Validates the collaboration.
      */
     public void doValidation() {
         try {
             ETLCollaborationModel collabModel = DataObjectProvider.getProvider().getActiveDataObject().getModel();
-            
+
             if (collabModel != null) {
                 validationView.clearView();
                 ETLDefinitionImpl def = collabModel.getETLDefinition();
@@ -268,12 +266,11 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
                 vThread.start();
             }
         } catch (Exception ex) {
-           // Logger.printThrowable(Logger.ERROR, ETLCollaborationTopPanel.class.getName(), "doValidation", NbBundle.getMessage(ETLCollaborationTopPanel.class, "LBL_validation_error"), ex);
-              mLogger.errorNoloc(mLoc.t("PRSR045: \nError occurred during validation:{0}",ex.getMessage()),ex);
+            mLogger.errorNoloc(mLoc.t("PRSR045: \nError occurred during validation:{0}", ex.getMessage()), ex);
             validationView.appendToView(NbBundle.getMessage(ETLCollaborationTopPanel.class, "LBL_validation_error", ex.getMessage()));
         }
     }
-    
+
     /**
      * Displays dialog box to edit database properties.
      */
@@ -284,14 +281,14 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
         panelTitle.setHorizontalAlignment(SwingConstants.LEADING);
         dObj = DataObjectProvider.getProvider().getActiveDataObject();
         editPanel = new EditDBModelPanel(DataObjectProvider.getProvider().getActiveDataObject());
-        
+
         JPanel contentPane = new JPanel();
         contentPane.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
         contentPane.setLayout(new BorderLayout());
         contentPane.add(panelTitle, BorderLayout.NORTH);
         contentPane.add(editPanel, BorderLayout.CENTER);
-        
-        
+
+
         DialogDescriptor dd = new DialogDescriptor(contentPane, NbBundle.getMessage(ETLCollaborationTopPanel.class, "TITLE_edit_database_properties"));
         Dialog dlg = DialogDisplayer.getDefault().createDialog(dd);
         dlg.setSize(new Dimension(600, 450));
@@ -312,7 +309,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
             collabModel.setDirty(false);
         }
     }
-    
+
     /**
      * Gets IGraphNode, if any, associated with the given Object.
      *
@@ -322,7 +319,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     public IGraphNode findGraphNode(Object dataObj) {
         return etlTopView.findGraphNode(dataObj);
     }
-    
+
     /**
      * Gets current IGraphView instance.
      *
@@ -331,9 +328,9 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     public IGraphView getGraphView() {
         return this.etlTopView.getGraphView();
     }
-    
+
     public JToolBar createToolbar() {
-        if(toolBar == null) {
+        if (toolBar == null) {
             IGraphView graphView = getGraphView();
             etlTopView.enableToolBarActions(true);
             SQLCollaborationView collabView = etlTopView.getCollaborationView();
@@ -345,7 +342,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
         }
         return toolBar;
     }
-    
+
     /**
      * Gets name of operator folder.
      *
@@ -354,7 +351,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     public String getOperatorFolder() {
         return DEFAULT_OPERATOR_FOLDER;
     }
-    
+
     /**
      * Gets the zoom factor for this TopComponent.
      *
@@ -363,7 +360,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     public double getZoomFactor() {
         return etlTopView.getZoomFactor();
     }
-    
+
     /**
      * Is editable
      *
@@ -372,7 +369,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     public boolean isEditable() {
         return true;
     }
-    
+
     public void reload() {
         try {
             ETLCollaborationModel collabModel = DataObjectProvider.getProvider().getActiveDataObject().getModel();
@@ -386,21 +383,21 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
             resetEditorInEventDispatchThread();
         }
     }
-    
+
     /**
      * Reset this view
      */
     public void reset() {
         etlTopView.setModifiable(isEditable());
     }
-    
+
     /**
      * Executes test run of this ETL Collaboration.
      */
     public void run() {
         Node node = DataObjectProvider.getProvider().getActiveDataObject().getNodeDelegate();
         final ExecuteTestCookie testCookie = node.getCookie(ExecuteTestCookie.class);
-        
+
         if (testCookie != null) {
             Runnable run = new Runnable() {
 
@@ -408,18 +405,18 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
                     testCookie.start();
                 }
             };
-            
+
             SwingUtilities.invokeLater(run);
         }
     }
-    
+
     /**
      * Displays dialog to select source and target tables.
      */
     public void selectTables() {
         Node node = DataObjectProvider.getProvider().getActiveDataObject().getNodeDelegate();
         final SelectTablesCookie selTablesCookie = node.getCookie(SelectTablesCookie.class);
-        
+
         if (selTablesCookie != null) {
             Runnable run = new Runnable() {
 
@@ -427,11 +424,11 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
                     selTablesCookie.showDialog();
                 }
             };
-            
+
             SwingUtilities.invokeLater(run);
         }
     }
-    
+
     /**
      * Set editable
      *
@@ -440,11 +437,11 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     public void setEditable(boolean edit) {
         //collabView.setEditable(edit);
     }
-    
+
     public void setModifiable(boolean b) {
         this.etlTopView.setModifiable(b);
     }
-    
+
     /**
      * Sets the zoom factor
      *
@@ -453,7 +450,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     public void setZoomFactor(double factor) {
         etlTopView.setZoomFactor(factor);
     }
-    
+
     /**
      * Show log
      *
@@ -464,7 +461,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
         showSplitPaneView(logView);
         return logView;
     }
-    
+
     /**
      * Toggle the output view
      */
@@ -478,7 +475,7 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
             topComp.setVisible(true);
         }
     }
-    
+
     /**
      * Shows output view in bottom portion of a split pane.
      *
@@ -487,9 +484,8 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
     public void showSplitPaneView(Component c) {
         etlTopView.showSplitPaneView(c);
     }
-    
+
     // APPEARANCE
-    
     /**
      * This method is called from within the constructor to initialize the form. WARNING:
      * Do NOT modify this code. The content of this method is always regenerated by the
@@ -500,14 +496,12 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
 
         setLayout(new java.awt.BorderLayout());
     }// </editor-fold>//GEN-END:initComponents
-    
     private void logReloadException(Exception e) {
-       // Logger.printThrowable(Logger.ERROR, ETLCollaborationTopPanel.class.getName(), "handleReload", "Error in executing reload", e);
-          mLogger.errorNoloc(mLoc.t("PRSR046: Error in executing reload {0}",ETLCollaborationTopPanel.class.getName()),e);
+        mLogger.errorNoloc(mLoc.t("PRSR046: Error in executing reload {0}", ETLCollaborationTopPanel.class.getName()), e);
         NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(ETLCollaborationTopPanel.class, "MSG_load_error", getName()), NotifyDescriptor.WARNING_MESSAGE);
         DialogDisplayer.getDefault().notify(d);
     }
-    
+
     /**
      * Populates eTL editor canvas using information from given ETLCollaborationModel.
      *
@@ -517,12 +511,12 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
      */
     private void populateCanvas(ETLCollaborationModel collabModel) throws BaseException {
         setModifiable(false);
-        
+
         this.getGraphView().clearAll();
         collabModel.restoreUIState();
         setModifiable(true);
     }
-    
+
     /**
      * Invokes editor reset in AWT event dispatch thread to ensure Swing-related updates
      * are correctly handled.
@@ -536,22 +530,21 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
         };
         SwingUtilities.invokeLater(resetEditor);
     }
-    
+
     /**
      * @see reload()
      */
     public void refresh() {
-         mLogger.infoNoloc(mLoc.t("PRSR047: Refresh called{0}in {1}",new java.util.Date(),ETLCollaborationTopPanel.class.getName()));
-        //Logger.print(Logger.DEBUG, ETLCollaborationTopPanel.class.getName(), "Refresh called" + new java.util.Date());
+        mLogger.infoNoloc(mLoc.t("PRSR047: Refresh called{0}in {1}", new java.util.Date(), ETLCollaborationTopPanel.class.getName()));
         this.reload();
     }
-    
+
     private void registerActions() {
         InputMap im1 = getInputMap(WHEN_FOCUSED);
         InputMap im2 = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap am = getActionMap();
         CallableSystemAction saveAction = (CallableSystemAction) SystemAction.get(SaveAction.class);
-        
+
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.CTRL_DOWN_MASK), "Save Collaboration"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyEvent.CTRL_DOWN_MASK), "undo-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_Y, KeyEvent.CTRL_DOWN_MASK), "redo-something"); // NOI18N
@@ -573,13 +566,13 @@ public class ETLCollaborationTopPanel extends JPanel implements ZoomSupport,Exte
         GraphView graphView = (GraphView) getGraphView();
         BirdsEyeView satelliteView = graphView.getSatelliteView();
         return satelliteView;
-}
+    }
 
     public void writeExternal(ObjectOutput out) throws IOException {
-      out.writeObject(dObj);
+        out.writeObject(dObj);
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-       dObj =  (ETLDataObject) in.readObject();
+        dObj = (ETLDataObject) in.readObject();
     }
 }

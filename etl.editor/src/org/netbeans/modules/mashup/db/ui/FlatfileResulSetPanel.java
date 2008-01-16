@@ -80,20 +80,22 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class FlatfileResulSetPanel extends JPanel implements ActionListener, PropertyChangeListener {
+
     private static transient final Logger mLogger = LogUtil.getLogger(FlatfileResulSetPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+
     private class FlatfileTableQuery {
+
         public FlatfileTableQuery() {
         }
-        
+
         public void generateResult(final FlatfileNode node) {
             String title = "Loading flat file table";
             String msg = "Loading data from flat file table: " + node.getName();
             UIUtil.startProgressDialog(title, msg);
             generateData(node);
         }
-        
+
         private void generateData(FlatfileNode node) {
             showDataBtn.setEnabled(false);
             recordCount.setEnabled(false);
@@ -101,30 +103,30 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
             queryThread.start();
         }
     }
-    
+
     private class DataViewWorkerThread extends SwingWorker {
-        
+
         FlatfileNode node;
         private ResultSet cntRs;
         private Connection conn;
         private Throwable ex;
         private ResultSet rs;
         private Statement stmt;
-        
+
         public DataViewWorkerThread(FlatfileNode newNode) {
             node = newNode;
         }
-        
+
         public Object construct() {
-            
+
             int ct = 25;
-            
+
             try {
                 ct = Integer.parseInt(recordCount.getText());
             } catch (NumberFormatException nfe) {
                 recordCount.setText(String.valueOf(25));
             }
-            
+
             try {
                 Object obj = node.getUserObject();
                 if (obj instanceof FlatfileTable) {
@@ -132,20 +134,17 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
                     conn = db.getJDBCConnection();
                     stmt = conn.createStatement();
                     String selectSQL = table.getSelectStatementSQL(ct);
-                    mLogger.infoNoloc(mLoc.t("PRSR084: FlatfileResulSetPanel.class.getName(){0}",selectSQL));
-                   // Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), selectSQL);
+                    mLogger.infoNoloc(mLoc.t("PRSR084: FlatfileResulSetPanel.class.getName(){0}", selectSQL));
                     rs = stmt.executeQuery(selectSQL);
                     recordViewer.clearView();
                     recordViewer.setResultSet(rs);
-                    
+
                     // get the count of all rows
                     String countSql = "Select count(*) From " + table.getName();
-                    mLogger.infoNoloc(mLoc.t("PRSR085: Select count(*) statement used for total rows: {0}",countSql));
-                   // Logger.print(Logger.DEBUG, FlatfileResulSetPanel.class.getName(), "Select count(*) statement used for total rows: \n" + countSql);
-                    
+                    mLogger.infoNoloc(mLoc.t("PRSR085: Select count(*) statement used for total rows: {0}", countSql));
                     stmt = conn.createStatement();
                     cntRs = stmt.executeQuery(countSql);
-                    
+
                     // set the count
                     if (cntRs == null) {
                         totalRowsLabel.setText("");
@@ -155,23 +154,22 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
                             totalRowsLabel.setText(String.valueOf(count));
                         }
                     }
-                    
+
                 } else {
                     totalRowsLabel.setText("");
                     recordViewer.clearView();
                 }
-                
+
             } catch (Exception e) {
                 this.ex = e;
-                  mLogger.errorNoloc(mLoc.t("PRSR086: Can't get contents for table:{0}",FlatfileResulSetPanel.class.getName()),e);
-               // Logger.printThrowable(Logger.ERROR, FlatfileResulSetPanel.class.getName(), null, "Can't get contents for table ", e);
+                mLogger.errorNoloc(mLoc.t("PRSR086: Can't get contents for table:{0}", FlatfileResulSetPanel.class.getName()), e);
                 recordViewer.clearView();
                 totalRowsLabel.setText("0");
             }
-            
+
             return "";
         }
-        
+
         // Runs on the event-dispatching thread.
         public void finished() {
             try {
@@ -179,18 +177,16 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
                     String errorMsg = NbBundle.getMessage(FlatfileResulSetPanel.class, "MSG_error_fetch_failed", this.ex.getMessage());
                     DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.ERROR_MESSAGE));
                 }
-                
+
                 showDataBtn.setEnabled(true);
                 recordCount.setEnabled(true);
-                
+
                 if (stmt != null) {
                     stmt.close();
                 }
-                
+
             } catch (SQLException sqle) {
-                 mLogger.errorNoloc(mLoc.t("PRSR087: Could not close statement after retrieving table contents {0}",FlatfileResulSetPanel.class.getName()),sqle);
-               // Logger.printThrowable(Logger.ERROR, FlatfileResulSetPanel.class.getName(), null,
-                 //       "Could not close statement after retrieving table contents.", sqle);
+                mLogger.errorNoloc(mLoc.t("PRSR087: Could not close statement after retrieving table contents {0}", FlatfileResulSetPanel.class.getName()), sqle);
             } finally {
                 if (conn != null) {
                     try {
@@ -203,9 +199,8 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
             }
         }
     }
-    
     private static final String CMD_SHOW_DATA = "Show Data"; // NOI18N
-    
+
     public static Icon getDbIcon() {
         Icon icon = null;
         try {
@@ -215,27 +210,25 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
         }
         return icon;
     }
-    
     private FlatfileDefinition db = null;
     private JTextField recordCount;
     private ResultSetTablePanel recordViewer;
     private JButton showDataBtn;
     private JLabel totalRowsLabel = null;
-    
     private FlatfileTreeTableView treeView = null;
-    
+
     public FlatfileResulSetPanel(FlatfileDefinition dbInstance) {
         super();
         db = dbInstance;
-        
+
         this.setBorder(BorderFactory.createTitledBorder("Selected Table Content"));
         this.setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         this.add(createControlPanel());
-        
+
         recordViewer = new ResultSetTablePanel();
         this.add(recordViewer);
     }
-    
+
     /**
      * Invoked when an action occurs.
      *
@@ -243,7 +236,7 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
      */
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
-        
+
         if (src == recordCount) {
             showDataBtn.requestFocusInWindow();
             showDataBtn.doClick();
@@ -251,70 +244,70 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
             new FlatfileTableQuery().generateResult((FlatfileNode) treeView.getCurrentNode());
         }
     }
-    
+
     public void propertyChange(PropertyChangeEvent event) {
         if (event.getSource() == treeView) {
             new FlatfileTableQuery().generateResult((FlatfileNode) event.getNewValue());
         }
     }
-    
+
     public void addActionListener(ActionListener listener) {
         showDataBtn.addActionListener(listener);
         recordCount.addActionListener(listener);
     }
-    
+
     public void generateResult(FlatfileNode node) {
         new FlatfileTableQuery().generateResult(node);
     }
-    
+
     public void setTreeView(FlatfileTreeTableView view) {
         this.treeView = view;
     }
-    
+
     /*
      * Creates show data button and row count text field to control display of selected
      * table.
      */
     private JPanel createControlPanel() {
         JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.LEADING));
-        
+
         // add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh16.png");
         showDataBtn = new JButton(new ImageIcon(url));
         showDataBtn.setMnemonic('S');
         showDataBtn.setToolTipText("Show data for selected flat file table node");
         showDataBtn.setActionCommand(CMD_SHOW_DATA);
-        
+
         JPanel recordCountPanel = new JPanel();
         recordCountPanel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-        
+
         JLabel lbl = new JLabel("Limit number of rows");
         lbl.setDisplayedMnemonic('r');
-        
+
         recordCountPanel.add(lbl);
         recordCount = new JTextField("25", 5);
         recordCountPanel.add(recordCount);
         lbl.setLabelFor(recordCount);
-        
+
         // add total row count label
         JPanel totalRowsPanel = new JPanel();
         FlowLayout fl = new FlowLayout();
         fl.setAlignment(FlowLayout.LEFT);
         totalRowsPanel.setLayout(fl);
-        
+
         JLabel totalRowsNameLabel = new JLabel("Total rows:");
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 100, 0, 8));
         totalRowsPanel.add(totalRowsNameLabel);
-        
+
         totalRowsLabel = new JLabel();
         totalRowsPanel.add(totalRowsLabel);
-        
+
         controlPanel.add(showDataBtn);
         controlPanel.add(recordCountPanel);
         controlPanel.add(totalRowsPanel);
-        
+
         this.addActionListener(this);
-        
+
         return controlPanel;
     }
 }

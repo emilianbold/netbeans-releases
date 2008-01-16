@@ -49,11 +49,13 @@ import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
  * @version $Revision$
  */
 public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
+
     private static final String LOG_CATEGORY = StagingStrategyBuilder.class.getName();
     private static final String SQL_INDENT = "";
     private boolean forceStaging = false;
     private static transient final Logger mLogger = LogUtil.getLogger(StagingStrategyBuilder.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     public StagingStrategyBuilder(ETLScriptBuilderModel model) throws BaseException {
         super(model);
     }
@@ -62,8 +64,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
      * Before calling apply appropriate applyConnections
      */
     public void generateScriptForTable(ETLStrategyBuilderContext context) throws BaseException {
-         mLogger.infoNoloc(mLoc.t("PRSR010: In generateScriptForTable:{0}",LOG_CATEGORY));
-       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "In generateScriptForTable:");
+        mLogger.infoNoloc(mLoc.t("PRSR010: In generateScriptForTable:{0}", LOG_CATEGORY));
         super.checkTargetConnectionDefinition(context);
 
         populateInitTask(context.getInitTask(), context.getGlobalCleanUpTask(), context.getTargetTable());
@@ -79,10 +80,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
 
         // TODO Need to refactor/redesign interfaces between sql-codegen and etl-codgen framework
         // such that we will avoid code like "IF ELSE" like below.
-        if ((targetDB.getDBType() == DB.JDBCDB)
-                && (targetTable.getSourceTableList().size() != 0)
-                && ( (statementType == SQLConstants.UPDATE_STATEMENT)
-                        || (statementType == SQLConstants.INSERT_UPDATE_STATEMENT))){
+        if ((targetDB.getDBType() == DB.JDBCDB) && (targetTable.getSourceTableList().size() != 0) && ((statementType == SQLConstants.UPDATE_STATEMENT) || (statementType == SQLConstants.INSERT_UPDATE_STATEMENT))) {
             transformerTask = builderModel.getEngine().createETLTaskNode(ETLEngine.CORRELATED_QUERY_EXECUTOR);
             transformerTask.addNextETLTaskNode(ETLTask.SUCCESS, context.getNextTaskOnSuccess().getId());
             transformerTask.addNextETLTaskNode(ETLTask.EXCEPTION, context.getNextTaskOnException().getId());
@@ -144,7 +142,7 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
                 // same DB as the target table.
                 if (isExtractionRequired(sourceTable, targetTable)) {
                     ETLTaskNode extractorTask = createExtractorNode(sourceTable, targetDB, waitTaskId, waitTaskId, getTargetConnName(),
-                        targetTable.getSchema().toUpperCase());
+                            targetTable.getSchema().toUpperCase());
 
                     // Add staging table to the drop list only if user specifies
                     // that it is deleteable - otherwise preserve the contents of the
@@ -256,56 +254,56 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
         MessageManager msgMgr = MessageManager.getManager(ETLTaskNode.class);
         String displayName = msgMgr.getString("TEMPLATE_dn", msgMgr.getString("LBL_dn_extractor"), srcTable.getName());
         extractorTask.setDisplayName(displayName);
-        
+
         // RFE-102428
         String stgTableName = srcTable.getStagingTableName();
-        if(stgTableName == null || stgTableName.trim().length() == 0) {
-        	// User has not specified the "Staging Table Name", proceed with default logic
-        	if (srcTable.isDropStagingTable()) {
+        if (stgTableName == null || stgTableName.trim().length() == 0) {
+            // User has not specified the "Staging Table Name", proceed with default logic
+            if (srcTable.isDropStagingTable()) {
+                StatementContext context = new StatementContext();
+                context.setUsingTempTableName(srcTable, true);
+                context.putClientProperty("targetSchema", trgtSchema);
+
+                SQLPart tableExistsPart = targetStmts.getTableExistsStatement(srcTable, context);
+                tableExistsPart.setConnectionPoolName(trgtConnName);
+                extractorTask.addStatement(tableExistsPart);
+
+                // Drop if exists statement for temp table
+                context.setUsingTempTableName(srcTable, true);
+                context.putClientProperty("ifExists", Boolean.TRUE);
+
+                SQLPart dropSQLPart = targetStmts.getDropStatement(srcTable, context);
+                dropSQLPart.setConnectionPoolName(trgtConnName);
+                extractorTask.addStatement(dropSQLPart);
+            }
+
+            // Create temp table in target database
             StatementContext context = new StatementContext();
             context.setUsingTempTableName(srcTable, true);
-            context.putClientProperty("targetSchema", trgtSchema);
-
-            SQLPart tableExistsPart = targetStmts.getTableExistsStatement(srcTable, context);
-            tableExistsPart.setConnectionPoolName(trgtConnName);
-            extractorTask.addStatement(tableExistsPart);
-
-            // Drop if exists statement for temp table
-            context.setUsingTempTableName(srcTable, true);
-            context.putClientProperty("ifExists", Boolean.TRUE);
-
-            SQLPart dropSQLPart = targetStmts.getDropStatement(srcTable, context);
-            dropSQLPart.setConnectionPoolName(trgtConnName);
-            extractorTask.addStatement(dropSQLPart);
+            SQLPart createSQLPart = targetStmts.getCreateStatement(srcTable, context);
+            createSQLPart.setConnectionPoolName(trgtConnName);
+            extractorTask.addStatement(createSQLPart);
         }
 
-        // Create temp table in target database
-        StatementContext context = new StatementContext();
-        context.setUsingTempTableName(srcTable, true);
-        SQLPart createSQLPart = targetStmts.getCreateStatement(srcTable, context);
-        createSQLPart.setConnectionPoolName(trgtConnName);
-        extractorTask.addStatement(createSQLPart);
-        }
-        
-        if(srcTable.isTruncateStagingTable()){
-        	// User has specified the "Staging Table Name" property. Use it and truncate the data.
-        	StatementContext trcontext = new StatementContext();
-        	trcontext.setUsingTempTableName(srcTable, true);
-        	trcontext.putClientProperty("targetSchema", trgtSchema);
-        	truncateTableIfExists(srcTable, extractorTask, trgtConnName, targetStmts, trcontext);
+        if (srcTable.isTruncateStagingTable()) {
+            // User has specified the "Staging Table Name" property. Use it and truncate the data.
+            StatementContext trcontext = new StatementContext();
+            trcontext.setUsingTempTableName(srcTable, true);
+            trcontext.putClientProperty("targetSchema", trgtSchema);
+            truncateTableIfExists(srcTable, extractorTask, trgtConnName, targetStmts, trcontext);
         }
 
         // Select extraction set from source
         StatementContext context = new StatementContext();
-        context.setUsingTempTableName(srcTable, false);        
-        this.useUniqueNameIfRequired(srcTable, context);        
+        context.setUsingTempTableName(srcTable, false);
+        this.useUniqueNameIfRequired(srcTable, context);
         SQLPart selectSQLPart = sourceStmts.getSelectStatement(srcTable, context);
         selectSQLPart.setConnectionPoolName(srcConnName);
         extractorTask.addStatement(selectSQLPart);
 
         // Create insert prepared statement.
         context.setUsingTempTableName(srcTable, true);
-        context.setUsingUniqueTableName(srcTable, false);        
+        context.setUsingUniqueTableName(srcTable, false);
         SQLPart insertSQLPart = targetStmts.getPreparedInsertStatement(srcTable, context);
         insertSQLPart.setConnectionPoolName(trgtConnName);
         extractorTask.addStatement(insertSQLPart);
@@ -355,5 +353,4 @@ public class StagingStrategyBuilder extends BaseETLStrategyBuilder {
 
         return buffer.toString();
     }
-
 }

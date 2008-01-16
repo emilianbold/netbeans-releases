@@ -75,9 +75,9 @@ import org.openide.util.NbBundle;
  * @author Ahimanikya Satapathy
  */
 class TruncateTableAction extends AbstractAction {
+
     private static transient final Logger mLogger = LogUtil.getLogger(TruncateTableAction.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-
     DataOutputPanel outer;
 
     protected TruncateTableAction(DataOutputPanel outer) {
@@ -160,8 +160,8 @@ class TruncateTableAction extends AbstractAction {
                 this.cntRs = stmtCount.executeQuery(countSql);
             } catch (Exception t) {
                 this.ex = t;
-                 mLogger.errorNoloc(mLoc.t("PRSR149: Could not truncate output for target aTable{0}",DataOutputPanel.class.getName()),t);
-                //Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not truncate output for target aTable.", t);
+                mLogger.errorNoloc(mLoc.t("PRSR149: Could not truncate output for target aTable{0}", DataOutputPanel.class.getName()), t);
+
             }
 
             return "";
@@ -216,8 +216,8 @@ class TruncateTableAction extends AbstractAction {
                         factory.shutdown(conn, false, null);
                     }
                 } catch (Exception t) {
-                     mLogger.errorNoloc(mLoc.t("PRSR150: Could not commit truncate action for target aTable...{0}",DataOutputPanel.class.getName()),t);
-                   // Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not commit truncate action for target aTable...", t);
+                    mLogger.errorNoloc(mLoc.t("PRSR150: Could not commit truncate action for target aTable...{0}", DataOutputPanel.class.getName()), t);
+
                 } finally {
                     outer.queryView.revalidate();
                     outer.queryView.repaint();

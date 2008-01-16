@@ -49,13 +49,13 @@ import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 
-
 /**
  * Abstract subclass of NetBeans wizard descriptor. ETL wizard descriptors should be
  * concrete subclasses of this class.
  */
 public abstract class ETLWizardDescriptor extends WizardDescriptor {
     /* Logging category string */
+
     private static final String LOG_CATEGORY = ETLWizardDescriptor.class.getName();
     private static transient final Logger mLogger = LogUtil.getLogger(ETLWizardDescriptor.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
@@ -83,7 +83,7 @@ public abstract class ETLWizardDescriptor extends WizardDescriptor {
     protected void initialize() {
         initializeLookAndFeel();
 
-        super.initialize();    	        
+        super.initialize();
     }
 
     /**
@@ -95,13 +95,10 @@ public abstract class ETLWizardDescriptor extends WizardDescriptor {
             // Sets message format used for panel title; {0} indicates component
             // name, if any; {1} indicates step info as provided by iterator.
             setTitleFormat(new MessageFormat(
-                NbBundle.getMessage(ETLWizardDescriptor.class, 
+                    NbBundle.getMessage(ETLWizardDescriptor.class,
                     "MSG_titleformat_wiz_default")));
         } catch (MissingResourceException e) {
-              mLogger.errorNoloc(mLoc.t("PRSR040: Could not locate key for title format.{0}",LOG_CATEGORY),e);
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, 
-             //   "initializeLookAndFeel()", 
-             //   "Could not locate key for title format.", e);
+            mLogger.errorNoloc(mLoc.t("PRSR040: Could not locate key for title format.{0}", LOG_CATEGORY), e);
         }
 
         // Number the steps.

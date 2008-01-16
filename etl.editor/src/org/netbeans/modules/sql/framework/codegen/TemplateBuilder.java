@@ -65,6 +65,7 @@ public class TemplateBuilder {
     private static AtomicReference<VelocityEngine> VELOCITY_ENGINE = null;
     private static transient final Logger mLogger = LogUtil.getLogger(TemplateBuilder.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Get VelocityEngine after initializing to use "autoload.Velocity" module's
      * resource loader.
@@ -82,7 +83,7 @@ public class TemplateBuilder {
                     VELOCITY_ENGINE.get().init(velProp);
                 } catch (Exception e) {
                     throw new RuntimeException("Could not initialize velocity engine: " + e);
-                } 
+                }
             }
         }
         return VELOCITY_ENGINE.get();
@@ -97,8 +98,7 @@ public class TemplateBuilder {
             ve.mergeTemplate(SQLFRAMEWORK_DB_PREFIX + templateFile, TEMPLATE_ENCODING, context, sw);
             return sw.toString();
         } catch (Exception ex) {
-            mLogger.errorNoloc(mLoc.t("PRSR090: Problem in initializing/merging Velocity template:{0}",LOG_CATEGORY),ex);
-          //  Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "Problem in initializing/merging Velocity template: ", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR090: Problem in initializing/merging Velocity template:{0}", LOG_CATEGORY), ex);
             return null;
         }
     }

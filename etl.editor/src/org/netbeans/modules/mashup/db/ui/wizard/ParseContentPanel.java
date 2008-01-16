@@ -106,35 +106,28 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class ParseContentPanel implements PropertyChangeListener, VetoableChangeListener, WizardDescriptor.Panel {
+
     private static transient final Logger mLogger = LogUtil.getLogger(ParseContentPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
     private static final String LOG_CATEGORY = ParseContentPanel.class.getName();
-    
     /* Map of current parse properties (prior to displaying panel) */
     private Map currentPropertyMap;
-    
     /* Local reference to current file */
     private FlatfileDBTable currentTable;
-    
     /*
      * String to hold error messages, if any, related to invalid panel contents.
      */
     private transient String parseErrors;
-    
     /* Descriptor for parse properties; generates JComponent */
     private IPropertySheet propertySheet;
-    
     private int currentIndex = -1;
-    
     private Component component;
-    
     private ParseContentVisualPanel panel;
-    
+
     /** Creates a new default instance of ParseContentPanel */
     public ParseContentPanel() {
     }
-    
+
     private boolean canAdvance() {
         if (parseErrors != null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(parseErrors.trim(), NotifyDescriptor.WARNING_MESSAGE));
@@ -143,7 +136,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
         }
         return true;
     }
-    
+
     /**
      * Indicates whether this panel contains valid content.
      *
@@ -154,25 +147,27 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
     public boolean hasValidData() {
         return (propertySheet != null) ? propertySheet.getPropertyGroup("Default").isValid() : false;
     }
-    
+
     public boolean isRefreshRequired(FlatfileDBTable table, Map newProperties) {
         final Map tableProps = table.getProperties();
         Iterator iter = tableProps.keySet().iterator();
         while (iter.hasNext()) {
             String key = (String) iter.next();
             Property property = (Property) tableProps.get(key);
-            
+
             Object newObj = newProperties.get(key);
             Object oldObj = currentPropertyMap.get(key);
-            
-            if( newObj != null && oldObj == null ) return true;
-            if((!oldObj.equals(newObj)) && property.isRefreshRequired()) {
+
+            if (newObj != null && oldObj == null) {
+                return true;
+            }
+            if ((!oldObj.equals(newObj)) && property.isRefreshRequired()) {
                 return true;
             }
         }
         return false;
     }
-    
+
     /**
      * This method gets called when a bound property is changed.
      *
@@ -182,7 +177,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
     public void propertyChange(PropertyChangeEvent evt) {
         fireChangeEvent();
     }
-    
+
     /**
      * Read temporary configuration and content information from the given context object.
      *
@@ -192,14 +187,14 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
     public void readSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
             WizardDescriptor wd = (WizardDescriptor) settings;
-            
+
             currentTable = (FlatfileDBTable) wd.getProperty(MashupTableWizardIterator.PROP_CURRENTTABLE);
             if (currentTable == null) {
                 throw new IllegalStateException("Context must contain reference to current flat file.");
             }
-            
+
             panel.removeAll();
-            
+
             JLabel instr = new JLabel(NbBundle.getMessage(ParseContentPanel.class, "LBL_instr_import_parse"));
             instr.setAlignmentX(Component.LEFT_ALIGNMENT);
             GridBagConstraints gbc = new GridBagConstraints();
@@ -215,28 +210,28 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
                 try {
                     FlatfileBootstrapParser parser = FlatfileBootstrapParserFactory.getInstance().
                             getBootstrapParser(currentTable.getParserType());
-                    if(parser != null) {
+                    if (parser != null) {
                         parser.makeGuess(currentTable);
                     }
                 } catch (FlatfileDBException se) {
                     // ignore
                 }
             }
-            
+
             PropertyViewManager pvMgr = getPropertyViewManager();
-            
+
             String fieldSep = currentTable.getProperty(PropertyKeys.WIZARDCUSTOMFIELDDELIMITER);
             if (!StringUtil.isNullString(fieldSep)) {
                 currentTable.setProperty(PropertyKeys.FIELDDELIMITER, "UserDefined");
             }
-            
+
             currentPropertyMap = Property.createKeyValueMapFrom(currentTable.getProperties());
-            
+
             propertySheet = pvMgr.getPropertySheet(currentPropertyMap, currentTable.getParserType());
-            
+
             propertySheet.getPropertyGroup("Default").addPropertyChangeListener(this);
             propertySheet.getPropertyGroup("Default").addVetoableChangeListener(this);
-            
+
             gbc = new GridBagConstraints();
             gbc.anchor = GridBagConstraints.LINE_START;
             gbc.fill = GridBagConstraints.BOTH;
@@ -245,7 +240,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
             gbc.weightx = 50.0;
             gbc.weighty = 55.0;
             panel.add(propertySheet.getPropertySheet(), gbc);
-            
+
             gbc = new GridBagConstraints();
             gbc.anchor = GridBagConstraints.LINE_START;
             gbc.fill = GridBagConstraints.BOTH;
@@ -254,14 +249,14 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
             gbc.weightx = 50.0;
             gbc.weighty = 45.0;
             panel.add(getPreviewPanel(wd), gbc);
-            
+
             parseErrors = null;
-            
+
             currentIndex = Integer.parseInt(
-                    (String)wd.getProperty(MashupTableWizardIterator.TABLE_INDEX));
+                    (String) wd.getProperty(MashupTableWizardIterator.TABLE_INDEX));
         }
     }
-    
+
     /**
      * Gets instance of PropertyViewManager which supplies parse property view components.
      *
@@ -273,7 +268,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
                 "org/netbeans/modules/mashup/db/ui/resource/parse_properties.xml");
         return new PropertyViewManager(stream, new FlatfileDBResourceManager());
     }
-    
+
     /**
      * Write temporary configuration and content information to the given context object.
      *
@@ -282,43 +277,43 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
     public void storeSettings(Object settings) {
         if (settings instanceof WizardDescriptor) {
             WizardDescriptor wd = (WizardDescriptor) settings;
-            
+
             // Don't commit if user didn't click next.
             if (wd.getValue() != WizardDescriptor.NEXT_OPTION) {
                 return;
             }
-            
+
             if (currentTable == null) {
                 currentTable = (FlatfileDBTable) wd.getProperty(MashupTableWizardIterator.PROP_CURRENTTABLE);
                 if (currentTable == null) {
                     throw new IllegalStateException("Context must contain reference to current flat file.");
                 }
             }
-            
+
             // get url.
             int index = Integer.parseInt((String) wd.getProperty(MashupTableWizardIterator.TABLE_INDEX));
-            List<String> urls = (List<String>)wd.getProperty(MashupTableWizardIterator.URL_LIST);
-            
-            if(index == currentIndex) {
+            List<String> urls = (List<String>) wd.getProperty(MashupTableWizardIterator.URL_LIST);
+
+            if (index == currentIndex) {
                 currentTable.updateProperties(propertySheet.getPropertyValues());
                 currentTable.setProperty("FILENAME", urls.get(index));
                 Map newPropertyMap = Property.createKeyValueMapFrom(currentTable.getProperties());
-                
+
                 // If any properties change, rebuild set of fields.
-                if (0 == currentTable.getColumnList().size() || 
+                if (0 == currentTable.getColumnList().size() ||
                         !newPropertyMap.equals(currentPropertyMap)) {
                     try {
                         final String loadType = (String) currentPropertyMap.get(PropertyKeys.LOADTYPE);
-                        
+
                         if (isRefreshRequired(currentTable, newPropertyMap)) {
                             currentTable.deleteAllColumns();
                         }
-                        
+
                         FlatfileBootstrapParser parser = FlatfileBootstrapParserFactory.getInstance().
                                 getBootstrapParser(currentTable.getParserType());
-                        ((FlatfileDBTableImpl)currentTable).setOrPutProperty(PropertyKeys.URL, 
+                        ((FlatfileDBTableImpl) currentTable).setOrPutProperty(PropertyKeys.URL,
                                 urls.get(index));
-                        ((FlatfileDBTableImpl)currentTable).setOrPutProperty(PropertyKeys.FILENAME, 
+                        ((FlatfileDBTableImpl) currentTable).setOrPutProperty(PropertyKeys.FILENAME,
                                 urls.get(index));
                         List colList = parser.buildFlatfileDBColumns(currentTable);
                         if (colList != null && !colList.isEmpty()) {
@@ -332,28 +327,28 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
                                 // ignore
                             }
                         }
-                        
+
                         try {
-                            
+
                             final String sqlType = (String) newPropertyMap.get(
                                     PropertyKeys.WIZARDDEFAULTSQLTYPE);
                             final String oldsqlType = (String) currentPropertyMap.get(
                                     PropertyKeys.WIZARDDEFAULTSQLTYPE);
-                            
+
                             Iterator iter = currentTable.getColumnList().iterator();
                             while (iter.hasNext() && sqlType != null) {
                                 FlatfileDBColumn newFld = (FlatfileDBColumn) iter.next();
-                                
+
                                 if (!sqlType.equals(oldsqlType)) {
                                     newFld.setJdbcType(SQLUtils.getStdJdbcType(sqlType));
                                 }
-                                
+
                                 if (loadType.equals(PropertyKeys.DELIMITED)) {
                                     final Integer precision = (Integer) newPropertyMap.get(
                                             PropertyKeys.WIZARDDEFAULTPRECISION);
                                     final Integer oldPrecision = (Integer) currentPropertyMap.get(
                                             PropertyKeys.WIZARDDEFAULTPRECISION);
-                                    
+
                                     if (!precision.equals(oldPrecision)) {
                                         newFld.setPrecision(precision.intValue());
                                     }
@@ -374,8 +369,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
             }
         }
     }
-    
-    
+
     /**
      * This method gets called when a constrained property is changed.
      *
@@ -386,11 +380,11 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
      */
     public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
     }
-    
+
     private JComponent getPreviewPanel(WizardDescriptor wd) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
-        
+
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createTitledBorder(NbBundle.getMessage(ParseContentPanel.class,
                 "LBL_preview_import_parse")), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
@@ -404,12 +398,12 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
         gbc.weightx = 50.0;
         gbc.weighty = 0.0;
         panel.add(lbl, gbc);
-        
+
         JTextArea txtArea = new JTextArea();
         txtArea.setEditable(false);
         txtArea.setFont(new Font("Courier", Font.PLAIN, 12));
         txtArea.setText(readPreviewText(wd));
-        
+
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.LINE_START;
         gbc.fill = GridBagConstraints.BOTH;
@@ -419,17 +413,17 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
         gbc.weighty = 100.0;
         JScrollPane sp = new JScrollPane(txtArea);
         panel.add(sp, gbc);
-        
+
         // Ensure scrollpane text area starts at top of document.
         txtArea.setCaretPosition(0);
         return panel;
     }
-    
+
     private String readPreviewText(WizardDescriptor wd) {
         String record = "";
         BufferedReader br = null;
         FlatfileDBTable table = (FlatfileDBTable) wd.getProperty(MashupTableWizardIterator.PROP_CURRENTTABLE);
-        List<String> urls = (List<String>)wd.getProperty(MashupTableWizardIterator.URL_LIST);
+        List<String> urls = (List<String>) wd.getProperty(MashupTableWizardIterator.URL_LIST);
         int index = Integer.parseInt((String) wd.getProperty(MashupTableWizardIterator.TABLE_INDEX));
         String encoding = table.getEncodingScheme();
         final int maxCharsToRead = 1024;
@@ -437,37 +431,37 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
         try {
             File repFile = new File(urls.get(index));
             InputStream is = null;
-            if(repFile.exists()) {
+            if (repFile.exists()) {
                 is = new FileInputStream(repFile);
             } else {
                 is = new URL(urls.get(index)).openStream();
             }
-            if(!table.getParserType().equals(PropertyKeys.SPREADSHEET)) {
-                
+            if (!table.getParserType().equals(PropertyKeys.SPREADSHEET)) {
+
                 br = new BufferedReader(new InputStreamReader(is, encoding), maxCharsToRead * 5);
-                
+
                 StringBuilder strBuf = new StringBuilder(maxCharsToRead);
                 int sz = 0;
                 int ct = 0;
-                
+
                 char[] charBuf = new char[maxCharsToRead];
                 while ((sz = br.read(charBuf)) != -1 && ((ct += sz) < maxCharsToDisplay)) {
                     strBuf.append(charBuf, 0, sz);
                 }
-                
+
                 record = strBuf.toString();
-                
+
             } else {
                 Workbook spreadSheetData = Workbook.getWorkbook(is);
                 Sheet sheet = spreadSheetData.getSheet(table.getProperty("SHEET"));
                 StringBuilder buf = new StringBuilder();
-                for(int i = 0; i < sheet.getRows(); i++) {
-                    if(i != 0) {
+                for (int i = 0; i < sheet.getRows(); i++) {
+                    if (i != 0) {
                         buf.append("\r\n");
                     }
                     Cell[] cells = sheet.getRow(i);
-                    for(int j = 0; j < cells.length; j++) {
-                        if(j != 0) {
+                    for (int j = 0; j < cells.length; j++) {
+                        if (j != 0) {
                             buf.append(",");
                         }
                         buf.append(cells[j].getContents());
@@ -477,8 +471,7 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
                 spreadSheetData.close();
             }
         } catch (Exception ioe) {
-             mLogger.errorNoloc(mLoc.t("PRSR074: Failed to read and parse the file{0}",LOG_CATEGORY),ioe);
-           // Logger.print(Logger.ERROR, LOG_CATEGORY, "Failed to read and parse the file ", ioe);
+            mLogger.errorNoloc(mLoc.t("PRSR074: Failed to read and parse the file{0}", LOG_CATEGORY), ioe);
         } finally {
             if (br != null) {
                 try {
@@ -487,16 +480,16 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
                     // ignore
                 }
             }
-            
+
             if (record == null) {
                 record = "";
             }
         }
         return record;
     }
-    
+
     public Component getComponent() {
-        if(component == null) {
+        if (component == null) {
             panel = new ParseContentVisualPanel(this);
             component = (Component) panel;
             panel.setLayout(new GridBagLayout());
@@ -504,29 +497,28 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
         }
         return component;
     }
-    
+
     public HelpCtx getHelp() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     public boolean isValid() {
         return canAdvance();
     }
-    
     private final Set<ChangeListener> listeners = new HashSet<ChangeListener>(1);
-    
+
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
-    
+
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
         }
     }
-    
+
     protected final void fireChangeEvent() {
         Iterator<ChangeListener> it;
         synchronized (listeners) {

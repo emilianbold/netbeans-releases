@@ -107,7 +107,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
                     case TableConstants.OUTPUT_TABLE:
                         column.setTextAlignment(JGoText.ALIGN_LEFT);
                         break;
-                        
+
                     case TableConstants.NO_PORT_TABLE:
                         column.setTextAlignment(JGoText.ALIGN_LEFT);
                         break;
@@ -274,7 +274,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
                 BasicCellArea cell = cArea.getCellAt(j);
                 if (cell != null) {
                     cell.setText(rowVal.getName());
-                    cell.setToolTipText(UIUtil.getColumnToolTip((SQLDBColumn)rowVal));
+                    cell.setToolTipText(UIUtil.getColumnToolTip((SQLDBColumn) rowVal));
                 }
             }
         }
@@ -323,9 +323,7 @@ public class SQLTableArea extends TableArea implements TableModelListener {
             //first try to remove column refs
             removeColumnReference(column);
         } catch (BaseException ex) {
-          // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, "makeColumnInVisible",
-            //    "Error making column invisible, unable to remove column references." + column.getName(), ex);
-             mLogger.errorNoloc(mLoc.t("PRSR178: Error making column invisible, unable to remove column references{0}",column.getName()),ex);
+            mLogger.errorNoloc(mLoc.t("PRSR178: Error making column invisible, unable to remove column references{0}", column.getName()), ex);
             throw ex;
 
         }

@@ -106,6 +106,7 @@ import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
  * @version $Revision$
  */
 public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
+
     private static transient final Logger mLogger = LogUtil.getLogger(DataOutputPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     public static final String NL = System.getProperty("line.separator", "\n");
@@ -154,7 +155,7 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         putClientProperty("PersistenceType", "Never"); //NOI18N
         this.setLayout(new BorderLayout());
         this.setName(NbBundle.getMessage(DataOutputPanel.class, "LBL_tab_output", sqlDefinition.getDisplayName()));
-        setBorder (BorderFactory.createEmptyBorder());
+        setBorder(BorderFactory.createEmptyBorder());
 
         JPanel panel = new JPanel();
         panel.setBorder(BorderFactory.createEtchedBorder());
@@ -632,7 +633,7 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
             }
             sql = sql + db.getGeneratorFactory().generate(op, context);
         } catch (BaseException ex) {
-        //ignore
+            //ignore
         }
         return sql;
     }
@@ -715,8 +716,7 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
                 }
             }
         } catch (SQLException ex) {
-             mLogger.errorNoloc(mLoc.t("PRSR145: Could not get total row count{0}", DataOutputPanel.class.getName()),ex);
-           // Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not get total row count", ex);
+            mLogger.errorNoloc(mLoc.t("PRSR145: Could not get total row count{0}", DataOutputPanel.class.getName()), ex);
         }
     }
 

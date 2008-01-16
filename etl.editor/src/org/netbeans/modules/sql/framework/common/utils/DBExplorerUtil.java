@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.common.utils;
 
 import java.net.URL;
@@ -73,13 +72,13 @@ import org.openide.util.Exceptions;
  * @author radval
  */
 public class DBExplorerUtil {
-    public static final String AXION_DRIVER = "org.axiondb.jdbc.AxionDriver";
 
+    public static final String AXION_DRIVER = "org.axiondb.jdbc.AxionDriver";
     private static final String LOG_CATEGORY = DBExplorerUtil.class.getName();
     private static List localConnectionList = new ArrayList();
     private static transient final Logger mLogger = LogUtil.getLogger(DBExplorerUtil.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+
     private static String adjustDatabaseURL(String url) {
         if (url.indexOf(AXION_URL_PREFIX) != -1) {
             String[] urlParts = parseConnUrl(url);
@@ -131,7 +130,6 @@ public class DBExplorerUtil {
         String url = connProps.getProperty(DBConnectionFactory.PROP_URL);
         return createConnection(driver, url, username, password);
     }
-    
     public static final String AXION_URL_PREFIX = "jdbc:axiondb:";
 
     public static String[] parseConnUrl(String url) {
@@ -155,11 +153,11 @@ public class DBExplorerUtil {
     public static Connection createConnection(DatabaseConnection dbConn) throws DBSQLException {
         Connection conn = null;
         if (dbConn != null) {
-            conn = createConnection(dbConn.getDriverClass(), dbConn.getDatabaseURL(),dbConn.getUser(), dbConn.getPassword());
+            conn = createConnection(dbConn.getDriverClass(), dbConn.getDatabaseURL(), dbConn.getUser(), dbConn.getPassword());
         }
         return conn;
     }
-    
+
     public static Connection createConnection(String driverName, String url, String username, String password) throws DBSQLException {
         // Try to get the connection directly. Dont go through DB Explorer.
         // It may pop up a window asking for password.
@@ -182,7 +180,7 @@ public class DBExplorerUtil {
                         }
                     }
                 } catch (Exception ex) {
-                // ignore
+                    // ignore
                 }
 
                 // If connection is still nul throw exception
@@ -199,9 +197,9 @@ public class DBExplorerUtil {
         }
         return conn;
     }
-    
-    public static void closeIfLocalConnection(Connection conn){
-        if(localConnectionList.contains(conn)){
+
+    public static void closeIfLocalConnection(Connection conn) {
+        if (localConnectionList.contains(conn)) {
             try {
                 localConnectionList.remove(conn);
                 conn.close();
@@ -210,18 +208,18 @@ public class DBExplorerUtil {
             }
         }
     }
-    
+
     public static DatabaseConnection createDatabaseConnection(String driverName, String url, String username, String password) throws DBSQLException {
         DatabaseConnection dbconn = null;
         JDBCDriver drv = null;
         String schema = null;
         try {
-            
+
             url = adjustDatabaseURL(url);
             drv = registerDriver(driverName);
 
             // check if connection exists in DB Explorer. Else add the connection to DB Explorer.
-            
+
             DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
             for (int i = 0; i < dbconns.length; i++) {
                 if (dbconns[i].getDriverClass().equals(driverName) && dbconns[i].getDatabaseURL().equals(url) && dbconns[i].getUser().equals(username)) {
@@ -238,19 +236,19 @@ public class DBExplorerUtil {
                     schema = username.toUpperCase();
                 }
                 dbconn = DatabaseConnection.create(drv, url, username, schema, password, true);
-                
-                if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && url.indexOf(ETLEditorSupport.PRJ_PATH) == -1 ) {    
+
+                if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && url.indexOf(ETLEditorSupport.PRJ_PATH) == -1) {
                     ConnectionManager.getDefault().addConnection(dbconn);
                 }
-            } 
-            
+            }
+
             return dbconn;
-            
+
         } catch (Exception e) {
             throw new DBSQLException("Connection could not be established.", e);
         }
     }
-    
+
     /**
      * Registers an instance of Driver associated with the given driver class name. Does
      * nothing if an instance has already been registered with the JDBC DriverManager.
@@ -287,7 +285,7 @@ public class DBExplorerUtil {
         if (drivers.length == 0) {
             // if axion db driver not available in db explorer, add it.
             URL[] url = new URL[1];
-            String workDir = getDefaultAxionDriverLoc() ;
+            String workDir = getDefaultAxionDriverLoc();
             if (StringUtil.isNullString(workDir)) {
                 throw new Exception("Axion Driver could not be located");
             }
@@ -333,15 +331,12 @@ public class DBExplorerUtil {
                 prop.setProperty("password", password);
                 conn = newDriverClass.connect(url, prop);
             } catch (SQLException e) {
-                mLogger.infoNoloc(mLoc.t("PRSR098: Unable to get the specified connection directly.{0}",LOG_CATEGORY));
-              //  Logger.print(Logger.ERROR, LOG_CATEGORY, "Unable to get the specified connection directly.");
+                mLogger.infoNoloc(mLoc.t("PRSR098: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
             } catch (Exception numex) {
-                mLogger.infoNoloc(mLoc.t("PRSR099: Unable to get the specified connection directly.{0}",LOG_CATEGORY));
-               // Logger.print(Logger.ERROR, LOG_CATEGORY, "Unable to get the specified connection directly.");
+                mLogger.infoNoloc(mLoc.t("PRSR099: Unable to get the specified connection directly.{0}", LOG_CATEGORY));
             }
         } catch (Exception ex) {
-             mLogger.infoNoloc(mLoc.t("PRSR100: Unable to find the driver class in the specified jar file{0}",LOG_CATEGORY));
-            //Logger.print(Logger.ERROR, LOG_CATEGORY, "Unable to find the driver class in the specified jar file");
+            mLogger.infoNoloc(mLoc.t("PRSR100: Unable to find the driver class in the specified jar file{0}", LOG_CATEGORY));
         }
         return conn;
     }
@@ -354,12 +349,12 @@ public class DBExplorerUtil {
         Properties prop = loadAxionProperties();
         return prop.getProperty(AxionDBConfiguration.PROP_DB_LOC);
     }
-    
+
     public static String getDefaultAxionDriverLoc() {
         Properties prop = loadAxionProperties();
         return prop.getProperty(AxionDBConfiguration.PROP_DRIVER_LOC);
     }
-    
+
     public static void recreateMissingFlatfileConnectionInDBExplorer() {
         // add flatfile databases to db explorer.
         String workDir = getDefaultAxionWorkingFolder();
@@ -377,7 +372,7 @@ public class DBExplorerUtil {
                         url = unifyPath(url);
                         DatabaseConnection con = ConnectionManager.getDefault().getConnection(url);
                         if (con == null) {
-                            DBExplorerUtil.createDatabaseConnection( AXION_DRIVER,url, "sa", "sa");
+                            DBExplorerUtil.createDatabaseConnection(AXION_DRIVER, url, "sa", "sa");
                         }
                     }
                 } catch (Exception ex) {
@@ -386,11 +381,11 @@ public class DBExplorerUtil {
             }
         }
     }
-    
-    public static String unifyPath(String workDir){
+
+    public static String unifyPath(String workDir) {
         return workDir.replace('/', '\\');
     }
-    
+
     public static List<DatabaseConnection> getDatabasesForCurrentProject() {
         List<DatabaseConnection> dbConns = new ArrayList<DatabaseConnection>();
         String workDir = ETLEditorSupport.PRJ_PATH + "\\nbproject\\private\\databases\\";
@@ -410,13 +405,13 @@ public class DBExplorerUtil {
                         dbConns.add(dbConn);
                     }
                 } catch (Exception ex) {
-                //ignore
+                    //ignore
                 }
             }
         }
         return dbConns;
     }
-    
+
     public static String getDisplayName(DatabaseConnection dbConn) {
         if (dbConn.toString() == null) {
             return "<None>";
@@ -437,5 +432,4 @@ public class DBExplorerUtil {
         }
         return connName;
     }
-    
 }

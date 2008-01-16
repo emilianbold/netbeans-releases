@@ -65,6 +65,7 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class RowEntryTableModel implements TableModel {
+
     private static transient final Logger mLogger = LogUtil.getLogger(RowEntryTableModel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
 
@@ -108,7 +109,6 @@ public class RowEntryTableModel implements TableModel {
          * @param newValue is the new value to use.
          */
         public void setValue(int column, Object newValue);
-
     }
 
     /* Default column header prefix to use if columnHeaders is null. */
@@ -116,13 +116,10 @@ public class RowEntryTableModel implements TableModel {
 
     /* Log4J category string */
     private static final String LOG_CATEGORY = RowEntryTableModel.class.getName();
-
     /** (Optional) Holds column header names */
     protected String[] columnHeaders;
-
     /** Holds default editability state for each column */
     protected boolean[] editable;
-
     /** rows is the list of rows in the table. */
     protected ArrayList rows;
 
@@ -405,7 +402,7 @@ public class RowEntryTableModel implements TableModel {
                 }
             }
 
-            //fireTableModelEvent(new TableModelEvent(this));
+        //fireTableModelEvent(new TableModelEvent(this));
         }
     }
 
@@ -443,14 +440,10 @@ public class RowEntryTableModel implements TableModel {
                 ((RowEntry) rowData).setValue(columnIndex, aValue);
                 success = true;
             } catch (Exception e) {
-                  mLogger.errorNoloc(mLoc.t("PRSR081: Error while setting value for row {0}, col{1}",rowIndex,columnIndex),e);
-               // Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, "doSetRowEntry", "Error while setting value for row " + rowIndex + ", col "
-                  //  + columnIndex, e);
+                mLogger.errorNoloc(mLoc.t("PRSR081: Error while setting value for row {0}, col{1}", rowIndex, columnIndex), e);
                 success = false;
             }
-        mLogger.infoNoloc(mLoc.t("PRSR082: After setValue at row{0}, col{1}:  value ={2}; rowData ={3}",rowIndex,columnIndex,aValue,rowData));
-           // Logger.print(Logger.DEBUG, LOG_CATEGORY, "doSetRowEntry", "After setValue at row " + rowIndex + ", col " + columnIndex + ":  value = "
-             //   + aValue + "; rowData = " + rowData);
+            mLogger.infoNoloc(mLoc.t("PRSR082: After setValue at row{0}, col{1}:  value ={2}; rowData ={3}", rowIndex, columnIndex, aValue, rowData));
         }
 
         return success;

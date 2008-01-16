@@ -60,7 +60,6 @@ import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * @author Ritesh Adval
  * @version $Revision$
@@ -74,7 +73,6 @@ public class OperatorCategoryNode extends CommonNode implements IOperatorXmlInfo
     private static transient final Logger mLogger = LogUtil.getLogger(OperatorCategoryNode.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
     private DataFolder folder;
-
     private Map operatorNameToNodeMap = new TreeMap(String.CASE_INSENSITIVE_ORDER);
 
     /** Creates a new instance of OperatorCategoryNode */
@@ -90,12 +88,12 @@ public class OperatorCategoryNode extends CommonNode implements IOperatorXmlInfo
             DataObject obj = children[i];
             try {
                 OperatorNode node = new OperatorNode(obj);
-                this.getChildren().add(new Node[] { node});
+                this.getChildren().add(new Node[]{node});
                 // this map for quick search of node based on node name
                 operatorNameToNodeMap.put(node.getName(), node);
             } catch (BaseException ignore) {
-                  mLogger.errorNoloc(mLoc.t("PRSR140: Could not load item(s) in operator folder{0}",obj.getName()),ignore);
-                //Logger.printThrowable(Logger.DEBUG, LOG_CATEGORY, null, "Could not load item(s) in operator folder " + obj.getName(), ignore);
+                mLogger.errorNoloc(mLoc.t("PRSR140: Could not load item(s) in operator folder{0}", obj.getName()), ignore);
+
             }
         }
     }

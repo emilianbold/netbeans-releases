@@ -196,8 +196,7 @@ public class TableTreeView extends JPanel {
                     try {
                         dge.startDrag(DragSource.DefaultCopyDrop, new ColumnTransferable(obj));
                     } catch (InvalidDnDOperationException ex) {
-                      //  Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, null, "invalid drag and drop", ex);
-                         mLogger.errorNoloc(mLoc.t("PRSR159: invalid drag and drop{0}",LOG_CATEGORY),ex);
+                        mLogger.errorNoloc(mLoc.t("PRSR159: invalid drag and drop{0}", LOG_CATEGORY), ex);
                     }
                 }
             }

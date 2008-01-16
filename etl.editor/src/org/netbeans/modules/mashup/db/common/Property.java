@@ -80,6 +80,7 @@ public class Property implements Cloneable, Comparable {
     private Object value;
     private static transient final Logger mLogger = LogUtil.getLogger(Property.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /** Creates a new default instance of Property */
     public Property() {
         required = true;
@@ -236,8 +237,8 @@ public class Property implements Cloneable, Comparable {
         } else {
             try {
                 String unescaped = StringUtil.unescapeControlChars(newValue.toString());
-                Constructor constr = type.getConstructor(new Class[] { String.class});
-                value = constr.newInstance(new Object[] { unescaped});
+                Constructor constr = type.getConstructor(new Class[]{String.class});
+                value = constr.newInstance(new Object[]{unescaped});
             } catch (Exception ex) {
                 throw new ClassCastException("Value of type " + newValClass.getName() + " cannot be assigned to this property.");
             }
@@ -262,12 +263,10 @@ public class Property implements Cloneable, Comparable {
         String cooked = StringUtil.unescapeControlChars(def);
 
         try {
-            Constructor constr = type.getConstructor(new Class[] { String.class});
-            this.defaultValue = constr.newInstance(new Object[] { cooked});
+            Constructor constr = type.getConstructor(new Class[]{String.class});
+            this.defaultValue = constr.newInstance(new Object[]{cooked});
         } catch (Exception ex) {
-           mLogger.errorNoloc(mLoc.t("PRSR052: Could not construct default value of type {0}with parameter = {1}",type,def),ex);
-           // Logger.printThrowable(Logger.ERROR, LOG_CATEGORY, this, "Could not construct default value of type " + type + " with parameter = " + def,
-            //    ex);
+            mLogger.errorNoloc(mLoc.t("PRSR052: Could not construct default value of type {0}with parameter = {1}", type, def), ex);
             defaultValue = null;
         }
     }

@@ -63,12 +63,15 @@ import org.netbeans.modules.etl.logger.LogUtil;
  * @version $Revision$
  */
 public class FlatfileNode extends BeanNode implements Comparable {
+
     private static transient final Logger mLogger = LogUtil.getLogger(FlatfileNode.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Extends FlatfileNode to represent a FlatfileNode with no children.
      */
     public static final class Leaf extends FlatfileNode {
+
         /**
          * Constructs a default instance of FlatfileNode.
          * 
@@ -350,8 +353,7 @@ public class FlatfileNode extends BeanNode implements Comparable {
      */
     public void updateUserObject() {
         // XXX Update user object.
-       mLogger.infoNoloc(mLoc.t("PRSR083: Current state of user object:{0}",userObject));
-       // Logger.print(Logger.DEBUG, LOG_CATEGORY, "Current state of user object: " + userObject);
+        mLogger.infoNoloc(mLoc.t("PRSR083: Current state of user object:{0}", userObject));
     }
 
     /**
@@ -375,7 +377,7 @@ public class FlatfileNode extends BeanNode implements Comparable {
      * Initializes Action and Cookies @param nodeType nodeType
      */
     private void initializeActionsAndCookies() {
-        mActions = new SystemAction[] {};
+        mActions = new SystemAction[]{};
     }
 }
 
