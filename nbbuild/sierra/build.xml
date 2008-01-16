@@ -253,6 +253,10 @@
 
         <!-- clusterSupport -->
         <antcall target="do-test-jbi"><param name="dir" value="clusterSupport/ClusterBPEL"/></antcall>
+
+        <!-- compensation -->
+        <antcall target="do-test-jbi"><param name="dir" value="compensation/IterativeScopes"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="compensation/NestedScope"/></antcall>
     </target>
 
     <target name="do-test-jbi">
