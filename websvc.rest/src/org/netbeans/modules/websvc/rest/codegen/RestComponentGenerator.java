@@ -201,18 +201,9 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                 ClassTree tree = JavaSourceHelper.getTopLevelClassTree(copy);
                 String[] annotations = new String[]{RestConstants.PATH_ANNOTATION};
                 Object[] annotationAttrs = new Object[]{getSubresourceLocatorUriTemplate()};
-                String[] params = null;
-                Object[] paramTypes = null;
-                String[] paramAnnotations = null;
-                Object[] paramAnnotationAttrs = null;
-
-                String uriParamAnnotationAttribute = getUriParam(JavaSourceHelper.getTopLevelClassElement(copy));
                 boolean addTryFinallyBlock = false;
-                if (uriParamAnnotationAttribute != null) {
-                    params = new String[]{"id"}; //NOI18N
-                    paramTypes = new Object[]{Integer.class.getName()};
-                    paramAnnotations = new String[]{RestConstants.URI_PARAM_ANNOTATION};
-                    paramAnnotationAttrs = new Object[]{uriParamAnnotationAttribute};
+
+                if (hasGetEntityMethod(JavaSourceHelper.getTopLevelClassElement(copy))) {
                     addTryFinallyBlock = true;
                 }
 
@@ -233,7 +224,11 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
                     body += "finally { PersistenceService.getInstance().close()";
                 }
 
-                ClassTree modifiedTree = JavaSourceHelper.addMethod(copy, tree, Constants.PUBLIC, annotations, annotationAttrs, getSubresourceLocatorName(), bean.getQualifiedClassName(), params, paramTypes, paramAnnotations, paramAnnotationAttrs, body, comment);
+                ClassTree modifiedTree = JavaSourceHelper.addMethod(copy, tree, 
+                        Constants.PUBLIC, annotations, annotationAttrs, 
+                        getSubresourceLocatorName(), bean.getQualifiedClassName(), 
+                        null, null, null, null, 
+                        body, comment);
                 copy.rewrite(tree, modifiedTree);
             }
         });
@@ -329,7 +324,7 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
         String getEntityStatement = "";
 
         if (addGetEntityStatement) {
-            getEntityStatement = getEntityType(JavaSourceHelper.getTopLevelClassElement(copy)) + " entity = getEntity(id)";
+            getEntityStatement = getEntityType(JavaSourceHelper.getTopLevelClassElement(copy)) + " entity = getEntity()";
         }
 
         return comment + getEntityStatement + statements;
@@ -353,6 +348,18 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 
     private String getOutputWrapperQualifiedName() throws IOException {
         return JavaSourceHelper.getClassType(jaxbOutputWrapperJS);
+    }
+
+    private boolean hasGetEntityMethod(TypeElement typeElement) {
+        List<ExecutableElement> methods = ElementFilter.methodsIn(typeElement.getEnclosedElements());
+   
+        for (ExecutableElement method : methods) {
+            if (method.getSimpleName().contentEquals("getEntity")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private String getUriParam(TypeElement typeElement) {
@@ -458,13 +465,13 @@ public abstract class RestComponentGenerator extends AbstractGenerator {
 //    }
 //
     private String match(TypeElement targetClass, String arg) {
-        List<VariableElement> fields = ElementFilter.fieldsIn(targetClass.getEnclosedElements());
+        //List<VariableElement> fields = ElementFilter.fieldsIn(targetClass.getEnclosedElements());
         String argName = arg.toLowerCase();
-        for (VariableElement field : fields) {
-            if (match(field.getSimpleName().toString(), argName)) {
-                return field.getSimpleName().toString();
-            }
-        }
+//        for (VariableElement field : fields) {
+//            if (match(field.getSimpleName().toString(), argName)) {
+//                return field.getSimpleName().toString();
+//            }
+//        }
 
         List<ExecutableElement> methods = ElementFilter.methodsIn(targetClass.getEnclosedElements());
         for (ExecutableElement method : methods) {
