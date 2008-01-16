@@ -263,17 +263,17 @@ public class ModelXMLRootContext implements XMLReaderContext {
         }
         
         class InstructionContext implements XMLReaderContext {
-            private String name;
+            private final String name;
             private String clazz;
-            private String descr;
+            private final String descr;
             // Other, optional, attributes
             private Map<String, String> attr;
-            private List<InstructionArgs> arguments;
+            private final List<InstructionArgs> arguments;
             
             public InstructionContext(Attributes attributes) {
-                this.name = checkForName(attributes, INSTR_NAME_ATTRIBUTE);                
-                this.clazz = checkForName(attributes, INSTR_CLAZZ_ATTRIBUTE); 
-                this.descr = checkForName(attributes, INSTR_DESCR_ATTRIBUTE); 
+                this.name = checkForName(attributes, INSTR_NAME_ATTRIBUTE);              
+                this.clazz = checkForName(attributes, INSTR_CLAZZ_ATTRIBUTE);
+                this.descr = checkForName(attributes, INSTR_DESCR_ATTRIBUTE);
                                                 
                 this.attr = new HashMap<String, String>();
                 this.arguments = new LinkedList<InstructionArgs>();

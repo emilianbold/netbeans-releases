@@ -52,10 +52,10 @@ import org.netbeans.modules.asm.model.lang.instruction.InstructionArgs;
 
 public abstract class XMLBaseInstruction implements Instruction {
     
-    private String name;
-    private String groupName;
-    private String description;
-    private Collection<InstructionArgs> args;
+    private final String name;
+    private final String groupName;
+    private final String description;
+    private final Collection<InstructionArgs> args;
     
     private Map<String, String> propMap;
     
@@ -90,8 +90,8 @@ public abstract class XMLBaseInstruction implements Instruction {
         
         return null;
     }
-      
-    
+
+    @Override
     public String toString() {
         return name + " " + description; 
     }

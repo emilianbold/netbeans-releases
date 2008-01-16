@@ -47,6 +47,7 @@ import java.util.Collections;
 
 import org.netbeans.modules.asm.model.lang.instruction.Instruction;
 import org.netbeans.modules.asm.model.lang.instruction.InstructionArgs;
+import org.netbeans.modules.asm.model.xml.DefaultXMLBaseInstruction;
 
 public class FakeInstruction implements Instruction {        
    
@@ -76,5 +77,13 @@ public class FakeInstruction implements Instruction {
 
     public String getProperty(String prop) {
         return null;
-    }       
+    }
+
+    public Collection<Integer> getReadArgIdxs() {
+        return DefaultXMLBaseInstruction.DEFAULT_READ;
+    }
+
+    public Collection<Integer> getWriteArgIdxs() {
+        return DefaultXMLBaseInstruction.DEFAULT_WRITE;
+    }
 }

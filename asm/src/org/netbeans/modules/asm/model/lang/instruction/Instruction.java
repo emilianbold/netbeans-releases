@@ -51,4 +51,6 @@ public interface Instruction extends AsmNameable, AsmPropHandler {
     String getGroupName();  
     String getDescription();
     Collection<InstructionArgs> getArguments();
+    Collection<Integer> getReadArgIdxs();
+    Collection<Integer> getWriteArgIdxs();
 }

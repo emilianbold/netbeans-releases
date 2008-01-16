@@ -69,6 +69,7 @@ import org.netbeans.modules.asm.model.lang.RegisterElement;
 import org.netbeans.modules.asm.model.lang.impl.AbstractAsmElement;
 import org.netbeans.modules.asm.model.lang.impl.AsmRootElement;
 import org.netbeans.modules.asm.model.lang.impl.BaseInstructionElement;
+import org.netbeans.modules.asm.model.lang.instruction.Instruction;
 import org.netbeans.modules.asm.model.util.IntervalSet;
 
 public class ATTParser implements AsmParser { 
@@ -251,12 +252,23 @@ public class ATTParser implements AsmParser {
 
         List<Register> read = new ArrayList<Register>();
         List<Register> write = new ArrayList<Register>();                    
-        List<Register> purpose = read;
         
         AsmElementBuilder instrBuilder = 
                 AsmElementBuilder.create(null);                
         
+        Instruction instruction = instr.getInstruction();
+        
         int inner = 0;
+        
+        // default arg number is 2
+        int argNo = 2;
+        // otherwise it should be the number of arguments
+        if (!instruction.getArguments().isEmpty()) {
+            List params = instruction.getArguments().iterator().next().getParamMnemonic();
+            if (!params.isEmpty()) {
+                argNo = params.size();
+            }
+        }
         
         while ((tok = cur.getCurrect()).getId() != ASM_EOF) {
             
@@ -267,10 +279,16 @@ public class ATTParser implements AsmParser {
                     AbstractAsmElement regInst;
 
                     if (inner == 0) {
-                        purpose.add(reg);
-                        
-                        regInst = RegisterElementImpl.create(reg, purpose == read ? RegisterElement.Usage.OP_USE_READ :
-                                                                                    RegisterElement.Usage.OP_USE_WRITE);                                                 
+                        RegisterElement.Usage usage = RegisterElement.Usage.OP_USE_NO_USE;
+                        if (instruction.getReadArgIdxs().contains(argNo)) {
+                            read.add(reg);
+                            usage = RegisterElement.Usage.OP_USE_READ;
+                        }
+                        if (instruction.getWriteArgIdxs().contains(argNo)) {
+                            write.add(reg);
+                            usage = usage.apply(RegisterElement.Usage.OP_USE_READ_WRITE);
+                        }
+                        regInst = RegisterElementImpl.create(reg, usage);
                     } else {
                         read.add(reg);
                         regInst = RegisterElementImpl.create(reg, RegisterElement.Usage.OP_USE_READ);
@@ -281,7 +299,7 @@ public class ATTParser implements AsmParser {
                     
             } else if (tok.getId() == ASM_MARK) {
                 if (tok.getText().equals(",") && inner == 0) {
-                    purpose = write;
+                    argNo--;
                 }                                                     
                 else if (tok.getText().equals(memOpBeginMark)) {
                     inner++;
@@ -297,7 +315,7 @@ public class ATTParser implements AsmParser {
         }               
         
         AbstractAsmElement resInstr = BaseInstructionElement.create(instrBuilder.get(),
-                                                                    instr.getInstruction(),
+                                                                    instruction,
                                                                     read,
                                                                     write);
         resInstr.setStartOffset(instr.getStartOffset());

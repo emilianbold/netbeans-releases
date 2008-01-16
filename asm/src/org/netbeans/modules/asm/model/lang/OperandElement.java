@@ -48,6 +48,7 @@ public interface OperandElement extends AsmElement {
     
     // "type safe" bit mask for argument usage
     public final static class Usage extends BitMask<Usage> {
+       public static final Usage OP_USE_NO_USE = new Usage(0);
        public static final Usage OP_USE_READ = new Usage(1);
        public static final Usage OP_USE_WRITE = new Usage(2);
        public static final Usage OP_USE_READ_WRITE = OP_USE_READ.apply(OP_USE_WRITE);

@@ -169,11 +169,17 @@ public class RegisterHighlightAssistance extends AbstractHighlightsContainer
         }
 
         public AttributeSet getAttributes() {
-            Color res = cur.getUsage().isContain(OperandElement.Usage.OP_USE_WRITE) 
-                        ? WRITE_COLORING : READ_COLORING;
+            Color res = null;
+            if (cur.getUsage().isContain(OperandElement.Usage.OP_USE_WRITE)) {
+                res = WRITE_COLORING;
+            } else if (cur.getUsage().isContain(OperandElement.Usage.OP_USE_READ)) {
+                res = READ_COLORING;
+            }
             
             SimpleAttributeSet attrs = new SimpleAttributeSet();
-            attrs.addAttribute(StyleConstants.Background, res);
+            if (res != null) {
+                attrs.addAttribute(StyleConstants.Background, res);
+            }
             
             return attrs;
         }        

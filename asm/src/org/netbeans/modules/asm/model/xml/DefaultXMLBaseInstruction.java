@@ -42,41 +42,62 @@
 
 package org.netbeans.modules.asm.model.xml;
 
-import java.util.Collection;
-
+import java.util.*;
 import org.netbeans.modules.asm.model.lang.instruction.InstructionArgs;
 import org.netbeans.modules.asm.model.lang.operand.Operand;
 
 public class DefaultXMLBaseInstruction extends XMLBaseInstruction {
-      
-    private int argsRead;   
-    private int argsWrite;
+    public static final Collection<Integer> DEFAULT_READ = Arrays.asList(new Integer[]{2});
+    public static final Collection<Integer> DEFAULT_WRITE = Arrays.asList(new Integer[]{1});
+    
+    //TODO: There are some instructions with fixed read,write registers, not in arguments
+    private Collection<Integer> readArgsIdx = DEFAULT_READ;
+    private Collection<Integer> writeArgsIdx = DEFAULT_WRITE;
     
     public DefaultXMLBaseInstruction(String name, String groupName, String desc, 
                                     Collection<InstructionArgs> args) {
-        
         super(name, desc, groupName, args);
-        
-        argsRead = 0;
-        argsWrite = 0;
     }
 
     public boolean isSupportive(Operand[] ops) {
         return false;
     }
     
-    public void setWrite(String write) {        
+    public void setWrite(String write) {
+        this.writeArgsIdx = parseArgs(Util.descriptionTokenizer(write));
+        if (this.readArgsIdx == DEFAULT_READ) {
+            this.readArgsIdx = Collections.EMPTY_LIST;
+        }
     }
     
     public void setRead(String read) {
-        
-    }
-        
-    public int getWriteArgs() {
-        return argsWrite;
+        this.readArgsIdx = parseArgs(Util.descriptionTokenizer(read));
+        if (this.writeArgsIdx == DEFAULT_WRITE) {
+            this.writeArgsIdx = Collections.EMPTY_LIST;
+        }
     }
     
-    public int getReadArgs() {
-        return argsRead;
+    private static final String ARG_PREFIX = "%arg";
+    private static Collection<Integer> parseArgs(List<String> args) {
+        Collection<Integer> res = new ArrayList();
+        for (String arg : args) {
+            if (arg.startsWith(ARG_PREFIX)) {
+                String argNo = arg.substring(ARG_PREFIX.length(), arg.length()-1);
+                try {
+                    res.add(Integer.valueOf(argNo));
+                } catch (NumberFormatException nfe) {
+                    // do nothing if was unable to parse
+                }
+            }
+        }
+        return res;
+    }
+    
+    public Collection<Integer> getReadArgIdxs() {
+        return readArgsIdx;
+    }
+
+    public Collection<Integer> getWriteArgIdxs() {
+        return writeArgsIdx;
     }
 }
