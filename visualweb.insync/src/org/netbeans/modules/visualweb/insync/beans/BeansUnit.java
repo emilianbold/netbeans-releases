@@ -508,7 +508,9 @@ public class BeansUnit implements Unit {
                     beans.add(bean);
                 }
             }
-            bean.setInserted(true);
+            if(bean != null) {
+                bean.setInserted(true);
+            }
         }
    }
 
