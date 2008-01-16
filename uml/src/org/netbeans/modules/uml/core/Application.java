@@ -473,7 +473,9 @@ public class Application implements IApplication,
         for (IProxyDiagram diagram: list)
         {
             IDiagram dia = diagram.getDiagram();
-            if (dia != null && dia.getProject().equals(project))
+            //krichard issue 124470 NPE from dia.getProject().equals(project)
+            // added dia.getProject() != null check
+            if (dia != null && dia.getProject() != null && dia.getProject().equals(project))
                 if (dia.getIsDirty())
                     dia.save();
         }
