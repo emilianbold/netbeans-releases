@@ -55,11 +55,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.xml.wsdl.ui.common.Constants;
 
+import org.netbeans.modules.xml.wsdl.ui.common.Constants;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElement;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
@@ -77,12 +79,15 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
 	
 	private DataFolder mRootFolder = null;
 	
+	private String rootFolderNamePrefix;
+	
 	private Map elementsMap = new HashMap();
 	
 	private Map<String, XMLSchemaFileInfo> schemasMap = new HashMap<String, XMLSchemaFileInfo>();
 	
 	public WSDLExtensibilityElementsImpl(DataFolder rootFolder) {
 		this.mRootFolder = rootFolder;
+		this.rootFolderNamePrefix = mRootFolder.getName() + "/";
 		readAllSchemas();
 	}
 	
@@ -92,14 +97,11 @@ public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements 
 			return element;
 		}
 		
-		DataObject[] dataObjects = this.mRootFolder.getChildren();
-		for(int i = 0; i < dataObjects.length; i++ ) {
-			DataObject dObj = dataObjects[i];
-			if(dObj instanceof DataFolder && dObj.getName().equals(name)) {
-				element = new WSDLExtensibilityElementImpl((DataFolder) dObj, this);
-				elementsMap.put(name, element);
-				break;
-			}
+		FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(rootFolderNamePrefix + name);
+		DataFolder folder = DataFolder.findFolder(fo);
+		if (folder != null && folder.getName().equals(name)) {
+		    element = new WSDLExtensibilityElementImpl(folder, this);
+            elementsMap.put(name, element);
 		}
 		
 		return element;

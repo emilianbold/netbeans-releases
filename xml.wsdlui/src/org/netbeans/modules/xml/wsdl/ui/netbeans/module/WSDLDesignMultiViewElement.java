@@ -192,14 +192,19 @@ public class WSDLDesignMultiViewElement extends TopComponent
         }
         removePropertyChangeListener(ACTIVATED_NODES, nodesMediator);
         removePropertyChangeListener(ACTIVATED_NODES, cpl);
+        nodesMediator.setExplorerManager(null);
         nodesMediator = null;
         cpl = null;
-        
         
         
         if (mToolbar != null) mToolbar.removeAll();
         mToolbar = null;
         removeAll();
+        graphComponent = null;
+        wsdlModel = null;
+        explorerManager = null;
+        multiViewObserver = null;
+        setActivatedNodes(new Node[0]);
     }
     
     public void propertyChange(PropertyChangeEvent evt) {

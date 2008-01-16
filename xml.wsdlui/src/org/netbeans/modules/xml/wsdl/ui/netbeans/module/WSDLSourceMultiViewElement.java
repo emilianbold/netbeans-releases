@@ -324,9 +324,20 @@ public class WSDLSourceMultiViewElement extends CloneableEditor implements Multi
     @Override
     public void componentClosed() {
         super.componentClosed();
-        multiViewObserver = null;
+        cleanup();
     }
     
+    private void cleanup() {
+        rootNode = null;
+        if (selectedNode != null) selectedNode.removeNodeListener(nl);
+        nl = null;
+        selectedNode = null;
+        toolbar = null;
+        setActivatedNodes(new Node[0]);
+        caretListener = null;
+        multiViewObserver = null;
+    }
+
     @Override
     public void componentShowing() {
         super.componentShowing();

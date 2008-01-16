@@ -119,7 +119,7 @@ public class WSDLNavigatorContent extends JPanel
         notAvailableLabel.setBackground(usualWindowBkg != null ? usualWindowBkg : Color.white);
         // to ensure our background color will have effect
         notAvailableLabel.setOpaque(true);
-        treeView = new BeanTreeView();
+        getTreeView(); //populates the treeView variable.
     }
     
     public WSDLNavigatorContent getDefault() {
@@ -263,7 +263,7 @@ public class WSDLNavigatorContent extends JPanel
                     selectActivatedNodes();
                 } else if (ExplorerManager.PROP_SELECTED_NODES.equals(property)) {
                     Node[] filteredNodes = (Node[])event.getNewValue();
-                    if (filteredNodes != null && filteredNodes.length >= 1) {
+                    if (filteredNodes != null) {
                         // Set the active nodes for the parent TopComponent.
                         tc.setActivatedNodes(filteredNodes);
                         validate();
@@ -329,7 +329,8 @@ public class WSDLNavigatorContent extends JPanel
      */
     private void show(WSDLModel model) {
         remove(notAvailableLabel);
-        add(treeView, BorderLayout.CENTER);
+        TreeView tree = getTreeView();
+        add(tree, BorderLayout.CENTER);
         validate();
         NodesFactory factory = NodesFactory.getInstance();
         rootNode = factory.create(model.getDefinitions());
@@ -342,7 +343,7 @@ public class WSDLNavigatorContent extends JPanel
         removeAll();
         validate();
         getExplorerManager().setRootContext(Node.EMPTY);
-        getExplorerManager().setExploredContext(Node.EMPTY);
+        getExplorerManager().setExploredContext(Node.EMPTY, new Node[0]);
         if (rootNode != null) {
             Definitions component = rootNode.getLookup().lookup(Definitions.class);
             if (component != null && component.isInDocumentModel()) {
@@ -350,13 +351,23 @@ public class WSDLNavigatorContent extends JPanel
             }
         }
         rootNode = null;
+        treeView = null;
+    }
+    
+    private TreeView getTreeView() {
+        if (treeView == null) {
+            treeView = new BeanTreeView();
+        }
+        return treeView;
     }
     
     public void showWaitNode() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-               treeView.setRootVisible(true);
-               explorerManager.setRootContext(new WaitNode());
+                if (treeView != null) {
+                    treeView.setRootVisible(true);
+                    explorerManager.setRootContext(new WaitNode());
+                }
             } 
         });
     }

@@ -232,6 +232,8 @@ public class TreeEditorView extends JPanel
     @Override
     public void removeNotify() {
         super.removeNotify();
+        explorerManager.setRootContext(Node.EMPTY);
+        explorerManager.setExploredContext(Node.EMPTY, new Node[0]);
         explorerManager.removePropertyChangeListener(this);
         removeAll();
         btv = null;

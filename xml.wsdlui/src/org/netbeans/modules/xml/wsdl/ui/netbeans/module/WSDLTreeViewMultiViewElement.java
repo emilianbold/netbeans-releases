@@ -195,6 +195,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         }
         removePropertyChangeListener(ACTIVATED_NODES, nodesMediator);
         removePropertyChangeListener(ACTIVATED_NODES, cpl);
+        nodesMediator.setExplorerManager(null);
         nodesMediator = null;
         cpl = null;
         
@@ -203,6 +204,10 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         if (mToolbar != null) mToolbar.removeAll();
         mToolbar = null;
         removeAll();
+        manager = null;
+        multiViewObserver = null;
+        setActivatedNodes(new Node[0]);
+        
     }
     
     public void propertyChange(PropertyChangeEvent evt) {

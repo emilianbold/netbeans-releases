@@ -47,8 +47,10 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import java.util.EventListener;
 import java.util.EventObject;
+
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
@@ -60,6 +62,7 @@ import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
+
 import org.netbeans.api.visual.widget.Scene;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -84,7 +87,7 @@ public class ZoomManager {
     /** Large zoom increment, when above the threshold. */
     private static final int ZOOM_STEP_LARGE = 25;
     /** The scene to zoom in/out. */
-    private Scene scene;
+    private WeakReference<Scene> sceneRef;
     /** The zoom factor in the form of a percentage (e.g. 75%). */
     private int zoomPercentage = DEFAULT_ZOOM_PERCENT;
     /** List of zoom listeners. */
@@ -96,7 +99,7 @@ public class ZoomManager {
      * @param  scene  the scene to be managed.
      */
     public ZoomManager(Scene scene) {
-        this.scene = scene;
+        this.sceneRef = new WeakReference<Scene>(scene);
         listeners = new EventListenerList();
     }
 
@@ -188,7 +191,7 @@ public class ZoomManager {
      * @return  Scene managed by this manager.
      */
     public Scene getScene() {
-        return scene;
+        return sceneRef.get();
     }
 
     /**
@@ -223,6 +226,8 @@ public class ZoomManager {
      *                  200 for double-size).
      */
     public void setZoom(int percent) {
+        Scene scene = getScene();
+        if (scene == null) return;
         JScrollPane pane = (JScrollPane) SwingUtilities.getAncestorOfClass(
                 JScrollPane.class, scene.getView());
         assert pane != null : "Scene view component not in a JScrollPane?!?";
@@ -253,6 +258,9 @@ public class ZoomManager {
         } else if (percent > MAX_ZOOM_PERCENT) {
             percent = MAX_ZOOM_PERCENT;
         }
+        
+        Scene scene = getScene();
+        if (scene == null) return;
 
         // Find the current center point prior to zooming.
         Point sceneCenter = scene.convertViewToScene(center);
