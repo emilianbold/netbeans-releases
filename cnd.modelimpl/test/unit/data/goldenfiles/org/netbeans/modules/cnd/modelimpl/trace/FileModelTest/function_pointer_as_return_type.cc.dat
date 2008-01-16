@@ -11,6 +11,13 @@ Includes:
     <no includes>
 Macros:
     <no macros>
+FUNCTION get_ptr [1:1/0-1:45/44] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: get_ptr  [6:1/131-11:2/236]
+    SIGNATURE get_ptr(const char)
+    UNIQUE NAME F:get_ptr(const char)
+    PARAMETERS:
+        opCode [1:15/14-1:32/31]  TYPE: const char TEXT=const char  [1:15/14-1:25/24]  INIT: null  SCOPE: get_ptr 
+    RETURNS int TEXT=int(*)(int,int)  [1:1/0-1:7/6]
 FUNCTION DEFINITION plus  [3:1/46-3:42/87] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE plus(int,int)
     UNIQUE NAME f:plus(int,int)
@@ -31,8 +38,38 @@ FUNCTION DEFINITION minus  [4:1/88-4:42/129] FunctionDDImpl SCOPE: $Global$
     RETURNS int TEXT=int  [4:1/88-4:4/91]
     STATEMENT COMPOUND  [4:25/112-4:42/129] SCOPE: minus 
         STATEMENT RETURN  [4:27/114-4:40/127] SCOPE: Stmt  [4:25/112-4:42/129] text: 'return x - y;'
+FUNCTION DEFINITION get_ptr  [6:1/131-11:2/236] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE get_ptr(const char)
+    UNIQUE NAME f:get_ptr(const char)
+    DECLARATION: get_ptr  [1:1/0-1:45/44]
+    PARAMETERS:
+        opCode [6:15/145-6:32/162]  TYPE: const char TEXT=const char  [6:15/145-6:25/155]  INIT: null  SCOPE: get_ptr 
+    RETURNS int TEXT=int(*)(int,int)  [6:1/131-6:7/137]
+    STATEMENT COMPOUND  [6:45/175-11:2/236] SCOPE: get_ptr 
+        STATEMENT IF  [7:9/178-10:31/234] SCOPE: Stmt  [6:45/175-11:2/236]
+            CONDITION EXPRESSION text='opCode == '+''
+            THEN: 
+                STATEMENT RETURN  [8:17/198-8:30/211] SCOPE: Stmt  [7:9/178-10:31/234] text: 'return &plus;'
+            ELSE: 
+                STATEMENT RETURN  [10:17/220-10:31/234] SCOPE: Stmt  [7:9/178-10:31/234] text: 'return &minus;'
+FUNCTION DEFINITION __set_malloc_handler  [13:1/238-16:2/308] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE __set_malloc_handler(void(*)())
+    UNIQUE NAME f:__set_malloc_handler(void(*)())
+    DECLARATION: __set_malloc_handler  [13:1/238-16:2/308]
+    PARAMETERS:
+        __f [13:37/274-13:50/287]  TYPE: void TEXT=void(*)()  [13:37/274-13:44/281]  INIT: null  SCOPE: __set_malloc_handler 
+    RETURNS void TEXT=void(*)()  [13:1/238-13:15/252]
+    STATEMENT COMPOUND  [14:1/292-16:2/308] SCOPE: __set_malloc_handler 
+        STATEMENT RETURN  [15:4/297-15:13/306] SCOPE: Stmt  [14:1/292-16:2/308] text: 'return 0;'
 
 ========== Dumping model of PROJECT DummyProject
+FUNCTION get_ptr [1:1/0-1:45/44] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: get_ptr  [6:1/131-11:2/236]
+    SIGNATURE get_ptr(const char)
+    UNIQUE NAME F:get_ptr(const char)
+    PARAMETERS:
+        opCode [1:15/14-1:32/31]  TYPE: const char TEXT=const char  [1:15/14-1:25/24]  INIT: null  SCOPE: get_ptr 
+    RETURNS int TEXT=int(*)(int,int)  [1:1/0-1:7/6]
 FUNCTION DEFINITION plus  [3:1/46-3:42/87] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE plus(int,int)
     UNIQUE NAME f:plus(int,int)
@@ -53,4 +90,27 @@ FUNCTION DEFINITION minus  [4:1/88-4:42/129] FunctionDDImpl SCOPE: $Global$
     RETURNS int TEXT=int  [4:1/88-4:4/91]
     STATEMENT COMPOUND  [4:25/112-4:42/129] SCOPE: minus 
         STATEMENT RETURN  [4:27/114-4:40/127] SCOPE: Stmt  [4:25/112-4:42/129] text: 'return x - y;'
+FUNCTION DEFINITION get_ptr  [6:1/131-11:2/236] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE get_ptr(const char)
+    UNIQUE NAME f:get_ptr(const char)
+    DECLARATION: get_ptr  [1:1/0-1:45/44]
+    PARAMETERS:
+        opCode [6:15/145-6:32/162]  TYPE: const char TEXT=const char  [6:15/145-6:25/155]  INIT: null  SCOPE: get_ptr 
+    RETURNS int TEXT=int(*)(int,int)  [6:1/131-6:7/137]
+    STATEMENT COMPOUND  [6:45/175-11:2/236] SCOPE: get_ptr 
+        STATEMENT IF  [7:9/178-10:31/234] SCOPE: Stmt  [6:45/175-11:2/236]
+            CONDITION EXPRESSION text='opCode == '+''
+            THEN: 
+                STATEMENT RETURN  [8:17/198-8:30/211] SCOPE: Stmt  [7:9/178-10:31/234] text: 'return &plus;'
+            ELSE: 
+                STATEMENT RETURN  [10:17/220-10:31/234] SCOPE: Stmt  [7:9/178-10:31/234] text: 'return &minus;'
+FUNCTION DEFINITION __set_malloc_handler  [13:1/238-16:2/308] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE __set_malloc_handler(void(*)())
+    UNIQUE NAME f:__set_malloc_handler(void(*)())
+    DECLARATION: __set_malloc_handler  [13:1/238-16:2/308]
+    PARAMETERS:
+        __f [13:37/274-13:50/287]  TYPE: void TEXT=void(*)()  [13:37/274-13:44/281]  INIT: null  SCOPE: __set_malloc_handler 
+    RETURNS void TEXT=void(*)()  [13:1/238-13:15/252]
+    STATEMENT COMPOUND  [14:1/292-16:2/308] SCOPE: __set_malloc_handler 
+        STATEMENT RETURN  [15:4/297-15:13/306] SCOPE: Stmt  [14:1/292-16:2/308] text: 'return 0;'
 

@@ -56,7 +56,7 @@ FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl SCOPE: $Global$
     RETURNS int TEXT=int  [6:1/158-6:4/161]
     STATEMENT COMPOUND  [6:23/180-6:40/197] SCOPE: div 
         STATEMENT RETURN  [6:25/182-6:38/195] SCOPE: Stmt  [6:23/180-6:40/197] text: 'return a + b;'
-TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*(*)(int,int)  [8:9/207-8:15/213] SCOPE: $Global$ 
+TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*  [8:9/207-8:15/213] SCOPE: $Global$ 
 VARIABLE curr_op [10:1/229-10:31/259]  TYPE: int TEXT=int(*)(int,int)  [10:1/229-10:7/235]  INIT: text='add'  SCOPE: $Global$ 
 FUNCTION call_op [12:1/261-12:48/308] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
@@ -163,7 +163,7 @@ FUNCTION DEFINITION div  [6:1/158-6:40/197] FunctionDDImpl SCOPE: $Global$
     RETURNS int TEXT=int  [6:1/158-6:4/161]
     STATEMENT COMPOUND  [6:23/180-6:40/197] SCOPE: div 
         STATEMENT RETURN  [6:25/182-6:38/195] SCOPE: Stmt  [6:23/180-6:40/197] text: 'return a + b;'
-TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*(*)(int,int)  [8:9/207-8:15/213] SCOPE: $Global$ 
+TYPEDEF OP  [8:1/199-8:29/227] TYPE: *int TEXT=int*  [8:9/207-8:15/213] SCOPE: $Global$ 
 VARIABLE curr_op [10:1/229-10:31/259]  TYPE: int TEXT=int(*)(int,int)  [10:1/229-10:7/235]  INIT: text='add'  SCOPE: $Global$ 
 FUNCTION call_op [12:1/261-12:48/308] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
