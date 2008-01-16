@@ -103,15 +103,15 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
                     for (WSDLSchema schema : schemas) {
                         Reader in = createInlineSchemaSource(text, prefixes, linePositions, schema);
                         if(in != null) {
-	                        SAXSource source = new SAXSource(new InputSource(in));
-	                        source.setSystemId(systemId);
-	                        int start = schema.findPosition();
-	                        int lineNumber = getLineNumber(start, linePositions); //where the schema starts in the wsdl document
-	      
-	                        //validate the source
-	                        Handler handler = new InlineSchemaValidatorHandler(wsdlModel, lineNumber);
-	                        validate(wsdlModel, source, handler, resolver);
-	                        resultItems.addAll(handler.getResultItems());
+                            SAXSource source = new SAXSource(new InputSource(in));
+                            source.setSystemId(systemId);
+                            int start = schema.findPosition();
+                            int lineNumber = getLineNumber(start, linePositions); //where the schema starts in the wsdl document
+          
+                            //validate the source
+                            Handler handler = new InlineSchemaValidatorHandler(wsdlModel, lineNumber);
+                            validate(wsdlModel, source, handler, resolver);
+                            resultItems.addAll(handler.getResultItems());
                         }
                     }
                     
@@ -266,6 +266,10 @@ public class WSDLInlineSchemaValidator extends XsdBasedValidator {
         int start = oneInlineSchema.findPosition();
         int lineNumber = getLineNumber(start, wsdlLinePositions); //where the schema starts in the wsdl document
         String schemaString = oneInlineSchema.getContentFragment(); // get inner text content of schema.
+
+        if (wsdlText == null || schemaString == null) {
+          return null;
+        }
         int index = wsdlText.indexOf(schemaString, start);
         if (schemaString != null && schemaString.trim().length() > 0) { //else if its schema with no contents
             assert index != -1 : "the text content under schema couldnt be found in the wsdl document";
