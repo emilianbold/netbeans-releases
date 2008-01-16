@@ -311,7 +311,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/TwoWayEjbToBP/TwoWay"/></antcall>
 
         <!-- misc -->
-        <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
+        <!--todo a antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall-->
 
         <!-- pick -->
         <!-- todo a antcall target="do-test-jbi"><param name="dir" value="pick/PickBpel"/></antcall-->
