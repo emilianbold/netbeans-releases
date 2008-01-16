@@ -228,6 +228,7 @@
         ${test.cvs.path}/compensation
         ${test.cvs.path}/correlation
         ${test.cvs.path}/dynamicpartnerlink
+        ${test.cvs.path}/empty
         ${test.cvs.path}/MessageExchange
         ${test.cvs.path}/PartnerLinks
         ${test.cvs.path}/SchemaElemDecl
