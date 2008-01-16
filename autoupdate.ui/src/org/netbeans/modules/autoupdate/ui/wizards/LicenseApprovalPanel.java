@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -61,12 +61,11 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     /** Creates new form LicenseApprovalPanel */
     public LicenseApprovalPanel (InstallUnitWizardModel model) {
         initComponents ();
-        rbDismis.setSelected (true);
+        cbAccept.setSelected (false);
         if (model != null) {
             writeLicenses(model);
         } else {
-            rbAccept.setEnabled (false);
-            rbDismis.setEnabled (false);
+            cbAccept.setEnabled (false);
             taLicenses.setEnabled (false);
         }
     }
@@ -100,7 +99,7 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     }
     
     public boolean isApproved () {
-        return rbAccept.isSelected ();
+        return cbAccept.isSelected ();
     }
     
     /** This method is called from within the constructor to
@@ -111,12 +110,10 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        bgApproveButtons = new javax.swing.ButtonGroup();
         taTitle = new javax.swing.JTextArea();
-        rbAccept = new javax.swing.JRadioButton();
-        rbDismis = new javax.swing.JRadioButton();
         spLicenses = new javax.swing.JScrollPane();
         taLicenses = new javax.swing.JTextArea();
+        cbAccept = new javax.swing.JCheckBox();
 
         taTitle.setEditable(false);
         taTitle.setLineWrap(true);
@@ -124,24 +121,6 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         taTitle.setWrapStyleWord(true);
         taTitle.setMargin(new java.awt.Insets(0, 4, 0, 0));
         taTitle.setOpaque(false);
-
-        bgApproveButtons.add(rbAccept);
-        org.openide.awt.Mnemonics.setLocalizedText(rbAccept, org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_rbAccept_Text")); // NOI18N
-        rbAccept.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbAccept.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rbAcceptActionPerformed(evt);
-            }
-        });
-
-        bgApproveButtons.add(rbDismis);
-        org.openide.awt.Mnemonics.setLocalizedText(rbDismis, org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel_rbDismis_Text")); // NOI18N
-        rbDismis.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        rbDismis.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                rbDismisActionPerformed(evt);
-            }
-        });
 
         taLicenses.setColumns(20);
         taLicenses.setEditable(false);
@@ -151,17 +130,27 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
         taLicenses.setMargin(new java.awt.Insets(0, 4, 0, 4));
         spLicenses.setViewportView(taLicenses);
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbAccept, org.openide.util.NbBundle.getMessage(LicenseApprovalPanel.class, "LicenseApprovalPanel.cbAccept.text")); // NOI18N
+        cbAccept.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbAcceptActionPerformed(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, taTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                        .add(rbDismis, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .add(rbAccept, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, spLicenses, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 473, Short.MAX_VALUE))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(cbAccept))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, taTitle, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+                            .add(spLicenses, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -169,28 +158,20 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .add(taTitle, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(spLicenses, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                .add(spLicenses)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbAccept)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(rbDismis)
+                .add(cbAccept)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
-private void rbDismisActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbDismisActionPerformed
-    firePropertyChange (LICENSE_APPROVED, null, rbAccept.isSelected ());
-}//GEN-LAST:event_rbDismisActionPerformed
-
-private void rbAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbAcceptActionPerformed
-    firePropertyChange (LICENSE_APPROVED, null, rbAccept.isSelected ());
-}//GEN-LAST:event_rbAcceptActionPerformed
+    private void cbAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbAcceptActionPerformed
+        firePropertyChange (LICENSE_APPROVED, null, cbAccept.isSelected ());
+    }//GEN-LAST:event_cbAcceptActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.ButtonGroup bgApproveButtons;
-    private javax.swing.JRadioButton rbAccept;
-    private javax.swing.JRadioButton rbDismis;
+    private javax.swing.JCheckBox cbAccept;
     private javax.swing.JScrollPane spLicenses;
     private javax.swing.JTextArea taLicenses;
     private javax.swing.JTextArea taTitle;
