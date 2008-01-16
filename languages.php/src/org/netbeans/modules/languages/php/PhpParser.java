@@ -138,7 +138,9 @@ public class PhpParser implements Parser {
             if ( doc == null ){
                 return;
             }
-            PhpModel model = ModelAccess.getAccess().getModel(doc);
+            PhpModel model = ModelAccess.getAccess().getModel( 
+                    ModelAccess.getModelOrigin( file.getFileObject() ));
+            System.out.println( model );
             model.sync();
             
             try {

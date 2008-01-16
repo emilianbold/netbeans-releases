@@ -71,6 +71,8 @@ import org.openide.util.HelpCtx;
  */
 public class PhpKit extends HTMLKit {
 
+    private static final long serialVersionUID = 1858280307247622290L;
+    
     private static final String LINE_COMMENT = "//";        // NOI18N
 
     /* (non-Javadoc)

@@ -40,9 +40,18 @@
  */
 package org.netbeans.modules.php.model;
 
+import java.io.IOException;
+
 import javax.swing.text.Document;
 
+import org.netbeans.editor.BaseDocument;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
+import org.openide.util.UserQuestionException;
+import org.openide.util.lookup.Lookups;
 
 
 
@@ -60,6 +69,85 @@ public abstract class ModelAccess {
         return access;
     }
     
-    public abstract PhpModel getModel( Document doc );
+    public static ModelOrigin getModelOrigin( FileObject fileObject ) {
+        final DataObject dobj;
+        try {
+            dobj = DataObject.find(fileObject);
+        }
+        catch (DataObjectNotFoundException e) {
+            return null;
+        }
+        Lookup proxyLookup = Lookups.proxy(new Lookup.Provider() {
+
+            public Lookup getLookup() {
+                try {
+                    Document document = null;
+                    document = getDocument(dobj);
+                    if (document != null) {
+                        return Lookups.fixed(new Object[] {
+                                dobj.getPrimaryFile(), document, dobj, });
+                    }
+                    else {
+                        return Lookups.fixed(new Object[] {
+                                dobj.getPrimaryFile(), dobj, });
+                    }
+                }
+                catch (IOException e) {
+                    // TODO : log exception
+                    return Lookups.fixed(new Object[] { dobj, });
+                }
+            }
+        });
+        return new ModelOrigin(proxyLookup);
+    }
+    
+    public static Document getDocument(FileObject fileObject){
+        Document result = null;
+        try {
+            DataObject dObject = DataObject.find(fileObject);
+            EditorCookie ec = (EditorCookie)dObject.getCookie(EditorCookie.class);
+            Document doc = ec.openDocument();
+            if(doc instanceof BaseDocument){
+                return doc;
+            }
+
+            // TODO : need to somehow access to PhpKit  
+
+            //result = new org.netbeans.editor.BaseDocument(PhpKit.class, false);
+            String str = doc.getText(0, doc.getLength());
+            result.insertString(0,str,null);
+
+        } catch (Exception dObjEx) {
+            return null;
+        }
+        return result;
+    }
+    
+    private static Document getDocument(DataObject dataObject) 
+        throws IOException 
+    {
+        Document result = null;
+        if (dataObject != null && dataObject.isValid()) {
+            EditorCookie ec = (EditorCookie)
+            dataObject.getCookie(EditorCookie.class);
+            assert ec != null : "Data object "+
+            dataObject.getPrimaryFile().getPath()+
+                " has no editor cookies.";
+            Document doc = null;
+            try {
+                doc = ec.openDocument();
+            } catch (UserQuestionException uce) {
+                // this exception is thrown if the document is to large
+                // lets just confirm that it is ok
+                uce.confirmed();
+                doc = ec.openDocument();
+            }
+            assert doc instanceof BaseDocument;
+            result = doc;
+        }
+        return result;
+    }
+    
+    public abstract PhpModel getModel( ModelOrigin origin );
     
 }

@@ -48,6 +48,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.lexer.PhpTokenId;
 import org.netbeans.modules.php.model.ModelAccess;
 import org.netbeans.modules.php.model.PhpModel;
@@ -246,9 +247,11 @@ public class TokenUtils {
         return getEnteredTokenText(sequence, offset, upToOffset);
     }
     
-    public static TokenSequence getTokenSequence( BaseDocument doc )
+    public static TokenSequence<?> getTokenSequence( BaseDocument doc )
     {
-        PhpModel model = ModelAccess.getAccess().getModel(doc);
+        PhpModel model = ModelAccess.getAccess().getModel(
+                ModelAccess.getModelOrigin(
+                        NbEditorUtilities.getFileObject(doc)));
         model.writeLock();
         try {
             model.sync();
@@ -260,7 +263,9 @@ public class TokenUtils {
     }
     
     public static ASTNode getRoot( BaseDocument doc ){
-        PhpModel model = ModelAccess.getAccess().getModel(doc);
+        PhpModel model = ModelAccess.getAccess().getModel(
+                ModelAccess.getModelOrigin(
+                        NbEditorUtilities.getFileObject(doc)));
         model.writeLock();
         try {
             model.sync();

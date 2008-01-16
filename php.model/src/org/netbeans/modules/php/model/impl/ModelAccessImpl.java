@@ -46,6 +46,7 @@ import java.util.WeakHashMap;
 import javax.swing.text.Document;
 
 import org.netbeans.modules.php.model.ModelAccess;
+import org.netbeans.modules.php.model.ModelOrigin;
 import org.netbeans.modules.php.model.PhpModel;
 
 
@@ -59,17 +60,17 @@ public class ModelAccessImpl extends ModelAccess {
      * @see org.netbeans.modules.php.model.ModelAccess#getModel()
      */
     @Override
-    public synchronized PhpModel getModel( Document doc )
+    public synchronized PhpModel getModel( ModelOrigin origin )
     {
-        PhpModel model = MODELS.get( doc );
+        PhpModel model = MODELS.get( origin );
         if ( model == null ){
-            model = new PhpModelImpl( doc );
-            MODELS.put( doc , model );
+            model = new PhpModelImpl( origin );
+            MODELS.put( origin , model );
         }
         return model;
     }
     
-    private static Map<Document,PhpModel> MODELS 
-        = new WeakHashMap<Document, PhpModel>();
+    private static Map<ModelOrigin,PhpModel> MODELS 
+        = new WeakHashMap<ModelOrigin, PhpModel>();
 
 }

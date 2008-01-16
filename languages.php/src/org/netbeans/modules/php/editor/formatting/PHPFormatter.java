@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.structure.formatting.JoinedTokenSequence;
@@ -209,7 +210,9 @@ public class PHPFormatter {
             
            
             //***********************
-            PhpModel model = ModelAccess.getAccess().getModel(doc);
+            PhpModel model = ModelAccess.getAccess().getModel(
+                    ModelAccess.getModelOrigin(
+                            NbEditorUtilities.getFileObject(doc)));
             model.writeLock();
             try {
                 model.sync();
@@ -472,7 +475,9 @@ public class PHPFormatter {
 
                 newIndent = baseIndent;
 
-                PhpModel model = ModelAccess.getAccess().getModel(doc);
+                PhpModel model = ModelAccess.getAccess().getModel( 
+                        ModelAccess.getModelOrigin(
+                                NbEditorUtilities.getFileObject(doc)));
                 model.writeLock();
                 try {
                     model.sync();

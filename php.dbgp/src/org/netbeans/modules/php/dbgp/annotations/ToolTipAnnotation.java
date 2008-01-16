@@ -61,6 +61,7 @@ import org.netbeans.modules.php.model.ModelAccess;
 import org.netbeans.modules.php.model.PhpModel;
 import org.netbeans.modules.php.model.SourceElement;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
 import org.openide.text.DataEditorSupport;
@@ -166,12 +167,13 @@ public class ToolTipAnnotation extends Annotation
             return;
         }
         DataObject dataObject = DataEditorSupport.findDataObject(line);
+        final FileObject fileObject = dataObject.getPrimaryFile();
         if ( !isPhpDataObject( dataObject) ){
             return;
         }
         EditorCookie editorCookie = (EditorCookie)dataObject.
             getCookie(EditorCookie.class);
-        final StyledDocument document = editorCookie.getDocument();
+        StyledDocument document = editorCookie.getDocument();
         final int offset = NbDocument.findLineOffset(document, 
                 part.getLine().getLineNumber()) + part.getColumn();
         String selectedText = getSelectedText( editorCookie, offset);
@@ -181,7 +183,7 @@ public class ToolTipAnnotation extends Annotation
         else {
             Runnable runnable = new Runnable(){
                 public void run() {
-                    computeVariable(document, offset);                    
+                    computeVariable(fileObject, offset);                    
                 }
             };
             RequestProcessor.getDefault().post(runnable);
@@ -192,8 +194,9 @@ public class ToolTipAnnotation extends Annotation
         return Utils.isPhpFile( dataObject.getPrimaryFile() );
     }
 
-    private void computeVariable( StyledDocument doc , int offset ){
-        PhpModel model = ModelAccess.getAccess().getModel( doc);
+    private void computeVariable( FileObject fObject, int offset ){
+        PhpModel model = ModelAccess.getAccess().getModel( 
+                ModelAccess.getModelOrigin( fObject ));
         if ( model == null ){
             return;
         }

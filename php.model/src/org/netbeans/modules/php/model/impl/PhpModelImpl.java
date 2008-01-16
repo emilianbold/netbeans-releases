@@ -42,8 +42,6 @@ package org.netbeans.modules.php.model.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -66,6 +64,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.lexer.PhpTokenId;
+import org.netbeans.modules.php.model.ModelOrigin;
 import org.netbeans.modules.php.model.PhpModel;
 import org.netbeans.modules.php.model.PhpModelVisitor;
 import org.netbeans.modules.php.model.SourceElement;
@@ -82,9 +81,9 @@ import org.openide.util.lookup.InstanceContent;
  */
 class PhpModelImpl implements PhpModel {
 
-    PhpModelImpl ( Document document ){
-        assert document!=null;
-        myRef = new WeakReference<Document>( document );
+    PhpModelImpl ( ModelOrigin origin ){
+        assert origin!=null;
+        myOrigin = origin;
         myLock = new ReentrantReadWriteLock();
         myReadLock = myLock.readLock();
         myWriteLock = myLock.writeLock();
@@ -97,7 +96,7 @@ class PhpModelImpl implements PhpModel {
      * @see org.netbeans.modules.php.model.PhpModel#getDocument()
      */
     public Document getDocument(){
-        Document doc = myRef.get();
+        Document doc = myOrigin.getLookup().lookup( Document.class );
         assert doc != null : "Inappropriate usage of Model. There should be " +
                 "active document for model access";         // NOI18N
         return doc;
@@ -502,7 +501,7 @@ class PhpModelImpl implements PhpModel {
         }
     }
 
-    private Reference<Document> myRef;
+    private ModelOrigin myOrigin;
     
     private ReentrantReadWriteLock myLock;
     

@@ -40,36 +40,59 @@
  */
 package org.netbeans.modules.php.model;
 
-import javax.swing.text.Document;
-
-import org.netbeans.modules.php.model.resources.ResourceMarker;
-
-import junit.framework.TestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Provider;
 
 
 /**
  * @author ads
  *
  */
-abstract class BaseCase extends TestCase {
+public class ModelOrigin implements Provider {
     
+    public ModelOrigin( Lookup lookup ){
+        myLookup = lookup;
+    }
 
-    protected PhpModel getModel() throws Exception {
-        if ( myModel == null ){
-            Document doc = Utils.loadDocument( ResourceMarker.getStream(
-                    ResourceMarker.STATEMENTS));
-            myModel = ModelAccess.getAccess().getModel(null);
+    /* (non-Javadoc)
+     * @see org.openide.util.Lookup.Provider#getLookup()
+     */
+    public Lookup getLookup() {
+        return myLookup;
+    }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals( Object obj ) {
+        if ( !( obj instanceof ModelOrigin ) ){
+            return false;
         }
-        return myModel;
+        ModelOrigin origin = (ModelOrigin)obj;
+        FileObject fileObject  = origin.getLookup().lookup( FileObject.class );
+        FileObject thisFileObject = getLookup().lookup( FileObject.class );
+        if ( fileObject == null ){
+            return thisFileObject == null;
+        }
+        return fileObject.equals( thisFileObject );
     }
     
-    protected PhpModel getModel( String fileName ) throws Exception {
-        PhpModel model;
-        Document doc = Utils.loadDocument(ResourceMarker.getStream(fileName));
-        model = ModelAccess.getAccess().getModel(null);
-        return model;
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        FileObject fileObject = getLookup().lookup( FileObject.class );
+        if ( fileObject == null ){
+            return 0;
+        }
+        else {
+            return fileObject.hashCode();
+        }
     }
     
-    private PhpModel myModel;
+    private Lookup myLookup;
 
 }

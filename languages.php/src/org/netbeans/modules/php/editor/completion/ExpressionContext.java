@@ -46,7 +46,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.text.Document;
 import org.netbeans.api.gsf.CompletionProposal;
 import org.netbeans.modules.php.doc.DocumentationRegistry;
 import org.netbeans.modules.php.doc.FunctionDoc;
@@ -66,6 +65,7 @@ import org.netbeans.modules.php.model.SourceElement;
 import org.netbeans.modules.php.model.Statement;
 import org.netbeans.modules.php.model.SwitchStatement;
 import org.netbeans.modules.php.model.WhileStatement;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 
@@ -176,32 +176,29 @@ public class ExpressionContext implements CompletionResultProvider
                                                CodeCompletionContext context)
     {   
         // TODO: It seems model should be synchronized once. It is not required here.
+        FileObject fileObject = context.getCompilationInfo().getFileObject();
+        PhpModel model = ModelAccess.getAccess().getModel(
+                ModelAccess.getModelOrigin(fileObject));
+        model.writeLock();
         try {
-            Document doc = context.getCompilationInfo().getDocument();
-            PhpModel model = ModelAccess.getAccess().getModel(doc);
-            model.writeLock();
-            try {
-                model.sync();
-                List<FunctionDefinition> fds = 
-                        model.getStatements(FunctionDefinition.class);
-                String prefix = context.getPrefix();
-                // TODO: Example 17.2. Conditional functions
-                // TODO: Example 17.3. Functions within functions
-                for (FunctionDefinition fd : fds) {
-                    FunctionDeclaration decl = fd.getDeclaration();
-                    if (isMatchedFunction(decl.getName(), prefix)) {
-                        list.add(new UserDefinedMethodItem(decl, 
-                                                      context.getInsertOffset(), 
-                                                      context.getFormatter()));
-                    }
+            model.sync();
+            List<FunctionDefinition> fds = model
+                    .getStatements(FunctionDefinition.class);
+            String prefix = context.getPrefix();
+            // TODO: Example 17.2. Conditional functions
+            // TODO: Example 17.3. Functions within functions
+            for (FunctionDefinition fd : fds) {
+                FunctionDeclaration decl = fd.getDeclaration();
+                if (isMatchedFunction(decl.getName(), prefix)) {
+                    list.add(new UserDefinedMethodItem(decl, context
+                            .getInsertOffset(), context.getFormatter()));
                 }
-            } finally {
-                model.writeUnlock();
             }
-        } 
-        catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
+        finally {
+            model.writeUnlock();
+        }
+
     }
 
     public static void addBuiltinFunctionProposals(List<CompletionProposal>  list,
