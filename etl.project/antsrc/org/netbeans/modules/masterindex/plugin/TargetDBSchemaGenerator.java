@@ -161,7 +161,7 @@ public class TargetDBSchemaGenerator {
 
         columns.append(createPrimaryKeyConstraint(defaultCol));
 
-        columns.append(createForeignKeyConstraint(modeltablename));
+        //columns.append(createForeignKeyConstraint(modeltablename));
 
         return columns.toString();
     }
