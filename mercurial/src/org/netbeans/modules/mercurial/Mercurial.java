@@ -102,6 +102,7 @@ public class Mercurial {
     private HashMap<String, RequestProcessor>   processorsToUrl;
     private boolean goodVersion;
     private String version;
+    private String runVersion;
     private boolean checkedVersion;
 
     private Mercurial() {
@@ -140,6 +141,13 @@ public class Mercurial {
         if (version != null) {
             goodVersion = version.startsWith(MERCURIAL_GOOD_VERSION) ||
                           version.startsWith(MERCURIAL_BETTER_VERSION);
+            if (!goodVersion){
+                Preferences prefs = HgModuleConfig.getDefault().getPreferences();
+                runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
+                if (runVersion != null && runVersion.equals(version)) {
+                    goodVersion = true;
+                }
+           }
         } else {
             goodVersion = false;
         }
@@ -147,9 +155,8 @@ public class Mercurial {
     
     public void checkVersionNotify() {  
         if (version != null && !goodVersion) {
-            Preferences prefs = HgModuleConfig.getDefault().getPreferences();
-            String runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
-            if (runVersion == null || !runVersion.equals(version)) {
+             if (runVersion == null || !runVersion.equals(version)) {
+                Preferences prefs = HgModuleConfig.getDefault().getPreferences();
                 int response = JOptionPane.showOptionDialog(null,
                         NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM_QUERY", version, MERCURIAL_BETTER_VERSION), // NOI18N
                         NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM"), // NOI18N
@@ -166,6 +173,8 @@ public class Mercurial {
                 goodVersion = true;
             }
         } else if (version == null) {
+            Preferences prefs = HgModuleConfig.getDefault().getPreferences();
+            prefs.remove(HgModuleConfig.PROP_RUN_VERSION);
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(Mercurial.class, "MSG_VERSION_NONE_OUTPUT_MSG")); // NOI18N);
             HgUtils.warningDialog(Mercurial.class, "MSG_VERSION_NONE_TITLE", "MSG_VERSION_NONE_MSG");// NOI18N
         }
