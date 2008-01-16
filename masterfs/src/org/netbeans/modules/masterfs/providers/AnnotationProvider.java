@@ -41,6 +41,11 @@
 
 package org.netbeans.modules.masterfs.providers;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import org.openide.filesystems.FileStatusListener;
+
 /** Can provide status and actions for FileObjects. Register it
  * in META-INF/services/org.netbeans.modules.masterfs.providers.AnnotationProvider
  * file.
@@ -49,7 +54,7 @@ package org.netbeans.modules.masterfs.providers;
  */
 public abstract class AnnotationProvider extends Object {
     /** listeners */
-    private org.openide.filesystems.FileStatusListener listener;
+    private List fsStatusListener = new ArrayList();
     /** lock for modification of listeners */
     private static Object LOCK = new Object ();
     
@@ -109,7 +114,7 @@ public abstract class AnnotationProvider extends Object {
         org.openide.filesystems.FileStatusListener listener
     ) throws java.util.TooManyListenersException {
         synchronized (LOCK) {
-            this.listener = listener;
+            fsStatusListener.add(listener);
         }
     }
 
@@ -120,9 +125,7 @@ public abstract class AnnotationProvider extends Object {
         org.openide.filesystems.FileStatusListener listener
     ) {
         synchronized (LOCK) {
-            if (this.listener == listener) {
-                this.listener = null;
-            }
+            fsStatusListener.remove(listener);
         }
     }
 
@@ -131,11 +134,12 @@ public abstract class AnnotationProvider extends Object {
     * @param event The event to be fired
     */
     protected final void fireFileStatusChanged(org.openide.filesystems.FileStatusEvent event) {
-        org.openide.filesystems.FileStatusListener l;
+        List listeners = new ArrayList();
         synchronized (LOCK) {
-            l = this.listener;
+            listeners.addAll(fsStatusListener);
         }
-        if (l != null) {
+        for (Iterator it = listeners.iterator(); it.hasNext();) {
+            FileStatusListener l = (FileStatusListener) it.next();
             l.annotationChanged(event);
         }
     }    
