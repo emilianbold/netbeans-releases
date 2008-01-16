@@ -50,7 +50,7 @@ public class FinalCounterValueImpl extends ExpressionImpl implements
      * @see org.netbeans.modules.soa.model.bpel20.api.BpelEntity#getElementType()
      */
     public Class<? extends BpelEntity> getElementType() {
-        return FinalCounterValueImpl.class;
+        return FinalCounterValue.class;
     }
     
     /* (non-Javadoc)
