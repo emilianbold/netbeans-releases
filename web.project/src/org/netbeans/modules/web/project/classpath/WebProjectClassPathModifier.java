@@ -134,11 +134,13 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     }
 
     protected boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        return handleRoots (classPathRoots, getClassPathProperty(sourceGroup, type), DEFAULT_WEB_MODULE_ELEMENT_NAME, REMOVE);
+        String classPathProperty = getClassPathProperty(sourceGroup, type);
+        return handleRoots (classPathRoots, classPathProperty, getElementName(classPathProperty), REMOVE);
     }
 
     protected boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
-        return handleRoots (classPathRoots, getClassPathProperty(sourceGroup, type), DEFAULT_WEB_MODULE_ELEMENT_NAME, ADD);
+        String classPathProperty = getClassPathProperty(sourceGroup, type);
+        return handleRoots (classPathRoots, classPathProperty, getElementName(classPathProperty), ADD);
     }
     
     boolean handleRoots (final URL[] classPathRoots, final String classPathProperty, final String webModuleElementName, final int operation) throws IOException, UnsupportedOperationException {
@@ -207,11 +209,13 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     }
     
     protected boolean removeAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        return handleAntArtifacts (artifacts, artifactElements, getClassPathProperty(sourceGroup, type), DEFAULT_WEB_MODULE_ELEMENT_NAME, REMOVE);
+        String classPathProperty = getClassPathProperty(sourceGroup, type);
+        return handleAntArtifacts (artifacts, artifactElements, classPathProperty, getElementName(classPathProperty), REMOVE);
     }
 
     protected boolean addAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        return handleAntArtifacts (artifacts, artifactElements, getClassPathProperty(sourceGroup, type), DEFAULT_WEB_MODULE_ELEMENT_NAME, ADD);
+        String classPathProperty = getClassPathProperty(sourceGroup, type);
+        return handleAntArtifacts (artifacts, artifactElements, classPathProperty, getElementName(classPathProperty), ADD);
     }
     
     boolean handleAntArtifacts (final AntArtifact[] artifacts, final URI[] artifactElements, final String classPathProperty, final String webModuleElementName, final int operation) throws IOException, UnsupportedOperationException {
@@ -265,11 +269,13 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     }
     
     protected boolean removeLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        return handleLibraries (libraries, getClassPathProperty(sourceGroup, type), DEFAULT_WEB_MODULE_ELEMENT_NAME, REMOVE);
+        String classPathProperty = getClassPathProperty(sourceGroup, type);
+        return handleLibraries (libraries, classPathProperty, getElementName(classPathProperty), REMOVE);
     }
 
     protected boolean addLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        return handleLibraries (libraries, getClassPathProperty(sourceGroup, type), DEFAULT_WEB_MODULE_ELEMENT_NAME, ADD);
+        String classPathProperty = getClassPathProperty(sourceGroup, type);
+        return handleLibraries (libraries, classPathProperty, getElementName(classPathProperty), ADD);
     }
     
     boolean handleLibraries (final Library[] libraries, final String classPathProperty, final String webModuleElementName, final int operation) throws IOException, UnsupportedOperationException {
@@ -441,4 +447,15 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         return cs;
     }
 
+    // #123223
+    /**
+     * We have to decide whether update project.xml file as well or not; project.xml file is updated if
+     * and only if the classpath property is "javac.classpath".
+     */
+    private String getElementName(String classpathProperty) {
+        if (WebProjectProperties.JAVAC_CLASSPATH.equals(classpathProperty)) {
+            return DEFAULT_WEB_MODULE_ELEMENT_NAME;
+        }
+        return null;
+    }
 }
