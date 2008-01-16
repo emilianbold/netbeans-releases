@@ -605,10 +605,11 @@ public class ServerExplorerOperator extends TopComponentOperator {
         // Is server in list?
         // We want to use here public API
         JTreeOperator jto = new JTreeOperator(serverManager);
-        int length = ((TreeNode) jto.getChild(jto.getRoot(), 0)).getChildCount();
+        Object[] treeNodes = jto.getChildren(jto.getRoot());
+        int length = treeNodes.length;
         String addServerName = properties.get(DeploymentTargetDescriptor.NAME_KEY + serverType).toString();
         for (int i = 0; i < length; i++) {
-            String currentServerName = ((TreeNode) jto.getChild(jto.getRoot(), 0)).getChildAt(i).toString();
+            String currentServerName = treeNodes[i].toString();
             if (currentServerName.equals(addServerName)) {
                 //log("press close for server manager");
                 JButtonOperator close = new JButtonOperator(serverManager, STR_BUTTON_TITLE_CLOSE);
