@@ -329,7 +329,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     public final void setExploredContext(final Node value, final Node[] selection) {
         class SetExploredContext implements Runnable {
             boolean doFire;
-            Object oldValue;
+            Node oldValue;
             
             public void run() {
                 // handles nulls correctly:
@@ -343,9 +343,21 @@ public final class ExplorerManager extends Object implements Serializable, Clone
                 setSelectedNodes0(selection);
 
                 oldValue = exploredContext;
-                exploredContext.removeNodeListener(weakListener);
+                {
+                    Node n = exploredContext;
+                    while (n != null && n != rootContext) {
+                        n.removeNodeListener(weakListener);
+                        n = n.getParentNode();
+                    }
+                }
                 exploredContext = value;
-                exploredContext.addNodeListener(weakListener);
+                {
+                    Node n = exploredContext;
+                    while (n != null && n != rootContext) {
+                        n.addNodeListener(weakListener);
+                        n = n.getParentNode();
+                    }
+                }
 
                 doFire = true;
             }
