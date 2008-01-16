@@ -234,6 +234,7 @@
         ${test.cvs.path}/faulthandling
         ${test.cvs.path}/flow
         ${test.cvs.path}/foreach-bpel20
+        ${test.cvs.path}/if
         ${test.cvs.path}/MessageExchange
         ${test.cvs.path}/PartnerLinks
         ${test.cvs.path}/SchemaElemDecl

@@ -291,6 +291,9 @@
 
         <!-- foreach-bpel20 -->
         <antcall target="do-test-jbi"><param name="dir" value="foreach-bpel20/ForEachBpel"/></antcall>
+
+        <!-- if -->
+        <antcall target="do-test-jbi"><param name="dir" value="if/ifBpel"/></antcall>
     </target>
 
     <target name="do-test-jbi">
