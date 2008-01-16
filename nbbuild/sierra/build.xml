@@ -345,6 +345,9 @@
 
         <!-- wait -->
         <antcall target="do-test-jbi"><param name="dir" value="wait/WaitBpel"/></antcall>
+
+        <!-- while -->
+        <antcall target="do-test-jbi"><param name="dir" value="while/WhileBpel"/></antcall>
     </target>
 
     <target name="do-test-jbi">
