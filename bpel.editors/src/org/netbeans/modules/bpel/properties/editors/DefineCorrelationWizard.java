@@ -615,11 +615,28 @@ public class DefineCorrelationWizard implements WizardProperties {
         //====================================================================//
         private class ActionDeleteKey extends AbstractAction {
             public void actionPerformed(ActionEvent e) {
-                TreePath selectedTreePath = correlationMapper.getSelectionModel().getSelectedPath();
                 List<Link> selectedLinks =  correlationMapper.getSelectionModel().getSelectedLinks();
-                if ((selectedTreePath != null) && (selectedLinks != null) &&
-                    (! selectedLinks.isEmpty())) {
-                    // fireTreeChangedEvent(...); !!!
+                if ((selectedLinks != null) && (! selectedLinks.isEmpty())) {
+                    for (Link link : selectedLinks) {
+                        SourcePin sourcePin = link.getSource();
+                        if ((sourcePin == null) || (! (sourcePin instanceof TreeSourcePin))) break;
+
+                        Graph targetGraph = link.getGraph();
+                        if (targetGraph == null) break;
+                        targetGraph.removeLink(link);
+
+                        CorrelationMapperModel mapperModel = (CorrelationMapperModel) correlationMapper.getModel();
+                        CorrelationMapperTreeModel rightTreeModel = 
+                            (CorrelationMapperTreeModel) mapperModel.getRightTreeModel();
+                        Map<TreePath, Graph> mapTreePathGraph = mapperModel.getMapTreePathGraphs();
+                        for (Map.Entry<TreePath, Graph> mapEntry : mapTreePathGraph.entrySet()) {
+                            if (mapEntry.getValue().equals(targetGraph)) {
+                                TreePath treePath = mapEntry.getKey();
+                                rightTreeModel.fireTreeChanged(this, treePath);
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -844,6 +861,10 @@ public class DefineCorrelationWizard implements WizardProperties {
 
             public TreeModel getLeftTreeModel() {
                 return leftTreeModel;
+            }
+
+            public TreeModel getRightTreeModel() {
+                return rightTreeModel;
             }
 
             public TreeSourcePin getTreeSourcePin(TreePath treePath) {
