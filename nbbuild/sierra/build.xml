@@ -275,6 +275,9 @@
         <!-- eventHandlers -->
         <antcall target="do-test-jbi"><param name="dir" value="eventHandlers/onAlarm"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="eventHandlers/onEvent"/></antcall>
+
+        <!-- exit -->
+        <antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall>
     </target>
 
     <target name="do-test-jbi">
