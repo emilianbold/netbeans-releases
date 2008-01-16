@@ -560,13 +560,8 @@ public class PropertyUtils {
     }
     
     /*public? */ static FileObject resolveFileObject(FileObject basedir, String filename) {
-        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
-            // Shortcut. Potentially much faster.
-            return basedir.getFileObject(filename);
-        } else {
-            // Might be an absolute path, or \-separated, or . or .. components, etc.; use the safer method.
-            return FileUtil.toFileObject(resolveFile(FileUtil.toFile(basedir), filename));
-        }
+        // an absolute path, or \-separated, or . or .. components, etc.; use the safer method.
+        return FileUtil.toFileObject(resolveFile(FileUtil.toFile(basedir), filename));
     }
     
     /*public? */ static String resolvePath(File basedir, String path) {
