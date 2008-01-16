@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,6 +60,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.ui.Containers;
+import org.netbeans.modules.autoupdate.ui.wizards.OperationWizardModel.OperationType;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -151,10 +152,16 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                 break;
             }
             body = new OperationDescriptionPanel (tableTitle,
-                    preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getPrimaryUpdateElements (), false, model.getOperation ()), model.getCustomHandledComponents ()),
-                        "",
-                        "",
-                        true);
+                    preparePluginsForShow (
+                        OperationWizardModel.getVisibleUpdateElements (
+                                model.getPrimaryUpdateElements (),
+                                false,
+                                model.getOperation ()),
+                        model.getCustomHandledComponents (),
+                        model.getOperation ()),
+                    "",
+                    "",
+                    true);
             component = new PanelBodyContainer (head, content, body);
             component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
             component.setWaitingState (true);
@@ -180,10 +187,17 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
                             true);
                 } else {
                     body = new OperationDescriptionPanel (tableTitle,
-                            preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getPrimaryUpdateElements (), false, model.getOperation ()), model.getCustomHandledComponents ()),
-                                dependenciesTitle,
-                                preparePluginsForShow (OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true, model.getOperation ()), null),
-                                ! OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true, model.getOperation ()).isEmpty ());
+                            preparePluginsForShow (
+                                OperationWizardModel.getVisibleUpdateElements (
+                                    model.getPrimaryUpdateElements (), false, model.getOperation ()),
+                                model.getCustomHandledComponents (),
+                                model.getOperation ()),
+                            dependenciesTitle,
+                            preparePluginsForShow (
+                                OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true, model.getOperation ()),
+                                null,
+                                model.getOperation ()),
+                            ! OperationWizardModel.getVisibleUpdateElements (model.getRequiredUpdateElements (), true, model.getOperation ()).isEmpty ());
                 }
                 final JPanel finalPanel = body;
                 readyToGo = model != null && ! hasBrokenDependencies;
@@ -257,15 +271,22 @@ public class OperationDescriptionStep implements WizardDescriptor.Panel<WizardDe
         return displayName == null ? dep : displayName;
     }
     
-    private String preparePluginsForShow (Set<UpdateElement> plugins, Set<UpdateElement> customHandled) {
+    private String preparePluginsForShow (Set<UpdateElement> plugins, Set<UpdateElement> customHandled, OperationType type) {
         String s = new String ();
         List<String> names = new ArrayList<String> ();
         if (plugins != null && ! plugins.isEmpty ()) {
             for (UpdateElement el : plugins) {
                 String updatename;
-                updatename = "<b>"  + el.getDisplayName () + "</b> " // NOI18N
-                        + getBundle ("OperationDescriptionStep_PluginVersionFormat",  // NOI18N
-                        el.getSpecificationVersion ()) + "<br>"; // NOI18N
+                updatename = "<b>"  + el.getDisplayName () + "</b> "; // NOI18N
+                if (OperationWizardModel.OperationType.UPDATE == type) {
+                    String oldVersion = el.getUpdateUnit ().getInstalled ().getSpecificationVersion ();
+                    String newVersion = el.getSpecificationVersion ();
+                    updatename += getBundle ("OperationDescriptionStep_UpdatePluginVersionFormat", oldVersion, newVersion);
+                } else {
+                    updatename += getBundle ("OperationDescriptionStep_PluginVersionFormat",  // NOI18N
+                        el.getSpecificationVersion ());
+                }
+                updatename += "<br>"; // NOI18N
                 String notification = el.getNotification ();
                 if (notification != null && notification.length () > 0) {
                     updatename += "<font color=\"red\">" + notification + "</font><br><br>";  // NOI18N
