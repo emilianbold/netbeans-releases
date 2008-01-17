@@ -120,10 +120,10 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         getSelectionModel().addSelectionListener(this);
                         
         registerAction(new StartInplaceEditor(this));
-        registerAction(new MoveRightAction(this));
-        registerAction(new MoveLeftAction(this));
-        registerAction(new MoveUpAction(this));
-        registerAction(new MoveDownAction(this));
+        registerAction(new MoveRightCanvasAction(this));
+        registerAction(new MoveLeftCanvasAction(this));
+        registerAction(new MoveUpCanvasAction(this));
+        registerAction(new MoveDownCanvasAction(this));
    }
     
     public void registerAction(MapperKeyboardAction action) {
