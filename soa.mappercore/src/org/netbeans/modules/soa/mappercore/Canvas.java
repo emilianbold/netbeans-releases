@@ -927,6 +927,5 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             getScrollPane().validate();
             repaint();
         }
-
     }
 }

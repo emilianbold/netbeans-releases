@@ -38,11 +38,11 @@ import org.netbeans.modules.soa.mappercore.model.VertexItem;
 public class CanvasEventHandler extends AbstractMapperEventHandler {
 
     private MouseEvent initialEvent = null;
-    private AutoScrollSelectionCanvas  autoSelection;
+    private AutoSelectionCanvas  autoSelection;
 
     public CanvasEventHandler(Canvas canvas) {
         super(canvas.getMapper(), canvas);
-        new AutoScrollSelectionCanvas(canvas);
+        new AutoSelectionCanvas(canvas);
     }
 
     private void reset() {

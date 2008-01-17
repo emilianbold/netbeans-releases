@@ -33,7 +33,6 @@ import javax.swing.JTree;
 import javax.swing.Timer;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.dnd.*;
-import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
 
@@ -227,8 +226,7 @@ public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
                         new ActionListener() {
 
                             final public void actionPerformed(ActionEvent e) {
-                                maper.setExpandedGraphState(fTreePath,
-                                        true);
+                                maper.setExpandedGraphState(fTreePath, true);
                             }
                         });
                 timer.setRepeats(false);
