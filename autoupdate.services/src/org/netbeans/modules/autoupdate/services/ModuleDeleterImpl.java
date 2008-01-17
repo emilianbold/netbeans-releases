@@ -253,8 +253,9 @@ public final class ModuleDeleterImpl  {
             //err.log ("Find UPDATE_TRACKING: " + updateTracking + " found.");
             // check the write permission
             File installCluster = null;
+            File updateTrackingDir = updateTracking.getParentFile ();
             for (File cluster : UpdateTracking.clusters (true)) {       
-                if (isParentOf (cluster, updateTracking)) {
+                if (cluster.equals (updateTrackingDir.getParentFile ())) {
                     installCluster = cluster;
                     break;
                 }
@@ -275,22 +276,6 @@ public final class ModuleDeleterImpl  {
         }
     }
             
-    private static boolean isParentOf (File parent, File child) {
-        if (parent.equals (child.getParentFile ())) {
-            return true;
-        }
-        if (! parent.isDirectory ()) {
-            return false;
-        }
-        File [] childs = parent.listFiles ();
-        for (int i = 0; i < childs.length; i++) {
-            if (isParentOf (childs [i], child)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     private void removeModuleFiles (ModuleInfo m, boolean markForDelete) throws IOException {
         err.log (Level.FINE, "Entry removing files of module " + m);
         File updateTracking = null;
