@@ -86,7 +86,7 @@ public class CallExpressionResolver implements ReferenceResolver {
         }
         
         List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
-                source.getModel());
+                source);
         
         for (PhpModel model : models) {
             List<Statement> statements = model.getStatements();

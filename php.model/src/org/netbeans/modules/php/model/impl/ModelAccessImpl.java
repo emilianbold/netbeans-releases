@@ -43,8 +43,6 @@ package org.netbeans.modules.php.model.impl;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import javax.swing.text.Document;
-
 import org.netbeans.modules.php.model.ModelAccess;
 import org.netbeans.modules.php.model.ModelOrigin;
 import org.netbeans.modules.php.model.PhpModel;
@@ -65,6 +63,7 @@ public class ModelAccessImpl extends ModelAccess {
         PhpModel model = MODELS.get( origin );
         if ( model == null ){
             model = new PhpModelImpl( origin );
+            model.sync();
             MODELS.put( origin , model );
         }
         return model;

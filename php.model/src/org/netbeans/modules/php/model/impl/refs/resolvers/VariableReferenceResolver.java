@@ -77,7 +77,7 @@ public class VariableReferenceResolver implements  ReferenceResolver
             findVariable( source , identifier , clazz , exactComparison);
         
         List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
-                source.getModel());
+                source);
         
         for (PhpModel model : models) {
             List<T> vars =  findInScope( identifier , clazz , model ,

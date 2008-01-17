@@ -82,7 +82,7 @@ public class FunctionDefinitionResolver implements ReferenceResolver {
         }
         
         List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
-                source.getModel());
+                source );
         for ( PhpModel model : models ){
             List<Statement> statements = model.getStatements();
             for (Statement statement : statements) {

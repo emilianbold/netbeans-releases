@@ -74,7 +74,7 @@ public class ClassReferenceResolver implements ReferenceResolver {
             return Collections.emptyList();
         }
         List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
-                source.getModel());
+                source);
         List<T> result = new LinkedList<T>();
         for ( PhpModel model : models ){
             List<T> classes = getClasses(identifier, clazz , model , 

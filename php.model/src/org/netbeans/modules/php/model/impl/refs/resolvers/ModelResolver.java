@@ -45,6 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.netbeans.modules.php.model.PhpModel;
+import org.netbeans.modules.php.model.SourceElement;
 import org.openide.util.Lookup;
 
 
@@ -58,6 +59,12 @@ import org.openide.util.Lookup;
 interface ModelResolver {
 
     /**
+     * @return models that are used in current OM ( via "include" or "require" )
+     * respectively given <code>element</code>.
+     */
+    List<PhpModel> getIncludedModels( SourceElement element  );
+    
+    /**
      * @return models that are used in current OM ( via "include" or "require" ).
      */
     List<PhpModel> getIncludedModels( PhpModel  model );
@@ -70,6 +77,19 @@ interface ModelResolver {
                 Lookup.getDefault().lookupAll( ModelResolver.class );
             for( ModelResolver resolver : collection ){
                 List<PhpModel> list = resolver.getIncludedModels(model);
+                result.addAll( list );
+            }
+            return result;
+        }
+        
+        static List<PhpModel> getIncludedModels( SourceElement element ) {
+            assert element != null;
+            List<PhpModel> result = new LinkedList<PhpModel>( );
+            result.add( element.getModel() );
+            Collection<? extends ModelResolver> collection = 
+                Lookup.getDefault().lookupAll( ModelResolver.class );
+            for( ModelResolver resolver : collection ){
+                List<PhpModel> list = resolver.getIncludedModels( element );
                 result.addAll( list );
             }
             return result;
