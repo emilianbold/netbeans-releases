@@ -77,7 +77,7 @@ public class MergeAction extends AbstractAction {
 
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(ctxFiles == null || ctxFiles.size() == 0) 
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
             return false;
         return true; // #121293: Speed up menu display, warn user if nothing to merge when Merge selected
     }
@@ -98,6 +98,11 @@ public class MergeAction extends AbstractAction {
             return;
         }
         if(root != null && !HgCommand.isMergeRequired(root)){
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTab( NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
             JOptionPane.showMessageDialog(null,
                 NbBundle.getMessage(MergeAction.class,"MSG_NOTHING_TO_MERGE"),// NOI18N
                 NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE"),// NOI18N

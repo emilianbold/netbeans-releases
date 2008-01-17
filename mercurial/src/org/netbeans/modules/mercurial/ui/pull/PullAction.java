@@ -109,6 +109,11 @@ public class PullAction extends AbstractAction {
         }
         // If the repository has no default pull path then inform user
         if(HgRepositoryContextCache.getPullDefault(context) == null){
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTab(NbBundle.getMessage(PullAction.class, "MSG_NO_DEFAULT_PULL_SET_MSG")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
             JOptionPane.showMessageDialog(null,
                 NbBundle.getMessage(PullAction.class,"MSG_NO_DEFAULT_PULL_SET"),
                 NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE"),
@@ -205,7 +210,7 @@ public class PullAction extends AbstractAction {
 
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(ctxFiles == null || ctxFiles.size() == 0) 
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
             return false;
         return true; // #121293: Speed up menu display, warn user if not set when Pull selected
     }

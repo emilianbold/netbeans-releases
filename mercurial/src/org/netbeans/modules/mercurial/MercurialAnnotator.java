@@ -336,7 +336,7 @@ public class MercurialAnnotator extends VCSAnnotator {
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         File root = HgUtils.getRootFile(ctx);
         boolean goodVersion = Mercurial.getInstance().isGoodVersion();
-        boolean noneVersioned = isNothingVersioned(files);
+        boolean noneVersioned = root == null;
         boolean onlyFolders = onlyFolders(files);
         boolean onlyProjects = onlyProjects(nodes);
 

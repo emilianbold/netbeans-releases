@@ -77,6 +77,19 @@ public class RollbackAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        if(!HgRepositoryContextCache.hasHistory(context)){
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(RollbackAction.class,
+                    "MSG_ROLLBACK_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(RollbackAction.class,
+                    "MSG_ROLLBACK_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTab(NbBundle.getMessage(RollbackAction.class, "MSG_NO_ROLLBACK")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(RollbackAction.class, "MSG_ROLLBACK_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            return;
+        }
         rollback(context);
     }
     
@@ -157,7 +170,6 @@ public class RollbackAction extends AbstractAction {
     }
     
     public boolean isEnabled() {
-        if(!Mercurial.getInstance().isGoodVersion()) return false;
-        return HgRepositoryContextCache.hasHistory(context);
+        return HgUtils.getRootFile(context) != null;
     }
 }

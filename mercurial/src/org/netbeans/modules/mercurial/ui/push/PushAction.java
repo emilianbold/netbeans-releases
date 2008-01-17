@@ -101,6 +101,11 @@ public class PushAction extends AbstractAction {
         // If the repository has no default pull path then inform user
         if(HgRepositoryContextCache.getPushDefault(context) == null && 
                 HgRepositoryContextCache.getPullDefault(context) == null){
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTab(NbBundle.getMessage(PushAction.class, "MSG_NO_DEFAULT_PUSH_SET_MSG")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
             JOptionPane.showMessageDialog(null,
                 NbBundle.getMessage(PushAction.class,"MSG_NO_DEFAULT_PUSH_SET"),
                 NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE"),
@@ -112,7 +117,7 @@ public class PushAction extends AbstractAction {
     }
     public boolean isEnabled() {
         Set<File> ctxFiles = context != null? context.getRootFiles(): null;
-        if(ctxFiles == null || ctxFiles.size() == 0) 
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
             return false;
         return true; // #121293: Speed up menu display, warn user if not set when Push selected
     }

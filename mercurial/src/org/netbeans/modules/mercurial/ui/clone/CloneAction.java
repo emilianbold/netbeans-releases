@@ -81,6 +81,20 @@ public class CloneAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent ev){
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        if(!HgRepositoryContextCache.hasHistory(context)){
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(CloneAction.class,
+                    "MSG_CLONE_TITLE")); // NOI18N
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(CloneAction.class,
+                    "MSG_CLONE_TITLE_SEP")); // NOI18N
+            HgUtils.outputMercurialTab(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_NOTHING")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            return;
+        }
+
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
         
@@ -228,9 +242,6 @@ public class CloneAction extends AbstractAction {
     }
 
     public boolean isEnabled() {
-        if(!Mercurial.getInstance().isGoodVersion()) return false;
-        // If it's a mercurial managed repository with history
-        // enable clone of this repository
-        return HgRepositoryContextCache.hasHistory(context);
+        return HgUtils.getRootFile(context) != null;
     }
 }

@@ -83,6 +83,19 @@ public class LogAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        if(!HgRepositoryContextCache.hasHistory(context)){
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(LogAction.class,
+                    "MSG_Log_Title")); // NOI18N
+            HgUtils.outputMercurialTabInRed(
+                    NbBundle.getMessage(LogAction.class,
+                    "MSG_Log_Title_Sep")); // NOI18N
+            HgUtils.outputMercurialTab(NbBundle.getMessage(LogAction.class, "MSG_Log_Nothing")); // NOI18N
+            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(LogAction.class, "MSG_Log_DONE")); // NOI18N
+            HgUtils.outputMercurialTab(""); // NOI18N
+            return;
+        }
         log(context);
     }
     
@@ -185,8 +198,6 @@ public class LogAction extends AbstractAction {
     }
     
     public boolean isEnabled() {
-        if(!Mercurial.getInstance().isGoodVersion()) return false;
-        // If it's a mercurial managed repository enable log action - Show History
-        return HgRepositoryContextCache.hasHistory(context);
+        return HgUtils.getRootFile(context) != null;
     } 
 }    
