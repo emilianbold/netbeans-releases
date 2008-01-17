@@ -65,8 +65,8 @@ public class MeasureActions4  {
         suite.addTest(new CreateNBProject("testCreateModuleSuiteProject", "Create Module Suite Project"));
         
         
-        suite.addTest(new OpenFiles("testGC", "GC of opened editors"));
-        suite.addTest(new CreateProject("testGC", "GC of created projects"));
+//        suite.addTest(new OpenFiles("testGC", "GC of opened editors"));
+//        suite.addTest(new CreateProject("testGC", "GC of created projects"));
         
         return suite;
     }
