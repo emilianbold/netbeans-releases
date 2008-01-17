@@ -52,15 +52,17 @@ public class GrailsServerRunnable implements Runnable {
     private BufferedReader procOutput;
     private Process process;
     CountDownLatch outputReady = null;
+    boolean waitforme;
     
     private  final Logger LOG = Logger.getLogger(GrailsServerRunnable.class.getName());
     
-    public GrailsServerRunnable(CountDownLatch outputReady, String cwdName, String cmd){
+    public GrailsServerRunnable(CountDownLatch outputReady, boolean waitforme, String cwdName, String cmd){
 
         this.settings = Settings.getInstance();
         this.cwdName = cwdName; 
         this.cmd = cmd;
         this.outputReady = outputReady;
+        this.waitforme = waitforme;
         
         this.grailsExecutable = settings.getGrailsBase() + ( Utilities.isWindows() ? "\\bin\\grails.bat" : "/bin/grails" ); // NOI18N
         }
@@ -77,7 +79,15 @@ public class GrailsServerRunnable implements Runnable {
                 process = grailsProcessDesc.exec(null, envp, true, cwd);
 
                 outputReady.countDown();
-
+                
+                if(waitforme) {
+                        try {
+                        process.waitFor();
+                            } catch (InterruptedException ex) {
+                            LOG.log(Level.WARNING, "InterruptedException while waiting: " + ex.getLocalizedMessage());
+                            }
+                }
+                    
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, "Problem creating Process: " + ex.getLocalizedMessage());
                     outputReady.countDown();

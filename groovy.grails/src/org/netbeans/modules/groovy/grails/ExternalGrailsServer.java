@@ -126,7 +126,7 @@ public class ExternalGrailsServer implements GrailsServer{
             String workDir = dirName.substring(0, lastSlash);
             String newDir  = dirName.substring(lastSlash + 1);
             
-            gsr = new GrailsServerRunnable(outputReady, workDir, prependOption() + "create-app " + newDir);
+            gsr = new GrailsServerRunnable(outputReady, false, workDir, prependOption() + "create-app " + newDir);
             new Thread(gsr).start();
 
             waitForOutput();
@@ -138,7 +138,7 @@ public class ExternalGrailsServer implements GrailsServer{
 
             assert io ==  null;
             
-            gsr = new GrailsServerRunnable(outputReady, cwdName, prependOption() + cmd);
+            gsr = new GrailsServerRunnable(outputReady, false, cwdName, prependOption() + cmd);
             new Thread(gsr).start();
 
             waitForOutput();
@@ -147,7 +147,7 @@ public class ExternalGrailsServer implements GrailsServer{
 
             String tabName = "Grails Server for: " + prj.getProjectDirectory().getName();
 
-            gsr = new GrailsServerRunnable(outputReady, cwdName, prependOption() + cmd);
+            gsr = new GrailsServerRunnable(outputReady, true, cwdName, prependOption() + cmd);
             ExecutorTask exTask = engine.execute(tabName, gsr, io);
 
             waitForOutput();
@@ -165,7 +165,7 @@ public class ExternalGrailsServer implements GrailsServer{
         }
         else if(cmd.startsWith("shell")) {
 
-            gsr = new GrailsServerRunnable(outputReady, cwdName, prependOption() + cmd);
+            gsr = new GrailsServerRunnable(outputReady, false, cwdName, prependOption() + cmd);
             new Thread(gsr).start();
 
             waitForOutput();
