@@ -239,7 +239,8 @@ public class PropertySheet extends JPanel {
     HelpAction helpAction = new HelpAction();
 
     // delayed setting nodes (partly impl issue 27781)
-    private transient Node[] helperNodes;
+    //package private for unit testing
+    transient Node[] helperNodes;
     private transient RequestProcessor.Task scheduleTask;
     private transient RequestProcessor.Task initTask;
     SheetPCListener pclistener = new SheetPCListener();
@@ -313,6 +314,9 @@ public class PropertySheet extends JPanel {
         table.getReusablePropertyEnv().setBeans(null);
         table.getReusablePropertyEnv().setNode(null);
         table.getReusablePropertyModel().setProperty(null);
+        
+        //don't hold anything when not in component hierarchy
+        helperNodes = null;
     }
 
     /** Prepare the initial state of the property sheet */

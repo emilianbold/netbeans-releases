@@ -153,6 +153,7 @@ public class NbSheetTest extends NbTestCase {
 
 
     public void testMemoryLeakIssue125057() throws Exception {
+        NbSheet sheet = NbSheet.getDefault();
         SwingUtilities.invokeAndWait( new Runnable() {
             public void run() {
                 N node = new N("node1");
@@ -166,11 +167,11 @@ public class NbSheetTest extends NbTestCase {
                 assertNotNull(activated);
                 assertEquals(activated.length, 1);
                 assertEquals(activated[0], node);
-                NbSheet.getDefault().close();
+                sheet.close();
 
-                assertNull("PropertySheet still holds activated nodes after closing", sheet.getNodes() );
             }
         });
+        assertEquals("PropertySheet still holds activated nodes after closing", 0, sheet.getNodes().length );
     }
 }
 

@@ -48,6 +48,7 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JFrame;
+import javax.swing.JWindow;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.AbstractNode;
@@ -195,6 +196,21 @@ public class PropertySheetTest extends NbTestCase {
         assertEquals("Editor value doesn't reflect the Property value. Post change property value, " + postChangePropertyValue + " should equal " + postChangeEditorValue, postChangePropertyValue, postChangeEditorValue);
     }
     
+    public void testRemoveNotifyClearsHelperNodes() throws Exception {
+        final PropertySheet ps = new PropertySheet();
+        Node n = new AbstractNode( Children.LEAF );
+        ps.setNodes( new Node[] {n} );
+        SwingUtilities.invokeAndWait( new Runnable() {
+            public void run() {
+                JWindow window = new JWindow();
+                window.add( ps );
+                window.setVisible(true);
+                window.remove( ps );
+            }
+        });
+        assertNull( "PropertySheet still holds some Nodes even when not in component hierarchy",
+                ps.helperNodes );
+    }
     
     //Node definition
     public class TNode extends AbstractNode {
