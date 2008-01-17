@@ -70,6 +70,7 @@
             <pathelement location="${netbeans.home}/../soa1/modules/org-netbeans-modules-compapp-projects-jbi.jar"/>
             <pathelement location="${netbeans.home}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
             <pathelement location="${netbeans.home}/../soa1/modules/org-netbeans-soa-libs-xmlbeans.jar"/>
+            <pathelement location="${netbeans.home}/../soa1/modules/ext/jbi/jbi-admin-common.jar"/>
             <pathelement location="${netbeans.home}/../soa1/ant/nblib/org-netbeans-modules-compapp-projects-jbi.jar"/>
             <pathelement location="${netbeans.home}/../platform7/lib/org-openide-util.jar"/>
             <pathelement location="${netbeans.home}/../platform7/lib/org-openide-modules.jar"/>
@@ -119,24 +120,7 @@
     <!--
                 COMPILATION SECTION
             -->
-    <target name="deps-jar" depends="init" unless="${no.dependencies}">
-        <ant target="dist_se" inheritall="false" antfile="${project.BluePrint4}/build.xml"/>
-        <basename property="BluePrint4.se.jar.name" file="${reference.BluePrint4.dist_se}"/>
-        <basename property="BluePrint4.su.name" file="${project.BluePrint4}"/>
-        <unzip src="${project.BluePrint4}/build/${BluePrint4.se.jar.name}" dest="${src.dir}/../jbiServiceUnits/${BluePrint4.su.name}">
-            <patternset>
-                <include name="**/*.wsdl"/>
-                <include name="**/*.xsd"/>
-                <include name="META-INF/jbi.xml"/>
-                <include name="META-INF/catalog.xml"/>
-            </patternset>
-        </unzip>
-        <property name="BluePrint4.su.dir" value="${src.dir}/../jbiServiceUnits/${BluePrint4.su.name}"/>
-        <move file="${BluePrint4.su.dir}/META-INF/jbi.xml" todir="${BluePrint4.su.dir}"/>
-        <move todir="${src.dir}/../jbiServiceUnits/META-INF/BluePrint4">
-            <fileset dir="${BluePrint4.su.dir}/META-INF"/>
-        </move>
-    </target>
+    <target name="deps-jar" depends="init" unless="${no.dependencies}"/>
     <target name="deps-javaee-jar" depends="init" unless="${no.dependencies}"/>
     <target name="pre-pre-compile" depends="init,deps-jar">
         <mkdir dir="${build.classes.dir}"/>
@@ -145,14 +129,10 @@
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
-    <target name="library-inclusion-in-archive" depends="compile">
-        <unjar dest="${build.classes.dir}" src="${reference.BluePrint4.dist_se}"/>
-    </target>
+    <target name="library-inclusion-in-archive" depends="compile"/>
     <target name="library-inclusion-in-manifest" depends="compile">
-        <basename property="included.lib.reference.BluePrint4.dist_se" file="${reference.BluePrint4.dist_se}"/>
-        <copy todir="${build.classes.dir}" file="${reference.BluePrint4.dist_se}"/>
         <manifest file="${build.classes.dir}/META-INF/MANIFEST.MF" mode="update">
-            <attribute name="Class-Path" value="${included.lib.reference.BluePrint4.dist_se}"/>
+            <attribute name="Class-Path" value=""/>
         </manifest>
     </target>
     <target name="do-compile" depends="init,deps-jar,pre-pre-compile,pre-compile"/>
@@ -197,35 +177,7 @@
         </jar>
     </target>
     <target name="jbi-clean-build" depends="init,init-deploy,clean,jbi-build" description="Clean and Build Service Assembly."/>
-    <target name="pre-dist">
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
-    </target>
-    <target name="do-dist" depends="init,pre-dist">
-        <mkdir dir="${build.dir}/META-INF"/>
-        <jar compress="${jar.compress}" jarfile="${build.dir}/SEDeployment.jar">
-            <fileset includes="**/*.bpel,**/*.wsdl,**/*.xsd" dir="${src.dir}"/>
-            <fileset dir="${basedir}/${src.dir}">
-                <include name="portmap.xml"/>
-            </fileset>
-        </jar>
-        <jar compress="${jar.compress}" jarfile="${build.dir}/BCDeployment.jar">
-            <fileset includes="**/*.wsdl,**/*.xsd" dir="${src.dir}"/>
-            <fileset dir="${basedir}/${src.dir}">
-                <include name="endpoints.xml"/>
-            </fileset>
-        </jar>
-        <dirname property="dist.jar.dir" file="${dist.jar}"/>
-        <mkdir dir="${dist.jar.dir}"/>
-        <jar compress="${jar.compress}" jarfile="${dist.jar}">
-            <fileset dir="${build.dir}"/>
-        </jar>
-    </target>
-    <target name="post-dist">
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
-    </target>
-    <target name="dist" depends="init,pre-dist,do-dist,post-dist" description="Build distribution (JAR)."/>
+    <target name="dist" depends="jbi-build" description="Build distribution (JAR)."/>
     <!--
                 EXECUTION SECTION
             -->
@@ -266,9 +218,7 @@
     <!--
                 CLEANUP SECTION
             -->
-    <target name="deps-clean" depends="init" unless="${no.dependencies}">
-        <ant target="clean" inheritall="false" antfile="${project.BluePrint4}/build.xml"/>
-    </target>
+    <target name="deps-clean" depends="init" unless="${no.dependencies}"/>
     <target name="do-clean" depends="init">
         <delete dir="${build.dir}"/>
         <delete dir="${dist.dir}"/>
@@ -290,34 +240,36 @@
             -->
     <target name="-pre-test-run" if="have.tests" depends="init">
         <mkdir dir="${test.results.dir}"/>
+        <path id="unit.test.classpath">
+            <pathelement path="${netbeans.home}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
+            <pathelement path="${netbeans.home}/../soa1/modules/ext/jbi/catd.jar"/>
+            <pathelement path="${netbeans.home}/../java1/modules/ext/junit-3.8.2.jar"/>
+            <pathelement path="${netbeans.home}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
+            <pathelement path="${netbeans.home}/../java1/modules/ext/jaxws21/saaj-impl.jar"/>
+            <pathelement path="${netbeans.home}/../java1/modules/ext/jaxws21/FastInfoset.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-xdm.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor-lib.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-text.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor-util.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-core.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor-lib2.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-lexer.jar"/>
+            <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-lexer.jar"/>
+            <pathelement path="${netbeans.home}/../platform7/lib/org-openide-modules.jar"/>
+            <pathelement path="${netbeans.home}/../platform7/lib/org-openide-util.jar"/>
+            <pathelement path="${netbeans.home}/../platform7/modules/org-openide-options.jar"/>
+            <pathelement path="${netbeans.home}/../platform7/modules/org-openide-text.jar"/>
+            <pathelement path="${netbeans.home}/../platform7/modules/org-openide-loaders.jar"/>
+            <pathelement path="${netbeans.home}/../platform7/modules/org-openide-nodes.jar"/>
+            <pathelement path="${netbeans.home}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+            <pathelement path="${netbeans.home}/../platform7/core/org-openide-filesystems.jar"/>
+        </path>
     </target>
     <target name="-do-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
         <junit showoutput="true" fork="yes" dir="${basedir}" failureproperty="tests.failed" errorproperty="tests.failed">
-            <classpath>
-                <pathelement path="${netbeans.home}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
-                <pathelement path="${netbeans.home}/../soa1/modules/ext/jbi/catd.jar"/>
-                <pathelement path="${netbeans.home}/../soa1/modules/ext/jbi/xmlunit-1.0.jar"/>
-                <pathelement path="${netbeans.home}/../java1/modules/ext/junit-3.8.2.jar"/>
-                <pathelement path="${netbeans.home}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
-                <pathelement path="${netbeans.home}/../java1/modules/ext/jaxws21/saaj-impl.jar"/>
-                <pathelement path="${netbeans.home}/../java1/modules/ext/jaxws21/FastInfoset.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-xdm.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor-lib.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-text.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor-util.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-core.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor-lib2.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/lib/org-openide-modules.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/lib/org-openide-util.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-openide-options.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-openide-text.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-openide-loaders.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-openide-nodes.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/core/org-openide-filesystems.jar"/>
-            </classpath>
+            <classpath refid="unit.test.classpath"/>
             <sysproperty key="NetBeansUserDir" value="${netbeans.user}"/>
             <test name="org.netbeans.modules.compapp.catd.ConfiguredTest" haltonfailure="no" todir="${test.results.dir}"/>
             <syspropertyset>
@@ -330,32 +282,7 @@
     </target>
     <target name="-do-single-test-run" if="netbeans.home+have.tests" depends="init,-pre-test-run">
         <junit showoutput="true" fork="yes" dir="${basedir}" failureproperty="tests.failed" errorproperty="tests.failed">
-            <classpath>
-                <pathelement path="${netbeans.home}/../soa1/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
-                <pathelement path="${netbeans.home}/../soa1/modules/ext/jbi/catd.jar"/>
-                <pathelement path="${netbeans.home}/../soa1/modules/ext/jbi/xmlunit-1.0.jar"/>
-                <pathelement path="${netbeans.home}/../soa1/modules/ext/jbi/httpunit-1.6.jar"/>
-                <pathelement path="${netbeans.home}/../java1/modules/ext/junit-3.8.2.jar"/>
-                <pathelement path="${netbeans.home}/../java1/modules/ext/jaxws21/api/saaj-api.jar"/>
-                <pathelement path="${netbeans.home}/../java1/modules/ext/jaxws21/saaj-impl.jar"/>
-                <pathelement path="${netbeans.home}/../java1/modules/ext/jaxws21/FastInfoset.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-xdm.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor-lib.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-text.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor-util.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-xml-core.jar"/>
-                <pathelement path="${netbeans.home}/../ide8/modules/org-netbeans-modules-editor-lib2.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/lib/org-openide-modules.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/lib/org-openide-util.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-openide-options.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-openide-text.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-openide-loaders.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-openide-nodes.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/modules/org-netbeans-modules-editor-mimelookup.jar"/>
-                <pathelement path="${netbeans.home}/../platform7/core/org-openide-filesystems.jar"/>
-            </classpath>
+            <classpath refid="unit.test.classpath"/>
             <sysproperty key="NetBeansUserDir" value="${netbeans.user}"/>
             <sysproperty key="inDebug" value="${inDebug}"/>
             <test name="org.netbeans.modules.compapp.catd.ConfiguredTest" haltonfailure="no" todir="${test.results.dir}"/>
