@@ -1644,8 +1644,16 @@ public class CodeCompleter implements Completable {
         }
         
         List<String> params = targetMethod.getParameters();
-        if (params == null || params.size() <= index) {
+        if (params == null || params.size() == 0) {
             return false;
+        }
+
+        if  (params.size() <= index) {
+            // Just use the last parameter in these cases
+            // See for example the TableDefinition.binary dynamic method where
+            // you can add a number of parameter names and the options parameter
+            // is always the last one
+            index = params.size()-1;
         }
 
         boolean isLastArg = index < params.size()-1;
