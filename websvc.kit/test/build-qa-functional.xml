@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="org.netbeans.modules.websvc.qatests/test-qa-functional" basedir="." default="all">
+<project name="websvc/kit/test/qa-functional" basedir="." default="all">
 
     <property file="../nbproject/private/private.properties"/>
 
@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
     <target name="-runidetest-with-glassfish" if="use.appserver" depends="set-gf">
         <antcall target="set-appserver-path"/>
         <echo>Running tests on GlassFish (using: ${j2ee.appserver.path})</echo>
-        <antcall target="xtest-qa-functional.runidetest-with-appserver" />
+        <antcall target="xtest-init.runidetest-with-appserver" />
     </target>
 
     <!-- Override to run tests on more servers at once -->
