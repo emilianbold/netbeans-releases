@@ -524,7 +524,10 @@ public class ProjectHelper {
                 File oSchemaDir = new File(projSchemasDir, oSchemaName);
                 // Do we need this?
                 if (!oSchemaDir.exists()) {
-                    oSchemaDir.mkdirs();
+                    // Do not use File.mkdirs();
+                    // see  http://www.netbeans.org/servlets/BrowseList?list=nbdev&by=thread&from=827178
+                    //oSchemaDir.mkdirs();
+                    FileUtil.createFolder(oSchemaDir);
                 }
 
                 FileObject oSchemaDirFO = FileUtil.toFileObject(oSchemaDir);
@@ -548,7 +551,8 @@ public class ProjectHelper {
         
         File schemaDir = new File(projSchemasDir, schema.getName());
         if (!schemaDir.exists()) {
-            schemaDir.mkdirs();
+            //schemaDir.mkdirs();
+            FileUtil.createFolder(schemaDir);
         }
         
         FileObject schemaDirFO = FileUtil.toFileObject(schemaDir);
@@ -726,6 +730,7 @@ public class ProjectHelper {
             FileObject fo = prj.getProjectDirectory();
 
             try {
+                fo.getFileObject(NBPROJECT_DIR + FILE_OBJECT_SEPARATOR).refresh();
                 configFile = fo.getFileObject(NBPROJECT_DIR 
                         + FILE_OBJECT_SEPARATOR + XML_BINDING_CONFIG_FILE_NAME);
             } catch (Exception ex) {
@@ -740,6 +745,7 @@ public class ProjectHelper {
         if (prj != null) {
             FileObject fo = prj.getProjectDirectory();
             try {
+                fo.getFileObject(NBPROJECT_DIR + FILE_OBJECT_SEPARATOR).refresh();                
                 buildFileFo = fo.getFileObject(NBPROJECT_DIR 
                         + FILE_OBJECT_SEPARATOR + XML_BINDING_BUILD_FILE_NAME);
             } catch (Exception ex) {
@@ -750,11 +756,17 @@ public class ProjectHelper {
         return buildFileFo;
     }
 
-    private static void createDirs(FileObject rootDir, String relDir) {
+    private static void createDirs(FileObject rootDir, String relDir)  {
         File fileRootDir = FileUtil.toFile(rootDir);
         File fileRelDirs = new File(fileRootDir, relDir);
         if (!fileRelDirs.exists()) {
-            fileRelDirs.mkdirs();
+            // Do not use fileRelDirs.mkdirs();
+            // see  http://www.netbeans.org/servlets/BrowseList?list=nbdev&by=thread&from=827178
+            try {
+                FileUtil.createFolder(rootDir, relDir);
+            } catch (IOException ex){
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 
