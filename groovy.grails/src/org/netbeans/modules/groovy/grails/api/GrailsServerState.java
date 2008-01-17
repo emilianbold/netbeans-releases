@@ -39,11 +39,13 @@ import java.util.logging.Level;
  * @author schmidtm
  */
 public class GrailsServerState implements TaskListener{
+    private String name;
     private boolean running = false;
     private ExecutorTask exTask;
     private  final Logger LOG = Logger.getLogger(GrailsServerState.class.getName());
     
-    public GrailsServerState (){
+    public GrailsServerState (String name){
+        this.name = name;
         }
 
     public boolean isRunning() {
@@ -52,12 +54,12 @@ public class GrailsServerState implements TaskListener{
 
     public void setRunning(boolean running) {
         this.running = running;
-        LOG.log(Level.FINEST, "setRunning() called: " + running );
+        LOG.log(Level.WARNING, "Project: " + name + " , setRunning() called: " + running );
     }
 
     public void taskFinished(Task task) {
-        // running = false;
-        LOG.log(Level.FINEST, "taskFinished() called");
+        running = false;
+        LOG.log(Level.WARNING, "Project: " + name + " , taskFinished() called");
     }
 
     public ExecutorTask getExTask() {
