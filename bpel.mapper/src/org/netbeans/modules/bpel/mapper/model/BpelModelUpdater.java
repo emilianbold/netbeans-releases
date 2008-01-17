@@ -35,18 +35,25 @@ import org.netbeans.modules.bpel.model.api.CompletionCondition;
 import org.netbeans.modules.bpel.model.api.ConditionHolder;
 import org.netbeans.modules.bpel.model.api.ContentElement;
 import org.netbeans.modules.bpel.model.api.Copy;
+import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.Expression;
 import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.FromChild;
+import org.netbeans.modules.bpel.model.api.If;
+import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
+import org.netbeans.modules.bpel.model.api.OnAlarmPick;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Query;
+import org.netbeans.modules.bpel.model.api.RepeatUntil;
 import org.netbeans.modules.bpel.model.api.StartCounterValue;
 import org.netbeans.modules.bpel.model.api.TimeEvent;
 import org.netbeans.modules.bpel.model.api.TimeEventHolder;
 import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
+import org.netbeans.modules.bpel.model.api.Wait;
+import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
@@ -79,22 +86,22 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
     public Object updateOnChanges(TreePath treePath) throws Exception {
         //
         // TODO m
-        BpelEntity bpelEntity = getDesignContext().getGraphEntity();
-        if (bpelEntity == null) {
-            bpelEntity = getDesignContext().getContextEntity();
-        }
+        BpelEntity bpelEntity = getDesignContext().getContextEntity();
         //
-        if (bpelEntity instanceof Copy) {
-            updateCopy(treePath, (Copy) bpelEntity);
-        } else if (bpelEntity instanceof Assign) {
+        Class<? extends BpelEntity> elementType = bpelEntity.getElementType();
+        if (elementType == Assign.class) {
             updateAssign(treePath, (Assign) bpelEntity);
-        } else if (bpelEntity instanceof TimeEventHolder) {
-            // Wait || OnAlarmPick || OnAlarmEvent
+        } else if (elementType == Wait.class || 
+                elementType == OnAlarmPick.class || 
+                elementType == OnAlarmEvent.class) {
             updateTimeEventHolder(treePath, (TimeEventHolder)bpelEntity);
-        } else if (bpelEntity instanceof ConditionHolder) {
+        } else if (elementType == If.class || 
+                elementType == ElseIf.class || 
+                elementType == While.class || 
+                elementType == RepeatUntil.class) {
             // If, ElseIf, While, RepeatUntil
             updateConditionHolder(treePath, (ConditionHolder)bpelEntity);
-        } else if (bpelEntity instanceof ForEach) {
+        } else if (elementType == ForEach.class) {
             updateForEach(treePath, (ForEach)bpelEntity);
         }
         //

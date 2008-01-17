@@ -55,7 +55,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  */
 public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
 
-    private static FindAllChildrenSchemaVisitor sSchemaSearcher = 
+    private FindAllChildrenSchemaVisitor sSchemaSearcher = 
             new FindAllChildrenSchemaVisitor(true, true);
     
     private VisibilityScope mVisScope;
