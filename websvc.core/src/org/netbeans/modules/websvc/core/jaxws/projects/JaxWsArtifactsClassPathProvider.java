@@ -41,14 +41,29 @@
 
 package org.netbeans.modules.websvc.core.jaxws.projects;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -57,6 +72,8 @@ import org.openide.filesystems.FileUtil;
 public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
     private Project project;
     private ClassPath sourceCP, compileCP, bootCP;
+    
+    private static final Logger LOG = Logger.getLogger(JaxWsArtifactsClassPathProvider.class.getName());
     
     JaxWsArtifactsClassPathProvider(Project project) {
         this.project = project;
@@ -79,7 +96,7 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
                 return compileCP;
             } else if (ClassPath.BOOT.equals(type)) {
                 if (bootCP == null) {
-                    bootCP = getClassPath(ClassPath.BOOT);
+                    bootCP = getBootClassPath();
                 }
                 return bootCP;
             }               
@@ -100,7 +117,7 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
                     return compileCP;
                 } else if (ClassPath.BOOT.equals(type)) {
                     if (bootCP == null) {
-                        bootCP = getClassPath(ClassPath.BOOT);
+                        bootCP = getBootClassPath();
                     }
                     return bootCP;
                 }
@@ -118,4 +135,37 @@ public class JaxWsArtifactsClassPathProvider implements ClassPathProvider {
         return null;
     }
     
+    private ClassPath getBootClassPath() {
+        Set<File> cp = new HashSet<File>();
+        J2eeModuleProvider javaeeModule = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (javaeeModule != null) {
+            //javaee project type (web, ejb, appclient)
+            //=> get required JAX-WS jars form the server
+            String serverInstanceID = javaeeModule.getServerInstanceID();
+            J2eePlatform javaeeplatform = Deployment.getDefault().getJ2eePlatform(serverInstanceID);
+            if (javaeeplatform.isToolSupported(J2eePlatform.TOOL_WSIMPORT)) {
+                cp.addAll(Arrays.asList(javaeeplatform.getToolClasspathEntries(J2eePlatform.TOOL_WSIMPORT)));
+}
+            if (javaeeplatform.isToolSupported(J2eePlatform.TOOL_WSGEN)) {
+                cp.addAll(Arrays.asList(javaeeplatform.getToolClasspathEntries(J2eePlatform.TOOL_WSGEN)));
+            }
+        } else {
+            //javase project type
+            //=> use JAX-WS API jars supplied with the IDE
+            File f = InstalledFileLocator.getDefault().locate("modules/ext/jaxws21/api", null, false); //NOI18N
+            cp.addAll(Arrays.asList(f.listFiles()));
+        }
+        List<PathResourceImplementation> path = new LinkedList<PathResourceImplementation>();
+        URL url = null;
+        for (File f : cp) {
+            try {
+                url = f.toURI().toURL();
+                path.add(ClassPathSupport.createResource(url));
+            } catch (MalformedURLException ex) {
+                LOG.severe(ex.getMessage());
+            }
+        }
+        url = null;
+        return ClassPathSupport.createClassPath(path);
+    }
 }
