@@ -127,6 +127,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         
         RubyDebuggerFactory.Descriptor debugDesc = new RubyDebuggerFactory.Descriptor();
         debugDesc.useDefaultPort(false);
+        debugDesc.setJRuby(descriptor.getPlatform().isJRuby());
         debugDesc.setScriptPath(descriptor.getScript());
         if (descriptor.getInitialArgs() != null) {
             List<String> additionalOptions = new ArrayList<String>();
@@ -227,7 +228,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
 
         if (jrubySet || prefs.isUseClassicDebugger()) {
             if (!platform.isValidRuby(true)) {
-            return false;
+                return false;
             }
         } else { // ruby-debug
             String message = NbBundle.getMessage(RubyDebugger.class,
