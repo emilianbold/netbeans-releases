@@ -184,6 +184,7 @@ public final class Splash {
 		// add splash component
 		frame.setLayout (new BorderLayout());
 		frame.add(comp, BorderLayout.CENTER);
+                frame.setResizable(false);
 		
 		int width = Integer.parseInt(NbBundle.getMessage(Splash.class, "SPLASH_WIDTH"));
 		int height = Integer.parseInt(NbBundle.getMessage(Splash.class, "SPLASH_HEIGHT"));
