@@ -185,6 +185,16 @@ public final class RubyStringLexer implements Lexer<RubyStringTokenId> {
 
                 // Hex escape: \xnn = Hex nn
                 case 'x':
+                    if (isHexDigit(input.read())) {
+                        if (isHexDigit(input.read())) {
+                            return token(RubyStringTokenId.STRING_ESCAPE); // valid unicode
+                        } else {
+                            input.backup(2);
+                        }
+                    } else {
+                        input.backup(1);
+                    }
+                    break;
 
                 // Octal escape: \nnn = Octal nnn
                 case '0':
@@ -289,6 +299,10 @@ public final class RubyStringLexer implements Lexer<RubyStringTokenId> {
                 }
             }
         }
+    }
+
+    private static boolean isHexDigit(int c) {
+        return Character.isDigit(c) || ((c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
     }
 
     private Token<RubyStringTokenId> token(RubyStringTokenId id) {

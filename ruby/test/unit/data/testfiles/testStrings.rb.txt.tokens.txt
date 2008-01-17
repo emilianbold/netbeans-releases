@@ -5,7 +5,8 @@ STRING_TEXT     " here\nMy #@field here", la=1
 ----- EOF -----
 
 .t.e.s.t. Escapes 
-STRING_TEXT     "\\xAF\n", la=1
+STRING_ESCAPE   "\\xAF"
+STRING_TEXT     "\n", la=1
 STRING_ESCAPE   "\\123"
 STRING_TEXT     "\n", la=1
 STRING_TEXT     "\\cy\n", la=1
