@@ -15,6 +15,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 import org.netbeans.modules.groovy.grailsproject.SourceCategory;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 
@@ -40,8 +41,6 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
         }
     
     void read (WizardDescriptor d) {
-        
-        
 
     }
     
@@ -93,19 +92,8 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
 
         projectTextField.setText(project.getProjectDirectory().getName());
         
-        String prefix = "";
-        
-        boolean windows = Utilities.isWindows();
-
-        if(!windows)
-            prefix = File.separator;
-        
-        baseDir =   prefix + project.getProjectDirectory().getPath() + 
+        baseDir =   FileUtil.getFileDisplayName(project.getProjectDirectory()) + 
                     File.separatorChar + "grails-app" + File.separatorChar + subDirName;
-        
-        if(windows)
-            baseDir = baseDir.replace("/","\\");
-        
         
         createdFileTextField.setText(baseDir + File.separatorChar );
         

@@ -14,6 +14,7 @@ import java.io.File;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.groovy.grails.api.GrailsProjectConfig;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -28,12 +29,7 @@ public class GeneralCustomizerPanel extends javax.swing.JPanel implements Docume
         prjConfig = new GrailsProjectConfig(prj);
         initComponents();
         
-        String prefix = "";
-
-        if(!Utilities.isWindows())
-            prefix = File.separator;
-        
-        projectFolderTextField.setText(prefix + prj.getProjectDirectory().getPath());
+        projectFolderTextField.setText(FileUtil.getFileDisplayName(prj.getProjectDirectory()));
         
         grailsServerPort.getDocument().addDocumentListener( this );
         grailsServerPort.setText(prjConfig.getPort());
