@@ -1711,23 +1711,43 @@ public final class RubyIndex {
     }
 
     static String getPreindexUrl(String url) {
-        // FIXME: use right platform
-        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-        String s = platform.getGemManager().getGemHomeUrl();
+        if (RubyIndexer.PREINDEXING) {
+            Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
+            while (it.hasNext()) {
+                RubyPlatform platform = it.next();
+                String s = platform.getGemManager().getGemHomeUrl();
+                
+                if (s != null && url.startsWith(s)) {
+                    return GEM_URL + url.substring(s.length());
+                }
 
-        if (s != null && url.startsWith(s)) {
-            return GEM_URL + url.substring(s.length());
+                s = platform.getHomeUrl();
+
+                if (url.startsWith(s)) {
+                    url = RUBYHOME_URL + url.substring(s.length());
+
+                    return url;
+                }
+            }
+        } else {
+            // FIXME: use right platform
+            RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+            String s = platform.getGemManager().getGemHomeUrl();
+
+            if (s != null && url.startsWith(s)) {
+                return GEM_URL + url.substring(s.length());
+            }
+
+            s = platform.getHomeUrl();
+
+            if (url.startsWith(s)) {
+                url = RUBYHOME_URL + url.substring(s.length());
+
+                return url;
+            }
         }
 
-        s = platform.getHomeUrl();
-
-        if (url.startsWith(s)) {
-            url = RUBYHOME_URL + url.substring(s.length());
-
-            return url;
-        }
-
-        s = getClusterUrl();
+        String s = getClusterUrl();
 
         if (url.startsWith(s)) {
             return CLUSTER_URL + url.substring(s.length());

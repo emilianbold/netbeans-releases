@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -393,6 +394,9 @@ public class RubyIndexer implements Indexer {
             } else if (fileName.equals("assertions.rb") && url.endsWith("lib/action_controller/assertions.rb")) { // NOI18N
                 handleRailsClass("Test::Unit", "Test::Unit::TestCase", "TestCase", "TestCase"); // NOI18N
                 return;
+            } else if (fileName.equals("schema_definitions.rb")) {
+                handleSchemaDefinitions();
+                // Fall through - also do normal indexing on the file
             }
 
             if ((structure == null) || (structure.size() == 0)) {
@@ -432,6 +436,92 @@ public class RubyIndexer implements Indexer {
             }
 
             analyze(structure);
+        }
+        
+        private void handleSchemaDefinitions() {
+            // Make sure we're in Rails 2.0...
+            if (url.indexOf("activerecord-2") == -1) { // NOI18N
+                return;
+            }
+            
+            Node root = AstUtilities.getRoot(result);
+
+            if (root == null) {
+                return;
+            }
+
+            Set<String> includeSet = new HashSet<String>();
+            Set<String> requireSet = new HashSet<String>();
+            scan(root, includeSet, requireSet);
+
+            Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
+            Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
+
+            // Add indexed info
+            Map<String, String> indexed = new HashMap<String, String>();
+            indexedList.add(indexed);
+
+            Map<String, String> notIndexed = new HashMap<String, String>();
+            notIndexedList.add(notIndexed);
+
+            // TODO:
+            //addIncluded(indexed);
+            String r = getRequireString(requireSet);
+            if (r != null) {
+                notIndexed.put(FIELD_REQUIRES, r);
+            }
+
+            addRequire(indexed);
+
+            String includes = getIncludedString(includeSet);
+
+            if (includes != null) {
+                notIndexed.put(FIELD_INCLUDES, includes);
+            }
+
+            int flags = 0;
+            notIndexed.put(FIELD_CLASS_ATTRS, IndexedElement.flagToString(flags));
+
+            String clz = "TableDefinition";
+            String classIn = "ActiveRecord::ConnectionAdapters";
+            String classFqn = classIn + "::" + clz;
+            String clzNoCase = clz.toLowerCase();
+            
+            indexed.put(FIELD_FQN_NAME, classFqn);
+            indexed.put(FIELD_CASE_INSENSITIVE_CLASS_NAME, clzNoCase);
+            indexed.put(FIELD_CLASS_NAME, clz);
+            notIndexed.put(FIELD_IN, classIn);
+
+            // Indexed so we can locate these documents when deleting/updating
+            indexed.put(FIELD_FILENAME, url);
+
+            // Insert methods:
+            for (String type : new String[] { "string", "text", "integer", "float", "decimal", "datetime", "timestamp", "time", "date", "binary", "boolean" }) { // NOI18N
+                Map<String, String> ru = new HashMap<String, String>();
+
+                Set<Modifier> modifiers = EnumSet.of(Modifier.PUBLIC);
+
+                int mflags = getModifiersFlag(modifiers);
+                StringBuilder sb = new StringBuilder();
+                sb.append(type);
+                sb.append("(names,options);"); // NOI18N
+                sb.append(IndexedElement.flagToFirstChar(mflags));
+                sb.append(IndexedElement.flagToSecondChar(mflags));
+                sb.append(";;;options(=>limit|default:nil|null:bool|precision|scale)"); // NOI18N
+
+                String signature = sb.toString();
+
+                ru.put(FIELD_METHOD_NAME, signature);
+                indexedList.add(ru);
+            }
+            
+            try {
+                Map<String, String> toDelete = Collections.emptyMap();
+                index.gsfStore(indexedList, notIndexedList, toDelete);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+            
         }
 
         private void handleRailsBase(String classIn) {

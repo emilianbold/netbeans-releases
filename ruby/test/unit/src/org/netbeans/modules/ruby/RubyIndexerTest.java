@@ -359,6 +359,10 @@ public class RubyIndexerTest extends RubyTestBase {
     public void testClassvar() throws Exception {
         checkIndexer("testfiles/classvar.rb");
     }
+
+    public void testRails20SchemaDefs() throws Exception {
+        checkIndexer("testfiles/activerecord-2.0.1/schema_definitions.rb");
+    }
     
     // TODO - test :nodoc: on methods and classes!!!
 }
