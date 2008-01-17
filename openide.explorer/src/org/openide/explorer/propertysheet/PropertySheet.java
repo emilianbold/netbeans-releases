@@ -1253,7 +1253,12 @@ public class PropertySheet extends JPanel {
                     // no need to use instanceof check since this action is
                     // not accessible if a selection is not a Node.Property
                     // instance
-                    ((Node.Property) sheet.table.getSelection()).restoreDefaultValue();
+                    //#122308 - prevent NPE in an exotic scenario
+                    if( null != sheet 
+                            && null != sheet.table 
+                            && null != sheet.table.getSelection() ) {
+                        ((Node.Property) sheet.table.getSelection()).restoreDefaultValue();
+                    }
                 } catch (IllegalAccessException iae) {
                     throw (IllegalStateException) new IllegalStateException("Error restoring default value").initCause(iae);
                 } catch (InvocationTargetException ite) {
