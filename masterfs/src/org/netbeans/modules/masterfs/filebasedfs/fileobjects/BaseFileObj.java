@@ -425,10 +425,19 @@ public abstract class BaseFileObj extends FileObject {
         stopWatch.stop();
     }
 
+
+    public static FolderObj getExistingParentFor(File f, FileBasedFileSystem fbs) {         
+        final File parentFile = f.getParentFile();
+        final FolderObj parent = (parentFile == null) ? null : (FolderObj) fbs.getFactory().get(parentFile);
+        return parent;
+    }
+    
     FolderObj getExistingParent() {         
-        final File parentFile = (getFileName().getParent() == null) ? null : getFileName().getParent().getFile();
+        /*final File parentFile = (getFileName().getParent() == null) ? null : getFileName().getParent().getFile();
         final FolderObj parent = (parentFile == null) ? null : (FolderObj) getLocalFileSystem().getFactory().get(parentFile);
         return parent;
+         */
+        return getExistingParentFor(getFileName().getFile(), getLocalFileSystem());
     }
 
 

@@ -48,8 +48,8 @@ import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -66,6 +66,7 @@ public class FileObjectFactoryTest extends NbTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+        clearWorkDir();        
         testFile = new File(getWorkDir(),"testfile");//NOI18N
         if (!testFile.exists()) {
             assert testFile.createNewFile();
@@ -75,143 +76,285 @@ public class FileObjectFactoryTest extends NbTestCase {
         
     }
 
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        clearWorkDir();
-    }
     
     
-    public void testRefreshForImpl() throws Exception {
-        FileDataCreated fdc = new FileDataCreated();
-        File workDir = getWorkDir();
-        File external = new File(workDir, "external555");        
-        assertFalse(external.exists());
-        FileObject foWorkDir = FileUtil.toFileObject(workDir);
-        assertNotNull(foWorkDir);
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        assertTrue(external.createNewFile());
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        fdc.assertOK(0);        
-        FileUtil.refreshFor(workDir);        
-        fdc.assertOK(1);
-        fdc.cleanUp();
-        assertNotNull(foWorkDir.getFileObject(external.getName()));
+    public void testRefreshFor() throws Exception {
+        EventsEvaluator fdc = new EventsEvaluator();        
+        try {
+            File workDir = getWorkDir();
+            File external = new File(workDir, "externalFile");        
+            assertFalse(external.exists());
+            FileObject foWorkDir = FileUtil.toFileObject(workDir);            
+            assertNotNull(foWorkDir);
+            //fully fill in cache
+            foWorkDir.getChildren();
+            
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            
+            /*1.create file */            
+            assertTrue(external.createNewFile());
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertDataCreated(0);        
+            FileUtil.refreshFor(workDir);        
+            fdc.assertDataCreated(1);
+            assertNotNull(foWorkDir.getFileObject(external.getName()));
+            
+            /*2.delete file */            
+            assertTrue(external.delete());
+            assertNotNull(foWorkDir.getFileObject(external.getName()));
+            FileUtil.refreshFor(workDir);        
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertDeleted(1);                    
+
+            /*3.create folder */                        
+            external = new File(workDir, "externalFolder");        
+            assertTrue(external.mkdir());
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertFolderCreated(0);                        
+            FileUtil.refreshFor(workDir);   
+            fdc.assertFolderCreated(1);
+            assertNotNull(foWorkDir.getFileObject(external.getName()));                                    
+            
+        } finally {
+            fdc.cleanUp();            
+        }
     }
 
     public void testRefreshForRoot() throws Exception {
-        FileDataCreated fdc = new FileDataCreated();        
-        File workDir = getWorkDir();
-        File external = new File(workDir, "external666");        
-        assertFalse(external.exists());
-        FileObject foWorkDir = FileUtil.toFileObject(workDir);
-        assertNotNull(foWorkDir);
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        assertTrue(external.createNewFile());
+        EventsEvaluator fdc = new EventsEvaluator();                
+        try {
+            File workDir = getWorkDir();
+            File external = new File(workDir, "externalFile");        
+            assertFalse(external.exists());
+            FileObject foWorkDir = FileUtil.toFileObject(workDir);
+            assertNotNull(foWorkDir);
+            //fully fill in cache
+            foWorkDir.getChildren();            
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            
+            /*1.create file*/
+            assertTrue(external.createNewFile());
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            
+            File root = workDir;
+            while(root.getParentFile() != null) {
+                root = root.getParentFile();
+            }
+            
+            fdc.assertDataCreated(0);                
+            FileUtil.refreshFor(root);
+            fdc.assertDataCreated(1);
+            assertNotNull(foWorkDir.getFileObject(external.getName()));
 
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        File root = workDir;
-        while(root.getParentFile() != null) {
-            root = root.getParentFile();
+            /*2.delete file*/                                    
+            fdc.assertDeleted(0);                                
+            assertTrue(external.delete());
+            assertNotNull(foWorkDir.getFileObject(external.getName()));
+            FileUtil.refreshFor(root);        
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertDeleted(1);                    
+            
+            /*3.create folder */                        
+            external = new File(workDir, "externalFolder");        
+            assertTrue(external.mkdir());
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertFolderCreated(0);                        
+            FileUtil.refreshFor(root);   
+            fdc.assertFolderCreated(1);
+            assertNotNull(foWorkDir.getFileObject(external.getName()));                                                            
+        } finally {
+            fdc.cleanUp();            
         }
-        fdc.assertOK(0);                
-        FileUtil.refreshFor(root);
-        fdc.assertOK(1);
-        fdc.cleanUp();
-        assertNotNull(foWorkDir.getFileObject(external.getName()));
     }
     
     public void testRefreshForWorkDir() throws Exception {
-        FileDataCreated fdc = new FileDataCreated();                
-        File workDir = getWorkDir();
-        File external = new File(workDir, "external666");        
-        assertFalse(external.exists());
-        FileObject foWorkDir = FileUtil.toFileObject(workDir);
-        assertNotNull(foWorkDir);
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        assertTrue(external.createNewFile());
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        fdc.assertOK(0);                        
-        FileUtil.refreshFor(workDir);   
-        fdc.assertOK(1);
-        fdc.cleanUp();
-        assertNotNull(foWorkDir.getFileObject(external.getName()));
+        EventsEvaluator fdc = new EventsEvaluator();                
+        try {
+            File workDir = getWorkDir();
+            File external = new File(workDir, "externalFile");        
+            assertFalse(external.exists());
+            FileObject foWorkDir = FileUtil.toFileObject(workDir);
+            assertNotNull(foWorkDir);
+            //fully fill in cache
+            foWorkDir.getChildren();            
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            
+            /*1.create file */
+            assertTrue(external.createNewFile());
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertDataCreated(0);                        
+            FileUtil.refreshFor(workDir);   
+            fdc.assertDataCreated(1);
+            assertNotNull(foWorkDir.getFileObject(external.getName()));
+            
+            /*2.delete file */            
+            fdc.assertDeleted(0);                                
+            assertTrue(external.delete());
+            assertNotNull(foWorkDir.getFileObject(external.getName()));
+            FileUtil.refreshFor(workDir);   
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertDeleted(1);                                
+            
+            /*3.create folder */            
+            external = new File(workDir, "externalFolder");
+            assertTrue(external.mkdir());
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertFolderCreated(0);                        
+            FileUtil.refreshFor(workDir);   
+            fdc.assertFolderCreated(1);
+            assertNotNull(foWorkDir.getFileObject(external.getName()));                        
+        } finally {
+            fdc.cleanUp();            
+        }
     }
     
     public void testRefreshForExternal() throws Exception {
-        FileDataCreated fdc = new FileDataCreated();                        
-        File workDir = getWorkDir();
-        File external = new File(workDir, "external666");        
-        assertFalse(external.exists());
-        FileObject foWorkDir = FileUtil.toFileObject(workDir);
-        assertNotNull(foWorkDir);
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        assertTrue(external.createNewFile());
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        fdc.assertOK(0);
-        FileUtil.refreshFor(external);        
-        fdc.assertOK(1);
-        fdc.cleanUp();
-        assertNotNull(foWorkDir.getFileObject(external.getName()));
+        EventsEvaluator fdc = new EventsEvaluator();                        
+        try {
+            File workDir = getWorkDir();
+            File external = new File(workDir, "externalFile");        
+            assertFalse(external.exists());
+            FileObject foWorkDir = FileUtil.toFileObject(workDir);
+            assertNotNull(foWorkDir);
+            //fully fill in cache
+            foWorkDir.getChildren();            
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            
+            /*1.create file */                        
+            assertTrue(external.createNewFile());
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertDataCreated(0);
+            FileUtil.refreshFor(external);        
+            fdc.assertDataCreated(1);
+            assertNotNull(foWorkDir.getFileObject(external.getName()));
+            
+            /*2.delete file */            
+            fdc.assertDeleted(0);                                
+            assertTrue(external.delete());
+            assertNotNull(foWorkDir.getFileObject(external.getName()));
+            FileUtil.refreshFor(external);   
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertDeleted(1);                                
+            
+            /*3.create folder */            
+            external = new File(workDir, "externalFolder");
+            assertTrue(external.mkdir());
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertFolderCreated(0);                        
+            FileUtil.refreshFor(external);   
+            fdc.assertFolderCreated(1);
+            assertNotNull(foWorkDir.getFileObject(external.getName()));                        
+            
+        } finally {
+            fdc.cleanUp();            
+        }
     }
 
     public void testRefreshForExternalWithNotExistingParent() throws Exception {
-        FileDataCreated fdc = new FileDataCreated();                        
-        File workDir = getWorkDir();
-        File external = new File(workDir, "external666");        
-        assertFalse(external.exists());
-        assertTrue(external.createNewFile());
-        fdc.assertOK(0);
-        FileUtil.refreshFor(external);        
-        fdc.assertOK(0);
-        fdc.cleanUp();
+        EventsEvaluator fdc = new EventsEvaluator();                        
+        try {
+            File workDir = getWorkDir();
+            File external = new File(workDir, "externalFile");        
+            assertFalse(external.exists());
+            assertTrue(external.createNewFile());
+            fdc.assertDataCreated(0);
+            FileUtil.refreshFor(external);        
+            fdc.assertDataCreated(0);
+        } finally {
+            fdc.cleanUp();
+        }
     }
     
     public void testRefreshForBoth() throws Exception {
-        FileDataCreated fdc = new FileDataCreated();                        
-        File workDir = getWorkDir();
-        File external = new File(workDir, "external666");        
-        assertFalse(external.exists());
-        FileObject foWorkDir = FileUtil.toFileObject(workDir);
-        assertNotNull(foWorkDir);
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        assertTrue(external.createNewFile());
-        assertNull(foWorkDir.getFileObject(external.getName()));
-        fdc.assertOK(0);        
-        FileUtil.refreshFor(external, workDir);        
-        fdc.assertOK(1);
-        fdc.cleanUp();
-        assertNotNull(foWorkDir.getFileObject(external.getName()));        
+        EventsEvaluator fdc = new EventsEvaluator();                        
+        try {
+            File workDir = getWorkDir();
+            File external = new File(workDir, "externalFile");        
+            assertFalse(external.exists());
+            FileObject foWorkDir = FileUtil.toFileObject(workDir);
+            assertNotNull(foWorkDir);
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            assertTrue(external.createNewFile());
+            assertNull(foWorkDir.getFileObject(external.getName()));
+            fdc.assertDataCreated(0);        
+            FileUtil.refreshFor(external, workDir);        
+            fdc.assertDataCreated(1);
+            assertNotNull(foWorkDir.getFileObject(external.getName()));        
+        } finally {
+            fdc.cleanUp();            
+        }
     }
     
     public void testRefreshForNotExisting() throws Exception {
-        FileDataCreated fdc = new FileDataCreated();                                
-        File workDir = getWorkDir();
-        File external = new File(workDir, "external666");        
-        assertFalse(external.exists());
-        fdc.assertOK(0);                
-        FileUtil.refreshFor(external);                
-        fdc.assertOK(0);
-        fdc.cleanUp();        
+        EventsEvaluator fdc = new EventsEvaluator();                                
+        try {
+            File workDir = getWorkDir();
+            File external = new File(workDir, "externalFile");        
+            assertFalse(external.exists());
+            fdc.assertDataCreated(0);                
+            FileUtil.refreshFor(external);                
+            fdc.assertDataCreated(0);
+        } finally {
+            fdc.cleanUp();        
+        }
     }
     
-    private class FileDataCreated extends FileChangeAdapter {
-        FileDataCreated() throws FileStateInvalidException {
-        testFo.getFileSystem().addFileChangeListener(this);
+    private class EventsEvaluator extends FileChangeAdapter {
+        private int folderCreatedCount;
+        private int dataCreatedCount;
+        private int deletedCount;        
+        EventsEvaluator() throws FileStateInvalidException {
+            FileSystem fs = testFo.getFileSystem();
+            fs.refresh(true);
+            fs.addFileChangeListener(this);
         }
-        private int count;
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            super.fileFolderCreated(fe);
+            folderCreatedCount++;
+        }
+
+        
         @Override
         public void fileDataCreated(FileEvent fe) {
             super.fileDataCreated(fe);
-            count++;
-        }        
+            dataCreatedCount++;
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            super.fileDeleted(fe);
+            deletedCount++;
+        }
+
+        public void assertFolderCreated(int count) {
+            assertEquals(this.folderCreatedCount, count);
+        }
         
-        public void assertOK(int count)  {
-            assertEquals(this.count, count);
+        public void assertDataCreated(int count) {
+            assertEquals(this.dataCreatedCount, count);
+        }
+
+        public void assertDeleted(int count) {
+            assertEquals(this.deletedCount, count);
+        }
+        
+        public void resetFolderCreated() {
+            folderCreatedCount = 0;
+        }
+        
+        public void resetDataCreated() {
+            dataCreatedCount = 0;
+        }
+
+
+        public void resetDeleted() {
+            deletedCount = 0;
         }
         
         public void cleanUp() throws FileStateInvalidException {
-            testFo.getFileSystem().removeFileChangeListener(this);            
+            testFo.getFileSystem().removeFileChangeListener(this);
         }
     }
     

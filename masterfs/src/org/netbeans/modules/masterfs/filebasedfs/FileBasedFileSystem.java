@@ -59,7 +59,9 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.ProvidedExtensionsProxy;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
@@ -130,7 +132,8 @@ public final class FileBasedFileSystem extends FileSystem {
 
     public final org.openide.filesystems.FileObject findResource(final String name) {
         File f = new File(getFactory().getRoot().getRealRoot().getFileName().getFile(), name);
-        return findFileObject(f);
+        FolderObj parent = BaseFileObj.getExistingParentFor(f, this);
+        return (parent != null) ? parent.getFileObject(f.getName()) : findFileObject(f);
     }
 
     public final FileObject findFileObject(final File f) {
