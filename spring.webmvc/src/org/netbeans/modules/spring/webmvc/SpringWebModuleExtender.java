@@ -64,6 +64,8 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -93,7 +95,7 @@ import org.openide.util.Exceptions;
  * @author Craig MacKay
  */
 public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {
-
+    private static Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
     private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
@@ -105,7 +107,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     public SpringWebModuleExtender(SpringWebFrameworkProvider framework, ExtenderController controller, boolean customizer) {
         this.framework = framework;
         this.controller = controller;
-        this.customizer = customizer;        
+        this.customizer = customizer;
     }
 
     public String getDispatcherName() {
@@ -155,7 +157,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         this.dispatcherName = getComponent().getDispatcherName();
         this.dispatcherMapping = getComponent().getDispatcherMapping();
     }
-    
+
     @Override
     public void update() {
     // not used yet
@@ -180,9 +182,10 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     private class CreateSpringConfig implements FileSystem.AtomicAction {
 
         public static final String SPRING_LIB_NAME = "spring-framework-2.5"; // NOI18N
+        public static final String JSTL_LIB_NAME = "jstl11"; // NOI18N
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
         public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
-        public static final String ENCODING = "UTF-8"; // NOI18N
+        public static final String ENCODING = "UTF-8"; // NOI18N        
         private Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
         private WebModule webModule;
 
@@ -210,6 +213,17 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
                 welcomeFiles.addWelcomeFile("index.jsp"); // NOI18N
             }
             ddRoot.write(dd);
+
+            // ADD JSTL IF ENABLED           
+            boolean includeJstl = getComponent().getCbJstl();
+            if (includeJstl) {
+                if (getLibrary(JSTL_LIB_NAME) == null) {
+                    LOGGER.log(Level.WARNING, "JSTL is not registered with Library Manager");
+                    // TODO - send warning to the configuration dialog
+                } else {
+                    addLibraryToWebModule(getLibrary(JSTL_LIB_NAME), webModule);
+                }
+            }
 
             // ADD SPRING LIBRARY
             addLibraryToWebModule(getLibrary(SPRING_LIB_NAME), webModule);

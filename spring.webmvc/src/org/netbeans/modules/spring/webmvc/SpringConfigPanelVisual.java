@@ -97,6 +97,14 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         mappingText.setText(dispatcherMapping);
     }
     
+    public boolean getCbJstl() {
+        return cbJstl.isSelected();
+    }
+    
+    public void setCbJstl(boolean selected) {
+        cbJstl.setSelected(selected);
+    }
+    
     private void fireChange() {
         changeSupport.fireChange();
     }
@@ -115,6 +123,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         nameLabel = new javax.swing.JLabel();
         mappingLabel = new javax.swing.JLabel();
         mappingText = new javax.swing.JTextField();
+        libPanel = new javax.swing.JPanel();
+        cbJstl = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -157,6 +167,34 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
 
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Configuration"), standardPanel); // NOI18N
 
+        libPanel.setAlignmentX(0.2F);
+        libPanel.setAlignmentY(0.2F);
+
+        cbJstl.setText(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_ConfigurationJSTLCheckBoxText")); // NOI18N
+        cbJstl.setActionCommand(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_ConfigurationJSTLCheckBoxText")); // NOI18N
+        cbJstl.setLabel(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_ConfigurationJSTLCheckBoxText")); // NOI18N
+
+        org.jdesktop.layout.GroupLayout libPanelLayout = new org.jdesktop.layout.GroupLayout(libPanel);
+        libPanel.setLayout(libPanelLayout);
+        libPanelLayout.setHorizontalGroup(
+            libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(libPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .add(cbJstl)
+                .addContainerGap(506, Short.MAX_VALUE))
+        );
+        libPanelLayout.setVerticalGroup(
+            libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(libPanelLayout.createSequentialGroup()
+                .add(15, 15, 15)
+                .add(cbJstl)
+                .addContainerGap(351, Short.MAX_VALUE))
+        );
+
+        cbJstl.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_ConfigurationJSTLCheckBoxText")); // NOI18N
+
+        tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.libPanel.TabConstraints.tabTitle"), libPanel); // NOI18N
+
         add(tabbedPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -170,6 +208,8 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cbJstl;
+    private javax.swing.JPanel libPanel;
     private javax.swing.JLabel mappingLabel;
     private javax.swing.JTextField mappingText;
     private javax.swing.JLabel nameLabel;
