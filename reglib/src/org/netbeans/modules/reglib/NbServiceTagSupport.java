@@ -154,10 +154,15 @@ public class NbServiceTagSupport {
     /** 
      * First look in registration data if NetBeans service tag exists.
      * If not then create new service tag.
+     * 
+     * @param source client who creates service tag eg.: "NetBeans IDE 6.0.1 Installer" 
+     * or "NetBeans IDE 6.0.1"
+     * @param javaVersion IDE will provides java version on which IDE is running ie. value of system
+     * property java.version. Installer will provide java version selected to run IDE                
      * @return service tag instance for NetBeans
      * @throws java.io.IOException
      */
-    public static ServiceTag createNbServiceTag (String source, String nbHomeDir) throws IOException {
+    public static ServiceTag createNbServiceTag (String source, String javaVersion) throws IOException {
         if (!inited) {
             init();
         }
@@ -177,7 +182,7 @@ public class NbServiceTagSupport {
         // New service tag entry if not created
         if (st == null) {
             LOG.log(Level.FINE,"Creating new service tag");
-            st = newNbServiceTag(source, nbHomeDir);
+            st = newNbServiceTag(source, javaVersion);
             // Add the service tag to the registration data in NB
             getRegistrationData().addServiceTag(st);
             writeRegistrationXml();
@@ -384,7 +389,7 @@ public class NbServiceTagSupport {
      * @return
      * @throws java.io.IOException
      */
-    private static ServiceTag newNbServiceTag (String svcTagSource, String nbHomeDir) throws IOException {
+    private static ServiceTag newNbServiceTag (String svcTagSource, String javaVersion) throws IOException {
         // Determine the product URN and name
         String productURN, productName, parentURN, parentName;
 
@@ -400,7 +405,7 @@ public class NbServiceTagSupport {
                                       productURN,
                                       parentName,
                                       parentURN,
-                                      getNbProductDefinedId(nbHomeDir),
+                                      getNbProductDefinedId(javaVersion),
                                       "NetBeans.org",
                                       System.getProperty("os.arch"),
                                       getZoneName(),
@@ -505,15 +510,14 @@ public class NbServiceTagSupport {
      * cleanup if necessary.  See RFE# 6574781 Service Tags Enhancement. 
      *
      */
-    private static String getNbProductDefinedId (String nbHomeDir) {
+    private static String getNbProductDefinedId (String javaVersion) {
         StringBuilder definedId = new StringBuilder();
         definedId.append("id=");
         definedId.append(NB_VERSION);
         
-        String location = ",dir=" + nbHomeDir;
+        String location = ",dir=" + nbInstallDir.getPath() + ",java.version=" + javaVersion;
         if ((definedId.length() + location.length()) < 256) {
-            definedId.append(",dir=");
-            definedId.append(nbHomeDir);
+            definedId.append(location);
         } else {
             // if it exceeds the limit, we will not include the location
             LOG.log(Level.INFO, "Warning: Product defined instance ID exceeds the field limit:");
