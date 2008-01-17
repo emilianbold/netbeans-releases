@@ -1,6 +1,125 @@
+diff -r -u jruby-1.0.3/src/org/jruby/ast/ListNode.java jruby-1.0.3/src/org/jruby/ast/ListNode.java
+--- jruby-1.0.3/src/org/jruby/ast/ListNode.java	2007-12-15 10:12:58.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/ast/ListNode.java	2008-01-17 10:51:00.000000000 -0800
+@@ -1,4 +1,5 @@
+-/***** BEGIN LICENSE BLOCK *****
++/*
++ ***** BEGIN LICENSE BLOCK *****
+  * Version: CPL 1.0/GPL 2.0/LGPL 2.1
+  *
+  * The contents of this file are subject to the Common Public
+@@ -41,7 +42,7 @@
+  * the editor projects who want position info saved.
+  */
+ public class ListNode extends Node {
+-    private static final long serialVersionUID = 1L;
++    private static Node[] EMPTY_NODE_ARRAY = new Node[0];
+     
+     private Node[] list;
+ 
+@@ -59,22 +60,20 @@
+     
+     public ListNode(ISourcePosition position, int id) {
+         super(position, id);
++        
++        list = EMPTY_NODE_ARRAY;
+     }
+ 
+     public ListNode(ISourcePosition position) {
+-        super(position, NodeTypes.LISTNODE);
++        this(position, NodeTypes.LISTNODE);
+     }
+     
+     public ListNode add(Node node) {
+         // Ruby Grammar productions return plenty of nulls.
+         if (node == null) return this;
+-        if (list == null) {
+-            list = new Node[1];
+-        } else {
+-            Node[] newList = new Node[list.length + 1];
+-            System.arraycopy(list, 0, newList, 0, list.length);
+-            list = newList;
+-        }
++        Node[] newList = new Node[list.length + 1];
++        if (list.length > 0) System.arraycopy(list, 0, newList, 0, list.length);
++        list = newList;
+ 
+         list[list.length - 1] = node;
+ 
+@@ -90,13 +89,9 @@
+     public ListNode prepend(Node node) {
+         // Ruby Grammar productions return plenty of nulls.
+         if (node == null) return this;
+-        if (list == null) {
+-            list = new Node[1];
+-        } else {
+-            Node[] newList = new Node[list.length + 1];
+-            System.arraycopy(list, 0, newList, 1, list.length);
+-            list = newList;
+-        }
++        Node[] newList = new Node[list.length + 1];
++        if (list.length > 0) System.arraycopy(list, 0, newList, 1, list.length);
++        list = newList;
+ 
+         list[0] = node;
+         setPosition(getPosition().union(node.getPosition()));
+@@ -104,7 +99,7 @@
+     }
+     
+     public int size() {
+-        return list == null ? 0 : list.length;
++        return list.length;
+     }
+     
+     
+@@ -116,15 +111,10 @@
+      */
+     public ListNode addAll(ListNode other) {
+         if (other != null && other.size() > 0) {
+-            if (list == null) {
+-                list = new Node[other.size()];
+-                System.arraycopy(other.list, 0, list, 0, other.list.length);
+-            } else {
+-                Node[] newList = new Node[list.length + other.size()];
+-                System.arraycopy(list, 0, newList, 0, list.length);
+-                System.arraycopy(other.list, 0, newList, list.length, other.list.length);
+-                list = newList;
+-            }
++            Node[] newList = new Node[list.length + other.size()];
++            if (list.length > 0) System.arraycopy(list, 0, newList, 0, list.length);
++            System.arraycopy(other.list, 0, newList, list.length, other.list.length);
++            list = newList;
+             
+             setPosition(getPosition().union(getLast().getPosition()));
+         }
+@@ -142,14 +132,11 @@
+     }
+     
+     public Node getLast() {
+-    	return list == null ? null : list[list.length - 1];
++    	return list.length == 0 ? null : list[list.length - 1];
+     }
+     
+     public String toString() {
+         String string = super.toString();
+-    	if (list == null) {
+-    		return string + ": {}";
+-    	}
+     	StringBuffer b = new StringBuffer();
+     	for (int i = 0; i < list.length; i++) {
+     		b.append(list[i]);
+@@ -161,7 +148,7 @@
+     }
+     
+     public List childNodes() {
+-    	return list == null ? EMPTY_LIST : Arrays.asList(list);
++    	return Arrays.asList(list);
+     }
+     
+     public Instruction accept(NodeVisitor visitor) {
 diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.3/src/org/jruby/lexer/yacc/HeredocTerm.java
 --- jruby-1.0.3/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-12-15 10:12:34.000000000 -0800
-+++ jruby-1.0.3/src/org/jruby/lexer/yacc/HeredocTerm.java	2007-12-19 12:34:56.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/lexer/yacc/HeredocTerm.java	2008-01-17 10:51:00.000000000 -0800
 @@ -48,12 +48,25 @@
      public int parseString(RubyYaccLexer lexer, LexerSource src) throws java.io.IOException {
          boolean indent = (func & RubyYaccLexer.STR_FUNC_INDENT) != 0;
@@ -213,9 +332,37 @@ diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/HeredocTerm.java jruby-1.0.3/src
 +
 +    // END NETBEANS MODIFICATIONS
  }
+diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0.3/src/org/jruby/lexer/yacc/LexerSource.java
+--- jruby-1.0.3/src/org/jruby/lexer/yacc/LexerSource.java	2007-12-15 10:12:34.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/lexer/yacc/LexerSource.java	2008-01-17 10:51:00.000000000 -0800
+@@ -445,4 +445,24 @@
+             return null;
+         }
+     }
++    
++    // BEGIN NETBEANS MODIFICATIONS
++    public int chompReadAhead() {
++        int result = bufLength+1;
++        bufLength = -1;
++        return result;
++    }
++    
++    public boolean isANewLine() {
++        return oneAgo == '\n';
++    }
++    // Various places where we call LexerSource.unread(), the nextCharIsOnANewline value gets inaccurate (column/line too, but I don't care about those)
++    public void setIsANewLine(boolean nextCharIsOnANewLine) {
++        oneAgo = nextCharIsOnANewLine ? '\n' : oneAgo;
++    }
++    
++    public void setOffset(int offset) {
++        this.offset = offset;
++    }
++    // END NETBEANS MODIFICATIONS
+ }
 diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/LexState.java jruby-1.0.3/src/org/jruby/lexer/yacc/LexState.java
 --- jruby-1.0.3/src/org/jruby/lexer/yacc/LexState.java	2007-12-15 10:12:34.000000000 -0800
-+++ jruby-1.0.3/src/org/jruby/lexer/yacc/LexState.java	2007-12-19 12:34:56.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/lexer/yacc/LexState.java	2008-01-17 10:51:00.000000000 -0800
 @@ -47,6 +47,40 @@
  
      private final String debug;
@@ -257,37 +404,9 @@ diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/LexState.java jruby-1.0.3/src/or
      private LexState(String debug) {
          this.debug = debug;
      }
-diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/LexerSource.java jruby-1.0.3/src/org/jruby/lexer/yacc/LexerSource.java
---- jruby-1.0.3/src/org/jruby/lexer/yacc/LexerSource.java	2007-12-15 10:12:34.000000000 -0800
-+++ jruby-1.0.3/src/org/jruby/lexer/yacc/LexerSource.java	2007-12-19 12:34:56.000000000 -0800
-@@ -445,4 +445,24 @@
-             return null;
-         }
-     }
-+    
-+    // BEGIN NETBEANS MODIFICATIONS
-+    public int chompReadAhead() {
-+        int result = bufLength+1;
-+        bufLength = -1;
-+        return result;
-+    }
-+    
-+    public boolean isANewLine() {
-+        return oneAgo == '\n';
-+    }
-+    // Various places where we call LexerSource.unread(), the nextCharIsOnANewline value gets inaccurate (column/line too, but I don't care about those)
-+    public void setIsANewLine(boolean nextCharIsOnANewLine) {
-+        oneAgo = nextCharIsOnANewLine ? '\n' : oneAgo;
-+    }
-+    
-+    public void setOffset(int offset) {
-+        this.offset = offset;
-+    }
-+    // END NETBEANS MODIFICATIONS
- }
 diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.3/src/org/jruby/lexer/yacc/RubyYaccLexer.java
 --- jruby-1.0.3/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-12-15 10:12:34.000000000 -0800
-+++ jruby-1.0.3/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2007-12-19 12:34:56.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/lexer/yacc/RubyYaccLexer.java	2008-01-17 10:51:00.000000000 -0800
 @@ -74,6 +74,124 @@
      // grammar use.
      private LexState lex_state;
@@ -780,59 +899,9 @@ diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/RubyYaccLexer.java jruby-1.0.3/s
 +    
 +// END NETBEANS MODIFICATIONS
  }
-diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0.3/src/org/jruby/lexer/yacc/StrTerm.java
---- jruby-1.0.3/src/org/jruby/lexer/yacc/StrTerm.java	2007-12-15 10:12:34.000000000 -0800
-+++ jruby-1.0.3/src/org/jruby/lexer/yacc/StrTerm.java	2007-12-19 12:34:56.000000000 -0800
-@@ -29,4 +29,46 @@
- 
- public abstract class StrTerm {
-     public abstract int parseString(RubyYaccLexer lexer, LexerSource src) throws java.io.IOException;
-+
-+    // BEGIN NETBEANS MODIFICATIONS
-+    /** Tell this string term to return separate tokens for embedded ruby code (#$foo, #@foo, #{foo}) */
-+    public abstract void splitEmbeddedTokens();
-+
-+    /** 
-+     * Report whether this string should be substituting things like \n into newlines (double
-+     * quoting rules).
-+     * E.g. are we dealing with a "" string or a '' string (or their alternate representations)
-+     */
-+    public abstract boolean isSubstituting();
-+    
-+    // When StringTerm processes a string with an embedded code fragment (or variable),
-+    // such as #{thiscode()}, it splits the string up at the beginning of the boundary
-+    // and returns Tokens.tSTRING_DBEG or Tokens.tSTRING_DVAR. However, it doesn't
-+    // split the string up where the embedded code ends, it just processes to the end.
-+    // For my lexing purposes that's not good enough; I want to know where the embedded
-+    // fragment ends (so I can lex that String as real Ruby code rather than just
-+    // a String literal).
-+    // However, 
-+    /** Default; ignore embedded fragments */
-+    final static int IGNORE_EMBEDDED = 0;
-+    /** Flag set in embeddedCode when we are processing an embedded code expression: #{foo} */
-+    final static int LOOKING_FOR_EMBEDDED = 1;
-+    /** Flag set in embeddedCode when we are processing an embedded code expression: #{foo} */
-+    final static int EMBEDDED_DEXPR = 2;
-+    /** Flag set in embeddedCode when we are processing an embedded variable: #@foo */
-+    final static int EMBEDDED_DVAR = 3;
-+    /** Flag set while we're processing embedded Ruby expressions. It will be 0 when we are not,
-+     * or otherwise set to the the relevant embedded type (EMBEDDED_DVAR or EMBEDDED_DEXPR) */
-+    protected int processingEmbedded;
-+    /**
-+     * Record any mutable state from this StrTerm such that it can
-+     * be set back to this exact state through a call to {@link #setMutableState}
-+     * later on. Necessary for incremental lexing where we may restart
-+     * lexing parts of a string (since they can be split up due to
-+     * Ruby embedding like "Evaluated by Ruby: #{foo}".
-+     */
-+    public abstract Object getMutableState();
-+    /** Support for incremental lexing: set current state of the term. See {@link #getMutableState} */
-+    public abstract void setMutableState(Object o);
-+    // END NETBEANS MODIFICATIONS
- }
 diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0.3/src/org/jruby/lexer/yacc/StringTerm.java
 --- jruby-1.0.3/src/org/jruby/lexer/yacc/StringTerm.java	2007-12-15 10:12:34.000000000 -0800
-+++ jruby-1.0.3/src/org/jruby/lexer/yacc/StringTerm.java	2007-12-19 12:34:56.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/lexer/yacc/StringTerm.java	2008-01-17 10:51:00.000000000 -0800
 @@ -69,8 +69,20 @@
              space = 1;
          }
@@ -1182,9 +1251,59 @@ diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/StringTerm.java jruby-1.0.3/src/
 +    }
 +    // END NETBEANS MODIFICATIONS
  }
+diff -r -u jruby-1.0.3/src/org/jruby/lexer/yacc/StrTerm.java jruby-1.0.3/src/org/jruby/lexer/yacc/StrTerm.java
+--- jruby-1.0.3/src/org/jruby/lexer/yacc/StrTerm.java	2007-12-15 10:12:34.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/lexer/yacc/StrTerm.java	2008-01-17 10:51:00.000000000 -0800
+@@ -29,4 +29,46 @@
+ 
+ public abstract class StrTerm {
+     public abstract int parseString(RubyYaccLexer lexer, LexerSource src) throws java.io.IOException;
++
++    // BEGIN NETBEANS MODIFICATIONS
++    /** Tell this string term to return separate tokens for embedded ruby code (#$foo, #@foo, #{foo}) */
++    public abstract void splitEmbeddedTokens();
++
++    /** 
++     * Report whether this string should be substituting things like \n into newlines (double
++     * quoting rules).
++     * E.g. are we dealing with a "" string or a '' string (or their alternate representations)
++     */
++    public abstract boolean isSubstituting();
++    
++    // When StringTerm processes a string with an embedded code fragment (or variable),
++    // such as #{thiscode()}, it splits the string up at the beginning of the boundary
++    // and returns Tokens.tSTRING_DBEG or Tokens.tSTRING_DVAR. However, it doesn't
++    // split the string up where the embedded code ends, it just processes to the end.
++    // For my lexing purposes that's not good enough; I want to know where the embedded
++    // fragment ends (so I can lex that String as real Ruby code rather than just
++    // a String literal).
++    // However, 
++    /** Default; ignore embedded fragments */
++    final static int IGNORE_EMBEDDED = 0;
++    /** Flag set in embeddedCode when we are processing an embedded code expression: #{foo} */
++    final static int LOOKING_FOR_EMBEDDED = 1;
++    /** Flag set in embeddedCode when we are processing an embedded code expression: #{foo} */
++    final static int EMBEDDED_DEXPR = 2;
++    /** Flag set in embeddedCode when we are processing an embedded variable: #@foo */
++    final static int EMBEDDED_DVAR = 3;
++    /** Flag set while we're processing embedded Ruby expressions. It will be 0 when we are not,
++     * or otherwise set to the the relevant embedded type (EMBEDDED_DVAR or EMBEDDED_DEXPR) */
++    protected int processingEmbedded;
++    /**
++     * Record any mutable state from this StrTerm such that it can
++     * be set back to this exact state through a call to {@link #setMutableState}
++     * later on. Necessary for incremental lexing where we may restart
++     * lexing parts of a string (since they can be split up due to
++     * Ruby embedding like "Evaluated by Ruby: #{foo}".
++     */
++    public abstract Object getMutableState();
++    /** Support for incremental lexing: set current state of the term. See {@link #getMutableState} */
++    public abstract void setMutableState(Object o);
++    // END NETBEANS MODIFICATIONS
+ }
 diff -r -u jruby-1.0.3/src/org/jruby/libraries/RbConfigLibrary.java jruby-1.0.3/src/org/jruby/libraries/RbConfigLibrary.java
 --- jruby-1.0.3/src/org/jruby/libraries/RbConfigLibrary.java	2007-12-15 10:13:02.000000000 -0800
-+++ jruby-1.0.3/src/org/jruby/libraries/RbConfigLibrary.java	2007-12-19 12:34:56.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/libraries/RbConfigLibrary.java	2008-01-17 10:51:00.000000000 -0800
 @@ -77,9 +77,9 @@
          setConfig(configHash, "target_cpu", System.getProperty("os.arch"));
          
@@ -1199,7 +1318,7 @@ diff -r -u jruby-1.0.3/src/org/jruby/libraries/RbConfigLibrary.java jruby-1.0.3/
              if (jarMatcher.matches()) {
 diff -r -u jruby-1.0.3/src/org/jruby/parser/Tokens.java jruby-1.0.3/src/org/jruby/parser/Tokens.java
 --- jruby-1.0.3/src/org/jruby/parser/Tokens.java	2007-12-15 10:12:38.000000000 -0800
-+++ jruby-1.0.3/src/org/jruby/parser/Tokens.java	2007-12-19 12:34:56.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/parser/Tokens.java	2008-01-17 10:51:00.000000000 -0800
 @@ -152,6 +152,16 @@
      int tRCURLY     = DefaultRubyParser.tRCURLY;
      int tPIPE       = DefaultRubyParser.tPIPE;
@@ -1219,7 +1338,7 @@ diff -r -u jruby-1.0.3/src/org/jruby/parser/Tokens.java jruby-1.0.3/src/org/jrub
  }
 diff -r -u jruby-1.0.3/src/org/jruby/runtime/Constants.java jruby-1.0.3/src/org/jruby/runtime/Constants.java
 --- jruby-1.0.3/src/org/jruby/runtime/Constants.java	2007-12-15 10:12:26.000000000 -0800
-+++ jruby-1.0.3/src/org/jruby/runtime/Constants.java	2007-12-19 12:34:56.000000000 -0800
++++ jruby-1.0.3/src/org/jruby/runtime/Constants.java	2008-01-17 10:51:00.000000000 -0800
 @@ -52,7 +52,13 @@
  
      static {
