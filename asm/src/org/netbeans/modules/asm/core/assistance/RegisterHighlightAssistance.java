@@ -161,9 +161,9 @@ public class RegisterHighlightAssistance extends AbstractHighlightsContainer
 
         public AttributeSet getAttributes() {
             Color res = null;
-            if (cur.getUsage().isContain(OperandElement.Usage.OP_USE_WRITE)) {
+            if (cur.getUsage().contains(OperandElement.Usage.OP_USE_WRITE)) {
                 res = WRITE_COLORING;
-            } else if (cur.getUsage().isContain(OperandElement.Usage.OP_USE_READ)) {
+            } else if (cur.getUsage().contains(OperandElement.Usage.OP_USE_READ)) {
                 res = READ_COLORING;
             }
             

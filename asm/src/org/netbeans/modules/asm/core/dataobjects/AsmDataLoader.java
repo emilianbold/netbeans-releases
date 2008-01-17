@@ -42,10 +42,8 @@
 package org.netbeans.modules.asm.core.dataobjects;
 
 import java.io.IOException;
-
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
 import org.openide.util.NbBundle;
@@ -53,16 +51,10 @@ import org.openide.util.NbBundle;
 public class AsmDataLoader extends UniFileLoader {
     
     public static final String REQUIRED_MIME = "text/x-asm";
-    
-    public static final String[] REQUIRED_EXTENSIONS = 
-                                new String[] { "s", "asm", "as" };
-    
     private static final long serialVersionUID = 1L;
     
     public AsmDataLoader() {
         super("org.netbeans.modules.asm.core.dataobjects.AsmDataObject");   
-        
-        
     }
          
     @Override
@@ -73,7 +65,6 @@ public class AsmDataLoader extends UniFileLoader {
     @Override
     protected void initialize() {
         super.initialize();
-        createExtentions(REQUIRED_EXTENSIONS);
         getExtensions().addMimeType(REQUIRED_MIME);        
     }
     
@@ -85,12 +76,4 @@ public class AsmDataLoader extends UniFileLoader {
     protected String actionsContext() {
         return "Loaders/" + REQUIRED_MIME + "/Actions";
     }
-    
-    protected final void createExtentions(String [] extensions) {
-	ExtensionList extensionList = new ExtensionList();
-	for (int i = 0; i < extensions.length; i++) {
-	    extensionList.addExtension(extensions[i]);
-	}
-	setExtensions(extensionList);     
-    }            
 }

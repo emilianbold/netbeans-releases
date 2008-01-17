@@ -41,11 +41,11 @@ abstract public class BitMask<T extends BitMask> {
         return create(mask | u.mask);
     }
 
-    public boolean isContain(T u) {
+    public boolean contains(T u) {
        return ((~mask) & u.mask) == 0;
     }
-
-    public boolean isIntersection(T u) {
+    
+    public boolean intersects(T u) {
        return (mask & u.mask) != 0;
     }
     

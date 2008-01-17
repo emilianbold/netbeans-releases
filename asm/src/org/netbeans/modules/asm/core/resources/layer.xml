@@ -194,11 +194,11 @@
     </folder>
     
     <folder name="Services">        
-        <folder name="Hidden">            
-            <file name="org-netbeans-modules-asm-core-dataobjects-MIMEResolver.instance">                
-                <attr name="instanceOf" stringvalue="org.openide.filesystems.MIMEResolver"/>                
-            </file>            
-        </folder>              
+        <folder name="MIMEResolver">
+            <file name="AsmResolver.xml" url="AsmResolver.xml">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>
+            </file>
+        </folder>
     </folder> 
     
     <folder name="Templates">        
