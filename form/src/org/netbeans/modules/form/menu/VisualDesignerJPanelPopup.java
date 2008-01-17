@@ -69,5 +69,11 @@ class VisualDesignerJPanelPopup extends Popup {
         fact.hideOtherMenus(menu);
         cont.setVisible(true);
     }
+
+    @Override
+    public void hide() {
+        // This method probably will do something once someone brave
+        // reviews/rewrites the menu designer. By now, it just fixes issue 122672.
+    }
     
 }
