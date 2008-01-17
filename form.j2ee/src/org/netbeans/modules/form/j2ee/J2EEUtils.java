@@ -181,6 +181,22 @@ public class J2EEUtils {
 
         unit = ProviderUtil.buildPersistenceUnit(puName, provider, connection);
         unit.setTransactionType("RESOURCE_LOCAL"); // NOI18N
+
+        // TopLink/Derby combination doesn't like empty username and password,
+        // but we can use dummy (app/app) values in this case, see issue 121427.
+        if ((nullOrEmpty(connection.getUser()) || nullOrEmpty(connection.getPassword()))
+                && ProviderUtil.TOPLINK_PROVIDER.equals(provider)
+                && connection.getDriverClass().startsWith("org.apache.derby.jdbc.")) { // NOI18N
+            String userPropName = provider.getJdbcUsername();
+            String passwdPropName = provider.getJdbcPassword();
+            for (Property prop : unit.getProperties().getProperty2()) {
+                String propName = prop.getName();
+                if ((userPropName.equals(propName) || passwdPropName.equals(propName)) && nullOrEmpty(prop.getValue())) {
+                    prop.setValue("app"); // NOI18N
+                }
+            }
+        }
+
         // Java Embedded DB, see issue 121391
         if ("org.apache.derby.jdbc.EmbeddedDriver".equals(connection.getDriverClass())) { // NOI18N
             // Make sure tables are created if they do not exist
@@ -200,6 +216,10 @@ public class J2EEUtils {
         ProviderUtil.addPersistenceUnit(unit, project);
 
         return unit;
+    }
+
+    public static boolean nullOrEmpty(String s) {
+        return (s == null) || "".equals(s); // NOI18N
     }
 
     /**
