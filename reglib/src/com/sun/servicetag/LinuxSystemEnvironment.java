@@ -66,7 +66,7 @@ import java.io.*;
 class LinuxSystemEnvironment extends SystemEnvironment {
     LinuxSystemEnvironment() {
         setHostId(getLinuxHostId());
-        setSystemModel(getCommandOutput("/usr/bin/uname", "-i"));
+        setSystemModel(getCommandOutput("/bin/uname", "-i"));
         setSystemManufacturer(getLinuxSystemManufacturer());
         setCpuManufacturer(getLinuxCpuManufacturer());
         setSerialNumber(getLinuxSN());
