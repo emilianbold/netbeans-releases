@@ -71,6 +71,7 @@ public class BasicCompletionTest extends AbstractTestCase {
         suite.addTest(new BasicCompletionTest("testEmptyTag1"));
         suite.addTest(new BasicCompletionTest("testEmptyTag2"));
         suite.addTest(new BasicCompletionTest("testEmptyTag3"));
+        suite.addTest(new BasicCompletionTest("testEmptyTag4"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion1"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion2"));
         suite.addTest(new BasicCompletionTest("testEndtagCompletion3"));
@@ -181,7 +182,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
-     * Queries an empty tag. If cursor is before "A31" and after "<" in <A31 />
+     * Queries an empty tag. If cursor is between < and A31 in <A31 />
      * we should show all qualifying elements that are children of the parent.
      */
     public void testEmptyTag1() throws Exception {
@@ -203,12 +204,22 @@ public class BasicCompletionTest extends AbstractTestCase {
     }
     
     /**
-     * Queries an empty tag.
+     * Queries attributes inside an empty tag.
      */
     public void testEmptyTag3() throws Exception {
         setupCompletion("resources/EmptyTag.xml", null);
         List<CompletionResultItem> items = query(226);
         String[] expectedResult = {"attrA31", "attrA32"};
+        assertResult(items, expectedResult);
+    }
+    
+    /**
+     * Issue: 108634, shouldn't show attributes after empty tag.
+     */
+    public void testEmptyTag4() throws Exception {
+        setupCompletion("resources/EmptyTag.xml", null);
+        List<CompletionResultItem> items = query(229);
+        String[] expectedResult = null;
         assertResult(items, expectedResult);
     }
     

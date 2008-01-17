@@ -204,6 +204,11 @@ public class CompletionContextImpl extends CompletionContext {
                 case XMLDefaultTokenContext.TEXT_ID:
                     String chars = token.getImage().trim();
                     if(chars != null && chars.equals("") &&
+                       token.getPrevious().getImage().trim().equals("/>")) {
+                        completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                        break;
+                    }                    
+                    if(chars != null && chars.equals("") &&
                        token.getPrevious().getImage().trim().equals(">")) {
                         completionType = CompletionType.COMPLETION_TYPE_VALUE;
                         break;
@@ -226,6 +231,11 @@ public class CompletionContextImpl extends CompletionContext {
                         break;
                     }
                     if(element instanceof EmptyTag) {
+                        if(token != null &&
+                           token.getImage().trim().equals("/>")) {
+                            completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                            break;
+                        }
                         EmptyTag tag = (EmptyTag)element;
                         if(element.getElementOffset() + 1 == this.completionAtOffset) {
                             completionType = CompletionType.COMPLETION_TYPE_ELEMENT;
@@ -245,6 +255,11 @@ public class CompletionContextImpl extends CompletionContext {
                     }
                     
                     if(element instanceof StartTag) {
+                        if(token != null &&
+                           token.getImage().trim().equals(">")) {
+                            completionType = CompletionType.COMPLETION_TYPE_UNKNOWN;
+                            break;
+                        }
                         if(element.getElementOffset() + 1 == this.completionAtOffset) {
                             typedChars = null;
                         } else {
