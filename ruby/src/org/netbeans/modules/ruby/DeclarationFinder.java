@@ -1067,11 +1067,16 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
                     astOffset, lexOffset, path, closest, index);
 
             if (candidate != null) {
-                IndexedElement com = candidate;
-                Node node = AstUtilities.getForeignNode(com, null);
+                FileObject fileObject = candidate.getFile().getFileObject();
+                if (fileObject == null) {
+                    return DeclarationLocation.NONE;
+                }
 
-                DeclarationLocation loc = new DeclarationLocation(com.getFile().getFileObject(),
-                    node.getPosition().getStartOffset(), com);
+                Node node = AstUtilities.getForeignNode(candidate, null);
+                int nodeOffset = node != null ? node.getPosition().getStartOffset() : 0;
+                
+                DeclarationLocation loc = new DeclarationLocation(
+                    fileObject, nodeOffset, candidate);
 
                 if (!CHOOSE_ONE_DECLARATION && methods.size() > 1) {
                     // Could the :nodoc: alternatives: if there is only one nodoc'ed alternative
@@ -1594,6 +1599,11 @@ public class DeclarationFinder implements org.netbeans.api.gsf.DeclarationFinder
             } else {
                 methods.remove(method);
             }
+        }
+        
+        // Dynamic methods that don't have source (such as the TableDefinition methods "binary", "boolean", etc.
+        if (methodSet.size() > 0) {
+            return methodSet.iterator().next();
         }
 
         return null;
