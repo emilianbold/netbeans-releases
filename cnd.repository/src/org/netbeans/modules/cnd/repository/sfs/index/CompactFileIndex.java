@@ -59,11 +59,62 @@ import org.netbeans.modules.cnd.repository.util.LongHashMap;
 public class CompactFileIndex implements FileIndex, SelfPersistent {
     private static final int shift = 37;
     private static final long mask = (1L<<shift)-1;
-    private static final int DEFAULT_INDEX_CAPACITY = 53711;
+    private static final int DEFAULT_INDEX_CAPACITY = 1024;
+    private static final int DEFAULT_SLICE_NUMBER = 29;
 
     private ReadWriteLock lock = new ReentrantReadWriteLock();
     
-    final LongHashMap<Key> map = new LongHashMap<Key>(DEFAULT_INDEX_CAPACITY);
+    private final SlicedLongHashMap<Key> map = new SlicedLongHashMap<Key>(DEFAULT_SLICE_NUMBER);
+    
+    private static final class SlicedLongHashMap<K> {
+        private final LongHashMap<K>[] instances;
+        private int sliceNumber;
+        private SlicedLongHashMap(int sliceNumber){
+            this.sliceNumber = sliceNumber;
+            instances = new LongHashMap[sliceNumber];
+            for(int i = 0; i < sliceNumber; i++){
+                instances[i] = new LongHashMap<K>(DEFAULT_INDEX_CAPACITY);
+            }
+        }
+        private LongHashMap<K> getDelegate(K key){
+            int index = key.hashCode() % sliceNumber;
+            if (index < 0) {
+                index += sliceNumber;
+            }
+            return instances[index];
+            
+        }
+        private long put(K key, long value){
+            return getDelegate(key).put(key, value);
+        }
+        private long get(K key){
+            return getDelegate(key).get(key);
+        }
+        private long remove(K key){
+            return getDelegate(key).remove(key);
+        }
+        private int size(){
+            int size = 0;
+            for(int i = 0; i < sliceNumber; i++){
+                size += instances[i].size();
+            }
+            return size;
+        }
+        private Collection<K> keySet() {
+            Collection<K> res = new ArrayList<K>(size());
+            for(int i = 0; i < sliceNumber; i++){
+                res.addAll(instances[i].keySet());
+            }
+            return res;
+        }
+        public Collection<LongHashMap.Entry<K>> entrySet() {
+            Collection<LongHashMap.Entry<K>> res = new ArrayList<LongHashMap.Entry<K>>(size());
+            for(int i = 0; i < sliceNumber; i++){
+                res.addAll(instances[i].entrySet());
+            }
+            return res;
+        }
+    }
     
     public CompactFileIndex () {
     }
@@ -92,7 +143,7 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
     public Collection<Key> keySet() {
         try {
             lock.readLock().lock();
-            return new ArrayList(map.keySet());
+            return map.keySet();
         } finally {
             lock.readLock().unlock();
         }
@@ -151,11 +202,9 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
     }
 
     public void write(final DataOutput output) throws IOException {
-        output.writeInt(size());
-        final Set<LongHashMap.Entry<Key>> aSet = map.entrySet();
-        final Iterator<LongHashMap.Entry<Key>> setIterator = aSet.iterator();
-        while (setIterator.hasNext()) {
-            final LongHashMap.Entry<Key> entry = setIterator.next();
+        final Collection<LongHashMap.Entry<Key>> collection = map.entrySet();
+        output.writeInt(collection.size());
+        for(LongHashMap.Entry<Key> entry : collection) {
             KeyFactory.getDefaultFactory().writeKey(entry.getKey(), output);
             output.writeLong(entry.getValue());
         }
