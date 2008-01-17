@@ -96,7 +96,7 @@ import org.openide.util.Lookup;
  */
 public class ClientBuilder {
     
-    private static final String TEMPLATE_BASE = "/org/netbeans/modules/websvc/core/client/resources/"; //NOI18N
+    private static final String TEMPLATE_BASE = "/org/netbeans/modules/websvc/jaxrpc/dev/wizard/xsl/"; //NOI18N
 
     // User/project specified inputs
     private Project project;
