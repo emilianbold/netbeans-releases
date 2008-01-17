@@ -42,18 +42,6 @@
  */
 package org.netbeans.modules.spring.webmvc;
 
-import java.io.IOException;
-import java.util.Set;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.netbeans.modules.web.api.webmodule.ExtenderController;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
-import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.HelpCtx;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -66,6 +54,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -88,9 +78,10 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 
 /**
- * Provides SpringWebModuleExtender support for Spring Framework
+ * The WebModuleExtender implementation for Spring Web MVC.
  *
  * @author Craig MacKay
  */
@@ -99,9 +90,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
-    private String dispatcherName;
-    private String dispatcherMapping;
     private boolean customizer;
+
+    private String dispatcherName = "dispatcher"; // NOI18N
+    private String dispatcherMapping = "*.htm"; // NOI18N
+    private boolean includeJstl = true;
+
 
     /** Creates a new instance of SpringWebModuleExtender */
     public SpringWebModuleExtender(SpringWebFrameworkProvider framework, ExtenderController controller, boolean customizer) {
@@ -111,19 +105,15 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     }
 
     public String getDispatcherName() {
-        return getComponent().getDispatcherName();
+        return dispatcherName;
     }
 
     public String getDispatcherMapping() {
-        return getComponent().getDispatcherMapping();
+        return dispatcherMapping;
     }
 
-    public void setDispatcherName(String dispatcherName) {
-        getComponent().setDispatcherName(dispatcherName);
-    }
-
-    public void setDispatcherMapping(String dispatcherMapping) {
-        getComponent().setDispatcherMapping(dispatcherMapping);
+    public boolean getIncludeJstl() {
+        return includeJstl;
     }
 
     public SpringConfigPanelVisual getComponent() {
@@ -154,8 +144,9 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     }
 
     public void stateChanged(ChangeEvent e) {
-        this.dispatcherName = getComponent().getDispatcherName();
-        this.dispatcherMapping = getComponent().getDispatcherMapping();
+        dispatcherName = getComponent().getDispatcherName();
+        dispatcherMapping = getComponent().getDispatcherMapping();
+        includeJstl = getComponent().getIncludeJstl();
     }
 
     @Override
@@ -185,7 +176,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         public static final String JSTL_LIB_NAME = "jstl11"; // NOI18N
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
         public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
-        public static final String ENCODING = "UTF-8"; // NOI18N        
+        public static final String ENCODING = "UTF-8"; // NOI18N
         private Set<FileObject> filesToOpen = new LinkedHashSet<FileObject>();
         private WebModule webModule;
 
@@ -214,8 +205,8 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             ddRoot.write(dd);
 
-            // ADD JSTL IF ENABLED           
-            boolean includeJstl = getComponent().getCbJstl();
+            // ADD JSTL IF ENABLED
+
             if (includeJstl) {
                 if (getLibrary(JSTL_LIB_NAME) == null) {
                     LOGGER.log(Level.WARNING, "JSTL is not registered with Library Manager");
@@ -233,7 +224,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             FileObject jsp = webInf.createFolder("jsp");
 
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
-            copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N            
+            copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
             copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
             addFileToOpen(copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml"))); // NOI18N
             addFileToOpen(copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, getComponent().getDispatcherName() + "-servlet.xml"))); // NOI18N
