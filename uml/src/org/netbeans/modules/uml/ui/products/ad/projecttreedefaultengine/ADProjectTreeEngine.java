@@ -3179,14 +3179,11 @@ public class ADProjectTreeEngine
          ProjectTreeNodeFactory factory = getNodeFactory();
          if ((proxy != null) && (factory != null))
          {            
-            //ITreeDiagram newItem = new ProjectTreeDiagramNode(proxy);
             String diagramName = proxy.getNameWithAlias();
             LOG.info( "*** addDiagramNode: diagramNameWithAlias = "+ diagramName);
             ITreeDiagram newItem = factory.createDiagramNode(proxy);
             newItem.setDisplayedName(diagramName);
-            // newItem.setName(proxy.getDiagramKindName());
             newItem.setName(diagramName);
-            String namespaceXMID = proxy.getNamespaceXMIID();
             IElement namespace = proxy.getNamespace();
 			
             if (namespace != null)
@@ -3197,8 +3194,6 @@ public class ADProjectTreeEngine
                     iter.hasNext();)
                {
                   ITreeItem curItem = iter.next();
-                  int diagramKind = proxy.getDiagramKind();
-
                   if (curItem.isInitalized())
                   {
                      addDiagram(curItem, newItem);
@@ -4030,12 +4025,12 @@ public class ADProjectTreeEngine
          }
          else if(nPropertyKindChanged == IDrawingAreaPropertyKind.DAPK_NAMESPACE)
          {
-             IProjectTreeModel model = getTreeModel();
-             ETList < ITreeItem > items = model.findDiagramNodes(pProxyDiagram.getFilename());    
-             for(ITreeItem item : items)
-             {
-                getTreeModel().removeNodeFromParent(item);
-             }
+//             IProjectTreeModel model = getTreeModel();
+//             ETList < ITreeItem > items = model.findDiagramNodes(pProxyDiagram.getFilename());    
+//             for(ITreeItem item : items)
+//             {
+//                getTreeModel().removeNodeFromParent(item);
+//             }
              
              SwingUtilities.invokeLater(new Runnable()
              {

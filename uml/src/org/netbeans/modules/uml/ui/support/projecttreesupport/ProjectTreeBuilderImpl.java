@@ -1614,7 +1614,7 @@ public class ProjectTreeBuilderImpl implements IProjectTreeBuilder
                   if(getNodeFactory() != null)
                   {
                      diagName = diagrams.get(index).getNameWithAlias();
-                     LOG.info("*** projectTreebuilderImpl.retrieveDiagramsForElement: diagramNameWithAlias = "+ diagName);
+                     LOG.info("*** retrieveDiagramsForElement: diagramNameWithAlias = "+ diagName);
                      ITreeDiagram newItem = getNodeFactory().createDiagramNode(diagrams.get(index));
                      newItem.setDisplayedName(diagName);
                      // cvc - CR#6265213   

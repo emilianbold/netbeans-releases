@@ -654,9 +654,9 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 						nodeList.remove(index);
 				}
 				
-				if (nodeList.size() == 0)
+				if (nodeList.size() == 0) 
 					mNodeMap.remove(key);
-			}
+                        }
 		} // if node !null
 	}
 	
@@ -818,30 +818,30 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                         String filename = diagram.getFilename();
                         mDiagramNodeMap.put(filename, key);
                         
-                        UMLModelRootNode modelRootNode = getModelRootNode(node);
-                        
-                        if (modelRootNode != null && mDiagramsNodeMap != null)
-                        {
-                            UMLDiagramsRootNode diagramsNode =
-                                    mDiagramsNodeMap.get(
-                                    modelRootNode.getModelElement().getXMIID());
-                            
-                            if (diagramsNode != null)
-                            {
-                                if ( !alreadyHasChild(diagramsNode, node)) 
-                                {
-                                    ITreeItem nodeCopy = 
-                                            mFactory.createDiagramNode(diagram);
-
-                                    String diagramName = diagram.getNameWithAlias();
-                                    LOG.info("*** addNode: diagramNameWithAlias = "+
-                                            diagramName);
-                                    nodeCopy.setDisplayedName(diagramName, false);
-                                    nodeCopy.setName(diagramName);
-                                    diagramsNode.addChild(nodeCopy);
-                                }
-                            }
-                        }
+//                        UMLModelRootNode modelRootNode = getModelRootNode(node);
+//                        
+//                        if (modelRootNode != null && mDiagramsNodeMap != null)
+//                        {
+//                            UMLDiagramsRootNode diagramsNode =
+//                                    mDiagramsNodeMap.get(
+//                                    modelRootNode.getModelElement().getXMIID());
+//                            
+//                            if (diagramsNode != null)
+//                            {
+//                                if ( !alreadyHasChild(diagramsNode, node)) 
+//                                {
+//                                    ITreeItem nodeCopy = 
+//                                            mFactory.createDiagramNode(diagram);
+//
+//                                    String diagramName = diagram.getNameWithAlias();
+//                                    LOG.info("*** addNode: diagramNameWithAlias = "+
+//                                            diagramName);
+//                                    nodeCopy.setDisplayedName(diagramName, false);
+//                                    nodeCopy.setName(diagramName);
+//                                    diagramsNode.addChild(nodeCopy);
+//                                }
+//                            }
+//                        }
                     }
                 }
                 
@@ -892,7 +892,7 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                                 LOG.info("*** DrawingAreaSink.onDrawingAreaPostCreated: diagramNameWithAlias = "+ diagramName);
                                 node.setDisplayedName(diagramName, false);
                                 node.setName(diagramName);
-                                diagramsNode.addChild(node);
+                                addItem(diagramsNode, node);
                             }
                         }
                     }
