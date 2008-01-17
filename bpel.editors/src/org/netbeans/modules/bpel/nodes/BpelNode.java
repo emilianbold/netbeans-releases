@@ -163,7 +163,7 @@ public abstract class BpelNode<T>
     public static final String FOR_PROPERTY_EQ = " forProperty="; // NOI18N
     public static final String EMPTY_STRING = "";
     public static final String MESSAGE_TYPE_EQ = " messageType=";
-    public static final int MAX_CONTENT_NAME_LENGTH = 50;
+    public static final int MAX_CONTENT_NAME_LENGTH = 35;
     public static final String DOTS_SIGN = "...";
     public static final String DELIMITER = "/"; // NOI18N
     public static final String EQUAL_SIGN = "="; // NOI18N

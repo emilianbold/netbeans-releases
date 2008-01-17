@@ -75,8 +75,13 @@ public class DefaultBpelEntityNode extends BpelNode<BpelEntity> {
             // content of the element could contain html-elements, e.g.: documentation:
             name = Util.getCorrectedHtmlRenderedString(name);
             
-            if (name != null && name.length() > MAX_CONTENT_NAME_LENGTH) {
-                name = name.substring(0, MAX_CONTENT_NAME_LENGTH);
+            if (name != null) {
+                String tagName = org.netbeans.modules.bpel.editors.api.utils.Util.getTagName(ref);
+                assert tagName != null;
+                name = tagName+" ( "  // NOI18N
+                        +(name.length() > MAX_CONTENT_NAME_LENGTH 
+                        ? name.substring(0, MAX_CONTENT_NAME_LENGTH)+" ...)" : name+" )"); // NOI18N
+
             }
         }
         
