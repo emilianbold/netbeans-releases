@@ -279,19 +279,11 @@ public class InstallManager extends InstalledFileLocator{
     }
     
     private static boolean isParentOf (File parent, File child) {
-        if (parent.equals (child.getParentFile ())) {
-            return true;
+        File tmp = child.getParentFile ();
+        while (tmp != null && ! parent.equals (tmp)) {
+            tmp = tmp.getParentFile ();
         }
-        if (! parent.isDirectory ()) {
-            return false;
-        }
-        File [] childs = parent.listFiles ();
-        for (int i = 0; i < childs.length; i++) {
-            if (isParentOf (childs [i], child)) {
-                return true;
-            }
-        }
-        return false;
+        return tmp != null;
     }
     
     static File getUserDir () {
