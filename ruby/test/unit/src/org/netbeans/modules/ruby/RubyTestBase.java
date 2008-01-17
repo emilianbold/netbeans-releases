@@ -88,7 +88,6 @@ public abstract class RubyTestBase extends org.netbeans.api.ruby.platform.RubyTe
 
     public RubyTestBase(String testName) {
         super(testName);
-        System.setProperty("ruby.interpreter", FileUtil.toFile(TestUtil.getXTestJRubyHomeFO().getFileObject("bin/jruby")).getAbsolutePath());
     }
 
     protected @Override void setUp() throws Exception {
