@@ -41,11 +41,15 @@
 
 package org.netbeans.modules.cnd.repository.testbench.sfs;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 
 
-class TestKey implements Key {
+class TestKey implements Key, SelfPersistent {
     
     private String key;
     
@@ -56,6 +60,11 @@ class TestKey implements Key {
     public TestKey(String key) {
 	this.key = key;
     }
+
+    public TestKey(DataInput aStream) throws IOException {
+        this(aStream.readUTF());
+    }
+    
     
     public String getAt(int level) {
 	return key;
@@ -95,5 +104,9 @@ class TestKey implements Key {
     public String getUnit() {
 	return "Test"; // NOI18N
     }
-    
+
+    public void write(DataOutput output) throws IOException {
+        output.writeUTF(key);
+    }
+   
 }
