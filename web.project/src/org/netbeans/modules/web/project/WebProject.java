@@ -1119,7 +1119,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
                 if (isEE5) {
                     retVal = getPrivilegedTemplatesEE5();
                 } else {
-                    retVal = getPrivilegedTemplates();
+                    retVal = WebProject.this.getPrivilegedTemplates();
                 }
             }
             return retVal;
