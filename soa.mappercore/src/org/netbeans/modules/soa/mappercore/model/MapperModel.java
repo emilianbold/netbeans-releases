@@ -34,8 +34,10 @@ public interface MapperModel extends TreeModel {
     public Graph getGraph(TreePath treePath);
     public boolean searchGraphsInside(TreePath treePath);
 
-    public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target);
-    public void connect(TreePath treePath, SourcePin source, TargetPin target);
+    public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target,
+            TreePath oldTreePath, Link oldLink);
+    public void connect(TreePath treePath, SourcePin source, TargetPin target,
+            TreePath oldTreePath, Link oldLink);
     
     public GraphSubset getGraphSubset(Transferable transferable);
     

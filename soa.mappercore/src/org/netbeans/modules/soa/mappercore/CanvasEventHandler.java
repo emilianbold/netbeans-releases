@@ -22,7 +22,12 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
 import javax.naming.directory.SearchResult;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
+import org.netbeans.modules.soa.mappercore.model.Link;
+import org.netbeans.modules.soa.mappercore.model.SourcePin;
+import org.netbeans.modules.soa.mappercore.model.TargetPin;
+import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
 
@@ -47,18 +52,22 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
 
     public void mouseReleased(MouseEvent e) {
         CanvasSearchResult searchResult = getCanvas().find(e.getX(), e.getY());
-        SelectionModel selectionModel = getSelectionModel();
-        if (e.isControlDown()) {
-            if (searchResult != null) {
-                selectionModel.switchSelected(
-                        searchResult.getTreePath(),
-                        searchResult.getGraphItem());
-            }
-        } else {
-            if (selectionModel.isSelected(searchResult.getTreePath(), searchResult.getGraphItem())){
-                selectionModel.setSelected(
-                        searchResult.getTreePath(), 
-                        searchResult.getGraphItem());
+        if (searchResult != null) {
+            SelectionModel selectionModel = getSelectionModel();
+            if (e.isControlDown()) {
+                if (searchResult != null) {
+                    selectionModel.switchSelected(
+                            searchResult.getTreePath(),
+                            searchResult.getGraphItem());
+                }
+            } else {
+                if (selectionModel.isSelected(searchResult.getTreePath(), 
+                        searchResult.getGraphItem()))
+                {
+                    selectionModel.setSelected(
+                            searchResult.getTreePath(), 
+                            searchResult.getGraphItem());
+                }
             }
         }
         reset();
@@ -108,13 +117,41 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             CanvasSearchResult result = getCanvas().find(initialEvent.getX(), initialEvent.getY());
 
             if (result.getPinItem() instanceof Vertex) {
-                transferable = linkTool.activateOutgoing(
-                        result.getTreePath(),
-                        (Vertex) result.getPinItem());
+                Vertex vertex = (Vertex) result.getPinItem();
+                Link link = vertex.getOutgoingLink();
+                
+                if (link == null) {
+                    transferable = linkTool.activateOutgoing(
+                            result.getTreePath(), vertex);
+                } else {
+                    TargetPin targetPin = link.getTarget();
+                    if (targetPin instanceof VertexItem) {
+                        transferable = linkTool.activateIngoing(
+                                result.getTreePath(), (VertexItem) targetPin);
+                    } else if (targetPin instanceof Graph) {
+                        transferable = linkTool.activateIngoing(
+                                result.getTreePath(), (Graph) targetPin, link);
+                    }
+                }
             } else if (result.getPinItem() instanceof VertexItem) {
-                transferable = linkTool.activateIngoing(
-                        result.getTreePath(),
-                        (VertexItem) result.getPinItem());
+                VertexItem vertexItem = (VertexItem) result.getPinItem();
+                Link oldLink = vertexItem.getIngoingLink();
+                
+                if (oldLink == null) {
+                    transferable = linkTool.activateIngoing(
+                            result.getTreePath(),
+                            (VertexItem) result.getPinItem());
+                } else {
+                    SourcePin sourcePin = oldLink.getSource();
+                    if (sourcePin instanceof Vertex) {
+                        transferable = linkTool.activateOutgoing(
+                                result.getTreePath(), (Vertex) sourcePin);
+                    } else if (sourcePin instanceof TreeSourcePin) {
+                        transferable = linkTool.activateOutgoing(
+                                (TreeSourcePin) sourcePin, oldLink, 
+                                result.getTreePath());
+                    }
+                }
             } else if (result.getGraphItem() instanceof Vertex) {
 
                 transferable = moveTool.getMoveTransferable(
@@ -127,6 +164,7 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             reset();
         }
     }
+
 
     @Override
     public void mouseClicked(MouseEvent e) {

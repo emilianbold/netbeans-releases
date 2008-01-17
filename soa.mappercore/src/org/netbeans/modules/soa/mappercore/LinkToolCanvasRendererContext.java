@@ -25,6 +25,7 @@ import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
  *
@@ -68,35 +69,20 @@ public class LinkToolCanvasRendererContext implements CanvasRendererContext {
 
     
     public boolean paintLink(TreePath treePath, Link link) {
-        return true;
+        if (link != linkTool.getOldLink()) return true;
+        return !Utils.equal(treePath, linkTool.getOldTreePath());
     }
 
     
     public boolean paintVertexItemPin(TreePath treePath, VertexItem vertexItem) {
-        if (vertexItem.getIngoingLink() != null) {
-            return false;
-        }
-
-        if (linkTool.isActive()) {
-            return linkTool.getActivePins().contains(treePath, vertexItem) 
-                    && linkTool.getTargetPin() != vertexItem;
-        }
-        
-        return true;
+        return linkTool.getActivePins().contains(treePath, vertexItem) 
+                && linkTool.getTargetPin() != vertexItem;
     }
 
     
     public boolean paintVertexPin(TreePath treePath, Vertex vertex) {
-        if (vertex.getOutgoingLink() != null) {
-            return false;
-        }
-        
-        if (linkTool.isActive()) {
-            return linkTool.getActivePins().contains(treePath, vertex)
-                    && linkTool.getSourcePin() != vertex;
-        }
-        
-        return true;
+        return linkTool.getActivePins().contains(treePath, vertex)
+                && linkTool.getSourcePin() != vertex;
     }
 
     

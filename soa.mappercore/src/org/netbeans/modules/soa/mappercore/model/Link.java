@@ -194,6 +194,8 @@ public class Link implements GraphItem {
         if (source == null) return;
         if (target == null) return;
         
+        if (!rendererContext.paintLink(treePath, this)) return;
+        
         Mapper mapper = rendererContext.getMapper();
         int step = rendererContext.getStep();
         

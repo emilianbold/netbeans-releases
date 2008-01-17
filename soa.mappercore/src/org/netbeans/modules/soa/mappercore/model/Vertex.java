@@ -297,8 +297,8 @@ public abstract class Vertex implements SourcePin, GraphItem {
     
     
     public void paintSourcePin(Graphics2D g2, TreePath treePath,
-            CanvasRendererContext rendererContext, int graphY) {
-        
+            CanvasRendererContext rendererContext, int graphY) 
+    {
         Link link = getOutgoingLink();
         
         int step = rendererContext.getStep();
@@ -333,7 +333,7 @@ public abstract class Vertex implements SourcePin, GraphItem {
             g2.draw(gp);
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
                     RenderingHints.VALUE_STROKE_NORMALIZE);
-        } else if (link != null) {
+        } else if (link != null && rendererContext.paintLink(treePath, link)) {
             Color color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
             
             if (rendererContext.isSelected(treePath)) {

@@ -56,7 +56,7 @@ public final class MapperTreeNode<DataObject> {
     public void discardCachedData() {
         mDisplayName = null;
         mIcon = null;
-        mChildren = null;
+//        mChildren = null;
         mIsLeaf = null;
     }
     

@@ -25,7 +25,6 @@ import java.util.Map;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.MapperStyle;
 import org.netbeans.modules.soa.mappercore.icons.NumberIcon2D;
@@ -258,24 +257,39 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
         return new DefaultTreeModel(root);
     }
 
-    public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target) {
-        if (source instanceof Vertex) {
-            return ((Vertex) source).getOutgoingLink() == null;
-        }
-        
-        if (target instanceof VertexItem) {
-            return ((VertexItem) target).getIngoingLink() == null;
-        }
-        
-        if (target instanceof Graph) {
-            return !((Graph) target).hasIngoingLinks();
-        }
-        
+    public boolean canConnect(TreePath treePath, SourcePin source, 
+            TargetPin target, TreePath oldTreePath, Link oldLink) 
+    {
+        if (oldLink != null) return false;
+//        if (source instanceof TreeSourcePin) {
+//            TreePath path = ((TreeSourcePin) source).getTreePath();
+//            return !path.getLastPathComponent().toString().equals("colors");
+//        }
+//            
+//        if (source instanceof Vertex) {
+//            return ((Vertex) source).getOutgoingLink() == null;
+//        }
+//        
+//        if (target instanceof VertexItem) {
+//            return ((VertexItem) target).getIngoingLink() == null;
+//        }
+//        
+//        if (target instanceof Graph) {
+//            return !((Graph) target).hasIngoingLinks();
+//        }
+//        
+//        return true;
         return true;
     }
 
     
-    public void connect(TreePath treePath, SourcePin source, TargetPin target) {
+    public void connect(TreePath treePath, SourcePin source, TargetPin target, 
+            TreePath oldTreePath, Link oldLink) 
+    {
+        if (oldTreePath != null && oldLink != null) {
+            oldLink.disconnect();
+        }
+        
         Object parent = treePath.getLastPathComponent();
         
         Graph graph = getGraph(treePath);
@@ -358,12 +372,12 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
 
     
     public boolean canCopy(TreePath treePath, GraphSubset graphSubset) {
-        return false;
+        return true;
     }
 
 
     public boolean canMove(TreePath treePath, GraphSubset graphSubset) {
-        return false;
+        return true;
     }
     
     

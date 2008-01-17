@@ -63,7 +63,8 @@ public abstract class MapperCollection {
     public static MapperCollection create(Map<TreePath, Set<VertexItem>> 
             vertexItems)
     {
-        if (vertexItems == null || vertexItems.isEmpty()) return null;
+        if (vertexItems == null || vertexItems.isEmpty()) return 
+                EMPTY_COLLECTION;
         if (vertexItems.size() == 1) {
             return new SingleGraphVertexItemCollection(
                     vertexItems.keySet().iterator().next(),

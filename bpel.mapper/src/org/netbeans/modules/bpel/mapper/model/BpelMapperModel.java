@@ -188,7 +188,10 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     //   Modification methods
     //==========================================================================
 
-    public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target) {
+    public boolean canConnect(TreePath treePath, SourcePin source, 
+            TargetPin target, TreePath oldTreePath, Link oldLink) 
+    {
+        if (oldLink != null) return false;
         if (target instanceof Graph) {
             if (!mRightTreeModel.isConnectable(treePath)) {
                 return false;
@@ -248,7 +251,11 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         return true;
     }
 
-    public void connect(TreePath treePath, SourcePin source, TargetPin target) {
+    public void connect(TreePath treePath, SourcePin source, TargetPin target,
+            TreePath oldTreePath, Link oldLink) 
+    {
+        if (oldLink != null) return;
+        
         Graph graph = getGraph(treePath);
         //
         Graph resultGraph;

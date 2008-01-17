@@ -130,12 +130,13 @@ public class RightTreeEventHandler extends AbstractMapperEventHandler {
             LeftTree leftTree = getLeftTree();
             LinkTool linkTool = getMapper().getLinkTool();
             Transferable transferable = linkTool.activateIngoing(
-                    initialPath, initialTargetGraph);
+                    initialPath, initialTargetGraph, null);
 
             startDrag(initialEvent, transferable, MOVE);
             reset();
         }
     }
+    
     
     @Override
     public void mouseClicked(MouseEvent e) {

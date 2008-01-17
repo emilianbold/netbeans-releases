@@ -303,7 +303,7 @@ public class VertexItem implements TargetPin, GraphItem {
             g2.draw(gp);
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
                     RenderingHints.VALUE_STROKE_NORMALIZE);
-        } else if (link != null) {
+        } else if (link != null && rendererContext.paintLink(treePath, link)) {
             Color color = MapperStyle.LINK_COLOR_UNSELECTED_NODE;
             
             if (rendererContext.isSelected(treePath)) {

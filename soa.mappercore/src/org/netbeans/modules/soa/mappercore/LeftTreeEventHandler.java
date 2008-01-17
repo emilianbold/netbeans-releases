@@ -79,8 +79,7 @@ public class LeftTreeEventHandler extends AbstractMapperEventHandler {
             LeftTree leftTree = getLeftTree();
             LinkTool linkTool = getMapper().getLinkTool();
             Transferable transferable = linkTool.activateOutgoing(
-                    initialSourcePin);
-            
+                    initialSourcePin, null, null);
             startDrag(initialEvent, transferable, MOVE);
             reset();
         }

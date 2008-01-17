@@ -76,6 +76,10 @@ public class LinkTool extends MapperPropertyAccess {
     
     private MapperCollection activePins;
     
+    private TreePath oldTreePath = null;
+    private Link oldLink = null;
+    
+    
     public LinkTool(Mapper mapper) {
         super(mapper);
     }
@@ -111,16 +115,25 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
     
+    public Link getOldLink() {
+        return oldLink;
+    }
+    
+    
+    public TreePath getOldTreePath() {
+        return oldTreePath;
+    }
+    
+    
+    public TreePath getTargetPath() {
+        return targetPath;
+    }
+    
+    
     public JComponent getSourceComponent() {
         return sourceComponent;
     }
     
-    
-    private boolean canConnect(TreePath treePath, SourcePin source, 
-            TargetPin target) 
-    {
-        return true;
-    }
     
     
     MapperCollection getActivePins() {
@@ -128,8 +141,20 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
     
+    private void initOld(Link oldLink, TreePath oldTreePath) {
+        if (oldLink != null) {
+            this.oldLink = oldLink;
+            this.oldTreePath = oldTreePath;
+        } else {
+            this.oldLink = null;
+            this.oldTreePath = null;
+        }
+    }
+    
+    
     public Point getSourcePoint() {
         if (sourcePin == null) {
+            if (sourceComponent == null) return null;
             return Utils.fromScrollPane(sourceComponent, new Point(x1, y1), 
                     null);
         } 
@@ -137,8 +162,15 @@ public class LinkTool extends MapperPropertyAccess {
         if (sourcePin instanceof TreeSourcePin) {
             TreePath treePath = ((TreeSourcePin) sourcePin).getTreePath();
             JTree tree = (JTree) sourceComponent;
-            Rectangle bounds = tree.getRowBounds(tree.getRowForPath(treePath));
-            return new Point(
+            
+            Rectangle bounds = null;
+            
+            while (bounds == null && treePath != null) {
+                bounds = tree.getRowBounds(tree.getRowForPath(treePath));
+                treePath = treePath.getParentPath();
+            }
+            
+            return (bounds == null) ? new Point(0, 0) : new Point(
                     bounds.x + bounds.width, 
                     bounds.y + bounds.height / 2);
         }
@@ -169,6 +201,7 @@ public class LinkTool extends MapperPropertyAccess {
     
     public Point getTargetPoint() {
         if (targetPin == null) {
+            if (targetComponent == null) return null;
             return Utils.fromScrollPane(targetComponent, new Point(x2, y2), 
                     null);
         }
@@ -198,7 +231,9 @@ public class LinkTool extends MapperPropertyAccess {
     
     
 
-    public Transferable activateIngoing(TreePath targetPath, Graph graph) {
+    public Transferable activateIngoing(TreePath targetPath, Graph graph, 
+            Link link) 
+    {
         this.outgoing = false;
         this.uid = createUID();
         
@@ -211,6 +246,8 @@ public class LinkTool extends MapperPropertyAccess {
         
         this.sourcePin = null;
         this.sourceComponent = null;
+        
+        initOld(link, targetPath);
         
         this.activePins = findActivePins();
 
@@ -231,19 +268,25 @@ public class LinkTool extends MapperPropertyAccess {
         
         this.sourcePin = null;
         this.sourceComponent = null;
+
+        initOld(item.getIngoingLink(), targetPath);
         
         this.activePins = findActivePins();
-
+        
         return new LinkTransferable(uid);
     }
     
     
-    public Transferable activateOutgoing(TreeSourcePin sourcePin) {
+    public Transferable activateOutgoing(TreeSourcePin sourcePin, Link oldLink, 
+            TreePath oldTreePath) 
+    {
         this.outgoing = true;
         this.uid = createUID();
         
         this.sourcePin = sourcePin;
         this.sourceComponent = getLeftTree();
+        
+        initOld(oldLink, oldTreePath);
         
         this.targetPath = null;
         this.targetComponent = null;
@@ -262,6 +305,8 @@ public class LinkTool extends MapperPropertyAccess {
         this.sourcePin = sourcePin;
         this.sourceComponent = getCanvas();
         
+        initOld(sourcePin.getOutgoingLink(), targetPath);
+        
         this.targetPath = targetPath;
         this.targetPin = null;
         this.targetComponent = null;
@@ -270,26 +315,14 @@ public class LinkTool extends MapperPropertyAccess {
         
         return new LinkTransferable(uid);
     }
-
-    
-    
-//    public Transferable activate(boolean outgoing, 
-//            SourcePin sourcePin, JComponent sourceComponent, Point sourcePoint,
-//            TargetPin targetPin, JComponent targetComponent, Point targetPoint) 
-//    {
-//        this.outgoing = outgoing;
-//        this.uid = createUID();
-//        
-//        setSource(sourcePin, sourceComponent, sourcePoint);
-//        setTarget(targetPin, targetComponent, targetPoint);
-//        
-//        return new LinkTransferable(uid);
-//    }
     
     
     private void reset() {
         uid = -1;
 
+        oldLink = null;
+        oldTreePath = null;
+        
         sourcePin = null;
         sourceComponent = null;
         
@@ -351,12 +384,18 @@ public class LinkTool extends MapperPropertyAccess {
         TreePath treePath = tree.getPathForLocation(point.x, point.y);
         
         if (treePath != null) {
-            treeSourcePin = getMapperModel().getTreeSourcePin(treePath);
-        } 
+            MapperModel model = getMapperModel();
+            treeSourcePin = model.getTreeSourcePin(treePath);
+            if (treeSourcePin != null 
+                    && !canConnect(model, targetPath, treeSourcePin, targetPin)) 
+            {
+                treeSourcePin = null;
+            }
+        }
         
         this.sourcePin = treeSourcePin;
         
-        acceptReject(dtde, false);
+        acceptReject(dtde, treeSourcePin == null);
         
         return true;
     }
@@ -507,28 +546,33 @@ public class LinkTool extends MapperPropertyAccess {
             if (graph != null && treePath != null) {
                 if (sourcePin instanceof Vertex) {
                     if (Utils.equal(targetPath, treePath) 
-                            && model.canConnect(treePath, sourcePin, graph))
+                            && canConnect(model, treePath, sourcePin, graph))
                     {
                         targetGraph = graph;
                         targetPath = treePath;
-                    } else {
-                        rejectDrag = true;
                     }
-                } else if (model.canConnect(treePath, sourcePin, graph)) {
+                } else if (canConnect(model, treePath, sourcePin, graph)) {
                     // TreeSourcePin
                     targetGraph = graph;
                     targetPath = treePath;
-                }
+                } 
+            } else {
+                graph = null;
             }
         }
         
         this.x2 = scrollPanePoint.x;
         this.y2 = scrollPanePoint.y;
-        this.targetPin = targetGraph;
-        this.targetPath = targetPath;
         this.targetComponent = tree;
         
-        acceptReject(dtde, rejectDrag);
+        if (targetGraph != null) {
+            this.targetPin = targetGraph;
+            this.targetPath = targetPath;
+            acceptReject(dtde, false);
+        } else {
+            this.targetPin = null;
+            acceptReject(dtde, true);
+        }
         
         getCanvas().repaint();
         
@@ -546,48 +590,6 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
 
-//    private boolean dragOverCanvas(Canvas canvas, 
-//            DropTargetDragEvent dtde) 
-//    {
-//        Point point = dtde.getLocation();
-//
-//        int graphX = canvas.toGraph(point.x);
-//        
-//        MapperNode node = getNodeAt(point.y);
-//        
-//        TreePath treePath = null;
-//        
-//        if (node != null) {
-//            treePath = node.getTreePath();
-//        }
-//        
-//        Graph graph = node.getGraph();
-//        
-//        if (isIngoing()) {
-//            // ingoing
-//            if (treePath != null && treePath.equals(targetPath)) {
-//                // drag over correct graph
-//                
-//            }
-//        } else if (sourcePin instanceof TreeSourcePin) {
-//            // outgoing from left tree
-//            if (treePath != null && graph != null) {
-//                this.targetPath = treePath;
-//            } else {
-//                this.targetPath = null;
-//            }
-//        } else {
-//            // outgoing from vertex
-//            if (treePath != null && treePath.equals(targetPath)) {
-//                // drag over correct graph
-//                
-//            }
-//        }
-//        
-//        return true;
-//    }
-    
-    
     private Vertex findVertex(TreePath treePath, Graph graph, 
             int graphX, int graphY, int step) 
     {
@@ -650,108 +652,6 @@ public class LinkTool extends MapperPropertyAccess {
     }
 
     
-//    public boolean drag(JComponent component, DropTargetDragEvent dtde) {
-//        if (!isActive()) return false;
-//        if (!isValidTransferable(dtde.getTransferable())) return false;
-//
-//        LeftTree leftTree = getLeftTree();
-//        RightTree rightTree = getRightTree();
-//        Canvas canvas = getCanvas();
-//        
-//        Point p = dtde.getLocation();
-//        
-//        if (component == canvas) {
-//            p.x = canvas.toGraph(p.x);
-//            if (isIngoing()) {
-//                SourcePin edgeSource = canvas.findEdgeSource(p);
-//                setSource(edgeSource, component, p);
-//            } else {
-//                TargetPin edgeTarget = canvas.findEdgeTarget(p);
-//                setTarget(edgeTarget, component, p);
-//            }
-//        } else if (component == leftTree) {
-//            if (isIngoing()) {
-//                TreeSourcePin edgeSource = leftTree.findEdgeSource(p, true);
-//                setSource(edgeSource, component, p);
-//            } else {
-//                setTarget(null, component, p);
-//                dtde.rejectDrag();
-//            }
-//        } else if (component == rightTree) {
-//            if (isOutgoing()) {
-//                Graph edgeTarget = rightTree.findEdgeTarget(p, true);
-//                setTarget(edgeTarget, component, p);
-//            } else {
-//                setSource(null, component, p);
-//                dtde.rejectDrag();
-//            }
-//        } else {
-//            assert false;
-//        }
-//        
-//        leftTree.repaint();
-//        rightTree.repaint();
-//        canvas.repaint();
-//        return true;
-//    }
-//    
-//    
-//    
-//    private boolean dragOverCanvas(Canvas canvas, 
-//            DropTargetDragEvent dtde) 
-//    {
-//        Point point = dtde.getLocation();
-//
-//        int graphX = canvas.toGraph(point.x);
-//        
-//        MapperNode node = getNodeAt(point.y);
-//        
-//        TreePath treePath = null;
-//        
-//        if (node != null) {
-//            treePath = node.getTreePath();
-//        }
-//        
-//        Graph graph = node.getGraph();
-//        
-//        if (isIngoing()) {
-//            // ingoing
-//            if (treePath != null && treePath.equals(targetPath)) {
-//                // drag over correct graph
-//                
-//            }
-//        } else if (sourcePin instanceof TreeSourcePin) {
-//            // outgoing from left tree
-//            if (treePath != null && graph != null) {
-//                this.targetPath = treePath;
-//            } else {
-//                this.targetPath = null;
-//            }
-//        } else {
-//            // outgoing from vertex
-//            if (treePath != null && treePath.equals(targetPath)) {
-//                // drag over correct graph
-//                
-//            }
-//        }
-//    }
-//    
-//    
-//    private void dragOverLeftTree(LeftTree leftTree, 
-//            DropTargetDragEvent dtde) 
-//    {
-//        
-//    }
-//
-//    
-//    public Vertex findVertex(Graph graph, int x, int y, int step) {
-//        for (int i = graph.getVertexCount() - 1; i >= 0; i--) {
-//            Vertex vertex = graph.getVertex(i);
-//            
-//        }
-//    }
-//    
-    
     public boolean drop(JComponent component, DropTargetDropEvent dtde) {
         if (!isActive()) return false;
         if (!isValidTransferable(dtde.getTransferable())) return false;
@@ -759,7 +659,7 @@ public class LinkTool extends MapperPropertyAccess {
         MapperModel model = getMapperModel();
         
         if (sourcePin != null && targetPin != null && targetPath != null) {
-            model.connect(targetPath, sourcePin, targetPin);
+            model.connect(targetPath, sourcePin, targetPin, oldTreePath, oldLink);
         }
         
         getMapper().repaint();
@@ -812,6 +712,8 @@ public class LinkTool extends MapperPropertyAccess {
             
             Point sourcePoint = getSourcePoint();
             Point targetPoint = getTargetPoint();
+            
+            if (sourcePoint == null || targetPoint == null) return;
             
             Rectangle visibleRect = canvas.getViewport().getViewRect();
             
@@ -933,7 +835,7 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
     
-    private static void findSourceVerteces(TargetPin targetPin, 
+    private void findSourceVerteces(TargetPin targetPin, 
             MapperModel model, TreePath treePath, Set<Vertex> result)
     {
         Graph graph = model.getGraph(treePath);
@@ -941,7 +843,7 @@ public class LinkTool extends MapperPropertyAccess {
         if (graph != null) {
             for (int i = graph.getVertexCount() - 1; i >= 0; i--) {
                 Vertex vertex = graph.getVertex(i);
-                if (model.canConnect(treePath, vertex, targetPin)) {
+                if (canConnect(model, treePath, vertex, targetPin)) {
                     result.add(vertex);
                 }
             }
@@ -949,7 +851,7 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
     
-    private static void findTargetVertexItems(TreeSourcePin treeSourcePin, 
+    private void findTargetVertexItems(TreeSourcePin treeSourcePin, 
             MapperModel model, TreePath treePath, Map<TreePath, 
             Set<VertexItem>> result) 
     {
@@ -964,7 +866,7 @@ public class LinkTool extends MapperPropertyAccess {
                 if (!(vertex instanceof Constant)) {
                     for (int j = vertex.getItemCount() - 1; j >= 0; j--) {
                         VertexItem item = vertex.getItem(j);
-                        if (model.canConnect(treePath, treeSourcePin, item)) {
+                        if (canConnect(model, treePath, treeSourcePin, item)) {
                             items.add(item);
                         }
                     }
@@ -988,7 +890,7 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
     
-    private static void findTargetVertexItems(Vertex sourceVertex, MapperModel model, 
+    private void findTargetVertexItems(Vertex sourceVertex, MapperModel model, 
             TreePath treePath, Set<VertexItem> vertexItems) 
     {
         Graph graph = model.getGraph(treePath);
@@ -999,13 +901,66 @@ public class LinkTool extends MapperPropertyAccess {
                 if (!(vertex instanceof Constant)) {
                     for (int j = vertex.getItemCount() - 1; j >= 0; j--) {
                         VertexItem item = vertex.getItem(j);
-                        if (model.canConnect(treePath, sourceVertex, item)) {
+                        if (canConnect(model, treePath, sourceVertex, item)) {
                             vertexItems.add(item);
                         }
                     }
                 }
             }
         }
+    }
+    
+    
+    private boolean canConnect(MapperModel model, TreePath treePath, 
+            SourcePin sourcePin, TargetPin targetPin)
+    {
+        boolean canConnect = (isOutgoing()) 
+                ? canConnectOutgoing(treePath, targetPin)
+                : canConnectIngoing(treePath, sourcePin);
+        
+        if (canConnect && checkCyrcle(sourcePin, targetPin)) {
+            canConnect = false;
+        }
+        
+        return (canConnect) ? model.canConnect(treePath, sourcePin, targetPin, 
+                oldTreePath, oldLink) : false;
+    }
+
+    
+    private boolean canConnectOutgoing(TreePath treePath, TargetPin targetPin) {
+        if (targetPin instanceof VertexItem) {
+            VertexItem item = (VertexItem) targetPin;
+            
+            Link link = item.getIngoingLink();
+            
+            if (link == null) return true;
+            
+            return (link == oldLink) && Utils.equal(treePath, oldTreePath);
+        } 
+        
+        Graph graph = (Graph) targetPin;
+
+        if (oldLink != null) {
+            return oldLink.getTarget() == graph 
+                    && Utils.equal(oldTreePath, treePath);
+        } 
+        
+        return !graph.hasOutgoingLinks();
+    }
+    
+    
+    private boolean canConnectIngoing(TreePath treePath, SourcePin sourcePin) {
+        if (sourcePin instanceof Vertex) {
+            Vertex vertex = (Vertex) sourcePin;
+            
+            Link link = vertex.getOutgoingLink();
+            
+            if (link == null) return true;
+            
+            return (link == oldLink) && Utils.equal(treePath, oldTreePath);
+        }
+        
+        return true;
     }
     
     
@@ -1031,7 +986,43 @@ public class LinkTool extends MapperPropertyAccess {
             throw new UnsupportedFlavorException(flavor);
         }
     }
-
+    
+    
+    private boolean checkCyrcle(SourcePin sourcePin, TargetPin targetPin) {
+        if (sourcePin instanceof Vertex && targetPin instanceof VertexItem) {
+            Set<Vertex> visited = new HashSet<Vertex>();
+            visited.add(((VertexItem) targetPin).getVertex());
+            return checkCyrcle((Vertex) sourcePin, visited);
+        }
+        
+        return false;
+    }
+    
+    
+    private boolean checkCyrcle(Vertex current, Set<Vertex> visited) {
+        if (visited.contains(current)) return true;
+        
+        visited.add(current);
+        
+        for (int i = current.getItemCount() - 1; i >= 0; i--) {
+            VertexItem item = current.getItem(i);
+            Link link = item.getIngoingLink();
+            
+            if (link != null && link != oldLink) {
+                SourcePin sourcePin = link.getSource();
+                if (sourcePin instanceof Vertex) {
+                    if (checkCyrcle((Vertex) sourcePin, visited)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        
+        visited.remove(current);
+        
+        return false;
+    }
+    
     
     private static final DataFlavor LINK_DATA_FLAVOR = new DataFlavor(
             LinkTransferable.class, "MapperLinkToolUID");
