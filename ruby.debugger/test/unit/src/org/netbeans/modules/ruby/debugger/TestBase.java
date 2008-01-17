@@ -105,7 +105,6 @@ public abstract class TestBase extends RubyTestBase {
         String problems = Util.getFastDebuggerProblems(platform.getGemManager());
         assertNull("fast debugger installed: " + problems, problems);
         
-//        System.setProperty("ruby.interpreter", TestBase.getFile("ruby.executable", true).getAbsolutePath());
         engines = new Stack<Engine>();
         engines.push(Engine.CLASSIC);
         if (isRDebugExecutableCorrectlySet()) {
