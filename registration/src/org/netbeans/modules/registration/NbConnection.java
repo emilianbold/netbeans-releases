@@ -48,11 +48,15 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
@@ -178,6 +182,7 @@ class NbConnection {
     /**
      * Query web service if all products are registered. If there is confirmation that any product is
      * not registered show Reminder dialog.
+     * It is done only if local registration status is 'registered'.
      */
     private static void checkProductRegistrationStatus () {
         RegistrationData regData = null;
@@ -195,8 +200,83 @@ class NbConnection {
                 //If one service tag is not registered show reminder dialog
                 RegisterAction a = SharedClassObject.findObject(RegisterAction.class, true);
                 a.showDialog();
-                return;
+                break;
             }
+        }
+        //Locate GF service tag. If it is present and local registration status is registered
+        //Check GF registration status on server. If GF registration status is registered on server
+        //update GF registration status at [gf.home]/lib/registration/servicetag-registry.xml from
+        //'NOT REGISTERED'  to 'REGISTERED'.
+        ServiceTag gfST = null;
+        for (ServiceTag st : svcTags) {
+            if (st.getProductName().startsWith("Sun Java System Application Server")) {
+                gfST = st;
+                break;
+            }
+        }
+        if (gfST != null) {
+            registered = NbConnectionSupport.isRegistered2(NbConnectionSupport.getRegistrationQueryHost(), gfST.getInstanceURN());
+            if (registered) {
+                updateGFRegistrationStatus(gfST);
+            }
+        }
+    }
+    
+    /** 
+     * This method updates local GF registration status 
+     * at [gf.home]/lib/registration/servicetag-registry.xml from 'NOT REGISTERED'  to 'REGISTERED'.
+     * 
+     * @param st GF service tag. It contains gf.home dir
+     * 
+     */
+    private static void updateGFRegistrationStatus (ServiceTag st) {
+        String id = st.getProductDefinedInstanceID();
+        String [] arr = id.split(",");
+        String gfHome = "";
+        for (String s : arr) {
+            if (s.startsWith("glassfish.home")) {
+                int pos = s.indexOf("=");
+                if (pos != -1) {
+                    gfHome = s.substring(pos + 1);
+                    break;
+                } else {
+                    return;
+                }
+            }
+        }
+        if (gfHome.length() == 0) {
+            return;
+        }
+        File regFile = new File(gfHome + File.separator + "lib" + File.separator
+        + "registration" + File.separator + "servicetag-registry.xml");
+        //It checks both existence and write access
+        if (!regFile.canWrite()) {
+            return;
+        }
+        LOG.log(Level.INFO,"Update file: " + regFile);
+        try {
+            InputStream in = new FileInputStream(regFile);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+            File f = File.createTempFile("nbt", null, regFile.getParentFile());
+            PrintWriter pw = new PrintWriter(f,"UTF-8");
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                String output = line;
+                if (line.contains("NOT_REGISTERED")) {
+                    output = line.replace("NOT_REGISTERED", "REGISTERED");
+                } else if (line.contains("ASK_FOR_REGISTRATION")) {
+                    output = line.replace("ASK_FOR_REGISTRATION", "DONT_ASK_FOR_REGISTRATION");
+                }
+                pw.println(output);
+            }
+            pw.flush();
+            pw.close();
+            in.close();
+            regFile.delete();
+            boolean ret = f.renameTo(regFile);
+            LOG.log(Level.FINE,"Did rename succeed: " + ret);
+        } catch (IOException exc) {
+            LOG.log(Level.INFO,"Cannot update: " + regFile, exc);
         }
     }
     

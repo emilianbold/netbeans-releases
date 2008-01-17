@@ -275,4 +275,65 @@ public class NbConnectionSupport {
         }
         return true;
     }
+    
+    /** Query web service if given product by instance_urn is registered.
+     * Returns true only when we have 'REGISTERED' response from server.
+     * Otherwise return false.
+     */
+    public static boolean isRegistered2 (String host, String uuid) {
+        try {
+            URL url = new URL(
+                host
+                + "/ProductRegistrationService/status/"
+                + uuid);
+            LOG.log(Level.FINE,"Query URL: " + url);
+            //HttpURLConnection con = (HttpURLConnection) (url.openConnection());
+            HttpsURLConnection con = (HttpsURLConnection) (url.openConnection());
+            
+            con.setRequestMethod("GET");
+            con.setDoOutput(true);
+            con.setDoInput(true);
+            con.setAllowUserInteraction(false);
+            con.setUseCaches(false);
+
+            con.connect();
+            int responseCode = con.getResponseCode();
+
+            LOG.log(Level.FINE,"Response code = " + responseCode);
+            if (responseCode == 200) {
+                BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(con.getInputStream()));
+                StringBuffer sb = new StringBuffer();
+
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    sb.append(line);
+                }
+
+                reader.close();
+                String response = sb.toString();
+                
+                LOG.log(Level.FINE,"Response: " + response);
+                
+                // the response should be equal to 'REGISTERED' or 'NOT REGISTERED'
+                if (response.equals("REGISTERED")) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else if (responseCode == 404) {
+                // response code of 404 is not found, which means not registered
+                return false;
+            } else {
+                // unknown response code
+                return false;
+            }
+        } catch (Exception ex) {
+            LOG.log(Level.FINE,"Error: " + ex.getMessage(), ex);
+        }
+        return false;
+    }
 }
