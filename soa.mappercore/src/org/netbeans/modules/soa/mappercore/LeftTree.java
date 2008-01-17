@@ -474,7 +474,7 @@ public class LeftTree extends JTree implements
             Link link = LeftTree.this.getOutgoingLinkForPath(path);
             if (link == null) return;
             
-            path = mapper.getReghtTreePathForLink(link);
+            path = mapper.getRightTreePathForLink(link);
             mapper.getCanvas().requestFocus();
             mapper.getSelectionModel().setSelected(path, link);    
             

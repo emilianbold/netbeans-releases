@@ -480,11 +480,11 @@ public class Mapper extends JPanel {
         return rightTree.getTreeCellRenderer();
     }
     
-    public TreePath getReghtTreePathForLink(Link link) {
-        return getReghtTreePathForLink(link, getRoot().getTreePath());
+    public TreePath getRightTreePathForLink(Link link) {
+        return getRightTreePathForLink(link, getRoot().getTreePath());
     }
     
-    private TreePath getReghtTreePathForLink(Link link, TreePath initialTreePath) {
+    private TreePath getRightTreePathForLink(Link link, TreePath initialTreePath) {
         if (link == null || initialTreePath == null) return null; 
         
         MapperNode node = getNode(initialTreePath, true);
@@ -500,8 +500,8 @@ public class Mapper extends JPanel {
                     return childNode.getTreePath();
                 }
             } else {
-                if (getReghtTreePathForLink(link, childNode.getTreePath()) != null) {
-                    return getReghtTreePathForLink(link, childNode.getTreePath());
+                if (getRightTreePathForLink(link, childNode.getTreePath()) != null) {
+                    return getRightTreePathForLink(link, childNode.getTreePath());
                 }
             }
         }
@@ -535,8 +535,6 @@ public class Mapper extends JPanel {
                 linksCandidateRow.add(l);
             }
         }
-        
-        
         if (linksCandidateRow.size() > 1) {
             // find prevLinks in own Row with nearest Graph
             linksCandidateGraph.clear();
@@ -607,7 +605,6 @@ public class Mapper extends JPanel {
                 }
             }
         } 
-        
         //find links with nearest Row < currentRow
         linksCandidateRow.clear();        
         int maxRow = 0;
@@ -669,6 +666,10 @@ public class Mapper extends JPanel {
                 return maxGraph.getPrevLink(null, linksCandidateGraph);
             }
         }
+        return null;
+    }
+    
+    public Link getNextOutgoingLink(Link link) {
         return null;
     }
         
