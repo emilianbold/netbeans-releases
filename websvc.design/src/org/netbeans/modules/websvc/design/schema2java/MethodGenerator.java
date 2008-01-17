@@ -43,8 +43,11 @@ package org.netbeans.modules.websvc.design.schema2java;
 
 import java.io.IOException;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
+import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -61,13 +64,17 @@ public class MethodGenerator {
     /** generate new method to implementation class
      */
     public void generateMethod(String operationName) {
-        
-        org.netbeans.modules.websvc.core.MethodGenerator delegatedGenerator =
-                new org.netbeans.modules.websvc.core.MethodGenerator(wsdlModel, implClassFo);
-        try {
-            delegatedGenerator.generateMethod(operationName);
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+        if (wsdlModel != null) {
+            org.netbeans.modules.websvc.core.MethodGenerator delegatedGenerator =
+                    new org.netbeans.modules.websvc.core.MethodGenerator(wsdlModel, implClassFo);
+            try {
+                delegatedGenerator.generateMethod(operationName);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
+            }
+        } else {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(MethodGenerator.class, "TXT_InvalidSchema"),NotifyDescriptor.ERROR_MESSAGE));
         }
     }
 }
