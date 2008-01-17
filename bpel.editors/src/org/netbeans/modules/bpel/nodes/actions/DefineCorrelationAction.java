@@ -84,47 +84,6 @@ public class DefineCorrelationAction extends BpelNodeAction {
                 wizard.showWizardDialog();
             }
         });
-/*        
-        final BaseScope baseScope;
-        
-        baseScope = (BaseScope)((BpelNode)nodes[0]).getReference();
-        if (baseScope == null) {
-            return;
-        }
-        final BPELElementsBuilder elementBuilder = 
-                baseScope.getBpelModel().getBuilder();
-        final CorrelationSet newCorrSet = elementBuilder.createCorrelationSet();
-        //
-        Lookup lookup = nodes[0].getLookup();
-        Children children = new CorrelationSetNode.MyChildren(newCorrSet, lookup);
-        CorrelationSetNode corrSetNode =
-                new CorrelationSetNode(newCorrSet, children, lookup);
-        //
-        String dialogTitle = NbBundle.getMessage(
-                FormBundle.class, "DLG_AddCorrelationSet"); // NOI18N
-        SimpleCustomEditor customEditor = new SimpleCustomEditor<CorrelationSet>(
-                corrSetNode, CorrelationSetMainPanel.class,
-                EditingMode.CREATE_NEW_INSTANCE);
-        //
-        NodeEditorDescriptor descriptor =
-                new NodeEditorDescriptor(customEditor, dialogTitle);
-        descriptor.setOkButtonProcessor(new Callable<Boolean>() {
-            public Boolean call() throws Exception {
-                CorrelationSetContainer container = baseScope.getCorrelationSetContainer();
-                if (container == null) {
-                    container = elementBuilder.createCorrelationSetContainer();
-                    baseScope.setCorrelationSetContainer(container);
-                    container = baseScope.getCorrelationSetContainer();
-                }
-                //
-                container.insertCorrelationSet(newCorrSet, 0);
-                return Boolean.TRUE;
-            }
-        });
-        //
-        Dialog dialog = SoaDialogDisplayer.getDefault().createDialog(descriptor);
-        dialog.setVisible(true);
-*/
     }
     
     @Override
