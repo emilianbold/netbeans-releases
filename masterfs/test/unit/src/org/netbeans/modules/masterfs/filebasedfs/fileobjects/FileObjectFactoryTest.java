@@ -154,6 +154,18 @@ public class FileObjectFactoryTest extends NbTestCase {
         fdc.cleanUp();
         assertNotNull(foWorkDir.getFileObject(external.getName()));
     }
+
+    public void testRefreshForExternalWithNotExistingParent() throws Exception {
+        FileDataCreated fdc = new FileDataCreated();                        
+        File workDir = getWorkDir();
+        File external = new File(workDir, "external666");        
+        assertFalse(external.exists());
+        assertTrue(external.createNewFile());
+        fdc.assertOK(0);
+        FileUtil.refreshFor(external);        
+        fdc.assertOK(0);
+        fdc.cleanUp();
+    }
     
     public void testRefreshForBoth() throws Exception {
         FileDataCreated fdc = new FileDataCreated();                        

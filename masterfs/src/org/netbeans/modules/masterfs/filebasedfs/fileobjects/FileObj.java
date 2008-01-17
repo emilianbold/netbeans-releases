@@ -273,6 +273,24 @@ public class FileObj extends BaseFileObj {
                 if (fire) {
                     fireFileDeletedEvent(expected);
                 }                
+            } else {
+                FolderObj parent = getExistingParent();
+                if (parent != null) {
+                    ChildrenCache childrenCache = parent.getChildrenCache();
+                    final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+                    if (mutexPrivileged != null) {
+                        mutexPrivileged.enterWriteAccess();
+                    }
+                    try {
+                        if (childrenCache.getChild(getFileName().getFile().getName(), false) == null) {
+                            parent.refresh(expected);
+                        }
+                    } finally {
+                        if (mutexPrivileged != null) {
+                            mutexPrivileged.exitWriteAccess();
+                        }
+                    }
+                }
             }            
         }                 
         stopWatch.stop();

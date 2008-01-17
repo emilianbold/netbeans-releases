@@ -109,10 +109,10 @@ public final class FileObjectFactory {
 
         if (name.isFile() && !name.isDirectory()) {
             final FileObj realRoot = new FileObj(file, name);
-            FolderObj par = (FolderObj)realRoot.getExistingParent();
-            /*if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
+            /*FolderObj par = (FolderObj)realRoot.getExistingParent();
+            if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
                 //par.refresh(true);
-                par.getChildrenCache().getChild(name.getName(), true);
+                //par.getChildrenCache().getChild(name.getName(), true);
             }*/
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
@@ -122,7 +122,7 @@ public final class FileObjectFactory {
             /*FolderObj par = (FolderObj)realRoot.getExistingParent();
             if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
                 //par.refresh(true);
-                par.getChildrenCache().getChild(name.getName(), true); 
+                //par.getChildrenCache().getChild(name.getName(), true); 
             }*/
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
