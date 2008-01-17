@@ -205,12 +205,12 @@ public abstract class CsmPaintComponent extends JPanel {
         drawState.drawY += ascent;
     }
     
-    protected void drawString(Graphics g, String s){
+    protected void drawString(Graphics g, CharSequence s){
         drawString(g, s, false);
     }
     
     /** Draw string using the foreground color */
-    protected void drawString(Graphics g, String s, boolean strike) {
+    protected void drawString(Graphics g, CharSequence s, boolean strike) {
         if (g != null) {
             g.setColor(getForeground());
         }
@@ -221,14 +221,14 @@ public abstract class CsmPaintComponent extends JPanel {
     /** Draw string with given color which is first possibly modified
      * by calling getColor() method to care about selection etc.
      */
-    protected void drawString(Graphics g, String s, Color c) {
+    protected void drawString(Graphics g, CharSequence s, Color c) {
         if (g != null) {
             g.setColor(getColor(s, c));
         }
         drawStringToGraphics(g, s);
     }
     
-    protected void drawString(Graphics g, String s, Color c, Font font, boolean strike) {
+    protected void drawString(Graphics g, CharSequence s, Color c, Font font, boolean strike) {
         if (g != null) {
             g.setColor(getColor(s, c));
             g.setFont(font);
@@ -259,23 +259,24 @@ public abstract class CsmPaintComponent extends JPanel {
         }
     }
     
-    protected void drawStringToGraphics(Graphics g, String s) {
+    protected void drawStringToGraphics(Graphics g, CharSequence s) {
         drawStringToGraphics(g, s, null, false);
     }
     
-    protected void drawStringToGraphics(Graphics g, String s, Font font, boolean strike) {
+    protected void drawStringToGraphics(Graphics g, CharSequence s, Font font, boolean strike) {
+        String str = s != null ? s.toString() : "";
         if (g != null) {
             if (!strike){
-                g.drawString(s, drawState.drawX, drawState.drawY);
+                g.drawString(str, drawState.drawX, drawState.drawY);
             }else{
                 Graphics2D g2 = ((Graphics2D)g);
-                AttributedString strikeText = new AttributedString(s);
+                AttributedString strikeText = new AttributedString(str);
                 strikeText.addAttribute(TextAttribute.STRIKETHROUGH, TextAttribute.STRIKETHROUGH_ON);
                 strikeText.addAttribute(TextAttribute.FONT, g.getFont());
                 g2.drawString(strikeText.getIterator(), drawState.drawX, drawState.drawY);
             }
         }
-        drawState.drawX += getWidth(s, font);
+        drawState.drawX += getWidth(str, font);
     }
     
     protected int getWidth(String s) {
@@ -292,7 +293,7 @@ public abstract class CsmPaintComponent extends JPanel {
         return getFontMetrics(font).stringWidth(s);
     }
     
-    protected Color getColor(String s, Color defaultColor) {
+    protected Color getColor(CharSequence s, Color defaultColor) {
         return isSelected ? getForeground()
         : defaultColor;
     }
@@ -779,7 +780,7 @@ public abstract class CsmPaintComponent extends JPanel {
             }
             drawString(g, "(", strike); // NOI18N
             for (Iterator it = prmList.iterator(); it.hasNext();) {
-                drawString(g, (String)it.next(), MACRO_PARAMETER_NAME_COLOR, null, strike);
+                drawString(g, (CharSequence)it.next(), MACRO_PARAMETER_NAME_COLOR, null, strike);
                 if (it.hasNext()) {
                     drawString(g, ", ", strike); // NOI18N
                 }
@@ -794,7 +795,7 @@ public abstract class CsmPaintComponent extends JPanel {
             StringBuilder buf = new StringBuilder();
             buf.append('('); // NOI18N
             for (Iterator it = prmList.iterator(); it.hasNext();) {
-                buf.append((String)it.next());
+                buf.append(it.next());
                 if (it.hasNext()) {
                     buf.append(", "); // NOI18N
                 }
