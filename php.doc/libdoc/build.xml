@@ -49,6 +49,9 @@ made subject to such option by the copyright holder.
 		<property name="doc.url" value="http://us.php.net/get/php_manual_en.html.gz/from/this/mirror"/>
 		<property name="doc.arch" value="${basedir}/doc.gzip"/>
 		<property name="doc.html" value="${basedir}/doc.html"/>
+        <condition property="doc.downloaded">
+            <available file="${doc.arch}"/>
+        </condition>
 		<property name="dist" value="${basedir}/build"/>
 		<property name="main.class" value="org.netbeans.modules.php.docgen.DocIndexer"/>
 		<property name="gen.result" value="${basedir}/../src/org/netbeans/modules/php/doc/resources"/>
@@ -69,7 +72,7 @@ made subject to such option by the copyright holder.
 	</target>
 
 
-	<target name="download" depends="proxy">
+	<target name="download" depends="init,proxy" unless="doc.downloaded">
 		<get src="${doc.url}"
 			dest="${doc.arch}"/>
 	</target>
