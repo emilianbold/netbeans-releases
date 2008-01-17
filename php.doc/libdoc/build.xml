@@ -41,7 +41,8 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project basedir="." default="all" name="documentation indexer">
-	<target name="all" depends="init, download, unpack, index"/>
+	<!-- <target name="all" depends="init, download, unpack, index"/> -->
+	<target name="all" depends="init, unpack, index"/>
 
 	<target name="init">
 		<property file="proxy.properties"/>
