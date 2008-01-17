@@ -49,8 +49,7 @@ import javax.swing.InputMap;
 import javax.swing.JComboBox;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
-
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.print.impl.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

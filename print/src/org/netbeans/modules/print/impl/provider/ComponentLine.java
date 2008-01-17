@@ -54,7 +54,7 @@ import java.util.List;
 import org.openide.text.AttributedCharacters;
 
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.print.impl.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

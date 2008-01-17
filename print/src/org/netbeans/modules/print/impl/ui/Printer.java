@@ -48,7 +48,7 @@ import java.awt.print.PrinterJob;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.print.impl.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

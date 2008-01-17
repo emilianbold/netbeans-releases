@@ -70,7 +70,7 @@ import org.openide.util.HelpCtx;
 import org.netbeans.modules.print.impl.util.Percent;
 import org.netbeans.modules.print.impl.util.Macro;
 import org.netbeans.modules.print.impl.util.Option;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.print.impl.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

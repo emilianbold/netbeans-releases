@@ -60,8 +60,7 @@ import org.netbeans.modules.print.impl.provider.ComponentProvider;
 import org.netbeans.modules.print.impl.provider.TextProvider;
 import org.netbeans.modules.print.impl.ui.Preview;
 import org.netbeans.modules.print.impl.util.Option;
-
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.print.impl.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
