@@ -94,9 +94,16 @@ public class UMLUserInterface
 	{
             // 86994, in sdi mode, use the current activated TC instead of IDE 
             // main window as the parent for the dialog
+            
+            // krichard issue 125173 NPE - if there is no active TC, then comp will
+            //be null which causes SwingUtilities.getWindowAncestor(comp) to throw NPE.
+            //So, test for the null. If it exists, fall into the retriever code.
+            Window window = null ;
             Component comp = WindowManager.getDefault().getRegistry().getActivated();
-            Window window = SwingUtilities.getWindowAncestor(comp);
-            if (window instanceof Frame)
+            if (comp != null)
+                window = SwingUtilities.getWindowAncestor(comp);
+            
+            if (window != null && window instanceof Frame)
                 return (Frame)window;
             else
             {
