@@ -4,5 +4,10 @@ int main(int argc, char**argv) {
    cout << "Параметр1";
    // Prints welcome message...
    cout <<"фывфыв...\n";
+
+   switch ((char)argc) {
+        case '\e': // ANSI color
+        break;
+   }
    return 0;
 } 

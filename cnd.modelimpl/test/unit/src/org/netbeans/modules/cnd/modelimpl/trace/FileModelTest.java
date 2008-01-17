@@ -198,6 +198,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("0x01.c"); // NOI18N
     }
     
+    public void test0x16() throws Exception {
+        performTest("0x16.cc"); // NOI18N
+    }
+    
     public void testPreProcExpressionAndEmptyBodyMacro() throws Exception {
         performTest("ppExpressionAndEmptyBodyMacro.cc"); //NOI18N
     }
