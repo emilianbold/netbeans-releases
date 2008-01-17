@@ -83,6 +83,7 @@ made subject to such option by the copyright holder.
     <target name="-init-httpunit" depends="-init-props, -httpunit"/>
 
     <target name="qa-functional-compiler" depends="-init-httpunit">
+        <ant inheritAll="false" antfile="../../kit/test/build.xml" target="buildtests"/>
         <antcall target="xtest-qa-functional.qa-functional-compiler"/>
     </target>
 
@@ -127,7 +128,7 @@ made subject to such option by the copyright holder.
     <target name="-runidetest-with-glassfish" if="use.appserver" depends="set-gf">
         <antcall target="set-appserver-path"/>
         <echo>Running tests on GlassFish (using: ${j2ee.appserver.path})</echo>
-        <antcall target="xtest-qa-functional.runidetest-with-appserver" />
+        <antcall target="xtest-init.runidetest-with-appserver" />
     </target>
 
     <!-- Override to run tests on more servers at once -->
