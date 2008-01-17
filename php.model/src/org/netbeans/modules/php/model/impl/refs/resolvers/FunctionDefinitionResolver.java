@@ -83,14 +83,20 @@ public class FunctionDefinitionResolver implements ReferenceResolver {
         
         List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
                 source );
-        for ( PhpModel model : models ){
-            List<Statement> statements = model.getStatements();
-            for (Statement statement : statements) {
-                if ( exactComparison && result.size() >0 ){
-                    return result;
+        for (PhpModel model : models) {
+            model.readLock();
+            try {
+                List<Statement> statements = model.getStatements();
+                for (Statement statement : statements) {
+                    if (exactComparison && result.size() > 0) {
+                        return result;
+                    }
+                    result.addAll(resolve(statement, identifier, clazz,
+                            exactComparison));
                 }
-                result.addAll(resolve( statement, identifier, clazz, 
-                        exactComparison));
+            }
+            finally {
+                model.readUnlock();
             }
         }
         return result;

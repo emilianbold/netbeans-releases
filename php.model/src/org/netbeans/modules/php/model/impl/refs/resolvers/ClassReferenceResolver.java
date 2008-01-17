@@ -70,16 +70,22 @@ public class ClassReferenceResolver implements ReferenceResolver {
     public <T extends SourceElement> List<T> resolve( SourceElement source,
             String identifier, Class<T> clazz, boolean exactComparison )
     {
-        if ( !clazz.isAssignableFrom( ClassDefinition.class ) ){
+        if (!clazz.isAssignableFrom(ClassDefinition.class)) {
             return Collections.emptyList();
         }
-        List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
-                source);
+        List<PhpModel> models = ModelResolver.ResolverUtility
+                .getIncludedModels(source);
         List<T> result = new LinkedList<T>();
-        for ( PhpModel model : models ){
-            List<T> classes = getClasses(identifier, clazz , model , 
-                    exactComparison );
-            result.addAll( classes );
+        for (PhpModel model : models) {
+            List<T> classes;
+            model.readLock();
+            try {
+                classes = getClasses(identifier, clazz, model, exactComparison);
+            }
+            finally {
+                model.readUnlock();
+            }
+            result.addAll(classes);
         }
         return result;
     }

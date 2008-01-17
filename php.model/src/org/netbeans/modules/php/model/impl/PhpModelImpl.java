@@ -453,15 +453,17 @@ class PhpModelImpl implements PhpModel {
     }
     
     private void setReadLockAcquired(){
-        readLockAcquired.set( true );
+        int locks = readLockAcquired.get();
+        readLockAcquired.set( locks +1 );
     }
     
     private void readLockReleased(){
-        readLockAcquired.set( false );
+        int locks = readLockAcquired.get();
+        readLockAcquired.set( locks -1 );
     }
     
     private boolean isReadLockAcuired(){
-        return readLockAcquired.get();
+        return readLockAcquired.get() > 0 ;
     }
     
     private List<SourceElement> getChildren(){
@@ -496,15 +498,15 @@ class PhpModelImpl implements PhpModel {
         myLookup =  new AbstractLookup (myInstanceContent);
     }
     
-    private class ReadLockAcquired extends ThreadLocal<Boolean> {
+    private class ReadLockAcquired extends ThreadLocal<Integer> {
 
         /* (non-Javadoc)
          * @see java.lang.ThreadLocal#initialValue()
          */
         @Override
-        protected Boolean initialValue()
+        protected Integer initialValue()
         {
-            return false;
+            return 0;
         }
     }
 
@@ -516,7 +518,7 @@ class PhpModelImpl implements PhpModel {
     
     private WriteLock myWriteLock;
     
-    private ThreadLocal<Boolean> readLockAcquired;
+    private ThreadLocal<Integer> readLockAcquired;
     
     private List<SourceElement> myChildren;
     

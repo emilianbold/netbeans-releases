@@ -54,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  * @author ads
  *
  */
-abstract class BaseCase extends TestCase {
+public abstract class BaseCase extends TestCase {
     
 
     protected PhpModel getModel() throws Exception {

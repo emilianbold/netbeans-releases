@@ -80,10 +80,17 @@ public class VariableReferenceResolver implements  ReferenceResolver
                 source);
         
         for (PhpModel model : models) {
-            List<T> vars =  findInScope( identifier , clazz , model ,
-                    null, exactComparison);
-            if ( vars != null ) {
-                result.addAll( vars );
+            model.readLock();
+            List<T> vars;
+            try {
+                vars = findInScope(identifier, clazz, model, null,
+                        exactComparison);
+            }
+            finally {
+                model.readUnlock();
+            }
+            if (vars != null) {
+                result.addAll(vars);
             }
             if (exactComparison && result.size() > 0) {
                 return result;

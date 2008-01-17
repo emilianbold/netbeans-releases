@@ -76,10 +76,16 @@ public class InterfaceReferenceResolver implements ReferenceResolver {
         List<PhpModel> models = ModelResolver.ResolverUtility.getIncludedModels(
                 source);
         List<T> result = new LinkedList<T>();
-        for ( PhpModel model : models ){
-            List<T> classes = getInterfaces(identifier, clazz , model , 
-                    exactComparison );
-            result.addAll( classes );
+        for (PhpModel model : models) {
+            List<T> classes;
+            model.readLock();
+            try {
+                classes = getInterfaces(identifier, clazz, model,exactComparison);
+            }
+            finally {
+                model.readUnlock();
+            }
+            result.addAll(classes);
         }
         return result;
     }

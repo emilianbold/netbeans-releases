@@ -38,60 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.model.resources;
+package org.netbeans.modules.php.model.impl.refs.resolvers;
 
-import java.io.InputStream;
+import java.util.List;
+
+import org.netbeans.modules.php.model.BaseCase;
+import org.netbeans.modules.php.model.PhpModel;
+import org.netbeans.modules.php.model.resources.ResourceMarker;
+import org.openide.filesystems.FileObject;
 
 
 /**
  * @author ads
  *
  */
-public final class ResourceMarker {
+public class IncludedModelsTest extends BaseCase {
 
-    private ResourceMarker(){
-    }
-    
-    public static final String STATEMENTS   = "statements.php";           // NOI18N 
-    
-    public static final String SEPARATED    = "separated.php";            // NOI18N
-    
-    public static final String BROKEN1      = "brokenTopLevelStats.php";  // NOI18N 
-    
-    public static final String CALL_EXPRESSION
-                                            = "callExpression.php";       // NOI18N  
-    
-    public static final String EXPRESSION   = "expression.php";           // NOI18N  
-    
-    public static final String INTERFACE    = "interface.php";            // NOI18N  
-    
-    public static final String CLASS        = "class.php";                // NOI18N  
-    
-    public static final String MEMBER       = "member.php";               // NOI18N
-    
-    public static final String VARIABLE     = "variable.php";             // NOI18N
-    
-    public static final String DECLARE      = "declare.php";              // NOI18N
-    
-    public static final String ARRAY        = "array.php";                // NOI18N
-    
-    public static final String CLASS_REF    = "classReference.php";       // NOI18N
-    
-    public static final String STATIC_REF   = "staticReferences.php";     // NOI18N   
-    
-    public static final String CONST_REF    = "constantReference.php";    // NOI18N
-    
-    public static final String MAIN_MODEL   = "mainModel.php";            // NOI18N
-    
-    public static final String INCLUDED_MODEL
-                                            = "includedModel.php";        // NOI18N
-    
-    public static final String SECOND_LEVEL_INCLUDED
-                                            = "secondLevelIncluded.php";  // NOI18N
-    
-    public static InputStream getStream( String relativeResourceName ){
-        /*String pack = ResourceMarker.class.getPackage().getName().
-            replace( '.', '/');*/
-        return ResourceMarker.class.getResourceAsStream(  relativeResourceName );
+    public void testIncludedModel() throws Exception {
+        PhpModel model = getModel(ResourceMarker.MAIN_MODEL);
+        model.sync();
+        model.readLock();
+        try {
+            List<PhpModel> models = 
+                ModelResolver.ResolverUtility.getIncludedModels(model);
+            
+            assert models.size() > 0 && models.get( 0 ) == model :
+                "Expected to find at least model itself";
+            
+            assert models.size() == 3 : "Expected to find two imported models";
+            
+            PhpModel imported = models.get( 1 );
+            assert imported != null :"Unexpected null imported model";
+            FileObject fileObject = imported.getModelOrigin().getLookup().
+                lookup( FileObject.class );
+            assert fileObject != null;
+            
+            assert fileObject.getNameExt().equals( ResourceMarker.INCLUDED_MODEL ):
+                "Expected to find source model for "+ResourceMarker.INCLUDED_MODEL+
+                    " file , but found for :" +fileObject.getNameExt();
+            
+            imported = models.get( 2 );
+            assert imported != null :"Unexpected null imported model";
+            fileObject = imported.getModelOrigin().getLookup().lookup( 
+                    FileObject.class );
+            assert fileObject != null;
+            
+            assert fileObject.getNameExt().equals( 
+                    ResourceMarker.SECOND_LEVEL_INCLUDED):
+                "Expected to find source model for "+
+                ResourceMarker.SECOND_LEVEL_INCLUDED+" file , but found for :" 
+                +fileObject.getNameExt();
+        }
+        finally {
+            model.readUnlock();
+        }
     }
 }

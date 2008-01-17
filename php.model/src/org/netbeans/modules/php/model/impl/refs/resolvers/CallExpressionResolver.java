@@ -89,9 +89,16 @@ public class CallExpressionResolver implements ReferenceResolver {
                 source);
         
         for (PhpModel model : models) {
-            List<Statement> statements = model.getStatements();
-            findCallExpression(statements, identifier, clazz, exactComparison, 
-                    result);
+            model.readLock();
+            try {
+                List<Statement> statements = model.getStatements();
+                findCallExpression(statements, identifier, clazz,
+                        exactComparison, result);
+            }
+            finally {
+                model.readUnlock();
+            }
+            
             if (exactComparison && result.size() > 0) {
                 return result;
             }
