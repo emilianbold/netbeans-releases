@@ -241,61 +241,16 @@ public class FileObj extends BaseFileObj {
         return false;
     }
 
-    public void refresh(final boolean expected, boolean fire) {
-        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
-        stopWatch.start();                
-        if (isValid()) {
-            final long oldLastModified = lastModified;
-            boolean isReal = realLastModifiedCached;
-            setLastModified(getFileName().getFile().lastModified());
-            boolean isModified = (isReal) ? 
-                (oldLastModified != lastModified) : (oldLastModified < lastModified);
-            if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
-                fireFileChangedEvent(expected);
-            }
-            
-            boolean validityFlag = getFileName().getFile().exists();                    
-            if (!validityFlag) {
-                //fileobject is invalidated
-                FolderObj parent = getExistingParent();
-                if (parent != null) {
-                    ChildrenCache childrenCache = parent.getChildrenCache();
-                    final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
-                    if (mutexPrivileged != null) mutexPrivileged.enterWriteAccess();
-                    try {
-                        childrenCache.getChild(getFileName().getFile().getName(),true);
-                    } finally {
-                        if (mutexPrivileged != null) mutexPrivileged.exitWriteAccess();
-                    }
-                    
-                }
-                setValid(false);
-                if (fire) {
-                    fireFileDeletedEvent(expected);
-                }                
-            } else {
-                FolderObj parent = getExistingParent();
-                if (parent != null) {
-                    ChildrenCache childrenCache = parent.getChildrenCache();
-                    final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
-                    if (mutexPrivileged != null) {
-                        mutexPrivileged.enterWriteAccess();
-                    }
-                    try {
-                        if (childrenCache.getChild(getFileName().getFile().getName(), false) == null) {
-                            parent.refresh(expected);
-                        }
-                    } finally {
-                        if (mutexPrivileged != null) {
-                            mutexPrivileged.exitWriteAccess();
-                        }
-                    }
-                }
-            }            
-        }                 
-        stopWatch.stop();
-    }        
-
+    public void refreshImpl(final boolean expected, boolean fire) {
+        final long oldLastModified = lastModified;
+        boolean isReal = realLastModifiedCached;
+        setLastModified(getFileName().getFile().lastModified());
+        boolean isModified = (isReal) ? (oldLastModified != lastModified) : (oldLastModified < lastModified);
+        if (fire && oldLastModified != -1 && lastModified != -1 && lastModified != 0 && isModified) {
+            fireFileChangedEvent(expected);
+        }
+    }
+    
     public final void refresh(final boolean expected) {
         refresh(expected, true);
     }

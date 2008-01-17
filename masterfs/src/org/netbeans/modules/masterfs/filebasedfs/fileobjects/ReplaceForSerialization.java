@@ -135,7 +135,7 @@ public class ReplaceForSerialization extends Object implements java.io.Serializa
             throw new IOException (getPath());
         }
 
-        public void refresh(final boolean expected, boolean fire) {
+        public void refreshImpl(final boolean expected, boolean fire) {
     }    
-}
+    }
 }

@@ -51,6 +51,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
 import org.openide.util.Exceptions;
 
@@ -131,16 +132,27 @@ public final class FileBasedURLMapper extends URLMapper {
                 return null;
             }
         }
-
         final FileBasedFileSystem instance = FileBasedFileSystem.getInstance(file);
-
         if (instance != null) {
-            retVal = instance.findFileObject(file);
+            retVal = issueFileObject(file, instance);
         }
 
         return new FileObject[]{retVal};
     }
 
+    private FileObject issueFileObject(File file, FileBasedFileSystem instance) {
+        FileObject retVal = null;
+        FolderObj parent = BaseFileObj.getExistingParentFor(file, instance);
+        retVal = (parent != null) ? parent.getFileObject(file.getName()) : instance.findFileObject(file);
+        if (parent != null) {
+            if ((retVal == null && file.exists()) || (retVal != null && !file.exists())) {
+                parent.refresh(true);
+                return parent.getFileObject(file.getName());
+            }
+        }
+        return retVal;
+    }
+    
     private static URL fileToURL(final File file, final FileObject fo) throws MalformedURLException {
         URL retVal = null;
         if (fo.isFolder() && (!fo.isValid() || fo.isVirtual())) {
@@ -154,6 +166,4 @@ public final class FileBasedURLMapper extends URLMapper {
         retVal = (retVal == null) ? file.toURI().toURL() : retVal;
         return retVal;
     }
-
-
 }

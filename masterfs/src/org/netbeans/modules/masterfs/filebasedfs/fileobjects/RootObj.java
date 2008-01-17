@@ -178,6 +178,12 @@ public final class RootObj extends FileObject {
         return realRoot;
     }
 
+    @Override
+    public String getPath() {
+        return "";
+    }
+
+    
     public String toString() {
         return getRealRoot().toString();
     }

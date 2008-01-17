@@ -218,7 +218,13 @@ public abstract class BaseFileObj extends FileObject {
                 new File(target.getFileName().getFile(),nameExt));
         assert result != null;
         result.fireFileDataCreatedEvent(false);
-        fireFileDeletedEvent(false);
+        FolderObj parent = getExistingParent();
+        if (parent != null) {
+            parent.refresh(true);
+        } else {
+            refresh(true);
+        }
+        //fireFileDeletedEvent(false);
         return result;
     }
 
@@ -560,9 +566,68 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     abstract protected void setValid(boolean valid);
+    abstract void refreshImpl(final boolean expected, boolean fire);
 
-    abstract public void refresh(final boolean expected, boolean fire);
+    public final void refresh(final boolean expected, boolean fire) {
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FILE);
+        stopWatch.start();
+        try {   
+            if (isValid()) {
+                refreshImpl(expected, fire);
+                if (isData()) {
+                    refreshExistingParent(expected, fire);
+                }
+            }
+        } finally {
+            stopWatch.stop();
+        }
+    }
 
+    void refreshExistingParent(final boolean expected, boolean fire) {
+        boolean validityFlag = getFileName().getFile().exists();
+        if (!validityFlag) {
+            //fileobject is invalidated
+            FolderObj parent = getExistingParent();
+            if (parent != null) {
+                ChildrenCache childrenCache = parent.getChildrenCache();
+                final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+                if (mutexPrivileged != null) {
+                    mutexPrivileged.enterWriteAccess();
+                }
+                try {
+                    childrenCache.getChild(getFileName().getFile().getName(), true);
+                } finally {
+                    if (mutexPrivileged != null) {
+                        mutexPrivileged.exitWriteAccess();
+                    }
+                }
+            }
+            setValid(false);
+            if (fire) {
+                fireFileDeletedEvent(expected);
+            }
+        } else {
+            /*FolderObj parent = getExistingParent();
+            if (parent != null) {
+                ChildrenCache childrenCache = parent.getChildrenCache();
+                final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
+                if (mutexPrivileged != null) {
+                    mutexPrivileged.enterWriteAccess();
+                }
+                try {
+                    if (childrenCache.getChild(getFileName().getFile().getName(), false) == null) {
+                        parent.refresh(expected);
+                    }
+                } finally {
+                    if (mutexPrivileged != null) {
+                        mutexPrivileged.exitWriteAccess();
+                    }
+                }
+            }*/
+            //refreshExistingParent(expected, fire);
+        }
+    }
+    
 
     //TODO: attributes written by VCS must be readable by FileBaseFS and vice versa  
 /**

@@ -312,101 +312,94 @@ public final class FolderObj extends BaseFileObj {
         }        
     }
 
-    public void refresh(final boolean expected, boolean fire) {
-        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FOLDER);
-        stopWatch.start();
+    public void refreshImpl(final boolean expected, boolean fire) {
+        final ChildrenCache cache = getChildrenCache();
+        final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
 
-        if (isValid()) {
-            final ChildrenCache cache = getChildrenCache();
-            final Mutex.Privileged mutexPrivileged = cache.getMutexPrivileged();
+        Set oldChildren = null;
+        Map refreshResult = null;
+        mutexPrivileged.enterWriteAccess();
+        try {
+            oldChildren = new HashSet(cache.getCachedChildren());
+            refreshResult = cache.refresh();
+        } finally {
+            mutexPrivileged.exitWriteAccess();
+        }
 
-            Set oldChildren = null;
-            Map refreshResult = null;
-            mutexPrivileged.enterWriteAccess();
-            try {
-                oldChildren = new HashSet(cache.getCachedChildren());
-                refreshResult = cache.refresh();
-            } finally {
-                mutexPrivileged.exitWriteAccess();
+        oldChildren.removeAll(refreshResult.keySet());
+        for (Iterator iterator = oldChildren.iterator(); iterator.hasNext();) {
+            final FileName child = (FileName) iterator.next();
+            final BaseFileObj childObj = getLocalFileSystem().getFactory().get(child.getFile());
+            if (childObj != null && childObj.isData()) {
+                ((FileObj) childObj).refresh(expected);
             }
+        }
 
-            oldChildren.removeAll(refreshResult.keySet());
-            for (Iterator iterator = oldChildren.iterator(); iterator.hasNext();) {
-                final FileName child = (FileName) iterator.next();
-                final BaseFileObj childObj = getLocalFileSystem().getFactory().get(child.getFile());
-                if (childObj != null && childObj.isData()) {
-                    ((FileObj)childObj).refresh(expected);
-                }
-            }
+        final FileBasedFileSystem localFileSystem = this.getLocalFileSystem();
+        final FileObjectFactory factory = localFileSystem.getFactory();
 
-            final FileBasedFileSystem localFileSystem = this.getLocalFileSystem();
-            final FileObjectFactory factory = localFileSystem.getFactory();
+        final Iterator iterator = refreshResult.entrySet().iterator();
+        while (iterator.hasNext()) {
+            final Map.Entry entry = (Map.Entry) iterator.next();
+            final FileName child = (FileName) entry.getKey();
+            final Integer operationId = (Integer) entry.getValue();
 
-            final Iterator iterator = refreshResult.entrySet().iterator();
-            while (iterator.hasNext()) {
-                final Map.Entry entry = (Map.Entry) iterator.next();
-                final FileName child = (FileName) entry.getKey();
-                final Integer operationId = (Integer) entry.getValue();
+            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? (BaseFileObj) factory.findFileObject(new FileInfo(child.getFile())) : factory.get(child.getFile());
+            newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
+            if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
 
-                BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? (BaseFileObj)
-                    factory.findFileObject(new FileInfo(child.getFile())): factory.get(child.getFile());
-                newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
-                if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
-
-                    if (newChild.isFolder()) {
-                        if (fire) {
+                if (newChild.isFolder()) {
+                    if (fire) {
                         newChild.fireFileFolderCreatedEvent(expected);
-                        }
-                    } else {
-                        if (fire) {
+                    }
+                } else {
+                    if (fire) {
                         newChild.fireFileDataCreatedEvent(expected);
                     }
-                    }
+                }
 
-                } else if (operationId == ChildrenCache.REMOVED_CHILD) {
-                    if (newChild != null) {
-                        if (newChild.isValid()) {
-                            newChild.setValid(false);
-                            if (fire) {
+            } else if (operationId == ChildrenCache.REMOVED_CHILD) {
+                if (newChild != null) {
+                    if (newChild.isValid()) {
+                        newChild.setValid(false);
+                        if (fire) {
                             newChild.fireFileDeletedEvent(expected);
                         }
+                    }
+                } else {
+                    //TODO: should be rechecked
+                    //assert false;
+                    final File f = child.getFile();
+                    if (!(new FileInfo(f).isConvertibleToFileObject())) {
+                        final BaseFileObj fakeInvalid;
+                        if (child.isFile()) {
+                            fakeInvalid = new FileObj(f, child);
+                        } else {
+                            fakeInvalid = new FolderObj(f, child);
                         }
-                    } else {
-                        //TODO: should be rechecked
-                        //assert false;
-                        final File f = child.getFile();
-                        if (!(new FileInfo(f).isConvertibleToFileObject())) {
-                            final BaseFileObj fakeInvalid;
-                            if (child.isFile()) {
-                                fakeInvalid = new FileObj(f, child);
-                            } else {
-                                fakeInvalid = new FolderObj(f, child);                            
-                            }
 
-                            fakeInvalid.setValid(false);
-                            if (fire) {
+                        fakeInvalid.setValid(false);
+                        if (fire) {
                             fakeInvalid.fireFileDeletedEvent(expected);
                         }
                     }
-                    }
-
-                } else {
-                    assert !(new FileInfo(child.getFile()).isConvertibleToFileObject());
                 }
 
+            } else {
+                assert !(new FileInfo(child.getFile()).isConvertibleToFileObject());
             }
-            boolean validityFlag = getFileName().getFile().exists();                                
-            if (!validityFlag) {
-                //fileobject is invalidated                
-                setValid(false);                       
-                if (fire) {
-                fireFileDeletedEvent(expected);    
+
+        }
+        boolean validityFlag = getFileName().getFile().exists();
+        if (!validityFlag) {
+            //fileobject is invalidated                
+            setValid(false);
+            if (fire) {
+                fireFileDeletedEvent(expected);
             }
-        }         
-        }         
-        stopWatch.stop();        
+        }
     }
-    
+
     public final void refresh(final boolean expected) {
         refresh(expected, true);
     }

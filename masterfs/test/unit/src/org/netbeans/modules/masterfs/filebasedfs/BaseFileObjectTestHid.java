@@ -783,9 +783,12 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     
     
     public void testValidRoots () throws Exception {
-        FileSystemView fsv = FileSystemView.getFileSystemView();
+        assertNotNull(testedFS.getRoot());    
+        assertTrue(testedFS.getRoot().isValid());            
         
+        FileSystemView fsv = FileSystemView.getFileSystemView();                
         File[] roots = File.listRoots();
+        boolean validRoot = false;
         for (int i = 0; i < roots.length; i++) {
             FileObject root = FileUtil.toFileObject(roots[i]);
             if (fsv.isFloppyDrive(roots[i]) || !roots[i].exists()) {
@@ -794,11 +797,12 @@ public class BaseFileObjectTestHid extends TestBaseHid{
             }
             
             assertNotNull(roots[i].getAbsolutePath (),root);
-            assertEquals(testedFS, root.getFileSystem());
-            assertTrue(root.isValid());
+            assertTrue(root.isValid());            
+            if (testedFS == root.getFileSystem()) {
+                validRoot = true;
+            }
         }
-        assertNotNull(testedFS.getRoot());    
-        assertTrue(testedFS.getRoot().isValid());            
+        assertTrue(validRoot);
     }
     
     public void testDeserializationOfMasterFSLeadsToTheSameFileSystem () throws Exception {
