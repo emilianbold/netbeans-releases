@@ -169,10 +169,12 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                     startIncludes = true;
                     continue;
                 }
-                if (line.startsWith("End of search") || ! line.trim().startsWith(File.separator)) { // NOI18N
-                    startIncludes = false;
-                    continue;
-                }
+		if (startIncludes) {
+                    if (line.startsWith("End of search") || ! line.trim().startsWith(File.separator)) { // NOI18N
+                        startIncludes = false;
+                        continue;
+                    }
+		}
                 if (startIncludes) {
                     line = line.trim();
                     if (getFlavor() == CompilerFlavor.MinGW) {
