@@ -19,15 +19,20 @@ To open the sample UML Modeling project:
    this node were generated using the existing Java source files you can find under the 
    UMLBankAppSample > Source Packages > bankpack node.
 
-3) Expand the UMLBankAppSample-Model > bankpack > BankAccount node. Notice the Attributes,
-   Operations, and Relationship nodes that represent the attributes, operations, and 
-   relationships in the BankAccount.java file.
+3) Expand the UMLBankAppSample-Model > Model > bankpack > BankAccount node. Notice the
+   Attributes, Operations, and Relationship nodes that represent the attributes,
+   operations, and relationships in the BankAccount.java file.
 
-4) Use the "Reverse Engineering a Java Application" tutorial to learn more about how 
+4) Right click UMLBankAppSample-Model > Model > bankpack > Create Diagram From Selected
+   Elements.  In the Create New diagram Dialog, select Class Diagram as the Diagram Type
+   and click Finish.  Click Yes to include the nested elements in the Create diagram From
+   Selected dialog.  A class diagram of the elements in the bankpack package will be created.
+
+5) Use the "Reverse Engineering a Java Application" tutorial to learn more about how 
    to use the Reverse Engineering feature of the UML Modeling module. Copy and paste
-   the following link to your browser: http://www.netbeans.org/kb/55/uml-re-sampleapp.html
+   the following link to your browser: http://www.netbeans.org/kb/60/uml/re-sampleapp.html
    
-5) You will notice that the tutorial additionally creates three diagrams: BankClassDiagram,
+6) You will notice that the tutorial additionally creates three diagrams: BankClassDiagram,
    BankAccountDependencies, and withdrawSD. These diagrams are not packaged with this sample, 
    but they can be created quite easily.
 
@@ -46,5 +51,4 @@ To open the sample UML Modeling project:
    Right-click withdraw and select Reverse Engineer Operation. Select Sequence Diagram and name the 
    diagram withdrawSD and click OK. The diagram will be created and opened.
 
-6) For a detailed interactive demonstration of the steps to reverse engineer a Java application, 
-   View the flash video at http://www.netbeans.org/kb/55/uml-re-sampleapp-flash.html 
+7) Additional UML tutorials and documentation are available at http://www.netbeans.org/kb/60/uml/
