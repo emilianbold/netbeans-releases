@@ -91,6 +91,13 @@ public class RubyPlatformTest extends RubyTestBase {
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.6-p110"));
         assertNotNull("rdoc found", platform.getRDoc());
     }
+    
+    public void testLongDescription() throws Exception {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        assertEquals("right long description", "JRuby 1.8.6 (2008-01-12 patchlevel 5512) [java]", jruby.getInfo().getLongDescription());
+        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
+        assertEquals("right long description without patchlevel", "Ruby 0.1 (2000-01-01) [abcd]", ruby.getInfo().getLongDescription());
+    }
 
     private String touch(String path, String dir) throws IOException {
         File f = new File(dir, path);

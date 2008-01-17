@@ -141,7 +141,6 @@ public abstract class RubyTestBase extends NbTestCase {
         Properties props = new Properties();
         props.put(Info.RUBY_KIND, "Ruby");
         props.put(Info.RUBY_VERSION, "0.1");
-        props.put(Info.RUBY_PATCHLEVEL, "123");
         props.put(Info.RUBY_RELEASE_DATE, "2000-01-01");
         props.put(Info.RUBY_PLATFORM, "abcd");
         if (withGems) {

@@ -524,7 +524,7 @@ public final class RubyPlatform {
         if (stubsFO == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
             File clusterFile = InstalledFileLocator.getDefault().locate(
-                    "modules/org-netbeans-modules-ruby-project.jar", null, false);
+                    "modules/org-netbeans-modules-ruby-project.jar", null, false); // NOI18N
 
             if (clusterFile != null) {
                 File rubyStubs =
@@ -694,32 +694,37 @@ public final class RubyPlatform {
         
         static Info forDefaultPlatform() {
             // NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel")
-            Info info = new Info("JRuby", "1.8.6");
-            info.jversion = "1.1RC1";
-            info.patchlevel = "5512";
-            info.releaseDate = "2008-01-12";
+            Info info = new Info("JRuby", "1.8.6"); // NOI18N
+            info.jversion = "1.1RC1"; // NOI18N
+            info.patchlevel = "5512"; // NOI18N
+            info.releaseDate = "2008-01-12"; // NOI18N
             info.executable = null;
-            info.platform = "java";
+            info.platform = "java"; // NOI18N
             File jrubyHome = InstalledFileLocator.getDefault().locate(
                     "jruby-1.1RC1", "org.netbeans.modules.ruby.platform", false);  // NOI18N
             // XXX handle valid case when it is not available, see #124534
             assert (jrubyHome != null && jrubyHome.isDirectory()) : "Default platform available";
-            info.gemHome = FileUtil.toFile(FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby/gems/1.8")).getAbsolutePath();
+            info.gemHome = FileUtil.toFile(FileUtil.toFileObject(jrubyHome).getFileObject("/lib/ruby/gems/1.8")).getAbsolutePath(); // NOI18N
             info.gemPath = info.gemHome;
-            info.gemVersion = "1.0.1 (1.0.1)";
+            info.gemVersion = "1.0.1 (1.0.1)"; // NOI18N
             return info;
         }
         
         public String getLabel() {
-            return kind + " (" + (isJRuby() ? jversion : version) + ')';
+            return kind + " (" + (isJRuby() ? jversion : version) + ')'; // NOI18N
         }
         
         public String getLongDescription() {
-            return kind + ' ' + version + ' ' + '(' + releaseDate + " patchlevel " + patchlevel + ") [" + platform + ']'; // NOI18N
+            StringBuilder sb = new StringBuilder(kind + ' ' + version + ' ' + '(' + releaseDate);
+            if (patchlevel != null) {
+                sb.append(" patchlevel ").append(patchlevel); // NOI18N
+            }
+            sb.append(") [").append(platform).append(']'); // NOI18N
+            return sb.toString();
         }
 
         public boolean isJRuby() {
-            return "JRuby".equals(kind);
+            return "JRuby".equals(kind); // NOI18N
         }
 
 //        public String getExecutable() {
