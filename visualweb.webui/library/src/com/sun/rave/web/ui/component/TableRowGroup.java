@@ -1899,7 +1899,7 @@ public class TableRowGroup extends TableRowGroupBase implements
         Properties properties = (Properties) propertiesMap.get(propertiesId);
         if (properties == null) {
             properties = new Properties();
-            requestMap.put(propertiesMapId, propertiesMap);
+            propertiesMap.put(propertiesId, properties);
         }
 
         return properties;
