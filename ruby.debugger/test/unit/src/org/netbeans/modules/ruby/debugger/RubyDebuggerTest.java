@@ -329,25 +329,25 @@ public final class RubyDebuggerTest extends TestBase {
         }
     }
     
-    public void testDoNotStepIntoNonResolvedPath() throws Exception { // issue #106115
-        MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
-        switchToJRuby();
-        String[] testContent = {
-            "require 'java'",
-            "import 'java.util.TreeSet'",
-            "t = TreeSet.new",
-            "t.add 1",
-            "t.add 2"
-        };
-        File testF = createScript(testContent);
-        FileObject testFO = FileUtil.toFileObject(testF);
-        addBreakpoint(testFO, 3);
-        Process p = startDebugging(testF);
-        doAction(ActionsManager.ACTION_STEP_INTO);
-        doAction(ActionsManager.ACTION_STEP_INTO);
-        doAction(ActionsManager.ACTION_STEP_INTO);
-        p.waitFor();
-    }
+//    public void testDoNotStepIntoNonResolvedPath() throws Exception { // issue #106115
+//        MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
+//        switchToJRuby();
+//        String[] testContent = {
+//            "require 'java'",
+//            "import 'java.util.TreeSet'",
+//            "t = TreeSet.new",
+//            "t.add 1",
+//            "t.add 2"
+//        };
+//        File testF = createScript(testContent);
+//        FileObject testFO = FileUtil.toFileObject(testF);
+//        addBreakpoint(testFO, 3);
+//        Process p = startDebugging(testF);
+//        doAction(ActionsManager.ACTION_STEP_INTO);
+//        doAction(ActionsManager.ACTION_STEP_INTO);
+//        doAction(ActionsManager.ACTION_STEP_INTO);
+//        p.waitFor();
+//    }
     
     public void testCheckAndTuneSettings() {
         ExecutionDescriptor descriptor = new ExecutionDescriptor(RubyPlatformManager.getDefaultPlatform());

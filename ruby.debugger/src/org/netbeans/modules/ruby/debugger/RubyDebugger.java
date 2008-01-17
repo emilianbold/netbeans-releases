@@ -220,7 +220,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             return false;
         }
 
-        if (!jrubySet && !Util.isValidRDebugIDEGemInstalled(gemManager) && !Util.offerToInstallFastDebugger(gemManager)) {
+        if (!jrubySet && !Util.hasFastDebuggerInstalled(gemManager) && !Util.offerToInstallFastDebugger(gemManager)) {
             // user really wants classic debugger, ensure it
             DebuggerPreferences.getInstance().setUseClassicDebugger(true);
         }

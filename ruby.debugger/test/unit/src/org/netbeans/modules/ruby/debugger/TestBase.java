@@ -53,6 +53,7 @@ import java.util.logging.LogRecord;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.junit.MockServices;
@@ -84,6 +85,7 @@ public abstract class TestBase extends RubyTestBase {
     
     protected static boolean watchStepping = false;
     private Stack<Engine> engines;
+    private RubyPlatform platform;
 
     protected TestBase(final String name, final boolean verbose) {
         super(name);
@@ -98,7 +100,12 @@ public abstract class TestBase extends RubyTestBase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        System.setProperty("ruby.interpreter", TestBase.getFile("ruby.executable", true).getAbsolutePath());
+        platform = RubyPlatformManager.addPlatform(TestBase.getFile("ruby.executable", true));
+        assertTrue(platform.getInterpreter() + " has RubyGems installed", platform.hasRubyGemsInstalled());
+        String problems = Util.getFastDebuggerProblems(platform.getGemManager());
+        assertNull("fast debugger installed: " + problems, problems);
+        
+//        System.setProperty("ruby.interpreter", TestBase.getFile("ruby.executable", true).getAbsolutePath());
         engines = new Stack<Engine>();
         engines.push(Engine.CLASSIC);
         if (isRDebugExecutableCorrectlySet()) {
@@ -123,11 +130,11 @@ public abstract class TestBase extends RubyTestBase {
         return startDebugging(f, true);
     }
     
-    protected Process startDebugging(final File f, final boolean waitForSuspension) throws RubyDebuggerException, IOException, InterruptedException {
+    protected Process startDebugging(final File toTest, final boolean waitForSuspension) throws RubyDebuggerException, IOException, InterruptedException {
         MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
-        ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatformManager.getDefaultPlatform(),
-                f.getName(), f.getParentFile(), f.getAbsolutePath());
-        desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(f.getParentFile())));
+        ExecutionDescriptor desc = new ExecutionDescriptor(platform,
+                toTest.getName(), toTest.getParentFile(), toTest.getAbsolutePath());
+        desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(toTest.getParentFile())));
         Process process = RubyDebugger.startDebugging(desc);
         if (waitForSuspension) {
             waitForSuspension();
@@ -178,9 +185,7 @@ public abstract class TestBase extends RubyTestBase {
     }
 
     protected void switchToJRuby() {
-        throw new UnsupportedOperationException("not implemented yet");
-        // XXX
-//        RubyInstallation.getInstance().setRuby(RubyInstallation.getInstance().getJRuby());
+        platform = RubyPlatformManager.getDefaultPlatform();
     }
 
     private File getRDebugExecutable(boolean failIfNotAvailable) {
@@ -204,8 +209,8 @@ public abstract class TestBase extends RubyTestBase {
      * given content.
      */
     protected File createScript(final String[] scriptContent, final String name) throws IOException {
-        File script = new File(getWorkDir(), name);
-        PrintWriter pw = new PrintWriter(script);
+        FileObject script = FileUtil.createData(FileUtil.toFileObject(getWorkDir()), name);
+        PrintWriter pw = new PrintWriter(script.getOutputStream());
         try {
             for (String line : scriptContent) {
                 pw.println(line);
@@ -213,7 +218,7 @@ public abstract class TestBase extends RubyTestBase {
         } finally {
             pw.close();
         }
-        return script;
+        return FileUtil.toFile(script);
     }
     
     protected static RubyBreakpoint addBreakpoint(final FileObject fo, final int line) throws RubyDebuggerException {
