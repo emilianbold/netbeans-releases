@@ -41,9 +41,11 @@
 
 package org.netbeans.performance.test.utilities;
 
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -57,7 +59,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-//import java.util.logging.SimpleFormatter;
 
 /**
  * BlacklistedClassLogger performs processing of log messages to identify
@@ -78,28 +79,49 @@ public class BlacklistedClassLogger extends Handler {
 
     private static boolean violation = false;
     // TODO: Is it necessary to use synchronizedMap? Should the list be synchronized?
-    private static Map<String, List<Exception>> blacklist
-            = Collections.synchronizedMap(new HashMap<String, List<Exception>>());
-//    private SimpleFormatter sf;
-    
+    private static Map<String, List<Exception>> blacklist = Collections.synchronizedMap(new HashMap<String, List<Exception>>());
     static {
-//        System.out.println("==========================================");
-//        for(String prop : System.getProperties().stringPropertyNames()) {
-//            System.out.println(prop + " = " + System.getProperty(prop));
-//        }
-//        System.out.println("==========================================");
         for (String s : getWatched()) {
             blacklist.put(s, new ArrayList<Exception>());
         }
-        System.out.println("BlacklistedClassLogger: " + blacklist.size() 
-                + " classes loaded.");
+        System.out.println("BlacklistedClassLogger: " + blacklist.size() + " classes loaded.");
     }
 
     public BlacklistedClassLogger() {
-//        sf = new SimpleFormatter();
+        defaultHandler();
+    }
+    
+    private static void defaultHandler () {
+        String home = System.getProperty("netbeans.user");
+        if (home != null && !"memory".equals(home)) {
+            try {
+                File dir = new File(new File(new File(home), "var"), "log");
+                dir.mkdirs ();
+                File f = new File(dir, "messages.log");
+                File f1 = new File(dir, "messages.log.1");
+                File f2 = new File(dir, "messages.log.2");
+
+                if (f1.exists()) {
+                    f1.renameTo(f2);
+                }
+                if (f.exists()) {
+                    f.renameTo(f1);
+                }
+                
+                FileOutputStream fout = new FileOutputStream(f, false);
+                fout.write("No messages.log available when BlacklistedClassLogger is enabled.".getBytes());
+                fout.flush();
+//                Handler h = new StreamHandler(fout, NbFormatter.FORMATTER);
+//                h.setLevel(Level.ALL);
+//                h.setFormatter(NbFormatter.FORMATTER);
+//                defaultHandler = new NonClose(h, 5000);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
         
     }
-
+    
     @Override
     public void publish(LogRecord record) {
         try {
@@ -112,7 +134,7 @@ public class BlacklistedClassLogger extends Handler {
                     exc.printStackTrace();
                     synchronized (blacklist) {
                         // TODO: Probably we should synchronize by list
-                        blacklist.get(className).add(exc);                    
+                        blacklist.get(className).add(exc);
                     }
                     violation = true;
                 }
@@ -129,13 +151,20 @@ public class BlacklistedClassLogger extends Handler {
     @Override
     public void close() throws SecurityException {
     }
-    
-    public static boolean noViolations() {        
+
+    public static boolean noViolations() {
         return !violation;
     }
-    
+
+    public static boolean noViolations(PrintStream out) {
+        if (violation) {
+            out.println("The following violations are identified:");
+            BlacklistedClassLogger.listViolations(out, true);
+        }
+        return !violation;
+    }
+
     private static String getWatchedFileName() {
-//        System.getProperties().list(System.out);
         return System.getProperty("org.netbeans.performance.test.utilities.BlacklistedClassLogger.blacklist.filename");
     }
 
@@ -146,11 +175,10 @@ public class BlacklistedClassLogger extends Handler {
             if (fileName != null) {
                 reader = new BufferedReader(new FileReader(new File(fileName)));
                 ArrayList<String> strings = new ArrayList<String>();
-                for(String line = reader.readLine(); line != null; line = reader.readLine()) {
+                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     line = line.trim();
                     if (line.length() > 0 && Character.isJavaIdentifierStart(line.charAt(0))) {
                         strings.add(line);
-//                        System.out.println(line + " added to Black List");
                     }
                 }
                 return strings.toArray(new String[strings.size()]);
@@ -161,26 +189,24 @@ public class BlacklistedClassLogger extends Handler {
             Logger.getLogger(BlacklistedClassLogger.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-                if (reader != null) reader.close();
+                if (reader != null) {
+                    reader.close();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(BlacklistedClassLogger.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
         return new String[0];
-//        return new String[]{
-//            "sun.security.x509.X509CertInfo",
-//            "org.netbeans.modules.db.explorer.nodes.DatabaseNode"
-//        };
     }
-    
+
     public static void listViolations(PrintStream out) {
         listViolations(out, false);
     }
-    
+
     public static void listViolations(PrintWriter out) {
         listViolations(out, false);
     }
-    
+
     public static void listViolations(PrintStream out, boolean listExceptions) {
         synchronized (blacklist) {
             int i = 0;
@@ -193,10 +219,10 @@ public class BlacklistedClassLogger extends Handler {
                         }
                     }
                 }
-            }            
+            }
         }
     }
-    
+
     public static void listViolations(PrintWriter out, boolean listExceptions) {
         synchronized (blacklist) {
             int i = 0;
@@ -209,10 +235,10 @@ public class BlacklistedClassLogger extends Handler {
                         }
                     }
                 }
-            }            
+            }
         }
     }
-    
+
     public static void resetViolations() {
         synchronized (blacklist) {
             for (String violator : blacklist.keySet()) {
