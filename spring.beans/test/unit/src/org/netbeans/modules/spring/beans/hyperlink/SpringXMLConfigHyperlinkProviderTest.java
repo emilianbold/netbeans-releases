@@ -38,10 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import javax.swing.text.BadLocationException;
+import java.io.BufferedReader;
+import java.io.StringReader;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.spring.beans.SpringXMLConfigDataLoader;
@@ -50,10 +50,18 @@ import org.openide.text.CloneableEditorSupport;
 /**
  *
  * @author Andrei Badea
+ * @author Rohan Ranade
  */
 public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
 
     private SpringXMLConfigHyperlinkProvider hyperlinkProvider;
+    private static BaseDocument doc;
+    
+    static {
+        Class<?> kitClass = CloneableEditorSupport.getEditorKit(
+                SpringXMLConfigDataLoader.REQUIRED_MIME).getClass();
+        doc = new BaseDocument(kitClass, false);
+    }
 
     public SpringXMLConfigHyperlinkProviderTest(String testName) {
         super(testName);
@@ -64,28 +72,80 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
         hyperlinkProvider = new SpringXMLConfigHyperlinkProvider();
     }
 
-    public void testBeanClass() throws Exception {
-        String config = createXMLConfig("<bean id='foo' class='org.example.Foo'/>");
-        assertHyperlink(config, "org.example.Foo");
+    public void testBeanHyperlinks() throws Exception {
+        String config = createXMLConfigText("<bean id='propertyConfigurer' " +
+                "class='org.dummy.config.PropertyConfigurer' " +
+                "parent='dummyBean' " +
+                "depends-on='initialBean' " +
+                "factory-method='getInstance' " +
+                "init-method='myInitMethod' " +
+                "destroy-method='myDestroyMethod' " +
+                "p:location='/WEB-INF/jdbc.properties'/>");
+        BaseDocument testDoc = setDocumentContentTo(doc, config);
+        assertHyperlink(testDoc, "org.dummy.config.PropertyConfigurer");
+        assertHyperlink(testDoc, "getInstance");
+        assertHyperlink(testDoc, "dummyBean");
+        assertHyperlink(testDoc, "initialBean");
+        assertHyperlink(testDoc, "myInitMethod");
+        assertHyperlink(testDoc, "myDestroyMethod");
+        assertHyperlink(testDoc, "p:location");
     }
 
-    private void assertHyperlink(String contents, String hyperlink) throws BadLocationException {
-        BaseDocument doc = createDocument(contents);
+    public void testImportHyperlink() throws Exception {
+        String config = createXMLConfigText("<import resource='/WEB-INF/applicationContext.xml'/>");
+        BaseDocument testDoc = setDocumentContentTo(doc, config);
+        assertHyperlink(testDoc, "/WEB-INF/applicationContext.xml");
+    }
+
+    public void testPropertyHyperlinks() throws Exception {
+        String config = createXMLConfigText("<bean id='petStore' " +
+                "class='org.springframework.PetStoreImpl'>" +
+                "<property name='accountDao' ref='accountBean'>" +
+                "</bean>");
+        BaseDocument testDoc = setDocumentContentTo(doc, config);
+        assertHyperlink(testDoc, "accountDao");
+        assertHyperlink(testDoc, "accountBean");
+    }
+
+    private void assertHyperlink(BaseDocument testDoc, String hyperlink) throws Exception {
+        String contents = testDoc.getText(0, testDoc.getLength());
         int offset = contents.indexOf(hyperlink);
-        assertTrue(hyperlinkProvider.isHyperlinkPoint(doc, offset));
-        int[] span = hyperlinkProvider.getHyperlinkSpan(doc, offset);
+        assertTrue(hyperlinkProvider.isHyperlinkPoint(testDoc, offset + 1));
+        int[] span = hyperlinkProvider.getHyperlinkSpan(testDoc, offset + 1);
         assertEquals(offset, span[0]);
         assertEquals(offset + hyperlink.length(), span[1]);
     }
 
-    private static String createXMLConfig(String snippet) {
-        return "<?xml version='1.0'?><beans>" + snippet + "</beans>"; // XXX add at least beans and p namespace declaration here
+    private static String createXMLConfigText(String snippet) {
+        return "<?xml version='1.0' encoding='UTF-8'?>" +
+                "<beans xmlns='http://www.springframework.org/schema/beans' " +
+                "       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
+                "       xmlns:p='http://www.springframework.org/schema/p' " +
+                "       xsi:schemaLocation='http://www.springframework.org/schema/beans " +
+                "       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd'>" +
+                snippet +
+                "</beans>";
     }
 
-    private static BaseDocument createDocument(String contents) throws BadLocationException {
-        Class<?> kitClass = CloneableEditorSupport.getEditorKit(SpringXMLConfigDataLoader.REQUIRED_MIME).getClass();
-        BaseDocument doc = new BaseDocument(kitClass, false);
-        doc.insertString(0, contents, null);
+    private static BaseDocument setDocumentContentTo(BaseDocument doc, String content) throws Exception {
+        BufferedReader br = new BufferedReader(new StringReader(content));
+        return setDocumentContentTo(doc, br);
+    }
+
+    private static BaseDocument setDocumentContentTo(BaseDocument doc, BufferedReader br) throws Exception {
+        StringBuffer sb = new StringBuffer();
+        try {
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+                sb.append(System.getProperty("line.separator"));
+            }
+        } finally {
+            br.close();
+        }
+
+        doc.remove(0, doc.getLength());
+        doc.insertString(0, sb.toString(), null);
         return doc;
     }
 }

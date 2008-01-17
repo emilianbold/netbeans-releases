@@ -44,9 +44,7 @@ package org.netbeans.modules.spring.beans.hyperlink;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.DocumentContext;
@@ -168,10 +166,6 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         }
 
         BaseDocument doc = (BaseDocument) document;
-        JTextComponent target = Utilities.getFocusedComponent();
-        if ((target == null) || (target.getDocument() != doc)) {
-            return false;
-        }
         if (!(doc.getSyntaxSupport() instanceof XMLSyntaxSupport)) {
             return false;
         }
@@ -223,13 +217,6 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
 
     public int[] getHyperlinkSpan(Document document, int offset) {
         if (!(document instanceof BaseDocument)) {
-            return null;
-        }
-
-        BaseDocument bdoc = (BaseDocument) document;
-        JTextComponent target = Utilities.getFocusedComponent();
-
-        if ((target == null) || (lastDocument != bdoc)) {
             return null;
         }
 
