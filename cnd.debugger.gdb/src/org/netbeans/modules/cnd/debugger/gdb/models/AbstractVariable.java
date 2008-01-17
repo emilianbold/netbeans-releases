@@ -363,12 +363,13 @@ public class AbstractVariable implements LocalVariable, Customizer {
         if (GdbUtils.isArray(rt) && !isCharString(rt)) {
             return true;
         } else if (isValidPointerAddress()) {
-            if (GdbUtils.isFunctionPointer(rt) || (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
+            if (GdbUtils.isFunctionPointer(rt) || rt.equals("void *") || // NOI18N
+                    (isCharString(rt) && !GdbUtils.isMultiPointer(rt))) {
                 return false;
             } else {
                 return true;
             }
-        } else if (value != null && value.charAt(0) == '{') {
+        } else if (value != null && value.length() > 0 && value.charAt(0) == '{') {
             return true;
         }
         return false;
@@ -526,16 +527,18 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 createChildrenForMultiPointer(t);
             } else {
                 map = getTypeInfo().getMap();
-                String val = v.substring(1, v.length() - 1);
-                int start = 0;
-                int end = GdbUtils.findNextComma(val, 0);
-                while (end != -1) {
-                    String vfrag = val.substring(start, end).trim();
-                    addField(completeFieldDefinition(this, map, vfrag));
-                    start = end + 1;
-                    end = GdbUtils.findNextComma(val, end + 1);
+                if (!map.isEmpty()) {
+                    String val = v.substring(1, v.length() - 1);
+                    int start = 0;
+                    int end = GdbUtils.findNextComma(val, 0);
+                    while (end != -1) {
+                        String vfrag = val.substring(start, end).trim();
+                        addField(completeFieldDefinition(this, map, vfrag));
+                        start = end + 1;
+                        end = GdbUtils.findNextComma(val, end + 1);
+                    }
+                    addField(completeFieldDefinition(this, map, val.substring(start).trim()));
                 }
-                addField(completeFieldDefinition(this, map, val.substring(start).trim()));
             }
         }
     }
@@ -794,7 +797,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         if (t.equals("char")) { // NOI18N
             String nextv;
             for (int i = 0; i < size && vstart != -1; i++) {
-                nextv = nextValue(value, vstart);
+                nextv = nextValue(value, vstart < size ? vstart : size);
                 addField(new AbstractField(this, name + "[" + i + "]", t, nextv)); // NOI18N
                 vstart += nextv.length();
             }

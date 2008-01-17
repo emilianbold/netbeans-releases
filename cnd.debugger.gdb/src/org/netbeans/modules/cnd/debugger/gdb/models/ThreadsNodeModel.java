@@ -85,7 +85,7 @@ public class ThreadsNodeModel implements NodeModel {
             if (line.startsWith("* ")) { // NOI18N
                 return bold(line.substring(2));
             } else {
-                return line.substring(1);
+                return line;
             }
         } else {
 	    throw new UnknownTypeException(o);

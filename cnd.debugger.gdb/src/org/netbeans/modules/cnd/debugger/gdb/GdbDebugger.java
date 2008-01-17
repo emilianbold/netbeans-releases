@@ -348,7 +348,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (results.length() > 0) {
                 List<String> list = new ArrayList<String>();
                 for (String line : results.split("\\\\n")) { // NOI18N
-                    if (!line.trim().startsWith("from ")) { // NOI18N
+                    line = line.trim();
+                    if (line.length() > 0 && !line.startsWith("from ")) { // NOI18N
                         list.add(line);
                     }
                 }
@@ -428,6 +429,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
         } else if (evt.getPropertyName().equals(PROP_CURRENT_THREAD)) {
             updateCurrentCallStack();
+            updateLocalVariables(0);
         }
     }
     
