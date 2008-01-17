@@ -45,6 +45,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -74,11 +75,13 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
+import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
@@ -199,6 +202,9 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     // memory leak probing
     private static final Logger TIMERS = Logger.getLogger("TIMER.jsfTopComponents"); // NOI18N
     
+    private final JPanel panel = new JPanel();
+    
+    
     public JsfTopComponent(/*WebForm webform*/ JsfForm jsfForm, Designer designer, DataObject jspDataObject) {
 //        super(webform);
         super(jsfForm, designer);
@@ -258,6 +264,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         initActivatedNodes(jspDataObject);
 
         initDesignerPreferences();
+        
+        panel.setOpaque(false);
+        panel.setLayout(new OverlayLayout(panel));
+        setLayout(new BorderLayout());
+        add(panel, BorderLayout.CENTER);
     }
 
     
@@ -324,8 +335,8 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
 
     private void initDesignerComponent() {
-        removeAll();
-        setLayout(new BorderLayout());
+        panel.removeAll();
+//        setLayout(new BorderLayout());
         createDesignerPane();
 
         installActions();
@@ -343,16 +354,36 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     }
     
     private void initLoadingComponent() {
-        removeAll();
-        setLayout(new BorderLayout());
-        add(createLoadingComponent(), BorderLayout.CENTER);
+        panel.removeAll();
+//        setLayout(new BorderLayout());
+        panel.add(createLoadingComponent());
     }
     
     private JComponent createLoadingComponent() {
         JLabel loadingComponent = new JLabel(NbBundle.getMessage(JsfTopComponent.class, "LBL_LoadingModel"), JLabel.CENTER);
+        loadingComponent.setAlignmentX(0.5f);
+        loadingComponent.setMaximumSize(getMaximumSize());
         loadingComponent.setForeground(SystemColor.textInactiveText);
         loadingComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         return loadingComponent;
+    }
+    
+    private JComponent createReloadingComponent() {
+        JLabel reloadingComponent = new JLabel(NbBundle.getMessage(JsfTopComponent.class, "LBL_ReloadingModel"), JLabel.CENTER);
+        reloadingComponent.setAlignmentX(0.5f);
+        reloadingComponent.setMaximumSize(getMaximumSize());
+        reloadingComponent.setOpaque(true);
+        Color backgroundColor = SystemColor.control;
+        reloadingComponent.setBackground(
+            new Color(
+                backgroundColor.getRed(),
+                backgroundColor.getGreen(),
+                backgroundColor.getBlue(),
+                150) // Provide some constant for alpha?
+        );
+        reloadingComponent.setForeground(SystemColor.textInactiveText);
+        reloadingComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        return reloadingComponent;
     }
     
     @Override
@@ -506,7 +537,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     void showErrors(boolean on) {
         if (on == showingErrors) {
             if (on) {
-                Component comp = getComponent(0);
+                Component comp = panel.getComponent(0);
 
 //                if (comp instanceof ErrorPanel) {
 //                    ((ErrorPanel)comp).updateErrors();
@@ -528,15 +559,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
         if (on) {
 //            assert getComponentCount() >= 1;
-            if (getComponentCount() == 0) {
+            if (panel.getComponentCount() == 0) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL,
                         new IllegalStateException("Designer top component is not initialized," +
                         " there is no designer pane or error panel in it")); // NOI18N
                 return;
             }
             
-            hiddenComp = getComponent(0);
-            removeAll();
+            hiddenComp = panel.getComponent(0);
+            panel.removeAll();
 
 //            if (webform.getModel().isBusted()) {
 //                ErrorPanel errorPanel = new ErrorPanel(webform, webform.getModel().getErrors());
@@ -548,15 +579,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //            JComponent errorPanel = webform.getErrorPanel();
             JComponent errorPanel = jsfForm.getErrorPanel(new ErrorPanelCallbackImpl(this));
             
-            add(errorPanel, BorderLayout.CENTER);
+            panel.add(errorPanel, BorderLayout.CENTER);
         } else {
-            assert getComponentCount() >= 1;
-            removeAll();
+            assert panel.getComponentCount() >= 1;
+            panel.removeAll();
             assert hiddenComp != null;
 
             // Add old contents back: could be design scroll pane, or could
             // be split pane showing scrollpane and tray.
-            add(hiddenComp, BorderLayout.CENTER);
+            panel.add(hiddenComp, BorderLayout.CENTER);
 
             // Ensure that the exposed component has dimensions, otherwise
             // it won't receive any paint requests (and I drive layout from
@@ -1078,7 +1109,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
         JViewport vp = scrollPane.getViewport();
         vp.add(html);
-        add(scrollPane, BorderLayout.CENTER);
+        panel.add(scrollPane, BorderLayout.CENTER);
 //        html.updateViewport();
         designer.updatePaneViewPort();
     }
@@ -2656,23 +2687,24 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
             if (designer.getPageBox() == null) {
                 resetDesigner();
             }
+            refreshDesignerPaneAsNeeded();
         } else {
-            jsfForm.syncModel();
-
-            resetDesigner();
+            final JComponent reloadingComponent = createReloadingComponent();
+            // Needs to be first (to be on top in overlay).
+            panel.add(reloadingComponent, 0);
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    try {
+                        jsfForm.syncModel();
+                        resetDesigner();
+                        refreshDesignerPaneAsNeeded();
+                    } finally {
+                        panel.remove(reloadingComponent);
+                    }
+                }
+            });
         }
 
-        // Refresh layout for fragments and for pages that contain fragments whenever
-        // they are exposed
-        if (jsfForm.isFragment() || jsfForm.hasCachedExternalFrames()) {
-            // Always refresh fragments on expose since whenever they are
-            // rendered as part of other (including) documents those documents
-            // may style our elements and stash box references on the elements
-            // that point to their own box hierarchies
-            designer.redoPaneLayout(true);
-        }
-
-        designer.setPaneGrid(jsfForm.isGridMode());
 
         // XXX This was wrong, showing doesn't necessarily mean activated.
 //        // We cannot set the caret to the document position yet; we need
@@ -2687,6 +2719,21 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         // because contextChanged is not run when the form is first opened.
         // XXX perhaps I can do this in componentOpened instead?
         updateErrors(); // XXX shouldn't the contextChanged ensure this?
+    }
+    
+    // XXX Bad method from old code.
+    private void refreshDesignerPaneAsNeeded() {
+        // Refresh layout for fragments and for pages that contain fragments whenever
+        // they are exposed
+        if (jsfForm.isFragment() || jsfForm.hasCachedExternalFrames()) {
+            // Always refresh fragments on expose since whenever they are
+            // rendered as part of other (including) documents those documents
+            // may style our elements and stash box references on the elements
+            // that point to their own box hierarchies
+            designer.redoPaneLayout(true);
+        }
+
+        designer.setPaneGrid(jsfForm.isGridMode());
     }
 
     private void designerHidden() {
