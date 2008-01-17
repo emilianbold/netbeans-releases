@@ -64,6 +64,7 @@ public enum CppStringTokenId implements TokenId {
 
     TEXT("string"), //NOI18N
     BACKSPACE("string-escape"), //NOI18N
+    ANSI_COLOR("string-escape"), //NOI18N
     FORM_FEED("string-escape"), //NOI18N
     NEWLINE("string-escape"), //NOI18N
     CR("string-escape"), //NOI18N

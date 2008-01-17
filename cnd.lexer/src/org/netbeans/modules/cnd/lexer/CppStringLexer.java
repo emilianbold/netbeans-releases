@@ -94,6 +94,8 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                     switch (ch = read()) {
                         case 'b': //NOI18N
                             return token(CppStringTokenId.BACKSPACE);
+                        case 'e': //NOI18N
+                            return token(CppStringTokenId.ANSI_COLOR);
                         case 'f': //NOI18N
                             return token(CppStringTokenId.FORM_FEED);
                         case 'n': //NOI18N

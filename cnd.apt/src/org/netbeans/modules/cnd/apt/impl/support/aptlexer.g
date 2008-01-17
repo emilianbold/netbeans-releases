@@ -827,7 +827,7 @@ protected STRING_LITERAL_BODY :
 protected
 Escape:
 	'\\'
-		('a' | 'b' | 'f' | 'n' | 'r' | 't' | 'v' | '"' | '\'' | '\\' | '?' | 
+		('a' | 'b' | 'e' | 'f' | 'n' | 'r' | 't' | 'v' | '"' | '\'' | '\\' | '?' | 
                     ('0'..'3') (options{greedy=true;}: Digit)? (options{greedy=true;}: Digit)?
 		| ('4'..'7') (options{greedy=true;}: Digit)?
 		| 'x' (options{greedy=true;}: Digit | 'a'..'f' | 'A'..'F')+
