@@ -53,7 +53,7 @@ import org.openide.windows.TopComponent;
 import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 import org.netbeans.modules.print.api.PrintManager;
 import org.netbeans.modules.bpel.search.impl.util.Util;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

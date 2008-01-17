@@ -54,8 +54,7 @@ import org.netbeans.modules.bpel.editors.api.utils.DurationDialog;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.ItemHandler;
 import org.netbeans.modules.bpel.mapper.model.VertexFactory;
-
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

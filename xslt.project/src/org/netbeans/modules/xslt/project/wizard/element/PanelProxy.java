@@ -60,7 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileUtil;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -92,7 +92,7 @@ final class PanelProxy<T> extends Panel<T> {
   protected String getError()
   {
     String name = addExtension(myReplyFile.getText().trim());
-    if (!Util.isValidFileName(name)) {
+    if ( !PanelUtil.isValidFileName(name)) {
         return i18n("ERR_WrongFileName", name); // NOI18N
     }
     FileObject file = getFolder().getFileObject(name);
@@ -102,7 +102,7 @@ final class PanelProxy<T> extends Panel<T> {
     }
 
     name = addExtension(myRequestFile.getText().trim());
-    if (myReplyBox.isSelected() && !Util.isValidFileName(name)) {
+    if (myReplyBox.isSelected() && !PanelUtil.isValidFileName(name)) {
         return i18n("ERR_WrongFileName", name); // NOI18N
     }
     

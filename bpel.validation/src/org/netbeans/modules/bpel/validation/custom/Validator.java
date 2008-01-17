@@ -87,8 +87,12 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.bpel.validation.util.ResultItem;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.05.03
+ */
 public final class Validator extends org.netbeans.modules.bpel.validation.util.Validator {
 
     // vlv # 93078

@@ -48,8 +48,12 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.05.03
+ */
 public final class Validator extends org.netbeans.modules.bpel.validation.util.Validator {
 
     public ValidationResult validate( Model model, Validation validation, ValidationType validationType ) {

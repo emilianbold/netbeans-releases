@@ -68,7 +68,7 @@ import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.impl.core.Manager;
 import org.netbeans.modules.bpel.search.impl.ui.Search;
 import org.netbeans.modules.bpel.search.impl.util.Util;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

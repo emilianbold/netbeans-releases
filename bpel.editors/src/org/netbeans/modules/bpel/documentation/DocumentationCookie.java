@@ -88,7 +88,7 @@ import org.netbeans.modules.reportgenerator.api.ReportSection;
 import org.netbeans.modules.bpel.core.BPELDataObject;
 import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.editors.api.utils.RefactorUtil;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -362,12 +362,12 @@ public class DocumentationCookie implements ReportCookie {
   }
 
   private String i18n(String key) {
-    return org.netbeans.modules.print.api.PrintUtil.i18n(
+    return org.netbeans.modules.soa.ui.util.UI.i18n(
       DocumentationCookie.class, key);
   }
 
   private String i18n(String key, String param) {
-    return org.netbeans.modules.print.api.PrintUtil.i18n(
+    return org.netbeans.modules.soa.ui.util.UI.i18n(
       DocumentationCookie.class, key, param);
   }
 

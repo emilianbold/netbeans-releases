@@ -121,8 +121,12 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.netbeans.modules.bpel.validation.util.ResultItem;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.05.03
+ */
 public final class Helper {
     
     public Helper(Validator validator) {

@@ -59,7 +59,7 @@ import javax.swing.JTextField;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -18,7 +18,7 @@
  */
 package org.netbeans.modules.bpel.editors.api.utils;
 
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

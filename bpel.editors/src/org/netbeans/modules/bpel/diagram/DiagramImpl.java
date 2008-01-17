@@ -31,7 +31,7 @@ import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 
 import org.netbeans.modules.bpel.editors.api.diagram.Diagram;
 import org.netbeans.modules.bpel.editors.api.diagram.DiagramElement;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

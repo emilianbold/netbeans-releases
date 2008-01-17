@@ -155,7 +155,9 @@
                 <friend>org.netbeans.modules.bpel.editors</friend>
                 <friend>org.netbeans.modules.bpel.editors.api</friend>
                 <friend>org.netbeans.modules.bpel.mapper</friend>
-                <friend>org.netbeans.modules.bpel.xpath</friend>
+                <friend>org.netbeans.modules.bpel.refactoring</friend>
+                <friend>org.netbeans.modules.bpel.search</friend>
+                <friend>org.netbeans.modules.bpel.validation</friend>
                 <friend>org.netbeans.modules.soa.mapper</friend>
                 <friend>org.netbeans.modules.xslt.core</friend>
                 <friend>org.netbeans.modules.xslt.mapper</friend>
@@ -168,6 +170,7 @@
                 <package>org.netbeans.modules.soa.ui.nodes</package>
                 <package>org.netbeans.modules.soa.ui.tnv.api</package>
                 <package>org.netbeans.modules.soa.ui.tnv.scrollpane</package>
+                <package>org.netbeans.modules.soa.ui.util</package>
             </friend-packages>
         </data>
     </configuration>

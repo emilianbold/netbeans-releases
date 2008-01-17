@@ -47,7 +47,7 @@ import javax.swing.JPanel;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -85,7 +85,7 @@ import org.netbeans.modules.xml.xpath.XPathModel;
 import org.netbeans.modules.xml.xpath.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.XPathVariableReference;
 import org.netbeans.modules.xml.xpath.visitor.AbstractXPathVisitor;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

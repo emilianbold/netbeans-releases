@@ -84,7 +84,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.xsd.WSDLSchema;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLModelVisitor;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLUtilities;
 import org.netbeans.modules.xml.wsdl.ui.view.ElementOrType;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -121,7 +121,7 @@ final class PanelOperation<T> extends Panel<T> {
   {
     if (myFileName != null) {
       String fileName = myFile.getText().trim();
-      if (!Util.isValidFileName(fileName)) {
+      if ( !PanelUtil.isValidFileName(fileName)) {
           return i18n("ERR_WrongFileName", fileName); // NOI18N
       }
       

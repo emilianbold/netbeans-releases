@@ -79,7 +79,7 @@ import org.netbeans.modules.xslt.tmap.model.api.WSDLReference;
 import org.netbeans.modules.xslt.tmap.model.impl.VariableReferenceImpl;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
@@ -87,60 +87,48 @@ import static org.netbeans.modules.print.api.PrintUtil.*;
  */
 public final class Iterator implements TemplateWizard.Iterator {
 
-  /**{@inheritDoc}*/
   public static Iterator createXsl() {
     return new Iterator();
   }
 
-  /**{@inheritDoc}*/
   public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
     return Collections.singleton(createFile(wizard));
   }
 
-  /**{@inheritDoc}*/
   public void initialize(TemplateWizard wizard) {
     myPanel = new PanelStartup<WizardDescriptor>(Templates.getProject(wizard), null);
   }
 
-  /**{@inheritDoc}*/
   public void uninitialize(TemplateWizard wizard) {
     myPanel = null;
   }
 
-  /**{@inheritDoc}*/
   public String name() {
     return i18n(Iterator.class, "LBL_Title"); // NOI18N
   }
   
-  /**{@inheritDoc}*/
   public boolean hasNext() {
     return myPanel.getNext() != null;
   }
   
-  /**{@inheritDoc}*/
   public boolean hasPrevious() {
     return myPanel.getPrevious() != null;
   }
   
-  /**{@inheritDoc}*/
   public void nextPanel() {
     myPanel = myPanel.getNext();
   }
   
-  /**{@inheritDoc}*/
   public void previousPanel() {
     myPanel = myPanel.getPrevious();
   }
 
-  /**{@inheritDoc}*/
   public WizardDescriptor.Panel<WizardDescriptor> current() {
     return myPanel;
   }
   
-  /**{@inheritDoc}*/
   public void addChangeListener(ChangeListener listener) {}
 
-  /**{@inheritDoc}*/
   public void removeChangeListener(ChangeListener listener) {}
 
   private DataObject createFile(TemplateWizard wizard) throws IOException {
@@ -297,7 +285,7 @@ public final class Iterator implements TemplateWizard.Iterator {
         if (dirFo != null) {
             xslFo = dirFo.getFileObject(file);
             if (xslFo == null) {
-                xslFo = Util.copyFile(dirFo, 
+                xslFo = PanelUtil.copyFile(dirFo, 
                     TEMPLATES_PATH, XSLT_SERVICE,
                     file, XSL);
                 if (!isCreatedDir) {

@@ -34,8 +34,12 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.support.SimpleBpelModelVisitorAdaptor;
 import org.netbeans.modules.bpel.model.api.support.ValidationVisitor;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.05.03
+ */
 public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements ValidationVisitor, org.netbeans.modules.xml.xam.spi.Validator {
 
   public String getName() {

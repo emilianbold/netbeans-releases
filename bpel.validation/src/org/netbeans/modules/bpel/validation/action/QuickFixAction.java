@@ -55,14 +55,12 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
-//import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.validation.util.QuickFix;
 import org.netbeans.modules.bpel.validation.util.ResultItem;
 import org.netbeans.modules.bpel.validation.util.Util;
-
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

@@ -43,7 +43,7 @@ package org.netbeans.modules.bpel.validation.util;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bpel.model.api.NamedElement;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy

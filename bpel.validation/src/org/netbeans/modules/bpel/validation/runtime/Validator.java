@@ -74,9 +74,12 @@ import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
-import static org.netbeans.modules.print.api.PrintUtil.*;
-
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.05.03
+ */
 public final class Validator extends org.netbeans.modules.bpel.validation.util.Validator {
     
     // vlv

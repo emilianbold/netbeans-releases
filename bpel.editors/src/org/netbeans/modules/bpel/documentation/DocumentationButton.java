@@ -50,7 +50,7 @@ import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 
 import org.netbeans.modules.bpel.design.decoration.components.AbstractGlassPaneButton;
-import static org.netbeans.modules.print.api.PrintUtil.*;
+import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
