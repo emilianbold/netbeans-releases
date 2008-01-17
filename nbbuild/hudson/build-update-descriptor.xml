@@ -13,6 +13,7 @@
         <!-- org.netbeans.lib.terminalemulator is really unused in cnd cluster, yet apparently has to be in the build anyway; contact Thomas Preisler -->
         <!-- lexer/editor bridge really unused, yet kept in build for tutorials -->
         <property name="disabled.autoloads" value="org.netbeans.modules.ide.branding,org.netbeans.lib.terminalemulator,org.netbeans.modules.lexer.editorbridge,org.netbeans.spi.actions.support"/>
+<!-- XXX #125497
         <vuc updates="workspace/nbbuild/nbms/updates.xml" oldupdates="lastSuccessful/archive/nbbuild/nbms/updates.xml" disabledautoloads="${disabled.autoloads}" checkautoupdatevisibility="true" report="workspace/nbbuild/nbms/vuc-report.xml">
             <classpath>
                 <fileset dir="workspace/nbbuild/netbeans">
@@ -21,5 +22,6 @@
                 </fileset>
             </classpath>
         </vuc>
+-->
     </target>
 </project>
