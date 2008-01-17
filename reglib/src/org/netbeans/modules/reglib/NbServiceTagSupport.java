@@ -157,7 +157,7 @@ public class NbServiceTagSupport {
      * @return service tag instance for NetBeans
      * @throws java.io.IOException
      */
-    public static ServiceTag createNbServiceTag (String source) throws IOException {
+    public static ServiceTag createNbServiceTag (String source, String nbHomeDir) throws IOException {
         if (!inited) {
             init();
         }
@@ -177,7 +177,7 @@ public class NbServiceTagSupport {
         // New service tag entry if not created
         if (st == null) {
             LOG.log(Level.FINE,"Creating new service tag");
-            st = newNbServiceTag(source);
+            st = newNbServiceTag(source, nbHomeDir);
             // Add the service tag to the registration data in NB
             getRegistrationData().addServiceTag(st);
             writeRegistrationXml();
@@ -199,7 +199,8 @@ public class NbServiceTagSupport {
      * @return service tag instance for GlassFish
      * @throws java.io.IOException
      */
-    public static ServiceTag createGfServiceTag (String source) throws IOException {
+    public static ServiceTag createGfServiceTag
+    (String source, String jdkHomeUsedByGlassfish, String jdkVersionUsedByGlassfish, String glassfishHome) throws IOException {
         if (!inited) {
             init();
         }
@@ -219,7 +220,7 @@ public class NbServiceTagSupport {
         // New service tag entry if not created
         if (st == null) {
             LOG.log(Level.FINE,"Creating new GlassFish service tag");
-            st = newGfServiceTag(source);
+            st = newGfServiceTag(source, jdkHomeUsedByGlassfish, jdkVersionUsedByGlassfish, glassfishHome);
             // Add the service tag to the registration data in NB
             getRegistrationData().addServiceTag(st);
             writeRegistrationXml();
@@ -383,7 +384,7 @@ public class NbServiceTagSupport {
      * @return
      * @throws java.io.IOException
      */
-    private static ServiceTag newNbServiceTag (String svcTagSource) throws IOException {
+    private static ServiceTag newNbServiceTag (String svcTagSource, String nbHomeDir) throws IOException {
         // Determine the product URN and name
         String productURN, productName, parentURN, parentName;
 
@@ -399,7 +400,7 @@ public class NbServiceTagSupport {
                                       productURN,
                                       parentName,
                                       parentURN,
-                                      getNbProductDefinedId(),
+                                      getNbProductDefinedId(nbHomeDir),
                                       "NetBeans.org",
                                       System.getProperty("os.arch"),
                                       getZoneName(),
@@ -412,7 +413,8 @@ public class NbServiceTagSupport {
      * @return
      * @throws java.io.IOException
      */
-    private static ServiceTag newGfServiceTag (String svcTagSource) throws IOException {
+    private static ServiceTag newGfServiceTag
+    (String svcTagSource, String jdkHomeUsedByGlassfish, String jdkVersionUsedByGlassfish, String glassfishHome) throws IOException {
         // Determine the product URN and name
         String productURN, productName, parentURN, parentName;
 
@@ -428,7 +430,7 @@ public class NbServiceTagSupport {
                                       productURN,
                                       parentName,
                                       parentURN,
-                                      getGfProductDefinedId(),
+                                      getGfProductDefinedId(jdkHomeUsedByGlassfish, jdkVersionUsedByGlassfish, glassfishHome),
                                       "Sun Microsystems Inc",
                                       System.getProperty("os.arch"),
                                       getZoneName(),
@@ -503,15 +505,15 @@ public class NbServiceTagSupport {
      * cleanup if necessary.  See RFE# 6574781 Service Tags Enhancement. 
      *
      */
-    private static String getNbProductDefinedId() {
+    private static String getNbProductDefinedId (String nbHomeDir) {
         StringBuilder definedId = new StringBuilder();
         definedId.append("id=");
         definedId.append(NB_VERSION);
         
-        String location = ",dir=" + nbInstallDir.getPath();
+        String location = ",dir=" + nbHomeDir;
         if ((definedId.length() + location.length()) < 256) {
             definedId.append(",dir=");
-            definedId.append(nbInstallDir.getPath());
+            definedId.append(nbHomeDir);
         } else {
             // if it exceeds the limit, we will not include the location
             LOG.log(Level.INFO, "Warning: Product defined instance ID exceeds the field limit:");
@@ -529,7 +531,8 @@ public class NbServiceTagSupport {
      * Caller (installer) must make sure that system property glassfish.home is set.
      *
      */
-    private static String getGfProductDefinedId() {
+    private static String getGfProductDefinedId
+    (String jdkHomeUsedByGlassfish, String jdkVersionUsedByGlassfish, String glassfishHome) {
         StringBuilder definedId = new StringBuilder();
         
         definedId.append("os.name=");
@@ -539,13 +542,13 @@ public class NbServiceTagSupport {
         definedId.append(System.getProperty("os.version"));
         
         definedId.append(",java.version=");
-        definedId.append(System.getProperty("java.version"));
+        definedId.append(jdkVersionUsedByGlassfish);
         
         definedId.append(",glassfish.home=");
-        definedId.append(System.getProperty("glassfish.home"));
+        definedId.append(glassfishHome);
         
         definedId.append(",java.home=");
-        definedId.append(System.getProperty("java.home"));
+        definedId.append(jdkHomeUsedByGlassfish);
         
         return definedId.toString();
     }

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.registration;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -94,8 +95,15 @@ public class NbInstaller extends ModuleInstall {
             return;
         }
         
+        //This return platfomX dir but we need install dir
+        File f = new File(System.getProperty("netbeans.home"));
+        
+        File nbInstallDir = f.getParentFile();
+        LOG.log(Level.FINE,"NetBeans install dir is:" + nbInstallDir);
+        
         try {
-            NbServiceTagSupport.createNbServiceTag(NbBundle.getMessage(NbInstaller.class,"nb.product.name"));
+            NbServiceTagSupport.createNbServiceTag
+            (NbBundle.getMessage(NbInstaller.class,"nb.product.name"),nbInstallDir.getPath());
             //NbServiceTagSupport.createGfServiceTag("NetBeans IDE 6.0");
             //NbServiceTagSupport.createJdkServiceTag("NetBeans IDE 6.0");
             //NbServiceTagSupport.getRegistrationHtmlPage(PRODUCT_ID);
