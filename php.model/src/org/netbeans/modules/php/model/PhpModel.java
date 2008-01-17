@@ -109,5 +109,10 @@ public interface PhpModel extends Acceptor, Provider  {
      * @return source element at <code>offset</code>
      */
     SourceElement findSourceElement( int offset );
+    
+    /**
+     * @return
+     */
+    ModelOrigin getModelOrigin();
 
 }

@@ -93,6 +93,13 @@ class PhpModelImpl implements PhpModel {
     }
     
     /* (non-Javadoc)
+     * @see org.netbeans.modules.php.model.PhpModel#getModelOrigin()
+     */
+    public ModelOrigin getModelOrigin() {
+        return myOrigin;
+    }
+    
+    /* (non-Javadoc)
      * @see org.netbeans.modules.php.model.PhpModel#getDocument()
      */
     public Document getDocument(){
