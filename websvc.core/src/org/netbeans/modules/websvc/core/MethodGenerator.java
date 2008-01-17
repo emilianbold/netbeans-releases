@@ -86,8 +86,6 @@ public class MethodGenerator {
         this.wsdlModel=wsdlModel;
     }
     
-    
-    
     public void generateMethod(final String operationName) throws IOException {
         
         // Use Progress API to display generator messages.
@@ -103,7 +101,7 @@ public class MethodGenerator {
                 if (javaClass!=null) {
                     
                     // get proper wsdlOperation;
-                    WsdlOperation wsdlOperation = getWsdlOperation(wsdlModel, operationName);
+                    WsdlOperation wsdlOperation = getWsdlOperation(operationName);
                     
                     TreeMaker make = workingCopy.getTreeMaker();
                     
@@ -319,9 +317,9 @@ public class MethodGenerator {
         return null;
     }
     
-    private WsdlOperation getWsdlOperation(WsdlModel model, String operationName) {
+    private WsdlOperation getWsdlOperation(String operationName) {
         // TODO: exclude non DOCUMENT/LITERAL ports
-        List<WsdlService> services = model.getServices();
+        List<WsdlService> services = wsdlModel.getServices();
         for (WsdlService service:services) {
             List<WsdlPort> ports = service.getPorts();
             for (WsdlPort port:ports) {
