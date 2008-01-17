@@ -751,7 +751,7 @@ public class JavaSourceHelper {
     }
 
     public static boolean isOfAnnotationType(AnnotationMirror am, String annotationType) {
-        return am.getAnnotationType().asElement().getSimpleName().contentEquals(annotationType);
+        return annotationType.equals(am.toString().substring(1));
     }
 
     public static AnnotationMirror findAnnotation(List<? extends AnnotationMirror> anmirs, String annotationString) {
