@@ -31,6 +31,7 @@ public class TreeSourcePin implements SourcePin {
     
     
     public TreeSourcePin(TreePath treePath) {
+        assert treePath.getParentPath() != null;
         this.treePath = treePath;
     }
     

@@ -443,18 +443,20 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
      * @return TreePath of the found tree item. 
      */
     public TreePath findFirstNode(List<TreeItemFinder> finderList) {
+        if (finderList == null || finderList.isEmpty()) {
+            return null;
+        }
+        //
         MapperTreeNode rootNode = (MapperTreeNode)getRoot();
         Stack<MapperTreeNode> locationStack = new Stack<MapperTreeNode>();
         locationStack.push(rootNode);
         //
-        if (finderList != null) {
-            for (TreeItemFinder finder : finderList) {
-                //
-                boolean found = findFirstChild(locationStack, finder, -1);
-                //
-                if (!found) {
-                    return null;
-                }
+        for (TreeItemFinder finder : finderList) {
+            //
+            boolean found = findFirstChild(locationStack, finder, -1);
+            //
+            if (!found) {
+                return null;
             }
         }
         //
