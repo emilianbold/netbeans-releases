@@ -54,7 +54,6 @@ import java.util.logging.Level;
 
 import javax.swing.Action;
 
-import org.netbeans.modules.visualweb.ejb.actions.AddSessionBeanToPageAction;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
 import org.netbeans.modules.visualweb.ejb.util.Util;
@@ -110,8 +109,8 @@ public class SessionBeanNode extends AbstractNode implements Node.Cookie {
     // Create the popup menu for the session bean node
     public Action[] getActions(boolean context) {
         // todo I don't know what actions to popup from this node yet
-        return new Action[] { SystemAction.get(AddSessionBeanToPageAction.class),
-                SystemAction.get(PropertiesAction.class), };
+        return new Action[] {
+                SystemAction.get(PropertiesAction.class) };
     }
 
     public HelpCtx getHelpCtx() {

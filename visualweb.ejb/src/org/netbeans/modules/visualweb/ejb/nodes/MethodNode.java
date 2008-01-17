@@ -56,7 +56,6 @@ import java.util.logging.Level;
 
 import javax.swing.Action;
 
-import org.netbeans.modules.visualweb.ejb.actions.AddDataProviderToPageAction;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
@@ -107,8 +106,8 @@ public class MethodNode extends AbstractNode implements Node.Cookie {
 
     // Create the popup menu:
     public Action[] getActions(boolean context) {
-        return new Action[] { SystemAction.get(AddDataProviderToPageAction.class),
-                SystemAction.get(PropertiesAction.class), };
+        return new Action[] {
+                SystemAction.get(PropertiesAction.class) };
     }
 
     public Action getPreferredAction() {

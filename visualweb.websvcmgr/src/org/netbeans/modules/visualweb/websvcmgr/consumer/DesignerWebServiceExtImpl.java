@@ -57,8 +57,6 @@ import java.util.Map;
 import java.util.Properties;
 import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.modules.visualweb.websvcmgr.actions.AddDataProviderToFormAction;
-import org.netbeans.modules.visualweb.websvcmgr.actions.AddToFormAction;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderBeanInfoWriter;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderDesignInfoWriter;
 import org.netbeans.modules.visualweb.websvcmgr.codegen.DataProviderInfo;
@@ -69,7 +67,6 @@ import org.netbeans.modules.visualweb.websvcmgr.util.Util;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor.JarEntry;
-import org.netbeans.modules.websvc.manager.model.WebServiceData;
 import org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.DialogDisplayer;
@@ -80,7 +77,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 
 /**
  * WebServiceManagerExt implementation for the Visualweb page designer
@@ -406,27 +402,15 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
     }
 
     public Action[] getWebServiceActions(Node node) {
-        Node[] children = node.getChildren().getNodes();
-        WebServiceData wsData = node.getLookup().lookup(WebServiceData.class);
-        if (children != null && children.length == 1 && wsData != null && wsData.isCompiled()) {
-            return new Action[] {
-                SystemAction.get(AddToFormAction.class),
-            };
-        } else {
-            return EMPTY_ACTIONS;
-        }
+        return EMPTY_ACTIONS;
     }
 
     public Action[] getPortActions(Node node) {
-        return new Action[] {
-            SystemAction.get(AddToFormAction.class)
-        };
+        return EMPTY_ACTIONS;
     }
 
     public Action[] getMethodActions(Node node) {
-        return new Action[] {
-            SystemAction.get(AddDataProviderToFormAction.class)
-        };
+        return EMPTY_ACTIONS;
     }
     
     private void copyIcons(File dtSourceDir){
