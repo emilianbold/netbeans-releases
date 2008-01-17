@@ -201,7 +201,11 @@ public class OutputWindowWriter extends Writer {
     }
     
     private void handleLine(String line) throws IOException {
-        if (parseOutputForErrors) {
+        if (parseOutputForErrors && 
+                line.length() < 2048) // We can safely ignore large lines for analyzing because 
+                                      // max path length on most systems is about 256, and
+                                      // text message are even shorter. See IZ#124796 for reasons.
+        {
             for (int cntr = 0; cntr < parsers.length; cntr++) {
                 Pattern[] patterns = parsers[cntr].getPattern();
 
