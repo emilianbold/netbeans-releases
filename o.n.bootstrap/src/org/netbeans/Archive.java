@@ -226,9 +226,10 @@ class Archive {
     }
     
     private void save(File f, boolean append) throws IOException {
+        if (saved) return;
+
         assert !gathering;
         assert !active;
-        assert !saved;
         assert !append || f.equals(archiveFile);
         
         saved = true;
