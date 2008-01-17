@@ -1219,48 +1219,45 @@ public class ResourceMgr //implements IDrawingPropertyProvider
 		 // dumpToFile(NULL, false, false);
 	}
 	
-	public Font getZoomedFont(int nFontID, double nDrawZoom)
-	{
-		Font  pFont = null;
+    public Font getZoomedFont(int nFontID, double nDrawZoom) {
+        Font pFont = null;
 
-		double nZoomLevel = nDrawZoom;
-		if (nZoomLevel < 0)
-		{
-			 // Use the current zoom level
-			 nZoomLevel = 1.0;
+        double nZoomLevel = nDrawZoom;
+        if (nZoomLevel < 0) {
+            // Use the current zoom level
+            nZoomLevel = 1.0;
 
-			if( m_RawDrawingAreaControl != null)
-			{
-            IDrawingAreaControl ctrl = (IDrawingAreaControl)m_RawDrawingAreaControl.get();
-            if(ctrl != null)
-            {
-				  nZoomLevel = ctrl.getCurrentZoom();
+            if (m_RawDrawingAreaControl != null) {
+                IDrawingAreaControl ctrl = (IDrawingAreaControl) m_RawDrawingAreaControl.get();
+                if (ctrl != null) {
+                    nZoomLevel = ctrl.getCurrentZoom();
+                }
             }
-			}
-		  }
+        }
 
-		  // Now look for this font by id
-		  ETPairT<Integer, Integer> ids = m_FontHolderIDs.get(new Integer(nFontID));
-		  if (ids != null)
-		  {
-		  	
-			 Integer nFontHolderID = ids.getParamOne();
-			ERFontHolder iterator2 = m_FontHolderTable.get(nFontHolderID);
-			 if (iterator2 != null)
-			 {
-				pFont = iterator2.getFont(nZoomLevel);
-			 }
-		  }
-      
-		  if (pFont == null)
-		  {
-			pFont = m_pDefaultFontHolder.getFont(nZoomLevel);
-		  }
+        // Now look for this font by id
+        //krichard issue 124432 NPE from m_FontHolderIDs.get(new Integer(nFontID))
+        // needed to add null checks. This is best done by checking if the 
+        //nFontID represents a valid font. This check also garuntees that ids is 
+        //not null.
+        if (this.isValidFontID(nFontID)) {
+            ETPairT<Integer, Integer> ids = m_FontHolderIDs.get(new Integer(nFontID));
 
-		  // DumpToFile(NULL, false);
+            Integer nFontHolderID = ids.getParamOne();
+            ERFontHolder iterator2 = m_FontHolderTable.get(nFontHolderID);
+            if (iterator2 != null) {
+                pFont = iterator2.getFont(nZoomLevel);
+            }
+        }
 
-		return pFont;
-	}
+        if (pFont == null) {
+            pFont = m_pDefaultFontHolder.getFont(nZoomLevel);
+        }
+
+        // DumpToFile(NULL, false);
+
+        return pFont;
+    }
 	
 	public int getColor( int nColorID )
 	{
