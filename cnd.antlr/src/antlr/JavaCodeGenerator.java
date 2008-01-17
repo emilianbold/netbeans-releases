@@ -1140,7 +1140,7 @@ public class JavaCodeGenerator extends CodeGenerator {
         } else {
             action = "break " + context.breakLabel + ";";
         }
-        return "if (matchError) {" + action + "};";
+        return "if (matchError) {" + action + "}";
     }
     
     public void printCheck(Context context) {
