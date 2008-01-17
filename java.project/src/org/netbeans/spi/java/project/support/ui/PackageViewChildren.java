@@ -656,7 +656,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                     
                     for( int i = 0; i < superActions.length; i++ ) {
 
-                        if ( superActions[ i ] == null && superActions[i + 1] instanceof PropertiesAction ) {
+                        if ( (i <= superActions.length - 2) && superActions[ i ] == null && superActions[i + 1] instanceof PropertiesAction ) {
                             i ++;
                             continue;
                         }
