@@ -64,37 +64,16 @@ public class SwitchToFile  extends org.netbeans.performance.test.utilities.Perfo
     /** Creates a new instance of SwitchToFile */
     public SwitchToFile(String testName) {
         super(testName);
+
         expectedTime = WINDOW_OPEN;
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        Node prn = pto.getProjectRootNode("PerformanceTestWebApplication");
-
-        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestFoldersData"), "folders.javaFolder50|StatusBar.java"));
-        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestFoldersData"), "folders.javaFolder50|CompleteWord.java"));
-        new OpenAction().performAPI(new Node(prn, "web|Test.jsp"));
-        new OpenAction().performAPI(new Node(prn, "web|BigJSP.jsp"));
-
-        FilesTabOperator fto= FilesTabOperator.invoke();
-        Node f = fto.getProjectNode("PerformanceTestWebApplication");
-
-        new OpenAction().performAPI(new Node(f, "build.xml"));
     }
     
     /** Creates a new instance of SwitchToFile */
     public SwitchToFile(String testName, String performanceDataName) {
         super(testName,performanceDataName);
+ 
         expectedTime = WINDOW_OPEN;
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        Node prn = pto.getProjectRootNode("PerformanceTestWebApplication");
 
-        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestFoldersData"), "folders.javaFolder50|StatusBar.java"));
-        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestFoldersData"), "folders.javaFolder50|CompleteWord.java"));
-        new OpenAction().performAPI(new Node(prn, "web|Test.jsp"));
-        new OpenAction().performAPI(new Node(prn, "web|BigJSP.jsp"));
-
-        FilesTabOperator fto= FilesTabOperator.invoke();
-        Node f = fto.getProjectNode("PerformanceTestWebApplication");
-
-        new OpenAction().performAPI(new Node(f, "build.xml"));
     }
 
     public void testSwitchJavaToJava(){
@@ -133,11 +112,28 @@ public class SwitchToFile  extends org.netbeans.performance.test.utilities.Perfo
 
         repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
         setJavaEditorCaretFilteringOn();
+
+        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
+        Node prn = pto.getProjectRootNode("PerformanceTestWebApplication");
+
+        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestFoldersData"), "folders.javaFolder50|StatusBar.java"));
+        new OpenAction().performAPI(new Node(new SourcePackagesNode("PerformanceTestFoldersData"), "folders.javaFolder50|CompleteWord.java"));
+        new OpenAction().performAPI(new Node(prn, "web|Test.jsp"));
+        new OpenAction().performAPI(new Node(prn, "web|BigJSP.jsp"));
+
+        FilesTabOperator fto= FilesTabOperator.invoke();
+        Node f = fto.getProjectNode("PerformanceTestWebApplication");
+
+        new OpenAction().performAPI(new Node(f, "build.xml"));
+
     }
         
     public void prepare() {
         log(":: prepare");
+
+
         EditorOperator eo = ewo.selectPage(filenameFrom);
+
     }
     
     public ComponentOperator open() {
