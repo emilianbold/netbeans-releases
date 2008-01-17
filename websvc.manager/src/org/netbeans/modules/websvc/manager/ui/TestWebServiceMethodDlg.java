@@ -107,7 +107,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
      */
     private URLClassLoader runtimeClassLoader;
     
-    private String packageName;
     private DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
     private DefaultMutableTreeNode resultRootNode = new DefaultMutableTreeNode();
     private WebServiceData wsData;
@@ -120,7 +119,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         this.method = inMethod;
         wsData = inWSData;
         port = inPort;
-        packageName = inWSData.getPackageName();
         portName = inPort.getName();
         
         assert wsData.getJaxWsDescriptor() != null;
@@ -191,16 +189,6 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ex);
             return null;
         }
-    }
-    
-    /**
-     * This method returns the package name of the  web service for which we are testing the methods.
-     * TODO: determine if the tree components should get the class loader here, store the classloader in the tree nodes, or pass
-     * to the tree component constructors.
-     *@returns URLClassLoader - the class loader of the Jar file for the web service with the methods to test.
-     */
-    public String getPackageName() {
-        return packageName;
     }
     
     public WebServiceData getWebServiceData() {
@@ -393,8 +381,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         /**
          * specify the wrapper client class name for this method.
          */
-        String className = wsData.getJaxWsDescriptor().getName(); //NOI18N
-        String clientClassName = packageName + "." + className;
+        String clientClassName = wsData.getWsdlService().getJavaName();
         
         /**
          * Fix for Bug: 6217545
@@ -478,7 +465,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         }
         
         try {
-            NodeHelper.createInstance(getRuntimeClassLoader(), packageName);
+            NodeHelper.createInstance(getRuntimeClassLoader());
             
             parameterOutline = loadParameterTreeTable(this.method);
 

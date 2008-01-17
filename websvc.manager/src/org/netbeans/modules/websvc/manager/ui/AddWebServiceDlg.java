@@ -42,8 +42,8 @@
 package org.netbeans.modules.websvc.manager.ui;
 
 
+import java.awt.Color;
 import java.awt.Component;
-import java.io.IOException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -61,7 +61,6 @@ import java.net.MalformedURLException;
 
 import javax.swing.filechooser.FileFilter;
 import javax.swing.*;
-import org.netbeans.modules.websvc.manager.WebServiceManager;
 import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.openide.DialogDescriptor;
@@ -135,7 +134,9 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
 
     
     private static boolean isValidPackageName(String packageName) {
-        if (packageName == null || packageName.length() == 0 || !Character.isJavaIdentifierStart(packageName.charAt(0))) {
+        if (packageName == null || packageName.length() == 0) { // let jaxws pick package name
+            return true;
+        } else if (!Character.isJavaIdentifierStart(packageName.charAt(0))) {
             return false;
         }else {
             java.util.StringTokenizer pkgIds = new java.util.StringTokenizer(packageName, "."); // NOI18N
@@ -282,7 +283,8 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         
         setDefaults();
         
-        
+        jTxtpackageName.setText(NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride")); // NOI18N
+        jTxtpackageName.setForeground(Color.GRAY);
     }
         
     public void displayDialog(){
@@ -378,7 +380,10 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         } else {
             wsdl = fixFileURL(jTxtLocalFilename.getText().trim());
         }
-        final String packageName = jTxtpackageName.getText().trim();
+        String packageName = jTxtpackageName.getText().trim();
+        if (packageName.equals(NbBundle.getMessage(AddWebServiceDlg.class, "MSG_ClickToOverride"))) {
+            packageName = ""; //NOI18N
+        }
 
         dialog.setVisible(false);
         dialog.dispose();
@@ -461,7 +466,11 @@ public class AddWebServiceDlg extends JPanel  implements ActionListener {
         pkgNameLbl.setText(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "PACKAGE_LABEL")); // NOI18N
 
         jTxtpackageName.setColumns(20);
-        jTxtpackageName.setText("websvc");
+        jTxtpackageName.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTxtpackageNameMouseClicked(evt);
+            }
+        });
         jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) {
                 updateAddButtonState(jTxtpackageName);
@@ -582,6 +591,11 @@ private void jRbnFilesystemActionPerformed(java.awt.event.ActionEvent evt) {//GE
     
     enableControls();
 }//GEN-LAST:event_jRbnFilesystemActionPerformed
+
+private void jTxtpackageNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTxtpackageNameMouseClicked
+    jTxtpackageName.selectAll();
+    jTxtpackageName.setForeground(Color.BLACK);
+}//GEN-LAST:event_jTxtpackageNameMouseClicked
 
 
 

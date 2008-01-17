@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.websvc.components.strikeiron.ui;
 
-import java.awt.event.KeyEvent;
+import java.awt.Color;
 import javax.swing.JLabel;
-import javax.swing.JTextField;
 import org.netbeans.modules.websvc.components.ServiceData;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -66,8 +66,28 @@ public class HeaderPanel extends javax.swing.JPanel {
         return jlTitle;
     }
     
-    JTextField getPackageNameTF() {
-        return tfPackageName;
+    private static final String TO_OVERRIDE = NbBundle.getMessage(HeaderPanel.class, "MSG_ClickToOverride");
+    public String getPackageName() {
+        String name = tfPackageName.getText().trim();
+        if (name.equals(TO_OVERRIDE)) {
+            name = ""; //NOI18N
+        }
+        return name;
+    }
+    
+    public void setPackageName(String name) {
+        if (name == null || name.length() == 0) {
+            tfPackageName.setText(TO_OVERRIDE);
+            tfPackageName.setForeground(Color.GRAY);
+        }
+    }
+    
+    public void addFocusListener(java.awt.event.FocusAdapter l) {
+        tfPackageName.addFocusListener(l);
+    }
+    
+    public void removeFocusListener(java.awt.event.FocusAdapter l) {
+        tfPackageName.removeFocusListener(l);
     }
     
     /** This method is called from within the constructor to
@@ -85,6 +105,11 @@ public class HeaderPanel extends javax.swing.JPanel {
         jlTitle.setText(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.jlTitle.text")); // NOI18N
 
         tfPackageName.setText(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.tfPackageName.text")); // NOI18N
+        tfPackageName.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tfPackageNameMouseClicked(evt);
+            }
+        });
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(HeaderPanel.class, "HeaderPanel.jLabel1.text")); // NOI18N
 
@@ -114,6 +139,12 @@ public class HeaderPanel extends javax.swing.JPanel {
                 .addContainerGap(23, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void tfPackageNameMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tfPackageNameMouseClicked
+        tfPackageName.selectAll();
+        tfPackageName.setForeground(Color.BLACK);
+
+    }//GEN-LAST:event_tfPackageNameMouseClicked
         
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

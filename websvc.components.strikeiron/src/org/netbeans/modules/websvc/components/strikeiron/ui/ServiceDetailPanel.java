@@ -73,7 +73,6 @@ public class ServiceDetailPanel extends JTextPane {
     private JScrollPane scrollPane;
     private HeaderPanel header;
     private JLabel title;
-    private JTextField tfPackageName;
     private ServiceData currentData;
 
     public ServiceDetailPanel() {
@@ -84,20 +83,19 @@ public class ServiceDetailPanel extends JTextPane {
         CompoundBorder compoundBorder = BorderFactory.createCompoundBorder(outsideBorder, insideBorder);
         header.setBorder(compoundBorder);
         initHtmlKit();
-        tfPackageName = header.getPackageNameTF();
-        tfPackageName.addKeyListener(new java.awt.event.KeyAdapter() {
+        header.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 if (KeyEvent.VK_ENTER == evt.getKeyCode()) {
                     if (currentData != null) {
-                        currentData.setPackageName(tfPackageName.getText());
+                        currentData.setPackageName(header.getPackageName());
                     }
                 }
             }
         });
-        tfPackageName.addFocusListener(new java.awt.event.FocusAdapter() {
+        header.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusLost(java.awt.event.FocusEvent evt) {
                 if (currentData != null) {
-                    currentData.setPackageName(tfPackageName.getText());
+                    currentData.setPackageName(header.getPackageName());
                 }
             }
         });
@@ -159,17 +157,17 @@ public class ServiceDetailPanel extends JTextPane {
     
     void setCurrentService(ServiceData service) {
         if (currentData != null) {
-            currentData.setPackageName(tfPackageName.getText());
+            currentData.setPackageName(header.getPackageName());
         }
         currentData = service;
         if (currentData != null) {
             getScrollPane().setColumnHeaderView(header);
-            tfPackageName.setText(currentData.getPackageName());
+            header.setPackageName(currentData.getPackageName());
             setTitle(currentData.getServiceName());
             setDetails();
         } else {
             setTitle("");
-            tfPackageName.setText("");
+            header.setPackageName("");
             setText("");
         }
     }
@@ -179,7 +177,7 @@ public class ServiceDetailPanel extends JTextPane {
     }
     
     String getPackageName() {
-        currentData.setPackageName(tfPackageName.getText());
+        currentData.setPackageName(header.getPackageName());
         return currentData.getPackageName();
     }
     

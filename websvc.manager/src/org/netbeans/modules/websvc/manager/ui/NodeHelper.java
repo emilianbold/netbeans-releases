@@ -45,17 +45,15 @@ import org.openide.ErrorManager;
  */
 public final class NodeHelper {
     private final URLClassLoader loader;
-    private final String packageName;
     
     private static NodeHelper instance;
     
-    private NodeHelper(URLClassLoader loader, String packageName) {
+    private NodeHelper(URLClassLoader loader) {
         this.loader = loader;
-        this.packageName = packageName;
     }
     
-    public static NodeHelper createInstance(URLClassLoader loader, String packageName) {
-        NodeHelper result = new NodeHelper(loader, packageName);
+    public static NodeHelper createInstance(URLClassLoader loader) {
+        NodeHelper result = new NodeHelper(loader);
         NodeHelper.instance = result;
         
         return result;
@@ -67,10 +65,6 @@ public final class NodeHelper {
     
     private URLClassLoader getRuntimeClassLoader() {
         return loader;
-    }
-    
-    private String getPackageName() {
-        return packageName;
     }
     
     /**
@@ -88,7 +82,7 @@ public final class NodeHelper {
          */
         String parameterClass = data.getTypeClass();
         if (ReflectionHelper.isHolder(parameterClass)) {
-            node = new HolderTypeTreeNode(data, this.getRuntimeClassLoader(), this.getPackageName());
+            node = new HolderTypeTreeNode(data, this.getRuntimeClassLoader());
             
             DefaultMutableTreeNode childNode = null;
 
@@ -132,11 +126,11 @@ public final class NodeHelper {
             
             addParameterArrayInstances(node);
         } else if (ReflectionHelper.isCollection(data.getTypeClass(), getRuntimeClassLoader())) {
-            node = new ListTypeTreeNode(data, this.getRuntimeClassLoader(), this.getPackageName());
+            node = new ListTypeTreeNode(data, this.getRuntimeClassLoader());
 
             addParameterArrayInstances(node);
         } else if (ReflectionHelper.isComplexType(data.getTypeClass(), getRuntimeClassLoader())) {
-            node = new StructureTypeTreeNode(data, this.getRuntimeClassLoader(), this.getPackageName());
+            node = new StructureTypeTreeNode(data, this.getRuntimeClassLoader());
 
             traverseType(node);
         } else {
@@ -151,10 +145,10 @@ public final class NodeHelper {
         
         String typeClass = data.getTypeClass();
         if (ReflectionHelper.isCollection(typeClass, getRuntimeClassLoader())) {
-            node = new ListTypeTreeNode(data, this.getRuntimeClassLoader(), this.getPackageName());
+            node = new ListTypeTreeNode(data, this.getRuntimeClassLoader());
             addResultArrayInstances(node);
         }else if (ReflectionHelper.isComplexType(typeClass, getRuntimeClassLoader())) {
-            node = new StructureTypeTreeNode(data, this.getRuntimeClassLoader(), this.getPackageName());
+            node = new StructureTypeTreeNode(data, this.getRuntimeClassLoader());
             traverseResultType(node);
         }else {
             node = new DefaultMutableTreeNode(data);

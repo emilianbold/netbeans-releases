@@ -220,7 +220,6 @@
     <Component class="javax.swing.JTextField" name="jTxtpackageName">
       <Properties>
         <Property name="columns" type="int" value="20"/>
-        <Property name="text" type="java.lang.String" value="websvc"/>
       </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
@@ -230,6 +229,9 @@
           <Connection code="NbBundle.getMessage(AddWebServiceDlg.class, &quot;AddWebServiceDlg.packageTextField.ACC_desc&quot;)" type="code"/>
         </Property>
       </AccessibilityProperties>
+      <Events>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="jTxtpackageNameMouseClicked"/>
+      </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_ListenersCodePost" type="java.lang.String" value="jTxtpackageName.getDocument().addDocumentListener(new DocumentListener() {&#xd;&#xa;            public void insertUpdate(DocumentEvent e) {&#xd;&#xa;                updateAddButtonState(jTxtpackageName);&#xd;&#xa;            }&#xd;&#xa;            &#xd;&#xa;            public void removeUpdate(DocumentEvent e) {&#xd;&#xa;                updateAddButtonState(jTxtpackageName);&#xd;&#xa;            }&#xd;&#xa;            &#xd;&#xa;            public void changedUpdate(DocumentEvent e) {&#xd;&#xa;                updateAddButtonState(jTxtpackageName);&#xd;&#xa;            }&#xd;&#xa;});&#xd;&#xa;"/>
       </AuxValues>

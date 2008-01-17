@@ -82,7 +82,6 @@ public class Wsdl2Java {
     private static final String WSDL_NAME_PROP = "serviceName";
     private static final String WSDL_FILE_NAME_PROP = "wsdlFileName";
     private static final String PACKAGE_NAME = "packageName";
-    private static final String PACKAGE_DIR = "packageDir";
     
     private static final String CONFIG_FILE_PROP = "config.file"; // for wscompile JAXRPC
     private static final String PROXY_SERVER = "proxy.server";
@@ -115,15 +114,14 @@ public class Wsdl2Java {
             boolean jaxRPCAvailable = ManagerUtil.isJAXRPCAvailable();
             String wsdlFileName = webServiceData.getURL();
             String serviceName = webServiceData.getName();
-            
+            String packageName = webServiceData.getPackageName();
             properties.put(WEBSVC_HOME_PROP, WebServiceManager.WEBSVC_HOME);
             // INFO - This build properties file contains the classpath information
             // about all the library reference in the IDE
             properties.put(USER_FILE_PROP, userDir+"/build.properties");
             properties.put(WSDL_NAME_PROP, serviceName);
             properties.put(WSDL_FILE_NAME_PROP, wsdlFileName);
-            properties.put(PACKAGE_NAME, webServiceData.getPackageName());
-            properties.put(PACKAGE_DIR, webServiceData.getPackageName().replace('.', '/'));
+            properties.put(PACKAGE_NAME, packageName == null ? "" : packageName);
             
             File endorsedDir = InstalledFileLocator.getDefault().locate(ENDORSED_REF, null, true).getParentFile();
             properties.put(JAXWS_ENDORSED_DIR, endorsedDir.getAbsolutePath());
@@ -313,9 +311,13 @@ public class Wsdl2Java {
             File cf = File.createTempFile("jaxrpcconfigfile", ".xml"); // NOI81N
             cf.deleteOnExit();
             OutputStream out = new FileOutputStream(cf);
-            
+            String packageName = webServiceData.getEffectivePackageName();
+            if (packageName == null || packageName.trim().length() == 0) {
+                String msg = NbBundle.getMessage(Wsdl2Java.class, "MSG_InvalidPackageName");
+                throw new IllegalArgumentException(msg);
+            }
             final String wsdlConfigEntry = "\t<wsdl location=\"" + wsdlFileName +
-                    "\" packageName=\"" + webServiceData.getPackageName() + "\"/>"; // NOI81N
+                    "\" packageName=\"" + packageName + "\"/>"; // NOI81N
             
             PrintWriter configWriter = new PrintWriter(out);
             

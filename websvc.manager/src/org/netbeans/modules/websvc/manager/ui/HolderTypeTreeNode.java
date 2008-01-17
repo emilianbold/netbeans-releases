@@ -53,13 +53,11 @@ import java.net.URLClassLoader;
  */
 public class HolderTypeTreeNode extends AbstractParameterTreeNode {
     private URLClassLoader urlClassLoader;
-    private String packageName;
     
     /** Creates a new instance of HolderTypeTreeNode */
-    public HolderTypeTreeNode(TypeNodeData userObject,URLClassLoader inClassLoader,String inPackageName) {
+    public HolderTypeTreeNode(TypeNodeData userObject,URLClassLoader inClassLoader) {
         super(userObject);
         urlClassLoader = inClassLoader;
-        packageName = inPackageName;
         
     }
     /**

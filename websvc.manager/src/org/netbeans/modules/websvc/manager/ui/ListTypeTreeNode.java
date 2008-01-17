@@ -55,12 +55,10 @@ import java.net.URLClassLoader;
  */
 public class ListTypeTreeNode extends AbstractParameterTreeNode {
     private URLClassLoader urlClassLoader;
-    private String packageName;
     
-    public ListTypeTreeNode(TypeNodeData userObject,URLClassLoader inClassLoader,String inPackageName) {
+    public ListTypeTreeNode(TypeNodeData userObject,URLClassLoader inClassLoader) {
         super(userObject);
         urlClassLoader = inClassLoader;
-        packageName = inPackageName;
         
     }
     
@@ -117,11 +115,11 @@ public class ListTypeTreeNode extends AbstractParameterTreeNode {
             TypeNodeData data = ReflectionHelper.createTypeData(structureType, "[" + i + "]", iter.next());
             data.setAssignable(thisData.isAssignable());
             if (ReflectionHelper.isComplexType(data.getTypeClass(), urlClassLoader)) {
-                StructureTypeTreeNode childNode = new StructureTypeTreeNode(data,urlClassLoader,packageName);
+                StructureTypeTreeNode childNode = new StructureTypeTreeNode(data,urlClassLoader);
                 childNode.updateChildren();
                 this.add(childNode);
             }else if (ReflectionHelper.isCollection(data.getTypeClass(), urlClassLoader)) {
-                ListTypeTreeNode childNode = new ListTypeTreeNode(data,urlClassLoader,packageName);
+                ListTypeTreeNode childNode = new ListTypeTreeNode(data,urlClassLoader);
                 childNode.updateChildren();
                 this.add(childNode);
             }else {

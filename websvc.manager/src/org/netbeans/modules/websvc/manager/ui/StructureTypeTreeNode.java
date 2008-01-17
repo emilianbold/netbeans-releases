@@ -53,12 +53,10 @@ import org.openide.ErrorManager;
  */
 public class StructureTypeTreeNode extends AbstractParameterTreeNode {
     private URLClassLoader urlClassLoader;
-    private String packageName;
     
-    public StructureTypeTreeNode(TypeNodeData userObject,URLClassLoader inClassLoader,String inPackageName) {
+    public StructureTypeTreeNode(TypeNodeData userObject,URLClassLoader inClassLoader) {
         super(userObject);
         urlClassLoader = inClassLoader;
-        packageName = inPackageName;
         
     }
     

@@ -120,7 +120,9 @@ public final class WebServiceManager {
         URL wsdlUrl = localWsdlFile.toURI().toURL();
 
         WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlUrl);
-        wsdlModeler.setPackageName(wsData.getPackageName());
+        if (wsData.getPackageName() != null && wsData.getPackageName().trim().length() > 0) {
+            wsdlModeler.setPackageName(wsData.getPackageName());
+        }
         WsdlModel model = wsdlModeler.getAndWaitForWsdlModel();
 
         boolean dataInModel = listModel.webServiceExists(wsData);
@@ -209,51 +211,9 @@ public final class WebServiceManager {
         }
     }
 
-    /**
-     * 
-     * @param wsData
-     * @throws java.io.IOException
-     * @deprecated use {@link #addWebService(WebServiceData, boolean)}
-     */
-    @Deprecated
-    public void ensureWebServiceClientReady(WebServiceData wsData) throws IOException {
-        if (wsData.getURL() == null || !new File(wsData.getURL()).isFile()) {
-            File localWsdlFile = copyWsdlResources(wsData.getOriginalWsdl());
-            File catalogFile = new File(WEBSVC_HOME, getCatalogForWsdl(wsData.getOriginalWsdl()));
-            wsData.setCatalog(catalogFile.getAbsolutePath());
-            wsData.setURL(localWsdlFile.getAbsolutePath());
-        }
-
-        URL wsdlLocation = new File(wsData.getURL()).toURL();
-        WsdlModeler wsdlModeler = WsdlModelerFactory.getDefault().getWsdlModeler(wsdlLocation);
-        wsdlModeler.setPackageName(wsData.getPackageName());
-        WsdlModel model = wsdlModeler.getAndWaitForWsdlModel();
-
-        List<WsdlService> services = model.getServices();
-        if (services.isEmpty()) {
-            throw new IllegalArgumentException(wsdlLocation + " has no services."); //NOI18N
-        }
-
-        for (WsdlService service : services) {
-            if (service.getName().equals(wsData.getName())) {
-                wsData.setWsdlService(service);
-
-                WebServiceListModel.getInstance().addWebService(wsData);
-                WebServiceGroup group = WebServiceListModel.getInstance().getWebServiceGroup(wsData.getGroupId());
-                if (group != null) {
-                    group.add(wsData.getId());
-                }
-
-                compileService(wsData);
-                break;
-            }
-        }
-    }
-
     public void refreshWebService(WebServiceData wsData) throws IOException {
         removeWebService(wsData, false);
         wsData.setWsdlFile(null);
-        wsData.setCompiled(false);
         wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
         wsData.setCatalog(null);
         wsData.setWsdlService(null);
@@ -269,7 +229,6 @@ public final class WebServiceManager {
         removeWebService(wsData, false);
 
         wsData.setWsdlFile(null);
-        wsData.setCompiled(false);
         wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
         wsData.setCatalog(null);
         wsData.setWsdlService(null);
@@ -486,7 +445,7 @@ public final class WebServiceManager {
                 return;
             }
             URL wsdl = new File(wsData.getWsdlFile()).toURI().toURL();
-            String packageName = wsData.getPackageName();
+            String packageName = wsData.getEffectivePackageName();
             if (wsData.isJaxRpcEnabled()) {
                 WebServiceDescriptor jaxRpcDescriptor = new WebServiceDescriptor(wsData.getName(), packageName, WebServiceDescriptor.JAX_RPC_TYPE, wsdl, new File(WEBSVC_HOME, wsData.getJaxRpcDescriptorPath()), svc);
                 jaxRpcDescriptor.addJar(wsData.getName() + ".jar", WebServiceDescriptor.JarEntry.PROXY_JAR_TYPE);

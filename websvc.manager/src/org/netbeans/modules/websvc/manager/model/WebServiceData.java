@@ -75,14 +75,15 @@ public class WebServiceData {
     /** Group ID to which this Web Service belogs */
     private String groupId;
     
-    /** The java package name used for the generated code */
+    /** The java package name used to call wscompile or wsimport
+     * If user do not set, it should remain null or empty for wsimport.
+     * wscompile requires a non-empty value, we will determine
+     * a value right before the call, but should not change this value. 
+     */
     private String packageName;
     
     /** WSDL Service Model this meta model wraps */
     WsdlService wsdlService;
-    
-    /* Default package name for generated source */
-    public final static String DEFAULT_PACKAGE_NAME = "webservice";
     
     /** This is the name of WsdlService WsdlService.getName()
      * Used to find the corresponding WsdlService during loading from
@@ -125,7 +126,7 @@ public class WebServiceData {
     public WebServiceData(String file, String originalWsdl, String groupId) {
         websvcId = WebServiceListModel.getInstance().getUniqueWebServiceId();
         wsdlFile = file;
-        this.packageName = derivePackageName(originalWsdl, null);
+        //this.packageName = derivePackageName(originalWsdl, null);
         this.groupId = groupId;
         this.compiled = false;
         this.originalWsdlUrl = originalWsdl;
@@ -185,40 +186,6 @@ public class WebServiceData {
     
     public boolean isResolved() {
         return resolved;
-    }
-    
-    static String getDefaultPackageName(String subPackage) {
-        return DEFAULT_PACKAGE_NAME + ((subPackage != null) ? subPackage : "");
-    }
-    
-    static String derivePackageName(String wsdlURL, String subPackage) {
-        URL url = null;
-        try {
-            url = new URL(wsdlURL);
-        } catch(Exception ex) {
-            return getDefaultPackageName(subPackage);
-        }
-        
-        if (url == null || url.getProtocol().equals("file") ||
-            url.getHost() == null || url.getHost().length() == 0 || 
-            url.getHost().equals("localhost") ||
-            Character.isDigit(url.getHost().charAt(0))) 
-        {
-            return getDefaultPackageName(subPackage);
-        }
-        
-        String pakName = url.getHost();
-        String[] segments = pakName.split("\\.");
-        StringBuilder sb = new StringBuilder(segments[segments.length - 1]);
-        if (segments.length > 1) {
-            sb.append('.');
-            sb.append(segments[segments.length - 2]);
-        }
-        if (subPackage != null) {
-            sb.append(".");
-            sb.append(subPackage.toLowerCase());
-        }
-        return sb.toString();
     }
     
     public void setWsdlService(WsdlService svc){
@@ -317,10 +284,23 @@ public class WebServiceData {
     }
     
     public String getPackageName(){
-        if(null == packageName) {
-            packageName = DEFAULT_PACKAGE_NAME;
-        }
         return packageName;
+    }
+    
+    public String getEffectivePackageName() {
+        if (packageName != null && packageName.trim().length() > 0) {
+            return packageName;
+        }
+        if (wsdlService != null) {
+            String javaName = wsdlService.getJavaName();
+            if (javaName != null) {
+                int endIndex = javaName.lastIndexOf('.');
+                if (endIndex >= 0) {
+                    return javaName.substring(0, endIndex);
+                }
+            }
+        }
+        return ""; //NOI18N
     }
 
     public WebServiceDescriptor getJaxWsDescriptor() {

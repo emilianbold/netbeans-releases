@@ -49,8 +49,6 @@ import org.netbeans.modules.websvc.components.ServiceData;
  * @author nam
  */
 public class SiServiceData extends ServiceData {
-    public static final String DEFAUL_PACKAGE_NAME = "com.strikeiron";
-    
     private final MarketPlaceService service;
     private String packageName;
     
@@ -83,9 +81,6 @@ public class SiServiceData extends ServiceData {
     }
     
     public String getPackageName() {
-        if (packageName == null) {
-            return DEFAUL_PACKAGE_NAME;
-        }
         return packageName;
     }
 
@@ -98,10 +93,6 @@ public class SiServiceData extends ServiceData {
     }
 
     public void setPackageName(String packageName) {
-        if (packageName == null || packageName.trim().length() == 0 ||
-            DEFAUL_PACKAGE_NAME.equals(packageName)) {
-            this.packageName = null;
-        }
         this.packageName = packageName;
     }
     
