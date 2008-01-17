@@ -752,7 +752,9 @@ public class DefineCorrelationWizard implements WizardProperties {
                 TMP_FAKE_GRAPH = new Graph(this);
             }
 
-            public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target) {
+            public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target, 
+                    TreePath oldTreePath, Link oldLink) {
+                if (oldLink != null) return false;
                 boolean result = false;
                 CorrelationMapperTreeNode treeNode = null;
                 if ((source != null) && (source instanceof TreeSourcePin)) {
@@ -776,7 +778,9 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return result;
             }
 
-            public void connect(TreePath treePath, SourcePin source, TargetPin target) {
+            public void connect(TreePath treePath, SourcePin source, TargetPin target, 
+                TreePath oldTreePath, Link oldLink) {
+                if (oldLink != null) return;
                 Graph graph = getGraph(treePath);
                 if ((graph == null) || (graph == TMP_FAKE_GRAPH)) {
                     graph = createNewGraph(treePath);
