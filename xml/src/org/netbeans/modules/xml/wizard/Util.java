@@ -85,7 +85,7 @@ import org.w3c.dom.NodeList;
  *
  * @author Petr Kuzel
  */
-class Util extends AbstractUtil {
+public class Util extends AbstractUtil {
 
     // last catalog directory
     private static File lastDirectory;

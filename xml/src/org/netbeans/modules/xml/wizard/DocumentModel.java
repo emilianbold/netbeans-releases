@@ -194,7 +194,7 @@ public final class DocumentModel {
         return contentAttr;
     }
     
-     void setPrimarySchema(String fileName) {
+     public void setPrimarySchema(String fileName) {
         this.primarySchemaFileName = fileName;
     }
     
