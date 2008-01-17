@@ -206,6 +206,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         }
         
         // JRuby vs. ruby-debug-ide
+        /*
         if (jrubySet) {
             if (fastDebuggerRequired) {
                 Util.showMessage(getMessage("RubyDebugger.jruby.cannot.be.used"));
@@ -215,6 +216,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
                 return false;
             }
         }
+        */
         
         if (fastDebuggerRequired && prefs.isUseClassicDebugger()
                 && !Util.ensureRubyDebuggerIsPresent(gemManager, true, getMessage("RubyDebugger.wrong.fast.debugger.required"))) {
