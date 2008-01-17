@@ -268,8 +268,11 @@ public class FormDesigner extends TopComponent implements MultiViewElement
                             switchLookup();
                         }
                         List<Node> list = new ArrayList<Node>(nodes.length);
-                        list.addAll(Arrays.asList(nodes));
-                        list.remove(delegate);
+                        for (int i=0; i<nodes.length; i++) {
+                            if ((nodes[i] != null) && (nodes[i] != delegate)) {
+                                list.add(nodes[i]);
+                            }
+                        }
                         explorerManager.setSelectedNodes(list.toArray(new Node[list.size()]));
                     } catch (PropertyVetoException ex) {
                         ex.printStackTrace();
