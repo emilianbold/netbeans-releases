@@ -181,6 +181,11 @@ public final class NavigatorController implements LookupListener, ActionListener
         weakNodesL = Collections.emptyList();
         // #113764: mem leak fix - update lookup - force ClientsLookup to free its delegates
         clientsLookup.lookup(Object.class);
+        // #104145: panelDeactivated called if needed
+        NavigatorPanel selPanel = navigatorTC.getSelectedPanel();
+        if (selPanel != null) {
+            selPanel.panelDeactivated();
+        }
         lastActivatedRef = null;
         navigatorTC.setPanels(null);
         panelLookupNodesResult = null;

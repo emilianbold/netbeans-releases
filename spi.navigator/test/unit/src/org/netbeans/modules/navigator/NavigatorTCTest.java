@@ -94,7 +94,7 @@ public class NavigatorTCTest extends NbTestCase {
         NbTestSuite suite = new NbTestSuite(NavigatorTCTest.class);
         return suite;
     }
-    
+
     
     public void testCorrectCallsOfNavigatorPanelMethods () throws Exception {
         System.out.println("Testing correct calls of NavigatorPanel methods...");
@@ -159,6 +159,34 @@ public class NavigatorTCTest extends NbTestCase {
         
         // clean
         ic.remove(ostravskiHint);
+    }
+    
+    public void testBugfix104145_DeactivatedNotCalled () throws Exception {
+        System.out.println("Testing bugfix 104145...");
+        InstanceContent ic = getInstanceContent();
+
+        TestLookupHint ostravskiHint = new TestLookupHint("ostravski/gyzd");
+        ic.add(ostravskiHint);
+
+        try {
+            NavigatorTC navTC = NavigatorTC.getInstance();
+            navTC.componentOpened();
+
+            NavigatorPanel selPanel = navTC.getSelectedPanel();
+            OstravskiGyzdProvider ostravak = (OstravskiGyzdProvider) selPanel;
+            ostravak.resetDeactCalls();
+
+            navTC.componentClosed();
+
+            int deact = ostravak.getPanelDeactivatedCallsCount();
+            assertEquals("panelDeactivated expected to be called once but called " + deact + " times.",
+                    1, deact);
+
+        } finally {
+            // clean in finally block so that test doesn't affect others
+            ic.remove(ostravskiHint);
+        }
+        
     }
     
     public void testBugfix80155_NotEmptyOnProperties () throws Exception {
@@ -523,6 +551,10 @@ public class NavigatorTCTest extends NbTestCase {
         
         public boolean wasDeactCalledOnInactive () {
             return wasDeactCalledOnInactive;
+        }
+        
+        public void resetDeactCalls() {
+            panelDeactCalls = 0;
         }
         
     }
