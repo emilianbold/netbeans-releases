@@ -42,11 +42,12 @@
 package org.netbeans.modules.websvc.core;
 
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author mkuchtiak
  */
 public interface InvokeOperationActionProvider {
-    public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource);
+    public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource,Node node);
 }

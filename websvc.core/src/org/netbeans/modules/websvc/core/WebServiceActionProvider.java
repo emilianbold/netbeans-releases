@@ -43,6 +43,7 @@ package org.netbeans.modules.websvc.core;
 
 import java.util.Collection;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -71,11 +72,12 @@ public class WebServiceActionProvider {
         Lookup.getDefault().lookup(new Lookup.Template<InvokeOperationActionProvider>(InvokeOperationActionProvider.class));
 
     /** Find InvokeOperationCookie for given FileObject (target source)
+     * and given web service operation
      */
-    public static InvokeOperationCookie getInvokeOperationAction(FileObject targetSource) {
+    public static InvokeOperationCookie getInvokeOperationAction(FileObject targetSource, Node node) {
         Collection<? extends InvokeOperationActionProvider> instances = invokeOperationActionProviders.allInstances();
         for (InvokeOperationActionProvider impl: instances) {
-            InvokeOperationCookie cookie = impl.getInvokeOperationCookie(targetSource);
+            InvokeOperationCookie cookie = impl.getInvokeOperationCookie(targetSource,node);
             if (cookie != null) {
                 return cookie;
             }

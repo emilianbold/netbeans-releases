@@ -197,7 +197,7 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
                 Node nodes[] = manager.getSelectedNodes();
                 if(nodes != null && nodes.length > 0 ) {
                     Node node = nodes[0];
-                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(srcFileObject);
+                    InvokeOperationCookie invokeCookie = WebServiceActionProvider.getInvokeOperationAction(srcFileObject,node);
                     if(invokeCookie != null){
                         if(invokeCookie.isWebServiceOperation(node)) {
                             // This is a method node.

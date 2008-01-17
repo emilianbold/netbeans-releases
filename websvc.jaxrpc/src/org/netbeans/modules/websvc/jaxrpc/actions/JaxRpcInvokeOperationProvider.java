@@ -48,23 +48,25 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.websvc.api.registry.WebServiceMethod;
 import org.netbeans.modules.websvc.core.InvokeOperationActionProvider;
 import org.netbeans.modules.websvc.core.InvokeOperationCookie;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
+import org.openide.nodes.Node;
 
 public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvider {
     
     
-    public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource) {
+    public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource,Node node) {
         Project project = FileOwnerQuery.getOwner(targetSource);
-        if(supportsJaxrpcOnly(project, targetSource)){
+//        if(supportsJaxrpcOnly(project, targetSource)){
             return new JaxRpcInvokeOperation(project);
-        }
+//        }
         
-        return null;
+//        return null;
     }
     
     private boolean supportsJaxrpcOnly(Project project, FileObject targetSource){
@@ -131,4 +133,12 @@ public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvi
         return false;
     }
     
+    private boolean isJaxRpcService(Node node) {
+        if (node!=null) {
+            return //node.getLookup().lookup(WebServicesCookie.class)!=null ||
+                    node.getLookup().lookup(WebServiceMethod.class)!=null;
+        }
+        return false;
+    }
+
 }
