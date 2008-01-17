@@ -46,7 +46,6 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.datatransfer.Transferable;
@@ -67,7 +66,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.border.EtchedBorder;
 import javax.swing.event.ChangeListener;
@@ -90,9 +88,8 @@ import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
 import org.netbeans.modules.bpel.nodes.BpelNode;
-import org.netbeans.modules.print.api.PrintUtil;
+import org.netbeans.modules.soa.mappercore.DefaultMapperContext;
 import org.netbeans.modules.soa.mappercore.Mapper;
-import org.netbeans.modules.soa.mappercore.MapperContext;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.Link;
@@ -114,6 +111,7 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -125,9 +123,9 @@ public class DefineCorrelationWizard implements WizardProperties {
     private static final Dimension LEFT_DIMENSION_VALUE = new Dimension(200, 450);
     private static final Dimension PANEL_DIMENSION_VALUE = new Dimension(600, 450);
     private static final String[] WIZARD_STEP_NAMES = new String[] {
-        PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Select_Messaging_Activity"),
-        PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Define_Correlation"),
-        PrintUtil.i18n(DefineCorrelationWizard.class, "LBL_Wizard_Step_Correlation_Configuration")
+        NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Wizard_Step_Select_Messaging_Activity"),
+        NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Wizard_Step_Define_Correlation"),
+        NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Wizard_Step_Correlation_Configuration")
     };
 
     private static Map<Class<? extends Activity>, ActivityChooser> mapActivityChoosers;
@@ -166,9 +164,9 @@ public class DefineCorrelationWizard implements WizardProperties {
         wizardDescriptor.putProperty(PROPERTY_CONTENT_DATA, WIZARD_STEP_NAMES);
         
         wizardDescriptor.setTitleFormat(new MessageFormat(
-            PrintUtil.i18n(DefineCorrelationWizard.class, 
+            NbBundle.getMessage(DefineCorrelationWizard.class, 
             "LBL_DefineCorrelation_Wizard_Title_Format")));
-        wizardDescriptor.setTitle(PrintUtil.i18n(DefineCorrelationWizard.class, 
+        wizardDescriptor.setTitle(NbBundle.getMessage(DefineCorrelationWizard.class, 
             "LBL_DefineCorrelation_Wizard_Title"));
     }
     
@@ -406,7 +404,7 @@ public class DefineCorrelationWizard implements WizardProperties {
         public WizardSelectMessagingActivityPanel() {
             super();
             wizardPanel.setLayout(new FlowLayout(FlowLayout.LEFT, insetX, insetY));
-            wizardPanel.add(new JLabel(PrintUtil.i18n(
+            wizardPanel.add(new JLabel(NbBundle.getMessage(
                 WizardSelectMessagingActivityPanel.class, "LBL_Initiated_Messaging_Activities")));
 
             fillActivityComboBox();
@@ -442,7 +440,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                             (activityComboBox.getSelectedItem() != null));
             
             wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, isOK ? null :
-                PrintUtil.i18n(WizardSelectMessagingActivityPanel.class, "LBL_ErrMsg_No_Activity_For_Correlation"));                              
+                NbBundle.getMessage(WizardSelectMessagingActivityPanel.class, "LBL_ErrMsg_No_Activity_For_Correlation"));                              
             if (buttonNext != null) buttonNext.setEnabled(isOK);
             return isOK;
         }
@@ -495,13 +493,13 @@ public class DefineCorrelationWizard implements WizardProperties {
             if (leftBpelEntity != null) {
                 leftTreeModel = new CorrelationMapperTreeModel();
                 CorrelationMapperTreeNode topLeftTreeNode = buildCorrelationTree(leftBpelEntity,
-                    PrintUtil.i18n(WizardDefineCorrelationPanel.class, "LBL_Left_Mapper_Top_Tree_Node_Name_Pattern"));
+                    NbBundle.getMessage(WizardDefineCorrelationPanel.class, "LBL_Left_Mapper_Top_Tree_Node_Name_Pattern"));
                 leftTreeModel.buildCorrelationMapperTree(topLeftTreeNode);
             }
             if (rightBpelEntity != null) {
                 rightTreeModel = new CorrelationMapperTreeModel();
                 CorrelationMapperTreeNode topRightTreeNode = buildCorrelationTree(rightBpelEntity,
-                    PrintUtil.i18n(WizardDefineCorrelationPanel.class, "LBL_Right_Mapper_Top_Tree_Node_Name_Pattern"));
+                    NbBundle.getMessage(WizardDefineCorrelationPanel.class, "LBL_Right_Mapper_Top_Tree_Node_Name_Pattern"));
                 rightTreeModel.buildCorrelationMapperTree(topRightTreeNode);
             }
             
@@ -513,8 +511,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 wizardPanel.setBorder(panelBorder);
                 
                 correlationMapper = new Mapper(mapperModel);
-                MapperContext defaultMapperContext = correlationMapper.getContext();
-                correlationMapper.setContext(new CorrelationMapperContext(defaultMapperContext));                
+                correlationMapper.setContext(new CorrelationMapperContext());                
                 defineCorrelationMapperKeyBindings();
                 
                 wizardPanel.add(correlationMapper);
@@ -604,7 +601,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 if (isOK) break;
             }
             wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, isOK ? null :
-                PrintUtil.i18n(WizardDefineCorrelationPanel.class, "LBL_ErrMsg_No_Links_For_Correlation"));                              
+                NbBundle.getMessage(WizardDefineCorrelationPanel.class, "LBL_ErrMsg_No_Links_For_Correlation"));                              
             if (buttonNext != null) buttonNext.setEnabled(isOK);
             return isOK;
         }
@@ -733,61 +730,16 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
         }
         //====================================================================//
-        private class CorrelationMapperContext implements MapperContext {
-            private MapperContext defaultMapperContext;
-
-            public CorrelationMapperContext(MapperContext defaultMapperContext) {
-                this.defaultMapperContext = defaultMapperContext;
-            }
-
-            public String getLeftDysplayText(MapperModel model, Object value) {
-                return defaultMapperContext.getLeftDysplayText(model, value);
-            }
-
-            public Font getLeftFont(MapperModel model, Object value, Font defaultFont) {
-                return defaultMapperContext.getLeftFont(model, value, defaultFont);
-            }
-
-            public Color getLeftForeground(MapperModel model, Object value) {
-                return defaultMapperContext.getLeftForeground(model, value);
-            }
-
+        private class CorrelationMapperContext extends DefaultMapperContext {
+            @Override
             public Icon getLeftIcon(MapperModel model, Object value, Icon defaultIcon) {
                 return ((CorrelationMapperTreeNode) value).getIcon();
             }
-
-            public JPopupMenu getLeftPopupMenu(MapperModel model, Object value) {
-                return defaultMapperContext.getLeftPopupMenu(model, value);
-            }
-
-            public String getLeftToolTipText(MapperModel mode, Object value) {
-                return defaultMapperContext.getLeftToolTipText(mode, value);
-            }
-
-            public String getRightDysplayText(MapperModel model, Object value) {
-                return defaultMapperContext.getRightDysplayText(model, value);
-            }
-
-            public Font getRightFont(MapperModel model, Object value, Font defaultFont) {
-                return defaultMapperContext.getRightFont(model, value, defaultFont);
-            }
-
-            public Color getRightForeground(MapperModel model, Object value) {
-                return defaultMapperContext.getRightForeground(model, value);
-            }
-
+            
+            @Override
             public Icon getRightIcon(MapperModel model, Object value, Icon defaultIcon) {
                 return ((CorrelationMapperTreeNode) value).getIcon();
             }
-
-            public JPopupMenu getRightPopupMenu(MapperModel model, Object value) {
-                return defaultMapperContext.getRightPopupMenu(model, value);
-            }
-
-            public String getRightToolTipText(MapperModel mode, Object value) {
-                return defaultMapperContext.getRightToolTipText(mode, value);
-            }
-            
         }
         //====================================================================//
         private class CorrelationMapperModel implements MapperModel {
@@ -800,10 +752,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 TMP_FAKE_GRAPH = new Graph(this);
             }
 
-            public boolean canConnect(TreePath treePath, SourcePin source, 
-                    TargetPin target, TreePath oldTreePath, Link oldLink) 
-            {
-                if (oldLink != null) return false;
+            public boolean canConnect(TreePath treePath, SourcePin source, TargetPin target) {
                 boolean result = false;
                 CorrelationMapperTreeNode treeNode = null;
                 if ((source != null) && (source instanceof TreeSourcePin)) {
@@ -827,10 +776,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return result;
             }
 
-            public void connect(TreePath treePath, SourcePin source, 
-                    TargetPin target, TreePath oldTreePath, Link oldLink) 
-            {
-                if (oldLink != null) return;
+            public void connect(TreePath treePath, SourcePin source, TargetPin target) {
                 Graph graph = getGraph(treePath);
                 if ((graph == null) || (graph == TMP_FAKE_GRAPH)) {
                     graph = createNewGraph(treePath);
