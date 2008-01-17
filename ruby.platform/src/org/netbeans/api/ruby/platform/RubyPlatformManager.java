@@ -386,6 +386,10 @@ public final class RubyPlatformManager {
                 throw new IllegalStateException("Cannot locate platform_info.rb script");
             }
             ProcessBuilder pb = new ProcessBuilder(interpreter.getAbsolutePath(), platformInfoScript.getAbsolutePath()); // NOI18N
+            // be sure that JRUBY_HOME is not set during configuration
+            // autodetection, otherwise interpreter under JRUBY_HOME would be
+            // effectively used
+            pb.environment().remove("JRUBY_HOME"); // NOI18N
             Process start = pb.start();
             // FIXME: set timeout
             start.waitFor();
