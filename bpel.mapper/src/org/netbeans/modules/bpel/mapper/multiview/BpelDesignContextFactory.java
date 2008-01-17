@@ -28,14 +28,15 @@ import org.netbeans.modules.bpel.model.api.CompletionCondition;
 import org.netbeans.modules.bpel.model.api.Copy;
 import org.netbeans.modules.bpel.model.api.DeadlineExpression;
 import org.netbeans.modules.bpel.model.api.ElseIf;
-import org.netbeans.modules.bpel.model.api.Expression;
 import org.netbeans.modules.bpel.model.api.FinalCounterValue;
 import org.netbeans.modules.bpel.model.api.For;
 import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.If;
+import org.netbeans.modules.bpel.model.api.Literal;
 import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnAlarmPick;
+import org.netbeans.modules.bpel.model.api.Query;
 import org.netbeans.modules.bpel.model.api.RepeatEvery;
 import org.netbeans.modules.bpel.model.api.RepeatUntil;
 import org.netbeans.modules.bpel.model.api.StartCounterValue;
@@ -149,6 +150,33 @@ public class BpelDesignContextFactory {
                         accept = true;
                     }
                 }
+            } else if (entityType == Query.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null) {
+                    entityType = parent.getElementType();
+                    if (entityType == From.class || entityType == To.class) {
+                        parent = parent.getParent();
+                        if (parent != null && parent.getElementType() == Copy.class) {
+                            BpelEntity nextParent = parent.getParent();
+                            if (nextParent != null && 
+                                    nextParent.getElementType() == Assign.class) {
+                                accept = true;
+                            }
+                        }
+                    }
+                }
+            } else if (entityType == Literal.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null && parent.getElementType() == From.class) {
+                    parent = parent.getParent();
+                    if (parent != null && parent.getElementType() == Copy.class) {
+                        BpelEntity nextParent = parent.getParent();
+                        if (nextParent != null && 
+                                nextParent.getElementType() == Assign.class) {
+                            accept = true;
+                        }
+                    }
+                }
             }
             //
             return accept;
@@ -178,6 +206,35 @@ public class BpelDesignContextFactory {
                             nextParent.getElementType() == Assign.class) {
                         context = new BpelDesignContextImpl(nextParent, 
                                 parent, selectedEntity, node, lookup);
+                    }
+                }
+            } else if (entityType == Query.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null) {
+                    entityType = parent.getElementType();
+                    if (entityType == From.class || entityType == To.class) {
+                        parent = parent.getParent();
+                        if (parent != null && parent.getElementType() == Copy.class) {
+                            BpelEntity nextParent = parent.getParent();
+                            if (nextParent != null && 
+                                    nextParent.getElementType() == Assign.class) {
+                                context = new BpelDesignContextImpl(nextParent, 
+                                        parent, selectedEntity, node, lookup);
+                            }
+                        }
+                    }
+                }
+            } else if (entityType == Literal.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null && parent.getElementType() == From.class) {
+                    parent = parent.getParent();
+                    if (parent != null && parent.getElementType() == Copy.class) {
+                        BpelEntity nextParent = parent.getParent();
+                        if (nextParent != null && 
+                                nextParent.getElementType() == Assign.class) {
+                            context = new BpelDesignContextImpl(nextParent, 
+                                    parent, selectedEntity, node, lookup);
+                        }
                     }
                 }
             }

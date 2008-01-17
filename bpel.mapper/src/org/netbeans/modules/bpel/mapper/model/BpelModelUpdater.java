@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.List;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.model.CopyFromProcessor.CopyFromForm;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.DateValueTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.ForEachConditionsTreeModel;
@@ -42,6 +43,7 @@ import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.From;
 import org.netbeans.modules.bpel.model.api.FromChild;
 import org.netbeans.modules.bpel.model.api.If;
+import org.netbeans.modules.bpel.model.api.Literal;
 import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnAlarmPick;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
@@ -61,11 +63,14 @@ import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
+import org.netbeans.modules.soa.mappercore.model.Vertex;
+import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.xml.xpath.ext.LocationStep;
 import org.netbeans.modules.xml.xpath.ext.XPathExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathLocationPath;
 import org.netbeans.modules.xml.xpath.ext.XPathModel;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.xpath.ext.XPathStringLiteral;
 
 /**
  * 
@@ -110,7 +115,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
     
     //==========================================================================
 
-    private void updateCopy(TreePath rightTreePath, Copy copy) {
+    private void updateCopy(TreePath rightTreePath, Copy copy) throws Exception {
         //
         // Do common preparations
         //
@@ -136,10 +141,13 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         // Populate FROM
         //
         From from = copy.getFrom();
+        CopyFromForm oldFromForm = null;
         if (from == null) {
             BpelModel bpelModel = copy.getBpelModel();
             from = bpelModel.getBuilder().createFrom();
             copy.setFrom(from);
+        } else {
+            oldFromForm = CopyFromProcessor.calculateCopyFromForm(from);
         }
         //
         if (graphInfo.onlyOneTransitLink()) {
@@ -154,17 +162,54 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             XPathModel xPathModel = XPathModelFactory.create(from);
             populateFrom(from, xPathModel, tpInfo);
         } else {
-            // Complex case when an XPath expression form definitly has to be used
+            boolean processed = false;
             // 
-            populateContentHolder(from, graphInfo);
+            // Process specific cases
+            if (oldFromForm != null) {
+                switch (oldFromForm) {
+                    // Old From has nested literal
+                    case LITERAL: 
+                        if (graphInfo.getPrimaryRoots().size() == 1 && 
+                                graphInfo.getSecondryRoots().size() == 0) {
+                            Vertex rootVertex = graphInfo.getPrimaryRoots().get(0);
+                            Object dataObj = rootVertex.getDataObject();
+                            if (dataObj == XPathStringLiteral.class) {
+                                // The vertex represents a string constant
+                                VertexItem firstVItem = rootVertex.getItem(0);
+                                String literalValue = firstVItem.getText();
+                                //
+                                FromChild literal = from.getFromChild(); // literal
+                                if (literal != null && literal instanceof Literal) {
+                                    ((Literal)literal).setContent(literalValue);
+                                    //
+                                    from.removeEndpointReference();
+                                    from.removePart();
+                                    from.removePartnerLink();
+                                    from.removeProperty();
+                                    from.removeVariable();
+                                    //
+                                    processed = true;
+                                }
+                            }
+                        }
+                        break;
+                }
+            }
             //
-            // Remove other attributes because they are not necessary now.
-            from.removeEndpointReference();
-            from.removeFromChild();
-            from.removePart();
-            from.removePartnerLink();
-            from.removeProperty();
-            from.removeVariable();
+            //
+            if (!processed) {
+                // Complex case when an XPath expression form definitly has to be used
+                // 
+                populateContentHolder(from, graphInfo);
+                //
+                // Remove other attributes because they are not necessary now.
+                from.removeEndpointReference();
+                from.removeFromChild();
+                from.removePart();
+                from.removePartnerLink();
+                from.removeProperty();
+                from.removeVariable();
+            }
         }
         //
         //=====================================================================
@@ -183,7 +228,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         populateTo(to, xPathModel, tpInfo);
     }
     
-    private void updateAssign(TreePath rightTreePath, Assign assign)  {
+    private void updateAssign(TreePath rightTreePath, Assign assign) throws Exception {
         Graph graph = getMapperModel().graphRequired(rightTreePath);
         //
         Object dataObject = graph.getDataObject();

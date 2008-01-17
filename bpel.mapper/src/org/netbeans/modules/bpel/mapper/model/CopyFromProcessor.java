@@ -101,9 +101,8 @@ public class CopyFromProcessor {
             FromChild literal = mCopy.getFrom().getFromChild(); // literal
             if (literal != null && literal instanceof Literal) {
                 String literalText = ((Literal)literal).getContent();
-                Vertex newVertex = new Constant(new StringIcon2D("str"));
-                VertexItem contentItem = new VertexItem(newVertex, literalText);
-                newVertex.addItem(contentItem);
+                Vertex newVertex = VertexFactory.getInstance().
+                        createStringLiteral(literalText);
                 //
                 graph.addVertex(newVertex);
                 Link newLink = new Link(newVertex, graph);
@@ -140,47 +139,50 @@ public class CopyFromProcessor {
             return;
         }
         //
+        mCopyFromForm = calculateCopyFromForm(copyFrom);
+    }
+    
+    public static CopyFromForm calculateCopyFromForm(From copyFrom) {
+        //
+        if (copyFrom == null) {
+            return CopyFromForm.UNKNOWN;
+        }
+        //
         BpelReference<VariableDeclaration> varRef = copyFrom.getVariable();
         if (varRef != null) {
             WSDLReference<Part> partRef = copyFrom.getPart();
             if (partRef != null) {
                 FromChild query = copyFrom.getFromChild(); // query
                 if (query != null && query instanceof Query) {
-                    mCopyFromForm = CopyFromForm.VAR_PART_QUERY;
-                    return;
+                    return CopyFromForm.VAR_PART_QUERY;
                 } else {
-                    mCopyFromForm = CopyFromForm.VAR_PART;
-                    return;
+                    return CopyFromForm.VAR_PART;
                 }
             } else {
                 FromChild query = copyFrom.getFromChild(); // query
                 if (query != null && query instanceof Query) {
-                    mCopyFromForm = CopyFromForm.VAR_QUERY;
-                    return;
+                    return CopyFromForm.VAR_QUERY;
                 } else {
-                    mCopyFromForm = CopyFromForm.VAR;
-                    return;
+                    return CopyFromForm.VAR;
                 }
             }
         } else {
             BpelReference<PartnerLink> plRef = copyFrom.getPartnerLink();
             if (plRef != null) {
-                mCopyFromForm = CopyFromForm.PARTNER_LINK;
-                return;
+                return CopyFromForm.PARTNER_LINK;
             }
             FromChild literal = copyFrom.getFromChild(); // literal
             if (literal != null && literal instanceof Literal) {
-                mCopyFromForm = CopyFromForm.LITERAL;
-                return;
+                return CopyFromForm.LITERAL;
             }
             String expression = copyFrom.getContent(); // Expression
             if (expression != null && expression.length() != 0) {
-                mCopyFromForm = CopyFromForm.EXPRESSION;
-                return;
+                return CopyFromForm.EXPRESSION;
             }
         }
         // WSDLReference<CorrelationProperty> cPropRef = copyTo.getProperty();
         //
+        return CopyFromForm.UNKNOWN;
     }
     
     public ArrayList<TreeItemFinder> constructFindersList(BpelEntity contextEntity) {
