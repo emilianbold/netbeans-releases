@@ -224,6 +224,7 @@ public class RightTree extends MapperPanel implements
         return new Dimension(10, 10);
     }
 
+    @Override
     public void doLayout() {
         Mapper mapper = getMapper();
 
@@ -234,6 +235,7 @@ public class RightTree extends MapperPanel implements
         clearCellRendererPane();
     }
 
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Mapper mapper = getMapper();
@@ -485,6 +487,7 @@ public class RightTree extends MapperPanel implements
             addMouseListener(this);
         }
 
+        @Override
         public Dimension getPreferredSize() {
             Dimension size = getMapper().getPreferredTreeSize();
             if (size != null) {
@@ -495,10 +498,12 @@ public class RightTree extends MapperPanel implements
             return new Dimension(16, 10);
         }
 
+        @Override
         public void doLayout() {
             getMapper().validateNodes();
         }
 
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             getMapper().resetRepaintSceduled();
@@ -626,10 +631,12 @@ public class RightTree extends MapperPanel implements
 
     private class BottomLeftCorner extends JPanel {
 
+        @Override
         public Dimension getPreferredSize() {
             return new Dimension(1, 1);
         }
 
+        @Override
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
 

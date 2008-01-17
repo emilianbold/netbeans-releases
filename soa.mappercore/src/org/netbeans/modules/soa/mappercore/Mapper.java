@@ -848,6 +848,7 @@ public class Mapper extends JPanel {
         }
     }
 
+    @Override
     public void updateUI() {
         super.updateUI();
         treeLineColor = UIManager.getColor("Tree.hash");

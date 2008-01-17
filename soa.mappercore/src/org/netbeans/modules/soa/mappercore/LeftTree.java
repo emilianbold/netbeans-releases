@@ -98,10 +98,12 @@ public class LeftTree extends JTree implements
         // Add the mouse listener for popup menu
         MouseListener pupupMouseListener = new MouseAdapter() {
 
+            @Override
             public void mousePressed(MouseEvent e) {
                 maybeShowPopup(e);
             }
 
+            @Override
             public void mouseReleased(MouseEvent e) {
                 maybeShowPopup(e);
             }
@@ -209,12 +211,14 @@ public class LeftTree extends JTree implements
         return mapper.getModel();
     }
 
+    @Override
     public Dimension getPreferredSize() {
         Dimension size = super.getPreferredSize();
         size.width += mapper.getStepSize();
         return size;
     }
 
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
@@ -354,6 +358,7 @@ public class LeftTree extends JTree implements
         mapper.getCanvas().repaint();
     }
 
+    @Override
     public String convertValueToText(Object value, boolean selected,
             boolean expanded, boolean leaf, int row,
             boolean hasFocus) {

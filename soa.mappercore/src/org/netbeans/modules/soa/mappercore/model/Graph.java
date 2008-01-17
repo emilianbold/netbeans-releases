@@ -22,7 +22,6 @@ package org.netbeans.modules.soa.mappercore.model;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;

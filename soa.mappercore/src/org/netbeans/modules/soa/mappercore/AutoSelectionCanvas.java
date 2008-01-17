@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.soa.mappercore;
 
-import java.awt.Rectangle;
 import java.util.List;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.event.MapperSelectionEvent;

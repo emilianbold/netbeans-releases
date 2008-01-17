@@ -20,7 +20,6 @@ package org.netbeans.modules.soa.mappercore;
 
 import java.awt.datatransfer.Transferable;
 import java.awt.event.MouseEvent;
-import javax.naming.directory.SearchResult;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;

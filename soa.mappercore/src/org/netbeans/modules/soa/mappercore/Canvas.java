@@ -33,18 +33,15 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.dnd.Autoscroll;
-import java.awt.event.ActionEvent;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.CellRendererPane;
 import javax.swing.InputMap;
@@ -180,6 +177,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         return scrollPane.getViewport();
     }
 
+    @Override
     public void setLocation(int x, int y) {
         int step = getStep();
 
@@ -245,6 +243,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         return graphX - getGraphViewPositionX() - getX();
     }
 
+    @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
         Mapper mapper = getMapper();
@@ -757,6 +756,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         return (root == null) ? null : root.getNode(y);
     }
 
+    @Override
     public void doLayout() {
         cellRendererPane.setBounds(0, 0, getWidth(), getHeight());
     }
@@ -775,6 +775,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             getHorizontalScrollBar().addAdjustmentListener(this);
         }
 
+        @Override
         public void doLayout() {
             int step = getStep();
             int graphViewPositionX = getGraphViewPositionX(step);
@@ -814,10 +815,12 @@ public class Canvas extends MapperPanel implements VertexCanvas,
             setGraphViewPositionX(graphViewPositionX, step);
         }
 
+        @Override
         public Dimension getPreferredSize() {
             return new Dimension(32, 32);
         }
 
+        @Override
         public Dimension getMinimumSize() {
             return new Dimension(32, 32);
         }
