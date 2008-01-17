@@ -233,10 +233,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             FileObject jsp = webInf.createFolder("jsp");
 
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
-            copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
-            copyResource("taglibs.jsp", FileUtil.createData(jsp, "taglibs.jsp")); // NOI18N
-            copyResource("header.jsp", FileUtil.createData(jsp, "header.jsp")); // NOI18N
-            copyResource("footer.jsp", FileUtil.createData(jsp, "footer.jsp")); // NOI18N
+            copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N            
             copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
             addFileToOpen(copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml"))); // NOI18N
             addFileToOpen(copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, getComponent().getDispatcherName() + "-servlet.xml"))); // NOI18N
