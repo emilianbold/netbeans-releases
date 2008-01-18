@@ -52,8 +52,6 @@ import org.openide.DialogDisplayer;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
 
-import org.netbeans.modules.xml.core.lib.AbstractUtil;
-
 /**
  * Utility methods.
  *
@@ -61,7 +59,7 @@ import org.netbeans.modules.xml.core.lib.AbstractUtil;
  * @author  Libor Kramolis
  * @version 0.2
  */
-public class Util extends AbstractUtil {
+public class Util {
 
 
     /** Default and only one instance of this class. */
@@ -116,7 +114,9 @@ public class Util extends AbstractUtil {
      * @return filename or null if operation was cancelled.
      */
     public static File selectCatalogFile(final String extensions) {
-        return selectFile(extensions, Util.THIS.getString("TITLE_select_catalog"), Util.THIS.getString("PROP_catalog_mask"));
+        return selectFile(extensions,
+                NbBundle.getMessage(Util.class, "TITLE_select_catalog"),
+                NbBundle.getMessage(Util.class, "PROP_catalog_mask"));
     }
     
     /**
@@ -149,7 +149,7 @@ public class Util extends AbstractUtil {
 
         chooser.setDialogTitle(dialogTitle);
         while (chooser.showDialog(WindowManager.getDefault().getMainWindow(),
-                               Util.THIS.getString("PROP_select_button"))
+                               NbBundle.getMessage(Util.class, "PROP_select_button"))
                == JFileChooser.APPROVE_OPTION)
         {
             File f = chooser.getSelectedFile();
@@ -162,7 +162,7 @@ public class Util extends AbstractUtil {
             }
 
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                Util.THIS.getString("MSG_inValidFile"), NotifyDescriptor.WARNING_MESSAGE));
+                NbBundle.getMessage(Util.class, "MSG_inValidFile"), NotifyDescriptor.WARNING_MESSAGE));
         }
         return null;
     } 

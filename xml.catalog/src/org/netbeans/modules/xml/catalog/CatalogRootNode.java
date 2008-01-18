@@ -61,6 +61,7 @@ import org.netbeans.modules.xml.catalog.settings.CatalogSettings;
 import org.openide.util.HelpCtx;
 import java.awt.event.ActionEvent;
 import javax.swing.*;
+import org.openide.util.NbBundle;
 
 /**
  * Node representing catalog root in the Runtime tab. It retrieves all
@@ -85,9 +86,9 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
     public CatalogRootNode() {
         super(new RootChildren());
         setName("XML-CATALOG");                                                 // NOI18N
-        setDisplayName (Util.THIS.getString("TEXT_catalog_root"));              // NOI18N
+        setDisplayName (NbBundle.getMessage(CatalogRootNode.class, "TEXT_catalog_root"));              // NOI18N
         setIconBaseWithExtension("org/netbeans/modules/xml/catalog/resources/catalog-root.gif"); // NOI18N
-        setShortDescription(Util.THIS.getString("PROP_catalog_root_desc"));
+        setShortDescription(NbBundle.getMessage(CatalogRootNode.class, "PROP_catalog_root_desc"));
         getCookieSet().add(this);
     }
     
@@ -119,7 +120,7 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
             model = new CatalogMounterModel(it);
             Object rpanel = new CatalogMounterPanel(model);
             DialogDescriptor dd = new DialogDescriptor(rpanel,
-                                  Util.THIS.getString ("PROP_Mount_Catalog"), true, this);
+                                  NbBundle.getMessage(CatalogRootNode.class, "PROP_Mount_Catalog"), true, this);
             dd.setHelpCtx(new HelpCtx(CatalogMounterPanel.class));
             myDialog = DialogDisplayer.getDefault().createDialog(dd);
 
@@ -159,7 +160,7 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
         }
         
         public String getName() {
-            return Util.THIS.getString ("LBL_mount"); // NOI18N
+            return NbBundle.getMessage(CatalogRootNode.class, "LBL_mount"); // NOI18N
         }
     }
     
@@ -167,13 +168,13 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
     // ~~~~~~~~~~~~~~~~~~~~~~ Serialization stuff ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Reading CatalogRoot node " + this); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Reading CatalogRoot node " + this); // NOI18N
 
         in.defaultReadObject();        
     }
     
     private void writeObject(ObjectOutputStream out) throws IOException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Writing " + this); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Writing " + this); // NOI18N
 
         out.defaultWriteObject();        
     }
@@ -294,7 +295,7 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
         }
         
         public String getName() {
-            return Util.THIS.getString("LBL_mount");
+            return NbBundle.getMessage(CatalogRootNode.class, "LBL_mount");
         }
         
         public HelpCtx getHelpCtx() {
@@ -322,7 +323,7 @@ public final class CatalogRootNode extends AbstractNode implements Node.Cookie {
             CatalogMounter newType = me.new CatalogMounter();
             newType.create();
         } catch (IOException ex) {
-            Util.THIS.debug(ex);
+            //Util.THIS.debug(ex);
         } finally {
         }
     }

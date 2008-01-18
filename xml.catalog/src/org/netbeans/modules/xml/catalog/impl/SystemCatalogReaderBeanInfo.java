@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.catalog.impl;
 import java.beans.*;
 import java.awt.Image;
 
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
@@ -59,8 +60,8 @@ public class SystemCatalogReaderBeanInfo extends SimpleBeanInfo {
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor beanDescriptor = new BeanDescriptor  ( SystemCatalogReader.class , SystemCatalogCustomizer.class );
 
-        beanDescriptor.setDisplayName ( Util.THIS.getString("NAME_system_catalog") );
-        beanDescriptor.setShortDescription ( Util.THIS.getString("TEXT_system_catalog_desc") );
+        beanDescriptor.setDisplayName ( NbBundle.getMessage(SystemCatalogReaderBeanInfo.class, "NAME_system_catalog") );
+        beanDescriptor.setShortDescription ( NbBundle.getMessage(SystemCatalogReaderBeanInfo.class, "TEXT_system_catalog_desc") );
 	return beanDescriptor;
     }
 

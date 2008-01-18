@@ -68,6 +68,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.CloneableEditorSupport.Env;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -122,7 +123,7 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
             if (!editPossible)
                 org.openide.DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
-                            Util.THIS.getString("MSG_CannotOpenURI",getSystemID()), //NOI18N
+                            NbBundle.getMessage(CatalogEntryNode.class, "MSG_CannotOpenURI",getSystemID()), //NOI18N
                             NotifyDescriptor.INFORMATION_MESSAGE));
         } catch (Throwable ex) {
             ErrorManager.getDefault().notify(ex);
@@ -221,23 +222,23 @@ final class CatalogEntryNode extends BeanNode implements EditCookie, Node.Cookie
         }
                                 
         protected String messageName() {
-            return Util.THIS.getString("MSG_opened_entity", getPublicID());  // NOI18N
+            return NbBundle.getMessage(CatalogEntryNode.class, "MSG_opened_entity", getPublicID());  // NOI18N
         }
         
         protected String messageSave() {
-            return Util.THIS.getString ("MSG_ENTITY_SAVE", getPublicID());  // NOI18N
+            return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_SAVE", getPublicID());  // NOI18N
         }
         
         protected java.lang.String messageToolTip() {
-            return Util.THIS.getString ("MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
+            return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_TOOLTIP", getSystemID()); // NOI18N
         }
 
         protected java.lang.String messageOpening() {
-            return Util.THIS.getString ("MSG_ENTITY_OPENING", getPublicID()); // NOI18N
+            return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_OPENING", getPublicID()); // NOI18N
         }
         
         protected java.lang.String messageOpened() {
-            return Util.THIS.getString ("MSG_ENTITY_OPENED", getPublicID()); // NOI18N
+            return NbBundle.getMessage(CatalogEntryNode.class, "MSG_ENTITY_OPENED", getPublicID()); // NOI18N
         }
 
         //#20646 associate the entry node with editor top component

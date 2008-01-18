@@ -43,6 +43,7 @@ package org.netbeans.modules.xml.catalog;
 import org.xml.sax.*;
 
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
+import org.openide.util.NbBundle;
 
 /**
  * Represents catalog entry keyed by a public ID.
@@ -121,11 +122,11 @@ public final class CatalogEntry extends Object {
     
     public String getName() {
         String id = getPublicID();
-        if (id.startsWith("PUBLIC:")) return Util.THIS.getString("TXT_publicEntry",id.substring(7)); //NOI18N
-        if (id.startsWith("SYSTEM:")) return Util.THIS.getString("TXT_systemEntry",id.substring(7)); //NOI18N
-        if (id.startsWith("URI:")) return Util.THIS.getString("TXT_publicEntry",id.substring(4)); //NOI18N
-        if (id.startsWith("SCHEMA:")) return Util.THIS.getString("TXT_systemEntry",id.substring(7)); //NOI18N
-        return Util.THIS.getString("TXT_publicEntry",id);
+        if (id.startsWith("PUBLIC:")) return NbBundle.getMessage(CatalogEntry.class, "TXT_publicEntry",id.substring(7)); //NOI18N
+        if (id.startsWith("SYSTEM:")) return NbBundle.getMessage(CatalogEntry.class, "TXT_systemEntry",id.substring(7)); //NOI18N
+        if (id.startsWith("URI:")) return NbBundle.getMessage(CatalogEntry.class, "TXT_publicEntry",id.substring(4)); //NOI18N
+        if (id.startsWith("SCHEMA:")) return NbBundle.getMessage(CatalogEntry.class, "TXT_systemEntry",id.substring(7)); //NOI18N
+        return NbBundle.getMessage(CatalogEntry.class, "TXT_publicEntry",id);
     }
     
     public String toString() {

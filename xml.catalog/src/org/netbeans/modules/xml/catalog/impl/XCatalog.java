@@ -175,7 +175,7 @@ public final class XCatalog extends AbstractCatalog
         updateShortDescription(ex.getLocalizedMessage());
         updateIcon(getDefaultErrorIcon(0));               //!!!
 
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Can not read: " + shortDescription); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Can not read: " + shortDescription); // NOI18N
     }
 
 
@@ -221,7 +221,7 @@ public final class XCatalog extends AbstractCatalog
      * Reload the catalog from its original location.
      */
     public void refresh() {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Refreshing catalog...impl..."); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Refreshing catalog...impl..."); // NOI18N
 
         loadCatalog(getSource());
     }
@@ -235,9 +235,9 @@ public final class XCatalog extends AbstractCatalog
     public String getDisplayName() {
         String location = catalogSrc;
         if (location == null || "".equals(location.trim())) {
-            return Util.THIS.getString("PROP_missing_location");
+            return NbBundle.getMessage(XCatalog.class, "PROP_missing_location");
         } else {
-            return Util.THIS.getString("PROP_display_name", catalogSrc);
+            return NbBundle.getMessage(XCatalog.class, "PROP_display_name", catalogSrc);
         }
     }
         
@@ -280,7 +280,7 @@ public final class XCatalog extends AbstractCatalog
      */
     public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
         
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("resolveEntity(\""+publicId+"\", \""+systemId+"\")"); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("resolveEntity(\""+publicId+"\", \""+systemId+"\")"); // NOI18N
                 
         // public identifier resolution
         if (publicId != null) {
@@ -288,7 +288,7 @@ public final class XCatalog extends AbstractCatalog
             // direct public id mappings
             String value = getPublicMapping(publicId);
 
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("  map: \""+publicId+"\" -> \""+value+"\""); // NOI18N
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("  map: \""+publicId+"\" -> \""+value+"\""); // NOI18N
             
             if (value != null) {
                 InputSource source = resolveEntity(null, value);
@@ -304,7 +304,7 @@ public final class XCatalog extends AbstractCatalog
             while (delegates.hasMoreElements()) {
                 String key = (String)delegates.nextElement();
 
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("  delegate: \""+key+"\""); // NOI18N
+                //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("  delegate: \""+key+"\""); // NOI18N
 
                 if (publicId.startsWith(key)) {
                     AbstractCatalog catalog = getDelegateCatalog(key);
@@ -319,7 +319,7 @@ public final class XCatalog extends AbstractCatalog
         // system identifier resolution
         String value = getSystemMapping(systemId);
         if (value != null) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("  remap: \""+systemId+"\" -> \""+value+"\""); // NOI18N
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("  remap: \""+systemId+"\" -> \""+value+"\""); // NOI18N
 
             InputSource source = new InputSource(value);
             source.setPublicId(publicId);
@@ -336,7 +336,7 @@ public final class XCatalog extends AbstractCatalog
         }
 
         // use default behavior
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("  returning null!"); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("  returning null!"); // NOI18N
 
         return null;
         
@@ -433,7 +433,7 @@ public final class XCatalog extends AbstractCatalog
 
                     String href     = attrList.getValue(HREF_ATT);
 
-                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("MAP \""+publicId+"\" \""+href+"\""); // NOI18N
+                    //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("MAP \""+publicId+"\" \""+href+"\""); // NOI18N
                     
                     // create mapping
                     if (Categorizer.isURL(href) == false) {
@@ -449,7 +449,7 @@ public final class XCatalog extends AbstractCatalog
                     if (publicId == null) publicId = attrList.getValue(PUBLICID_ATT_2);
                     String href     = attrList.getValue(HREF_ATT);
                     
-                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("DELEGATE \""+publicId+"\" \""+href+"\""); // NOI18N
+                    //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("DELEGATE \""+publicId+"\" \""+href+"\""); // NOI18N
                     
                     // expand system id
                     if (Categorizer.isURL(href) == false) {
@@ -467,7 +467,7 @@ public final class XCatalog extends AbstractCatalog
                     // <Extend HRef="..."/>
                     String href = attrList.getValue(HREF_ATT);
                     
-                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("EXTEND \""+href+"\""); // NOI18N
+                    //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("EXTEND \""+href+"\""); // NOI18N
                     
                     // expand system id
                     if (Categorizer.isURL(href) == false) {
@@ -489,7 +489,7 @@ public final class XCatalog extends AbstractCatalog
                     if (href != null) { 
                         base = href;
                     }
-                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("BASE \""+href+"\" -> \""+base+"\""); // NOI18N
+                    //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("BASE \""+href+"\" -> \""+base+"\""); // NOI18N
                     
                 } else if (qName.equals(REMAP)) {
                     
@@ -500,7 +500,7 @@ public final class XCatalog extends AbstractCatalog
 
                     String href = attrList.getValue(HREF_ATT);
                     
-                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("REMAP \""+systemId+"\" \""+href+"\""); // NOI18N
+                    //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("REMAP \""+systemId+"\" \""+href+"\""); // NOI18N
                                         
                     // create mapping
                     if (Categorizer.isURL(href) == false) {

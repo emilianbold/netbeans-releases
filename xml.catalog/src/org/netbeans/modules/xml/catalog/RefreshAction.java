@@ -44,6 +44,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * Action sensitive to the node selection that refreshs children.
@@ -59,19 +60,19 @@ final class RefreshAction extends CookieAction {
         if (nodes == null) return;
         try {
             for (int i = 0; i<nodes.length; i++) {
-                String msg = Util.THIS.getString("MSG_refreshing", nodes[i].getDisplayName());
+                String msg = NbBundle.getMessage(RefreshAction.class, "MSG_refreshing", nodes[i].getDisplayName());
                 StatusDisplayer.getDefault().setStatusText(msg);
                 Refreshable cake = (Refreshable) nodes[i].getCookie(Refreshable.class);
                 cake.refresh();
             }
         } finally {
-            String msg = Util.THIS.getString("MSG_refreshed");
+            String msg = NbBundle.getMessage(RefreshAction.class, "MSG_refreshed");
             StatusDisplayer.getDefault().setStatusText(msg);
         }
     }
 
     public String getName () {
-        return Util.THIS.getString ("LBL_Action");
+        return NbBundle.getMessage(RefreshAction.class, "LBL_Action");
     }
 
     protected String iconResource () {

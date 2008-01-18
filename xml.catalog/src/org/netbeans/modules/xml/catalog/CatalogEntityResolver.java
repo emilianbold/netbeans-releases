@@ -114,11 +114,10 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
                     break;
                 }
             }
-        }
-        
+        }        
         // return result (null is allowed)
 
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("CatalogEntityResolver:PublicID: " + publicId + ", " + systemId + " => " + (result == null ? "null" : result.getSystemId())); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("CatalogEntityResolver:PublicID: " + publicId + ", " + systemId + " => " + (result == null ? "null" : result.getSystemId())); // NOI18N
 
         // #56103 bootstrap XML catalog DTD
         if (result == null && "-//OASIS//DTD Entity Resolution XML Catalog V1.0//EN".equals(publicId)) {  // NOi18N
@@ -196,7 +195,7 @@ public class CatalogEntityResolver extends UserCatalog implements EntityResolver
         
         // return result (null is allowed)
 
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("CatalogEntityResolver:PublicID: " + publicId + ", " + systemId + " => " + (result == null ? "null" : result.getSystemId())); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("CatalogEntityResolver:PublicID: " + publicId + ", " + systemId + " => " + (result == null ? "null" : result.getSystemId())); // NOI18N
         return result;        
     }
     

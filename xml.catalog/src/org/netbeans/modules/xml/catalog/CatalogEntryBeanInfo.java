@@ -43,18 +43,19 @@ package org.netbeans.modules.xml.catalog;
 import java.beans.*;
 import java.awt.Image;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public class CatalogEntryBeanInfo extends SimpleBeanInfo {
 
     private static final String ICON_DIR_BASE = "org/netbeans/modules/xml/catalog/resources/"; // NOI18N
 
-    private static final String PUBLICID_N = Util.THIS.getString("PROP_public_id");
-    private static final String PUBLICID_D = Util.THIS.getString("PROP_public_id_desc");
-    private static final String SYSTEMID_D = Util.THIS.getString("PROP_system_id_desc");
-    private static final String SYSTEMID_N = Util.THIS.getString("PROP_system_id");
-    private static final String URI_D = Util.THIS.getString("PROP_uri_desc");
-    private static final String URI_N = Util.THIS.getString("PROP_uri");
+    private static final String PUBLICID_N = NbBundle.getMessage(CatalogEntryBeanInfo.class, "PROP_public_id");
+    private static final String PUBLICID_D = NbBundle.getMessage(CatalogEntryBeanInfo.class, "PROP_public_id_desc");
+    private static final String SYSTEMID_D = NbBundle.getMessage(CatalogEntryBeanInfo.class, "PROP_system_id_desc");
+    private static final String SYSTEMID_N = NbBundle.getMessage(CatalogEntryBeanInfo.class, "PROP_system_id");
+    private static final String URI_D = NbBundle.getMessage(CatalogEntryBeanInfo.class, "PROP_uri_desc");
+    private static final String URI_N = NbBundle.getMessage(CatalogEntryBeanInfo.class, "PROP_uri");
     
     /**
      * Gets the bean's <code>PropertyDescriptor</code>s.

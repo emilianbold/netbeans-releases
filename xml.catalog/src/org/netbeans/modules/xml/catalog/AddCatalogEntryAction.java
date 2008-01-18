@@ -67,7 +67,7 @@ public class AddCatalogEntryAction extends NodeAction {
         CatalogWriter catalog = (CatalogWriter)node.getCatalogReader();
         CatalogEntryPanel panel = new CatalogEntryPanel();
         DialogDescriptor dd = new DialogDescriptor(panel,
-                              Util.THIS.getString ("TITLE_addCatalogEntry")); //NOI18N
+                              NbBundle.getMessage(AddCatalogEntryAction.class, "TITLE_addCatalogEntry")); //NOI18N
         //dd.setHelpCtx(new HelpCtx(CatalogMounterPanel.class));
         panel.setEnclosingDesc(dd);
         java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);

@@ -53,8 +53,8 @@ import org.xml.sax.*;
 import org.netbeans.modules.xml.catalog.spi.*;
 
 import org.apache.xml.resolver.tools.CatalogResolver;
-import org.apache.xml.resolver.CatalogException;
 import org.apache.xml.resolver.CatalogManager;
+import org.openide.util.NbBundle;
 
 /**
  * SPI implementation that bridges to Sun's Resolvers 1.1.
@@ -99,7 +99,7 @@ public final class Catalog
         in.defaultReadObject();
         
         // lazy init transient fields, see getPCHS() and getPeer() methods
-        setShortDescription(Util.THIS.getString("MSG_prepared", location));
+        setShortDescription(NbBundle.getMessage(Catalog.class, "MSG_prepared", location));
     }
     
     /**
@@ -155,9 +155,9 @@ public final class Catalog
     public String getDisplayName() {
         String src = location;
         if (src == null || "".equals(src.trim())) {
-            return Util.THIS.getString("PROP_missing_location");
+            return NbBundle.getMessage(Catalog.class, "PROP_missing_location");
         } else {        
-            return Util.THIS.getString("TITLE_catalog", location);
+            return NbBundle.getMessage(Catalog.class, "TITLE_catalog", location);
         }
     }
 
@@ -279,11 +279,11 @@ public final class Catalog
             CatalogResolver catalogResolver = new CatalogResolver(manager);
             org.apache.xml.resolver.Catalog cat = catalogResolver.getCatalog();
             cat.parseCatalog(new URL(location));
-            setShortDescription(Util.THIS.getString("DESC_loaded"));
+            setShortDescription(NbBundle.getMessage(Catalog.class, "DESC_loaded"));
             return catalogResolver;
         } catch (IOException ex) {
-            setShortDescription(Util.THIS.getString("DESC_error_loading", ex.getLocalizedMessage()));
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("I/O error loading catalog " + location, ex);
+            setShortDescription(NbBundle.getMessage(Catalog.class, "DESC_error_loading", ex.getLocalizedMessage()));
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("I/O error loading catalog " + location, ex);
         }
         
         // return dumb peer

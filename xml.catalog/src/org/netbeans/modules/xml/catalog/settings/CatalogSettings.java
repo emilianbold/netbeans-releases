@@ -50,6 +50,7 @@ import org.openide.util.io.NbMarshalledObject;
 
 import org.netbeans.modules.xml.catalog.spi.*;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 
@@ -265,7 +266,7 @@ public final class CatalogSettings implements Externalizable {
     public synchronized void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         //super.readExternal(in);        
 
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("CatalogSettings.readExternal()"); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("CatalogSettings.readExternal()"); // NOI18N
 
         int version = in.readInt();  //IN version
         
@@ -286,15 +287,15 @@ public final class CatalogSettings implements Externalizable {
                 }
             } catch (ClassNotFoundException ex) {
                 //ignore probably missing provider class
-                emgr().annotate(ex, Util.THIS.getString("EXC_deserialization_failed", catalogClass));
+                emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_deserialization_failed", catalogClass));
                 emgr().notify(ErrorManager.INFORMATIONAL, ex);                
             } catch (IOException ex) {
                 //ignore incompatible classes
-                emgr().annotate(ex, Util.THIS.getString("EXC_deserialization_failed", catalogClass));
+                emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_deserialization_failed", catalogClass));
                 emgr().notify(ErrorManager.INFORMATIONAL, ex);                                
             } catch (RuntimeException ex) {
                 //ignore catalog that can not deserialize itself without NPE etc.
-                emgr().annotate(ex, Util.THIS.getString("EXC_deserialization_failed", catalogClass));
+                emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_deserialization_failed", catalogClass));
                 emgr().notify(ErrorManager.INFORMATIONAL, ex);                                
             }
         }
@@ -306,7 +307,7 @@ public final class CatalogSettings implements Externalizable {
     public synchronized void writeExternal(ObjectOutput out) throws IOException  {
         //super.writeExternal(out);
 
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("CatalogSettings.writeExternal()"); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("CatalogSettings.writeExternal()"); // NOI18N
 
         out.writeInt(VERSION_1);  //OUT version
         
@@ -334,11 +335,11 @@ public final class CatalogSettings implements Externalizable {
                     out.writeObject(marshaled);  //OUT marshalled object
                 } catch (IOException ex) {
                     // catalog can not be serialized
-                    emgr().annotate(ex, Util.THIS.getString("EXC_serialization_failed", next.getClass()));
+                    emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_serialization_failed", next.getClass()));
                     emgr().notify(ErrorManager.INFORMATIONAL, ex);
                 } catch (RuntimeException ex) {
                     //skip this odd catalog
-                    emgr().annotate(ex, Util.THIS.getString("EXC_serialization_failed", next.getClass()));
+                    emgr().annotate(ex, NbBundle.getMessage(CatalogSettings.class, "EXC_serialization_failed", next.getClass()));
                     emgr().notify(ErrorManager.INFORMATIONAL, ex);
                 }
             }

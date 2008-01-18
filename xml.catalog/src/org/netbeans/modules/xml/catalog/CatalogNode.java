@@ -63,6 +63,7 @@ import org.openide.nodes.BeanNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
@@ -93,7 +94,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
             setSynchronizeName(false);
             setName(desc.getDisplayName());
             String bundleString = catalog instanceof CatalogWriter ?"LBL_catalogReadWrite":"LBL_catalogReadOnly"; //NOI18N
-            setDisplayName(Util.THIS.getString(bundleString, desc.getDisplayName()));
+            setDisplayName(NbBundle.getMessage(CatalogNode.class, bundleString, desc.getDisplayName()));
             setShortDescription(desc.getShortDescription());
             fireIconChange();  
 
@@ -176,18 +177,18 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
      * The node listens on some changes
      */
     public void propertyChange(PropertyChangeEvent e) {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(e.toString());
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(e.toString());
         if (CatalogDescriptor.PROP_CATALOG_NAME.equals(e.getPropertyName())) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Setting name: " + (String) e.getNewValue()); // NOI18N
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Setting name: " + (String) e.getNewValue()); // NOI18N
 
             setName((String) e.getNewValue());
             setDisplayName((String) e.getNewValue());
         } else if (CatalogDescriptor.PROP_CATALOG_DESC.equals(e.getPropertyName())) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Setting desc: " + (String) e.getNewValue()); // NOI18N
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Setting desc: " + (String) e.getNewValue()); // NOI18N
 
             setShortDescription((String) e.getNewValue());
         } else if (CatalogDescriptor.PROP_CATALOG_ICON.equals(e.getPropertyName())) { 
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Updating icon"); // NOI18N
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Updating icon"); // NOI18N
 
             fireIconChange();
         }
@@ -197,13 +198,13 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
     // ~~~~~~~~~~~~~~~~~~~~~~ Serialization stuff ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Reading Catalog node " + this); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Reading Catalog node " + this); // NOI18N
 
         in.defaultReadObject();        
     }
     
     private void writeObject(ObjectOutputStream out) throws IOException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Writing " + this); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Writing " + this); // NOI18N
 
         out.defaultWriteObject();        
     }
@@ -261,7 +262,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
           * Reloads catalog content
           */
         public void reload() {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Reloading kids of " + peer + "..."); // NOI18N
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(" Reloading kids of " + peer + "..."); // NOI18N
 
             Set previous = new HashSet(keys);
             keys.clear();
@@ -317,7 +318,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
         }
         
         public String getName() {
-            return Util.THIS.getString("LBL_unmount");
+            return NbBundle.getMessage(CatalogNode.class, "LBL_unmount");
         }
         
         public HelpCtx getHelpCtx() {
@@ -348,7 +349,7 @@ final class CatalogNode extends BeanNode implements Refreshable, PropertyChangeL
                     CatalogNode self = (CatalogNode) me.getCookie(CatalogNode.class);
                     self.destroy();
                 } catch (IOException ex) {
-                    Util.THIS.debug("Cannot unmount XML entity catalog!", ex);
+                    //Util.THIS.debug("Cannot unmount XML entity catalog!", ex);
                 }
             }
         }

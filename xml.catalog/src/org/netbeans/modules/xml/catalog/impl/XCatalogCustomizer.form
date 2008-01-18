@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_variablesModifier" type="java.lang.Integer" value="2"/>
@@ -17,7 +19,7 @@
           <Connection code="locationTextField" type="code"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/Bundle.properties" key="XCatalogCustomizer.locationLabel.text" replaceFormat="Util.THIS.getString (&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/Bundle.properties" key="XCatalogCustomizer.locationLabel.text" replaceFormat="NbBundle.getMessage(XCatalogCustomizer.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Constraints>
@@ -51,7 +53,7 @@
         </Property>
         <Property name="lineWrap" type="boolean" value="true"/>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/Bundle.properties" key="DESC_xcatalog_fmts" replaceFormat="Util.THIS.getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/xml/catalog/impl/Bundle.properties" key="DESC_xcatalog_fmts" replaceFormat="NbBundle.getMessage(XCatalogCustomizer.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="wrapStyleWord" type="boolean" value="true"/>
         <Property name="disabledTextColor" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
