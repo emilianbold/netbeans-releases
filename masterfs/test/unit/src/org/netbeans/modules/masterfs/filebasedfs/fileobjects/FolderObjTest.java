@@ -843,6 +843,7 @@ public class FolderObjTest extends NbTestCase {
         assert f.exists() : f.getAbsolutePath();
         
         FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileObject fo = FileUtil.toFileObject(f.getParentFile());
         
         final FileObject testFo = fs.findFileObject(f);
         assertNotNull(testFo);
@@ -956,6 +957,7 @@ public class FolderObjTest extends NbTestCase {
         
         
         FileBasedFileSystem fs = FileBasedFileSystem.getInstance(f);
+        FileObject fo = FileUtil.toFileObject(f.getParentFile());        
         
         FileObject testFo = fs.findFileObject(f);
         assertNotNull(testFo);

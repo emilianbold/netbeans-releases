@@ -431,27 +431,11 @@ public abstract class BaseFileObj extends FileObject {
         stopWatch.stop();
     }
 
-
-    public static FolderObj getExistingParentFor(File f, FileBasedFileSystem fbs) {         
-        final File parentFile = f.getParentFile();
-        final FolderObj parent = (parentFile == null) ? null : (FolderObj) fbs.getFactory().get(parentFile);
-        return parent;
-    }
-    
-    FolderObj getExistingParent() {         
-        /*final File parentFile = (getFileName().getParent() == null) ? null : getFileName().getParent().getFile();
-        final FolderObj parent = (parentFile == null) ? null : (FolderObj) getLocalFileSystem().getFactory().get(parentFile);
-        return parent;
-         */
-        return getExistingParentFor(getFileName().getFile(), getLocalFileSystem());
-    }
-
-
     public final void fireFileChangedEvent(final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
         
-        FileObject p = getParent();
+        FileObject p = getExistingParent();
         final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
         Enumeration pListeners = (parent != null) ? parent.getListeners() : null;
         
@@ -467,7 +451,7 @@ public abstract class BaseFileObj extends FileObject {
     final void fireFileDeletedEvent(final boolean expected) {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.LISTENERS_CALLS);
         stopWatch.start();
-        FileObject p = getParent();
+        FileObject p = getExistingParent();
         final BaseFileObj parent = (BaseFileObj)((p instanceof BaseFileObj) ? p : null);//getExistingParent();
         Enumeration pListeners = (parent != null) ?parent.getListeners() : null;        
         
@@ -762,6 +746,16 @@ public abstract class BaseFileObj extends FileObject {
         FileBasedFileSystem.StatusImpl status = (FileBasedFileSystem.StatusImpl) getLocalFileSystem().getStatus();
         ProvidedExtensions extensions = status.getExtensions();
         return extensions;
+    }
+
+    public static FolderObj getExistingParentFor(File f, FileBasedFileSystem fbs) {         
+        final File parentFile = f.getParentFile();
+        final FolderObj parent = (parentFile == null) ? null : (FolderObj) fbs.getFactory().get(parentFile);
+        return parent;
+    }
+    
+    FolderObj getExistingParent() {         
+        return getExistingParentFor(getFileName().getFile(), getLocalFileSystem());
     }
     
     private final class FileChangeListenerForVersioning extends FileChangeAdapter {
