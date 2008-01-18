@@ -704,8 +704,10 @@ public class FormEditor {
                 // Avoiding deadlock (issue 51796)
                 java.awt.EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        formDataObject.getNodeDelegate().getChildren()
-                            .remove(new Node[] { formRootNode });
+                        if (formDataObject.isValid()) {
+                            formDataObject.getNodeDelegate().getChildren()
+                                .remove(new Node[] { formRootNode });
+                        }
                         formRootNode = null;
                     }
                 });
