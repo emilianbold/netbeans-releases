@@ -1275,7 +1275,7 @@ public class FolderObjTest extends NbTestCase {
         //first refresh after initialization compares
         //lastModified with oldLastModified this way:
         //if (lastModified > oldLastModified) the fileChange
-        thisTest.setLastModified(1000000);        
+        assertTrue(thisTest.setLastModified(thisTest.lastModified() - 1000000));        
         testf.refresh();
         assertTrue(l.isEmpty());        
 
@@ -1283,7 +1283,7 @@ public class FolderObjTest extends NbTestCase {
         //lastModified with oldLastModified this way:
         //if (lastModified != oldLastModified) the fileChange                
         l.add("not empty");        
-        thisTest.setLastModified(10000);
+        assertTrue(thisTest.setLastModified(thisTest.lastModified()-10000));
         testf.refresh();
         assertTrue(l.isEmpty());
     }
