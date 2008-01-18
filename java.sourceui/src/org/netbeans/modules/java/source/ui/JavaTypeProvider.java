@@ -43,13 +43,11 @@ package org.netbeans.modules.java.source.ui;
 
 import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
@@ -73,7 +71,6 @@ import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.SearchType;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -113,17 +110,17 @@ public class JavaTypeProvider implements TypeProvider {
     
     public JavaTypeProvider() {
         this(null, null);
-        pathListener = new GlobalPathRegistryListener() {
-
-            public void pathsAdded(GlobalPathRegistryEvent event) {
-                cache = null; cpInfo = null;
-            }
-
-            public void pathsRemoved(GlobalPathRegistryEvent event) {
-                cache = null; cpInfo = null;
-            }
-        };
-        GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(pathListener);
+//        pathListener = new GlobalPathRegistryListener() {
+//
+//            public void pathsAdded(GlobalPathRegistryEvent event) {
+//                cache = null; cpInfo = null;
+//            }
+//
+//            public void pathsRemoved(GlobalPathRegistryEvent event) {
+//                cache = null; cpInfo = null;
+//            }
+//        };
+//        GlobalPathRegistry.getDefault().addGlobalPathRegistryListener(pathListener);
     }
    
     public JavaTypeProvider(ClasspathInfo cpInfo, TypeElementFinder.Customizer customizer) {
@@ -148,7 +145,10 @@ public class JavaTypeProvider implements TypeProvider {
 //        }
 //    }
 
-   public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType searchType) {
+    public void computeTypeNames(Context context, Result res) {
+        String text = context.getText();
+        SearchType searchType = context.getSearchType();
+        
         boolean hasBinaryOpen = Lookup.getDefault().lookup(BinaryElementOpen.class) != null;
         final ClassIndex.NameKind nameKind;
         switch (searchType) {
@@ -183,7 +183,7 @@ public class JavaTypeProvider implements TypeProvider {
                     time = System.currentTimeMillis();                
                     ClasspathInfo ci = ClasspathInfo.create( EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(root));               //create(roots[i]);
                     if ( isCanceled ) {
-                        return null;
+                        return;
                     }
                     else {
                         sources.add( new CacheItem( roots[i], ci, false ) );
@@ -202,7 +202,7 @@ public class JavaTypeProvider implements TypeProvider {
                 for (int i = 0; i < roots.length; i++ ) {
                     try {
                         if ( isCanceled ) {
-                            return null;
+                            return;
                         }
                         time = System.currentTimeMillis();
                         if (!hasBinaryOpen) {
@@ -223,7 +223,7 @@ public class JavaTypeProvider implements TypeProvider {
                     }                   
                     finally {
                         if ( isCanceled ) {
-                            return null;
+                            return;
                         }
                     }
                 }
@@ -239,7 +239,7 @@ public class JavaTypeProvider implements TypeProvider {
                     time = System.currentTimeMillis();                
                     ClasspathInfo ci = ClasspathInfo.create(ClassPathSupport.createClassPath(bootRoots[i]), EMPTY_CLASSPATH, EMPTY_CLASSPATH);
                     if ( isCanceled ) {
-                        return null;
+                        return;
                     }
                     else {
                         sources.add( new CacheItem( bootRoots[i], ci, true ) );
@@ -252,7 +252,7 @@ public class JavaTypeProvider implements TypeProvider {
                     time = System.currentTimeMillis();                
                     ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, ClassPathSupport.createClassPath(compileRoots[i]), EMPTY_CLASSPATH);
                     if ( isCanceled ) {
-                        return null;
+                        return;
                     }
                     else {
                         sources.add( new CacheItem( compileRoots[i], ci, true ) );
@@ -265,7 +265,7 @@ public class JavaTypeProvider implements TypeProvider {
                     time = System.currentTimeMillis();                
                     ClasspathInfo ci = ClasspathInfo.create(EMPTY_CLASSPATH, EMPTY_CLASSPATH, ClassPathSupport.createClassPath(sourceRoots[i]));
                     if ( isCanceled ) {
-                        return null;
+                        return;
                     }
                     else {
                         sources.add( new CacheItem( sourceRoots[i], ci, false ) );
@@ -279,13 +279,13 @@ public class JavaTypeProvider implements TypeProvider {
                 cache = sources;
             }
             else {
-                return null;
+                return;
             }
 
         }
 
         ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(cache.size() * 20);
-
+        Set<ElementHandle<TypeElement>> names = null;
         for(final CacheItem ci : cache) {
             time = System.currentTimeMillis();
 
@@ -302,10 +302,10 @@ public class JavaTypeProvider implements TypeProvider {
                     textForQuery = text;
             }
 
-            Set<ElementHandle<TypeElement>> names = null;
             if (customizer != null) {
                 names = customizer.query(ci.classpathInfo, textForQuery, nameKind, EnumSet.of(ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE));
             } else {
+                @SuppressWarnings("unchecked")
                 final Set<ElementHandle<TypeElement>>[] n = new Set[1];
                 JavaSource source = JavaSource.create(ci.classpathInfo, new FileObject[0]);
                 try {
@@ -322,7 +322,7 @@ public class JavaTypeProvider implements TypeProvider {
             }
 
             if ( isCanceled ) {
-                return null;
+                return;
             }
 
             gtn += System.currentTimeMillis() - time;            
@@ -337,7 +337,7 @@ public class JavaTypeProvider implements TypeProvider {
                     types.add(td);
 //                    }
                 if ( isCanceled ) {
-                    return null;
+                    return;
                 }
             }
             add += System.currentTimeMillis() - time;
@@ -349,13 +349,10 @@ public class JavaTypeProvider implements TypeProvider {
             // Collections.sort(types);
             sort += System.currentTimeMillis() - time;
             LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
-            return types;
-        }
-        else {
-            return null;
+            res.addResult(types);
         }
     }
-   
+    
     private static boolean isAllUpper( String text ) {
         for( int i = 0; i < text.length(); i++ ) {
             if ( !Character.isUpperCase( text.charAt( i ) ) ) {

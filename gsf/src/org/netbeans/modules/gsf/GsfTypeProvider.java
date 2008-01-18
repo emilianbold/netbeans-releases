@@ -46,7 +46,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -204,7 +203,9 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
     
 
     //@Override
-       public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType nameKind) {
+       public void computeTypeNames(Context context, Result res) {
+            String text = context.getText();
+            SearchType nameKind = context.getSearchType();
         
             long time;
             
@@ -227,7 +228,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
                     LOGGER.fine("GoToTypeAction.getTypeNames created ClasspathInfo for source: " + FileUtil.getFileDisplayName(roots[i])+"\n");
 //                    if ( isCanceled ) {
                     if ( isCancelled ) {
-                        return null;
+                        return;
                     }
                     else {
                         sources.add( new CacheItem( roots[i], ci, false ) );
@@ -268,7 +269,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
                     cache = sources;
                 }
                 else {
-                    return null;
+                    return;
                 }
                 
             }
@@ -312,7 +313,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
                 //Set<ElementHandle<TypeElement>> names = ci.classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, indexNameKind, EnumSet.of( ci.isBinary ? ClassIndex.SearchScope.DEPENDENCIES : ClassIndex.SearchScope.SOURCE ));
 //                if ( isCanceled ) {
                 if ( isCancelled ) {
-                    return null;
+                    return;
                 }
                 
                 gtn += System.currentTimeMillis() - time;            
@@ -329,7 +330,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
 //                    }
 //                    if ( isCanceled ) {
                     if ( isCancelled ) {
-                        return null;
+                        return;
                     }
                 }
                 add += System.currentTimeMillis() - time;
@@ -341,10 +342,7 @@ public class GsfTypeProvider implements TypeProvider, TypeSearcher.Helper {
                 // Collections.sort(types);
                 sort += System.currentTimeMillis() - time;
                 LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort ); 
-                return types;
-            }
-            else {
-                return null;
+                res.addResult(types);
             }
         }
 

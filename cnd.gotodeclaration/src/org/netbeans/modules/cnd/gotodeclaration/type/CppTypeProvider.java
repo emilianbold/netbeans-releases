@@ -61,7 +61,11 @@ public class CppTypeProvider implements TypeProvider {
         return NbBundle.getMessage(CppTypeProvider.class, "TYPE_PROVIDER_DISPLAY_NAME"); // NOI18N
     }
 
-    public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType type) {
+//    public List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType type) {
+    public void computeTypeNames(Context context, Result res) {
+        Project project = context.getProject();
+        String text = context.getText();
+        SearchType type = context.getSearchType();
 	
 	if( TRACE ) System.err.printf("CppTypeProvider.getTypeNames(%s, %s, %s)\n", project, text, type);
 	
@@ -69,7 +73,7 @@ public class CppTypeProvider implements TypeProvider {
 	
 	NameMatcher comparator = NameMatcherFactory.createNameMatcher(text, type);
 	if( comparator == null ) {
-	    return Collections.emptyList();
+	    return;
 	}
 	
 	if( project == null ) {
@@ -88,7 +92,7 @@ public class CppTypeProvider implements TypeProvider {
                         processProjectLibs(csmProject, result, comparator, processedLibs);
                     }
                 }
-                return new ArrayList<TypeDescriptor>(result);
+                res.addResult(new ArrayList<TypeDescriptor>(result));
 	    }
 	}
 	else {
@@ -98,11 +102,8 @@ public class CppTypeProvider implements TypeProvider {
             if( PROCESS_LIBRARIES ) {
                 processProjectLibs(csmProject, result, comparator, new HashSet<CsmProject>());
             }
-            return new ArrayList<TypeDescriptor>(result);
+            res.addResult(new ArrayList<TypeDescriptor>(result));
 	}
-	
-	
-	return Collections.emptyList();
     }
 
     public void cancel() {

@@ -391,7 +391,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             if ( !isCanceled && model != null ) {
                 LOGGER.fine( "Worker for text " + text + " finished after " + ( System.currentTimeMillis() - createTime ) + " ms."  );                
                 
-                panel.setModel(model);                
+                panel.setModel(model);
                 if (okButton != null && !types.isEmpty()) {
                     okButton.setEnabled (true);
                 }
@@ -412,23 +412,17 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private List<? extends TypeDescriptor> getTypeNames(String text) {
             // TODO: Search twice, first for current project, then for all projects
             List<TypeDescriptor> items;
-            if (typeProviders.size() == 1) {
-                items = (List<TypeDescriptor>) typeProviders.iterator().next().getTypeNames(null, text, nameKind);
-            } else {
-                // Multiple providers: merge results
-                items = new ArrayList<TypeDescriptor>(128);
-                for (TypeProvider provider : typeProviders) {
-                    if (isCanceled) {
-                        return null;
-                    }
-                    List<? extends TypeDescriptor> list = provider.getTypeNames(null, text, nameKind);
-                    if (list != null) {
-                        items.addAll(list);
-                    }
+            // Multiple providers: merge results
+            items = new ArrayList<TypeDescriptor>(128);
+            String[] message = new String[1];
+            TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, nameKind);
+            TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
+            for (TypeProvider provider : typeProviders) {
+                if (isCanceled) {
+                    return null;
                 }
-
+                provider.computeTypeNames(context, result);
             }
-            
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
                 Collections.sort(items, new TypeComparator());

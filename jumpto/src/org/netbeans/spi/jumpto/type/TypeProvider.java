@@ -42,8 +42,8 @@
 package org.netbeans.spi.jumpto.type;
 
 import java.util.List;
-import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.jumpto.type.TypeProviderAccessor;
 
 /**
  * A Type Provider participates in the Goto Type dialog by providing TypeDescriptors,
@@ -77,7 +77,7 @@ public interface TypeProvider {
     String getDisplayName();
     
     /** 
-     * Provide a list of TypeDescriptors that match the given search text for the given
+     * Compute a list of TypeDescriptors that match the given search text for the given
      * search type. This might be a slow operation, and the infrastructure may end
      * up calling {@link #cancel} on the same type provider during the operation, in which
      * case the method can return incomplete results. If there is a "current project",
@@ -92,14 +92,11 @@ public interface TypeProvider {
      * result. There is an explicit {@link #cleanup} call that the Go To Type dialog
      * will make at the end of the dialog interaction, which can be used to clean up the cache.
      * 
-     * @param project If not null, limit the type search to the given project.
-     * @param text The text to be used for the search; e.g. when type=SearchType.PREFIX,
-     *   text is the prefix that all returned types should start with.
-     * @param type A type of search to be performed, such as prefix, regexp or camel case.
-     * @return A collection of TypeDescriptors that match the given search criteria
+     * @param context search context containg search text and type, optionally project
+     * @param result  filled with type descriptors and optional message
      */
-    List<? extends TypeDescriptor> getTypeNames(Project project, String text, SearchType type);
-
+    void computeTypeNames(Context context, Result result);
+    
     /**
      * Cancel the current operation, if possible. This might be called if the user
      * has typed something (including the backspace key) which makes the current
@@ -116,4 +113,108 @@ public interface TypeProvider {
      * search is simply a narrower search, it can just filter the previous result.
      */
     void cleanup();
+
+
+    /**
+     * Represents search context.
+     * Contains search type (such as prefix, regexp), search text and
+     * optionally project where to search.
+     *
+     * @since 1.5
+     */
+    public static final class Context extends Object {
+        private final Project project;
+        private final String text;
+        private final SearchType type;
+        
+        static {
+            TypeProviderAccessor.DEFAULT = new TypeProviderAccessor() {
+                @Override
+                protected Context createContext(Project p, String text, SearchType t) {
+                    return new Context(p, text, t);
+                }
+
+                @Override
+                protected Result createResult(List<? super TypeDescriptor> result, String[] message) {
+                    return new Result(result, message);
+                }
+            };
+        }
+        
+        Context(Project project, String text, SearchType type) {
+            this.project = project;
+            this.text = text;
+            this.type = type;
+        }
+        
+        /**
+         * Return project representing scope of search, if null, the search is not
+         * limited.
+         *
+         * @return project If not null, the type search is limited to the given project.
+         */
+        public Project getProject() { return project; }
+
+        /**
+          * Return the text used for search.
+          *
+          * @return The text used for the search; e.g. when getSearchType() == SearchType.PREFIX,
+          *   text is the prefix that all returned types should start with.
+          */
+        public String getText() { return text; }
+
+        /**
+         * Return the type of search.
+         *
+         * @return Type of search performed, such as prefix, regexp or camel case.
+         */
+        public SearchType getSearchType() { return type; }
+    }
+    
+    /**
+     * Represents a collection of <tt>TypeDescriptor</tt>s that match 
+     * the given search criteria. Moreover, it can contain message 
+     * for the user, such as an incomplete search result.
+     *
+     * @since 1.5
+     */
+    public static final class Result extends Object {
+        
+        private List<? super TypeDescriptor> result;
+        private String[] message;
+
+        Result(List<? super TypeDescriptor> result, String[] message) {
+            this.result = result;
+            this.message = message;
+        }
+        
+        /**
+         * Optional message. It can inform the user about result, e.g.
+         * that result can be incomplete etc.
+         * 
+         * @param  msg  message
+         */
+        public void setMessage(String msg) {
+            message[0] = msg;
+        }
+
+        /**
+          * Adds result descriptor.
+          *
+          * @param  typeDescriptor  type descriptor to be added to result
+          */
+        public void addResult(TypeDescriptor typeDescriptor) {
+            result.add(typeDescriptor);
+        }
+
+        /**
+          * Adds list of result descriptors.
+          *
+          * @param  typeDescriptor  type descriptor to be added to result
+          */
+        public void addResult(List<? extends TypeDescriptor> typeDescriptor) {
+            result.addAll(typeDescriptor);
+        }
+    }
+
 }
