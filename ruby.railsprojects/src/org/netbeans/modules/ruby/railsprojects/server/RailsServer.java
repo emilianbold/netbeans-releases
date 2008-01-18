@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.api.progress.ProgressHandle;
@@ -96,6 +97,8 @@ public final class RailsServer {
 
     enum ServerStatus { NOT_STARTED, STARTING, RUNNING; }
 
+    private static final Logger LOGGER = Logger.getLogger(RailsServer.class.getName());
+    
     /** Set of currently active - in use; ports. */
     private static final Set<Integer> IN_USE_PORTS = new HashSet<Integer>();;
 
@@ -202,6 +205,7 @@ public final class RailsServer {
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         serverType = getServerType();
         String displayName = getServerTabName(serverType, projectName, port);
+        LOGGER.fine("Got display name [" + displayName + "] for server  [" + serverType + "]");
         String serverPath = "script" + File.separator + "server"; // NOI18N
         ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, dir, serverPath);
         desc.additionalArgs("--port", Integer.toString(port)); // NOI18N
@@ -262,14 +266,17 @@ public final class RailsServer {
     /** Figure out which server we're using */
     private ServerType getServerType() {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
-        
+        LOGGER.fine("Got GemManager [" + gemManager.getGemHome() + "] for project [" + project + "]");
+        ServerType result = null;
         if (gemManager.getVersion("mongrel") != null) { // NOI18N
-            return ServerType.MONGREL;
+            result = ServerType.MONGREL;
         } else if (gemManager.getVersion("lighttpd") != null) { // NOI18N
-            return ServerType.LIGHTTPD;
+            result = ServerType.LIGHTTPD;
         } else {
-            return ServerType.WEBRICK;
+            result = ServerType.WEBRICK;
         }
+        LOGGER.fine("Returning ServerType [" + result + "]");
+        return result;
     }
     
     private void notifyPortConflict() {
@@ -327,6 +334,7 @@ public final class RailsServer {
                             }
 
                             if (status == ServerStatus.NOT_STARTED) {
+                               LOGGER.fine("Server starup failed, server type is: " + serverType);
                                 // Server startup somehow failed...
                                 break;
                             }
@@ -383,6 +391,7 @@ public final class RailsServer {
     }
 
     private static void showURL(String relativeUrl, int port) {
+        LOGGER.fine("Opening URL: " + "http://localhost:" + port + "/" + relativeUrl);
         try {
             URL url = new URL("http://localhost:" + port + "/" + relativeUrl); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
@@ -417,6 +426,7 @@ public final class RailsServer {
             // work - try that again later
             if (outputLine.matches(startedMessagePattern)) {
                 synchronized (RailsServer.this) {
+                    LOGGER.fine("Identified " + serverType + " as running");
                     status = ServerStatus.RUNNING;
                 }
             } else if (isAddressInUseMsg(outputLine)) {
