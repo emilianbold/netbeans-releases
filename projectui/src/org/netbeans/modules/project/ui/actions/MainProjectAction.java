@@ -116,12 +116,14 @@ public class MainProjectAction extends BasicAction implements PropertyChangeList
 
         if ( command != null ) {
             ActionProvider ap = p.getLookup().lookup(ActionProvider.class);
-            if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
-                ap.invokeAction(command, Lookup.EMPTY);
-            } else {
-                // #47160: was a supported command (e.g. on a freeform project) but was then removed.
-                Toolkit.getDefaultToolkit().beep();
-                refreshView();
+            if (ap != null) {
+                if (Arrays.asList(ap.getSupportedActions()).contains(command)) {
+                    ap.invokeAction(command, Lookup.EMPTY);
+                } else {
+                    // #47160: was a supported command (e.g. on a freeform project) but was then removed.
+                    Toolkit.getDefaultToolkit().beep();
+                    refreshView();
+                }
             }
         }
         else {
