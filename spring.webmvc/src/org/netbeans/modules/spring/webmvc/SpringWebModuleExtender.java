@@ -228,7 +228,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             // ADD SPRING LIBRARY
             Library springLibrary = getLibrary(SPRING_CLASS_NAME);
             assert springLibrary != null;
-            addLibraryToWebModule(getLibrary(SPRING_CLASS_NAME), webModule);
+            addLibraryToWebModule(springLibrary, webModule);
 
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
