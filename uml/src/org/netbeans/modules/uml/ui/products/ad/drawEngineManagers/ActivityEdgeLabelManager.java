@@ -325,7 +325,7 @@ public class ActivityEdgeLabelManager extends ADLabelManager implements IActivit
 
             if (sText != null && sText.length() > 0)
             {
-               if (!(sText == sOldText))
+               if (!(sText.equals(sOldText)))
                {
                   pETLabel.setText(sText);
                   pETLabel.reposition();
@@ -384,7 +384,7 @@ public class ActivityEdgeLabelManager extends ADLabelManager implements IActivit
 					String sOldText = pETLabel.getText();
 
 					if (sText != null && sText.length() > 0) {
-						if (!(sText == sOldText)) {
+						if (!(sText.equals(sOldText))) {
 							pETLabel.setText(sText);
 							pETLabel.reposition();
 							bDoLayout = true;
