@@ -66,7 +66,8 @@ public class FilteringLineDiff extends LineDiff {
     }
 
     /**
-     *  Lines beginning with " * Created " or " * @author " are treated equals.
+     *  Lines beginning with " * Created " or " * @author " and empty lines
+     * are treated equals.
      *
      * @param l1 first line to compare
      * @param l2 second line to compare
@@ -78,6 +79,9 @@ public class FilteringLineDiff extends LineDiff {
             return true;
         }
         if (((l1.indexOf(" * Created ") == 0) && (l2.indexOf(" * Created ") == 0)) || ((l1.indexOf(" * @author ") == 0) && (l2.indexOf(" * @author ") == 0)) || ((l1.indexOf("Created-By: ") == 0) && (l2.indexOf("Created-By: ") == 0))) {
+            return true;
+        }
+        if (l1.trim().length() == 0 && super.compareLines(l1.trim(), l2.trim())) {
             return true;
         }
         return false;
