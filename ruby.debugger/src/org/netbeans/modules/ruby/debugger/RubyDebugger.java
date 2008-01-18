@@ -164,7 +164,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         Util.finest("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
         boolean forceRubyDebug = Boolean.getBoolean("org.netbeans.modules.ruby.debugger.force.rdebug");
-        if (!forceRubyDebug && (jrubySet || prefs.isUseClassicDebugger())) {
+//        if (!forceRubyDebug && (jrubySet || prefs.isUseClassicDebugger())) {
+        // XXX the above is right, the below is cheat for 6.1M1
+        if (!forceRubyDebug && (jrubySet || !Util.hasFastDebuggerInstalled(gemManager))) {
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
