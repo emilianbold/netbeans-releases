@@ -47,6 +47,8 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
+import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.util.Lookup;
 
@@ -163,7 +165,24 @@ public abstract class CsmVirtualInfoQuery {
 
         @Override
         public Collection<CsmMethod> getOverridenMethods(CsmMethod base) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            Set<CsmMethod> res = new HashSet<CsmMethod>();
+            CsmClass cls = base.getContainingClass();
+            if (cls != null){
+                CharSequence sig = base.getSignature();
+                for(CsmReference ref :CsmTypeHierarchyResolver.getDefault().getSubTypes(cls, false)){
+                    CsmClass c = (CsmClass) ref.getOwner();
+                    for(CsmMember m : c.getMembers()){
+                        if (CsmKindUtilities.isMethod(m)) {
+                            CsmMethod met = (CsmMethod) m;
+                            if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0){
+                                res.add(met);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return res;
         }
     }    
 }
