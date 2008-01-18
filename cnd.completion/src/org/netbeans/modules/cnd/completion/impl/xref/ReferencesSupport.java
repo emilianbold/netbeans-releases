@@ -126,8 +126,19 @@ public final class ReferencesSupport {
     /*package*/ static CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset, Token jumpToken) {
         CsmObject csmItem = null;
         // emulate hyperlinks order
-        // first ask includes handler
-        CsmInclude incl = findInclude(csmFile, offset);
+        // first ask includes handler if offset in include sring token  
+        CsmInclude incl = null;
+        jumpToken = jumpToken != null ? jumpToken : getTokenByOffset(doc, offset);
+        if (jumpToken != null) {
+            switch (jumpToken.getTokenID().getNumericID()) {
+                case CCTokenContext.SYS_INCLUDE_ID:
+                case CCTokenContext.USR_INCLUDE_ID:
+                    // look for include directive
+                    incl = findInclude(csmFile, offset);
+                    break;
+            }
+        }
+        
         csmItem = incl == null ? null : incl.getIncludeFile();
 
         // if failed => ask declarations handler
