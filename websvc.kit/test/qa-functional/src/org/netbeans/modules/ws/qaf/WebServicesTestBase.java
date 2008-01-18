@@ -101,7 +101,8 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         JAVASE_APPLICATION,
         WEB,
         EJB,
-        APPCLIENT;
+        APPCLIENT,
+        SAMPLE;
 
         /**
          * Get project template category name
@@ -120,6 +121,9 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 case APPCLIENT:
                     //Enterprise
                     return Bundle.getStringTrimmed("org.netbeans.modules.j2ee.ejbjarproject.ui.wizards.Bundle", "Templates/Project/J2EE");
+                case SAMPLE:
+                    //Samples
+                    return Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Templates/Project/Samples");
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -276,6 +280,15 @@ public abstract class WebServicesTestBase extends JellyTestCase {
     protected abstract String getProjectName();
 
     /**
+     * Get the name of the sample project's category (ie. Web Services)
+     *
+     * @return name of the project
+     */
+    protected String getSamplesCategoryName() {
+        return "";
+    }
+
+    /**
      * Get a Project instance used by test case
      *
      * @return a Project instance
@@ -339,33 +352,35 @@ public abstract class WebServicesTestBase extends JellyTestCase {
     public void setUp() throws Exception {
         super.setUp();
         assertNotNull("No server has been found", REGISTERED_SERVER); //NOI18N
-        if (ServerType.TOMCAT.equals(REGISTERED_SERVER)
-                && !ProjectType.WEB.equals(getProjectType())
-                && !ProjectType.JAVASE_APPLICATION.equals(getProjectType())) {
-            fail("Tomcat does not support: " + getProjectType().getProjectTypeName() + "s."); //NOI18N
-        }
-        System.out.println("########  TestCase: " + getName() + "  #######"); //NOI18N
-        System.out.println("########  Server: " + REGISTERED_SERVER.toString() + "  #######"); //NOI18N
-        File projectRoot = new File(getDataDir(), "projects/" + getProjectName()); //NOI18N
-        if (projectRoot.exists()) {
-            project = (Project) ProjectSupport.openProject(new File(getDataDir(), "projects/" + getProjectName()));
-        } else {
-            if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
-                //XTest execution
-                projectRoot = new File(System.getProperty("xtest.tmpdir"), getProjectName()); //NOI18N
-            } else {
-                //Internal-execution
-                projectRoot = new File(System.getProperty("java.io.tmpdir"), getProjectName()); //NOI18N
+        if (!ProjectType.SAMPLE.equals(getProjectType())) {
+            if (ServerType.TOMCAT.equals(REGISTERED_SERVER)
+                    && !ProjectType.WEB.equals(getProjectType())
+                    && !ProjectType.JAVASE_APPLICATION.equals(getProjectType())) {
+                fail("Tomcat does not support: " + getProjectType().getProjectTypeName() + "s."); //NOI18N
             }
-            if (!projectRoot.exists()) {
-                project = createProject(projectName, getProjectType(), getJavaEEversion());
+            System.out.println("########  TestCase: " + getName() + "  #######"); //NOI18N
+            System.out.println("########  Server: " + REGISTERED_SERVER.toString() + "  #######"); //NOI18N
+            File projectRoot = new File(getDataDir(), "projects/" + getProjectName()); //NOI18N
+            if (projectRoot.exists()) {
+                project = (Project) ProjectSupport.openProject(new File(getDataDir(), "projects/" + getProjectName()));
             } else {
-                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));
-                assertNotNull("FO cannot be null", fo); //NOI18N
-                project = ProjectManager.getDefault().findProject(fo);
+                if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
+                    //XTest execution
+                    projectRoot = new File(System.getProperty("xtest.tmpdir"), getProjectName()); //NOI18N
+                } else {
+                    //Internal-execution
+                    projectRoot = new File(System.getProperty("java.io.tmpdir"), getProjectName()); //NOI18N
+                }
+                if (!projectRoot.exists()) {
+                    project = createProject(projectName, getProjectType(), getJavaEEversion());
+                } else {
+                    FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(projectRoot));
+                    assertNotNull("FO cannot be null", fo); //NOI18N
+                    project = ProjectManager.getDefault().findProject(fo);
+                }
             }
+            assertNotNull("Project cannot be null!", project); //NOI18N
         }
-        assertNotNull("Project cannot be null!", project); //NOI18N
     }
 
     @Override
@@ -398,7 +413,7 @@ public abstract class WebServicesTestBase extends JellyTestCase {
      * Helper method to be used by subclasses to create new project according
      * to given parameters. Default server registered in the IDE will be used.
      *
-     * @param name project name
+     * @param name project or sample name
      * @param type project type
      * @param javaeeVersion server type, can be null
      * @return created project
@@ -409,31 +424,41 @@ public abstract class WebServicesTestBase extends JellyTestCase {
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         npwo.treeCategories().setComparator(new Operator.DefaultStringComparator(true, true));
         npwo.lstProjects().setComparator(new Operator.DefaultStringComparator(true, true));
-        npwo.selectCategory(type.getCategory());
-        npwo.selectProject(type.getProjectTypeName());
+        if (ProjectType.SAMPLE.equals(type)) {
+            npwo.selectCategory(type.getCategory() + "|" + getSamplesCategoryName());
+            npwo.selectProject(name);
+            name = getProjectName();
+        } else {
+            npwo.selectCategory(type.getCategory());
+            npwo.selectProject(type.getProjectTypeName());
+        }
         npwo.next();
         // project name & location selection step
         NewProjectNameLocationStepOperator op = new NewProjectNameLocationStepOperator();
         op.txtProjectName().setText(name);
-        File projectLocation = null;
-        if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
-            //XTest execution
-            projectLocation = new File(System.getProperty("xtest.tmpdir")); //NOI18N
+        if (ProjectType.SAMPLE.equals(type)) {
+            op.txtLocation().setText(getWorkDirPath());
         } else {
-            //Internal-execution
-            projectLocation = new File(System.getProperty("java.io.tmpdir")); //NOI18N
-        }
-        op.txtProjectLocation().setText(projectLocation.getAbsolutePath());
-        if (!ProjectType.JAVASE_APPLICATION.equals(type)) {
-            //choose server type and Java EE version
-            JComboBoxOperator jcboServer = new JComboBoxOperator(op, type.getServerComboBoxIndex());
-            jcboServer.selectItem(REGISTERED_SERVER.toString());
-            JComboBoxOperator jcboVersion = new JComboBoxOperator(op, type.getServerVersionComboBoxIndex());
-            jcboVersion.selectItem(javaeeVersion.toString());
+            File projectLocation = null;
+            if (System.getProperty("xtest.tmpdir") != null) { //NOI18N
+                //XTest execution
+                projectLocation = new File(System.getProperty("xtest.tmpdir")); //NOI18N
+            } else {
+                //Internal-execution
+                projectLocation = new File(System.getProperty("java.io.tmpdir")); //NOI18N
+            }
+            op.txtProjectLocation().setText(projectLocation.getAbsolutePath());
+            if (!ProjectType.JAVASE_APPLICATION.equals(type)) {
+                //choose server type and Java EE version
+                JComboBoxOperator jcboServer = new JComboBoxOperator(op, type.getServerComboBoxIndex());
+                jcboServer.selectItem(REGISTERED_SERVER.toString());
+                JComboBoxOperator jcboVersion = new JComboBoxOperator(op, type.getServerVersionComboBoxIndex());
+                jcboVersion.selectItem(javaeeVersion.toString());
+            }
         }
         op.finish();
         // Opening Projects
-        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
+        String openingProjectsTitle = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
         waitDialogClosed(openingProjectsTitle);
         // wait project appear in projects view
         ProjectRootNode node = ProjectsTabOperator.invoke().getProjectRootNode(name);
@@ -629,5 +654,5 @@ public abstract class WebServicesTestBase extends JellyTestCase {
                 } catch (IOException ioe) {}
             }
         }
-    }
+    }    
 }
