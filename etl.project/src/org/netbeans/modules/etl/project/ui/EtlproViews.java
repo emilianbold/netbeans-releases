@@ -35,11 +35,13 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-
+import net.java.hulp.i18n.Logger;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
@@ -59,7 +61,9 @@ class EtlproViews {
         private final PropertyEvaluator evaluator;
         private FileObject projectDir;
         private Project project;
-
+        private static transient final Logger mLogger = LogUtil.getLogger(EtlproViews.class.getName());
+        private static transient final Localizer mLoc = Localizer.get();
+        
         public LogicalViewChildren(AntProjectHelper helper, PropertyEvaluator evaluator, Project project) {
             assert helper != null;
             this.helper = helper;
@@ -93,7 +97,6 @@ class EtlproViews {
             return projectDir.getFileObject("setup"); //NOI18N
         }
 
-       
         @Override
         protected void removeNotify() {
             setKeys(Collections.EMPTY_SET);
@@ -117,12 +120,16 @@ class EtlproViews {
             return n == null ? new Node[0] : new Node[]{n};
         }
 
-        private DataFolder getFolder(String propName) {
-            FileObject fo = helper.resolveFileObject(evaluator.getProperty(propName));
-            if (fo != null) {
-                DataFolder df = DataFolder.findFolder(fo);
-                return df;
-            }
+        private DataFolder getFolder(String propName) { 
+            try{
+                FileObject fo = helper.resolveFileObject(evaluator.getProperty(propName));  
+                if (fo != null) {
+                    DataFolder df = DataFolder.findFolder(fo);
+                    return df;
+                }
+           }catch(Exception ex){
+                mLogger.errorNoloc(mLoc.t("PRSR021: Exception :{0}",ex.getMessage()),ex);
+           }
             return null;
         }
 
@@ -140,11 +147,11 @@ class EtlproViews {
             createNodes();
         }
 
-        public void fileFolderCreated(org.openide.filesystems.FileEvent fe) {            
+        public void fileFolderCreated(org.openide.filesystems.FileEvent fe) {
             createNodes();
         }
 
-        public void fileRenamed(org.openide.filesystems.FileRenameEvent fe) {           
+        public void fileRenamed(org.openide.filesystems.FileRenameEvent fe) {
             createNodes();
         }
     }

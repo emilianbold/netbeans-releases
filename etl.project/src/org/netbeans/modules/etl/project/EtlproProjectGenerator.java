@@ -33,7 +33,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
-
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.ETLEditorSupport;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
@@ -62,6 +64,9 @@ public class EtlproProjectGenerator {
     private static FileObject dbObj = null;
     private static File databases = null;
     private static FileObject data = null;
+    
+    private static transient final Logger mLogger = LogUtil.getLogger(EtlproProjectGenerator.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     private EtlproProjectGenerator() {
     }
