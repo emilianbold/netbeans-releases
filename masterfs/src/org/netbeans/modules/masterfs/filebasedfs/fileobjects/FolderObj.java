@@ -42,7 +42,6 @@
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
-import org.netbeans.modules.masterfs.filebasedfs.Statistics;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenSupport;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
@@ -247,6 +246,9 @@ public final class FolderObj extends BaseFileObj {
         }
 
         if (retVal != null) {            
+            if (retVal instanceof FileObj) {
+                ((FileObj)retVal).setLastModified(file2Create.lastModified());
+            }
             retVal.fireFileDataCreatedEvent(false);
         } else {
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N

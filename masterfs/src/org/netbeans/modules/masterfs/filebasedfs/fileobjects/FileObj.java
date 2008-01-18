@@ -51,8 +51,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Enumeration;
-import org.netbeans.modules.masterfs.filebasedfs.Statistics;
-import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
@@ -60,7 +58,6 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
-import org.openide.util.Mutex;
 import org.openide.util.Utilities;
 
 /**
@@ -197,7 +194,7 @@ public class FileObj extends BaseFileObj {
         return new Date(f.lastModified());
     }
 
-    private final void setLastModified(long lastModified) {
+    final void setLastModified(long lastModified) {
         if (this.lastModified != -1 && !realLastModifiedCached) {
             realLastModifiedCached = true;
         }

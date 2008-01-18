@@ -303,8 +303,8 @@ public class FolderObjTest extends NbTestCase {
         assertNotNull(testRoot);
         FileObj bfo = (FileObj)testRoot.createData(getName());
 
-        assertSize("",Collections.singleton(bfo),32 ,new Object[] {bfo.getFileName()});        
-        assertSize("",Collections.singleton(testRoot),32 ,new Object[] {testRoot.getFileName(), 
+        assertSize("",Collections.singleton(bfo),264,new Object[] {bfo.getFileName()});        
+        assertSize("",Collections.singleton(testRoot),264,new Object[] {testRoot.getFileName(), 
         testRoot.getChildrenCache()});                        
     }
     
