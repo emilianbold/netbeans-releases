@@ -80,6 +80,7 @@ public class RestSamplesTest extends RestTestBase {
         WebResponse wr = doGet(getRestAppURL() + "/resources/helloWorld", MimeType.TEXT_HTML); //NOI18N
         String expectedResponse = "<html><body><h1>Hello World!</body></h1></html>"; //NOI18N
         assertEquals("invalid response", expectedResponse, wr.getText()); //NOI18N
+        undeployProject(getProjectName());
     }
     
     public void testCustomerDBSample() throws IOException {
@@ -92,6 +93,8 @@ public class RestSamplesTest extends RestTestBase {
         String sampleName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.samples.resources.Bundle", "Templates/Project/Samples/REST/CustomerDBClientSampleProject");
         createProject(sampleName, getProjectType(), null);
         deployProject(getProjectName());
+        undeployProject(getProjectName());
+        undeployProject("CustomerDBSample"); //NOI18N
     }
     
     /** Creates suite from particular test cases. You can define order of testcases here. */
