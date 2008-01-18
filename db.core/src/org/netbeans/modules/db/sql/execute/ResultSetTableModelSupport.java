@@ -91,17 +91,21 @@ public class ResultSetTableModelSupport {
         
         TYPE_TO_DEF.put(Integer.valueOf(Types.BOOLEAN), booleanTypeDef);
         TYPE_TO_DEF.put(Integer.valueOf(Types.BIT), booleanTypeDef);
-        
+
         ColumnTypeDef integerTypeDef = new GenericWritableColumnDef(Integer.class);
 
         TYPE_TO_DEF.put(Integer.valueOf(Types.TINYINT), integerTypeDef);
         TYPE_TO_DEF.put(Integer.valueOf(Types.SMALLINT), integerTypeDef);
         TYPE_TO_DEF.put(Integer.valueOf(Types.INTEGER), integerTypeDef);
-        
+
         ColumnTypeDef charTypeDef = new GenericWritableColumnDef(String.class);
         
         TYPE_TO_DEF.put(Integer.valueOf(Types.CHAR), charTypeDef);
         TYPE_TO_DEF.put(Integer.valueOf(Types.VARCHAR), charTypeDef);
+        
+        // Issue 15248 - JDBC introduced NCHAR(-15), and NVARCHAR (-9),
+        TYPE_TO_DEF.put(Integer.valueOf(-15), charTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(-9), charTypeDef);
         
         ColumnTypeDef longTypeDef = new GenericWritableColumnDef(Long.class);
         
@@ -203,8 +207,13 @@ public class ResultSetTableModelSupport {
                 return LongVarCharColumnValue.forCharColumn(rs, column);
             }
         };
-        
+
+        // Issue 125248 - JDBC4 added LONGNVARCHAR(-16) and SQLXML(2009)
+        // We can't use the mnemonic because it would fail to compile
+        // on JDK 6.  We can fix this once we only build on JDK6+
         TYPE_TO_DEF.put(Integer.valueOf(Types.LONGVARCHAR), longVarCharTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(-16), longVarCharTypeDef);
+        TYPE_TO_DEF.put(Integer.valueOf(2009), longVarCharTypeDef);
         
         // clob type -- we don't retrieve the full contents (it is are too
         // long), and we display only the first n characters
@@ -222,6 +231,10 @@ public class ResultSetTableModelSupport {
         };
         
         TYPE_TO_DEF.put(Integer.valueOf(Types.CLOB), clobTypeDef);
+        
+        // Issue 125248 - JDBC 4 added NCLOB.  We have to use the hardcoded
+        // value because otherwise this class would not build under JDK 5
+        TYPE_TO_DEF.put(Integer.valueOf(2011), clobTypeDef);
         
         // other types -- we can hardly edit them
         
@@ -245,6 +258,13 @@ public class ResultSetTableModelSupport {
         TYPE_TO_DEF.put(Integer.valueOf(Types.ARRAY), otherTypeDef);
         TYPE_TO_DEF.put(Integer.valueOf(Types.REF), otherTypeDef);
         TYPE_TO_DEF.put(Integer.valueOf(Types.DATALINK), otherTypeDef);
+        
+        // Issue 125248 - JDBC 4 introduced Types.ROWID.  Can't refer to it
+        // directly because it will cause build failure on JDK 5.  So using
+        // the hardcoded value of -8 until we start building on JDK 6 only.
+        TYPE_TO_DEF.put(Integer.valueOf(-8), integerTypeDef);
+        
+
     }
     
     /**
