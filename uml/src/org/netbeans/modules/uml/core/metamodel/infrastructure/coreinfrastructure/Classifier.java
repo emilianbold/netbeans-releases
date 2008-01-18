@@ -68,6 +68,8 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.ElementConnector;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElementChangeDispatchHelper;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRedefinableElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.Namespace;
@@ -2905,6 +2907,43 @@ public class Classifier extends Namespace implements IClassifier,
 		}
 		return retStereo;
 	}
+
+        /**
+         * overrides NamedElement.setNamespace() 
+         * to move Associations as well
+         */
+	public void setNamespace(INamespace space) {
+            super.setNamespace(space);
+            if (space == null) {
+                return;
+            }
+            IPackage to = (space instanceof IPackage 
+                           ? (IPackage) space 
+                           : space.getOwningPackage());
+            if (to == null) {
+                return;                
+            }
+            ETList<IAssociationEnd> ends = getAssociationEnds();
+            ETList<IAssociation> assocs = new ETArrayList<IAssociation>();
+            if (ends != null)
+            {
+                for (IAssociationEnd end : ends)
+                {
+                    if (end != null) 
+                    {
+                        IAssociation a = end.getAssociation();
+                        if (a != null && a.getEndIndex(end) == 0) 
+                        {
+                            assocs.addIfNotInList(a);
+                        }
+                    }
+                }
+            }
+            for(IAssociation a : assocs) 
+            {
+                a.setNamespace(to);
+            }
+        }
 	
     
      public void delete() 

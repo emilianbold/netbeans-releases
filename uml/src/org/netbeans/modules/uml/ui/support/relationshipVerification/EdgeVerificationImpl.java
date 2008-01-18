@@ -604,7 +604,8 @@ public class EdgeVerificationImpl implements IEdgeVerification
                     
                     if (pFromClassifier != null && pToClassifier != null)
                     {
-                        IAssociation pAssociation = this.createAssociation(pFactory, pNamespace,
+                        IAssociation pAssociation = this.createAssociation(pFactory, 
+                                pFromClassifier.getNamespace(),
                                 pFromClassifier,
                                 pToClassifier,
                                 sInitializationString);
@@ -625,7 +626,7 @@ public class EdgeVerificationImpl implements IEdgeVerification
                     if (pFromClassifier != null && pToClassifier != null)
                     {
                         IAssociation pAggregation = this.createAggregation(pFactory,
-                                pNamespace,
+                                pFromClassifier.getNamespace(),
                                 pFromClassifier,
                                 pToClassifier,
                                 sInitializationString);
