@@ -554,7 +554,10 @@ class LuceneIndex extends Index {
             } finally {
                 searcher.close();
             }
-        } catch (java.io.FileNotFoundException fnf) {
+        } catch (java.io.IOException ioe) {
+            //The FileNotFoundException is may be thrown if the index is not fully merged,
+            //also IOException can be thrown when index was not closed on exit.
+            //Both can be caused by killing the IDE.
             this.clear();
             return false;
         }
