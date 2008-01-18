@@ -51,8 +51,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
@@ -583,7 +582,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
     }
 
-    private final Map<Project,ArrayList> propertyListeners = new WeakHashMap();
+    private HashMap propertyListeners = new HashMap();
 
     private void fireChange(Project project) {
         PropertyChangeEvent event = new PropertyChangeEvent(project, null, null, null);
