@@ -170,7 +170,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                     continue;
                 }
 		if (startIncludes) {
-                    if (line.startsWith("End of search") || ! line.trim().startsWith(File.separator)) { // NOI18N
+                    if (line.startsWith("End of search") || ! line.trim().startsWith("/")) { // NOI18N
                         startIncludes = false;
                         continue;
                     }
