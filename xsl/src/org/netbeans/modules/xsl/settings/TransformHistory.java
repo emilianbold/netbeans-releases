@@ -261,7 +261,7 @@ public final class TransformHistory implements Serializable {
                 } catch (IOException exc) { // TransformUtil.getURLName
                     // ignore it
 
-                    Util.THIS.debug (exc);
+                    //Util.THIS.debug (exc);
                 }
             }
         }

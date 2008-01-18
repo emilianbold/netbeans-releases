@@ -612,8 +612,8 @@ public final class XSLGrammarQuery implements GrammarQuery{
                 String nodeValue = attr.getNodeValue();
                 int exprStart = nodeValue.lastIndexOf('{', prefix.length() - 1); // NOI18N
                 int exprEnd = nodeValue.indexOf('}', prefix.length()); // NOI18N
-                Util.THIS.debug("exprStart: " + exprStart); // NOI18N
-                Util.THIS.debug("exprEnd: " + exprEnd); // NOI18N
+                //Util.THIS.debug("exprStart: " + exprStart); // NOI18N
+                //Util.THIS.debug("exprEnd: " + exprEnd); // NOI18N
                 if (exprStart != -1 && exprEnd != -1) {
                     isXPath = true;
                     preExpression = prefix.substring(0, exprStart + 1);

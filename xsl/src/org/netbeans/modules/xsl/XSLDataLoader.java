@@ -45,6 +45,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.*;
 
 import org.netbeans.modules.xml.XMLDataLoader;
+import org.openide.util.NbBundle;
 
 /**
  * XSL object loader. It is mime type based.
@@ -78,7 +79,7 @@ public final class XSLDataLoader extends UniFileLoader {
      * Lazy init name.
      */
     protected String defaultDisplayName () {
-        return Util.THIS.getString ("NAME_XSLDataLoader");
+        return NbBundle.getMessage(XSLDataLoader.class, "NAME_XSLDataLoader");
     }
     
     /** Creates the right primary entry for given primary file.

@@ -49,6 +49,7 @@ import org.netbeans.modules.xml.actions.CollectXMLAction;
 
 import org.netbeans.modules.xsl.XSLDataObject;
 import org.netbeans.modules.xsl.transform.TransformPerformer;
+import org.openide.util.NbBundle;
 
 /**
  * Perform Transform action on XML document.
@@ -97,7 +98,7 @@ public class TransformAction extends CookieAction implements CollectXMLAction.XM
 
     /** Human presentable name. */
     public String getName() {
-        return Util.THIS.getString ("NAME_transform_action");
+        return NbBundle.getMessage(TransformAction.class, "NAME_transform_action");
     }
 
     /** Do not slow by any icon. */

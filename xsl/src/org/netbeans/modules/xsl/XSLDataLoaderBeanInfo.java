@@ -45,6 +45,7 @@ import java.awt.Image;
 import org.openide.util.Utilities;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Loader BeanInfo adding metadata missing in org.openide.loaders.MultiFileLoaderBeanInfo.
@@ -64,7 +65,7 @@ public class XSLDataLoaderBeanInfo extends SimpleBeanInfo {
      */
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor beanDescriptor = new BeanDescriptor  ( XSLDataLoader.class , null );
-        beanDescriptor.setDisplayName ( Util.THIS.getString("NAME_XSLDataLoader") );//GEN-HEADEREND:BeanDescriptor
+        beanDescriptor.setDisplayName ( NbBundle.getMessage(XSLDataLoaderBeanInfo.class, "NAME_XSLDataLoader") );//GEN-HEADEREND:BeanDescriptor
         
         // Here you can add code for customizing the BeanDescriptor.
         
@@ -88,9 +89,12 @@ public class XSLDataLoaderBeanInfo extends SimpleBeanInfo {
         PropertyDescriptor[] properties = new PropertyDescriptor[1];
     
         try {
-            properties[PROPERTY_extensions] = new PropertyDescriptor ( "extensions", XSLDataLoader.class, "getExtensions", "setExtensions" );
-            properties[PROPERTY_extensions].setDisplayName ( Util.THIS.getString ("PROP_XSL_Extensions") );
-            properties[PROPERTY_extensions].setShortDescription ( Util.THIS.getString ("HINT_XSL_Extensions") );
+            properties[PROPERTY_extensions] = new PropertyDescriptor (
+                    "extensions", XSLDataLoader.class, "getExtensions", "setExtensions" );
+            properties[PROPERTY_extensions].setDisplayName ( NbBundle.
+                    getMessage(XSLDataLoaderBeanInfo.class, "PROP_XSL_Extensions") );
+            properties[PROPERTY_extensions].setShortDescription ( NbBundle.
+                    getMessage(XSLDataLoaderBeanInfo.class, "HINT_XSL_Extensions") );
         }
         catch( IntrospectionException e) {
             Exceptions.printStackTrace(e);

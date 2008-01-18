@@ -68,6 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 import org.xml.sax.SAXParseException;
 
 /**
@@ -129,16 +130,16 @@ public class TransformServlet extends HttpServlet {
                 response.setContentType (mimeType);
             }
 
-            if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug ("[TransformServlet] Response MIME Type: '" + mimeType + "'");
-                Util.THIS.debug ("    xmlSource.getSystemId() = " + xmlSource.getSystemId());
-                Util.THIS.debug ("    transformable = " + transformable);
-                Util.THIS.debug ("    xslSource.getSystemId() = " + xslSource.getSystemId());
-            }
+//            if ( Util.THIS.isLoggable() ) /* then */ {
+//                Util.THIS.debug ("[TransformServlet] Response MIME Type: '" + mimeType + "'");
+//                Util.THIS.debug ("    xmlSource.getSystemId() = " + xmlSource.getSystemId());
+//                Util.THIS.debug ("    transformable = " + transformable);
+//                Util.THIS.debug ("    xslSource.getSystemId() = " + xslSource.getSystemId());
+//            }
 
             TransformUtil.transform (xmlSource, transformable, xslSource, outputResult, notifier);
         } catch (Exception exc) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    EXCEPTION!!!: " + exc.getClass().getName(), exc);
+//            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    EXCEPTION!!!: " + exc.getClass().getName(), exc);
 
             // thrown if error in style sheet
             CookieMessage message = null;
@@ -158,10 +159,10 @@ public class TransformServlet extends HttpServlet {
                      );
             }
 
-            if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug ("    message  = " + message);
-                Util.THIS.debug ("    notifier = " + notifier);
-            }
+//            if ( Util.THIS.isLoggable() ) /* then */ {
+//                Util.THIS.debug ("    message  = " + message);
+//                Util.THIS.debug ("    notifier = " + notifier);
+//            }
 
             if ( message != null ) {
                 notifier.receive (message);
@@ -171,13 +172,13 @@ public class TransformServlet extends HttpServlet {
             response.setContentType ("text/html");
 
             out.println ("<html><head>");
-            out.println ("    <title>" + Util.THIS.getString ("MSG_error_html_title") + "</title>");
-            out.println ("    <style>" + Util.THIS.getString ("MSG_error_html_style") + "</style>");
+            out.println ("    <title>" + NbBundle.getMessage(TransformServlet.class, "MSG_error_html_title") + "</title>");
+            out.println ("    <style>" + NbBundle.getMessage(TransformServlet.class, "MSG_error_html_style") + "</style>");
             out.println ("</head><body>");
-            out.println ("    <h2>" + Util.THIS.getString ("MSG_error_page_title") + "</h2>");
-            out.println ("    <p>" + Util.THIS.getString ("MSG_error_page_message") + "</p>");
+            out.println ("    <h2>" + NbBundle.getMessage(TransformServlet.class, "MSG_error_page_title") + "</h2>");
+            out.println ("    <p>" + NbBundle.getMessage(TransformServlet.class, "MSG_error_page_message") + "</p>");
             out.println ("    <hr size=\"1\" noshade=\"\" />\n" + generateReport (notifier.getList()) + "<hr size=\"1\" noshade=\"\" />");
-            out.println ("    <p>" + Util.THIS.getString ("MSG_error_bottom_message") + "</p>");
+            out.println ("    <p>" + NbBundle.getMessage(TransformServlet.class, "MSG_error_bottom_message") + "</p>");
             out.println ("</body></html>");
         } finally {
             out.close();
@@ -259,7 +260,7 @@ public class TransformServlet extends HttpServlet {
         }
 
         } catch (Exception exc) {
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
         }
 
         return sb.toString();
@@ -278,7 +279,7 @@ public class TransformServlet extends HttpServlet {
         } catch (Exception exc) {
             // ignore it -> use systemId
 
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
         }
 
         return name;

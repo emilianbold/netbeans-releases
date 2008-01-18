@@ -61,9 +61,9 @@ import org.netbeans.api.xml.cookies.*;
 import org.netbeans.api.xml.services.UserCatalog;
 import org.netbeans.spi.xml.cookies.*;
 
-import org.netbeans.modules.xml.XMLDataObject;
 
 import org.netbeans.modules.xsl.XSLDataObject;
+import org.openide.util.NbBundle;
 
 /**
  * Transformation utilities.
@@ -90,18 +90,18 @@ public class TransformUtil {
         File file = FileUtil.toFile (fileObject);
 
         if ( file != null ) {
-            if ( Util.THIS.isLoggable() ) /* then */ {
-                try {
-                    Util.THIS.debug ("[TransformUtil.getURLName]");
-                    Util.THIS.debug ("    file = " + file);
-                    Util.THIS.debug ("    file.getCanonicalPath = " + file.getCanonicalPath());
-                    Util.THIS.debug ("    file.getAbsolutePath  = " + file.getAbsolutePath());
-                    Util.THIS.debug ("    file.toString  = " + file.toString());
-                    Util.THIS.debug ("    file.toURL  = " + file.toURL());
-                } catch (Exception exc) {
-                    Util.THIS.debug ("DEBUG Exception", exc);
-                }
-            }
+//            if ( Util.THIS.isLoggable() ) /* then */ {
+//                try {
+//                    Util.THIS.debug ("[TransformUtil.getURLName]");
+//                    Util.THIS.debug ("    file = " + file);
+//                    Util.THIS.debug ("    file.getCanonicalPath = " + file.getCanonicalPath());
+//                    Util.THIS.debug ("    file.getAbsolutePath  = " + file.getAbsolutePath());
+//                    Util.THIS.debug ("    file.toString  = " + file.toString());
+//                    Util.THIS.debug ("    file.toURL  = " + file.toURL());
+//                } catch (Exception exc) {
+//                    Util.THIS.debug ("DEBUG Exception", exc);
+//                }
+//            }
 
             fileURL = file.toURL();
         } else {
@@ -112,15 +112,15 @@ public class TransformUtil {
     }
 
     public static URL createURL (URL baseURL, String fileName) throws MalformedURLException, FileStateInvalidException {
-        if ( Util.THIS.isLoggable() ) /* then */ {
-            Util.THIS.debug ("TransformUtil.createURL:");
-            Util.THIS.debug ("    baseURL = " + baseURL);
-            Util.THIS.debug ("    fileName = " + fileName);
-        }
+//        if ( Util.THIS.isLoggable() ) /* then */ {
+//            Util.THIS.debug ("TransformUtil.createURL:");
+//            Util.THIS.debug ("    baseURL = " + baseURL);
+//            Util.THIS.debug ("    fileName = " + fileName);
+//        }
 
         URL url = new URL (baseURL, fileName);
 
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    return URL = " + url);
+//        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("    return URL = " + url);
 
         return url;
     }
@@ -133,8 +133,8 @@ public class TransformUtil {
 
         XMLReader reader = TransformUtil.newXMLReader();
 
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TransformUtil.createSource: XMLReader (http://xml.org/sax/features/namespaces) : "
-                                                                  +  reader.getFeature (SAX_FEATURES_NAMESPACES));
+//        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TransformUtil.createSource: XMLReader (http://xml.org/sax/features/namespaces) : "
+//                                                                  +  reader.getFeature (SAX_FEATURES_NAMESPACES));
 
         reader.setEntityResolver (TransformUtil.getEntityResolver());
         Source source = new SAXSource (reader, new InputSource (url.toExternalForm()));
@@ -175,7 +175,7 @@ public class TransformUtil {
     public static Transformer newTransformer (Source xsl) throws TransformerConfigurationException {
         Transformer transformer = getTransformerFactory().newTransformer (xsl);
 
-        if ( Util.THIS.isLoggable() ) /* then */ transformer.setParameter ("transformer", xsl); // debug
+//        if ( Util.THIS.isLoggable() ) /* then */ transformer.setParameter ("transformer", xsl); // debug
 
         return transformer;
     }
@@ -189,10 +189,10 @@ public class TransformUtil {
     /*  @return associated stylesheet or <code>null</code>.
      */
     public static Source getAssociatedStylesheet (URL baseURL) {
-        if ( Util.THIS.isLoggable() ) /* then */ {
-            Util.THIS.debug ("TransformUtil.getAssociatedStylesheet:");
-            Util.THIS.debug ("    baseURL = " + baseURL);
-        }
+//        if ( Util.THIS.isLoggable() ) /* then */ {
+//            Util.THIS.debug ("TransformUtil.getAssociatedStylesheet:");
+//            Util.THIS.debug ("    baseURL = " + baseURL);
+//        }
 
         Source xml_stylesheet = null;
 
@@ -203,13 +203,13 @@ public class TransformUtil {
             
             xml_stylesheet = getTransformerFactory().getAssociatedStylesheet (source, null, null, null);
 
-            if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug ("    source = " + source.getSystemId());
-                Util.THIS.debug ("    xml_stylesheet = " + xml_stylesheet);
-            }
+//            if ( Util.THIS.isLoggable() ) /* then */ {
+//                Util.THIS.debug ("    source = " + source.getSystemId());
+//                Util.THIS.debug ("    xml_stylesheet = " + xml_stylesheet);
+//            }
         } catch (Exception exc) { // ParserConfigurationException, SAXException, TransformerConfigurationException
             // ignore it
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TransformUtil.getAssociatedStylesheet: !!!", exc); // debug
+//            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("TransformUtil.getAssociatedStylesheet: !!!", exc); // debug
         }
 
         return xml_stylesheet;
@@ -222,7 +222,7 @@ public class TransformUtil {
             Transformer transformer = newTransformer (source);
             String method = transformer.getOutputProperty (OutputKeys.METHOD);
             
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[TransformUtil] guessOutputExt: method = " + method);
+//            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[TransformUtil] guessOutputExt: method = " + method);
             
             if ( "text".equals (method) ) { // NOI18N
                 ext = "txt"; // NOI18N
@@ -232,10 +232,10 @@ public class TransformUtil {
         } catch (Exception exc) {
             // ignore it
             
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
+//            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
         }
 
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[TransformUtil] guessOutputExt: extension = " + ext);
+//        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("[TransformUtil] guessOutputExt: extension = " + ext);
 
         return ext;
     }
@@ -244,14 +244,14 @@ public class TransformUtil {
      * @throws TransformerException it indicates 
      */
     public static void transform (Source xml, TransformableCookie transformable, Source xsl, Result output, CookieObserver notifier) throws TransformerException {
-        if ( Util.THIS.isLoggable() ) /* then */ {
-            Util.THIS.debug ("TransformUtil.transform");
-            Util.THIS.debug ("    XML source = " + xml.getSystemId());
-            Util.THIS.debug ("    TransformableCookie = " + transformable);
-            Util.THIS.debug ("    XSL source = " + xsl.getSystemId());
-            Util.THIS.debug ("    Output Result = " + output.getSystemId());
-            Util.THIS.debug ("    CookieObserver = " + notifier);
-        }
+//        if ( Util.THIS.isLoggable() ) /* then */ {
+//            Util.THIS.debug ("TransformUtil.transform");
+//            Util.THIS.debug ("    XML source = " + xml.getSystemId());
+//            Util.THIS.debug ("    TransformableCookie = " + transformable);
+//            Util.THIS.debug ("    XSL source = " + xsl.getSystemId());
+//            Util.THIS.debug ("    Output Result = " + output.getSystemId());
+//            Util.THIS.debug ("    CookieObserver = " + notifier);
+//        }
 
         if ( transformable != null ) {
 
@@ -269,29 +269,29 @@ public class TransformUtil {
                     ProtectionDomain domain = transformer.getClass().getProtectionDomain();
                     CodeSource codeSource = domain.getCodeSource();
                     if (codeSource == null) {
-                        notifier.receive(new CookieMessage(Util.THIS.getString("BK000", transformer.getClass().getName())));
+                        notifier.receive(new CookieMessage(NbBundle.getMessage(TransformUtil.class, "BK000", transformer.getClass().getName())));
                     } else {
                         URL location = codeSource.getLocation();
-                        notifier.receive(new CookieMessage(Util.THIS.getString("BK001", location, transformer.getClass().getName())));
+                        notifier.receive(new CookieMessage(NbBundle.getMessage(TransformUtil.class, "BK001", location, transformer.getClass().getName())));
                     }
 
                     Proxy proxy = new Proxy (notifier);
                     transformer.setErrorListener (proxy);
                 }
             
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n==> transform: param [transformer] = " + transformer.getParameter ("transformer")); // debug
+                //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("\n==> transform: param [transformer] = " + transformer.getParameter ("transformer")); // debug
 
                 transformer.transform (xml, output);
 
             } catch (Exception exc) { // TransformerException, ParserConfigurationException, SAXException, FileStateInvalidException
-                if ( Util.THIS.isLoggable() ) /* then */ {
-                    Util.THIS.debug ("    EXCEPTION during transformation: " + exc.getClass().getName(), exc);
-                    Util.THIS.debug ("    exception's message = " + exc.getLocalizedMessage());
+//                if ( Util.THIS.isLoggable() ) /* then */ {
+//                    Util.THIS.debug ("    EXCEPTION during transformation: " + exc.getClass().getName(), exc);
+//                    Util.THIS.debug ("    exception's message = " + exc.getLocalizedMessage());
+//                    
+//                    Throwable tempExc = unwrapException (exc);
+//                    Util.THIS.debug ("    wrapped exception = " + tempExc.getLocalizedMessage());
+//                }
                     
-                    Throwable tempExc = unwrapException (exc);
-                    Util.THIS.debug ("    wrapped exception = " + tempExc.getLocalizedMessage());
-                }
-
                 TransformerException transExcept = null;
                 Object detail = null;
             
@@ -322,7 +322,7 @@ public class TransformUtil {
                     notifier.receive (message);
                 }
 
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("--> throw transExcept: " + transExcept);
+//                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("--> throw transExcept: " + transExcept);
 
                 throw transExcept;
             }
@@ -379,13 +379,13 @@ public class TransformUtil {
         }
 
         private void report (int level, TransformerException tex) throws TransformerException {
-            if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug ("[TransformableSupport::Proxy]: report [" + level + "]: ", tex);
-                Util.THIS.debug ("    exception's message = " + tex.getLocalizedMessage());
-
-                Throwable tempExc = unwrapException (tex);
-                Util.THIS.debug ("    wrapped exception = " + tempExc.getLocalizedMessage());
-            }
+//            if ( Util.THIS.isLoggable() ) /* then */ {
+//                Util.THIS.debug ("[TransformableSupport::Proxy]: report [" + level + "]: ", tex);
+//                Util.THIS.debug ("    exception's message = " + tex.getLocalizedMessage());
+//
+//                Throwable tempExc = unwrapException (tex);
+//                Util.THIS.debug ("    wrapped exception = " + tempExc.getLocalizedMessage());
+//            }
 
             Throwable unwrappedExc = unwrapException (tex);
             CookieMessage message = new CookieMessage (

@@ -80,6 +80,7 @@ import org.netbeans.modules.xsl.settings.TransformHistory;
 import org.netbeans.modules.xsl.actions.TransformAction;
 import org.netbeans.modules.xsl.utils.TransformUtil;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.NbBundle;
 
 /**
  * Handle workflow of transformation action, gather UI info and
@@ -143,11 +144,11 @@ public class TransformPerformer {
                 saveBeforeTransformation(do1);
                 saveBeforeTransformation(do2);
                 
-                if ( Util.THIS.isLoggable() ) /* then */ {
-                    Util.THIS.debug("TransformAction.performAction:");
-                    Util.THIS.debug("    do1 [" + xslt1 + "] = " + do1);
-                    Util.THIS.debug("    do2 [" + xslt2 + "] = " + do2);
-                }
+                //if ( Util.THIS.isLoggable() ) /* then */ {
+                //    Util.THIS.debug("TransformAction.performAction:");
+                //    Util.THIS.debug("    do1 [" + xslt1 + "] = " + do1);
+                //    Util.THIS.debug("    do2 [" + xslt2 + "] = " + do2);
+                //}
                 
                 if ( xslt1 != xslt2 ) {
                     TransformableCookie transformable;
@@ -206,7 +207,7 @@ public class TransformPerformer {
      */
     private InputOutputReporter getCookieObserver() {
         if ( cookieObserver == null ) {
-            String label = Util.THIS.getString("PROP_transformation_io_name");
+            String label = NbBundle.getMessage(TransformPerformer.class, "PROP_transformation_io_name");
             cookieObserver = new InputOutputReporter(label);
         }
         return cookieObserver;
@@ -261,7 +262,7 @@ public class TransformPerformer {
                 init(); // throws IOException
                 showDialog(); // throws IOException
             } catch (IOException exc) {
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
+                //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
                 
                 NotifyDescriptor nd = new NotifyDescriptor.Message(exc.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(nd);
@@ -284,7 +285,7 @@ public class TransformPerformer {
             transformPanel = new TransformPanel(xmlDO, xmlStylesheetName, xslDO);
             
             dialogDescriptor = new DialogDescriptor(transformPanel,
-                    Util.THIS.getString("NAME_transform_panel_title"), true,
+                    NbBundle.getMessage(TransformPerformer.class, "NAME_transform_panel_title"), true,
                     DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                     DialogDescriptor.BOTTOM_ALIGN,
                     new HelpCtx(TransformAction.class), null);
@@ -299,44 +300,44 @@ public class TransformPerformer {
         protected void prepareData() throws IOException, FileStateInvalidException, MalformedURLException, ParserConfigurationException, SAXException {
             data = transformPanel.getData();
             
-            if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug("TransformPerformer...performTransformation");
-                Util.THIS.debug("    transformable = " + transformableCookie);
-                Util.THIS.debug("    baseFileObject = " + baseFO);
-                Util.THIS.debug("    data = " + data);
-            }
+//            if ( Util.THIS.isLoggable() ) /* then */ {
+//                Util.THIS.debug("TransformPerformer...performTransformation");
+//                Util.THIS.debug("    transformable = " + transformableCookie);
+//                Util.THIS.debug("    baseFileObject = " + baseFO);
+//                Util.THIS.debug("    data = " + data);
+//            }
             
             try {
                 xmlSource = TransformUtil.createSource(baseURL, data.getInput()); // throws IOException, MalformedURLException, FileStateInvalidException, ParserConfigurationException, SAXException
             } catch (IOException ex) {
-                ErrorManager.getDefault().annotate(ex, Util.THIS.getString("MSG_sourceError"));
+                ErrorManager.getDefault().annotate(ex, NbBundle.getMessage(TransformPerformer.class, "MSG_sourceError"));
                 throw ex;
             }
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("    xmlSource = " + xmlSource.getSystemId());
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("    xmlSource = " + xmlSource.getSystemId());
             
             if ( data.getXSL() != null ) {
                 try {
                     xslSource = TransformUtil.createSource(baseURL, data.getXSL()); // throws IOException, MalformedURLException, FileStateInvalidException, ParserConfigurationException, SAXException
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().annotate(ex, Util.THIS.getString("MSG_transError"));
+                    ErrorManager.getDefault().annotate(ex, NbBundle.getMessage(TransformPerformer.class, "MSG_transError"));
                     throw ex;
                 }
             } else {
                 xslSource = xmlStylesheetSource;
             }
             
-            if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("    xslSource = " + xslSource.getSystemId());
+            //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("    xslSource = " + xslSource.getSystemId());
             
             if ( data.getOutput() != null ) { // not Preview
                 String fileName = data.getOutput().toString().replace('\\', '/');
                 try {
                     resultFO = FileUtilities.createFileObject(baseFO.getParent(), fileName, data.isOverwriteOutput()); // throws IOException
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().annotate(ex, Util.THIS.getString("MSG_resultError"));
+                    ErrorManager.getDefault().annotate(ex, NbBundle.getMessage(TransformPerformer.class, "MSG_resultError"));
                     throw ex;
                 }
                 
-                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("    resultFO = " + resultFO);
+                //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("    resultFO = " + resultFO);
             }
         }
         
@@ -388,13 +389,13 @@ public class TransformPerformer {
                 
                 Result outputResult = new StreamResult(outputStream); // throws IOException, FileStateInvalidException
                 
-                if ( Util.THIS.isLoggable() ) /* then */ {
-                    Util.THIS.debug("    resultFO = " + resultFO);
-                    Util.THIS.debug("    outputResult = " + outputResult);
-                }
+//                if ( Util.THIS.isLoggable() ) /* then */ {
+//                    Util.THIS.debug("    resultFO = " + resultFO);
+//                    Util.THIS.debug("    outputResult = " + outputResult);
+//                }
                 String xmlName = data.getInput();
                 String xslName = data.getXSL();
-                TransformPerformer.this.getCookieObserver().message(Util.THIS.getString("MSG_transformation_1", xmlName, xslName));
+                TransformPerformer.this.getCookieObserver().message(NbBundle.getMessage(TransformPerformer.class, "MSG_transformation_1", xmlName, xslName));
                 TransformUtil.transform(xmlSource, transformableCookie, xslSource, outputResult, TransformPerformer.this.getCookieObserver()); // throws TransformerException
                 
                 // revalidate DataObject associated with possibly partially written file #28079
@@ -407,7 +408,7 @@ public class TransformPerformer {
                     ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot invalidate " + resultFO);
                 }
             } catch (FileAlreadyLockedException exc) {
-                throw (FileAlreadyLockedException) ErrorManager.getDefault().annotate(exc, Util.THIS.getString("ERR_FileAlreadyLockedException_output"));
+                throw (FileAlreadyLockedException) ErrorManager.getDefault().annotate(exc, NbBundle.getMessage(TransformPerformer.class, "ERR_FileAlreadyLockedException_output"));
             } finally {
                 if ( fileLock != null ) {
                     fileLock.releaseLock();
@@ -426,7 +427,7 @@ public class TransformPerformer {
         
         private void showURL(URL url) {
             HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-            GuiUtil.setStatusText(Util.THIS.getString("MSG_opening_browser"));
+            GuiUtil.setStatusText(NbBundle.getMessage(TransformPerformer.class, "MSG_opening_browser"));
         }
         
         //
@@ -434,10 +435,10 @@ public class TransformPerformer {
         //
         
         public final void actionPerformed(ActionEvent e) {
-            if ( Util.THIS.isLoggable() ) /* then */ {
-                Util.THIS.debug("[TransformPerformer::AbstractPerformer] actionPerformed: " + e);
-                Util.THIS.debug("    ActionEvent.getSource(): " + e.getSource());
-            }
+//            if ( Util.THIS.isLoggable() ) /* then */ {
+//                Util.THIS.debug("[TransformPerformer::AbstractPerformer] actionPerformed: " + e);
+//                Util.THIS.debug("    ActionEvent.getSource(): " + e.getSource());
+//            }
             
             workaround31850 = false;
             if ( DialogDescriptor.OK_OPTION.equals(e.getSource()) ) {
@@ -455,7 +456,7 @@ public class TransformPerformer {
                     
                 } catch (Exception exc) { // IOException, ParserConfigurationException, SAXException
                     // during prepareData(), previewOutput() and fileOutput()
-                    if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
+                    //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
                     
                     //                     NotifyDescriptor nd = new NotifyDescriptor.Message (exc.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
                     //                     TopManager.getDefault().notify (nd);
@@ -495,7 +496,7 @@ public class TransformPerformer {
                         // ignore it -> it should be displayed by CookieObserver!
                     } catch (Exception exc) { // IOException, ParserConfigurationException, SAXException
                         // during prepareData(), previewOutput() and fileOutput()
-                        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
+                        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug(exc);
                         
                         //                     NotifyDescriptor nd = new NotifyDescriptor.Message (exc.getLocalizedMessage(), NotifyDescriptor.WARNING_MESSAGE);
                         //                     TopManager.getDefault().notify (nd);
@@ -505,7 +506,7 @@ public class TransformPerformer {
                         if (isLastInBatch()) {
                             InputOutputReporter cookieObserver = getCookieObserver();
                             if ( cookieObserver != null ) {
-                                cookieObserver.message(Util.THIS.getString("MSG_transformation_2"));
+                                cookieObserver.message(NbBundle.getMessage(TransformPerformer.class, "MSG_transformation_2"));
                                 cookieObserver.moveToFront(true);
                             }
                             active = false;

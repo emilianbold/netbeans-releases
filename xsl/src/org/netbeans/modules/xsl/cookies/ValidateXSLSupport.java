@@ -41,15 +41,13 @@
 package org.netbeans.modules.xsl.cookies;
 
 import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
 import javax.xml.transform.*;
 import javax.xml.transform.sax.*;
-import javax.xml.transform.stream.StreamSource;
 
-import org.openide.filesystems.FileStateInvalidException;
 
 import org.netbeans.api.xml.cookies.*;
 import org.netbeans.spi.xml.cookies.*;
+import org.openide.util.NbBundle;
 
 /**
  * Validates XSL transformation
@@ -83,7 +81,7 @@ public class ValidateXSLSupport implements ValidateXMLCookie {
             int errors = 0;
 
             String checkedFile = inputSource.getSystemId();
-            sendMessage(Util.THIS.getString("MSG_checking", checkedFile));
+            sendMessage(NbBundle.getMessage(ValidateXSLSupport.class, "MSG_checking", checkedFile));
 
             ErrorListener errorListener = new XslErrorListener();
             try {
@@ -124,7 +122,7 @@ public class ValidateXSLSupport implements ValidateXMLCookie {
     private class XslErrorListener implements ErrorListener {
         public void error(TransformerException ex) throws TransformerException{
             if (errors++ == getMaxErrorCount()) {
-                String msg = Util.THIS.getString("MSG_too_many_errs");
+                String msg = NbBundle.getMessage(ValidateXSLSupport.class, "MSG_too_many_errs");
                 sendMessage(msg);
                 throw ex; // stop the parser                
             } else {

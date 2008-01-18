@@ -58,6 +58,7 @@ import org.netbeans.modules.xml.cookies.*;
 import org.netbeans.modules.xml.api.XmlFileEncodingQueryImpl;
 import org.netbeans.modules.xml.text.syntax.XMLKit;
 import org.netbeans.modules.xsl.cookies.ValidateXSLSupport;
+import org.openide.util.NbBundle;
 
 /**
  * XSL owner.
@@ -141,7 +142,7 @@ public final class XSLDataObject extends MultiDataObject implements XMLDataObjec
         public XSLDataNode (XSLDataObject obj) {
             super (obj, Children.LEAF);
             setIconBase (XSL_ICON_BASE);
-            setShortDescription(Util.THIS.getString("PROP_XSLDataNode_desc"));
+            setShortDescription(NbBundle.getMessage(XSLDataObject.class, "PROP_XSLDataNode_desc"));
         }
 
         /**
