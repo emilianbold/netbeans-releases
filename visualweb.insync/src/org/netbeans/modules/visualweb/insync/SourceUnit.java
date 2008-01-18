@@ -91,6 +91,8 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
     protected Date lastModified;
     private FileChangeListener lastModifiedTracker;
 
+    protected Date lastModelDirty;
+
     private AtomicBoolean documentListenerAdded = new AtomicBoolean(false);
     private AtomicBoolean undoableEditListenerAdded = new AtomicBoolean(false);
     //--------------------------------------------------------------------------------- Construction
@@ -219,23 +221,16 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
     public void propertyChange(PropertyChangeEvent event) {
         if (EditorCookie.Observable.PROP_DOCUMENT.equals(event.getPropertyName())) {
             if (event.getNewValue() == null) {
-/*//NB6.0
-                // Bug Fix # 6473201 llegalStateException, When renaming a page
-                // When a document (e.g. managed-beans.xml) is reloaded during refactoring
-                // do not set the source dirty. The changes to the model will be flushed
-                // at the end of refactoring.
-                if (!MdrInSyncSynchronizer.get().isRefactoringSessionInProgress()) {
-*/
-                Date newLastModified = fobj.lastModified();
-                if (lastModified.equals(newLastModified)) {
-                    setSourceDirty();
-                } else {
-                    lastModified = newLastModified;
+                // Check if the model was dirtied after opening or last saving
+                try {
+                    if (lastModelDirty != null && lastModified.before(lastModelDirty)) {
+                        setSourceDirty();
+                    }
+                } finally {
+                    lastModified = fobj.lastModified();                
+                    lastModelDirty = null;
+                    releaseDocument();
                 }
-/*
-                }
-//*/
-                releaseDocument();
             }
             if ((event.getNewValue() != null) && (event.getOldValue() == null)){
                 // Remove the FileObject change listener, now that we start
@@ -277,6 +272,8 @@ public abstract class SourceUnit implements Unit, DocumentListener, UndoableEdit
      * Called by various subclasses when they actually mutate their model
      */
     public void setModelDirty() {
+        // Record model dirty timestamp
+        lastModelDirty = new Date();
         //This would be good, but many sync() handlers would need a lock and cant place it with source dirty...
         //if (writerCount == 0)
         //    throw new IllegalStateException("Illegal model modification without a lock " + name);
