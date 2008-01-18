@@ -49,8 +49,10 @@
   </condition>
 
   <condition property="build_openesb">
+    <and>
     <isset property="openesb_location"/>
     <isset property="jbicore_location"/>
+    </and>
   </condition>
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
