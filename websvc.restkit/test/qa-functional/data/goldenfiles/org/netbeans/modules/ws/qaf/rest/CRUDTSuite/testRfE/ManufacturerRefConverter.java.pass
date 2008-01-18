@@ -27,7 +27,7 @@ public class ManufacturerRefConverter {
     private Manufacturer entity;
     private boolean isUriExtendable;
     private URI uri;
-    
+  
     /** Creates a new instance of ManufacturerRefConverter */
     public ManufacturerRefConverter() {
     }

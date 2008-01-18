@@ -27,7 +27,7 @@ import javax.ws.rs.ConsumeMime;
 public class GenericResource {
     @HttpContext
     private UriInfo context;
-    
+
     /** Creates a new instance of GenericResource */
     public GenericResource() {
     }

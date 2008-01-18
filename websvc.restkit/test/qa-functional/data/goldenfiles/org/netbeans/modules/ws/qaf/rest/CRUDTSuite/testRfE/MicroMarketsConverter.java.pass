@@ -29,7 +29,7 @@ public class MicroMarketsConverter {
     private Collection<MicroMarket> entities;
     private Collection<MicroMarketRefConverter> references;
     private URI uri;
-    
+  
     /** Creates a new instance of MicroMarketsConverter */
     public MicroMarketsConverter() {
     }

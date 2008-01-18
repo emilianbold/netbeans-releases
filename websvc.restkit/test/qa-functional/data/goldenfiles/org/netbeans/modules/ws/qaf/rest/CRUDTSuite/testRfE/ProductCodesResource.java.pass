@@ -15,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.UriParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
@@ -35,7 +36,7 @@ import o.n.m.ws.qaf.rest.crud.converter.ProductCodeConverter;
 public class ProductCodesResource {
     @HttpContext
     private UriInfo context;
-    
+  
     /** Creates a new instance of ProductCodesResource */
     public ProductCodesResource() {
     }
@@ -95,8 +96,9 @@ public class ProductCodesResource {
      * @return an instance of ProductCodeResource
      */
     @Path("{prodCode}/")
-    public ProductCodeResource getProductCodeResource() {
-        return new ProductCodeResource(context);
+    public ProductCodeResource getProductCodeResource(@UriParam("prodCode")
+    String id) {
+        return new ProductCodeResource(id, context);
     }
 
     /**

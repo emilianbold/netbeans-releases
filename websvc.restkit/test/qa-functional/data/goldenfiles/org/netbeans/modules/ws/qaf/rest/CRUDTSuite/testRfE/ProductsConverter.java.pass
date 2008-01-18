@@ -29,7 +29,7 @@ public class ProductsConverter {
     private Collection<Product> entities;
     private Collection<ProductRefConverter> references;
     private URI uri;
-    
+  
     /** Creates a new instance of ProductsConverter */
     public ProductsConverter() {
     }

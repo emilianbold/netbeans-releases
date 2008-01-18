@@ -15,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.UriParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
@@ -34,7 +35,7 @@ import o.n.m.ws.qaf.rest.crud.converter.MicroMarketConverter;
 public class MicroMarketsResource {
     @HttpContext
     private UriInfo context;
-    
+  
     /** Creates a new instance of MicroMarketsResource */
     public MicroMarketsResource() {
     }
@@ -94,8 +95,9 @@ public class MicroMarketsResource {
      * @return an instance of MicroMarketResource
      */
     @Path("{zipCode}/")
-    public MicroMarketResource getMicroMarketResource() {
-        return new MicroMarketResource(context);
+    public o.n.m.ws.qaf.rest.crud.service.MicroMarketResource getMicroMarketResource(@UriParam("zipCode")
+    String id) {
+        return new MicroMarketResource(id, context);
     }
 
     /**

@@ -10,7 +10,6 @@
 package o.n.m.ws.qaf.rest.crud.service;
 
 import javax.ws.rs.Path;
-import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
@@ -31,8 +30,9 @@ import o.n.m.ws.qaf.rest.crud.converter.PurchaseOrderConverter;
  */
 
 public class PurchaseOrderResource {
+    private Integer id;
     private UriInfo context;
-    
+  
     /** Creates a new instance of PurchaseOrderResource */
     public PurchaseOrderResource() {
     }
@@ -42,7 +42,8 @@ public class PurchaseOrderResource {
      *
      * @param context HttpContext inherited from the parent resource
      */
-    public PurchaseOrderResource(UriInfo context) {
+    public PurchaseOrderResource(Integer id, UriInfo context) {
+        this.id = id;
         this.context = context;
     }
 
@@ -54,10 +55,9 @@ public class PurchaseOrderResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public PurchaseOrderConverter get(@UriParam("orderNum")
-    Integer id) {
+    public PurchaseOrderConverter get() {
         try {
-            return new PurchaseOrderConverter(getEntity(id), context.getAbsolutePath());
+            return new PurchaseOrderConverter(getEntity(), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -71,12 +71,11 @@ public class PurchaseOrderResource {
      */
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
-    public void put(@UriParam("orderNum")
-    Integer id, PurchaseOrderConverter data) {
+    public void put(PurchaseOrderConverter data) {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            updateEntity(getEntity(id), data.getEntity());
+            updateEntity(getEntity(), data.getEntity());
             service.commitTx();
         } finally {
             service.close();
@@ -89,12 +88,11 @@ public class PurchaseOrderResource {
      * @param id identifier for the entity
      */
     @DELETE
-    public void delete(@UriParam("orderNum")
-    Integer id) {
+    public void delete() {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            PurchaseOrder entity = getEntity(id);
+            PurchaseOrder entity = getEntity();
             service.removeEntity(entity);
             service.commitTx();
         } finally {
@@ -109,13 +107,12 @@ public class PurchaseOrderResource {
      * @return an instance of CustomerResource
      */
     @Path("customer/")
-    public CustomerResource getCustomerResource(@UriParam("orderNum")
-    Integer id) {
-        final PurchaseOrder parent = getEntity(id);
-        return new CustomerResource(context) {
+    public CustomerResource getCustomerResource() {
+        final PurchaseOrder parent = getEntity();
+        return new CustomerResource(null, context) {
 
             @Override
-            protected Customer getEntity(Integer id) {
+            protected Customer getEntity() {
                 Customer entity = parent.getCustomerId();
                 if (entity == null) {
                     throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
@@ -132,13 +129,12 @@ public class PurchaseOrderResource {
      * @return an instance of ProductResource
      */
     @Path("product/")
-    public ProductResource getProductResource(@UriParam("orderNum")
-    Integer id) {
-        final PurchaseOrder parent = getEntity(id);
-        return new ProductResource(context) {
+    public ProductResource getProductResource() {
+        final PurchaseOrder parent = getEntity();
+        return new ProductResource(null, context) {
 
             @Override
-            protected Product getEntity(Integer id) {
+            protected Product getEntity() {
                 Product entity = parent.getProductId();
                 if (entity == null) {
                     throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
@@ -154,7 +150,7 @@ public class PurchaseOrderResource {
      * @param id identifier for the entity
      * @return an instance of PurchaseOrder
      */
-    protected PurchaseOrder getEntity(Integer id) {
+    protected PurchaseOrder getEntity() {
         try {
             return (PurchaseOrder) PersistenceService.getInstance().createQuery("SELECT e FROM PurchaseOrder e where e.orderNum = :orderNum").setParameter("orderNum", id).getSingleResult();
         } catch (NoResultException ex) {

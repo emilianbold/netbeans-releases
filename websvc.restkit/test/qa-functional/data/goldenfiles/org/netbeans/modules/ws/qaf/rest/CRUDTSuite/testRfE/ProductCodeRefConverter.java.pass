@@ -27,7 +27,7 @@ public class ProductCodeRefConverter {
     private ProductCode entity;
     private boolean isUriExtendable;
     private URI uri;
-    
+  
     /** Creates a new instance of ProductCodeRefConverter */
     public ProductCodeRefConverter() {
     }

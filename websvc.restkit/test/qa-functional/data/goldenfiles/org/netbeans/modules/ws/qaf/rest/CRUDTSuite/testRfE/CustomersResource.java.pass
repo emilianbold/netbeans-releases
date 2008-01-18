@@ -15,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.UriParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
@@ -35,7 +36,7 @@ import o.n.m.ws.qaf.rest.crud.converter.CustomerConverter;
 public class CustomersResource {
     @HttpContext
     private UriInfo context;
-    
+  
     /** Creates a new instance of CustomersResource */
     public CustomersResource() {
     }
@@ -95,8 +96,9 @@ public class CustomersResource {
      * @return an instance of CustomerResource
      */
     @Path("{customerId}/")
-    public CustomerResource getCustomerResource() {
-        return new CustomerResource(context);
+    public CustomerResource getCustomerResource(@UriParam("customerId")
+    Integer id) {
+        return new CustomerResource(id, context);
     }
 
     /**

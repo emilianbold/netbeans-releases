@@ -19,7 +19,7 @@ import o.n.m.ws.qaf.rest.crud.service.PersistenceService;
 
 /**
  * Utility class for resolving an uri into an entity.
- * 
+
  * @author lukas
  */
 public class UriResolver {

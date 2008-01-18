@@ -15,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.UriParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
@@ -35,7 +36,7 @@ import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
 public class ManufacturersResource {
     @HttpContext
     private UriInfo context;
-    
+  
     /** Creates a new instance of ManufacturersResource */
     public ManufacturersResource() {
     }
@@ -95,8 +96,9 @@ public class ManufacturersResource {
      * @return an instance of ManufacturerResource
      */
     @Path("{manufacturerId}/")
-    public ManufacturerResource getManufacturerResource() {
-        return new ManufacturerResource(context);
+    public ManufacturerResource getManufacturerResource(@UriParam("manufacturerId")
+    Integer id) {
+        return new ManufacturerResource(id, context);
     }
 
     /**

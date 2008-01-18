@@ -27,7 +27,7 @@ public class MicroMarketRefConverter {
     private MicroMarket entity;
     private boolean isUriExtendable;
     private URI uri;
-    
+  
     /** Creates a new instance of MicroMarketRefConverter */
     public MicroMarketRefConverter() {
     }

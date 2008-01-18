@@ -10,7 +10,6 @@
 package o.n.m.ws.qaf.rest.crud.service;
 
 import javax.ws.rs.Path;
-import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
@@ -29,8 +28,9 @@ import o.n.m.ws.qaf.rest.crud.converter.MicroMarketConverter;
  */
 
 public class MicroMarketResource {
+    private String id;
     private UriInfo context;
-    
+  
     /** Creates a new instance of MicroMarketResource */
     public MicroMarketResource() {
     }
@@ -40,7 +40,8 @@ public class MicroMarketResource {
      *
      * @param context HttpContext inherited from the parent resource
      */
-    public MicroMarketResource(UriInfo context) {
+    public MicroMarketResource(String id, UriInfo context) {
+        this.id = id;
         this.context = context;
     }
 
@@ -52,10 +53,9 @@ public class MicroMarketResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public MicroMarketConverter get(@UriParam("zipCode")
-    String id) {
+    public MicroMarketConverter get() {
         try {
-            return new MicroMarketConverter(getEntity(id), context.getAbsolutePath());
+            return new MicroMarketConverter(getEntity(), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -69,12 +69,11 @@ public class MicroMarketResource {
      */
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
-    public void put(@UriParam("zipCode")
-    String id, MicroMarketConverter data) {
+    public void put(MicroMarketConverter data) {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            updateEntity(getEntity(id), data.getEntity());
+            updateEntity(getEntity(), data.getEntity());
             service.commitTx();
         } finally {
             service.close();
@@ -87,12 +86,11 @@ public class MicroMarketResource {
      * @param id identifier for the entity
      */
     @DELETE
-    public void delete(@UriParam("zipCode")
-    String id) {
+    public void delete() {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            MicroMarket entity = getEntity(id);
+            MicroMarket entity = getEntity();
             service.removeEntity(entity);
             service.commitTx();
         } finally {
@@ -106,7 +104,7 @@ public class MicroMarketResource {
      * @param id identifier for the entity
      * @return an instance of MicroMarket
      */
-    protected MicroMarket getEntity(String id) {
+    protected MicroMarket getEntity() {
         try {
             return (MicroMarket) PersistenceService.getInstance().createQuery("SELECT e FROM MicroMarket e where e.zipCode = :zipCode").setParameter("zipCode", id).getSingleResult();
         } catch (NoResultException ex) {

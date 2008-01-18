@@ -15,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.ProduceMime;
 import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.UriParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
@@ -35,7 +36,7 @@ import o.n.m.ws.qaf.rest.crud.converter.DiscountCodeConverter;
 public class DiscountCodesResource {
     @HttpContext
     private UriInfo context;
-    
+  
     /** Creates a new instance of DiscountCodesResource */
     public DiscountCodesResource() {
     }
@@ -95,8 +96,9 @@ public class DiscountCodesResource {
      * @return an instance of DiscountCodeResource
      */
     @Path("{discountCode}/")
-    public DiscountCodeResource getDiscountCodeResource() {
-        return new DiscountCodeResource(context);
+    public DiscountCodeResource getDiscountCodeResource(@UriParam("discountCode")
+    String id) {
+        return new DiscountCodeResource(id, context);
     }
 
     /**

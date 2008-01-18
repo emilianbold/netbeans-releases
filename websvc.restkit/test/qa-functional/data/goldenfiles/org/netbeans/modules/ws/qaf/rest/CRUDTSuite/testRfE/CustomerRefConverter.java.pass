@@ -27,7 +27,7 @@ public class CustomerRefConverter {
     private Customer entity;
     private boolean isUriExtendable;
     private URI uri;
-    
+  
     /** Creates a new instance of CustomerRefConverter */
     public CustomerRefConverter() {
     }

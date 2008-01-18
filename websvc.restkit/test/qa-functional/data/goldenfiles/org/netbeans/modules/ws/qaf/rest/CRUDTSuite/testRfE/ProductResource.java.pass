@@ -10,7 +10,6 @@
 package o.n.m.ws.qaf.rest.crud.service;
 
 import javax.ws.rs.Path;
-import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
@@ -33,8 +32,9 @@ import o.n.m.ws.qaf.rest.crud.converter.ProductConverter;
  */
 
 public class ProductResource {
+    private Integer id;
     private UriInfo context;
-    
+  
     /** Creates a new instance of ProductResource */
     public ProductResource() {
     }
@@ -44,7 +44,8 @@ public class ProductResource {
      *
      * @param context HttpContext inherited from the parent resource
      */
-    public ProductResource(UriInfo context) {
+    public ProductResource(Integer id, UriInfo context) {
+        this.id = id;
         this.context = context;
     }
 
@@ -56,10 +57,9 @@ public class ProductResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public ProductConverter get(@UriParam("productId")
-    Integer id) {
+    public ProductConverter get() {
         try {
-            return new ProductConverter(getEntity(id), context.getAbsolutePath());
+            return new ProductConverter(getEntity(), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -73,12 +73,11 @@ public class ProductResource {
      */
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
-    public void put(@UriParam("productId")
-    Integer id, ProductConverter data) {
+    public void put(ProductConverter data) {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            updateEntity(getEntity(id), data.getEntity());
+            updateEntity(getEntity(), data.getEntity());
             service.commitTx();
         } finally {
             service.close();
@@ -91,12 +90,11 @@ public class ProductResource {
      * @param id identifier for the entity
      */
     @DELETE
-    public void delete(@UriParam("productId")
-    Integer id) {
+    public void delete() {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            Product entity = getEntity(id);
+            Product entity = getEntity();
             service.removeEntity(entity);
             service.commitTx();
         } finally {
@@ -111,13 +109,12 @@ public class ProductResource {
      * @return an instance of ManufacturerResource
      */
     @Path("manufacturer/")
-    public ManufacturerResource getManufacturerResource(@UriParam("productId")
-    Integer id) {
-        final Product parent = getEntity(id);
-        return new ManufacturerResource(context) {
+    public ManufacturerResource getManufacturerResource() {
+        final Product parent = getEntity();
+        return new ManufacturerResource(null, context) {
 
             @Override
-            protected Manufacturer getEntity(Integer id) {
+            protected Manufacturer getEntity() {
                 Manufacturer entity = parent.getManufacturerId();
                 if (entity == null) {
                     throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
@@ -134,13 +131,12 @@ public class ProductResource {
      * @return an instance of ProductCodeResource
      */
     @Path("productCode/")
-    public ProductCodeResource getProductCodeResource(@UriParam("productId")
-    Integer id) {
-        final Product parent = getEntity(id);
-        return new ProductCodeResource(context) {
+    public ProductCodeResource getProductCodeResource() {
+        final Product parent = getEntity();
+        return new ProductCodeResource(null, context) {
 
             @Override
-            protected ProductCode getEntity(String id) {
+            protected ProductCode getEntity() {
                 ProductCode entity = parent.getProductCode();
                 if (entity == null) {
                     throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
@@ -157,9 +153,8 @@ public class ProductResource {
      * @return an instance of PurchaseOrdersResource
      */
     @Path("purchaseOrders/")
-    public PurchaseOrdersResource getPurchaseOrdersResource(@UriParam("productId")
-    Integer id) {
-        final Product parent = getEntity(id);
+    public PurchaseOrdersResource getPurchaseOrdersResource() {
+        final Product parent = getEntity();
         return new PurchaseOrdersResource(context) {
 
             @Override
@@ -189,7 +184,7 @@ public class ProductResource {
      * @param id identifier for the entity
      * @return an instance of Product
      */
-    protected Product getEntity(Integer id) {
+    protected Product getEntity() {
         try {
             return (Product) PersistenceService.getInstance().createQuery("SELECT e FROM Product e where e.productId = :productId").setParameter("productId", id).getSingleResult();
         } catch (NoResultException ex) {

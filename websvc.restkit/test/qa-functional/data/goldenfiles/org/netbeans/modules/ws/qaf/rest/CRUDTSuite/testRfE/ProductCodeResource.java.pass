@@ -10,7 +10,6 @@
 package o.n.m.ws.qaf.rest.crud.service;
 
 import javax.ws.rs.Path;
-import javax.ws.rs.UriParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.DELETE;
@@ -31,8 +30,9 @@ import o.n.m.ws.qaf.rest.crud.converter.ProductCodeConverter;
  */
 
 public class ProductCodeResource {
+    private String id;
     private UriInfo context;
-    
+  
     /** Creates a new instance of ProductCodeResource */
     public ProductCodeResource() {
     }
@@ -42,7 +42,8 @@ public class ProductCodeResource {
      *
      * @param context HttpContext inherited from the parent resource
      */
-    public ProductCodeResource(UriInfo context) {
+    public ProductCodeResource(String id, UriInfo context) {
+        this.id = id;
         this.context = context;
     }
 
@@ -54,10 +55,9 @@ public class ProductCodeResource {
      */
     @GET
     @ProduceMime({"application/xml", "application/json"})
-    public ProductCodeConverter get(@UriParam("prodCode")
-    String id) {
+    public ProductCodeConverter get() {
         try {
-            return new ProductCodeConverter(getEntity(id), context.getAbsolutePath());
+            return new ProductCodeConverter(getEntity(), context.getAbsolutePath());
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -71,12 +71,11 @@ public class ProductCodeResource {
      */
     @PUT
     @ConsumeMime({"application/xml", "application/json"})
-    public void put(@UriParam("prodCode")
-    String id, ProductCodeConverter data) {
+    public void put(ProductCodeConverter data) {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            updateEntity(getEntity(id), data.getEntity());
+            updateEntity(getEntity(), data.getEntity());
             service.commitTx();
         } finally {
             service.close();
@@ -89,12 +88,11 @@ public class ProductCodeResource {
      * @param id identifier for the entity
      */
     @DELETE
-    public void delete(@UriParam("prodCode")
-    String id) {
+    public void delete() {
         PersistenceService service = PersistenceService.getInstance();
         try {
             service.beginTx();
-            ProductCode entity = getEntity(id);
+            ProductCode entity = getEntity();
             service.removeEntity(entity);
             service.commitTx();
         } finally {
@@ -109,9 +107,8 @@ public class ProductCodeResource {
      * @return an instance of ProductsResource
      */
     @Path("products/")
-    public ProductsResource getProductsResource(@UriParam("prodCode")
-    String id) {
-        final ProductCode parent = getEntity(id);
+    public ProductsResource getProductsResource() {
+        final ProductCode parent = getEntity();
         return new ProductsResource(context) {
 
             @Override
@@ -141,7 +138,7 @@ public class ProductCodeResource {
      * @param id identifier for the entity
      * @return an instance of ProductCode
      */
-    protected ProductCode getEntity(String id) {
+    protected ProductCode getEntity() {
         try {
             return (ProductCode) PersistenceService.getInstance().createQuery("SELECT e FROM ProductCode e where e.prodCode = :prodCode").setParameter("prodCode", id).getSingleResult();
         } catch (NoResultException ex) {
