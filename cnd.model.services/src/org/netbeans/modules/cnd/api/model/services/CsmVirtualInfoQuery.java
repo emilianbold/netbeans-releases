@@ -40,14 +40,87 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
+import org.openide.util.Lookup;
 
 /**
- * API to query information about virtuallity of method
+ * API to query information about virtuality of method
  * @author Vladimir Voskresensky
  */
 public abstract class CsmVirtualInfoQuery {
     public abstract boolean isVirtual(CsmMethod method);
     public abstract CsmMethod getBaseDeclaration(CsmMethod method);
     public abstract Collection<CsmMethod> getOverridenMethods(CsmMethod base);
+    private static final CsmVirtualInfoQuery EMPTY = new Empty();
+    
+    /** default instance */
+    private static CsmVirtualInfoQuery defaultQuery;
+    
+    protected CsmVirtualInfoQuery() {
+    }
+    
+    /** Static method to obtain the resolver.
+     * @return the resolver
+     */
+    public static synchronized CsmVirtualInfoQuery getDefault() {
+        if (defaultQuery != null) {
+            return defaultQuery;
+        }
+        defaultQuery = Lookup.getDefault().lookup(CsmVirtualInfoQuery.class);
+        return defaultQuery == null ? EMPTY : defaultQuery;
+    }
+    
+    //
+    // Implementation of the default query
+    //
+    private static final class Empty extends CsmVirtualInfoQuery {
+        private Empty() {
+        }
+
+        @Override
+        public boolean isVirtual(CsmMethod method) {
+            if (method.isVirtual()) {
+                return true;
+            }
+            return processClass(method.getSignature(), method.getContainingClass(), new HashSet<CsmClass>());
+        }
+
+        private boolean processClass(CharSequence sig, CsmClass cls, Set<CsmClass> anilLoop){
+            if (cls == null || anilLoop.contains(cls)) {
+                return false;
+            }
+            anilLoop.add(cls);
+            for(CsmMember m : cls.getMembers()){
+                if (CsmKindUtilities.isMethod(m)) {
+                    CsmMethod met = (CsmMethod) m;
+                    if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0){
+                        return met.isVirtual();
+                    }
+                }
+            }
+            for(CsmInheritance inh : cls.getBaseClasses()){
+                if (processClass(sig, inh.getCsmClass(), anilLoop)){
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        @Override
+        public CsmMethod getBaseDeclaration(CsmMethod method) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Collection<CsmMethod> getOverridenMethods(CsmMethod base) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }    
 }
