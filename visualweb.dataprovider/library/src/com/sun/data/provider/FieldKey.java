@@ -135,6 +135,19 @@ public class FieldKey implements Comparable, Serializable {
         }
         return false;
     }
+    
+    /**
+     * @return the hashCode of a blank String if the FieldKey id is null, or the
+     * hashCode of the FieldKey id otherwise.
+     * @see Object#hashCode()
+     */
+    public int hashCode() {
+        String thisFieldId = getFieldId();
+        if (thisFieldId == null) {
+            return "".hashCode();
+        }
+        return thisFieldId.hashCode();
+    }
 
     /**
      * Standard compareTo implementation (for {@link Comparable} interface).

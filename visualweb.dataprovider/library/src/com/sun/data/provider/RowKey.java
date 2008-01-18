@@ -126,6 +126,19 @@ public class RowKey implements Serializable, Comparable {
         }
         return false;
     }
+    
+    /**
+     * @return the hashCode of a blank String if the RowKey id is null, or the
+     * hashCode of the RowKey id otherwise.
+     * @see Object#hashCode()
+     */
+    public int hashCode() {
+        String thisRowId = getRowId();
+        if (thisRowId == null) {
+            return "".hashCode();
+        }
+        return thisRowId.hashCode();
+    }
 
     /**
      * <p>Standard implementation of compareTo(Object).  This checks for

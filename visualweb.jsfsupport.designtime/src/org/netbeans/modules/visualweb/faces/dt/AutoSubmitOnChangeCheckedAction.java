@@ -62,14 +62,26 @@ public class AutoSubmitOnChangeCheckedAction extends BasicDisplayAction implemen
 
     private static final Pattern thisDotFormDotSubmitPattern = Pattern.compile(
             "this\\s*\\.\\s*form\\s*\\.\\s*submit\\s*\\(\\s*\\)\\s*;?"); //NOI18N
+    
+    private static final String EE5_TIMEOUT_FUNCTION = "webui.suntheme.common.timeoutSubmitForm"; //NOI18N
+    private static final String EE4_TIMEOUT_FUNCTION = "common_timeoutSubmitForm"; //NOI18N
+    
+    private static final String EE4_PAGE = "com.sun.rave.web.ui.component.Page";   //NOI18N
+    private static final String EE5_PAGE = "com.sun.webui.jsf.component.Page";   //NOI18N
+    
+    private static final String SUBMIT_PATTERN_SUFFIX = "\\s*\\(\\s*this\\s*\\.\\s*form\\s*,\\s*'\\S+'\\s*\\)\\s*;?"; //NOI18N
+    
+    private String timeoutFunction;
 
-    private static final Pattern submitPattern = Pattern.compile(
-            "common_timeoutSubmitForm\\s*\\(\\s*this\\s*\\.\\s*form\\s*,\\s*'\\S+'\\s*\\)\\s*;?"); //NOI18N
+    private Pattern submitPattern;
 
     protected DesignBean bean;
     public AutoSubmitOnChangeCheckedAction(DesignBean bean) {
         super(bundle.getMessage("autoSubmit")); //NOI18N
         this.bean = bean;
+        //default to ee4 value:
+        this.timeoutFunction = EE5_PAGE.equals(getPageClassName()) ? EE5_TIMEOUT_FUNCTION : EE4_TIMEOUT_FUNCTION;
+        this.submitPattern = Pattern.compile(this.timeoutFunction + SUBMIT_PATTERN_SUFFIX);
     }
 
     public void setAutoSubmit(boolean autoSubmit) {
@@ -98,7 +110,9 @@ public class AutoSubmitOnChangeCheckedAction extends BasicDisplayAction implemen
                     prop.setValue(newValue); //NOI18N
                 }
             }
-            if (isNewPage()) return;	//don't touch immediate property if this is a new page
+            if (getPageClassName() != null) {
+                return;	//don't touch immediate property if this is a recognized ee4 or ee5 page
+            }
             prop = bean.getProperty("immediate"); //NOI18N
             if (prop != null) {
                 if (autoSubmit) {
@@ -142,7 +156,9 @@ public class AutoSubmitOnChangeCheckedAction extends BasicDisplayAction implemen
                     prop.setValue(getSubmitScript(value));
                 }
             }
-            if (isNewPage()) return;	//don't touch immediate property if this is a new page
+            if (getPageClassName() != null) {
+                return;	//don't touch immediate property if this is a recognized ee4 or ee5 page
+            }
             prop = bean.getProperty("immediate"); //NOI18N
             if (prop != null) {
                 if (isON) {
@@ -202,7 +218,8 @@ public class AutoSubmitOnChangeCheckedAction extends BasicDisplayAction implemen
             //fully qualified id (starting with ":") could look intimidating to users. so just chop off leading ":"
             id = id.substring(1, id.length());
         }
-        buffer.append("common_timeoutSubmitForm(this.form, '");
+        buffer.append(this.timeoutFunction);
+        buffer.append("(this.form, '");
         buffer.append(id);
         buffer.append("');");
         return buffer.toString();
@@ -212,7 +229,7 @@ public class AutoSubmitOnChangeCheckedAction extends BasicDisplayAction implemen
     //if this is an old page and the correct submit property is onclick,
     //then clean up onchange
     private void cleanOnchangeIfAppropriate() {     
-        if (!isNewPage() && "onclick".equals(getSubmitPropertyName())) { //NOI18N
+        if (getPageClassName() == null && "onclick".equals(getSubmitPropertyName())) { //NOI18N
             //remove any onsubmit script from onchange handler
             DesignProperty onchangeProp = bean.getProperty("onchange"); //NOI18N
             if (onchangeProp != null) {
@@ -225,20 +242,18 @@ public class AutoSubmitOnChangeCheckedAction extends BasicDisplayAction implemen
         }
     }
 
-    private boolean isNewPage() {
-        boolean ancestorFound = false;
+    private String getPageClassName() {
         DesignBean testBean = bean;
         while (testBean != null) {
             Object instance = testBean.getInstance();
             if (instance != null) {
                 String className = instance.getClass().getName();
-                if ("com.sun.rave.web.ui.component.Page".equals(className)) {
-                    ancestorFound = true;
-                    break;
+                if (EE4_PAGE.equals(className) || EE5_PAGE.equals(className)) {
+                    return className;
                 }
             }
             testBean = testBean.getBeanParent();
         }
-        return ancestorFound;
+        return null;
     }
 }
