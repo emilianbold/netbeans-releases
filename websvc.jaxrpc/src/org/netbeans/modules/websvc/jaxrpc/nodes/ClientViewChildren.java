@@ -44,6 +44,8 @@ package org.netbeans.modules.websvc.jaxrpc.nodes;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.openide.nodes.FilterNode;
@@ -54,7 +56,11 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileUtil;
 
 /** Displays web service client nodes representing the web services for which 
  *  this module has been enabled to use as a client.  Driven by existence of
@@ -64,14 +70,24 @@ import org.openide.ErrorManager;
  */
 public class ClientViewChildren extends FilterNode.Children {
     FileObject wsdlFolder;
+    private final ProjectXmlListener projectXmlListener;
     
     public ClientViewChildren(FileObject wsdlFolder) throws DataObjectNotFoundException {
         super(DataObject.find(wsdlFolder).getNodeDelegate());
         this.wsdlFolder = wsdlFolder;
+        this.projectXmlListener = new ProjectXmlListener();
     }
     
     protected void addNotify(){
         super.addNotify();
+        updateKeys();
+        FileObject prjXml = FileOwnerQuery.getOwner(wsdlFolder).getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+        if(prjXml!=null) {
+            prjXml.addFileChangeListener(FileUtil.weakFileChangeListener(projectXmlListener, prjXml) );
+        }
+    }
+
+    private void updateKeys(){
         List<Node> children = new ArrayList<Node>();
         try {
             FileObject[] wsdls = wsdlFolder.getChildren();
@@ -138,4 +154,15 @@ public class ClientViewChildren extends FilterNode.Children {
         }
         return false;
     }
+
+        private final class ProjectXmlListener extends FileChangeAdapter {
+            public void fileChanged(FileEvent fe) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        updateKeys();
+                    }
+                });
+            }
+        }
+            
 }

@@ -54,6 +54,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientView;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.ErrorManager;
@@ -87,19 +88,21 @@ public class JaxRpcNodeFactory implements NodeFactory {
         private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
         private final WsdlCreationListener wsdlListener;
         private final MetaInfListener metaInfListener;
+        private final ProjectXmlListener projectXmlListener;
         private FileObject wsdlFolder;
         
         public WsNodeList(Project proj) {
             project = proj;
             this.metaInfListener = new MetaInfListener();
             this.wsdlListener = new WsdlCreationListener();
+            this.projectXmlListener = new ProjectXmlListener();
         }
         
         public List keys() {
             List<String> result = new ArrayList<String>();
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             
-            if (wscs  != null ) {
+            if (wscs  != null && !wscs.getServiceClients().isEmpty()) {
                 FileObject wsdlFolder = wscs.getWsdlFolder();
                 if( wsdlFolder != null){
                     result.add(KEY_SERVICE_REFS);
@@ -188,6 +191,10 @@ public class JaxRpcNodeFactory implements NodeFactory {
             if (wsdlFolder != null) {
                 wsdlFolder.addFileChangeListener(FileUtil.weakFileChangeListener(wsdlListener, wsdlFolder) );
             }
+            FileObject prjXml = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_XML_PATH);
+            if(prjXml!=null) {
+                prjXml.addFileChangeListener(FileUtil.weakFileChangeListener(projectXmlListener, prjXml) );
+            }
         }
         
         private final class WsdlCreationListener extends FileChangeAdapter {
@@ -243,6 +250,16 @@ public class JaxRpcNodeFactory implements NodeFactory {
             }
         }
 
+        private final class ProjectXmlListener extends FileChangeAdapter {
+            public void fileChanged(FileEvent fe) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        fireChange();
+                    }
+                });
+            }
+        }
+            
         public void removeNotify() {
         }
         
