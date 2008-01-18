@@ -60,6 +60,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -110,7 +111,7 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
     private static final boolean DEBUG = ErrorManager.getDefault()
             .getInstance(OutlinePanel.class.getName()).isLoggable(ErrorManager.INFORMATIONAL);
 
-    private static final OutlinePanel instance = new OutlinePanel();
+    private static WeakReference<OutlinePanel> instanceWRef = new WeakReference<OutlinePanel>(null);
 
     private final ExplorerManager manager = new ExplorerManager();
     private final Lookup lookup;
@@ -173,7 +174,14 @@ class OutlinePanel extends JPanel implements ExplorerManager.Provider, Lookup.Pr
 
     
     public static OutlinePanel getDefault() {
-        return instance;
+        synchronized(OutlinePanel.class) {
+            OutlinePanel outlinePanel = instanceWRef.get();
+            if (outlinePanel == null) {
+                outlinePanel = new OutlinePanel();
+                instanceWRef = new WeakReference<OutlinePanel>(outlinePanel);
+            }
+            return outlinePanel;
+        }
     }
     
     
