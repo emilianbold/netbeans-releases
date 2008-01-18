@@ -109,6 +109,9 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
             settingsMap.put(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE,
                             CCSettingsDefaults.defaultCCFormatNewlineBeforeBrace);
 
+            settingsMap.put(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
+                            CCSettingsDefaults.defaultCCFormatNewlineBeforeBraceDeclaration);
+
             settingsMap.put(CCSettingsNames.CC_FORMAT_LEADING_SPACE_IN_COMMENT,
                             CCSettingsDefaults.defaultCCFormatLeadingSpaceInComment);
 

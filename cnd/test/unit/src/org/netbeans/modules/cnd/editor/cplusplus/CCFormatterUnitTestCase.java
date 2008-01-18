@@ -282,12 +282,33 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 );
         reformat();
         assertDocumentText("Incorrect new-line indent",
-                "void m() {\n"
+                "void m()\n"
+                + "{\n"
                 + "    printf(\n"
                 + "            \"haf\");\n"
                 + "}\n"
-                );
-        
+                    );
+    }
+
+    public void testReformatMultiLineSystemOutPrintln2() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                    "void m() {\n"
+                    + "    printf(\n"
+                    + "    \"haf\");\n"
+                    + "}\n"
+                    );
+            reformat();
+            assertDocumentText("Incorrect new-line indent",
+                    "void m() {\n"
+                    + "    printf(\n"
+                    + "            \"haf\");\n"
+                    + "}\n"
+                    );
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
     }
     
 //    public void testReformatMultiLineClassDeclaration() {
@@ -381,6 +402,37 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
      */
     public void testReformatMultilineConstructor() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                    "class Test {\n" +
+                    "Test(int one,\n" +
+                    "int two,\n" +
+                    "int three,\n" +
+                    "int four) {\n" +
+                    "this.one = one;\n" +
+                    "}\n" +
+                    "};");
+            reformat();
+            assertDocumentText("Incorrect multiline constructor reformatting",
+                    "class Test {\n" +
+                    "    Test(int one,\n" +
+                    "            int two,\n" +
+                    "            int three,\n" +
+                    "            int four) {\n" +
+                    "        this.one = one;\n" +
+                    "    }\n" +
+                    "};");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    }
+
+    /**
+     * Test reformatting of multiline constructors
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=49450
+     */
+    public void testReformatMultilineConstructor2() {
         setLoadDocumentText(
                 "class Test {\n" +
                 "Test(int one,\n" +
@@ -392,11 +444,13 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                 "};");
         reformat();
         assertDocumentText("Incorrect multiline constructor reformatting",
-                "class Test {\n" +
+                "class Test\n" +
+                "{\n" +
                 "    Test(int one,\n" +
                 "            int two,\n" +
                 "            int three,\n" +
-                "            int four) {\n" +
+                "            int four)\n" +
+                "    {\n" +
                 "        this.one = one;\n" +
                 "    }\n" +
                 "};");
@@ -425,6 +479,39 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=97544
      */
     public void testReformatSimpleClass() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                "class C {\n" +
+                "protected:\n" +
+                "int i;\n" +
+                "int foo();\n" +
+                "private:\n" +
+                "int j;\n" +
+                "public:\n" +
+                "int k;\n" +
+                "};\n");
+            reformat();
+            assertDocumentText("Incorrect reformatting of simple class",
+                "class C {\n" +
+                "protected:\n" +
+                "    int i;\n" +
+                "    int foo();\n" +
+                "private:\n" +
+                "    int j;\n" +
+                "public:\n" +
+                "    int k;\n" +
+                "};\n");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    }
+    
+    /**
+     * Test reformatting of class
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=97544
+     */
+    public void testReformatSimpleClass2() {
         setLoadDocumentText(
             "class C {\n" +
             "protected:\n" +
@@ -437,7 +524,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "};\n");
         reformat();
         assertDocumentText("Incorrect reformatting of simple class",
-            "class C {\n" +
+            "class C\n" +
+            "{\n" +
             "protected:\n" +
             "    int i;\n" +
             "    int foo();\n" +
@@ -447,7 +535,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    int k;\n" +
             "};\n");
     }
-    
+
     /**
      * Test reformatting of For without braces
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=98475
@@ -481,6 +569,37 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=100665
      */
     public void testReformatPreprocessorsDirectives() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                "main() {\n" +
+                "#define AAA 1\n" +
+                "int aaa;\n" +
+                "#define BBB 2\n" +
+                "long bbb;\n" +
+                "int ccc;\n" +
+                "int ddd;\n" +
+                "}\n");
+            reformat();
+            assertDocumentText("Incorrect reformatting for preprocessors directives",
+                "main() {\n" +
+                "#define AAA 1\n" +
+                "    int aaa;\n" +
+                "#define BBB 2\n" +
+                "    long bbb;\n" +
+                "    int ccc;\n" +
+                "    int ddd;\n" +
+                "}\n");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    }
+
+    /**
+     * Test reformatting for preprocessors directives
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=100665
+     */
+    public void testReformatPreprocessorsDirectives2() {
         setLoadDocumentText(
             "main() {\n" +
             "#define AAA 1\n" +
@@ -492,7 +611,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n");
         reformat();
         assertDocumentText("Incorrect reformatting for preprocessors directives",
-            "main() {\n" +
+            "main()\n" +
+            "{\n" +
             "#define AAA 1\n" +
             "    int aaa;\n" +
             "#define BBB 2\n" +
@@ -502,7 +622,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "}\n");
     }
 
-//    /**
+    //    /**
 //     * Test reformatting of function arguments list
 //     * @see http://www.netbeans.org/issues/show_bug.cgi?id=115628
 //     */
@@ -523,6 +643,29 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatConstructorInitializer() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                "Cpu::Cpu(int type, int architecture, int units) :\n" +
+                "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
+                "ComputeSupportMetric();\n" +
+                "}\n");
+            reformat();
+            assertDocumentText("Incorrect reformatting of constructor initializer",
+                "Cpu::Cpu(int type, int architecture, int units) :\n" +
+                "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
+                "    ComputeSupportMetric();\n" +
+                "}\n");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    }
+    
+    /**
+     * Test reformatting of constructor initializer
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
+     */
+    public void testReformatConstructorInitializer2() {
         setLoadDocumentText(
             "Cpu::Cpu(int type, int architecture, int units) :\n" +
             "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
@@ -531,16 +674,40 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         reformat();
         assertDocumentText("Incorrect reformatting of constructor initializer",
             "Cpu::Cpu(int type, int architecture, int units) :\n" +
-            "Module(\"CPU\", \"generic\", type, architecture, units) {\n" +
+            "Module(\"CPU\", \"generic\", type, architecture, units)\n" +
+            "{\n" +
             "    ComputeSupportMetric();\n" +
             "}\n");
     }
-    
+
     /**
      * Test reformatting of constructor initializer
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
      */
     public void testReformatMultilineMainDefinition() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                "int\n" +
+                "main(int argc, char** argv) {\n" +
+                "return (EXIT_SUCCESS);\n" +
+                "};\n");
+            reformat();
+            assertDocumentText("Incorrect reformatting of multi line main definition",
+                "int\n" +
+                "main(int argc, char** argv) {\n" +
+                "    return (EXIT_SUCCESS);\n" +
+                "};\n");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    }
+
+    /**
+     * Test reformatting of constructor initializer
+     * @see http://www.netbeans.org/issues/show_bug.cgi?id=91173
+     */
+    public void testReformatMultilineMainDefinition2() {
         setLoadDocumentText(
             "int\n" +
             "main(int argc, char** argv) {\n" +
@@ -549,7 +716,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         reformat();
         assertDocumentText("Incorrect reformatting of multi line main definition",
             "int\n" +
-            "main(int argc, char** argv) {\n" +
+            "main(int argc, char** argv)\n" +
+            "{\n" +
             "    return (EXIT_SUCCESS);\n" +
             "};\n");
     }
@@ -677,6 +845,49 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
     
     public void testIdentInnerEnum() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                "class NdbTransaction {\n" +
+                "#ifndef D\n" +
+                "friend class Ndb;\n" +
+                "#endif\n" +
+                "\n" +
+                "public:\n" +
+                "\n" +
+                "enum AbortOption {\n" +
+                "#ifndef D\n" +
+                "AbortOnError=::AbortOnError,\n" +
+                "#endif\n" +
+                "AO_IgnoreError=::AO_IgnoreError,\n" +
+                "AO_SkipError\n" +
+                "};\n" +
+                "};\n"
+                );
+            reformat();
+            assertDocumentText("Incorrect identing of inner enum",
+                "class NdbTransaction {\n" +
+                "#ifndef D\n" +
+                "    friend class Ndb;\n" +
+                "#endif\n" +
+                "    \n" +
+                "public:\n" +
+                "    \n" +
+                "    enum AbortOption {\n" +
+                "#ifndef D\n" +
+                "        AbortOnError=::AbortOnError,\n" +
+                "#endif\n" +
+                "        AO_IgnoreError=::AO_IgnoreError,\n" +
+                "        AO_SkipError\n" +
+                "    };\n" +
+                "};\n"
+            );
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    }
+
+    public void testIdentInnerEnum2() {
         setLoadDocumentText(
             "class NdbTransaction {\n" +
             "#ifndef D\n" +
@@ -696,14 +907,16 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             );
         reformat();
         assertDocumentText("Incorrect identing of inner enum",
-            "class NdbTransaction {\n" +
+            "class NdbTransaction\n" +
+            "{\n" +
             "#ifndef D\n" +
             "    friend class Ndb;\n" +
             "#endif\n" +
             "    \n" +
             "public:\n" +
             "    \n" +
-            "    enum AbortOption {\n" +
+            "    enum AbortOption\n" +
+            "    {\n" +
             "#ifndef D\n" +
             "        AbortOnError=::AbortOnError,\n" +
             "#endif\n" +
@@ -712,9 +925,44 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
             "    };\n" +
             "};\n"
         );
-    };
+    }
 
     public void testTemplate() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                "template <class T, class U>\n" +
+                "class KeyTable2 : public DLHashTable2<T, U> {\n" +
+                "public:\n" +
+                "KeyTable2(ArrayPool<U>& pool) :\n" +
+                "DLHashTable2<T, U>(pool) {\n" +
+                "}\n" +
+                "\n" +
+                "bool find(Ptr<T>& ptr, const T& rec) const {\n" +
+                "return DLHashTable2<T, U>::find(ptr, rec);\n" +
+                "}\n" +
+                "};\n"
+                );
+            reformat();
+            assertDocumentText("Incorrect identing of template class",
+                "template <class T, class U>\n" +
+                "class KeyTable2 : public DLHashTable2<T, U> {\n" +
+                "public:\n" +
+                "    KeyTable2(ArrayPool<U>& pool) :\n" +
+                "    DLHashTable2<T, U>(pool) {\n" +
+                "    }\n" +
+                "    \n" +
+                "    bool find(Ptr<T>& ptr, const T& rec) const {\n" +
+                "        return DLHashTable2<T, U>::find(ptr, rec);\n" +
+                "    }\n" +
+                "};\n"
+                );
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    }
+
+    public void testTemplate2() {
         setLoadDocumentText(
             "template <class T, class U>\n" +
             "class KeyTable2 : public DLHashTable2<T, U> {\n" +
@@ -731,13 +979,16 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         reformat();
         assertDocumentText("Incorrect identing of template class",
             "template <class T, class U>\n" +
-            "class KeyTable2 : public DLHashTable2<T, U> {\n" +
+            "class KeyTable2 : public DLHashTable2<T, U>\n" +
+            "{\n" +
             "public:\n" +
             "    KeyTable2(ArrayPool<U>& pool) :\n" +
-            "    DLHashTable2<T, U>(pool) {\n" +
+            "    DLHashTable2<T, U>(pool)\n" +
+            "    {\n" +
             "    }\n" +
             "    \n" +
-            "    bool find(Ptr<T>& ptr, const T& rec) const {\n" +
+            "    bool find(Ptr<T>& ptr, const T& rec) const\n" +
+            "    {\n" +
             "        return DLHashTable2<T, U>::find(ptr, rec);\n" +
             "    }\n" +
             "};\n"
@@ -781,7 +1032,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         reformat();
         assertDocumentText("Incorrect identing of preprocessor else",
             "int\n" +
-            "main() {\n" +
+            "main()\n" +
+            "{\n" +
             "    int z;\n" +
             "#define X \\\n" +
             "        a+\\\n" +
@@ -793,6 +1045,29 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     };
 
     public void testIdentMultyLineMain() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                "long z;\n" +
+                "int\n" +
+                "main() {\n" +
+                "short a;\n" +
+                "}\n"
+                );
+            reformat();
+            assertDocumentText("Incorrect identing multyline main",
+                "long z;\n" +
+                "int\n" +
+                "main() {\n" +
+                "    short a;\n" +
+                "}\n"
+            );
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    };
+
+    public void testIdentMultyLineMain2() {
         setLoadDocumentText(
             "long z;\n" +
             "int\n" +
@@ -804,27 +1079,33 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect identing multyline main",
             "long z;\n" +
             "int\n" +
-            "main() {\n" +
+            "main()\n" +
+            "{\n" +
             "    short a;\n" +
             "}\n"
         );
     };
     
     public void testIdentMultyConstructor() {
-        setLoadDocumentText(
-            "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
-            "        :log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg)\n" +
-            "        {\n" +
-            "                server_id=thd->server_id;\n" +
-            "        }\n"
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
+                "        :log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg)\n" +
+                "        {\n" +
+                "                server_id=thd->server_id;\n" +
+                "        }\n"
+                );
+            reformat();
+            assertDocumentText("Incorrect identing multyline constructor",
+                "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
+                ":log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg) {\n" +
+                "    server_id=thd->server_id;\n" +
+                "}\n"
             );
-        reformat();
-        assertDocumentText("Incorrect identing multyline constructor",
-            "Log_event::Log_event(uint flags_arg, bool using_trans)\n" +
-            ":log_pos(0), temp_buf(0), exec_time(0), flags(flags_arg), thd(thd_arg) {\n" +
-            "    server_id=thd->server_id;\n" +
-            "}\n"
-        );
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
     };
 
     public void testIdentMultyConstructor2() {
@@ -840,7 +1121,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect identing multyline constructor",
             "Log_event::Log_event(const char* buf,\n" +
             "        const Format_description_log_event* description_event)\n" +
-            ":temp_buf(0), cache_stmt(0) {\n" +
+            ":temp_buf(0), cache_stmt(0)\n" +
+            "{\n" +
             "    server_id=thd->server_id;\n" +
             "}\n"
         );
@@ -857,7 +1139,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         reformat();
         assertDocumentText("Incorrect identing define brace",
             "#define BRACE {\n" +
-            "int main() {\n" +
+            "int main()\n" +
+            "{\n" +
             "    if (a){\n" +
             "    }\n" +
             "}\n"
@@ -875,7 +1158,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         reformat();
         assertDocumentText("Incorrect identing define brace",
             "#define BRACE }\n" +
-            "int main() {\n" +
+            "int main()\n" +
+            "{\n" +
             "    if (a){\n" +
             "    }\n" +
             "}\n"
@@ -984,6 +1268,29 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
     }
 
     public void testMacroDefineWithParen() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
+        try {
+            setLoadDocumentText(
+                    "#include <stdio.h>\n" +
+                    "#define M(x) puts(#x)\n" +
+                    "int main() {\n" +
+                    "M(\"test\");\n" +
+                    "return 0;\n" +
+                    "}\n");
+            reformat();
+            assertDocumentText("Incorrect formatting for macro define with paren",
+                    "#include <stdio.h>\n" +
+                    "#define M(x) puts(#x)\n" +
+                    "int main() {\n" +
+                    "    M(\"test\");\n" +
+                    "    return 0;\n" +
+                    "}\n");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    }
+
+    public void testMacroDefineWithParen11() {
         setLoadDocumentText(
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
@@ -995,7 +1302,8 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
         assertDocumentText("Incorrect formatting for macro define with paren",
                 "#include <stdio.h>\n" +
                 "#define M(x) puts(#x)\n" +
-                "int main() {\n" +
+                "int main()\n" +
+                "{\n" +
                 "    M(\"test\");\n" +
                 "    return 0;\n" +
                 "}\n");
@@ -1003,6 +1311,7 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
 
     public void testMacroDefineWithParen2() {
         Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, Boolean.TRUE);
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.FALSE);
         try {
             setLoadDocumentText(
                     "#include <stdio.h>\n" +
@@ -1016,6 +1325,31 @@ public class CCFormatterUnitTestCase extends CCFormatterBaseUnitTestCase {
                     "#include <stdio.h>\n" +
                     "#define M(x) puts(#x)\n" +
                     "int main () {\n" +
+                    "    M (\"test\");\n" +
+                    "    return 0;\n" +
+                    "}\n");
+        } finally {
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, Boolean.FALSE);
+            Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION, Boolean.TRUE);
+        }
+    }
+
+    public void testMacroDefineWithParen21() {
+        Settings.setValue(CCKit.class, CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS, Boolean.TRUE);
+        try {
+            setLoadDocumentText(
+                    "#include <stdio.h>\n" +
+                    "#define M(x) puts(#x)\n" +
+                    "int main() {\n" +
+                    "    M(\"test\");\n" +
+                    "    return 0;\n" +
+                    "}\n");
+            reformat();
+            assertDocumentText("Incorrect formatting for macro define with paren",
+                    "#include <stdio.h>\n" +
+                    "#define M(x) puts(#x)\n" +
+                    "int main ()\n" +
+                    "{\n" +
                     "    M (\"test\");\n" +
                     "    return 0;\n" +
                     "}\n");

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.JTextComponent;
@@ -60,7 +59,6 @@ import org.netbeans.editor.ext.FormatWriter;
  *
  * (Copied from from editor/libsrc/org/netbeans/editor/ext/java/JavaFormatter.java)
  */
-
 public class CCFormatter extends ExtFormatter {
 
     public CCFormatter(Class kitClass) {
@@ -75,7 +73,7 @@ public class CCFormatter extends ExtFormatter {
     @Override
     public int[] getReformatBlock(JTextComponent target, String typedText) {
         int[] ret = null;
-	BaseDocument doc = Utilities.getDocument(target);
+        BaseDocument doc = Utilities.getDocument(target);
         int dotPos = target.getCaret().getDot();
         if (doc != null) {
             ret = getKeywordBasedReformatBlock(doc, dotPos, typedText);
@@ -83,10 +81,10 @@ public class CCFormatter extends ExtFormatter {
                 ret = super.getReformatBlock(target, typedText);
             }
         }
-        
+
         return ret;
     }
-    
+
     public static int[] getKeywordBasedReformatBlock(BaseDocument doc, int dotPos, String typedText) {
         /* Check whether the user has written the ending 'e'
          * of the first 'else' on the line.
@@ -96,7 +94,7 @@ public class CCFormatter extends ExtFormatter {
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "else")) { // NOI18N
-                    ret = new int[] { fnw, fnw + 4 };
+                    ret = new int[]{fnw, fnw + 4};
                 }
             } catch (BadLocationException e) {
             }
@@ -105,36 +103,36 @@ public class CCFormatter extends ExtFormatter {
             try {
                 int fnw = Utilities.getRowFirstNonWhite(doc, dotPos);
                 if (checkCase(doc, fnw, "case")) { // NOI18N
-                    ret = new int[] { fnw, fnw + 4 };
+                    ret = new int[]{fnw, fnw + 4};
                 } else if (checkCase(doc, fnw, "default")) { // NOI18N
-                    ret = new int[] {fnw, fnw + 7 };
+                    ret = new int[]{fnw, fnw + 7};
                 } else if (checkCase(doc, fnw, "public")) { // NOI18N
-                    ret = new int[] {fnw, fnw + 6 };
+                    ret = new int[]{fnw, fnw + 6};
                 } else if (checkCase(doc, fnw, "protected")) { // NOI18N
-                    ret = new int[] {fnw, fnw + 9 };
+                    ret = new int[]{fnw, fnw + 9};
                 } else if (checkCase(doc, fnw, "private")) { // NOI18N
-                    ret = new int[] {fnw, fnw + 7 };
+                    ret = new int[]{fnw, fnw + 7};
                 }
             } catch (BadLocationException e) {
             }
         }
         return ret;
     }
-    
-    private static boolean checkCase(BaseDocument doc, int fnw, String what) throws BadLocationException{
+
+    private static boolean checkCase(BaseDocument doc, int fnw, String what) throws BadLocationException {
         return fnw >= 0 && fnw + what.length() <= doc.getLength() && what.equals(doc.getText(fnw, what.length()));
     }
-    
+
     @Override
     protected void initFormatLayers() {
         addFormatLayer(new StripEndWhitespaceLayer());
         addFormatLayer(new CCLayer());
     }
-    
+
     public FormatSupport createFormatSupport(FormatWriter fw) {
         return new CCFormatSupport(fw);
     }
-    
+
     public class StripEndWhitespaceLayer extends AbstractFormatLayer {
 
         public StripEndWhitespaceLayer() {
@@ -147,11 +145,11 @@ public class CCFormatter extends ExtFormatter {
         }
 
         public void format(FormatWriter fw) {
-            CCFormatSupport ccfs = (CCFormatSupport)createFormatSupport(fw);
+            CCFormatSupport ccfs = (CCFormatSupport) createFormatSupport(fw);
 
             FormatTokenPosition pos = ccfs.getFormatStartPosition();
-            if (ccfs.isIndentOnly()) { 
-		// don't do anything
+            if (ccfs.isIndentOnly()) {
+            // don't do anything
             } else { // remove end-line whitespace
                 while (pos.getToken() != null) {
                     pos = ccfs.removeLineEndWhitespace(pos);
@@ -161,9 +159,8 @@ public class CCFormatter extends ExtFormatter {
                 }
             }
         }
-
     }
-    
+
     public class CCLayer extends AbstractFormatLayer {
 
         public CCLayer() {
@@ -177,7 +174,7 @@ public class CCFormatter extends ExtFormatter {
 
         public void format(FormatWriter fw) {
             try {
-                CCFormatSupport ccfs = (CCFormatSupport)createFormatSupport(fw);
+                CCFormatSupport ccfs = (CCFormatSupport) createFormatSupport(fw);
 
                 FormatTokenPosition pos = ccfs.getFormatStartPosition();
 
@@ -196,20 +193,23 @@ public class CCFormatter extends ExtFormatter {
 
                         // Goto next line
                         FormatTokenPosition pos2 = ccfs.findLineEnd(pos);
-                        if (pos2 == null || pos2.getToken() == null)
-                            break; // the last line was processed
-                        
+                        if (pos2 == null || pos2.getToken() == null) {
+                            break;
+                        } // the last line was processed
+
                         pos = ccfs.getNextPosition(pos2, javax.swing.text.Position.Bias.Forward);
-                        if (pos == pos2)
-                            break; // in case there is no next position
-                        if (pos == null || pos.getToken() == null)
-                            break; // there is nothing after the end of line
-                        
+                        if (pos == pos2) {
+                            break;
+                        } // in case there is no next position
+                        if (pos == null || pos.getToken() == null) {
+                            break;
+                        } // there is nothing after the end of line
+
                         FormatTokenPosition fnw = ccfs.findLineFirstNonWhitespace(pos);
                         if (fnw != null) {
-                          pos = fnw;
+                            pos = fnw;
                         } else { // no non-whitespace char on the line
-                          pos = ccfs.findLineStart(pos);
+                            pos = ccfs.findLineStart(pos);
                         }
                     }
                 }
@@ -217,25 +217,25 @@ public class CCFormatter extends ExtFormatter {
             }
         }
 
-        private void removeLineBeforeToken(TokenItem token, CCFormatSupport ccfs, boolean checkRBraceBefore){
+        private void removeLineBeforeToken(TokenItem token, CCFormatSupport ccfs, boolean checkRBraceBefore) {
             FormatTokenPosition tokenPos = ccfs.getPosition(token, 0);
             // Check that nothing exists before token
-            if (ccfs.findNonWhitespace(tokenPos, null, true, true) != null){
+            if (ccfs.findNonWhitespace(tokenPos, null, true, true) != null) {
                 return;
             }
 
             // Check that the backward nonWhite is }
-            if (checkRBraceBefore){
+            if (checkRBraceBefore) {
                 FormatTokenPosition ftpos = ccfs.findNonWhitespace(tokenPos, null, false, true);
-                if (ftpos == null || ftpos.getToken().getTokenID().getNumericID() != CCTokenContext.RBRACE_ID){
+                if (ftpos == null || ftpos.getToken().getTokenID().getNumericID() != CCTokenContext.RBRACE_ID) {
                     return;
                 }
-            } 
-            
+            }
+
             // Check that nothing exists after token, but ignore comments
-            if (ccfs.getNextPosition(tokenPos) != null){
+            if (ccfs.getNextPosition(tokenPos) != null) {
                 FormatTokenPosition ftp = ccfs.findImportant(ccfs.getNextPosition(tokenPos), null, true, false);
-                if (ftp != null){
+                if (ftp != null) {
                     insertNewLineBeforeToken(ftp.getToken(), ccfs);
                 }
             }
@@ -243,57 +243,54 @@ public class CCFormatter extends ExtFormatter {
             // check that on previous line is some stmt
             FormatTokenPosition ftp = ccfs.findLineStart(tokenPos); // find start of current line
             FormatTokenPosition endOfPreviousLine = ccfs.getPreviousPosition(ftp); // go one position back - means previous line
-            if (endOfPreviousLine == null || endOfPreviousLine.getToken().getTokenID() != CCTokenContext.WHITESPACE){
+            if (endOfPreviousLine == null || endOfPreviousLine.getToken().getTokenID() != CCTokenContext.WHITESPACE) {
                 return;
             }
             ftp = ccfs.findLineStart(endOfPreviousLine); // find start of the previous line - now we have limit position
             ftp = ccfs.findImportant(tokenPos, ftp, false, true); // find something important till the limit
-            if (ftp == null){
+            if (ftp == null) {
                 return;
             }
 
             // check that previous line does not end with "{" or line comment
             ftp = ccfs.findNonWhitespace(endOfPreviousLine, null, true, true);
             if (ftp.getToken().getTokenID() == CCTokenContext.LINE_COMMENT ||
-                ftp.getToken().getTokenID() == CCTokenContext.LBRACE ||
-                ccfs.isPreprocessorLine(ftp.getToken())){
+                    ftp.getToken().getTokenID() == CCTokenContext.LBRACE ||
+                    ccfs.isPreprocessorLine(ftp.getToken())) {
                 return;
             }
 
             // now move the token to the end of previous line
             boolean remove = true;
-            while (remove)
-            {
-                if (token.getPrevious() == endOfPreviousLine.getToken()){
+            while (remove) {
+                if (token.getPrevious() == endOfPreviousLine.getToken()) {
                     remove = false;
                 }
-                if (ccfs.canRemoveToken(token.getPrevious())){
+                if (ccfs.canRemoveToken(token.getPrevious())) {
                     ccfs.removeToken(token.getPrevious());
-                }else{
+                } else {
                     return;  // should never get here!
                 }
             }
             // insert one space before token
-            if (ccfs.canInsertToken(token)){
+            if (ccfs.canInsertToken(token)) {
                 ccfs.insertSpaces(token, 1);
             }
-        
+
         }
 
         /** insertNewLineBeforeKeyword such as else, catch, finally
          *  if getFormatNewlineBeforeBrace is true
          */
-        private void insertNewLineBeforeToken(TokenItem token, CCFormatSupport ccfs){
+        private void insertNewLineBeforeToken(TokenItem token, CCFormatSupport ccfs) {
             FormatTokenPosition elsePos = ccfs.getPosition(token, 0);
             FormatTokenPosition imp = ccfs.findImportant(elsePos,
                     null, true, true); // stop on line start
-            if (imp != null && imp.getToken().getTokenContextPath()
-                                    == ccfs.getTokenContextPath()
-            ) {
+            if (imp != null && imp.getToken().getTokenContextPath() == ccfs.getTokenContextPath()) {
                 // Insert new-line
                 if (ccfs.canInsertToken(token)) {
                     ccfs.insertToken(token, ccfs.getValidWhitespaceTokenID(),
-                        ccfs.getValidWhitespaceTokenContextPath(), "\n"); // NOI18N
+                            ccfs.getValidWhitespaceTokenContextPath(), "\n"); // NOI18N
                     ccfs.removeLineEndWhitespace(imp);
                     // reindent newly created line
                     ccfs.indentLine(elsePos);
@@ -303,120 +300,30 @@ public class CCFormatter extends ExtFormatter {
 
         protected void formatLine(CCFormatSupport ccfs, FormatTokenPosition pos) {
             if (pos.getToken().getTokenID() == CCTokenContext.WHITESPACE) {
-                if (pos.getToken().getImage().indexOf('\n')==0){
+                if (pos.getToken().getImage().indexOf('\n') == 0) {
                     return;
                 }
             }
             TokenItem token = ccfs.findLineStart(pos).getToken();
-            if (ccfs.isPreprocessorLine(token)){
+            if (ccfs.isPreprocessorLine(token)) {
                 return;
             }
             boolean first = true;
             while (token != null) {
                 if (!first && token.getTokenID() == CCTokenContext.WHITESPACE) {
-                    if (token.getImage().indexOf('\n')>=0){
+                    if (token.getImage().indexOf('\n') >= 0) {
                         return;
                     }
                 }
                 first = false;
-/*                if (ccfs.findLineEnd(ccfs.getPosition(token, 0)).getToken() == token) {
-                    break; // at line end
+                /*                if (ccfs.findLineEnd(ccfs.getPosition(token, 0)).getToken() == token) {
+                break; // at line end
                 }
- */
+                 */
                 if (token.getTokenContextPath() == ccfs.getTokenContextPath()) {
                     switch (token.getTokenID().getNumericID()) {
                         case CCTokenContext.LBRACE_ID: // '{'
-                            if (!ccfs.isIndentOnly()) {
-                            if (ccfs.getFormatNewlineBeforeBrace()) {
-                                FormatTokenPosition lbracePos = ccfs.getPosition(token, 0);
-                                // Look for first important token in backward direction
-                                FormatTokenPosition imp = ccfs.findImportant(lbracePos,
-                                        null, true, true); // stop on line start
-                                if (imp != null && imp.getToken().getTokenContextPath()
-                                                        == ccfs.getTokenContextPath()) {
-                                    switch (imp.getToken().getTokenID().getNumericID()) {
-                                        case CCTokenContext.BLOCK_COMMENT_ID:
-                                        case CCTokenContext.LINE_COMMENT_ID:
-                                            break; // comments are ignored
-
-                                        case CCTokenContext.RBRACKET_ID:
-                                            break; // array initializtion "ttt [] {...}"
-                                            
-                                        case CCTokenContext.COMMA_ID:
-                                        case CCTokenContext.EQ_ID:
-                                        case CCTokenContext.LBRACE_ID:
-                                            // multi array initialization
-                                            //        static int[][] CONVERT_TABLE= { {3,5},
-                                            //            {1,2}, {2,3}, ...
-                                            break;
-                                            
-
-                                        default:
-                                            // Check whether it isn't a "{ }" case
-                                            FormatTokenPosition next = ccfs.findImportant(
-                                                    lbracePos, null, true, false);
-                                            if (next == null || next.getToken() == null ||
-                                                next.getToken().getTokenID() != CCTokenContext.RBRACE) {
-                                                // Insert new-line
-                                                if (ccfs.canInsertToken(token)) {
-                                                    ccfs.insertToken(token, ccfs.getValidWhitespaceTokenID(),
-								     ccfs.getValidWhitespaceTokenContextPath(), "\n"); // NOI18N
-                                                    ccfs.removeLineEndWhitespace(imp);
-                                                    // bug fix: 10225 - reindent newly created line
-                                                    ccfs.indentLine(lbracePos);
-                                                }
-
-                                                token = imp.getToken();
-                                            }
-                                            break;
-                                    }// end switch
-                                }
-
-                            } else {
-                                FormatTokenPosition lbracePos = ccfs.getPosition(token, 0);
-                                
-                                // Check that nothing exists before "{"
-                                if (ccfs.findNonWhitespace(lbracePos, null, true, true) != null)
-                                    break;
-                                // Check that nothing exists after "{", but ignore comments
-                                if (ccfs.getNextPosition(lbracePos) != null)
-                                    if (ccfs.findImportant(ccfs.getNextPosition(lbracePos), null, true, false) != null)
-                                        break;
-                                
-                                // check that on previous line is some stmt
-                                FormatTokenPosition ftp = ccfs.findLineStart(lbracePos); // find start of current line
-                                FormatTokenPosition endOfPreviousLine = ccfs.getPreviousPosition(ftp); // go one position back - means previous line
-                                if (endOfPreviousLine == null || 
-				    endOfPreviousLine.getToken().getTokenID() != CCTokenContext.WHITESPACE)
-                                    break;
-                                ftp = ccfs.findLineStart(endOfPreviousLine); // find start of the previous line - now we have limit position
-                                ftp = ccfs.findImportant(lbracePos, ftp, false, true); // find something important till the limit
-                                if (ftp == null)
-                                    break;
-                                
-                                // check that previous line does not end with "{" or line comment
-                                ftp = ccfs.findNonWhitespace(endOfPreviousLine, null, true, true);
-                                if (ftp.getToken().getTokenID() == CCTokenContext.LINE_COMMENT ||
-                                    ftp.getToken().getTokenID() == CCTokenContext.LBRACE ||
-                                    ccfs.isPreprocessorLine(ftp.getToken()))
-                                    break;
-
-                                // now move the "{" to the end of previous line
-                                boolean remove = true;
-                                while (remove)
-                                {
-                                    if (token.getPrevious() == endOfPreviousLine.getToken())
-                                        remove = false;
-                                    if (ccfs.canRemoveToken(token.getPrevious()))
-                                        ccfs.removeToken(token.getPrevious());
-                                    else
-                                        break;  // should never get here!
-                                }
-                                // insert one space before "{"
-                                if (ccfs.canInsertToken(token))
-                                    ccfs.insertSpaces(token, 1);
-                            }
-                            } // !ccfs.isIndentOnly()
+                            token = processBrace(ccfs, token);
                             break;
 
                         case CCTokenContext.LPAREN_ID:
@@ -425,7 +332,7 @@ public class CCFormatter extends ExtFormatter {
                                 if (prevToken != null && prevToken.getTokenID() == CCTokenContext.IDENTIFIER) {
                                     if (ccfs.canInsertToken(token)) {
                                         ccfs.insertToken(token, ccfs.getWhitespaceTokenID(),
-							 ccfs.getWhitespaceTokenContextPath(), " "); // NOI18N
+                                                ccfs.getWhitespaceTokenContextPath(), " "); // NOI18N
                                     }
                                 }
                             } else {
@@ -434,8 +341,7 @@ public class CCFormatter extends ExtFormatter {
                                 if (prevToken != null && prevToken.getTokenID() == CCTokenContext.WHITESPACE &&
                                         prevToken.getImage().length() == 1) {
                                     TokenItem prevprevToken = prevToken.getPrevious();
-                                    if (prevprevToken != null && prevprevToken.getTokenID() == CCTokenContext.IDENTIFIER)
-                                    {
+                                    if (prevprevToken != null && prevprevToken.getTokenID() == CCTokenContext.IDENTIFIER) {
                                         if (ccfs.canRemoveToken(prevToken)) {
                                             ccfs.removeToken(prevToken);
                                         }
@@ -443,18 +349,18 @@ public class CCFormatter extends ExtFormatter {
                                 }
                             }
                             break;
-                           
+
                         case CCTokenContext.COMMA_ID:
-			    TokenItem nextToken = token.getNext();
-                            if( nextToken != null ) {
+                            TokenItem nextToken = token.getNext();
+                            if (nextToken != null) {
                                 if (ccfs.getFormatSpaceAfterComma()) {
                                     // insert a space if one isn't already there
                                     if (nextToken.getTokenID() != CCTokenContext.WHITESPACE) {
-                                        ccfs.insertToken(nextToken, 
-                                                         ccfs.getValidWhitespaceTokenID(), 
-                                                         ccfs.getWhitespaceTokenContextPath(), 
-                                                         " "); //NOI18N
-                                     }
+                                        ccfs.insertToken(nextToken,
+                                                ccfs.getValidWhitespaceTokenID(),
+                                                ccfs.getWhitespaceTokenContextPath(),
+                                                " "); //NOI18N
+                                    }
                                 } else {
                                     if (nextToken.getTokenID() == CCTokenContext.WHITESPACE) {
                                         ccfs.removeToken(nextToken);
@@ -467,5 +373,144 @@ public class CCFormatter extends ExtFormatter {
                 token = token.getNext();
             } //end while loop
         } //end formatLine()
+
+        private TokenItem processBrace(CCFormatSupport ccfs, TokenItem token) {
+            if (ccfs.isIndentOnly()) {
+                return token;
+            }
+            if (ccfs.getFormatNewlineBeforeBrace() || ccfs.getFormatNewlineBeforeBraceDeclaration()) {
+                FormatTokenPosition lbracePos = ccfs.getPosition(token, 0);
+                // Look for first important token in backward direction
+                FormatTokenPosition imp = ccfs.findImportant(lbracePos,
+                        null, true, true); // stop on line start
+                if (imp != null && imp.getToken().getTokenContextPath() == ccfs.getTokenContextPath()) {
+                    switch (imp.getToken().getTokenID().getNumericID()) {
+                        case CCTokenContext.BLOCK_COMMENT_ID:
+                        case CCTokenContext.LINE_COMMENT_ID:
+                            break; // comments are ignored
+
+                        case CCTokenContext.RBRACKET_ID:
+                            break; // array initializtion "ttt [] {...}"
+
+                        case CCTokenContext.COMMA_ID:
+                        case CCTokenContext.EQ_ID:
+                        case CCTokenContext.LBRACE_ID:
+                            // multi array initialization
+                            //        static int[][] CONVERT_TABLE= { {3,5},
+                            //            {1,2}, {2,3}, ...
+                            break;
+
+                        default:
+                            // Check whether it isn't a "{ }" case
+                            FormatTokenPosition next = ccfs.findImportant(
+                                    lbracePos, null, true, false);
+                            if (next == null || next.getToken() == null ||
+                                    next.getToken().getTokenID() != CCTokenContext.RBRACE) {
+                                // Insert new-line
+                                if (isAddNewLine(ccfs, token)) {
+                                    if (ccfs.canInsertToken(token)) {
+                                        ccfs.insertToken(token, ccfs.getValidWhitespaceTokenID(),
+                                                ccfs.getValidWhitespaceTokenContextPath(), "\n"); // NOI18N
+                                        ccfs.removeLineEndWhitespace(imp);
+                                        // bug fix: 10225 - reindent newly created line
+                                        ccfs.indentLine(lbracePos);
+                                        token = imp.getToken();
+                                    }
+                                } else {
+                                    return removeNewLine(token, ccfs);
+                                }
+                            }
+                            break;
+                    }// end switch
+                } else {
+                    if (!isAddNewLine(ccfs, token)) {
+                        return removeNewLine(token, ccfs);
+                    }
+                }
+            } else {
+                return removeNewLine(token, ccfs);
+            }
+            return token;
+        }
+
+        private boolean isAddNewLine(CCFormatSupport ccfs, TokenItem token) {
+            TokenItem prev = ccfs.findImportantToken(token, null, true, true);
+            if (prev == null) {
+                return true;
+            }
+            switch (prev.getTokenID().getNumericID()) {
+                case CCTokenContext.TRY_ID: // 'thy {'
+                case CCTokenContext.ELSE_ID: // 'else {'
+                case CCTokenContext.DO_ID:
+                    return ccfs.getFormatNewlineBeforeBrace();
+                case CCTokenContext.SEMICOLON_ID:
+                    return true;
+            }
+            if (prev.getTokenID().getNumericID() == CCTokenContext.RPAREN_ID) {
+                TokenItem imp = ccfs.findStatementStart(prev, false);
+                if (imp != null) {
+                    switch (imp.getTokenID().getNumericID()) {
+                        case CCTokenContext.CATCH_ID: // 'catch (...) {'
+                        case CCTokenContext.IF_ID:
+                        case CCTokenContext.FOR_ID:
+                        case CCTokenContext.WHILE_ID:
+                        case CCTokenContext.SWITCH_ID:
+                            return ccfs.getFormatNewlineBeforeBrace();
+                    }
+                }
+            }
+            return ccfs.getFormatNewlineBeforeBraceDeclaration();
+        }
+
+        private TokenItem removeNewLine(TokenItem token, CCFormatSupport ccfs) {
+            FormatTokenPosition lbracePos = ccfs.getPosition(token, 0);
+
+            // Check that nothing exists before "{"
+            if (ccfs.findNonWhitespace(lbracePos, null, true, true) != null) {
+                return token;
+            }
+            // Check that nothing exists after "{", but ignore comments
+            if (ccfs.getNextPosition(lbracePos) != null) {
+                if (ccfs.findImportant(ccfs.getNextPosition(lbracePos), null, true, false) != null) {
+                    return token;
+                }
+            }
+
+            // check that on previous line is some stmt
+            FormatTokenPosition ftp = ccfs.findLineStart(lbracePos); // find start of current line
+            FormatTokenPosition endOfPreviousLine = ccfs.getPreviousPosition(ftp); // go one position back - means previous line
+            if (endOfPreviousLine == null || endOfPreviousLine.getToken().getTokenID() != CCTokenContext.WHITESPACE) {
+                return token;
+            }
+            ftp = ccfs.findLineStart(endOfPreviousLine); // find start of the previous line - now we have limit position
+            ftp = ccfs.findImportant(lbracePos, ftp, false, true); // find something important till the limit
+            if (ftp == null) {
+                return token;
+            }
+
+            // check that previous line does not end with "{" or line comment
+            ftp = ccfs.findNonWhitespace(endOfPreviousLine, null, true, true);
+            if (ftp.getToken().getTokenID() == CCTokenContext.LINE_COMMENT || ftp.getToken().getTokenID() == CCTokenContext.LBRACE || ccfs.isPreprocessorLine(ftp.getToken())) {
+                return token;
+            }
+
+            // now move the "{" to the end of previous line
+            boolean remove = true;
+            while (remove) {
+                if (token.getPrevious() == endOfPreviousLine.getToken()) {
+                    remove = false;
+                }
+                if (ccfs.canRemoveToken(token.getPrevious())) {
+                    ccfs.removeToken(token.getPrevious());
+                } else {
+                    break;
+                } // should never get here!
+            }
+            // insert one space before "{"
+            if (ccfs.canInsertToken(token)) {
+                ccfs.insertSpaces(token, 1);
+            }
+            return token;
+        }
     } // end class CCLayer
 }

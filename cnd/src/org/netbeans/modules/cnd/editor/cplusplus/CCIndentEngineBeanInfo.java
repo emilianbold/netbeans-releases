@@ -70,6 +70,7 @@ public class CCIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
         return NbEditorUtilities.mergeStringArrays(super.createPropertyNames(),
             new String[] {
                 CCIndentEngine.CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
+                CCIndentEngine.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION_PROP,
                 CCIndentEngine.CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
                 CCIndentEngine.CC_FORMAT_SPACE_AFTER_COMMA_PROP,
                 CCIndentEngine.CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP,

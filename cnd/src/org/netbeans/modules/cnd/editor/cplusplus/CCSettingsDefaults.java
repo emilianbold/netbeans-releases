@@ -58,6 +58,7 @@ public class CCSettingsDefaults extends ExtSettingsDefaults {
     // Formatting
     public static final Boolean defaultCCFormatSpaceBeforeParenthesis = Boolean.FALSE;
     public static final Boolean defaultCCFormatSpaceAfterComma = Boolean.TRUE;
+    public static final Boolean defaultCCFormatNewlineBeforeBraceDeclaration = Boolean.TRUE;
     public static final Boolean defaultCCFormatNewlineBeforeBrace = Boolean.FALSE;
     public static final Boolean defaultCCFormatLeadingSpaceInComment = Boolean.FALSE;
     public static final Boolean defaultCCFormatLeadingStarInComment = Boolean.TRUE;

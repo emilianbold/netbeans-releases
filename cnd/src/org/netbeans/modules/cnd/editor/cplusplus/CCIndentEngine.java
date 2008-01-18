@@ -58,6 +58,9 @@ public class CCIndentEngine extends FormatterIndentEngine {
     public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP
         = "CCFormatNewlineBeforeBrace"; // NOI18N
 
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION_PROP
+        = "CCFormatNewlineBeforeBraceDeclaration"; // NOI18N
+
     public static final String CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP
         = "CCFormatSpaceBeforeParenthesis"; // NOI18N
 
@@ -107,11 +110,24 @@ public class CCIndentEngine extends FormatterIndentEngine {
         return b.booleanValue();
     }
 
+    public boolean getCCFormatNewlineBeforeBraceDeclaration() {
+        Boolean b = (Boolean)getValue(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION);
+        if (b == null) {
+            b = CCSettingsDefaults.defaultCCFormatNewlineBeforeBraceDeclaration;
+        }
+        return b.booleanValue();
+    }
+
     public void setCCFormatNewlineBeforeBrace(boolean b) {
         setValue(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE,
 		b ? Boolean.TRUE : Boolean.FALSE, CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP);
     }
     
+    public void setCCFormatNewlineBeforeBraceDeclaration(boolean b) {
+        setValue(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
+		b ? Boolean.TRUE : Boolean.FALSE, CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION_PROP);
+    }
+
     public boolean getCCFormatSpaceAfterComma() {
         Boolean b = (Boolean)getValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
         if (b == null) {
@@ -166,6 +182,7 @@ public class CCIndentEngine extends FormatterIndentEngine {
     // Serialization ------------------------------------------------------------
     private static final ObjectStreamField[] serialPersistentFields = {
         new ObjectStreamField(CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP, Boolean.TYPE),
+        new ObjectStreamField(CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION_PROP, Boolean.TYPE),
         new ObjectStreamField(CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, Boolean.TYPE),
         new ObjectStreamField(CC_FORMAT_SPACE_AFTER_COMMA_PROP, Boolean.TYPE),
         new ObjectStreamField(CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP, Boolean.TYPE),
@@ -179,6 +196,8 @@ public class CCIndentEngine extends FormatterIndentEngine {
         ObjectInputStream.GetField fields = ois.readFields();
         setCCFormatNewlineBeforeBrace(fields.get(CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP,
             getCCFormatNewlineBeforeBrace()));
+        setCCFormatNewlineBeforeBraceDeclaration(fields.get(CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION_PROP,
+            getCCFormatNewlineBeforeBraceDeclaration()));
 	setCCFormatSpaceBeforeParenthesis(fields.get(CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP,
             getCCFormatSpaceBeforeParenthesis()));
         setCCFormatSpaceAfterComma(fields.get(CC_FORMAT_SPACE_AFTER_COMMA_PROP,
@@ -194,6 +213,7 @@ public class CCIndentEngine extends FormatterIndentEngine {
     private void writeObject(ObjectOutputStream oos) throws IOException, ClassNotFoundException {
         ObjectOutputStream.PutField fields = oos.putFields();
         fields.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_PROP, getCCFormatNewlineBeforeBrace());
+        fields.put(CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION_PROP, getCCFormatNewlineBeforeBraceDeclaration());
         fields.put(CC_FORMAT_SPACE_BEFORE_PARENTHESIS_PROP, getCCFormatSpaceBeforeParenthesis());
         fields.put(CC_FORMAT_SPACE_AFTER_COMMA_PROP, getCCFormatSpaceAfterComma());
         fields.put(CC_FORMAT_PREPROCESSOR_AT_LINE_START_PROP, getCCFormatPreprocessorAtLineStart());

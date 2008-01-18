@@ -82,6 +82,21 @@ public class CCSettingsNames extends ExtSettingsNames {
             "cc-add-newline-before-brace"; //NOI18N
     
     /**
+     * Whether insert extra new-line before the declaration or not.
+     * Values: java.lang.Boolean instances
+     * Effect: int foo() {
+     *           function();
+     *         }
+     *           becomes (when set to true)
+     *         int foo(test)
+     *         {
+     *           function();
+     *         }
+     */
+    public static final String CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION =
+            "cc-add-newline-before-brace-declaratin"; //NOI18N
+
+    /**
      * Whether to indent preprocessors positioned at start of line.
      * Those not starting at column 0 of the line will automatically be indented.
      * This setting is to prevent C/C++ code that is compiled with compilers that

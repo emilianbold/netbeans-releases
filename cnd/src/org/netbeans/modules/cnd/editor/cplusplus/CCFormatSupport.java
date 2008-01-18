@@ -223,7 +223,7 @@ public class CCFormatSupport extends ExtFormatSupport {
      *  and delimiter is being searched.
      * @return token that is start of the given statement
      *  or command delimiter.
-     *  If the start of the statement is not found, null is retrurned.
+     *  If the start of the statement is not found, null is returned.
      */
     public TokenItem findStatement(TokenItem token) {
         TokenItem lit = null; // last important token
@@ -1334,6 +1334,11 @@ public class CCFormatSupport extends ExtFormatSupport {
     public boolean getFormatNewlineBeforeBrace() {
         return getSettingBoolean(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE,
                                  CCSettingsDefaults.defaultCCFormatNewlineBeforeBrace);
+    }
+
+    public boolean getFormatNewlineBeforeBraceDeclaration() {
+        return getSettingBoolean(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
+                                 CCSettingsDefaults.defaultCCFormatNewlineBeforeBraceDeclaration);
     }
     
     public boolean getFormatLeadingSpaceInComment() {
