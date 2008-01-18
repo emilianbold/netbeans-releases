@@ -259,6 +259,7 @@
                 <package>jxl.read.biff</package>
                 <package>jxl.write</package>
                 <package>jxl.write.biff</package>
+                <package>net.java.hulp.i18n</package>
                 <package>org.apache.commons.collections</package>
                 <package>org.apache.commons.collections.bag</package>
                 <package>org.apache.commons.collections.bidimap</package>
@@ -336,6 +337,7 @@
                 <package>org.axiondb.util</package>
                 <package>org.netbeans.modules.etl.codegen</package>
                 <package>org.netbeans.modules.etl.codegen.impl</package>
+                <package>org.netbeans.modules.etl.logger</package>
                 <package>org.netbeans.modules.etl.model</package>
                 <package>org.netbeans.modules.etl.model.impl</package>
                 <package>org.netbeans.modules.etl.ui</package>
