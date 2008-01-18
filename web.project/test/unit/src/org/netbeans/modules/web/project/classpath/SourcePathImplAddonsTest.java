@@ -268,6 +268,7 @@ public class SourcePathImplAddonsTest extends NbTestCase{
         
         addonModuleDir1.mkdirs();
         addonModuleDir2.mkdirs();
+        FileUtil.refreshFor(helper.resolveFile(buildDir));
         
         // Simulate folder creation thru NB task.
         FileObject buildDirFO = helper.resolveFileObject(buildDir);
