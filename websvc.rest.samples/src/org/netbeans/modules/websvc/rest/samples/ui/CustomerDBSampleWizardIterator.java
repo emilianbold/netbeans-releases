@@ -83,7 +83,7 @@ public class CustomerDBSampleWizardIterator extends SampleWizardIterator {
         //replace tokens
         String[][] tokens = { {"CustomerDB", (String) wiz.getProperty(NAME)} };
         String[] files = 
-            {   "web/WEB-INF/sun-web.xml", 
+            {   //"web/WEB-INF/sun-web.xml", 
                 "nbproject/project.properties", "nbproject/project.xml", 
                 "build.xml"
             };        
