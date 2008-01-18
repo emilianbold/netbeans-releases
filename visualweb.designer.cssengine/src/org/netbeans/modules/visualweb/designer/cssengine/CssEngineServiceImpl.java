@@ -92,6 +92,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.UserDataHandler;
 
 
 /**
@@ -108,7 +109,7 @@ public final class CssEngineServiceImpl implements CssEngineService {
 
 //    /** Maps <code>Document</code> to XHTML CSS engine. */
 //    private final Map<Document, XhtmlCssEngine> document2engine = new WeakHashMap<Document, XhtmlCssEngine>();
-//    private static final String KEY_CSS_ENGINE = "vwpXhtmlCssEngine"; // NOI18N
+    private static final String KEY_CSS_ENGINE = "vwpXhtmlCssEngine"; // NOI18N
 
 
     /** Creates a new instance of CssServiceImpl */
@@ -123,29 +124,29 @@ public final class CssEngineServiceImpl implements CssEngineService {
         return instance;
     }
 
-    private static class EngineKey {}
-    private static final Map<EngineKey, XhtmlCssEngine> engineKey2engine = new WeakHashMap<EngineKey, XhtmlCssEngine>();
-    private static final ReadWriteLock engineLock = new ReentrantReadWriteLock();
-    
-    private static final Map<Document, EngineKey> doc2engineKey = new WeakHashMap<Document, EngineKey>();
+//    private static class EngineKey {}
+//    private static final Map<EngineKey, XhtmlCssEngine> engineKey2engine = new WeakHashMap<EngineKey, XhtmlCssEngine>();
+//    private static final ReadWriteLock engineLock = new ReentrantReadWriteLock();
+//    
+//    private static final Map<Document, EngineKey> doc2engineKey = new WeakHashMap<Document, EngineKey>();
     
 
     private XhtmlCssEngine getCssEngine(Document document) {
         if (document == null) {
             return null;
         }
-//        XhtmlCssEngine ret;
+        XhtmlCssEngine ret;
 //        synchronized (document2engine) {
 //            ret = document2engine.get(document);
 //        }
-//        return (XhtmlCssEngine)document.getUserData(KEY_CSS_ENGINE);
-        engineLock.readLock().lock();
-        try {
-            EngineKey engineKey = doc2engineKey.get(document);
-            return engineKey2engine.get(engineKey);
-        } finally {
-            engineLock.readLock().unlock();
-        }
+        return (XhtmlCssEngine)document.getUserData(KEY_CSS_ENGINE);
+//        engineLock.readLock().lock();
+//        try {
+//            EngineKey engineKey = doc2engineKey.get(document);
+//            return engineKey2engine.get(engineKey);
+//        } finally {
+//            engineLock.readLock().unlock();
+//        }
     }
 
 //    public void setCssEngine(Document document, XhtmlCssEngine engine) {
@@ -163,15 +164,15 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        synchronized (document2engine) {
 //            document2engine.put(document, engine);
 //        }
-//        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
-        engineLock.writeLock().lock();
-        try {
-            EngineKey engineKey = new EngineKey();
-            engineKey2engine.put(engineKey, engine);
-            doc2engineKey.put(document, engineKey);
-        } finally {
-            engineLock.writeLock().unlock();
-        }
+        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
+//        engineLock.writeLock().lock();
+//        try {
+//            EngineKey engineKey = new EngineKey();
+//            engineKey2engine.put(engineKey, engine);
+//            doc2engineKey.put(document, engineKey);
+//        } finally {
+//            engineLock.writeLock().unlock();
+//        }
     }
 
     /*private*/ static CssUserAgentInfo getUserAgentInfo() {
@@ -234,14 +235,14 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //        synchronized (document2engine) {
 //            engine = document2engine.remove(document);
 //        }
-//        engine = (XhtmlCssEngine) document.getUserData(KEY_CSS_ENGINE);
-        engineLock.readLock().lock();
-        try {
-            EngineKey engineKey = doc2engineKey.get(document);
-            engine = engineKey2engine.get(engineKey);
-        } finally {
-            engineLock.readLock().unlock();
-        }
+        engine = (XhtmlCssEngine) document.getUserData(KEY_CSS_ENGINE);
+//        engineLock.readLock().lock();
+//        try {
+//            EngineKey engineKey = doc2engineKey.get(document);
+//            engine = engineKey2engine.get(engineKey);
+//        } finally {
+//            engineLock.readLock().unlock();
+//        }
         
         if (engine != null) {
             engine.dispose();
@@ -256,18 +257,18 @@ public final class CssEngineServiceImpl implements CssEngineService {
 //            XhtmlCssEngine engine = document2engine.get(originalDocument);
 //            document2engine.put(document, engine);
 //        }
-//        XhtmlCssEngine engine = (XhtmlCssEngine)originalDocument.getUserData(KEY_CSS_ENGINE);
-//        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
-        engineLock.writeLock().lock();
-        try {
-            EngineKey originalEngineKey = doc2engineKey.get(originalDocument);
-            XhtmlCssEngine engine = engineKey2engine.get(originalEngineKey);
-            EngineKey engineKey = new EngineKey();
-            engineKey2engine.put(engineKey, engine);
-            doc2engineKey.put(document, engineKey);
-        } finally {
-            engineLock.writeLock().unlock();
-        }
+        XhtmlCssEngine engine = (XhtmlCssEngine)originalDocument.getUserData(KEY_CSS_ENGINE);
+        document.setUserData(KEY_CSS_ENGINE, engine, CssEngineDataHandler.getDefault());
+//        engineLock.writeLock().lock();
+//        try {
+//            EngineKey originalEngineKey = doc2engineKey.get(originalDocument);
+//            XhtmlCssEngine engine = engineKey2engine.get(originalEngineKey);
+//            EngineKey engineKey = new EngineKey();
+//            engineKey2engine.put(engineKey, engine);
+//            doc2engineKey.put(document, engineKey);
+//        } finally {
+//            engineLock.writeLock().unlock();
+//        }
     }
 
     public Collection<String> getCssStyleClassesForDocument(Document document) {
@@ -1149,16 +1150,16 @@ public final class CssEngineServiceImpl implements CssEngineService {
     } // End of DefaultCssSyntaxErrorInfo.
     
     
-//    private static class CssEngineDataHandler implements UserDataHandler {
-//        private static final CssEngineDataHandler INSTANCE = new CssEngineDataHandler();
-//        
-//        public static CssEngineDataHandler getDefault() {
-//            return INSTANCE;
-//        }
-//        
-//        public void handle(short operation, String key, Object data, Node src, Node dst) {
-//            // No op.
-//        }
-//    } // End of CssEngineDataHandler.
+    private static class CssEngineDataHandler implements UserDataHandler {
+        private static final CssEngineDataHandler INSTANCE = new CssEngineDataHandler();
+        
+        public static CssEngineDataHandler getDefault() {
+            return INSTANCE;
+        }
+        
+        public void handle(short operation, String key, Object data, Node src, Node dst) {
+            // No op.
+        }
+    } // End of CssEngineDataHandler.
     
 }
