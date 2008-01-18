@@ -43,10 +43,14 @@ package org.netbeans.modules.server.ui.wizard;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 import javax.swing.ListModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -78,13 +82,15 @@ public class ServerWizardVisual extends javax.swing.JPanel {
     public ServerWizardVisual() {
         initComponents();
 
-        WizardAdapter selected = null;
-        if (serverListBox.getModel().getSize() > 0) {
-            selected = (WizardAdapter) serverListBox.getModel().getElementAt(0);
+        Queue<WizardAdapter> selected = new PriorityQueue<WizardAdapter>(5, new WizardPriority());
+        for (int i = 0; i < serverListBox.getModel().getSize(); i++) {
+            selected.add((WizardAdapter) serverListBox.getModel().getElementAt(i));
         }
-        serverListBox.setSelectedValue(selected, true);
-        if (selected != null) {
-            fillDisplayName(selected.getServerInstanceWizard());
+
+        if (!selected.isEmpty()) {
+            WizardAdapter selectedItem = selected.peek();
+            serverListBox.setSelectedValue(selectedItem, true);
+            fillDisplayName(selectedItem.getServerInstanceWizard());
         }
 
         displayNameEditField.getDocument().addDocumentListener(new DocumentListener() {
@@ -323,7 +329,6 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
         public WizardListModel() {
             for (ServerWizardProvider wizard
                     : Lookups.forPath(ServerRegistry.SERVERS_PATH).lookupAll(ServerWizardProvider.class)) {
-                // TODO prefer glassfish ;)
 
                 // safety precaution shouldn't ever happen - used because of bridging
                 if (wizard.getInstantiatingIterator() != null) {
@@ -362,25 +367,6 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
             return serverInstanceWizard;
         }
 
-//        @Override
-//        public boolean equals(Object obj) {
-//            if (obj == null) {
-//                return false;
-//            }
-//            if (getClass() != obj.getClass()) {
-//                return false;
-//            }
-//
-//            WizardAdapter other = (WizardAdapter) obj;
-//            return serverInstanceWizard.getDisplayName().equals(
-//                    other.getServerInstanceWizard().getDisplayName());
-//        }
-//
-//        @Override
-//        public int hashCode() {
-//            return serverInstanceWizard.getDisplayName().hashCode();
-//        }
-
         public int compareTo(WizardAdapter o) {
             return serverInstanceWizard.getDisplayName().compareTo(
                     o.getServerInstanceWizard().getDisplayName());
@@ -389,6 +375,35 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
         @Override
         public String toString() {
             return serverInstanceWizard.getDisplayName();
+        }
+    }
+
+    private static class WizardPriority implements Comparator<WizardAdapter> {
+
+        private static final List<Pattern> PRIORITY_LIST = new ArrayList<Pattern>(4);
+
+        static {
+            PRIORITY_LIST.add(Pattern.compile(".*Sailfin.*")); // NOI18N
+            PRIORITY_LIST.add(Pattern.compile(".*Sun\\s*Java\\s*System.*")); // NOI18N
+            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*V1.*")); // NOI18N
+            PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*V2.*")); // NOI18N
+        }
+
+        public int compare(WizardAdapter o1, WizardAdapter o2) {
+            Integer priority1 = computePriority(o1.getServerInstanceWizard().getDisplayName());
+            Integer priority2 = computePriority(o2.getServerInstanceWizard().getDisplayName());
+
+            return -priority1.compareTo(priority2);
+        }
+
+        private int computePriority(String name) {
+            int priority = 0;
+            for (int i = 0; i < PRIORITY_LIST.size(); i++) {
+                if (PRIORITY_LIST.get(i).matcher(name).matches()) {
+                    priority = i;
+                }
+            }
+            return priority;
         }
 
     }
