@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -169,7 +168,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     
     public static final boolean STAT_COMPLETION = Boolean.getBoolean("cnd.completion.stat");
     public static final boolean TIMING_COMPLETION = Boolean.getBoolean("cnd.completion.timing") || STAT_COMPLETION;
-    
+
     private void resolveContext(CsmContext context, int offset, String strPrefix, boolean match) {
         long time = 0;
         if (TIMING_COMPLETION) {
@@ -214,7 +213,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         //long timeStart = System.nanoTime();
         if (needClasses(context, offset)) {
             // list of classesEnumsTypedefs
-            classesEnumsTypedefs = getClassesEnums(prj, strPrefix, match, offset);
+            classesEnumsTypedefs = getClassesEnums(context, prj, strPrefix, match, offset);
         }
         
         if (needLocalVars(context, offset)) {
@@ -308,17 +307,17 @@ public class CompletionResolverImpl implements CompletionResolver {
         } 
         
         if (needGlobalVariables(context, offset)) {
-            globVars = getGlobalVariables(prj, strPrefix, match, offset);
+            globVars = getGlobalVariables(context, prj, strPrefix, match, offset);
         }
         if (needGlobalEnumerators(context, offset)) {
-            globEnumerators = getGlobalEnumerators(prj, strPrefix, match, offset);
+            globEnumerators = getGlobalEnumerators(context, prj, strPrefix, match, offset);
         }
         if (needGlobalFunctions(context, offset)) {
-            globFuns = getGlobalFunctions(prj, strPrefix, match, offset);
+            globFuns = getGlobalFunctions(context, prj, strPrefix, match, offset);
         }
         if (needGlobalNamespaces(context, offset)) {
-            globProjectNSs = getGlobalNamespaces(prj, strPrefix, match, offset);
-            projectNsAliases = getProjectNamespaceAliases(prj, strPrefix, match, offset);
+            globProjectNSs = getGlobalNamespaces(context, prj, strPrefix, match, offset);
+            projectNsAliases = getProjectNamespaceAliases(context, prj, strPrefix, match, offset);
         }        
         
         if (needLibClasses(context, offset)) {
@@ -490,8 +489,8 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
     
     protected CsmProjectContentResolver createContentResolver(CsmProject prj) {
-        CsmProjectContentResolver contResolver = new CsmProjectContentResolver(prj, isCaseSensitive(), isSortNeeded(), isNaturalSort());
-        return contResolver;
+        CsmProjectContentResolver resolver = new CsmProjectContentResolver(prj, isCaseSensitive(), isSortNeeded(), isNaturalSort());
+        return resolver;
     }
     
     protected CsmProjectContentResolver createLibraryResolver(CsmProject lib) {
@@ -503,12 +502,12 @@ public class CompletionResolverImpl implements CompletionResolver {
         return CsmUtilities.merge(orig, newList);
     }
     
-    private Collection getClassesEnums(CsmProject prj, String strPrefix, boolean match, int offset) {
+    private Collection getClassesEnums(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {
         if (prj == null) {
             return null;
         }
         // try to get elements from visible namespaces
-        Collection<CsmNamespace> namespaces = getNamespacesToSearch(this.file, offset, strPrefix.length() == 0);
+        Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
         for (CsmNamespace ns : namespaces) {
             List res = contResolver.getNamespaceClassesEnums(ns, strPrefix, match, false);
@@ -526,8 +525,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
     
-    private Collection getGlobalVariables(CsmProject prj, String strPrefix, boolean match, int offset) {    
-        Collection<CsmNamespace> namespaces = getNamespacesToSearch(this.file, offset, strPrefix.length() == 0);
+    private Collection getGlobalVariables(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {    
+        Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
         for (CsmNamespace ns : namespaces) {
             List res = contResolver.getNamespaceVariables(ns, strPrefix, match, false);
@@ -541,8 +540,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
     
-    private Collection getGlobalEnumerators(CsmProject prj, String strPrefix, boolean match, int offset) {
-        Collection<CsmNamespace> namespaces = getNamespacesToSearch(this.file, offset, strPrefix.length() == 0);
+    private Collection getGlobalEnumerators(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {
+        Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
         for (CsmNamespace ns : namespaces) {
             List res = contResolver.getNamespaceEnumerators(ns, strPrefix, match, false);
@@ -551,8 +550,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;        
     }
     
-    private Collection getGlobalFunctions(CsmProject prj, String strPrefix, boolean match, int offset) {
-        Collection<CsmNamespace> namespaces = getNamespacesToSearch(this.file, offset, strPrefix.length() == 0);
+    private Collection getGlobalFunctions(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {
+        Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
         for (CsmNamespace ns : namespaces) {
             List res = contResolver.getNamespaceFunctions(ns, strPrefix, match, false);
@@ -567,8 +566,8 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
     
-    private Collection getGlobalNamespaces(CsmProject prj, String strPrefix, boolean match, int offset) {
-        Collection<CsmNamespace> namespaces = getNamespacesToSearch(this.file, offset, strPrefix.length() == 0);
+    private Collection getGlobalNamespaces(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {
+        Collection<CsmNamespace> namespaces = getNamespacesToSearch(context,this.file, offset, strPrefix.length() == 0);
         LinkedHashSet out = new LinkedHashSet(1024);
         for (CsmNamespace ns : namespaces) {
             List res = contResolver.getNestedNamespaces(ns, strPrefix, match);
@@ -577,7 +576,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
     
-    private Collection getProjectNamespaceAliases(CsmProject prj, String strPrefix, boolean match, int offset) {
+    private Collection getProjectNamespaceAliases(CsmContext context, CsmProject prj, String strPrefix, boolean match, int offset) {
         CsmProject inProject = (strPrefix.length() == 0) ? prj : null;
         Collection aliases = CsmUsingResolver.getDefault().findNamespaceAliases(this.file, offset, inProject);
         Collection out;
@@ -1309,14 +1308,28 @@ public class CompletionResolverImpl implements CompletionResolver {
         return out;
     }
         
-    private Collection<CsmNamespace> getNamespacesToSearch(CsmFile file, int offset, boolean onlyInProject) {
+    private Collection<CsmNamespace> getNamespacesToSearch(CsmContext context, CsmFile file, int offset, boolean onlyInProject) {
         CsmProject prj = file.getProject();
         CsmProject inProject = onlyInProject ? prj : null;
         Collection<CsmNamespace> namespaces = new ArrayList<CsmNamespace>(CsmUsingResolver.getDefault().findVisibleNamespaces(file, offset, inProject));
+        // add global namespace
         CsmNamespace globNS = prj.getGlobalNamespace();
         namespaces.add(globNS);
+        // add all namespaces from context
+        Collection<CsmNamespace> contextNSs = getContextNamespaces(context);
+        namespaces.addAll(contextNSs);
         namespaces = filterNamespaces(namespaces, inProject);
         return namespaces;
+    }
+    
+    private Collection<CsmNamespace> getContextNamespaces(CsmContext context) {
+        CsmNamespace ns = CsmContextUtilities.getNamespace(context);
+        Collection<CsmNamespace> out = new ArrayList();
+        while (ns != null && !ns.isGlobal()) {
+            out.add(ns);
+            ns = ns.getParent();
+        }
+        return out;
     }
     
     private Collection<CsmNamespace> filterNamespaces(Collection<CsmNamespace> orig, CsmProject prj) {

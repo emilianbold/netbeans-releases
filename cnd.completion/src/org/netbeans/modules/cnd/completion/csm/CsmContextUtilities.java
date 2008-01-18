@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmSortUtilities;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 
 /**
  *
@@ -474,6 +475,50 @@ public class CsmContextUtilities {
         }        
         return fun;
     }   
+    
+    public static CsmNamespace getNamespace(CsmContext context) {
+        CsmFunction fun = getFunction(context);
+        CsmNamespace ns = null;
+        if (fun != null) {
+            ns = getFunctionNamespace(fun);
+        } else {
+            CsmClass cls = CsmContextUtilities.getClass(context, false);
+            ns = cls == null ? null : getClassNamespace(cls);
+        }
+        return ns;
+    }
+
+    private static CsmNamespace getFunctionNamespace(CsmFunction fun) {
+        if (CsmKindUtilities.isFunctionDefinition(fun)) {
+            CsmFunction decl = ((CsmFunctionDefinition) fun).getDeclaration();
+            fun = decl != null ? decl : fun;
+        }
+        if (fun != null) {
+            CsmScope scope = fun.getScope();
+            if (CsmKindUtilities.isNamespace(scope)) {
+                CsmNamespace ns = (CsmNamespace) scope;
+                return ns;
+            } else if (CsmKindUtilities.isClass(scope)) {
+                return getClassNamespace((CsmClass) scope);
+            }
+        }
+        return null;
+    }
+
+    private static CsmNamespace getClassNamespace(CsmClass cls) {
+        CsmScope scope = cls.getScope();
+        while (scope != null) {
+            if (CsmKindUtilities.isNamespace(scope)) {
+                return (CsmNamespace) scope;
+            }
+            if (CsmKindUtilities.isScopeElement(scope)) {
+                scope = ((CsmScopeElement) scope).getScope();
+            } else {
+                break;
+            }
+        }
+        return null;
+    }
     
     public static boolean isInFunctionBody(CsmContext context, int offset) {
         CsmFunctionDefinition funDef = getFunctionDefinition(context);
