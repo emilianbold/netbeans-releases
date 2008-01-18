@@ -24,7 +24,7 @@
                   <Group type="102" attributes="0">
                       <Component id="nameLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="nameField" pref="561" max="32767" attributes="0"/>
+                      <Component id="nameField" pref="570" max="32767" attributes="0"/>
                   </Group>
                   <Component id="directoryKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="adHocKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -34,43 +34,37 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="directoryLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="directoryField" pref="456" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="masterProjectButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="directoryButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="directoryField" pref="465" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="directoryButton" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="directoryKindLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
+                  <Component id="subprojectsKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Group type="102" alignment="0" max="-2" attributes="0">
-                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                          <Component id="subprojectsKindRadio" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" max="-2" attributes="0">
-                              <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="masterProjectLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="masterProjectField" pref="416" max="32767" attributes="0"/>
-                                  </Group>
-                                  <Component id="subprojectsKindLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
+                      <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="17" pref="17" max="17" attributes="0"/>
-                              <Component id="adHocKindLabel" min="-2" max="-2" attributes="0"/>
+                              <Component id="masterProjectLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="masterProjectField" pref="495" max="32767" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <EmptySpace min="17" pref="17" max="17" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="autoSynchCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="useOpenCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
+                          <Component id="subprojectsKindLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="85" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="masterProjectButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="17" pref="17" max="17" attributes="0"/>
+                      <Component id="adHocKindLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace min="17" pref="17" max="17" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="autoSynchCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="useOpenCheckbox" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -99,8 +93,8 @@
               <Component id="subprojectsKindLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="masterProjectButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="masterProjectLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="masterProjectButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="masterProjectField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -109,9 +103,9 @@
               <Component id="directoryKindLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="directoryButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="directoryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="directoryField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="directoryButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
