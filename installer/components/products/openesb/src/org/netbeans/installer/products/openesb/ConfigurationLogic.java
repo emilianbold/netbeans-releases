@@ -43,6 +43,8 @@ import org.netbeans.installer.utils.applications.GlassFishUtils;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -118,9 +120,12 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // http://www.netbeans.org/issues/show_bug.cgi?id=125358
         // run the jbi core installer first - temporary solution        
-        final File jbiCoreInstaller = new File(openesbLocation, JBI_CORE_INSTALLER);
+        final File jbiCoreInstallerTemp = new File(openesbLocation, JBI_CORE_INSTALLER);
+        final File jbiCoreInstaller = new File(glassfishLocation, JBI_CORE_INSTALLER);
+        
         try 
-        {
+        {            
+            FileUtils.moveFile(jbiCoreInstallerTemp, jbiCoreInstaller);
             progress.setDetail(getString("CL.install.jbi.core.installer")); // NOI18N
             final File java = GlassFishUtils.getJavaHome(glassfishLocation);
             SystemUtils.executeCommand(glassfishLocation,
@@ -133,7 +138,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             throw new InstallationException(
                     getString("CL.install.error.jbi.core.installer"), // NOI18N
                     e);
-        }        
+        } finally {
+            try {
+                FileUtils.deleteFile(jbiCoreInstaller);
+            } catch (IOException e) {
+                LogManager.log(e);
+            }
+        }
 
         // run the openesb installer ////////////////////////////////////////////////
         try {
