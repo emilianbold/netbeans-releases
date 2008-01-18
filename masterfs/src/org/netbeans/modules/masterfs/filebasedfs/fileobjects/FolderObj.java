@@ -204,7 +204,7 @@ public final class FolderObj extends BaseFileObj {
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N   
         } else if (folder2Create.exists()) {
             extensions.createFailure(this, folder2Create.getName(), true);            
-            FSException.io("EXC_CannotCreateExistingFolder", folder2Create.getName(), getPath());// NOI18N               
+            throw new SyncFailedException(folder2Create.getAbsolutePath());// NOI18N               
         } else if (!folder2Create.mkdirs()) {
             extensions.createFailure(this, folder2Create.getName(), true);
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N               
@@ -267,7 +267,7 @@ public final class FolderObj extends BaseFileObj {
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         } else if (file2Create.exists()) {
             extensions.createFailure(this, file2Create.getName(), false);
-            FSException.io("EXC_CannotCreateExistingData", file2Create.getName(), getPath());// NOI18N
+            throw new SyncFailedException(file2Create.getAbsolutePath());// NOI18N               
         } else if (!file2Create.createNewFile()) {
             extensions.createFailure(this, file2Create.getName(), false);            
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
