@@ -412,6 +412,7 @@ public class ProjectsRootNode extends AbstractNode {
             Project proj = getOriginal().getLookup().lookup(Project.class);
             if (proj != null) {
                 file = proj.getProjectDirectory();
+                assert file != null : "Project returns null directory: " + proj;
                 files = Collections.singleton(file);
                 try {
                     FileSystem fs = file.getFileSystem();
