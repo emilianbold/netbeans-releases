@@ -54,8 +54,9 @@ import org.netbeans.modules.xml.wsdl.model.Message;
  *   &lt;/complexType&gt;
  * </pre>
  */
-public interface Catch extends CompensatableActivityHolder, FaultNameReference,
-    VariableDeclaration, VariableDeclarationScope, ReferenceCollection
+public interface Catch extends FaultHandler, CompensatableActivityHolder, 
+    FaultNameReference, VariableDeclaration, VariableDeclarationScope, 
+    ReferenceCollection
 {
 
     String FAULT_MESSAGE_TYPE = "faultMessageType";     // NOI18N

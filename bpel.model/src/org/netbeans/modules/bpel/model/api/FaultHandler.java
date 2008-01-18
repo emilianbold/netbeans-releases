@@ -17,16 +17,32 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-/**
- *
- */
 package org.netbeans.modules.bpel.model.api;
 
-
 /**
- * @author ads
+ * An empty extension from bpws:tActivityContainer to denote the
+ * fault handler activity (i.e. "catch" and "catchAll" element)
+ * <p>
+ * Java class for FaultHandler activity type.
+ * <p>
+ * The following schema fragment specifies the expected content contained within
+ * this class.
  *
+ * <pre>
+ *   &lt;complexType name=&quot;tActivityContainer&quot;&gt;
+ *     &lt;complexContent&gt;
+ *       &lt;extension base=&quot;{http://docs.oasis-open.org/wsbpel/2.0/process/executable}tExtensibleElements&quot;&gt;
+ *         &lt;sequence&gt;
+ *           &lt;group ref=&quot;{http://docs.oasis-open.org/wsbpel/2.0/process/executable}activity&quot;/&gt;
+ *         &lt;/sequence&gt;
+ *       &lt;/extension&gt;
+ *     &lt;/complexContent&gt;
+ *   &lt;/complexType&gt;
+ * </pre>
+ * 
+ * @author Vitaly Bychkov
+ * @version 1.0
  */
-public interface CatchAll extends FaultHandler, CompensatableActivityHolder {
+public interface FaultHandler extends ExtensibleElements, BpelContainer {
 
 }
