@@ -898,7 +898,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         if (!v.isEmpty()) {
             log.fine("GDI.addLocalsToLocalVariables: Starting to add locals to localVariables"); // NOI18N
             synchronized (localVariables) {
-                localVariables.addAll(v);
+                for (GdbVariable var : v) {
+                    if (!localVariables.contains(var)) {
+                        localVariables.add(var);
+                    }
+                }
             }
             log.fine("GDI.addLocalsToLocalVariables: Added " + v.size() + " locals");
         }

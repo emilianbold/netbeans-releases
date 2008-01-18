@@ -70,4 +70,16 @@ public class GdbVariable {
     public String getValue() {
         return value;
     }
+    
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof GdbVariable && ((GdbVariable) o).getName().equals(name);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
 }
