@@ -46,6 +46,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.text.*;
 import javax.swing.event.*;
+import org.openide.util.NbBundle;
 
 /**
  * This is a on change validator giving a user color and tooltip
@@ -125,7 +126,8 @@ public class ValidatingTextField extends JTextField implements ComboBoxEditor {
                     ValidatingTextField.this.setForeground(Color.black);
                 } else {
                     String reason = validator.getReason();
-                    ValidatingTextField.super.setToolTipText(reason == null ? Util.THIS.getString("MSG_invalid") : reason);
+                    ValidatingTextField.super.setToolTipText(reason == null ?
+                        NbBundle.getMessage(ValidatingTextField.class, "MSG_invalid") : reason);
                     ValidatingTextField.this.setForeground(Color.red);
                 }        
             }

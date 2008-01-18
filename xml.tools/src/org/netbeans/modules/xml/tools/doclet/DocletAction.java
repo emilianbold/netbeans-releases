@@ -133,7 +133,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
                 // ask for file object location
 
                 FileObject primFile = dtdo.getPrimaryFile();
-                String name = primFile.getName() + Util.THIS.getString("NAME_SUFFIX_Documentation");
+                String name = primFile.getName() + NbBundle.getMessage(DocletAction.class, "NAME_SUFFIX_Documentation");
                 FileObject folder = primFile.getParent();
 
                 FileObject generFile = (new SelectFileDialog (folder, name, "html")).getFileObject(); // NOI18N
@@ -158,7 +158,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
                      }
                      
                 } catch (IOException ex) {
-                    emgr.annotate(ex, Util.THIS.getString("MSG_error_leaving_in_clipboard"));
+                    emgr.annotate(ex, NbBundle.getMessage(DocletAction.class, "MSG_error_leaving_in_clipboard"));
                     emgr.notify(ex);
 
                     leaveInClipboard(text.toString());
@@ -187,18 +187,18 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
                 
             } catch (InterruptedException ex) {
 
-                emgr.annotate(ex, Util.THIS.getString("MSG_generating_interrupted"));
+                emgr.annotate(ex, NbBundle.getMessage(DocletAction.class, "MSG_generating_interrupted"));
                 emgr.notify(ex);            
             }
             
         } catch (IOException ioex) {
             
-            emgr.annotate(ioex, Util.THIS.getString("MSG_IO_ex_docwriting"));
+            emgr.annotate(ioex, NbBundle.getMessage(DocletAction.class, "MSG_IO_ex_docwriting"));
             emgr.notify(ioex);
             
         } catch (TreeException tex) {
             
-            StatusDisplayer.getDefault().setStatusText(Util.THIS.getString("MSG_doclet_fatal_error"));
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DocletAction.class, "MSG_doclet_fatal_error"));
         
         } finally {
             if (thread != null) thread.interrupt();
@@ -211,7 +211,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
         StringSelection ss = new StringSelection(text);
         ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
         clipboard.setContents(ss, null);
-        StatusDisplayer.getDefault().setStatusText(Util.THIS.getString("MSG_documentation_in_clipboard"));
+        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DocletAction.class, "MSG_documentation_in_clipboard"));
     }
     
     public HelpCtx getHelpCtx() {
@@ -219,7 +219,7 @@ public final class DocletAction extends CookieAction implements CollectDTDAction
     }
 
     public String getName() {
-        return Util.THIS.getString("NAME_Generate_Documentation");
+        return NbBundle.getMessage(DocletAction.class, "NAME_Generate_Documentation");
     }
 
     protected boolean asynchronous() {

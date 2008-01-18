@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.*;
 import org.netbeans.modules.xml.actions.*;
 
 import org.netbeans.api.xml.cookies.*;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 
@@ -93,7 +94,7 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
 
     /** Human presentable name. */
     public String getName() {
-        return Util.THIS.getString("NAME_Validate_DTD");
+        return NbBundle.getMessage(CheckDTDAction.class, "NAME_Validate_DTD");
     }
 
     protected String iconResource () {
@@ -115,7 +116,7 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
         public void run() {
             InputOutputReporter console = new InputOutputReporter();
             
-            console.message(Util.THIS.getString("MSG_DTD_valid_start"));
+            console.message(NbBundle.getMessage(CheckDTDAction.class, "MSG_DTD_valid_start"));
             console.moveToFront();
             
             for (int i = 0; i<nodes.length; i++) {
@@ -126,7 +127,7 @@ public class CheckDTDAction extends CookieAction implements CollectDTDAction.DTD
                 cake.checkXML(console);
             }
 
-            console.message(Util.THIS.getString("MSG_DTD_valid_end"));
+            console.message(NbBundle.getMessage(CheckDTDAction.class, "MSG_DTD_valid_end"));
             console.moveToFront(true);
        }
     }

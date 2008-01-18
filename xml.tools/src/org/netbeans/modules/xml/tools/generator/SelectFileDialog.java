@@ -82,8 +82,8 @@ public final class SelectFileDialog {
         this.ext = ext;
         this.check = check;
         this.selectDD = new Prompt (
-                Util.THIS.getString ("PROP_fileNameTitle") + " *." + ext, // NOI18N
-                Util.THIS.getString("PROP_fileName"),
+                NbBundle.getMessage(SelectFileDialog.class, "PROP_fileNameTitle") + " *." + ext, // NOI18N
+                NbBundle.getMessage(SelectFileDialog.class, "PROP_fileName"),
                 name
         );
     }
@@ -122,10 +122,10 @@ public final class SelectFileDialog {
                                 folder.createData (newName, ext);
                             } catch (IOException exc) {
                                 NotifyDescriptor desc = new NotifyDescriptor.Message
-                                    (Util.THIS.getString ("MSG_cannot_create_data", newName + "." + ext), NotifyDescriptor.WARNING_MESSAGE);
+                                    (NbBundle.getMessage(SelectFileDialog.class, "MSG_cannot_create_data", newName + "." + ext), NotifyDescriptor.WARNING_MESSAGE);
                                 DialogDisplayer.getDefault().notify (desc);
 
-                                if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
+                                //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug (exc);
                             }
                         }
                     });
@@ -135,10 +135,10 @@ public final class SelectFileDialog {
             } else if (newFO != null) {
                 DataObject data = DataObject.find(newFO);
                 if (data.isModified() || data.isValid() == false) {
-                    NotifyDescriptor message = new NotifyDescriptor.Message(Util.THIS.getString("BK0001"), NotifyDescriptor.WARNING_MESSAGE);
+                    NotifyDescriptor message = new NotifyDescriptor.Message(NbBundle.getMessage(SelectFileDialog.class, "BK0001"), NotifyDescriptor.WARNING_MESSAGE);
                     DialogDisplayer.getDefault().notify(message);
                     throw new UserCancelException();
-                } else if (! GuiUtil.confirmAction (Util.THIS.getString ("PROP_replaceMsg",
+                } else if (! GuiUtil.confirmAction (NbBundle.getMessage(SelectFileDialog.class, "PROP_replaceMsg",
                                                                 newName, ext ) )) {
                     throw new UserCancelException();
                 }

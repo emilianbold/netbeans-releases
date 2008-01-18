@@ -40,20 +40,14 @@
  */
 package org.netbeans.modules.xml.tools.generator;
 
-import java.awt.Font;
-import java.awt.FontMetrics;
 import javax.swing.*;
-
-
-import org.netbeans.modules.xml.core.lib.AbstractUtil;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Libor Kramolis
  * @version 0.2
  */
-class Util extends AbstractUtil {
+class Util {
 
     public static final NameCheck JAVA_CHECK = new JavaIdentifierNameCheck();
 

@@ -46,6 +46,7 @@ import org.netbeans.modules.xml.actions.CollectXMLAction;
 import org.netbeans.modules.xml.actions.InputOutputReporter;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.CookieAction;
 
@@ -85,9 +86,9 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
         //the way its working is that this menu item will is visible for all files
         //for non-xml files it will be disabled, so wanted to keep a generic menu item name
         if(this.isEnabled())
-           return Util.THIS.getString("NAME_Validate_XML");
+           return NbBundle.getMessage(ValidateAction.class, "NAME_Validate_XML");
         else
-            return Util.THIS.getString("NAME_Validate_File");
+            return NbBundle.getMessage(ValidateAction.class, "NAME_Validate_File");
    }
 
     protected String iconResource () {
@@ -112,7 +113,7 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
 
         public void run() {
             InputOutputReporter console = new InputOutputReporter();
-            console.message(Util.THIS.getString("MSG_XML_valid_start"));
+            console.message(NbBundle.getMessage(ValidateAction.class, "MSG_XML_valid_start"));
             console.moveToFront();
             for (int i = 0; i<nodes.length; i++) {
                 Node node = nodes[i];
@@ -122,7 +123,7 @@ public class ValidateAction extends CookieAction implements CollectXMLAction.XML
                 cake.validateXML(console);
             }
 
-            console.message(Util.THIS.getString("MSG_XML_valid_end"));
+            console.message(NbBundle.getMessage(ValidateAction.class, "MSG_XML_valid_end"));
             console.moveToFront(true);
        }
     }

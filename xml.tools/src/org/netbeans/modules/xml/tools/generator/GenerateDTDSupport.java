@@ -65,6 +65,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 import org.openide.util.UserCancelException;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
@@ -132,7 +133,7 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
             String encoding = "UTF-8";
             String dtd = xml2dtd(name, encoding);
             if (dtd == null) {
-                String msg = Util.THIS.getString("BK0009");
+                String msg = NbBundle.getMessage(GenerateDTDSupport.class, "BK0009");
                 GuiUtil.notifyWarning(msg + "\n" + warning); // NOI18N
                 return;
             }
@@ -180,7 +181,7 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
 //    private void trySetDocumentType(String fileName) {
 //        if (templateRoot.getParentNode() instanceof TreeDocument) { // try to set only when element is root document element
 //            TreeDocument document = (TreeDocument) templateRoot.getParentNode();
-//            if (GuiUtil.confirmAction(Util.THIS.getString("MSG_use_dtd_as_document_type?"))) {
+//            if (GuiUtil.confirmAction(NbBundle.getMessage(GenerateDTDSupport.class, "MSG_use_dtd_as_document_type?"))) {
 //                try {
 //                    TreeDocumentType newDoctype = new TreeDocumentType(templateRoot.getQName(), null, fileName + "." + DTD_EXT); // NOI18N
 //                    document.setDocumentType(newDoctype);
@@ -211,10 +212,10 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
             sb.append("<?xml version='1.0' encoding='").append(encoding).append("'?>\n\n"); // NOI18N
         }
 
-        String todo = Util.THIS.getString("TODO", name + "." + DTD_EXT);
+        String todo = NbBundle.getMessage(GenerateDTDSupport.class, "TODO", name + "." + DTD_EXT);
         sb.append("<!--\n    ").append(todo).append("\n\n-->");
 
-        String usage = Util.THIS.getString("BK0010");
+        String usage = NbBundle.getMessage(GenerateDTDSupport.class, "BK0010");
         sb.append("<!--\n").append("    " + usage + "\n\n").append("    <?xml version=\"1.0\"?>\n\n").// NOI18N
         append("    <!DOCTYPE ").append(rootQName).append(" SYSTEM \"").// NOI18N
         append(name).append(".").append(DTD_EXT).append("\">\n\n").// NOI18N
@@ -230,7 +231,7 @@ public final class GenerateDTDSupport implements XMLGenerateCookie  {
             sb.append("\n"); // NOI18N
             elem = (ElementInfo) it.next();
             // <!ELEMENT ...
-            sb.append("<!--- " + Util.THIS.getString("FMT_DTDDoc") + " -->\n");
+            sb.append("<!--- " + NbBundle.getMessage(GenerateDTDSupport.class, "FMT_DTDDoc") + " -->\n");
             //!!! there may by clash if the doccument happens to map several
             // URI into one prefix
             sb.append("<!ELEMENT ").append(elem.name.qName).append(" "); // NOI18N

@@ -126,7 +126,7 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
             // ask for data object location
             
             FileObject primFile = dtdo.getPrimaryFile();
-            String name = primFile.getName() + Util.THIS.getString("NAME_SUFFIX_Stylesheet");
+            String name = primFile.getName() + NbBundle.getMessage(CSSStyleAction.class, "NAME_SUFFIX_Stylesheet");
             FileObject folder = primFile.getParent();
 
             FileObject generFile = (new SelectFileDialog (folder, name, "css")).getFileObject(); // NOI18N
@@ -152,13 +152,13 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
                     doc.insertString(0, css, null);
                     ec.saveDocument();
                 } catch (BadLocationException locex) {
-                    emgr.annotate(locex, Util.THIS.getString("MSG_Leaving_CSS_in_clipboard"));
+                    emgr.annotate(locex, NbBundle.getMessage(CSSStyleAction.class, "MSG_Leaving_CSS_in_clipboard"));
                     emgr.notify(locex);                    
                     
                     StringSelection ss = new StringSelection(css);
                     ExClipboard clipboard = (ExClipboard) Lookup.getDefault().lookup(ExClipboard.class);
                     clipboard.setContents(ss, null);
-                    GuiUtil.setStatusText(Util.THIS.getString("MSG_CSS_placed_in_clipboard"));
+                    GuiUtil.setStatusText(NbBundle.getMessage(CSSStyleAction.class, "MSG_CSS_placed_in_clipboard"));
                     
                 }
                 
@@ -173,12 +173,12 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
             
         } catch (IOException ex) {
 
-            emgr.annotate(ex, Util.THIS.getString("MSG_IO_ex_CSS_writing."));
+            emgr.annotate(ex, NbBundle.getMessage(CSSStyleAction.class, "MSG_IO_ex_CSS_writing."));
             emgr.notify(ex);
             
         } catch (TreeException ex) {
             Logger.getLogger(CSSStyleAction.class.getName()).log(Level.INFO, null, ex);
-            GuiUtil.setStatusText(Util.THIS.getString("MSG_CSS_fatal_error"));
+            GuiUtil.setStatusText(NbBundle.getMessage(CSSStyleAction.class, "MSG_CSS_fatal_error"));
             
         }
 
@@ -194,7 +194,7 @@ public final class CSSStyleAction extends CookieAction implements CollectDTDActi
     }
 
     public String getName() {
-        return Util.THIS.getString("NAME_Generate_CSS");
+        return NbBundle.getMessage(CSSStyleAction.class, "NAME_Generate_CSS");
     }
     
     protected boolean asynchronous() {

@@ -41,6 +41,7 @@
 package org.netbeans.modules.xml.tools.generator;
 
 import java.util.*;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -63,15 +64,15 @@ public class ElementBindings extends HashMap {
     // some display names
     
     public static final String DELIMITER_HANDLING = 
-        Util.THIS.getString ("DELIMITER_HANDLING");
+        NbBundle.getMessage(ElementBindings.class, "DELIMITER_HANDLING");
     public static final String DATA_HANDLING = 
-        Util.THIS.getString ("DATA_HANDLING");
+        NbBundle.getMessage(ElementBindings.class, "DATA_HANDLING");
     public static final String IGNORE_HANDLING = 
-        Util.THIS.getString ("IGNORE_HANDLING");
+        NbBundle.getMessage(ElementBindings.class, "IGNORE_HANDLING");
     public static final String MIXED_HANDLING = 
-        Util.THIS.getString ("MIXED_HANDLING");
+        NbBundle.getMessage(ElementBindings.class, "MIXED_HANDLING");
     public static final String EMPTY_HANDLING =
-        Util.THIS.getString ("EMPTY_HANDLING");
+        NbBundle.getMessage(ElementBindings.class, "EMPTY_HANDLING");
     
     /** Create empty map. */
     public ElementBindings() {            

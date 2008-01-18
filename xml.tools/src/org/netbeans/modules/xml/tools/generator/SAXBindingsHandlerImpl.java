@@ -65,7 +65,7 @@ public class SAXBindingsHandlerImpl implements SAXBindingsHandler {
     }
     
     public void handle_parslet(final Attributes meta) throws SAXException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("handle_parslet: " + meta); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("handle_parslet: " + meta); // NOI18N
         
         String parslet = meta.getValue(ATT_PARSLET);
         String back = meta.getValue(ATT_RETURN);
@@ -74,16 +74,16 @@ public class SAXBindingsHandlerImpl implements SAXBindingsHandler {
     }
     
     public void start_SAX_bindings(final Attributes meta) throws SAXException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("start_SAX_bindings: " + meta); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("start_SAX_bindings: " + meta); // NOI18N
                 
     }
     
     public void end_SAX_bindings() throws SAXException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("end_SAX_bindings()"); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("end_SAX_bindings()"); // NOI18N
     }
     
     public void start_bind(final Attributes meta) throws SAXException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("start_bind: " + meta); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("start_bind: " + meta); // NOI18N
         
         String element = meta.getValue(ATT_ELEMENT);
         String method = meta.getValue(ATT_METHOD);
@@ -94,7 +94,7 @@ public class SAXBindingsHandlerImpl implements SAXBindingsHandler {
     }
     
     public void end_bind() throws SAXException {
-        if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("end_bind()"); // NOI18N
+        //if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug ("end_bind()"); // NOI18N
     }
     
     /**

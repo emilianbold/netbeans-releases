@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.*;
 import org.netbeans.modules.xml.actions.*;
 
 import org.netbeans.api.xml.cookies.*;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -90,9 +91,9 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
         //the way its working is that this menu item will is visible for all files
         //for non-xml files it will be disabled, so wanted to keep a generic menu item name
         if(this.isEnabled())
-           return Util.THIS.getString("NAME_Check_XML");
+           return NbBundle.getMessage(CheckAction.class, "NAME_Check_XML");
         else
-            return Util.THIS.getString("NAME_Check_File");
+            return NbBundle.getMessage(CheckAction.class, "NAME_Check_File");
     }
 
     /** Do not slow by any icon. */
@@ -118,7 +119,7 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
 
         public void run() {
             InputOutputReporter console = new InputOutputReporter();
-            console.message(Util.THIS.getString("MSG_XML_check_start"));
+            console.message(NbBundle.getMessage(CheckAction.class, "MSG_XML_check_start"));
             console.moveToFront();
             for (int i = 0; i<nodes.length; i++) {
                 Node node = nodes[i];
@@ -128,7 +129,7 @@ public class CheckAction extends CookieAction implements CollectXMLAction.XMLAct
                 cake.checkXML(console);
             }
 
-            console.message(Util.THIS.getString("MSG_XML_check_end"));
+            console.message(NbBundle.getMessage(CheckAction.class, "MSG_XML_check_end"));
             console.moveToFront(true);
        }
     }

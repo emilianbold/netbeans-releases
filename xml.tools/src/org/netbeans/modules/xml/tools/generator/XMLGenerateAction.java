@@ -46,12 +46,12 @@ import java.beans.*;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CookieAction;
-import org.openide.util.RequestProcessor;
 
 import org.netbeans.modules.xml.actions.CollectXMLAction;
 import org.netbeans.modules.xml.actions.CollectDTDAction;
 
 import org.netbeans.modules.xml.lib.GuiUtil;
+import org.openide.util.NbBundle;
 
 public abstract class XMLGenerateAction extends CookieAction {
 
@@ -96,7 +96,7 @@ public abstract class XMLGenerateAction extends CookieAction {
                 }
             }
         } catch (RuntimeException ex) {
-            String msg = Util.THIS.getString("MSG_action_failed");  //NOI18N
+            String msg = NbBundle.getMessage(XMLGenerateAction.class, "MSG_action_failed");  //NOI18N
             GuiUtil.notifyException(msg, ex);
         }
     }
@@ -113,7 +113,7 @@ public abstract class XMLGenerateAction extends CookieAction {
          * @return the name of the action
          */
         public String getName () {
-            return Util.THIS.getString ("PROP_GenerateDTD");
+            return NbBundle.getMessage(XMLGenerateAction.class, "PROP_GenerateDTD");
         }
 
         /* Help context where to find more about the action.
@@ -139,7 +139,7 @@ public abstract class XMLGenerateAction extends CookieAction {
          * @return the name of the action
          */
         public String getName () {
-            return Util.THIS.getString ("PROP_GenerateSAXHandler");
+            return NbBundle.getMessage(XMLGenerateAction.class, "PROP_GenerateSAXHandler");
         }
 
         /* Help context where to find more about the action.
@@ -165,7 +165,7 @@ public abstract class XMLGenerateAction extends CookieAction {
          * @return the name of the action
          */
         public String getName () {
-            return Util.THIS.getString ("PROP_GenerateDOMScanner");
+            return NbBundle.getMessage(XMLGenerateAction.class, "PROP_GenerateDOMScanner");
         }
 
         /* Help context where to find more about the action.
