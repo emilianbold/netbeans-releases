@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.model.impl;
 
 import java.util.List;
@@ -58,50 +57,41 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
       if (documentation == null) {
         return null;
       }
-      String content = documentation.getContent();
-
-      if (content == null) {
-        return null;
-      }
-      content = content.trim();
-
-      if (content.length() == 0) {
-        return null;
-      }
-      return content;
+      return documentation.getContent();
     }
 
     public void setDocumentation(String content) throws VetoException {
-      Documentation documentation = getBpelModel().getBuilder().createDocumentation();
-      documentation.setContent(content);
-
-      if (sizeOfDocumentations() > 0) {
-        if (content == null || content.trim().length() == 0) {
+      if (content == null) {
+        if (sizeOfDocumentations() != 0) {
           removeDocumentation(0);
-        }
-        else {
-          setDocumentation(documentation, 0);
         }
       }
       else {
+        Documentation documentation = getBpelModel().getBuilder().createDocumentation();
+        documentation.setContent(content);
+
+        if (sizeOfDocumentations() != 0) {
+          removeDocumentation(0);
+        }
         insertDocumentation(documentation, 0);
       }
     }
 
     public void removeDocumentation() throws VetoException {
-      setDocumentation(null);
+        setDocumentation(null);
     }
 
     public void addDocumentation(Documentation documentation) {
         addChildAfter(documentation, Documentation.class, BpelTypesEnum.DOCUMENTATION);
     }
 
-    public Documentation getDocumentation( int i ) {
-        return getChild( Documentation.class , i );
+    public Documentation getDocumentation(int i) {
+        return getChild(Documentation.class, i);
     }
 
     public Documentation[] getDocumentations() {
         readLock();
+
         try {
             List<Documentation> list = getChildren( Documentation.class );
             return list.toArray( new Documentation[list.size()] );
@@ -111,26 +101,25 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
         }
     }
 
-    public void insertDocumentation( Documentation documentation, int i ) {
-        insertAtIndexAfter( documentation , Documentation.class , i , 
-                BpelTypesEnum.DOCUMENTATION );
+    public void insertDocumentation(Documentation documentation, int i) {
+        insertAtIndexAfter(documentation, Documentation.class, i, BpelTypesEnum.DOCUMENTATION);
     }
 
-    public void removeDocumentation( int i ) {
-        removeChild( Documentation.class , i );
+    public void removeDocumentation(int i) {
+        removeChild(Documentation.class, i);
     }
 
-    public void setDocumentation( Documentation documentation, int i ) {
-        setChildAtIndex( documentation , Documentation.class , i );
+    public void setDocumentation(Documentation documentation, int i) {
+        setChildAtIndex(documentation, Documentation.class, i);
     }
 
-    public void setDocumentations( Documentation[] documentations ) {
-        setArrayAfter( documentations , Documentation.class , 
-                BpelTypesEnum.DOCUMENTATION);
+    public void setDocumentations(Documentation[] documentations) {
+        setArrayAfter(documentations, Documentation.class, BpelTypesEnum.DOCUMENTATION);
     }
 
     public int sizeOfDocumentations() {
         readLock();
+
         try {
             return getChildren( Documentation.class ).size();
         }
@@ -139,24 +128,15 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
         }
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.bpel.model.api.ExtensibleElements#addExtensionEntity(Class<T>, T)
-     */
     public <T extends ExtensionEntity> void addExtensionEntity(Class<T> clazz, T entity) {
         assert entity.canExtend(this);
         addChildAfter(entity, clazz, BpelTypesEnum.DOCUMENTATION);
     }
 
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.bpel.model.api.BpelContainer#getExtensionChildren()
-     */
     public List<ExtensionEntity> getExtensionChildren() {
         return getChildren( ExtensionEntity.class );
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.soa.model.bpel20.impl.BpelContainerImpl#create(org.w3c.dom.Element)
-     */
     @Override
     protected BpelEntity create( Element element )
     {
@@ -166,9 +146,6 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
         return null;
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.soa.model.bpel20.impl.BpelEntityImpl#getDomainAttributes()
-     */
     protected Attribute[] getDomainAttributes() {
         // TODO : common framework for accesing to extension attributes ? 
         if ( myAttributes.get() == null ){
