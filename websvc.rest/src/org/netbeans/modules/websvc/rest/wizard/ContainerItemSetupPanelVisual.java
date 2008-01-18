@@ -45,11 +45,19 @@ import java.awt.event.KeyAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -112,7 +120,7 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         mediaTypeLabel = new javax.swing.JLabel();
         contentClassLabel = new javax.swing.JLabel();
         selectClassButton = new javax.swing.JButton();
-        contentClassTextField = new javax.swing.JTextField();
+        representationClassTextField = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         resourceNameLabel = new javax.swing.JLabel();
         resourceNameTextField = new javax.swing.JTextField();
@@ -122,7 +130,7 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         containerUriLabel = new javax.swing.JLabel();
         containerUriTextField = new javax.swing.JTextField();
         contentClassLabel1 = new javax.swing.JLabel();
-        contentClassTextField1 = new javax.swing.JTextField();
+        containerRepresentationClassTextField = new javax.swing.JTextField();
         selectClassButton1 = new javax.swing.JButton();
 
         setName("null");
@@ -177,22 +185,22 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         mediaTypeLabel.setLabelFor(medaTypeComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(mediaTypeLabel, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_MimeType")); // NOI18N
 
-        contentClassLabel.setLabelFor(contentClassTextField);
+        contentClassLabel.setLabelFor(representationClassTextField);
         org.openide.awt.Mnemonics.setLocalizedText(contentClassLabel, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_RepresentationClass")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(selectClassButton, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_Select")); // NOI18N
-        selectClassButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectClassButtonActionPerformed(evt);
-            }
-        });
         selectClassButton.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 mouseClickHandler(evt);
             }
         });
+        selectClassButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectClassButtonActionPerformed(evt);
+            }
+        });
 
-        contentClassTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+        representationClassTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 representationClassChanged(evt);
             }
@@ -231,10 +239,10 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
             }
         });
 
-        contentClassLabel1.setLabelFor(contentClassTextField1);
+        contentClassLabel1.setLabelFor(containerRepresentationClassTextField);
         org.openide.awt.Mnemonics.setLocalizedText(contentClassLabel1, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ContainerRepresentationClass")); // NOI18N
 
-        contentClassTextField1.addKeyListener(new java.awt.event.KeyAdapter() {
+        containerRepresentationClassTextField.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyTyped(java.awt.event.KeyEvent evt) {
                 containerRepresentationClassChanged(evt);
             }
@@ -242,14 +250,14 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
 
         org.openide.awt.Mnemonics.setLocalizedText(selectClassButton1, org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_SelectContainerRepresentationClass")); // NOI18N
         selectClassButton1.setActionCommand(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_Select")); // NOI18N
-        selectClassButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectClassButton1ActionPerformed(evt);
-            }
-        });
         selectClassButton1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 selectClassButtonMouseClickHandler(evt);
+            }
+        });
+        selectClassButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                selectClassButton1ActionPerformed(evt);
             }
         });
 
@@ -259,11 +267,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(containerUriLabel)
-                .addContainerGap(385, Short.MAX_VALUE))
+                .addContainerGap(434, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(mediaTypeLabel)
-                .addContainerGap(445, Short.MAX_VALUE))
-            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
+                .addContainerGap(454, Short.MAX_VALUE))
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(classLabel)
@@ -289,11 +297,11 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                     .add(uriLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, contentClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, contentClassTextField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerUriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, medaTypeComboBox, 0, 253, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, uriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, representationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerRepresentationClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, containerUriTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, medaTypeComboBox, 0, 258, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                     .add(selectClassButton)
@@ -343,12 +351,12 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(selectClassButton)
                     .add(contentClassLabel)
-                    .add(contentClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(representationClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(contentClassLabel1)
                     .add(selectClassButton1)
-                    .add(contentClassTextField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(containerRepresentationClassTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 
@@ -370,8 +378,8 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         contentClassLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_RepresentationClass")); // NOI18N
         selectClassButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "SelectItemResourceRepresentation")); // NOI18N
         selectClassButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_SelectClass")); // NOI18N
-        contentClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ItemResourceRepresentationClass")); // NOI18N
-        contentClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_RepresentationClass")); // NOI18N
+        representationClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ItemResourceRepresentationClass")); // NOI18N
+        representationClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_RepresentationClass")); // NOI18N
         resourceNameLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ResourceName")); // NOI18N
         resourceNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ResourceName")); // NOI18N
         resourceNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ResourceName")); // NOI18N
@@ -384,8 +392,8 @@ public class ContainerItemSetupPanelVisual extends javax.swing.JPanel implements
         containerUriTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ContainerUriTemplate")); // NOI18N
         containerUriTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ContainerUriTemplate")); // NOI18N
         contentClassLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "LBL_ContainerRepresentationClass")); // NOI18N
-        contentClassTextField1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ContainerResourceRepresentationClass")); // NOI18N
-        contentClassTextField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ContainerRepresentationClass")); // NOI18N
+        containerRepresentationClassTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "ContainerResourceRepresentationClass")); // NOI18N
+        containerRepresentationClassTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_ContainerRepresentationClass")); // NOI18N
         selectClassButton1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "SelectContainerRepresentationClass")); // NOI18N
         selectClassButton1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ContainerItemSetupPanelVisual.class, "DESC_SelectContainerRepresentationClass")); // NOI18N
 
@@ -398,11 +406,25 @@ private void selectClassButton1ActionPerformed(java.awt.event.ActionEvent evt) {
 }//GEN-LAST:event_selectClassButton1ActionPerformed
 
 private void selectClassButtonMouseClickHandler(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selectClassButtonMouseClickHandler
-        String className = Util.chooseClass(project);
-        if (className != null) {
-            contentClassTextField1.setText(className);
-            fireChange();
-        }    
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
+
+                            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
+                                return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
+                            }
+
+                            public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                                return true;
+                            }
+                        });
+
+                if (handle != null) {
+                    containerRepresentationClassTextField.setText(handle.getQualifiedName());
+                    fireChange();
+                }
+            }
+        });
 }//GEN-LAST:event_selectClassButtonMouseClickHandler
 
 private void containerRepresentationClassChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_containerRepresentationClassChanged
@@ -464,11 +486,26 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
 }//GEN-LAST:event_selectClassButtonActionPerformed
 
     private void mouseClickHandler(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mouseClickHandler
-        String className = Util.chooseClass(project);
-        if (className != null) {
-            contentClassTextField.setText(className);
-            fireChange();
-        }
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
+
+                            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
+                                return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
+                            }
+
+                            public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                                return true;
+                            }
+                        });
+
+                if (handle != null) {
+                    representationClassTextField.setText(handle.getQualifiedName());
+                    fireChange();
+                }
+            }
+        });
 }//GEN-LAST:event_mouseClickHandler
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
@@ -489,13 +526,12 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
     private javax.swing.JLabel classLabel;
     private javax.swing.JTextField classTextField;
     private javax.swing.JLabel containerLabel;
+    private javax.swing.JTextField containerRepresentationClassTextField;
     private javax.swing.JTextField containerTextField;
     private javax.swing.JLabel containerUriLabel;
     private javax.swing.JTextField containerUriTextField;
     private javax.swing.JLabel contentClassLabel;
     private javax.swing.JLabel contentClassLabel1;
-    private javax.swing.JTextField contentClassTextField;
-    private javax.swing.JTextField contentClassTextField1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JComboBox locationComboBox;
     private javax.swing.JLabel locationLabel;
@@ -505,6 +541,7 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
     private javax.swing.JLabel packageLabel;
     private javax.swing.JLabel projectLabel;
     private javax.swing.JTextField projectTextField;
+    private javax.swing.JTextField representationClassTextField;
     private javax.swing.JLabel resourceNameLabel;
     private javax.swing.JTextField resourceNameTextField;
     private javax.swing.JButton selectClassButton;
@@ -630,9 +667,9 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
             }
             containerTextField.setText(Util.deriveResourceClassName(containerName));
             containerUriTextField.setText("/"+containerName);
-            contentClassTextField.setText(GenericResourceBean.
+            representationClassTextField.setText(GenericResourceBean.
                 getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
-            contentClassTextField1.setText(GenericResourceBean.
+            containerRepresentationClassTextField.setText(GenericResourceBean.
                 getDefaultRepresetationClass((MimeType)medaTypeComboBox.getSelectedItem()));
         } else {
             resourceNameTextField.setText(value);
@@ -641,13 +678,13 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
             medaTypeComboBox.setSelectedItem(((MimeType[]) settings.getProperty(WizardProperties.ITEM_MIME_TYPES))[0]);
             String[] types = (String[]) settings.getProperty(WizardProperties.ITEM_REPRESENTATION_TYPES);
             if (types != null && types.length > 0) {
-                contentClassTextField.setText(types[0]);
+                representationClassTextField.setText(types[0]);
             }
             containerTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_CLASS));
             containerUriTextField.setText((String) settings.getProperty(WizardProperties.CONTAINER_RESOURCE_URI));
             types = (String[]) settings.getProperty(WizardProperties.CONTAINER_REPRESENTATION_TYPES);
             if (types != null && types.length > 0) {
-                contentClassTextField1.setText(types[0]);
+                containerRepresentationClassTextField.setText(types[0]);
             }
         }
         
@@ -684,13 +721,13 @@ private void uriChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_uriChang
         settings.putProperty(WizardProperties.CONTAINER_RESOURCE_CLASS, containerTextField.getText());
         settings.putProperty(WizardProperties.CONTAINER_RESOURCE_URI, containerUriTextField.getText());
         settings.putProperty(WizardProperties.ITEM_MIME_TYPES, new MimeType[] { (MimeType) medaTypeComboBox.getSelectedItem() });
-        String type = contentClassTextField.getText();
+        String type = representationClassTextField.getText();
         if (type != null && type.length() > 0) {
-            settings.putProperty(WizardProperties.ITEM_REPRESENTATION_TYPES, new String[] { contentClassTextField.getText()} );
+            settings.putProperty(WizardProperties.ITEM_REPRESENTATION_TYPES, new String[] { representationClassTextField.getText()} );
         }
-        type = contentClassTextField1.getText();
+        type = containerRepresentationClassTextField.getText();
         if (type != null && type.length() > 0) {
-            settings.putProperty(WizardProperties.CONTAINER_REPRESENTATION_TYPES, new String[] { contentClassTextField1.getText()} );
+            settings.putProperty(WizardProperties.CONTAINER_REPRESENTATION_TYPES, new String[] { containerRepresentationClassTextField.getText()} );
         }
         
         try {            

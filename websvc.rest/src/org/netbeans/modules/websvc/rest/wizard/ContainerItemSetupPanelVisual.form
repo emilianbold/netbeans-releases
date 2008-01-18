@@ -29,13 +29,13 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <Component id="containerUriLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="385" max="32767" attributes="0"/>
+              <EmptySpace pref="434" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="mediaTypeLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="445" max="32767" attributes="0"/>
+              <EmptySpace pref="454" max="32767" attributes="0"/>
           </Group>
-          <Component id="jSeparator1" alignment="0" pref="499" max="32767" attributes="1"/>
+          <Component id="jSeparator1" alignment="0" pref="524" max="32767" attributes="1"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="classLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -66,11 +66,11 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="uriTextField" alignment="0" pref="253" max="32767" attributes="1"/>
-                  <Component id="contentClassTextField" alignment="0" pref="253" max="32767" attributes="0"/>
-                  <Component id="contentClassTextField1" alignment="0" pref="253" max="32767" attributes="1"/>
-                  <Component id="containerUriTextField" alignment="0" pref="253" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="0" pref="253" max="32767" attributes="1"/>
+                  <Component id="uriTextField" alignment="0" pref="258" max="32767" attributes="1"/>
+                  <Component id="representationClassTextField" alignment="0" pref="258" max="32767" attributes="0"/>
+                  <Component id="containerRepresentationClassTextField" alignment="0" pref="258" max="32767" attributes="1"/>
+                  <Component id="containerUriTextField" alignment="0" pref="258" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="0" pref="258" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -133,13 +133,13 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="selectClassButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="contentClassLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="contentClassTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="representationClassTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="contentClassLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="selectClassButton1" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="contentClassTextField1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="containerRepresentationClassTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
@@ -323,7 +323,7 @@
     <Component class="javax.swing.JLabel" name="contentClassLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="contentClassTextField"/>
+          <ComponentRef name="representationClassTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_RepresentationClass" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -350,11 +350,11 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectClassButtonActionPerformed"/>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="mouseClickHandler"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectClassButtonActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JTextField" name="contentClassTextField">
+    <Component class="javax.swing.JTextField" name="representationClassTextField">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="ItemResourceRepresentationClass" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -469,7 +469,7 @@
     <Component class="javax.swing.JLabel" name="contentClassLabel1">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="contentClassTextField1"/>
+          <ComponentRef name="containerRepresentationClassTextField"/>
         </Property>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="LBL_ContainerRepresentationClass" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -481,7 +481,7 @@
         </Property>
       </AccessibilityProperties>
     </Component>
-    <Component class="javax.swing.JTextField" name="contentClassTextField1">
+    <Component class="javax.swing.JTextField" name="containerRepresentationClassTextField">
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/websvc/rest/wizard/Bundle.properties" key="ContainerResourceRepresentationClass" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -512,8 +512,8 @@
         </Property>
       </AccessibilityProperties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectClassButton1ActionPerformed"/>
         <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="selectClassButtonMouseClickHandler"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="selectClassButton1ActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

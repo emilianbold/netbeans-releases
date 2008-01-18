@@ -60,21 +60,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBean;
-import org.netbeans.modules.websvc.rest.component.palette.RestComponentSetupPanel;
 import org.netbeans.modules.websvc.rest.support.Inflector;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
-import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeAcceptor;
-import org.openide.nodes.NodeOperation;
-import org.openide.util.NbBundle;
-import org.openide.util.UserCancelException;
 import org.openide.util.Utilities;
 
 /**
@@ -312,74 +301,6 @@ public class Util {
         } else {
             return bean.getName();
         }
-    }
-
-    /**
-     * Displays a class chooser dialog and lets the user select a class.
-     * @return the qualified name of the chosen class.
-     */
-    public static String chooseClass(Project project) {
-        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-        try {
-            final Node[] sourceGroupNodes
-                    = new Node[sourceGroups.length];
-            for (int i = 0; i < sourceGroupNodes.length; i++) {
-                /*
-                 * Note:
-                 * Precise structure of this view is *not* specified by the API.
-                 */
-                Node srcGroupNode
-                       = PackageView.createPackageView(sourceGroups[i]);
-                sourceGroupNodes[i]
-                       = new FilterNode(srcGroupNode,
-                                        new JavaChildren(srcGroupNode));
-            }
-            
-            Node rootNode;
-            if (sourceGroupNodes.length == 1) {
-                rootNode = new FilterNode(
-                        sourceGroupNodes[0],
-                        new JavaChildren(sourceGroupNodes[0]));
-            } else {
-                Children children = new Children.Array();
-                children.add(sourceGroupNodes);
-                
-                AbstractNode node = new AbstractNode(children);
-                node.setName("Project Source Roots");                   //NOI18N
-                node.setDisplayName(
-                        NbBundle.getMessage(Util.class, "LBL_Sources"));//NOI18N
-                rootNode = node;
-            }
-            
-            NodeAcceptor acceptor = new NodeAcceptor() {
-                public boolean acceptNodes(Node[] nodes) {
-                    Node.Cookie cookie;
-                    return nodes.length == 1
-                           && (cookie = nodes[0].getCookie(DataObject.class))
-                              != null
-                           && ((DataObject) cookie).getPrimaryFile().isFolder()
-                              == false;
-                }
-            };
-            
-            Node selectedNode = NodeOperation.getDefault().select(
-                    NbBundle.getMessage(SingletonSetupPanelVisual.class,
-                                        "LBL_WinTitle_SelectClass"),    //NOI18N
-                    NbBundle.getMessage(SingletonSetupPanelVisual.class,
-                                        "LBL_SelectRepresentationClass"),       //NOI18N
-                    rootNode,
-                    acceptor)[0];
-            
-            FileObject selectedFO = ((DataObject) selectedNode.getCookie(DataObject.class)).getPrimaryFile();
-            return getClassName(selectedFO);
-        } catch (UserCancelException ex) {
-            // if the user cancels the choice, do nothing
-        }
-        return null;
-    }
-    
-    private static String getClassName(FileObject file) {
-        return ClassPath.getClassPath(file, ClassPath.SOURCE).getResourceName(file, '.', false);
     }
 
     public static String[] ensureTypes(String[] types) {

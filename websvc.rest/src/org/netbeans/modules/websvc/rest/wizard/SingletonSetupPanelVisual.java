@@ -45,11 +45,19 @@ import java.awt.event.KeyAdapter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import javax.lang.model.element.TypeElement;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.openide.util.Utilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -346,12 +354,25 @@ private void resourceNameChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
 }//GEN-LAST:event_selectClassButtonActionPerformed
 
     private void mouseClickHandler(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_mouseClickHandler
-        String className = Util.chooseClass(project);
-        if (className != null) {
-            contentClassTextField.setText(className);
-            fireChange();
-        }
-    
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                final ElementHandle<TypeElement> handle = TypeElementFinder.find(null, new TypeElementFinder.Customizer() {
+
+                            public Set<ElementHandle<TypeElement>> query(ClasspathInfo classpathInfo, String textForQuery, NameKind nameKind, Set<SearchScope> searchScopes) {
+                                return classpathInfo.getClassIndex().getDeclaredTypes(textForQuery, nameKind, searchScopes);
+                            }
+
+                            public boolean accept(ElementHandle<TypeElement> typeHandle) {
+                                return true;
+                            }
+                        });
+
+                if (handle != null) {
+                    contentClassTextField.setText(handle.getQualifiedName());
+                    fireChange();
+                }
+            }
+        });    
 }//GEN-LAST:event_mouseClickHandler
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
