@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -75,6 +75,7 @@ import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -87,6 +88,7 @@ public class BalloonManager {
     private static Balloon currentBalloon;
     private static JLayeredPane currentPane;
     private static ComponentListener listener;
+    private static RequestProcessor.Task hideToolTipTask = null;
     
     /**
      * Show balloon-like tooltip pointing to the given component. The balloon stays
@@ -95,12 +97,25 @@ public class BalloonManager {
      * @param content Content to be displayed in the balloon.
      * @param defaultAction Action to invoked when the balloon is clicked, can be null.
      */
-    public static synchronized void show( final JComponent owner, JComponent content, Action defaultAction ) {
+    public static synchronized void show( final JComponent owner, JComponent content, Action defaultAction, int timeout ) {
         assert null != owner;
         assert null != content;
         
         //hide current balloon (if any)
         dismiss();
+        if (timeout > 0) {
+            if (hideToolTipTask == null || hideToolTipTask.isFinished ()) {
+                hideToolTipTask = RequestProcessor.getDefault ().post (new Runnable () {
+                    public void run () {
+                        SwingUtilities.invokeLater (new Runnable () {
+                            public void run () {
+                                dismiss ();
+                            }
+                        });
+                    }
+                }, timeout);
+            }
+        }
         
         currentBalloon = new Balloon( content, defaultAction );
         currentPane = JLayeredPane.getLayeredPaneAbove( owner );

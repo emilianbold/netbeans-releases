@@ -382,7 +382,7 @@ public class AutoupdateCheckScheduler {
                     public void actionPerformed(ActionEvent e) {
                         onMouseClick.run();
                     }
-                });
+                }, 0);
             }
         };
         SwingUtilities.invokeLater( showBalloon );

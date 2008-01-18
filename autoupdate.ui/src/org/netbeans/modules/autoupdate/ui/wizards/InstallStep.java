@@ -563,7 +563,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     public void actionPerformed (ActionEvent e) {
                         onMouseClick.run ();
                     }
-                });
+                }, 30000);
             }
         };
         if (showToolTip) {
@@ -601,7 +601,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                     public void actionPerformed (ActionEvent e) {
                         onMouseClick.run ();
                     }
-                });
+                }, 0);
             }
         };
         SwingUtilities.invokeLater (showBalloon);
