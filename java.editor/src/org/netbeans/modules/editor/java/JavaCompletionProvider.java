@@ -1448,10 +1448,25 @@ public class JavaCompletionProvider implements CompletionProvider {
         }
         
         private void insideMethodInvocation(Env env) throws IOException {
-            MethodInvocationTree mi = (MethodInvocationTree)env.getPath().getLeaf();
-            TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, mi, env.getOffset());
-            if (ts == null || (ts.token().id() != JavaTokenId.LPAREN && ts.token().id() != JavaTokenId.COMMA))
+            TreePath path = env.getPath();
+            MethodInvocationTree mi = (MethodInvocationTree)path.getLeaf();
+            int offset = env.getOffset();
+            TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, mi, offset);
+            if (ts == null || (ts.token().id() != JavaTokenId.LPAREN && ts.token().id() != JavaTokenId.COMMA)) {
+                SourcePositions sp = env.getSourcePositions();
+                CompilationUnitTree root = env.getRoot();
+                int lastTokenEndOffset = ts.offset() + ts.token().length();
+                for (ExpressionTree arg : mi.getArguments()) {
+                    int pos = (int)sp.getEndPosition(root, arg);
+                    if (lastTokenEndOffset == pos) {
+                        insideExpression(env, new TreePath(path, arg));
+                        break;
+                    }
+                    if (offset <= pos)
+                        break;
+                }
                 return;
+            }
             String prefix = env.getPrefix();
             if (prefix == null || prefix.length() == 0)
                 addMethodArguments(env, mi);
