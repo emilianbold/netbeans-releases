@@ -187,24 +187,18 @@ public class JsfProjectUtils {
         return (framework instanceof JSFFrameworkProvider);
     }
 
-    private static JSFFrameworkProvider JsfFramework;
-
     public static void addJsfFrameworkChangeListener(Project project, PropertyChangeListener listener) {
+        JSFFrameworkProvider JsfFramework = getJSFFramework();
         if (JsfFramework == null) {
-            JsfFramework = getJSFFramework();
-            if (JsfFramework == null) {
-                return;
-            }
+            return;
         }
         JsfFramework.addPropertyChangeListener(project, listener);
     }
     
     public static void removeJsfFrameworkChangeListener(Project project, PropertyChangeListener listener) {
+        JSFFrameworkProvider JsfFramework = getJSFFramework();
         if (JsfFramework == null) {
-            JsfFramework = getJSFFramework();
-            if (JsfFramework == null) {
-                return;
-            }
+            return;
         }
         JsfFramework.removePropertyChangeListener(project, listener);
     }
