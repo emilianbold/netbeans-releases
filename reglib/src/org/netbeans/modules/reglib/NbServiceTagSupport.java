@@ -436,7 +436,7 @@ public class NbServiceTagSupport {
                                       parentName,
                                       parentURN,
                                       getGfProductDefinedId(jdkHomeUsedByGlassfish, jdkVersionUsedByGlassfish, glassfishHome),
-                                      "Sun Microsystems Inc",
+                                      "Sun Microsystems Inc.",
                                       System.getProperty("os.arch"),
                                       getZoneName(),
                                       svcTagSource);
