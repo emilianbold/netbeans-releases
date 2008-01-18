@@ -15,4 +15,11 @@ static void (* __set_malloc_handler(void (*__f)()))()
    return 0;
 }
 
+int *(* genxGetAlloc(genxWriter ))(void * , int );
+
+int *(* genxGetAlloc(genxWriter w))(void * userData, int bytes)
+{
+  return w->alloc;
+}
+
 

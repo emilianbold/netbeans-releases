@@ -61,6 +61,22 @@ FUNCTION DEFINITION __set_malloc_handler  [13:1/238-16:2/308] FunctionDDImpl SCO
     RETURNS void TEXT=void(*)()  [13:1/238-13:15/252]
     STATEMENT COMPOUND  [14:1/292-16:2/308] SCOPE: __set_malloc_handler 
         STATEMENT RETURN  [15:4/297-15:13/306] SCOPE: Stmt  [14:1/292-16:2/308] text: 'return 0;'
+FUNCTION genxGetAlloc [18:1/310-18:51/360] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: genxGetAlloc  [20:1/362-23:2/448]
+    SIGNATURE genxGetAlloc(genxWriter)
+    UNIQUE NAME F:genxGetAlloc(genxWriter)
+    PARAMETERS:
+         [18:22/331-18:32/341]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [18:22/331-18:32/341]  INIT: null  SCOPE: genxGetAlloc 
+    RETURNS *int TEXT=int*(*)(void*,int)  [18:1/310-18:8/317]
+FUNCTION DEFINITION genxGetAlloc  [20:1/362-23:2/448] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE genxGetAlloc(genxWriter)
+    UNIQUE NAME f:genxGetAlloc(genxWriter)
+    DECLARATION: genxGetAlloc  [18:1/310-18:51/360]
+    PARAMETERS:
+        w [20:22/383-20:34/395]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [20:22/383-20:32/393]  INIT: null  SCOPE: genxGetAlloc 
+    RETURNS *int TEXT=int*(*)(void* userData,int bytes)  [20:1/362-20:8/369]
+    STATEMENT COMPOUND  [21:1/426-23:2/448] SCOPE: genxGetAlloc 
+        STATEMENT RETURN  [22:3/430-22:19/446] SCOPE: Stmt  [21:1/426-23:2/448] text: 'return w->alloc;'
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION get_ptr [1:1/0-1:45/44] FunctionImpl SCOPE: $Global$ 
@@ -113,4 +129,20 @@ FUNCTION DEFINITION __set_malloc_handler  [13:1/238-16:2/308] FunctionDDImpl SCO
     RETURNS void TEXT=void(*)()  [13:1/238-13:15/252]
     STATEMENT COMPOUND  [14:1/292-16:2/308] SCOPE: __set_malloc_handler 
         STATEMENT RETURN  [15:4/297-15:13/306] SCOPE: Stmt  [14:1/292-16:2/308] text: 'return 0;'
+FUNCTION genxGetAlloc [18:1/310-18:51/360] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: genxGetAlloc  [20:1/362-23:2/448]
+    SIGNATURE genxGetAlloc(genxWriter)
+    UNIQUE NAME F:genxGetAlloc(genxWriter)
+    PARAMETERS:
+         [18:22/331-18:32/341]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [18:22/331-18:32/341]  INIT: null  SCOPE: genxGetAlloc 
+    RETURNS *int TEXT=int*(*)(void*,int)  [18:1/310-18:8/317]
+FUNCTION DEFINITION genxGetAlloc  [20:1/362-23:2/448] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE genxGetAlloc(genxWriter)
+    UNIQUE NAME f:genxGetAlloc(genxWriter)
+    DECLARATION: genxGetAlloc  [18:1/310-18:51/360]
+    PARAMETERS:
+        w [20:22/383-20:34/395]  TYPE: $unresolved$::genxWriter TEXT=genxWriter  [20:22/383-20:32/393]  INIT: null  SCOPE: genxGetAlloc 
+    RETURNS *int TEXT=int*(*)(void* userData,int bytes)  [20:1/362-20:8/369]
+    STATEMENT COMPOUND  [21:1/426-23:2/448] SCOPE: genxGetAlloc 
+        STATEMENT RETURN  [22:3/430-22:19/446] SCOPE: Stmt  [21:1/426-23:2/448] text: 'return w->alloc;'
 
