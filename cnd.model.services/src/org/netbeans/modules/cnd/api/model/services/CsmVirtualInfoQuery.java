@@ -115,7 +115,50 @@ public abstract class CsmVirtualInfoQuery {
         
         @Override
         public CsmMethod getBaseDeclaration(CsmMethod method) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            Set<CsmClass> anilLoop = new HashSet<CsmClass>();
+            CharSequence sig = method.getSignature();
+            CsmMethod met = processMethod(sig, method.getContainingClass(), anilLoop);
+            if (met != null) {
+                CsmMethod next = met;
+                while(next != null) {
+                    met = next;
+                    CsmClass base = next.getContainingClass();
+                    next = null;
+                    if (base != null) {
+                        for(CsmInheritance inh : base.getBaseClasses()){
+                            CsmMethod m = processMethod(sig, inh.getCsmClass(), anilLoop);
+                            if (m != null) {
+                                next = m;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            return met;
+        }
+
+        private CsmMethod processMethod(CharSequence sig, CsmClass cls, Set<CsmClass> anilLoop){
+            if (cls == null || anilLoop.contains(cls)) {
+                return null;
+            }
+            anilLoop.add(cls);
+            for(CsmMember m : cls.getMembers()){
+                if (CsmKindUtilities.isMethod(m)) {
+                    CsmMethod met = (CsmMethod) m;
+                    if (CharSequenceKey.Comparator.compare(sig, met.getSignature())==0
+                        && met.isVirtual()){
+                        return met;
+                    }
+                }
+            }
+            for(CsmInheritance inh : cls.getBaseClasses()){
+                CsmMethod met = processMethod(sig, inh.getCsmClass(), anilLoop);
+                if (met != null) {
+                    return met;
+                }
+            }
+            return null;
         }
 
         @Override
