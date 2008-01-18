@@ -106,13 +106,7 @@ public class JSFNodeFactory implements NodeFactory {
         }
         
         private void fireChange() {
-            ArrayList<ChangeListener> list = new ArrayList<ChangeListener>();
-            synchronized (this) {
-                list.addAll(listeners);
-            }
-            Iterator<ChangeListener> it = list.iterator();
-            while (it.hasNext()) {
-                ChangeListener elem = it.next();
+            for (ChangeListener elem : listeners) {
                 elem.stateChanged(new ChangeEvent( this ));
             }
         }
