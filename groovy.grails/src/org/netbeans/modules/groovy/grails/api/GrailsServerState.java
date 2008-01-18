@@ -30,7 +30,6 @@ package org.netbeans.modules.groovy.grails.api;
 
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
-import org.openide.execution.ExecutorTask;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 
@@ -41,7 +40,7 @@ import java.util.logging.Level;
 public class GrailsServerState implements TaskListener{
     private String name;
     private boolean running = false;
-    private ExecutorTask exTask;
+    Process process;
     private  final Logger LOG = Logger.getLogger(GrailsServerState.class.getName());
     
     public GrailsServerState (String name){
@@ -62,12 +61,12 @@ public class GrailsServerState implements TaskListener{
         LOG.log(Level.WARNING, "Project: " + name + " , taskFinished() called");
     }
 
-    public ExecutorTask getExTask() {
-        return exTask;
+    public Process getProcess() {
+        return process;
     }
 
-    public void setExTask(ExecutorTask exTask) {
-        this.exTask = exTask;
+    public void setProcess(Process process) {
+        this.process = process;
     }
     
     

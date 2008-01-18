@@ -156,7 +156,7 @@ public class ExternalGrailsServer implements GrailsServer{
 
             if (serverState != null) {
                 serverState.setRunning(true);
-                serverState.setExTask(exTask);
+                serverState.setProcess(gsr.getProcess());
                 exTask.addTaskListener(serverState);
                 }
             else {
