@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 
 /**
  *
- * @author vv159170
+ * @author Vladimir Voskresensky
  */
 public class ReferencesBaseTestCase extends ProjectBasedTestCase {
 
