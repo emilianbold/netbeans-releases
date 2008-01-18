@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
+import junit.framework.TestSuite;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -58,6 +59,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.hints.TestUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -86,6 +88,14 @@ public class IntroduceHintTest extends NbTestCase {
         super.setUp();
     }
 
+//    public static TestSuite suite() {
+//        TestSuite s = new NbTestSuite();
+//        
+//        s.addTest(new IntroduceHintTest("testCorrectSelection7"));
+//        
+//        return s;
+//    }
+    
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
@@ -134,6 +144,14 @@ public class IntroduceHintTest extends NbTestCase {
     
     public void testCorrectSelection11() throws Exception {
         performSimpleSelectionVerificationTest("package test; public class Test {public void test() {System.err.println();}}", 102 - 49, 120 - 49, false);
+    }
+    
+    public void testCorrectSelection12() throws Exception {
+        performSimpleSelectionVerificationTest("package test; public class Test {public void test(|String|[] s) {}}", false);
+    }
+    
+    public void testCorrectSelection13() throws Exception {
+        performSimpleSelectionVerificationTest("package test; public class Test {public void test() {new |Object|();}}", false);
     }
     
     public void testFix1() throws Exception {
@@ -921,6 +939,14 @@ public class IntroduceHintTest extends NbTestCase {
     
     private CompilationInfo info;
     private Document doc;
+    
+    private void performSimpleSelectionVerificationTest(String code, boolean awaited) throws Exception {
+        int[] span = new int[2];
+
+        code = TestUtilities.detectOffsets(code, span);
+        
+        performSimpleSelectionVerificationTest(code, span[0], span[1], awaited);
+    }
     
     private void performSimpleSelectionVerificationTest(String code, int start, int end, boolean awaited) throws Exception {
         prepareTest(code);

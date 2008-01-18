@@ -48,13 +48,13 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ContinueTree;
 import com.sun.source.tree.DoWhileLoopTree;
-import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
@@ -189,7 +189,39 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             if (tp.getLeaf().getKind() == Kind.ANNOTATION)
                 continue;
             
-            return isInsideClass(tp) ? tp : null;
+            if (!isInsideClass(tp))
+                return null;
+            
+            TreePath candidate = tp;
+            
+            tp = tp.getParentPath();
+            
+            while (tp != null) {
+                switch (tp.getLeaf().getKind()) {
+                    case VARIABLE:
+                        VariableTree vt = (VariableTree) tp.getLeaf();
+                        if (vt.getInitializer() == leaf) {
+                            return candidate;
+                        } else {
+                            return null;
+                        }
+                    case NEW_CLASS:
+                        NewClassTree nct = (NewClassTree) tp.getLeaf();
+                        
+                        for (Tree p : nct.getArguments()) {
+                            if (p == leaf) {
+                                return candidate;
+                            }
+                        }
+                        
+                        return null;
+                }
+                
+                leaf = tp.getLeaf();
+                tp = tp.getParentPath();
+            }
+            
+            return candidate;
         }
         
         return null;
