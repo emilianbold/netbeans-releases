@@ -36,6 +36,7 @@ public class OverlayPanel extends JComponent{
         g2.scale(zoom, zoom);
 
         designView.getGhost().paint(g2);
+        designView.getFlowLinkTool().paint(g2);
         
     }
 

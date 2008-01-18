@@ -95,8 +95,10 @@ public class FlowlinkTool implements DnDTool {
         startElement = e;
         
         if (isTask(e)) {
+            
             startX = e.getX();
             startY = e.getCenterY();
+            
         } else {
             startX = e.getX() + e.getWidth();
             startY = e.getCenterY();
@@ -109,7 +111,7 @@ public class FlowlinkTool implements DnDTool {
     
     
     private void move() {
-        Point p = getDesignView().getMousePosition();
+        Point p = getDesignView().getOverlayView().getMousePosition();
         if (p != null) {
             FPoint fp = getDesignView().convertScreenToDiagram(p);
             moveImpl(fp.x, fp.y);
@@ -134,7 +136,8 @@ public class FlowlinkTool implements DnDTool {
         currentX = x;
         currentY = y;
         
-        VisualElement e = null;//FIXME = getDesignView().findElement(x, y);
+        
+        VisualElement e = null;//getDesignView().findElement(x, y);
         
         endElement = (e != null && isValidLinkTo(e)) ? e : null;
         

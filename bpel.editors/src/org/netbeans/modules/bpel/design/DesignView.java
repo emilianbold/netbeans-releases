@@ -81,6 +81,12 @@ import org.netbeans.modules.bpel.design.phmode.PlaceHolderSelectionModel;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 import org.netbeans.modules.bpel.design.PartnerlinksView;
 import org.netbeans.modules.bpel.design.ProcessView;
+import org.netbeans.modules.bpel.design.actions.CollapseCurrentPatternAction;
+import org.netbeans.modules.bpel.design.actions.DeleteAction;
+import org.netbeans.modules.bpel.design.actions.ExpandAllPatternsAction;
+import org.netbeans.modules.bpel.design.actions.ExpandCurrentPatternAction;
+import org.netbeans.modules.bpel.design.actions.FindUsagesAction;
+import org.netbeans.modules.bpel.design.actions.GoToSourceAction;
 import org.netbeans.modules.bpel.design.model.PartnerRole;
 import org.netbeans.modules.bpel.properties.NodeUtils;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
@@ -454,10 +460,10 @@ public class DesignView extends JPanel implements
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK), "cut-pattern"); // NOI18N
 
        // am.put("rename-something", new RenameAction()); // NOI18N
-       // am.put("delete-something", new DeleteAction()); // NOI18N
+        am.put("delete-something", new DeleteAction(this)); // NOI18N
       //  am.put("cancel-something", new CancelAction()); // NOI18N
-//        am.put("gotosource-something", new GoToSourceAction()); // NOI18N
-////        am.put("findusages-something", new FindUsagesAction()); // NOI18N
+        am.put("gotosource-something", new GoToSourceAction(this)); // NOI18N
+        am.put("findusages-something", new FindUsagesAction(this)); // NOI18N
 //        am.put("find_next_mex_peer", new CycleMexAction()); // NOI18N
 //        am.put("show_context_menu", new ShowContextMenu()); // NOI18N
 //        am.put("go_next_hierarchy_component", new GoNextHieComponentAction()); // NOI18N
@@ -468,9 +474,9 @@ public class DesignView extends JPanel implements
 //        am.put("go_nearest_up_component", new GoUpNearestComponentAction()); // NOI18N
 //        am.put("go_nearest_down_component", new GoDownNearestComponentAction()); // NOI18N
 //
-//        am.put("expand-current-pattern", new ExpandCurrentPatternAction()); // NOI18N
-//        am.put("collapse-current-pattern", new CollapseCurrentPatternAction()); // NOI18N
-//        am.put("expand-all-patterns", new ExpandAllPatternsAction());
+        am.put("expand-current-pattern", new ExpandCurrentPatternAction(this)); // NOI18N
+        am.put("collapse-current-pattern", new CollapseCurrentPatternAction(this)); // NOI18N
+        am.put("expand-all-patterns", new ExpandAllPatternsAction(this));
 //        
 //        am.put("copy-pattern", new CopyAction()); // NOI18N
 //        am.put("cut-pattern", new CutAction()); // NOI18N
@@ -762,7 +768,7 @@ public class DesignView extends JPanel implements
     
     protected void printChildren(Graphics g) {}
  
-    private void goPlaceHolderMode(Pattern clipboard, boolean isCopyAction) {
+    public void goPlaceHolderMode(Pattern clipboard, boolean isCopyAction) {
         if (clipboard == null) {
             return;
         }
@@ -950,11 +956,5 @@ public class DesignView extends JPanel implements
 
     public boolean isDesignMode() {
         return DesignViewMode.DESIGN.equals(designViewMode);
-    }
-            
-    private enum DesignViewMode {
-        CUT_PLACE_HOLDER,
-        COPY_PLACE_HOLDER,
-        DESIGN;
     }
 }
