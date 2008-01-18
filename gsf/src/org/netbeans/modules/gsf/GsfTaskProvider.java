@@ -228,10 +228,10 @@ public class GsfTaskProvider extends PushTaskScanner  {
         
         public void run() {
             FileObject file = getFileOrRoot();
-            refreshRubyFile(file);
+            refreshFile(file);
         }
         
-        public void refreshRubyFile(final FileObject file) {
+        private void refreshFile(final FileObject file) {
             if (file.isFolder()) {
                 // HACK Bypass all the libraries in Rails projects
                 // TODO FIXME The hints providers need to pass in relevant directories
@@ -239,7 +239,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
                     return;
                 }
                 for (FileObject child : file.getChildren()) {
-                    refreshRubyFile(child);
+                    refreshFile(child);
                 }
                 return;
             }
@@ -249,6 +249,10 @@ public class GsfTaskProvider extends PushTaskScanner  {
             }
 
             final HintsProvider provider = language.getHintsProvider();
+            if (provider == null) {
+                return;
+            }
+
             final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
             
             Source source = Source.forFileObject(file);
