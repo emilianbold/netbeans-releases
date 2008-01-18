@@ -41,6 +41,7 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -130,7 +131,7 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
 
     protected FileSystem store(MemFolder root) throws IOException {
         cleanupCache(); // move old file out of the way
-        OutputStream os = new FileOutputStream(cacheFile);
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(cacheFile));
         try {
             sizes = new HashMap<MemFileOrFolder,Integer>(1000);
             int fsSize = computeSize(root);
