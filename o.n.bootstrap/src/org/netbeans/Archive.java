@@ -41,6 +41,7 @@
 
 package org.netbeans;
 
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -234,7 +235,7 @@ class Archive {
         
         saved = true;
         OutputStream os = new FileOutputStream (f, append); //append new entries only
-        DataOutputStream dos = new DataOutputStream(os);
+        DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(os, 1024 * 1024));
         
         if (!append) { // write header
             dos.writeLong(magic);
