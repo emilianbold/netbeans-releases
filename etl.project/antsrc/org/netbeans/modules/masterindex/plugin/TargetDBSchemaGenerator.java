@@ -63,10 +63,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import net.java.hulp.i18n.Logger;
 import org.axiondb.AxionException;
 import org.axiondb.io.AxionFileSystem;
 import org.axiondb.io.BufferedDataInputStream;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  *
@@ -80,17 +82,21 @@ public class TargetDBSchemaGenerator {
     private Connection conn = null;
     //eview data model type vs. db data type
     private String[][] datatypes = {
-            {"string", "VARCHAR"},
-            {"int", "INTEGER"},
-            {"char", "CHAR"},
-            {"boolean", "BOOLEAN"},
-            {"date", "DATE"},
-            {"blob", "BLOB"},
-            {"float", "FLOAT"}};
+        {"string", "VARCHAR"},
+        {"int", "INTEGER"},
+        {"char", "CHAR"},
+        {"boolean", "BOOLEAN"},
+        {"date", "DATE"},
+        {"blob", "BLOB"},
+        {"float", "FLOAT"}};
     /**
      * logger
      */
-    private static Logger logger = Logger.getLogger(TargetDBSchemaGenerator.class.getName());
+    /**
+     * logger
+     */
+    private static transient final Logger mLogger = LogUtil.getLogger(TargetDBSchemaGenerator.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     private TargetDBSchemaGenerator() {
     }
@@ -103,7 +109,7 @@ public class TargetDBSchemaGenerator {
     }
 
     public void createTargetDB(String dbname) {
-    //
+        //
     }
 
     public void createTargetDB(String dbdir, String dbname) {
@@ -122,17 +128,17 @@ public class TargetDBSchemaGenerator {
 
     private void createTable(String NormtableName, String ModelTableName) {
         try {
-            logger.log(Level.INFO, "Creating Table [ " + NormtableName + " ]");
+            mLogger.infoNoloc(mLoc.t("PRSR001: Creating Table [ {0}", NormtableName));
             Statement stmt = conn.createStatement();
             stmt.execute(createSQL(NormtableName, ModelTableName));
         } catch (SQLException ex) {
-            Logger.getLogger("global").log(Level.SEVERE, null, ex);
+            mLogger.errorNoloc(mLoc.t("PRSR002: global"), ex);
         }
     }
 
     private String createSQL(String normtablename, String modeltablename) {
         String query = "CREATE EXTERNAL TABLE IF NOT EXISTS " + normtablename + " ( " + createSQLTableColumns(modeltablename) + " ) " + createOrganizationString(normtablename);
-        logger.log(Level.INFO, "SQL Executed : " + query);
+        mLogger.infoNoloc(mLoc.t("PRSR002: SQL Executed :{0}", query));
         return query;
     }
 
@@ -195,10 +201,10 @@ public class TargetDBSchemaGenerator {
             if (validateFile(configpath, configfilename)) {
                 return true;
             } else {
-                logger.severe("Invalid Config File : " + configfilename);
+                mLogger.infoNoloc(mLoc.t("PRSR019: Invalid Config File : {0}", configfilename));
             }
         } else {
-            logger.severe("Invalid Directory : " + configpath);
+            mLogger.infoNoloc(mLoc.t("PRSR004: Invalid Directory :{0}", configpath));
         }
         return false;
     }
@@ -209,10 +215,10 @@ public class TargetDBSchemaGenerator {
             if (dbdir.isDirectory()) {
                 return true;
             } else {
-                logger.severe("Directory is not a valid dir : " + dirpath);
+                mLogger.infoNoloc(mLoc.t("PRSR005: Directory is not a valid dir :{0}", dirpath));
             }
         } else {
-            logger.severe("Directory does not exist : " + dirpath);
+            mLogger.infoNoloc(mLoc.t("PRSR025: Directory is not a valid dir :{0}", dirpath));
         }
         return false;
     }
@@ -226,10 +232,10 @@ public class TargetDBSchemaGenerator {
                 createObjectDefModel();
                 ret = true;
             } else {
-                logger.severe("File does not exist : " + filename);
+                mLogger.infoNoloc(mLoc.t("PRSR007: File does not exist :{0}", filename));
             }
         } else {
-            logger.severe("File [ " + filename + " ] does not exist in dir : " + filepath);
+            mLogger.infoNoloc(mLoc.t("PRSR008: File [{0} ] does not exist in dir :{1}", filename, filepath));
         }
         return ret;
     }
@@ -240,9 +246,9 @@ public class TargetDBSchemaGenerator {
             String uri = PluginDTConstants.URI_PRIFIX + PluginDTConstants.PS + dbname + PluginDTConstants.PS + dbdir;
             conn = DriverManager.getConnection(uri);
         } catch (SQLException ex) {
-            Logger.getLogger("global").log(Level.SEVERE, null, ex);
+            mLogger.errorNoloc(mLoc.t("PRSR009: Exception"), ex);
         } catch (ClassNotFoundException ex) {
-            Logger.getLogger("global").log(Level.SEVERE, null, ex);
+            mLogger.infoNoloc(mLoc.t("PRSR010: Exception"), ex);
         }
     }
 
@@ -271,19 +277,19 @@ public class TargetDBSchemaGenerator {
                     addExtraFieldsToParent(objDef);
                     lookup = Lookup.createLookup(objDef);
                 } catch (AxionException ex) {
-                    logger.severe("Error Reading eview config file : " + ex.getMessage());
+                    mLogger.infoNoloc(mLoc.t("PRSR018: Error Reading eview config file :{0}", ex.getMessage()));
                 } finally {
                     try {
                         bdis.close();
                     } catch (IOException ex) {
-                        logger.severe("Error Closing Axion BufferedDataInputStream : " + ex.getMessage());
+                        mLogger.infoNoloc(mLoc.t("PRSR011: Error Closing Axion BufferedDataInputStream :{0}", ex.getMessage()));
                     }
                 }
             } else {
-                logger.severe("Unable to find file : " + PluginDTConstants.EVIEW_CONFIG_FILE.getAbsolutePath());
+                mLogger.infoNoloc(mLoc.t("PRSR012: Unable to find file : {0}", PluginDTConstants.EVIEW_CONFIG_FILE.getAbsolutePath()));
             }
         } else {
-            logger.severe("EView Config File is not available. Set the file using DataSourceReaderFactory.setEViewConfigFilePath()");
+            mLogger.infoNoloc(mLoc.t("PRSR013: EView Config File is not available. Set the file using DataSourceReaderFactory.setEViewConfigFilePath()"));
 
         }
     }

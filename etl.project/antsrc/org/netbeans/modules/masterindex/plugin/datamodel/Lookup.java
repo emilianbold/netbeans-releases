@@ -46,22 +46,22 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.logging.Logger;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Sujit Biswas
  * @author Manish Bharani
  */
 public class Lookup {
-    
-    private static Logger logger = Logger.getLogger(Lookup.class.getName());
-    
+
+    private static transient final Logger mLogger = LogUtil.getLogger(Lookup.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private HashMap<String, HashMap<String, Integer>> lookupMap = new HashMap<String, HashMap<String, Integer>>();
-    
     private HashMap<String, Integer> childIndex = new HashMap<String, Integer>();
-    
     private transient ObjectDefinition objectdef;
-    
+
     /**
      * @param objectdef
      */
@@ -69,7 +69,7 @@ public class Lookup {
         this.objectdef = objectdef;
         createLookup();
     }
-    
+
     /**
      *
      * @param objectDefinition
@@ -79,8 +79,7 @@ public class Lookup {
         this.objectdef = b.parse(objectDefinition);
         createLookup();
     }
-    
-    
+
     /**
      * populate the lookupMap and the childIndex
      *
@@ -88,9 +87,9 @@ public class Lookup {
     private void createLookup() {
         createLooupMap(lookupMap, objectdef, objectdef.getName());
         createChildIndex(childIndex, objectdef, objectdef.getName());
-        
+
     }
-    
+
     /**
      * populate the childIndex
      *
@@ -98,35 +97,35 @@ public class Lookup {
     private void createChildIndex(HashMap<String, Integer> childTypeIndex,
             ObjectDefinition context, String prefix) {
         for (int i = 0; i < context.getChildren().size(); i++) {
-            
+
             ObjectDefinition child = context.getChildren().get(i);
             String cname = child.getName();
             String key = prefix + "." + cname;
             childTypeIndex.put(key, i);
             createChildIndex(childTypeIndex, child, key);
         }
-        
+
     }
-    
+
     /**
      * populate the lookupMap
      *
      */
     private void createLooupMap(HashMap<String, HashMap<String, Integer>> lmap,
             ObjectDefinition context, String prefix) {
-        
+
         lmap.put(prefix, createFieldMap(context));
-        
+
         for (int i = 0; i < context.getChildren().size(); i++) {
-            
+
             ObjectDefinition child = context.getChildren().get(i);
             String cname = child.getName();
             String key = prefix + "." + cname;
             createLooupMap(lmap, child, key);
         }
-        
+
     }
-    
+
     /**
      * create the field map for a given ObjectDefinition
      *
@@ -134,18 +133,17 @@ public class Lookup {
      * @return
      */
     private HashMap<String, Integer> createFieldMap(ObjectDefinition context) {
-        
+
         HashMap<String, Integer> map = new HashMap<String, Integer>();
-        
+
         ArrayList<Field> fields = context.getFields();
-        
+
         for (int i = 0; i < fields.size(); i++) {
             map.put(fields.get(i).getName(), i);
         }
         return map;
     }
-    
-    
+
     /**
      * utility method to create Lookup from objectDefinition InputStream
      *
@@ -153,12 +151,12 @@ public class Lookup {
      * @return
      */
     public static Lookup createLookup(InputStream objectDefinition) {
-        
+
         Lookup l = new Lookup(objectDefinition);
         return l;
-        
+
     }
-    
+
     /**
      * utility method to create Lookup from objectDefinition Object
      *
@@ -168,9 +166,9 @@ public class Lookup {
     public static Lookup createLookup(ObjectDefinition objectDefinition) {
         Lookup l = new Lookup(objectDefinition);
         return l;
-        
+
     }
-    
+
     /**
      * returns the field index for a given fieldName and prefix where given an
      * ePath Person.Address.city , fieldName=city and prefix=Person.Address,
@@ -181,19 +179,21 @@ public class Lookup {
      * @return
      */
     public int getFieldIndex(String fieldName, String prefix) {
-        
-        if(lookupMap.get(prefix) == null)
+
+        if (lookupMap.get(prefix) == null) {
             return -1;
-        
+        }
+
         Integer i = lookupMap.get(prefix).get(fieldName);
-        
-        if (i == null)
+
+        if (i == null) {
             return -1;
-        else
+        } else {
             return i.intValue();
-        
+        }
+
     }
-    
+
     /**
      * returns the child index for a given prefix can be Person.Address
      *
@@ -202,72 +202,72 @@ public class Lookup {
      */
     public int getChildTypeIndex(String prefix) {
         Integer i = childIndex.get(prefix);
-        
-        if (i == null)
+
+        if (i == null) {
             return -1;
-        else
+        } else {
             return i.intValue();
+        }
     }
-    
-    public String getChildTypeName(int j){
+
+    public String getChildTypeName(int j) {
         Iterator i = childIndex.keySet().iterator();
-        while(i.hasNext()){
-            String key = (String)i.next();
-            if ((int)childIndex.get(key) == j){
+        while (i.hasNext()) {
+            String key = (String) i.next();
+            if ((int) childIndex.get(key) == j) {
                 return key.substring(key.indexOf(".") + 1);
             }
         }
         return null;
     }
-    
-    public HashMap getChildIndexMap(){
+
+    public HashMap getChildIndexMap() {
         return this.childIndex;
     }
-    
-    public HashMap getLookupMap(){
+
+    public HashMap getLookupMap() {
         return this.lookupMap;
     }
 
-    public ArrayList getFields(String tablename){
+    public ArrayList getFields(String tablename) {
         // Look out for parent fields
-        if (this.objectdef.getName().equals(tablename)){
+        if (this.objectdef.getName().equals(tablename)) {
             return objectdef.getFields();
-        } else{
+        } else {
             // Look out for children fields
-            for (int i=0; i < objectdef.getChildren().size(); i++){
-                ObjectDefinition odef = (ObjectDefinition)this.objectdef.getchild(i);
-                if ( odef.getName().equals(tablename)){
+            for (int i = 0; i < objectdef.getChildren().size(); i++) {
+                ObjectDefinition odef = (ObjectDefinition) this.objectdef.getchild(i);
+                if (odef.getName().equals(tablename)) {
                     return odef.getFields();
                 }
             }
         }
-        logger.severe("Fields for table [ " + tablename + " ] cannot be found in the data model");
+
+        mLogger.infoNoloc(mLoc.t("PRSR014: Fields for table [{0} cannot be found in the data model", tablename));
         return null;
     }
-    
-    public String getRootName(){
+
+    public String getRootName() {
         return this.objectdef.getName();
     }
-    
+
     /**
      * @param args
      */
     public static void main(String[] args) {
-        
+
         try {
             //FileInputStream fis = new FileInputStream("D:/temp/eviewconfig/objectdef.xml");
             FileInputStream fis = new FileInputStream("D:/temp/forMANISH/objectdef.xml");
             Lookup l = createLookup(fis);
-            
-            System.out.println("ChildIndexMap : " +  l.childIndex.toString());
+
+            System.out.println("ChildIndexMap : " + l.childIndex.toString());
             System.out.println("LookupMap : " + l.lookupMap.toString());
-            
+
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
     }
-    
-    
 }
