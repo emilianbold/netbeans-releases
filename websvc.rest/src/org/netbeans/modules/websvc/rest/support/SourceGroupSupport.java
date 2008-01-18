@@ -53,14 +53,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -240,24 +246,27 @@ public class SourceGroupSupport {
     }
     
     public static JavaSource getJavaSourceFromClassName(String qualifiedClassName, Project project) throws IOException {
-        return JavaSource.forFileObject(getFileObjectFromClassName(qualifiedClassName, project));
+        FileObject fo = getFileObjectFromClassName(qualifiedClassName, project);
+        if (fo != null) {
+            return JavaSource.forFileObject(fo);
+        } else {
+            return null;
+        }
     }
     
     public static FileObject getFileObjectFromClassName(String qualifiedClassName, Project project) throws IOException {
-        String name = qualifiedClassName;
-        for (String pkg = getPackageName(name); pkg != null; name = pkg) {
-            for (SourceGroup sg : getJavaSourceGroups(project)) {
-                FileObject folder = getFolderForPackage(sg, pkg, false);
-                if (folder != null) {
-                    for (FileObject fo : folder.getChildren()) {
-                        if (fo.isFolder() || ! "java".equals(fo.getExt())) {
-                            continue;
-                        }
-                        if (qualifiedClassName.endsWith(fo.getName())) {
-                            return fo;
-                        }
-                    }
-                }
+        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
+        FileObject root = restSupport.findSourceRoot();
+        ClasspathInfo cpInfo = ClasspathInfo.create(root);
+        ClassIndex ci = cpInfo.getClassIndex();
+        int beginIndex = qualifiedClassName.lastIndexOf('.')+1;
+        String simple = qualifiedClassName.substring(beginIndex);
+        Set<ElementHandle<TypeElement>> handles = ci.getDeclaredTypes(
+                simple, ClassIndex.NameKind.SIMPLE_NAME, 
+                Collections.singleton(ClassIndex.SearchScope.SOURCE));
+        for (ElementHandle<TypeElement> handle : handles) {
+            if (qualifiedClassName.equals(handle.getQualifiedName())) {
+                return SourceUtils.getFile(handle, cpInfo);
             }
         }
         return null;
