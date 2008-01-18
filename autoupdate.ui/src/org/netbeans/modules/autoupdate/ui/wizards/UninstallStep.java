@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -354,7 +354,7 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
                 Logger.getLogger (UninstallStep.class.getName ()).log (Level.INFO, x.getMessage (), x);
             }
         } else if (restarter != null) {
-            OperationSupport support = (OperationSupport) model.getBaseContainer ().getSupport ();
+            final OperationSupport support = (OperationSupport) model.getBaseContainer ().getSupport ();
             assert support != null : "OperationSupport cannot be null because OperationContainer " +
                     "contains elements: " + model.getBaseContainer ().listAll () + " and invalid elements " + model.getBaseContainer ().listInvalid ();
             if (panel.restartNow ()) {
@@ -371,6 +371,16 @@ public class UninstallStep implements WizardDescriptor.FinishablePanel<WizardDes
                 } catch (OperationException x) {
                     err.log (Level.INFO, x.getMessage (), x);
                 }
+                final Runnable onMouseClick = new Runnable () {
+                    public void run () {
+                        try {
+                            support.doRestart (restarter, null);
+                        } catch (OperationException x) {
+                            err.log (Level.INFO, x.getMessage (), x);
+                        }
+                    }
+                };
+                InstallStep.notifyRestartNeeded (onMouseClick, getBundle ("UninstallSupport_RestartNeeded"), false);
                 return ;
             }
         } else {

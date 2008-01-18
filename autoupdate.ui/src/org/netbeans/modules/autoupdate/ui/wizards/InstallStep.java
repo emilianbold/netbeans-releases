@@ -97,7 +97,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     private boolean indeterminateProgress = false;
     private int processedUnits = 0;
     private int totalUnits = 0;
-    private final Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.wizards.InstallPanel");
+    private static  final Logger log = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.wizards.InstallPanel");
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener> ();
     
     private static final String TEXT_PROPERTY = "text";
@@ -533,29 +533,32 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
             } catch (OperationException x) {
                 log.log (Level.INFO, x.getMessage (), x);
             }
-            notifyRestartNeeded (support, r);
+            notifyInstallRestartNeeded (support, r, true); // NOI18N
         }
     }
     
     private static RestartNeededNotification.UpdatesFlasher flasher;
     
-    private void notifyRestartNeeded (final InstallSupport support, final Restarter r) {
-        // Some modules found
+    private static void notifyInstallRestartNeeded (final InstallSupport support, final Restarter r, boolean showToolTip) {
         final Runnable onMouseClick = new Runnable () {
             public void run () {
                 try {
-                    support.doRestart (r, spareHandle);
+                    support.doRestart (r, null);
                 } catch (OperationException x) {
                     log.log (Level.INFO, x.getMessage (), x);
                 }
             }
         };
+        notifyRestartNeeded (onMouseClick, getBundle ("InstallSupport_RestartNeeded"), showToolTip);
+    }
+    
+    static void notifyRestartNeeded (final Runnable onMouseClick, final String tooltip, boolean showToolTip) {
         flasher = RestartNeededNotification.getFlasher (onMouseClick);
         assert flasher != null : "Updates Flasher cannot be null.";
         flasher.startFlashing ();
         final Runnable showBalloon = new Runnable () {
             public void run () {
-                JLabel balloon = new JLabel (getBundle ("InstallSupport_InBackground_RestartNeeded")); // NOI18N
+                JLabel balloon = new JLabel (tooltip);
                 BalloonManager.show (flasher, balloon, new AbstractAction () {
                     public void actionPerformed (ActionEvent e) {
                         onMouseClick.run ();
@@ -563,7 +566,9 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 });
             }
         };
-        SwingUtilities.invokeLater (showBalloon);
+        if (showToolTip) {
+            SwingUtilities.invokeLater (showBalloon);
+        }
         flasher.addMouseListener (new MouseAdapter () {
             @Override
             public void mouseEntered (MouseEvent e) {
@@ -650,6 +655,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 } catch (OperationException x) {
                     log.log (Level.INFO, x.getMessage (), x);
                 }
+                notifyInstallRestartNeeded (support, restarter, false); // NOI18N
                 return ;
             }
         } else {
@@ -684,7 +690,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         }
     }
 
-    private String getBundle (String key, Object... params) {
+    private static String getBundle (String key, Object... params) {
         return NbBundle.getMessage (InstallStep.class, key, params);
     }
 }
