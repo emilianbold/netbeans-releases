@@ -405,4 +405,23 @@ public class PreprocLexerTestCase extends NbTestCase {
 
         assertFalse("No more tokens", ts.moveNext());
     }
+    
+    public void testIncludeMacro() {
+        String text = "#include AA(x,7)\n";
+
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languagePreproc());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_START, "#");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "AA");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LPAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "x");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.COMMA, ",");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "7");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RPAREN, ")");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+
+        assertFalse("No more tokens", ts.moveNext());
+    }
 }
