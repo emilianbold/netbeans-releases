@@ -254,7 +254,7 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
         if (java_version == null) return false;
         String endorsed = privateProp.getProperty(JAXWS_ENDORSED);
         boolean modif = false;
-        if (java_version.startsWith("1.6") && endorsed != null) { //NOI18N
+        if (isOldJdk16(java_version) && endorsed != null) { //NOI18N
             // create or modify JVM options
             String jvmOptions = projectProp.getProperty(RUN_JVM_ARGS);
             if (jvmOptions == null) {                   
@@ -294,6 +294,33 @@ public class J2SEProjectJAXWSClientSupport extends ProjectJAXWSClientSupport /*i
             }
         }
         return modif;
+    }
+    
+    /** test if jdk version is 1.6 and older than jdk1.6.0_04 
+     * 
+     * @param java_version
+     * @return
+     */
+    private boolean isOldJdk16(String java_version) {
+        if (java_version.startsWith("1.6")) { //NOI18N
+            int index = java_version.indexOf("_");
+            if (index > 0) {
+                String releaseVersion = java_version.substring(index+1);
+                try {
+                    Integer rv = Integer.valueOf(releaseVersion);
+                    if (rv >=4) return false;
+                    else return true;
+                } catch (NumberFormatException ex) {
+                    // return true for some strange jdk versions
+                    return true;
+                }
+            } else {
+                // return true for some strange jdk versions
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
       
      /** Returns the default value for the http.nonProxyHosts system property. <br>
