@@ -1340,6 +1340,8 @@ function_definition_no_ret_type
 
 function_declarator_with_fun_as_ret_type  [boolean definition]
         :
+                (ptr_operator)=> ptr_operator function_declarator_with_fun_as_ret_type[definition]
+                |
                 LPAREN function_declarator[definition] RPAREN function_params
         ;
     
