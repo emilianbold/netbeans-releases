@@ -539,6 +539,10 @@ class J2SEActionProvider implements ActionProvider {
                     throw new IllegalArgumentException(command);
                 }
             }
+            if (COMMAND_CLEAN.equals(command)) {
+                //After clean, rebuild all
+                dirty = null;
+            }
         }
         J2SEConfigurationProvider.Config c = context.lookup(J2SEConfigurationProvider.Config.class);
         if (c != null) {
