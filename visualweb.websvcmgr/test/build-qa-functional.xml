@@ -1,75 +1,1 @@
-<?xml version="1.0"?>
-<!--
-DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
-
-
-The contents of this file are subject to the terms of either the GNU
-General Public License Version 2 only ("GPL") or the Common
-Development and Distribution License("CDDL") (collectively, the
-"License"). You may not use this file except in compliance with the
-License. You can obtain a copy of the License at
-http://www.netbeans.org/cddl-gplv2.html
-or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
-specific language governing permissions and limitations under the
-License.  When distributing the software, include this License Header
-Notice in each file and include the License file at
-nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
-particular file as subject to the "Classpath" exception as provided
-by Sun in the GPL Version 2 section of the License file that
-accompanied this code. If applicable, add the following below the
-License Header, with the fields enclosed by brackets [] replaced by
-your own identifying information:
-"Portions Copyrighted [year] [name of copyright owner]"
-
-Contributor(s):
-
-The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
-Microsystems, Inc. All Rights Reserved.
-
-If you wish your version of this file to be governed by only the CDDL
-or only the GPL Version 2, indicate your decision by adding
-"[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
-single choice of license, a recipient has the option to distribute
-your version of this file under either the CDDL, the GPL Version 2 or
-to extend the choice of license to its licensees as provided above.
-However, if you add GPL Version 2 code and therefore, elected the GPL
-Version 2 license, then the option applies only if the new code is
-made subject to such option by the copyright holder.
--->
-<project name="org.netbeans.modules.visualweb.websvcmgr/test-qa-functional" basedir="." default="all">
-
-    <!-- Imports default qa-functional-compiler and runidetest executor.
-        jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
-
-    <!-- ========= -->
-    <!-- Compilers -->
-    <!-- ========= -->
-
-    <!-- You can override default qa-functional-compiler if you need something special -->
-         <!--
-    <target name="qa-functional-compiler" depends="init-cp">
-        <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
-            <classpath refid="test.qa-functional.compile.cp"/>
-        </buildTests>
-    </target>
-    -->
-    
-    <!-- ========= -->
-    <!-- Executors -->
-    <!-- ========= -->
-    
-    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
-         If you need to customize it, you can uncomment the following and override it.
-    <target name="runidetest" depends="init-cp">
-        <executeTests pluginname="ide">
-            <classpath refid="test.qa-functional.run.cp"/>
-        </executeTests>
-    </target>
-    -->
-</project>
-
+<?xml version="1.0" encoding="UTF-8"?><!--DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.The contents of this file are subject to the terms of either the GNUGeneral Public License Version 2 only ("GPL") or the CommonDevelopment and Distribution License("CDDL") (collectively, the"License"). You may not use this file except in compliance with theLicense. You can obtain a copy of the License athttp://www.netbeans.org/cddl-gplv2.htmlor nbbuild/licenses/CDDL-GPL-2-CP. See the License for thespecific language governing permissions and limitations under theLicense.  When distributing the software, include this License HeaderNotice in each file and include the License file atnbbuild/licenses/CDDL-GPL-2-CP.  Sun designates thisparticular file as subject to the "Classpath" exception as providedby Sun in the GPL Version 2 section of the License file thataccompanied this code. If applicable, add the following below theLicense Header, with the fields enclosed by brackets [] replaced byyour own identifying information:"Portions Copyrighted [year] [name of copyright owner]"Contributor(s):The Original Software is NetBeans. The Initial Developer of the OriginalSoftware is Sun Microsystems, Inc. Portions Copyright 1997-2007 SunMicrosystems, Inc. All Rights Reserved.If you wish your version of this file to be governed by only the CDDLor only the GPL Version 2, indicate your decision by adding"[Contributor] elects to include this software in this distributionunder the [CDDL or GPL Version 2] license." If you do not indicate asingle choice of license, a recipient has the option to distributeyour version of this file under either the CDDL, the GPL Version 2 orto extend the choice of license to its licensees as provided above.However, if you add GPL Version 2 code and therefore, elected the GPLVersion 2 license, then the option applies only if the new code ismade subject to such option by the copyright holder.--><project default="all" name="VW Web Service Consumption Test Type Script">    <property name="opensource.dir" location="../../.."/>    <property name="httpunit.dir" value="${opensource.dir}/testtools/external"/>    <property name="xtest.data.dir" location="../../test/data"/>    <property name="xtest.properties-file.dir" value="${xtest.data.dir}"/>    <property name="xtest.ws-properties.file" location="./data/WebService.properties"/>    <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true -J-Dxtest.ws-properties.file=${xtest.ws-properties.file} -J-Dxtest.data.dir=${xtest.data.dir}"/>    <!-- Define path to IDE -->    <property name="netbeans.dest.dir" value="${opensource.dir}/nbbuild/netbeans"/>    <!-- Pass ${netbeans.dest.dir} property value to xtest command line -->    <copy file="${xtest.properties-file.dir}/DeploymentTargets.properties" tofile="${xtest.data.dir}/DeploymentTargets.properties" overwrite="true"/>    <copy file="${xtest.properties-file.dir}/DefaultDeploymentTargets.properties" tofile="${xtest.data.dir}/DefaultDeploymentTargets.properties" overwrite="true"/>    <condition property="jemmy.jar" value="jemmy-mac.jar" else="jemmy.jar">        <contains string="${os.name}" substring="Mac"                casesensitive="false"/>     </condition>    <echo message="jemmy.jar = ${jemmy.jar}"/>    <condition property="asadmin.script" value="asadmin.bat" else="asadmin">        <contains string="${os.name}" substring="Windows" casesensitive="false"/>    </condition>    <path id="httpunit.jars">        <pathelement location="${httpunit.dir}/httpunit.jar"/>        <pathelement location="${netbeans.dest.dir}/visualweb1/modules/ext/tidy-mod.jar"/>    </path>    <path id="jemmy.and.jelly.path">        <pathelement location="${opensource.dir}/jemmy/builds/${jemmy.jar}"/>        <pathelement location="${opensource.dir}/visualweb/kit/gravy/builds/gravy.jar"/>        <pathelement location="${opensource.dir}/jellytools/builds/jelly2-nb.jar"/>    </path>    <!-- Creates an empty Java project in IDE -->    <!-- <property name="xtest.ide.create.project" value="true"/> -->    <!-- Opens project at specified location -->    <!--property name="xtest.ide.open.project" location="${xtest.data}/SampleProject"/-->        <!-- ================ -->    <!-- Additional tasks -->    <!-- ================ -->    <!-- ========= -->    <!-- Compilers -->    <!-- ========= -->    <target name="init">        <property name="build.compiler.debug" value="true"/>        <property name="build.compiler.deprecation" value="true"/>        <property name="build.sysclasspath" value="ignore"/>    </target>    <target name="init-cp">        <path id="cp">            <pathelement location="${netbeans.dest.dir}/platform6/core/org-openide-filesystems.jar" />	    <pathelement location="${netbeans.dest.dir}/ide7/modules/org-netbeans-api-java.jar" />	    <pathelement location="${netbeans.dest.dir}/ide7/modules/org-netbeans-modules-editor-completion.jar" />            <pathelement location="${netbeans.dest.dir}/visualweb1/modules/org-netbeans-modules-visualweb-insync.jar"/>	</path>    </target>    <!-- You can override default qa-functional-compiler if you need something special -->    <target name="qa-functional-compiler" depends="init,init-cp">	    <buildTests srcDir="qa-functional/src">            <classpath>		<path refid="cp"/>                <path refid="httpunit.jars"/>		<path refid="jemmy.and.jelly.path"/>            </classpath>        </buildTests>    </target>    <!-- ========= -->    <!-- Executors -->    <!-- ========= -->    <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.         If you need to customize it, you can uncomment the following and override it.-->    <target name="runidetest" depends="init,init-cp">        <property name="coverage.lib.path" refid="httpunit.jars"/>        <executeTests  pluginName="ide">            <classpath>                    <path refid="jemmy.and.jelly.path"/>                    <path refid="httpunit.jars"/>            </classpath>        </executeTests>        <loadproperties srcFile="${xtest.data.dir}/DeploymentTargets.properties"/>        <exec dir="${deployment.target.path.GlassFish V2}/bin" executable="${deployment.target.path.GlassFish V2}/bin/${asadmin.script}">            <arg line="stop-domain domain1"/>        </exec>    </target>    <!-- This target is executed from test-executor in newly created Project -->    <!-- Name of this task is defined in cfg-xxx.xml -->    <!-- This target executes standalone tests -->    <target name="runcodetest">        <executeTests  pluginName="jvm">            <classpath>                    <path refid="jemmy.and.jelly.path"/>                    <path refid="httpunit.jars"/>            </classpath>        </executeTests>    </target></project>
