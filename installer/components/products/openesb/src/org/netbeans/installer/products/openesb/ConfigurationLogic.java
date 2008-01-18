@@ -131,7 +131,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     "install");
         } catch (IOException e) {
             throw new InstallationException(
-                    getString("CL.install.error.openesb.installer"), // NOI18N
+                    getString("CL.install.error.jbi.core.installer"), // NOI18N
                     e);
         }        
 
