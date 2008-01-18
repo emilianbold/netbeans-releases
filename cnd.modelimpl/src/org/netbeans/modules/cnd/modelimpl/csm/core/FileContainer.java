@@ -487,7 +487,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 		aMap.put(key, input.readUTF());
 	    }
 	    else {
-		final CharSequence[] value = new CharSequence[arraySize];
+		final String[] value = new String[arraySize];
 		for (int j = 0; j < arraySize; j++) {
 		    String path = input.readUTF();
 		    path = pathManager == null ? path : pathManager.getString(path).toString();
