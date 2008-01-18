@@ -512,7 +512,7 @@ public class Settings {
         ArrayList<KitAndValue> kavList = new ArrayList<KitAndValue>();
 
         for (Class kc = kitClass; kc != null; kc = kc.getSuperclass()) {
-            String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
+            String mimeType = BaseKit.kitsTracker_FindMimeType(kc);
             MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
 
             Object value = getValueEx(mimePath, kc, settingName, evaluateEvaluators);

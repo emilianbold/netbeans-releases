@@ -79,7 +79,11 @@ public final class KitsTracker {
      */
     @SuppressWarnings("unchecked")
     public List<String> getMimeTypesForKitClass(Class kitClass) {
-        return (List<String>) updateAndGet(kitClass);
+        if (kitClass != null) {
+            return (List<String>) updateAndGet(kitClass);
+        } else {
+            return Collections.singletonList(""); //NOI18N
+        }
     }
 
     /**
@@ -90,21 +94,25 @@ public final class KitsTracker {
      *   resolved for the given kit class.
      */
     public String findMimeType(Class kitClass) {
-        List mimeTypes = getMimeTypesForKitClass(kitClass);
-        if (mimeTypes.size() == 0) {
-            if (LOG.isLoggable(Level.WARNING)) {
-                logOnce(Level.WARNING, "No mime type uses editor kit implementation class: " + kitClass); //NOI18N
+        if (kitClass != null) {
+            List mimeTypes = getMimeTypesForKitClass(kitClass);
+            if (mimeTypes.size() == 0) {
+                if (LOG.isLoggable(Level.WARNING)) {
+                    logOnce(Level.WARNING, "No mime type uses editor kit implementation class: " + kitClass); //NOI18N
+                }
+                return null;
+            } else if (mimeTypes.size() == 1) {
+                return (String) mimeTypes.get(0);
+            } else {
+                if (LOG.isLoggable(Level.WARNING)) {
+    //                Throwable t = new Throwable("Stacktrace"); //NOI18N
+    //                LOG.log(Level.WARNING, "Ambiguous mime types for editor kit implementation class: " + kitClass + "; mime types: " + mimeTypes, t); //NOI18N
+                    logOnce(Level.WARNING, "Ambiguous mime types for editor kit implementation class: " + kitClass + "; mime types: " + mimeTypes); //NOI18N
+                }
+                return null;
             }
-            return null;
-        } else if (mimeTypes.size() == 1) {
-            return (String) mimeTypes.get(0);
         } else {
-            if (LOG.isLoggable(Level.WARNING)) {
-//                Throwable t = new Throwable("Stacktrace"); //NOI18N
-//                LOG.log(Level.WARNING, "Ambiguous mime types for editor kit implementation class: " + kitClass + "; mime types: " + mimeTypes, t); //NOI18N
-                logOnce(Level.WARNING, "Ambiguous mime types for editor kit implementation class: " + kitClass + "; mime types: " + mimeTypes); //NOI18N
-            }
-            return null;
+            return ""; //NOI18N
         }
     }
 
