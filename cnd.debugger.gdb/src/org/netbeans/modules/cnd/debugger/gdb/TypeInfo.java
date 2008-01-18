@@ -108,10 +108,12 @@ public class TypeInfo {
         ticache = debugger.getTypeInfoCache();
         log.fine("TI.<Init>: " + vartype + " ==> [" + resolvedType + ", " + rawInfo + "]");
         
-        if (!vartype.equals(resolvedType)) {
-            ticache.put(resolvedType, this);
+        if (vartype != null) {
+            if (!vartype.equals(resolvedType)) {
+                ticache.put(resolvedType, this);
+            }
+            ticache.put(vartype, this);
         }
-        ticache.put(vartype, this);
     }
     
     public String getResolvedType() {

@@ -61,6 +61,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -180,6 +181,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             throw new IllegalArgumentException(
                     "GdbEngineProvider must be used to start GdbDebugger!"); // NOI18N
         }
+        threadsViewInit();
     }
     
     public ContextProvider getLookup() {
@@ -1197,6 +1199,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     
     public void addPendingBreakpoint(int token, BreakpointImpl impl) {
         pendingBreakpointMap.put(new Integer(token), impl);
+    }
+    
+    private void threadsViewInit() {
+        Properties props = Properties.getDefault().getProperties("debugger").getProperties("views");
+        props.getProperties("ThreadState").setBoolean("visible", false);
+        props.getProperties("ThreadSuspended").setBoolean("visible", false);
     }
     
     /**

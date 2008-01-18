@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import javax.swing.JToolTip;
 import org.netbeans.spi.debugger.ui.Constants;
-import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -55,60 +54,20 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
  */
 public class ThreadsTableModelFilter implements TableModelFilter, Constants {
     
-//    public ThreadsTableModelFilter(ContextProvider lookupProvider) {
-//        System.err.println("ThreadsTableModelFilter<Init>: ");
-//        Model cm;
-//        List l = lookupProvider.lookup(null, Model.class);
-//        int s = l.size();
-//        if (s > 0) {
-//            int i, k = l.size ();
-//            for (i = 0; i < k; i++) {
-//                cm = (Model) l.get(i);
-//                if (cm != null) {
-//                    System.err.println("xxx");
-//                }
-//            }
-//        }
-//        l = DebuggerManager.getDebuggerManager().lookup(null, Models.CompoundModel.class);
-//        s = l.size();
-//        if (s > 0) {
-//            int i, k = l.size ();
-//            for (i = 0; i < k; i++) {
-//                cm = (Models.CompoundModel) l.get(i);
-//                if (cm != null) {
-//                    System.err.println("xxx");
-//                }
-//            }
-//        }
-//        l = DebuggerManager.getDebuggerManager().lookup(null, Model.class);
-//        s = l.size();
-//        if (s > 0) {
-//            int i, k = l.size ();
-//            for (i = 0; i < k; i++) {
-//                cm = (Models.CompoundModel) l.get(i);
-//                if (cm != null) {
-//                    System.err.println("xxx");
-//                }
-//            }
-//        }
-//    }
-    
     public Object getValueAt(TableModel original, Object row, String columnID) throws UnknownTypeException {
         if (row instanceof String || row instanceof JToolTip) {
-            if (!columnID.equals(THREAD_STATE_COLUMN_ID)) {
-                return original.getValueAt(row, columnID);
+            if (columnID.equals(THREAD_STATE_COLUMN_ID)) {
+                return row;
+            } else if (columnID.equals(THREAD_SUSPENDED_COLUMN_ID)) {
+                // return false in case the user explicitly turns this field on...
+                return Boolean.FALSE;
             }
         }
         throw new UnknownTypeException(row);
     }
     
     public boolean isReadOnly(TableModel original, Object row, String columnID) throws UnknownTypeException {
-        if (row instanceof String || row instanceof JToolTip) {
-            if (!columnID.equals(THREAD_STATE_COLUMN_ID)) {
-                return original.isReadOnly(row, columnID);
-	    }
-        }
-        throw new UnknownTypeException(row);
+        return true;
     }
     
     public void setValueAt(TableModel original, Object row, String columnID, Object value) throws UnknownTypeException {
@@ -129,9 +88,5 @@ public class ThreadsTableModelFilter implements TableModelFilter, Constants {
      * @param l the listener to remove
      */
     public void removeModelListener(ModelListener l) {
-    }
-    
-    public void modelChanged(ModelEvent ev) {
-        System.err.println("TTMF.modelChanged: " + ev.getClass().getName());
     }
 }

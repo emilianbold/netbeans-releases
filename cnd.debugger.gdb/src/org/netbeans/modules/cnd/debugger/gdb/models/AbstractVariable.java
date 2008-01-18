@@ -798,6 +798,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
             String nextv;
             for (int i = 0; i < size && vstart != -1; i++) {
                 nextv = nextValue(value, vstart < size ? vstart : size);
+                if (nextv == null) {
+                    return;
+                }
                 addField(new AbstractField(this, name + "[" + i + "]", t, nextv)); // NOI18N
                 vstart += nextv.length();
             }
@@ -826,12 +829,13 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 try {
                     Integer.parseInt(info.substring(start + 2, start + 5), 8);
                     return info.substring(start, start + 5);
-                } catch (NumberFormatException nfe) {}
+                } catch (Exception ex) {
+                    return null; // FIXME - Should handle this better...
+                }
             }
         } else {
             return info.substring(start, start + 1);
         }
-        throw new IllegalStateException();
     }
     
     /**
