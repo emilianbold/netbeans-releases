@@ -78,8 +78,7 @@ public final class VertexFactory  {
 
     // vlv
     public GraphSubset createGraphSubset(Object object) {
-        System.out.println("VertexFactory.createGraphSubset: " + object);
-        
+//System.out.println("VertexFactory.createGraphSubset: " + object);
       Vertex vertex = createVertex(object);
 
       if (vertex == null) {
