@@ -44,7 +44,7 @@ if [ -z "$1" ] || [ -z "$2" ] ; then
     echo "zipdir is the dir which contains the zip distros, e.g. nbbuild/dist"
     echo "basename is the distro filename prefix, e.g. netbeans-hudson-trunk-2464"
     echo "zipdir should contain <basename>.zip, <basename>-java.zip, <basename>-ruby.zip,..."
-    echo Requires GLASSFISH_LOCATION, TOMCAT_LOCATION, OPENESB_LOCATION to be set. 
+    echo Requires GLASSFISH_LOCATION, TOMCAT_LOCATION, OPENESB_LOCATION, JBICORE_LOCATION to be set. 
     exit 1
 fi
 
@@ -80,7 +80,7 @@ rm -rf $progdir/build/netbeans/mobility*
 #mkdir -p $progdir build/pkg
 #rsync -a $progdir/glassfish/build/pkg/ $progdir/build/pkg/
 # build dmg
-ant -f $progdir/build.xml -Ddmgname=$dmgname-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_Global_License.txt"
+ant -f $progdir/build.xml -Ddmgname=$dmgname-macosx.dmg -Dnb.dir=$progdir/build/netbeans -Dnetbeans.appname="$installdir" build-dmg -Dglassfish_location="$GLASSFISH_LOCATION" -Dtomcat_location="$TOMCAT_LOCATION" -Dopenesb_location="$OPENESB_LOCATION" -Djbicore_location="$JBICORE_LOCATION" -Dnetbeans_license_file="$progdir/licenses/NetBeans_6_Beta_1_Global_License.txt"
 
 # javaee
 

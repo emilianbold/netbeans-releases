@@ -50,6 +50,7 @@
 
   <condition property="build_openesb">
     <isset property="openesb_location"/>
+    <isset property="jbicore_location"/>
   </condition>
 
   <property name="nb.dir" value="../../nbbuild/netbeans"/>
@@ -155,6 +156,7 @@
     <echo message="Building ${openesb.appname} into ${basedir}/openesb"/>
     <ant dir="openesb" target="build-pkg" inheritAll="false">
       <property name="os_source" value="${openesb_location}"/>
+      <property name="core_source" value="${jbicore_location}"/>
       <property name="pkg.dest" value="${basedir}/build/pkg"/>
       <property name="appname" value="${openesb.appname}"/>
     </ant>

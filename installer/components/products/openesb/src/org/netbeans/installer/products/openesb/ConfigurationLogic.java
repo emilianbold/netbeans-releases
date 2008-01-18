@@ -44,6 +44,7 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
@@ -71,6 +72,9 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     private static final String JBI_INSTALLER =
             "jbi_components_installer.jar"; // NOI18N
+
+    private static final String JBI_CORE_INSTALLER =
+            "jbi-core-installer.jar"; // NOI18N
     
     private static final String ADDON_ID = 
             "jbi_components"; // NOI18N
@@ -111,6 +115,25 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.stop.as"), // NOI18N
                     e);
         }
+        
+        // http://www.netbeans.org/issues/show_bug.cgi?id=125358
+        // run the jbi core installer first - temporary solution        
+        final File jbiCoreInstaller = new File(openesbLocation, JBI_CORE_INSTALLER);
+        try 
+        {
+            progress.setDetail(getString("CL.install.jbi.core.installer")); // NOI18N
+            final File java = GlassFishUtils.getJavaHome(glassfishLocation);
+            SystemUtils.executeCommand(glassfishLocation,
+                    JavaUtils.getExecutable(java).getPath(),
+                    "-jar",
+                    jbiCoreInstaller.getAbsolutePath(),
+                    glassfishLocation.getAbsolutePath(),
+                    "install");
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.openesb.installer"), // NOI18N
+                    e);
+        }        
 
         // run the openesb installer ////////////////////////////////////////////////
         try {

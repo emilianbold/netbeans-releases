@@ -52,6 +52,7 @@
 
   <target name="clean-impl">
     <delete file="jbi_components_installer.jar"/>
+    <delete file="jbi-core-installer.jar" failonerror="false"/>
     <delete file="pkg/scripts/unpack200.sh"/>
     <delete file="pkg/scripts/perm.sh"/>
   </target>
@@ -59,12 +60,15 @@
   <target name="get-bits">
     <echo message="Downloading OpenESB from ${os_source}" />
     <get src="${os_source}" dest="jbi_components_installer.jar" usetimestamp="true"/>
+    <echo message="Downloading JBI core runtime from ${core_source}" />
+    <get src="${core_source}" dest="jbi-core-installer.jar" usetimestamp="true"/>
   </target>
 
   <target name="unzip">
     <mkdir dir="build"/>
     <mkdir dir="build/app"/>
     <copy file="jbi_components_installer.jar" tofile="build/app/jbi_components_installer.jar"/>
+    <copy file="jbi-core-installer.jar"       tofile="build/app/jbi-core-installer.jar"/>
   </target>
 
   <target name="pre-build-pkg">

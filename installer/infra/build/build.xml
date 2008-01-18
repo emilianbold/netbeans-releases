@@ -265,7 +265,7 @@
         <set property="openesb.build.number.real" value="070730"/>
 	-->
         <get
-            src="${openesb.builds.host}/kits/ojc/openesb_as9_fcs/latestSDK/log/"
+            src="${openesb.builds.host}/kits/ojc/main/latest/log/"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
