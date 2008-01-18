@@ -51,6 +51,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
@@ -118,7 +119,7 @@ public class LockForFile extends FileLock {
                     LockForFile lock = ref.get();
                     if (lock != null) {
                         File f = lock.getFile();
-                        String relPath = getRelativePath(theOld, f);
+                        String relPath = Utils.getRelativePath(theOld, f);
                         if (relPath != null) {
                             lock.relock(new File(theNew, relPath));
                         }
@@ -133,25 +134,6 @@ public class LockForFile extends FileLock {
         }
     }
 
-    private static String getRelativePath(final File dir, final File file) {
-        Stack stack = new Stack();
-        File tempFile = file;
-        while (tempFile != null && !tempFile.equals(dir)) {
-            stack.push(tempFile.getName());
-            tempFile = tempFile.getParentFile();
-        }
-        if (tempFile == null) {
-            return null;
-        }
-        StringBuilder retval = new StringBuilder();
-        while (!stack.isEmpty()) {
-            retval.append((String) stack.pop());
-            if (!stack.isEmpty()) {
-                retval.append("/");//NOI18N
-            }
-        }
-        return retval.toString();
-    }
 
     private static synchronized void deregisterLock(LockForFile lockForFile) {
         if (lockForFile.isValid()) {

@@ -131,9 +131,7 @@ public final class FileBasedFileSystem extends FileSystem {
     }
 
     public final org.openide.filesystems.FileObject findResource(final String name) {
-        File f = new File(getFactory().getRoot().getRealRoot().getFileName().getFile(), name);
-        FolderObj parent = BaseFileObj.getExistingParentFor(f, this);
-        return (parent != null) ? parent.getFileObject(f.getName()) : findFileObject(f);
+        return getFactory().getRoot().getRealRoot().getFileObject(name); 
     }
 
     public final FileObject findFileObject(final File f) {
