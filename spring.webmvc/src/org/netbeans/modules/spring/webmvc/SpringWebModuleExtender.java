@@ -50,12 +50,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -71,6 +72,9 @@ import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -86,7 +90,16 @@ import org.openide.util.HelpCtx;
  * @author Craig MacKay
  */
 public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {
-    private static Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
+    public static final String VOLUME_TYPE_CLASSPATH = "classpath";       //NOI18N
+    public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
+    public static final String VOLUME_TYPE_JAVADOC = "javadoc";       //NOI18N
+    public static final String LIBRARY_TYPE = "j2se";       //NOI18N
+    public static final String[] VOLUME_TYPES = new String[] {
+        VOLUME_TYPE_CLASSPATH,
+        VOLUME_TYPE_SRC,
+        VOLUME_TYPE_JAVADOC,
+    };
+    
     private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
@@ -172,8 +185,8 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
     private class CreateSpringConfig implements FileSystem.AtomicAction {
 
-        public static final String SPRING_LIB_NAME = "spring-framework-2.5"; // NOI18N
-        public static final String JSTL_LIB_NAME = "jstl11"; // NOI18N
+        public static final String SPRING_CLASS_NAME = "org.springframework.core.SpringVersion"; // NOI18N
+        public static final String JSTL_CLASS_NAME = "javax.servlet.jsp.jstl.core.Config"; // NOI18N
         public static final String CONTEXT_LOADER = "org.springframework.web.context.ContextLoaderListener"; // NOI18N
         public static final String DISPATCHER_SERVLET = "org.springframework.web.servlet.DispatcherServlet"; // NOI18N
         public static final String ENCODING = "UTF-8"; // NOI18N
@@ -206,18 +219,16 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             ddRoot.write(dd);
 
             // ADD JSTL IF ENABLED
-
             if (includeJstl) {
-                if (getLibrary(JSTL_LIB_NAME) == null) {
-                    LOGGER.log(Level.WARNING, "JSTL is not registered with Library Manager");
-                    // TODO - send warning to the configuration dialog
-                } else {
-                    addLibraryToWebModule(getLibrary(JSTL_LIB_NAME), webModule);
-                }
+                Library jstlLibrary = getLibrary(JSTL_CLASS_NAME);            
+                assert jstlLibrary != null;
+                addLibraryToWebModule(jstlLibrary, webModule);                
             }
 
             // ADD SPRING LIBRARY
-            addLibraryToWebModule(getLibrary(SPRING_LIB_NAME), webModule);
+            Library springLibrary = getLibrary(SPRING_CLASS_NAME);
+            assert springLibrary != null;
+            addLibraryToWebModule(getLibrary(SPRING_CLASS_NAME), webModule);
 
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
@@ -327,9 +338,29 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             return bean;
         }
+        
+        private boolean containsPath(List<URL> roots, String relativePath) {
+            ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+            return cp.findResource(relativePath) != null;
+        }
+                        
+        private boolean containsClass(LibraryImplementation library, String className) {   
+            String classRelativePath = className.replace('.', '/') + ".class";
+            return containsPath(library.getContent("classpath"), classRelativePath); //NOI18N
+        }            
+        
+        protected Library getLibrary(String className) {
+            LibraryImplementation libImpl = LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES);
+            for (Library eachLibrary : LibraryManager.getDefault().getLibraries()) {
+                libImpl.setName(eachLibrary.getName());
+                libImpl.setContent(VOLUME_TYPE_CLASSPATH, eachLibrary.getContent(VOLUME_TYPE_CLASSPATH));
+                if (containsClass(libImpl, className)) {
+                    return eachLibrary;
+                }
+            }
 
-        protected Library getLibrary(String name) {
-            return LibraryManager.getDefault().getLibrary(name);
+            //Library wasn't found
+            return null;
         }
 
         protected FileSystem getDefaultFileSystem() {
