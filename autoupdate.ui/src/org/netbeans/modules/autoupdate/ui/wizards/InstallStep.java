@@ -553,7 +553,20 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
     }
     
     static void notifyRestartNeeded (final Runnable onMouseClick, final String tooltip, boolean showToolTip) {
-        flasher = RestartNeededNotification.getFlasher (onMouseClick);
+        final NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
+                                            getBundle ("RestartConfirmation_Message"),
+                                            getBundle ("RestartConfirmation_Title"),
+                                            NotifyDescriptor.OK_CANCEL_OPTION);
+        final Runnable confirmOnClick = new Runnable () {
+            public void run () {
+                BalloonManager.dismiss ();
+                DialogDisplayer.getDefault ().notify (nd);
+                if (NotifyDescriptor.OK_OPTION.equals (nd.getValue ())) {
+                    onMouseClick.run ();
+                }
+            }
+        };
+        flasher = RestartNeededNotification.getFlasher (confirmOnClick);
         assert flasher != null : "Updates Flasher cannot be null.";
         flasher.startFlashing ();
         final Runnable showBalloon = new Runnable () {
@@ -561,7 +574,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 JLabel balloon = new JLabel (tooltip);
                 BalloonManager.show (flasher, balloon, new AbstractAction () {
                     public void actionPerformed (ActionEvent e) {
-                        onMouseClick.run ();
+                        confirmOnClick.run ();
                     }
                 }, 30000);
             }
