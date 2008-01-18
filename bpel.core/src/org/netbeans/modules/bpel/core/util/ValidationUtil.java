@@ -25,20 +25,10 @@ import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
-/**
- *
- * @author Praveen Savur
- * @author changed by ads
- */
 public final class ValidationUtil {
     
-    private ValidationUtil() {
-    }
+    private ValidationUtil() {}
     
-    /**
-     *  Return ResultItems which apply to Bpel Model elements.
-     *  ie., in the returned list, all components will be of type BpelEntity.
-     */
     public static List<ResultItem> filterBpelResultItems( 
             List<ResultItem> validationResults) 
     {
@@ -61,12 +51,6 @@ public final class ValidationUtil {
         return bpelResultItems;
     }
     
-    /**
-     * Compares two ResultItems
-     * @param item1 1st ResultItem to compare
-     * @param item2 2nd ResultItem to compare
-     * @returns TRUE when item1 and item2 are equal
-     **/
     public static boolean equals(ResultItem item1, ResultItem item2){
         if (item1 == item2){
             return true;
@@ -88,12 +72,6 @@ public final class ValidationUtil {
         return true;
     }
     
-    /**
-     * Get newly added ResultItems.
-     * @param oldList Old Validation results.
-     * @param newList New Validation Results.
-     * @return List of ResultItems added in newList.
-     */
     public static List<ResultItem> getAddedResultItems(List<ResultItem> oldList, 
             List<ResultItem> newList) 
     {
@@ -113,13 +91,6 @@ public final class ValidationUtil {
         return addedResultItems;
     }
     
-    
-    /**
-     * Get removed resultItems
-     * @param oldList Old Validation results.
-     * @param newList New Validation Results.
-     * @return List of ResultItems removed in newList.
-     */
     public static List<ResultItem> getRemovedResultItems(List<ResultItem> oldList,
             List<ResultItem> newList) 
     {
@@ -140,9 +111,6 @@ public final class ValidationUtil {
         return removedResultItems;
     }
     
-    /**
-     *  Return true if the list contains resultItem.
-     */
     private static boolean contains(List<ResultItem> list, ResultItem resultItem) {
         assert list!=null;
         for (ResultItem item: list) {
@@ -151,33 +119,5 @@ public final class ValidationUtil {
             }
         }
         return false;
-    }
-    
-    /**
-     *  Returns results from slow/complete BPEL validators such as BPEL schema validator.
-     */
-    public static boolean isSlowValidationResult(ResultItem item){
-        if (item.getValidator() != null) {
-          return item.getValidator().getName().endsWith("schema.Validator"); // NOI18N
-        }
-        else {
-          return false;
-        }
-    }
-    
-    public static List<ResultItem> filterSlowValidatorResultItems(
-            List<ResultItem> validationResults) 
-    {
-        List<ResultItem> slowValidatorResults = new ArrayList<ResultItem>();
-        
-        // Only get result from BPEL schema validator. more slow validators
-        // can be added as necessary.
-        for(ResultItem resultItem: validationResults) {
-            // TODO: use constant.
-            if(isSlowValidationResult(resultItem)) {
-                slowValidatorResults.add(resultItem);
-            }
-        }
-        return slowValidatorResults;
     }
 }

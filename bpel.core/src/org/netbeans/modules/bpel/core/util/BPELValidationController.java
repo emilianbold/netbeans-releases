@@ -25,8 +25,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
 
+import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
@@ -47,38 +49,27 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
     }
 
     public void attach() {
-        if(myBpelModel != null) {
+        if (myBpelModel != null) {
             myBpelModel.addEntityChangeListener(this);
-            myBpelModel.addEntityChangeListener( getTrigger() );
-            getTrigger().loadImports( );
+            myBpelModel.addEntityChangeListener(getTrigger());
+            getTrigger().loadImports();
         }
     }
 
     public void detach() {
         if(myBpelModel != null) {
             myBpelModel.removeEntityChangeListener(this);
-            myBpelModel.removeEntityChangeListener( getTrigger() );
+            myBpelModel.removeEntityChangeListener(getTrigger());
             getTrigger().clearTrigger();
         }
     }
 
-    
-    /**
-     *  Add a validation listener.
-     *  Listeners are maintained as weaklisteners to clients should maintain
-     *  a strong reference to the listener.
-     *
-     */
     public void addValidationListener(BPELValidationListener listener) {
         synchronized(myWeaklisteners) {
             myWeaklisteners.put(listener, null);
         }
     }
     
-    /**
-     * Remove a validation listener. Although listners are maintained as
-     * weak listeners, clients can explicity unregister a listener.
-     */
     public void removeValidationListener(BPELValidationListener listener) {
         synchronized(myWeaklisteners) {
             myWeaklisteners.remove(listener);
@@ -89,47 +80,16 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
         return myBpelModel;
     }
     
-    /**
-     *  Return current validation results.
-     */
-    private List<ResultItem> getFastValidationResults() {
-        return myLatestFastValidationResult;
-    }
-    
-    /**
-     *  Return current validation results.
-     */
-    private List<ResultItem> getSlowValidationResults() {
-        return myLatestSlowValidationResult;
-    }
-    
-    /**
-     *  Called when the model has changed.
-     */
     private void modelChanged(ChangeEvent event) {
-        // Validate on the last event in a chain.
-        if(!event.isLastInAtomic()) {
-            return;
+        if (event.isLastInAtomic()) {
+          startValidation();
         }
-        startValidation();
     }
     
-    /**
-     *  Use this for clients who want to initiate validation.
-     *  For example when initially opening the editor. Make sure you
-     *  attach a listener first and then call this method, so that you are
-     *  notified with the validation results.
-     */
     public void triggerValidation() {
         triggerValidation( false );
     }
     
-    /**
-     * Initiate validation.
-     * 
-     * @param checkExternallyTriggered if true then validation will be 
-     * started only in the case external artifact was modifed 
-     */
     public void triggerValidation( boolean checkExternallyTriggered ) {
         if ( checkExternallyTriggered && getTrigger().isTriggerDirty()) {
             startValidation();
@@ -139,24 +99,6 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
         }
     }
     
-    public void notifyCompleteValidationResults(List<ResultItem> results) {
-        //System.out.println(" Complete validation results obtained.");
-        // Filter to keep only slow validator results here.
-        myLatestSlowValidationResult = new ArrayList<ResultItem>();
-        myLatestFastValidationResult = new ArrayList<ResultItem>();
-        
-        for (ResultItem result: results){
-            ( ValidationUtil.isSlowValidationResult(result)?
-                myLatestSlowValidationResult :
-                myLatestFastValidationResult).add(result);
-            
-        }
-        notifyListeners();
-    }
-    
-    /**
-     *  Listener to listen to Object model changes.
-     */
     @Override
     public void notifyEvent(ChangeEvent changeEvent) {
         if ( !State.VALID.equals(myBpelModel.getState())){
@@ -164,61 +106,42 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
         }
         modelChanged(changeEvent);
     }
+
+    public void notifyCompleteValidationResults(List<ResultItem> result) {
+        notifyListeners(result);
+    }
     
-    public void startValidation() {
+    private void startValidation() {
         synchronized(lock) {
             final TimerTask timerTask= new TimerTask() {
                 public void run() {
-
-                    // Run at a low priority.
-                    Thread.currentThread().setPriority(Thread.NORM_PRIORITY);
-
+                    Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+//System.out.println();
+//System.out.println("---- VALIDATION");
+//System.out.println();
                     Validation validation = new Validation();
                     validation.validate(myBpelModel, ValidationType.PARTIAL);
-                    myLatestFastValidationResult = validation
-                            .getValidationResult();
-
-                    notifyListeners();
+                    notifyListeners(validation.getValidationResult());
                 }
             };
-            myTimer.cancel(); // This removes any tasks on the queue while
-                            // allowing any already running task to complete.
-            
+            myTimer.cancel();
             myTimer = new Timer();
             myTimer.schedule(timerTask, DELAY);
         }
     }
-    
-    /**
-     *  Listeners are notified about change in ValidationResult.
-     *  Happens on a non-AWT thread.
-     */
-    private void notifyListeners() {
-        List<ResultItem> mergedResults = getResultItems();
 
-        synchronized(myWeaklisteners) {
-            for(BPELValidationListener listener: myWeaklisteners.keySet()) {
-                if(listener != null)
-                    listener.validationUpdated(mergedResults);
+    private void notifyListeners(List<ResultItem> result) {
+        synchronized (myWeaklisteners) {
+            for (BPELValidationListener listener: myWeaklisteners.keySet()) {
+                if (listener != null) {
+                    listener.validationUpdated(result);
+                }
             }
         }
-        showAnnotationsInEditor(mergedResults);
+        showAnnotationsInEditor(result);
     }
     
-    public List<ResultItem> getResultItems() {
-//System.out.println("RESULT ITEMS");
-      List<ResultItem> mergedResults = new ArrayList<ResultItem>();
-
-      if (getFastValidationResults() != null) {
-        mergedResults.addAll(getFastValidationResults());
-      }
-      if (getSlowValidationResults() != null) {
-        mergedResults.addAll(getSlowValidationResults());
-      }
-      return mergedResults;
-    }
-
-    private void showAnnotationsInEditor(List<ResultItem> items) {
+    private void showAnnotationsInEditor(List<ResultItem> result) {
       for (ValidationAnnotation annotation : myAnnotations) {
         annotation.detach();
       }
@@ -226,7 +149,7 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
 //System.out.println();
 //System.out.println("SHOW ANNOTATION IN EDITOR");
 
-      for (ResultItem item : items) {
+      for (ResultItem item : result) {
         Line line = Util.getLine(item);
 //System.out.println("  see line: " + line);
 
@@ -243,14 +166,13 @@ public class BPELValidationController extends ChangeEventListenerAdapter {
       return myTrigger;
     }
     
+    private Object lock = new Object();
+    private Timer myTimer = new Timer();
     private BpelModel myBpelModel;
     private ExternalModelsValidationTrigger myTrigger;
     private Map<BPELValidationListener, Object> myWeaklisteners;
-    private Object lock = new Object();
-    private Timer myTimer = new Timer();
-    
-    private List<ResultItem> myLatestSlowValidationResult;
-    private List<ResultItem> myLatestFastValidationResult;
+    private List<ResultItem> myValidationResult;
     private List<ValidationAnnotation> myAnnotations;
-    private static final int DELAY = 4000;
+
+    private static final int DELAY = 3456;
 }

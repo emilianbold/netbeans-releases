@@ -35,7 +35,6 @@ import org.netbeans.modules.xml.xam.Model;
 
 /**
  * @author ads
- *
  */
 class WeakTriggerListener implements PropertyChangeListener, ComponentListener {
     
