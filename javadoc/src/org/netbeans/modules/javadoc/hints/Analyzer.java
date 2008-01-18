@@ -647,7 +647,7 @@ final class Analyzer {
     Position[] createSignaturePositions(final Tree t) throws BadLocationException {
         final Position[] pos = new Position[2];
         final BadLocationException[] blex = new BadLocationException[1];
-        NbDocument.runAtomic((StyledDocument) doc, new Runnable() {
+        doc.render(new Runnable() {
             public void run() {
                 try {
                     TokenSequence<JavaTokenId> tseq = null;
