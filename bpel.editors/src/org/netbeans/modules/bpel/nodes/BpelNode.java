@@ -53,6 +53,8 @@ import org.netbeans.modules.bpel.model.api.events.EntityRemoveEvent;
 import org.netbeans.modules.bpel.model.api.events.EntityUpdateEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
+import org.netbeans.modules.bpel.model.api.BpelContainer;
+import org.netbeans.modules.bpel.model.api.CompensatableActivityHolder;
 import org.netbeans.modules.bpel.model.api.events.ChangeEventListener;
 import org.netbeans.modules.soa.ui.nodes.NodeTypeHolder;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
@@ -1375,8 +1377,10 @@ public abstract class BpelNode<T>
         T ref = getReference(); 
         
         if (ref instanceof Activity) {
-            actionList.add(ActionType.ADD_FROM_PALETTE);
-            if (!(ref instanceof Process)) {
+            if (ref instanceof CompositeActivity) {
+                actionList.add(ActionType.ADD_FROM_PALETTE);
+            }
+            if (!(ref instanceof Process || ref instanceof CompensatableActivityHolder)) {
                 actionList.add(ActionType.WRAP);
             }
             actionList.add(ActionType.SEPARATOR);

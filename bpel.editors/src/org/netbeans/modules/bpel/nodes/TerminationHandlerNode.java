@@ -44,13 +44,17 @@ public class TerminationHandlerNode extends BpelNode<TerminationHandler>
         return NodeType.TERMINATION_HANDLER;
     }
     
-
+    @Override
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
+            ActionType.ADD_FROM_PALETTE,
+            ActionType.SEPARATOR,
             ActionType.GO_TO_SOURCE,
             ActionType.GO_TO_DIAGRAMM,
             ActionType.SEPARATOR,
-            ActionType.REMOVE
+            ActionType.REMOVE,
+            ActionType.SEPARATOR,
+            ActionType.PROPERTIES
         };
-    }    
+    }
 }

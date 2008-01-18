@@ -20,64 +20,24 @@
 package org.netbeans.modules.bpel.nodes.navigator;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
-import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BaseScope;
-import org.netbeans.modules.bpel.model.api.BooleanExpr;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Catch;
 
-import org.netbeans.modules.bpel.model.api.Compensate;
-import org.netbeans.modules.bpel.model.api.CompensationHandler;
-import org.netbeans.modules.bpel.model.api.CompletionCondition;
-import org.netbeans.modules.bpel.model.api.Copy;
-import org.netbeans.modules.bpel.model.api.CorrelationSetContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
-import org.netbeans.modules.bpel.model.api.ElseIf;
-import org.netbeans.modules.bpel.model.api.Empty;
 import org.netbeans.modules.bpel.model.api.EventHandlers;
-import org.netbeans.modules.bpel.model.api.FaultHandlers;
-import org.netbeans.modules.bpel.model.api.Flow;
-import org.netbeans.modules.bpel.model.api.ForEach;
-import org.netbeans.modules.bpel.model.api.From;
-import org.netbeans.modules.bpel.model.api.FromPart;
 import org.netbeans.modules.bpel.model.api.If;
-import org.netbeans.modules.bpel.model.api.Invoke;
-import org.netbeans.modules.bpel.model.api.MessageExchange;
-import org.netbeans.modules.bpel.model.api.MessageExchangeContainer;
-import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
-import org.netbeans.modules.bpel.model.api.OnAlarmPick;
-import org.netbeans.modules.bpel.model.api.OnEvent;
-import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
-import org.netbeans.modules.bpel.model.api.PatternedCorrelation;
 import org.netbeans.modules.bpel.model.api.Pick;
-import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Process;
-import org.netbeans.modules.bpel.model.api.RepeatUntil;
-import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.Scope;
-import org.netbeans.modules.bpel.model.api.Sequence;
-import org.netbeans.modules.bpel.model.api.TerminationHandler;
-import org.netbeans.modules.bpel.model.api.Throw;
-import org.netbeans.modules.bpel.model.api.To;
-import org.netbeans.modules.bpel.model.api.ToPart;
-import org.netbeans.modules.bpel.model.api.Variable;
-import org.netbeans.modules.bpel.model.api.Wait;
-import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.CompensatableActivityHolder;
-import org.netbeans.modules.bpel.model.api.CompensateScope;
 import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationSet;
-import org.netbeans.modules.bpel.model.api.Else;
-import org.netbeans.modules.bpel.model.api.Exit;
 import org.netbeans.modules.bpel.model.api.Import;
 import org.netbeans.modules.bpel.model.api.VariableContainer;
 import org.netbeans.modules.bpel.nodes.CorrelationSetNode;
@@ -350,6 +310,7 @@ public class NavigatorNodeFactory implements NodeFactory<NodeType> {
             case FROM_PART:
             case TO_PART :
             case WAIT :
+            case RETHROW :
             case THROW :
                 newNode = PropertyNodeFactory.getInstance().createNode(nodeType,
                         reference, Children.LEAF, lookup);

@@ -30,12 +30,12 @@ import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
 import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
 import org.netbeans.modules.bpel.model.api.references.SchemaReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.bpel.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.props.PropertyUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.bpel.properties.TypeContainer;
-import org.netbeans.modules.bpel.nodes.actions.ActionType;
 import org.netbeans.modules.bpel.properties.PropertyType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -154,17 +154,6 @@ public class CatchNode extends BpelNode<Catch> {
         }
     }
     
-    protected ActionType[] getActionsArray() {
-        return new ActionType[] {
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
-            ActionType.SEPARATOR,
-            ActionType.REMOVE,
-            ActionType.SEPARATOR,
-            ActionType.PROPERTIES
-        };
-    }
-
     protected void updateComplexProperties(ChangeEvent event) {
         if (event instanceof PropertyUpdateEvent || 
                 event instanceof PropertyRemoveEvent) {
@@ -178,6 +167,21 @@ public class CatchNode extends BpelNode<Catch> {
             }
         }
     }
+
+    @Override
+    protected ActionType[] getActionsArray() {
+        return new ActionType[] {
+            ActionType.ADD_FROM_PALETTE,
+            ActionType.SEPARATOR,
+            ActionType.GO_TO_SOURCE,
+            ActionType.GO_TO_DIAGRAMM,
+            ActionType.SEPARATOR,
+            ActionType.REMOVE,
+            ActionType.SEPARATOR,
+            ActionType.PROPERTIES
+        };
+    }
+    
      public String getHelpId() {
         return "orch_elements_scope_add_catch"; //NOI18N
     }

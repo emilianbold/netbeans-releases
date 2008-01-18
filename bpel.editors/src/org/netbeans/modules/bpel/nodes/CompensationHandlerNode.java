@@ -39,12 +39,17 @@ public class CompensationHandlerNode extends BpelNode<CompensationHandler>
         return NodeType.COMPENSATION_HANDLER;
     }
 
+    @Override
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
+            ActionType.ADD_FROM_PALETTE,
+            ActionType.SEPARATOR,
             ActionType.GO_TO_SOURCE,
             ActionType.GO_TO_DIAGRAMM,
             ActionType.SEPARATOR,
-            ActionType.REMOVE
+            ActionType.REMOVE,
+            ActionType.SEPARATOR,
+            ActionType.PROPERTIES
         };
-    }    
+    }
 }

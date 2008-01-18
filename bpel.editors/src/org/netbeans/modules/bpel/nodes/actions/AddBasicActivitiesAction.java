@@ -18,17 +18,13 @@
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.ExtendableActivity;
 import org.openide.awt.Actions;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -49,7 +45,10 @@ public class AddBasicActivitiesAction extends BpelNodeAction {
             (AddPaletteActivityAction)SystemAction.get(AddEmptyAction.class),
             (AddPaletteActivityAction)SystemAction.get(AddWaitAction.class),
             (AddPaletteActivityAction)SystemAction.get(AddThrowAction.class),
-            (AddPaletteActivityAction)SystemAction.get(AddExitAction.class)
+            (AddPaletteActivityAction)SystemAction.get(AddRethrowAction.class),
+            (AddPaletteActivityAction)SystemAction.get(AddExitAction.class),
+            (AddPaletteActivityAction)SystemAction.get(AddCompensateAction.class),
+            (AddPaletteActivityAction)SystemAction.get(AddCompensateScopeAction.class),
         };
     
     public AddBasicActivitiesAction() {
