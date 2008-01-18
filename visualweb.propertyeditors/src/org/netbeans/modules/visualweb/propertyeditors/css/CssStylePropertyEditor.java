@@ -59,7 +59,17 @@ public class CssStylePropertyEditor extends PropertyEditorBase implements
     }
     
     @Override
+     public String getAsText() {
+        if( getValue() != null )
+            return super.getAsText();
+        else
+            // Do not return "null" string for null value. See bug 122839
+            return "";
+     }
+     
+    @Override
     public Component getCustomEditor() {
+        
         StyleBuilderPanel styleBuilderPanel = 
                 new StyleBuilderPanel(getAsText(), this.getDesignProperty());
         styleBuilderPanel.addCssPropertyChangeListener(this);
