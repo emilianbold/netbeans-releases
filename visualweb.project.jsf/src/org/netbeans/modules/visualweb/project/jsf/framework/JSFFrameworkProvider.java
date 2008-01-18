@@ -583,9 +583,9 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
     }
 
-    private static final Map<Project,ArrayList> propertyListeners = new WeakHashMap();
+    private final Map<Project,ArrayList> propertyListeners = new WeakHashMap();
 
-    private static void fireChange(Project project) {
+    private void fireChange(Project project) {
         PropertyChangeEvent event = new PropertyChangeEvent(project, null, null, null);
 
         PropertyChangeListener[] listeners;
@@ -604,7 +604,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
     }
     
-    public static void addPropertyChangeListener(Project project, PropertyChangeListener listener) {
+    public void addPropertyChangeListener(Project project, PropertyChangeListener listener) {
         synchronized (propertyListeners) {
             ArrayList projectListeners = (ArrayList) propertyListeners.get(project);
             if (projectListeners == null) {
@@ -615,7 +615,7 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
         }
     }
     
-    public static void removePropertyChangeListener(Project project, PropertyChangeListener listener) {
+    public void removePropertyChangeListener(Project project, PropertyChangeListener listener) {
         synchronized (propertyListeners) {
             ArrayList projectListeners = (ArrayList) propertyListeners.get(project);
             if (projectListeners != null) {

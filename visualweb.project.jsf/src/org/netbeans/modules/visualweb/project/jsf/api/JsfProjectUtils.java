@@ -90,6 +90,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.project.api.WebProjectLibrariesModifier;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
@@ -186,12 +187,37 @@ public class JsfProjectUtils {
         return (framework instanceof JSFFrameworkProvider);
     }
 
+    private static JSFFrameworkProvider JsfFramework;
+
     public static void addJsfFrameworkChangeListener(Project project, PropertyChangeListener listener) {
-        JSFFrameworkProvider.addPropertyChangeListener(project, listener);
+        if (JsfFramework == null) {
+            JsfFramework = getJSFFramework();
+            if (JsfFramework == null) {
+                return;
+            }
+        }
+        JsfFramework.addPropertyChangeListener(project, listener);
     }
     
     public static void removeJsfFrameworkChangeListener(Project project, PropertyChangeListener listener) {
-        JSFFrameworkProvider.removePropertyChangeListener(project, listener);
+        if (JsfFramework == null) {
+            JsfFramework = getJSFFramework();
+            if (JsfFramework == null) {
+                return;
+            }
+        }
+        JsfFramework.removePropertyChangeListener(project, listener);
+    }
+
+    private static JSFFrameworkProvider getJSFFramework() {
+        List<WebFrameworkProvider> frameworks = WebFrameworks.getFrameworks();
+        for (WebFrameworkProvider framework : frameworks) {
+            if (framework instanceof JSFFrameworkProvider) {
+                return (JSFFrameworkProvider) framework;
+            }
+        }
+
+        return null;
     }
 
     public static boolean isWebProject(Project project) {
