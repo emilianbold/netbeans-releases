@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -126,6 +126,7 @@ public class InstallSupportImpl {
     private Collection<UpdateElementImpl> trusted = new ArrayList<UpdateElementImpl> ();
     private Collection<UpdateElementImpl> signed = new ArrayList<UpdateElementImpl> ();
     private Map<UpdateElement, Collection<Certificate>> certs = new HashMap<UpdateElement, Collection<Certificate>> ();
+    private List<? extends OperationInfo> infos = null;
     
     private ExecutorService es = null;
     
@@ -137,11 +138,12 @@ public class InstallSupportImpl {
         this.isGlobal = isGlobal;
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
             public Boolean call() throws Exception {
-                assert support.getContainer().listInvalid().isEmpty() : "Container contains no invalid OperationInfo, but " + support.getContainer().listInvalid();
+                assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
                 synchronized(this) {
                     currentStep = STEP.DOWNLOAD;
                 }
-                List<? extends OperationInfo> infos = support.getContainer().listAll();
+
+                infos = support.getContainer ().listAll ();
                 int size = 0;
                 for (OperationInfo info : infos) {
                     size += info.getUpdateElement().getDownloadSize();
@@ -205,9 +207,8 @@ public class InstallSupportImpl {
                     if (currentStep == STEP.CANCEL) return false;
                     currentStep = STEP.VALIDATION;
                 }
-                assert support.getContainer().listInvalid().isEmpty();
-                List<? extends OperationInfo> infos = support.getContainer().listAll();
-                
+                assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
+
                 // start progress
                 if (progress != null) {
                     progress.start (wasDownloaded);
@@ -268,8 +269,8 @@ public class InstallSupportImpl {
                     if (currentStep == STEP.CANCEL) return false;
                     currentStep = STEP.INSTALLATION;
                 }
-                assert support.getContainer ().listInvalid ().isEmpty () : "listInvalid() isEmpty() but " + support.getContainer ().listInvalid ();
-                List<OperationInfo<InstallSupport>> infos = support.getContainer().listAll();
+                assert support.getContainer ().listInvalid ().isEmpty () : support + ".listInvalid().isEmpty() but " + support.getContainer ().listInvalid ();
+
                 affectedModuleImpls = new HashSet<ModuleUpdateElementImpl> ();
                 affectedFeatureImpls = new HashSet<FeatureUpdateElementImpl> ();
                 

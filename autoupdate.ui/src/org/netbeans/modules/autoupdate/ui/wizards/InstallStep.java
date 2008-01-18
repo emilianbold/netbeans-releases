@@ -255,8 +255,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 spareHandle = ProgressHandleFactory.createHandle (getBundle ("InstallStep_Download_DownloadingPlugins"),
                         new Cancellable () {
                             public boolean cancel () {
-                                handleCancel ();
-                                return true;
+                                return handleCancel ();
                             }
                         });
                 totalUnits = model.getBaseContainer ().listAll ().size ();
