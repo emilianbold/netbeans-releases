@@ -638,11 +638,14 @@ tokens {
 
 public translation_unit:
 		//{enterExternalScope();}
-		(
+                /* Do not generate ambiguity warnings: we intentionally want to match everything that
+                   can not be matched in external_declaration in the second alternative */
+		(options{generateAmbigWarnings = false;}:
                     external_declaration 
                     | 
-                    /* errors recovery */
-                    (LCURLY | RCURLY | LSQUARE | RSQUARE) { reportError(new NoViableAltException(LT(0), getFilename())); }
+                    /* Here we match everything that can not be matched by external_declaration rule,
+                       report it as an error and not include in AST */
+                    .! { reportError(new NoViableAltException(LT(0), getFilename())); }
                 )* EOF!
 		{/*exitExternalScope();*/ #translation_unit = #(#[CSM_TRANSLATION_UNIT, getFilename()], #translation_unit);}
        ;
