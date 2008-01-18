@@ -344,6 +344,10 @@ public abstract class RestTestBase extends WebServicesTestBase {
     protected void checkFiles(Set<File> newFiles) {
         // save all instead of timeout
         new SaveAllAction().performAPI();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ie) {
+        }
         if (!CREATE_GOLDEN_FILES) {
             Set<String> set = new HashSet<String>(newFiles.size() / 2);
             for (Iterator<File> i = newFiles.iterator(); i.hasNext();) {
@@ -356,15 +360,15 @@ public abstract class RestTestBase extends WebServicesTestBase {
                             && !newFile.getName().startsWith("webservices.xml")) { //NOI18N
                         assertTrue(ContentComparator.equalsXML(goldenFile, newFile));
                     } else {
-                        assertFile(newFile, goldenFile,
+                        assertFile(goldenFile, newFile,
                                 new File(getWorkDirPath(), newFile.getName() + ".diff"), //NOI18N
                                 new FilteringLineDiff());
                     }
                 } catch (Throwable t) {
                     goldenFile = getGoldenFile(getName() + "/" + newFile.getName() + ".pass"); //NOI18N
-                    Utils.copyFile(newFile, new File(getWorkDirPath(), newFile.getName() + ".bad")); //NOI18N
+                    Utils.copyFile(newFile, new File(getWorkDirPath(), newFile.getName() + ".bad.txt")); //NOI18N
                     Utils.copyFile(goldenFile,
-                            new File(getWorkDirPath(), newFile.getName() + ".gf")); //NOI18N
+                            new File(getWorkDirPath(), newFile.getName() + ".gf.txt")); //NOI18N
                     set.add(newFile.getName());
                 }
             }
