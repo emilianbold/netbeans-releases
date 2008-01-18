@@ -187,20 +187,17 @@ public class ZoomManager implements ActionListener {
     public void fitWidth() {
         double zc = DiagramFontUtil.getZoomCorrection();
         
-        JScrollPane scrollPane = (JScrollPane) getDesignView().getParent()
-                .getParent();
         
-        Dimension pSize = scrollPane.getSize();
-        Insets insets = scrollPane.getInsets();
+        int screen_width = designView.getWidth();
+        screen_width -= DiagramViewLayout.MARGIN_LEFT * 3;
+        screen_width -= DiagramViewLayout.MARGIN_RIGHT * 3;
         
-        int width = pSize.width - insets.left - insets.right;
-        width -= scrollPane.getVerticalScrollBar().getWidth();
-        width -= DiagramViewLayout.MARGIN_LEFT;
-        width -= DiagramViewLayout.MARGIN_RIGHT;
-        
-        FDimension dSize = getDesignView().getDiagramSize();
+        float content_width  = 
+                getDesignView().getProcessView().getContentSize().width +
+                getDesignView().getConsumersView().getContentSize().width +
+                getDesignView().getProvidersView().getContentSize().width;
 
-        double newZoom = width * 100.0 / dSize.width / zc;
+        double newZoom = screen_width * 100.0 / content_width / zc;
         
         if (newZoom != newZoom) {
             newZoom = 100;
@@ -217,7 +214,7 @@ public class ZoomManager implements ActionListener {
     public void fitDiagram() {
         double zc = DiagramFontUtil.getZoomCorrection();
         
-        JScrollPane scrollPane = (JScrollPane) getDesignView().getParent()
+        JScrollPane scrollPane = (JScrollPane) getDesignView().getProcessView().getParent()
                 .getParent();
         
         Dimension pSize = scrollPane.getSize();
@@ -305,8 +302,8 @@ public class ZoomManager implements ActionListener {
 
     public void setZoom(int newZoomValue, int zoomPointX, int zoomPointY) {
         DesignView desingView = getDesignView();
-        JViewport viewport = (JViewport) desingView.getParent();
-        JScrollPane scrollPane = (JScrollPane) viewport.getParent();
+//        JViewport viewport = (JViewport) desingView.getParent();
+      // JScrollPane scrollPane = (JScrollPane) viewport.getParent();
         
         if (newZoomValue < MIN_ZOOM_VALUE) {
             newZoomValue = MIN_ZOOM_VALUE;
@@ -315,29 +312,27 @@ public class ZoomManager implements ActionListener {
         }
         
         if (newZoomValue != zoomValue) {
-            FPoint diagramZoomPoint = desingView.convertScreenToDiagram(
+           /* FPoint diagramZoomPoint = desingView.convertScreenToDiagram(
                     new Point(zoomPointX, zoomPointY));
 
             Rectangle rect = getDesignView().getVisibleRect();
 
             int dx = zoomPointX - rect.x;
-            int dy = zoomPointY - rect.y;
+            int dy = zoomPointY - rect.y;*/
 
             zoomValue = newZoomValue;
 
             desingView.getDecorationManager().repositionComponentsRecursive();
 
-            viewport.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
+//            viewport.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
         
-            desingView.invalidate();
-            viewport.invalidate();
-            scrollPane.invalidate();
-            scrollPane.validate();
+          //  desingView.invalidate();
+        //    desingView.validate();
 
-            viewport.setScrollMode(JViewport.BLIT_SCROLL_MODE);
+  //          viewport.setScrollMode(JViewport.BLIT_SCROLL_MODE);
         
             //FIXME desingView.getNameEditor().updateBounds();
-
+/*
             Point newScreenZoomPoint = desingView.convertDiagramToScreen(
                     diagramZoomPoint);
         
@@ -365,9 +360,15 @@ public class ZoomManager implements ActionListener {
                 rect.y = 0;
             }
         
-            desingView.scrollRectToVisible(rect);
-            desingView.revalidate();
-            desingView.repaint();        
+            desingView.scrollRectToVisible(rect);*/
+            desingView.getProcessView().invalidate();
+            desingView.getConsumersView().invalidate();
+            desingView.getProvidersView().invalidate();
+            
+            
+            desingView.validate();
+            desingView.repaint();   
+        
             designView.getRightStripe().repaint();
         }
         
