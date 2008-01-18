@@ -101,6 +101,8 @@ public class ClassUtil {
      */
     public static Class getClass(String type) throws ClassNotFoundException {
         //Use the project classloader to load the class
-        return getClass(type, FacesContainer.getCurrentLoader(ClassUtil.class));
+        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        // assert contextClassLoader.getClass() == org.netbeans.modules.visualweb.insync.ModelSet.ProjectClassLoader.class;
+        return getClass(type, contextClassLoader);
     }
 }

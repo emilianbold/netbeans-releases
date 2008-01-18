@@ -92,22 +92,6 @@ public class FacesContainer {
     private RaveFacesContext facesContext;
     private UIViewRoot defViewRoot;
     private ClassLoader loader;
-    private static ClassLoader staticLoader;
-
-    /**
-     * A simple pass through to Util class in jsf-api.
-     * InSync passes on a new class loader to handle the jar's defined by a project.
-     * The problem is how to initialize the parent class loader ?  Now, it will  grab
-     * the default class loader which would have been used if InSync we're not
-     * involved.  With new NB this seems to be required now to get proper
-     * visibility and no weird ClassCastException on same class from diff loaders.
-     *
-     * @param fallbackClass
-     * @return
-     */
-    public static ClassLoader getCurrentLoader(Object fallbackClass) {
-        return staticLoader;
-    }
 
     // XXX #6460001.
     private static final String SYS_PROP_SAX_PARSER_FACTORY = "javax.xml.parsers.SAXParserFactory"; // NOI18N
@@ -188,7 +172,6 @@ public class FacesContainer {
         }
 
         ServletContextEvent e = new ServletContextEvent(context);
-        staticLoader = cl;
 
         configureListener.contextInitialized(e);
 
