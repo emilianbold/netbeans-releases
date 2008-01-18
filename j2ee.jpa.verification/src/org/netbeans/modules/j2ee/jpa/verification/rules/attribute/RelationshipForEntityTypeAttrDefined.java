@@ -68,6 +68,11 @@ public class RelationshipForEntityTypeAttrDefined extends JPAEntityAttributeChec
     
     public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
         
+        // Not applicable for embeddable classes, which do not have relationships.
+        if (ctx.isEmbeddable()) {
+            return null;
+        }
+        
         Element typeElement = ctx.getCompilationInfo().getTypes().asElement(attrib.getType());
         
         if (typeElement != null && typeElement.getKind() == ElementKind.CLASS){

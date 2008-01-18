@@ -73,6 +73,11 @@ public class MVRelationshipForEntityTypeAttrDefined extends JPAEntityAttributeCh
     
     public ErrorDescription[] check(JPAProblemContext ctx, AttributeWrapper attrib) {
         
+        // Not applicable for embeddable classes, which do not have relationships.
+        if (ctx.isEmbeddable()) {
+            return null;
+        }
+        
         TypeMirror type = attrib.getType();
         
         if (type.getKind() == TypeKind.DECLARED){
