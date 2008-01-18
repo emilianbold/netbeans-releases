@@ -48,7 +48,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
+import net.java.hulp.i18n.Logger;
 
 import javax.wsdl.Binding;
 import javax.wsdl.BindingOperation;
@@ -80,6 +80,8 @@ import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.RuntimeAttribute;
 import javax.wsdl.Message;
 import javax.wsdl.Part;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * This class generates an ETL WSDL file given an ETL engine file name
@@ -93,8 +95,9 @@ public class WsdlGenerator {
     private String wsdlLocation;
     private Definition def;
     private File engineFile;
+    private static transient final Logger mLogger = LogUtil.getLogger(WsdlGenerator.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     
-
     static {
         initFactory();
     }
@@ -198,7 +201,7 @@ public class WsdlGenerator {
             sink.flush();
             sink.close();
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            mLogger.infoNoloc(mLoc.t("PRSR015: Exception{0}", e.getMessage()));
             throw new WsdlGenerateException(e);
         }
 
@@ -232,9 +235,9 @@ public class WsdlGenerator {
         for (int i = 0; i < msgs.size(); i++) {
             Object o = msgs.get(i);
             //if (o instanceof Message) {
-                System.out.println("Message: "+ ((Message)o).toString());
-                modifyMessageElementName((Message)o);               
-            //}
+            System.out.println("Message: " + ((Message) o).toString());
+            modifyMessageElementName((Message) o);
+        //}
         }
     }
 
@@ -451,7 +454,7 @@ public class WsdlGenerator {
             String wsdlURI = u.getFile().indexOf(".jar") > 0 ? "jar:" + u.getFile() : u.getFile();
             def = reader.readWSDL(wsdlURI);
         } catch (WSDLException e) {
-            logger.info(e.getMessage());
+            mLogger.infoNoloc(mLoc.t("PRSR016: Exception{0}", e.getMessage()));
             throw new WsdlGenerateException(e);
         }
         return def;
@@ -467,7 +470,7 @@ public class WsdlGenerator {
             try {
                 factory = WSDLFactory.newInstance();
             } catch (WSDLException e) {
-                logger.info(e.getMessage());
+                mLogger.infoNoloc(mLoc.t("PRSR017: Exception{0}", e.getMessage()));
             }
         }
     }
