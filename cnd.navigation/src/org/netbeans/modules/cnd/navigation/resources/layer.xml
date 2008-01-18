@@ -40,7 +40,7 @@
                 <folder name="Popup">
                     <folder name="goto">
                         <file name="cpp-switch-header-source">
-                            <attr name="position" intvalue="50"/>
+                            <attr name="position" intvalue="200"/>
                         </file>                        
                         <file name="SeparatorBeforeInspect.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
@@ -84,7 +84,7 @@
                 <folder name="Popup">
                     <folder name="goto">
                         <file name="cpp-switch-header-source">
-                            <attr name="position" intvalue="50"/>
+                            <attr name="position" intvalue="200"/>
                         </file>
                         <file name="SeparatorBeforeInspect.instance">
                             <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
