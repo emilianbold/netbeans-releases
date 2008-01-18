@@ -225,6 +225,28 @@ public final class TreeUtilities {
                 }
                 return null;
             }
+
+            @Override
+            public Void visitVariable(VariableTree node, Void p) {
+                int[] span = findNameSpan(node);
+                
+                if (span != null && span[0] <= pos && pos < span[1]) {
+                    throw new Result(new TreePath(getCurrentPath(), node));
+                }
+                
+                return super.visitVariable(node, p);
+            }
+
+            @Override
+            public Void visitMethod(MethodTree node, Void p) {
+                int[] span = findNameSpan(node);
+                
+                if (span != null && span[0] <= pos && pos < span[1]) {
+                    throw new Result(new TreePath(getCurrentPath(), node));
+                }
+                
+                return super.visitMethod(node, p);
+            }
         }
         
         try {

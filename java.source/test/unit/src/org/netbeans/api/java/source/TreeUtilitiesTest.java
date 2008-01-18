@@ -44,6 +44,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
@@ -239,6 +240,22 @@ public class TreeUtilitiesTest extends NbTestCase {
         int[] span = info.getTreeUtilities().findNameSpan(ct);
         
         assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {83 - 30, 87 - 30}));
+    }
+    
+    public void testTreePath124760a() throws Exception {
+        prepareTest("Test", "package test; public class Test {public Test(int iii[]){}}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(50);
+        
+        assertEquals(Kind.VARIABLE, tp.getLeaf().getKind());
+    }
+    
+    public void testTreePath124760b() throws Exception {
+        prepareTest("Test", "package test; public class Test {public int test()[]{}}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(47);
+        
+        assertEquals(Kind.METHOD, tp.getLeaf().getKind());
     }
     
 }
