@@ -73,14 +73,11 @@ import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
@@ -89,16 +86,8 @@ import org.openide.util.HelpCtx;
  *
  * @author Craig MacKay
  */
-public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {
-    public static final String VOLUME_TYPE_CLASSPATH = "classpath";       //NOI18N
-    public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
-    public static final String VOLUME_TYPE_JAVADOC = "javadoc";       //NOI18N
-    public static final String LIBRARY_TYPE = "j2se";       //NOI18N
-    public static final String[] VOLUME_TYPES = new String[] {
-        VOLUME_TYPE_CLASSPATH,
-        VOLUME_TYPE_SRC,
-        VOLUME_TYPE_JAVADOC,
-    };
+public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {  
+    public static final String LIBRARY_TYPE = "j2se";       //NOI18N  
     
     private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
@@ -344,27 +333,20 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             return cp.findResource(relativePath) != null;
         }
                         
-        private boolean containsClass(LibraryImplementation library, String className) {   
-            String classRelativePath = className.replace('.', '/') + ".class";
-            return containsPath(library.getContent("classpath"), classRelativePath); //NOI18N
+        private boolean containsClass(List<URL> libraryContent, String className) {   
+            String classRelativePath = className.replace('.', '/') + ".class"; //NOI18N
+            return containsPath(libraryContent, classRelativePath); //NOI18N
         }            
         
         protected Library getLibrary(String className) {
-            LibraryImplementation libImpl = LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES);
-            for (Library eachLibrary : LibraryManager.getDefault().getLibraries()) {
-                libImpl.setName(eachLibrary.getName());
-                libImpl.setContent(VOLUME_TYPE_CLASSPATH, eachLibrary.getContent(VOLUME_TYPE_CLASSPATH));
-                if (containsClass(libImpl, className)) {
+            for (Library eachLibrary : LibraryManager.getDefault().getLibraries()) {              
+                if (containsClass(eachLibrary.getContent("classpath"), className)) { // NOI18N
                     return eachLibrary;
                 }
             }
 
             //Library wasn't found
             return null;
-        }
-
-        protected FileSystem getDefaultFileSystem() {
-            return Repository.getDefault().getDefaultFileSystem();
-        }
+        }     
     }
 }
