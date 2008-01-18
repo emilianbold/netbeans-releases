@@ -1436,7 +1436,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         
         if (state.equals(STATE_STOPPED)) {
             CommandBuffer cb = new CommandBuffer(gdb.data_evaluate_expression(name));
-            return cb.postAndWait();
+            String info = cb.postAndWait();
+            if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
+                log.warning("GD.requestValue: Unexpected/invalid response from gdb"); // NOI18N
+                return "";
+            } else {
+                return info;
+            }
         } else {
             return null;
         }
@@ -1448,8 +1454,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         if (state.equals(STATE_STOPPED) && name != null && name.length() > 0) {
             CommandBuffer cb = new CommandBuffer(gdb.whatis(name));
             String info = cb.postAndWait();
-            if (info == null || info.length() < 1) {
-                return null;
+            if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
+                log.warning("GD.requestWhatis: Unexpected/invalid response from gdb"); // NOI18N
+                return "";
             } else {
                 return info.substring(7, info.length() - 2);
             }
@@ -1464,7 +1471,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         if (state.equals(STATE_STOPPED) && type != null && type.length() > 0) {
             CommandBuffer cb = new CommandBuffer(gdb.symbol_type(type));
             String info = cb.postAndWait();
-            if (info.length() == 0) {
+            if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
+                log.warning("GD.requestSymbolType: Unexpected response from gdb, returning original type"); // NOI18N
                 return type;
             } else {
                 return info.substring(7, info.length() - 2);

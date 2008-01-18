@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.debugger.gdb.utils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is intended for gathering multiline responses to a single gdb command.
@@ -51,10 +53,11 @@ public class CommandBuffer {
     
     // Static parts
     public static final int STATE_NONE = 0;
-    public static final int STATE_TIMEOUT = 1;
+    public static final int STATE_WAITING = 1;
     public static final int STATE_COMMAND_TIMEDOUT = 2;
-    public static final int STATE_DONE = 3;
-    public static final int STATE_ERROR = 4;
+    public static final int STATE_OK = 3;
+    public static final int STATE_DONE = 4;
+    public static final int STATE_ERROR = 5;
     
     private static Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
     
@@ -69,6 +72,7 @@ public class CommandBuffer {
     private String err;
     private int state;
     private Object lock;
+    protected static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public CommandBuffer(int token, CommandBufferCallbackProc cbproc) {
         buf = new StringBuilder();
@@ -91,12 +95,25 @@ public class CommandBuffer {
     }
     
     public String postAndWait() {
+        long tstart, tend;
+        
         synchronized (lock) {
             try {
-                state = STATE_TIMEOUT; // this will change unless we timeout
-                lock.wait(10000);
-                if (state == STATE_TIMEOUT) {
+                state = STATE_WAITING; // this will change unless we timeout
+                if (log.isLoggable(Level.FINE)) {
+                    tstart = System.currentTimeMillis();
+                    lock.wait(10000);
+                    tend = System.currentTimeMillis();
+                } else {
+                    lock.wait(10000);
+                    tstart = tend = 0;
+                }
+                if (state == STATE_WAITING) {
                     state = STATE_COMMAND_TIMEDOUT;
+                    log.fine("CB.postAndWait: Timeout");
+                } else {
+                    state = STATE_OK;
+                    log.fine("CB.postAndWait[" + token + "]: Waited " + (tend - tstart) + " milliseconds"); // NOI18N
                 }
                 return toString();
             } catch (InterruptedException ex) {
@@ -108,6 +125,10 @@ public class CommandBuffer {
     
     public Integer getID() {
         return token;
+    }
+    
+    public int getState() {
+        return state;
     }
     
     public void append(String line) {
@@ -137,7 +158,7 @@ public class CommandBuffer {
     }
     
     public boolean attachTimedOut() {
-        return state == STATE_TIMEOUT;
+        return state == STATE_WAITING;
     }
     
     public void dispose() {

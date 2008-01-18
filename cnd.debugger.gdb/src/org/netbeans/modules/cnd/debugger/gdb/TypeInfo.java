@@ -72,11 +72,12 @@ public class TypeInfo {
             return tinfo;
         }
         
-            if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
+        if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
             rawInfo = debugger.requestSymbolType(var.getType()).replace("\\n", "").trim();  // NOI18N
-            } else {
+        } else {
             rawInfo = debugger.requestSymbolType(var.getFullName(false)).replace("\\n", "").trim(); // NOI18N
-            }
+        }
+        
         int pos1 = rawInfo.indexOf('{');
         if (pos1 == -1) {
             resolvedType = rawInfo;
