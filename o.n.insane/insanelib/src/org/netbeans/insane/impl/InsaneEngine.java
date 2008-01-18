@@ -276,23 +276,28 @@ try {
         } else {
             // enqueue all instance fields of reference type
             while (cls != null) { // go over the class hierarchy
-                Field[] flds = cls.getDeclaredFields();
-                for (int i=0; i<flds.length; i++) {
-                    Field act = flds[i];
+	       try {
+                    Field[] flds = cls.getDeclaredFields();
+                    for (int i=0; i<flds.length; i++) {
+                        Field act = flds[i];
 
-                    if (((act.getModifiers() & Modifier.STATIC) == 0) &&
-                                (!act.getType().isPrimitive())) {
+                        if (((act.getModifiers() & Modifier.STATIC) == 0) &&
+                                    (!act.getType().isPrimitive())) {
                         
-                        act.setAccessible(true);
-                        Object target = act.get(obj);
-                        if (target!= null) {
-                            if (filter.accept(target, obj, act)) {
-                                recognize(target);
-                                if (objects.isKnown(target)) visitor.visitObjectReference(objects, obj, target, act);
+                            act.setAccessible(true);
+                            Object target = act.get(obj);
+                            if (target!= null) {
+                                if (filter.accept(target, obj, act)) {
+                                    recognize(target);
+                                    if (objects.isKnown(target)) visitor.visitObjectReference(objects, obj, target, act);
+                                }
                             }
                         }
                     }
-                }
+                } catch(Error e) {
+                    System.err.println("Skipped analysing class " + cls.getName() +
+                        " because of " + e);
+		}
                 cls = cls.getSuperclass();
             }
         }
