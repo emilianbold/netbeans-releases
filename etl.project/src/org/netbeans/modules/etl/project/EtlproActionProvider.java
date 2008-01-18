@@ -27,6 +27,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Lookup;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
@@ -48,7 +49,7 @@ class EtlproActionProvider implements ActionProvider {
     private static final String[] supportedActions = {
         COMMAND_BUILD,
         COMMAND_CLEAN,
-        COMMAND_REBUILD,
+        COMMAND_REBUILD,        
         COMMAND_COMPILE_SINGLE,
         EtlproProject.COMMAND_GENWSDL,
         EtlproProject.COMMAND_SCHEMA,
@@ -109,20 +110,24 @@ class EtlproActionProvider implements ActionProvider {
             return;
         }
         if (COMMAND_DELETE.equals(command)) {
-            DefaultProjectOperations.performDefaultDeleteOperation(project);
-            return;
+            try {
+                project.getAntProjectHelper().resolveFileObject("data").delete();
+                DefaultProjectOperations.performDefaultDeleteOperation(project);
+                return;
+            } catch (IOException ex) {                
+            }
         }
         //EXECUTION PART
         if (command.equals(IcanproConstants.COMMAND_DEPLOY) || command.equals(IcanproConstants.COMMAND_REDEPLOY)) {
             if (!isSelectedServer()) {
                 return;
             }
-        } else {
+        } /*else {
             p = null;
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
             }
-        }
+        }*/
 
         try {
             ActionUtils.runTarget(findBuildXml(), targetNames, p);
