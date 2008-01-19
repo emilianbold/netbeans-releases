@@ -97,7 +97,6 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 /**
@@ -651,18 +650,18 @@ final class Analyzer {
             public void run() {
                 try {
                     TokenSequence<JavaTokenId> tseq = null;
+                    int[] span = null;
                     if (t.getKind() == Tree.Kind.METHOD) { // method + constructor
-                        tseq = JavadocUtilities.findMethodNameToken(javac, (ClassTree) currentPath.getParentPath().getLeaf(), (MethodTree) t);
+                        span = javac.getTreeUtilities().findNameSpan((MethodTree) t);
                     } else if (t.getKind() == Tree.Kind.CLASS) {
-                        tseq = JavadocUtilities.findClassNameToken(javac, (ClassTree) t);
+                        span = javac.getTreeUtilities().findNameSpan((ClassTree) t);
                     } else if (Tree.Kind.VARIABLE == t.getKind()) {
-                        tseq = JavadocUtilities.findVariableNameToken(javac, (VariableTree) t,
-                                javac.getTreeUtilities().isEnum((ClassTree) currentPath.getParentPath().getLeaf()));
+                        span = javac.getTreeUtilities().findNameSpan((VariableTree) t);
                     }
 
-                    if (tseq != null) {
-                        pos[0] = doc.createPosition(tseq.offset());
-                        pos[1] = doc.createPosition(tseq.offset() + tseq.token().length());
+                    if (span != null) {
+                        pos[0] = doc.createPosition(span[0]);
+                        pos[1] = doc.createPosition(span[1]);
                         return;
                     }
 
