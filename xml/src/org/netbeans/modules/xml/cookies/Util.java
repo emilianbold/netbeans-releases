@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.xml.cookies;
 
-import org.netbeans.modules.xml.core.lib.AbstractUtil;
+import org.netbeans.modules.xml.lib.AbstractUtil;
 
 
 /**

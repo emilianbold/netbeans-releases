@@ -74,7 +74,7 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
 import javax.xml.namespace.NamespaceContext;
-import org.netbeans.modules.xml.core.lib.AbstractUtil;
+import org.netbeans.modules.xml.lib.AbstractUtil;
 import org.openide.nodes.Node;
 import org.xml.sax.InputSource;
 import org.w3c.dom.NodeList;

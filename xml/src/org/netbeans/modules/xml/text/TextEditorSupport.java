@@ -68,7 +68,6 @@ import org.netbeans.modules.xml.*;
 import org.netbeans.modules.xml.lib.*;
 import org.netbeans.modules.xml.sync.*;
 import org.netbeans.modules.xml.cookies.*;
-import org.netbeans.modules.xml.core.lib.EncodingHelper;
 
 /**
  * Text editor support that handles I/O encoding and sync with tree.
@@ -384,7 +383,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         try {
             //test encoding on dummy stream
             new OutputStreamWriter(new ByteArrayOutputStream(1), enc);
-            if (!checkCharsetConversion(EncodingHelper.getJava2IANAMapping(enc))){
+            if (!checkCharsetConversion(EncodingUtil.getJava2IANAMapping(enc))){
                 if ( Util.THIS.isLoggable() ) /* then */ Util.THIS.debug("Let unsaved."); // NOI18N
                 return;
             }
