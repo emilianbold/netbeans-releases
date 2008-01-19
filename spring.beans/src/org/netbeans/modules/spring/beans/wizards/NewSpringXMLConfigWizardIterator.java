@@ -230,7 +230,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         StringBuilder sb = generateXML(incNamespaces);
 
         try {
-            JEditorPane ep = new JEditorPane("text/x-springbeans+xml", ""); // NOI18N
+            JEditorPane ep = new JEditorPane("text/x-springconfig+xml", ""); // NOI18N
             BaseDocument doc = new BaseDocument(ep.getEditorKit().getClass(), false);
             Formatter f = Formatter.getFormatter(ep.getEditorKit().getClass());
             
