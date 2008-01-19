@@ -68,7 +68,6 @@ import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.modules.xml.api.EncodingUtil;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
-import org.netbeans.modules.xml.core.lib.EncodingHelper;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.schema.multiview.SchemaMultiViewSupport;
@@ -474,7 +473,7 @@ public class SchemaEditorSupport extends DataEditorSupport
         try {
             // Test the encoding on a dummy stream.
             new OutputStreamWriter(new ByteArrayOutputStream(1), enc);
-            if (!checkCharsetConversion(EncodingHelper.getJava2IANAMapping(enc))){
+            if (!checkCharsetConversion(EncodingUtil.getJava2IANAMapping(enc))){
                 return;
             }
             super.saveDocument();
