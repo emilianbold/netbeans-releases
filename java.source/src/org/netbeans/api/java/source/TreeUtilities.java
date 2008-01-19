@@ -521,7 +521,7 @@ public final class TreeUtilities {
      * @since 0.25
      */
     public int[] findNameSpan(ClassTree clazz) {
-        return findNameSpan(clazz.getSimpleName().toString(), clazz, JavaTokenId.CLASS, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
+        return findNameSpan(clazz.getSimpleName().toString(), clazz, JavaTokenId.CLASS, JavaTokenId.INTERFACE, JavaTokenId.ENUM, JavaTokenId.AT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
     }
     
     /**Find span of the {@link MethodTree#getName()} identifier in the source.
@@ -534,7 +534,27 @@ public final class TreeUtilities {
      * @since 0.25
      */
     public int[] findNameSpan(MethodTree method) {
-        return findNameSpan(method.getName().toString(), method);
+        if (isSynthetic(info.getCompilationUnit(), method)) {
+            return null;
+        }
+        JCMethodDecl jcm = (JCMethodDecl) method;
+        String name;
+        if (jcm.name == jcm.name.table.init) {
+            TreePath path = info.getTrees().getPath(info.getCompilationUnit(), jcm);
+            if (path == null) {
+                return null;
+            }
+            Element em = info.getTrees().getElement(path);
+            Element clazz;
+            if (em == null || (clazz = em.getEnclosingElement()) == null || !clazz.getKind().isClass()) {
+                return null;
+            }
+            
+            name = clazz.getSimpleName().toString();
+        } else {
+            name = method.getName().toString();
+        }
+        return findNameSpan(name, method);
     }
     
     /**Find span of the {@link VariableTree#getName()} identifier in the source.
