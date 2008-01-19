@@ -57,7 +57,6 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 import junit.framework.TestCase;
-import org.netbeans.modules.xml.core.lib.EncodingHelper;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -244,7 +243,7 @@ public class EncodingUtilTest extends TestCase {
             byte[] out = os.toByteArray();
             char[] chars = new char[xml.length];
             
-            enc = EncodingHelper.autoDetectEncoding(out);
+            enc = EncodingUtil.autoDetectEncoding(out);
             
             if (enc != null) {
                 
@@ -262,7 +261,7 @@ public class EncodingUtilTest extends TestCase {
                     }
 
                     // try to decode encoding
-                    String denc = EncodingHelper.detectDeclaredEncoding(out, enc);
+                    String denc = EncodingUtil.detectDeclaredEncoding(out, enc);
                     if (JAVA_ENCODINGS[i].equals(denc) == false) {
                         fail("detectDeclaredEncoding() failure got " + denc + " instead of " + JAVA_ENCODINGS[i]);
                     }
@@ -296,10 +295,10 @@ public class EncodingUtilTest extends TestCase {
         byte[] utf16_le = new byte[] {(byte)0xff,(byte)0xfe,(byte)'<',(byte)'?'};
         byte[] utf8 = new byte[] {(byte)0xef,(byte)0xbb,(byte)0xbf,(byte)'<'};
 
-        if (EncodingHelper.autoDetectEncoding(usc4_1234) != null) fail("usc4_1234");
-        if (EncodingHelper.autoDetectEncoding(usc4_4321) != null) fail("usc4_4321");
-        if (EncodingHelper.autoDetectEncoding(usc4_2143) != null) fail("usc4_2143");
-        if (EncodingHelper.autoDetectEncoding(usc4_3412) != null) fail("usc4_3412");
+        if (EncodingUtil.autoDetectEncoding(usc4_1234) != null) fail("usc4_1234");
+        if (EncodingUtil.autoDetectEncoding(usc4_4321) != null) fail("usc4_4321");
+        if (EncodingUtil.autoDetectEncoding(usc4_2143) != null) fail("usc4_2143");
+        if (EncodingUtil.autoDetectEncoding(usc4_3412) != null) fail("usc4_3412");
         
         
         // test roundtrip on recognized

@@ -38,7 +38,6 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.xml.core.lib.EncodingHelper;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -170,7 +169,7 @@ public final class XmlFileEncodingQueryImpl extends FileEncodingQueryImplementat
             String text = buffer.asReadOnlyBuffer().flip().toString();
             InputStream in = new ByteArrayInputStream(text.getBytes());
             try {
-                return EncodingHelper.detectEncoding(in);
+                return EncodingUtil.detectEncoding(in);
             } finally {
                 in.close();
             }
