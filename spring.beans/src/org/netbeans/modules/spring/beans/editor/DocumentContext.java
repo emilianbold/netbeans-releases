@@ -99,7 +99,7 @@ public class DocumentContext {
         declaredNamespaces.clear();
         try {
             element = syntaxSupport.getElementChain(caretOffset);
-            token = syntaxSupport.getPreviousToken(caretOffset);
+            token = syntaxSupport.getTokenChain(caretOffset, Math.min(document.getLength(), caretOffset+1));
             this.docRoot = ContextUtilities.getRoot(element);
             populateNamespaces();
         } catch (BadLocationException ex) {
