@@ -305,7 +305,7 @@ public abstract class AbstractModel<T extends Component<T>> implements Model<T>,
         transaction.addComponentEvent(evt);
     }
     
-    public synchronized boolean isIntransaction() {
+    public boolean isIntransaction() {
         return transaction != null;
     }
     
