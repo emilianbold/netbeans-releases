@@ -86,7 +86,8 @@ public class DeploymentManagerProperties {
         
         WSDM = (WSDeploymentManager)dm;
         
-        instanceProperties = WSURIManager.getInstanceProperties(WSDM.getHost(),WSDM.getPort());
+        instanceProperties = WSURIManager.getInstanceProperties(
+                WSDM.getHost(), WSDM.getPort(), WSDM.getServerRoot(), WSDM.getDomainRoot());
         
         if (instanceProperties==null){
             try {
@@ -94,6 +95,8 @@ public class DeploymentManagerProperties {
                 instanceProperties = WSURIManager.createInstanceProperties(
                         WSDM.getHost(),
                         WSDM.getPort(),
+                        WSDM.getServerRoot(),
+                        WSDM.getDomainRoot(),
                         WSDM.getUsername(),
                         WSDM.getPassword(),
                         WSDM.getHost()+":"+WSDM.getPort());

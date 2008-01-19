@@ -131,10 +131,7 @@ public class WSInstantiatingIterator
         Set result = new HashSet();
         
         // build the URL
-        String url = WSURIManager.WSURI + this.host + ":" + this.port; 
-        if (serverRoot != null && domainRoot != null) {
-            url += ":" + serverRoot + ":" + domainRoot;
-        }
+        String url = WSURIManager.constructUrl(this.host, this.port, serverRoot, domainRoot);
         
         // build the display name
         String displayName = getDisplayName() + " [" + this.host +     // NOI18N
