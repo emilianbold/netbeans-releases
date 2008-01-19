@@ -63,9 +63,11 @@ public class RemountCollaborationAction extends GraphAction {
             try {
                 SQLDBTable table = (SQLDBTable) targetTables.next();
                 SQLDBModel dbmodel = (SQLDBModel) table.getParent();
-                if (dbmodel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+                if (dbmodel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
+                    dbmodel.getETLDBConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
                     SQLObjectUtil.dropTable(table, (SQLDBModel) table.getParent());
                     SQLObjectUtil.createTable(table, (SQLDBModel) table.getParent());
+                    SQLObjectUtil.setOrgProperties(table);
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
@@ -78,9 +80,11 @@ public class RemountCollaborationAction extends GraphAction {
             try {
                 SQLDBTable table = (SQLDBTable) sourceTables.next();
                 SQLDBModel dbmodel = (SQLDBModel) table.getParent();
-                if (dbmodel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+                if (dbmodel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
+                    dbmodel.getETLDBConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
                     SQLObjectUtil.dropTable(table, (SQLDBModel) table.getParent());
                     SQLObjectUtil.createTable(table, (SQLDBModel) table.getParent());
+                    SQLObjectUtil.setOrgProperties(table);
                 }
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);

@@ -481,7 +481,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
             }
             if (bean.getObjectType() == SQLConstants.SOURCE_TABLE) {
                 SourceTableProperties srcTableBaen = new SourceTableProperties(this, (SQLBasicTableArea) gNode, (SourceTable) bean);
-                if (((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+                if (((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
+                    ((SourceTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
                     template = getTemplateName(bean);
                     pBean = new FFSourceTableProperties(srcTableBaen);
                 } else {
@@ -490,7 +491,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
                 }
             } else if (bean.getObjectType() == SQLConstants.TARGET_TABLE) {
                 TargetTableProperties trgtTableBaen = new TargetTableProperties(this, (SQLBasicTableArea) gNode, (TargetTable) bean);
-                if (((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+                if (((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
+                    ((TargetTable) bean).getParent().getConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {    
                     template = getTemplateName(bean);
                     pBean = new FFTargetTableProperties(trgtTableBaen);
                 } else {

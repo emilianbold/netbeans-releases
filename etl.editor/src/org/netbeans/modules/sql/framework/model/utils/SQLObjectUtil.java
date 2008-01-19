@@ -114,7 +114,8 @@ public class SQLObjectUtil {
         Statement stmt = null;
         ResultSet rs = null;
         try {
-            if (dbModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+            if (dbModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
+                dbModel.getETLDBConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
                 DBConnectionDefinition conndef = dbModel.getETLDBConnectionDefinition();
                 conn = DBExplorerUtil.createConnection(conndef.getDriverClass(), conndef.getConnectionURL(), conndef.getUserName(), conndef.getPassword());
 
@@ -217,7 +218,8 @@ public class SQLObjectUtil {
     private static void checkAndCreateTables(SQLDBModel aModel) throws BaseException, SQLException {
         //String aString = aModel.getETLDBConnectionDefinition().toString();
         //From the connection get all the tables
-        if (aModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+        if (aModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
+            aModel.getETLDBConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
 
             String[][] tableList = getTablesForDBModel(aModel);
             List<DBTable> tables = aModel.getTables();
@@ -324,7 +326,8 @@ public class SQLObjectUtil {
 
     public static SourceColumn createRuntimeInput(SQLDBTable sTable, SQLDefinition sqlDefn) throws BaseException {
         SQLDBModel dbModel = (SQLDBModel) sTable.getParent();
-        if (dbModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+        if (dbModel.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
+            dbModel.getETLDBConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
             // set the flatfile location name for this table
             sTable.setFlatFileLocationRuntimeInputName(generateFFRuntimeInputName(FILE_LOC, sTable));
             RuntimeDatabaseModel rtDBModel = getOrCreateRuntimeModel(sqlDefn);

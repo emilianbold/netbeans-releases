@@ -168,7 +168,8 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             remountItem.addActionListener(aListener);
             SQLObject tbl = (SQLObject) SQLSourceTableArea.this.getDataObject();
             SQLDBModelImpl impl = (SQLDBModelImpl) tbl.getParentObject();
-            if (impl.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION)) {
+            if (impl.getETLDBConnectionDefinition().getDBType().equals(DBMetaDataFactory.AXION) ||
+                impl.getETLDBConnectionDefinition().getDBType().equalsIgnoreCase("Internal")) {
                 popUpMenu.add(remountItem);
             }
 
@@ -252,6 +253,7 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             SQLDBTable table = (SQLDBTable) SQLSourceTableArea.this.getDataObject();
             SQLObjectUtil.dropTable(table, (SQLDBModel) table.getParent());
             SQLObjectUtil.createTable(table, (SQLDBModel) table.getParent());
+            SQLObjectUtil.setOrgProperties(table);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             StatusDisplayer.getDefault().setStatusText("Unable to remount :" + ex.getMessage());

@@ -220,7 +220,7 @@ public class ETLEditorSupport extends DataEditorSupport implements OpenCookie, E
             populateCanvas(etlDataObject, collabModel);
             isFirstTime = false;
 
-            // Validate the collabModel and upsate badge
+            // Validate the collabModel and update badge
             updateBadge(etlDataObject);
         } catch (Throwable ioe) {
             // The document cannot be parsed             

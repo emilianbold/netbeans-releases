@@ -229,7 +229,11 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <public-packages>
+                <package>org.netbeans.modules.etl.project</package>
+                <package>org.netbeans.modules.etl.project.ui</package>
+                <package>org.netbeans.modules.etl.project.ui.wizards</package>
+            </public-packages>
         </data>
     </configuration>
 </project>
