@@ -43,6 +43,9 @@ import java.util.concurrent.*;
 import javax.swing.*;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.Invoke;
+import org.netbeans.modules.bpel.model.api.OnEvent;
+import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.Receive;
 import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.nodes.BpelNode;
@@ -106,12 +109,18 @@ public class DefineCorrelationAction extends BpelNodeAction {
     }
     
     protected static boolean isAllowableBpelNode(BpelNode bpelNode) {
-        return ((bpelNode.getNodeType() == NodeType.RECEIVE) || 
-                (bpelNode.getNodeType() == NodeType.REPLY));
+        return ((bpelNode.getNodeType() == NodeType.RECEIVE)  || 
+                (bpelNode.getNodeType() == NodeType.REPLY)    ||
+                (bpelNode.getNodeType() == NodeType.INVOKE)   ||
+                (bpelNode.getNodeType() == NodeType.ON_EVENT) ||
+                (bpelNode.getNodeType() == NodeType.MESSAGE_HANDLER));
     }
     
     protected static boolean isAllowableBpelEntity(BpelEntity bpelEntity) {
         return ((bpelEntity instanceof Receive) || 
-                (bpelEntity instanceof Reply));
+                (bpelEntity instanceof Reply)   ||
+                (bpelEntity instanceof Invoke)   ||
+                (bpelEntity instanceof OnEvent)   ||
+                (bpelEntity instanceof OnMessage));
     }
 }

@@ -224,6 +224,10 @@ public class InvokeNode extends BpelNode<Invoke> {
             ActionType.SEPARATOR,
             ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,
+            
+            ActionType.DEFINE_CORRELATION,
+            ActionType.SEPARATOR,
+            
             ActionType.ADD_CATCH,
             ActionType.ADD_CATCH_ALL,
             ActionType.ADD_COMPENSATION_HANDLER,

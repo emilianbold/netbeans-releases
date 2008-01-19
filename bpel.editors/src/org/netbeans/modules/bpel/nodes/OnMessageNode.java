@@ -140,6 +140,10 @@ public class OnMessageNode extends BpelNode<OnMessage> {
 //            ActionType.CYCLE_MEX, // Issue 85553
             ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,
+            
+            ActionType.DEFINE_CORRELATION,
+            ActionType.SEPARATOR,
+            
             ActionType.REMOVE,
             ActionType.SEPARATOR,
             ActionType.PROPERTIES
