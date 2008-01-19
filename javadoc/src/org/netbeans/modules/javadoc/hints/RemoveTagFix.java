@@ -207,7 +207,8 @@ final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
         }
         
         if (jdEndLine != tagEndLine && jdBeginLine != tagBeginLine) {
-            int lineEnd = findLineTail(cs, tagBounds[1].getOffset(), jdBounds[1].getOffset());
+            int lineEnd = findLineTail(cs, tagBounds[0].getOffset(),
+                    tagBounds[1].getOffset(), jdBounds[1].getOffset());
             if (lineEnd != tagBounds[1].getOffset()) {
                 tagBounds[1] = doc.createPosition(lineEnd);
             }
@@ -228,15 +229,24 @@ final class RemoveTagFix implements Fix, CancellableTask<WorkingCopy> {
         return offset;
     }
 
-    private static int findLineTail(CharSequence cs, int offset, int stop) {
-        for (int i = offset; i < stop; i++) {
-            char c = cs.charAt(i);
-            if (c == '\n') {
-                return i + 1;
+    private static int findLineTail(CharSequence cs, int tagBegin, int tagEnd, int stop) {
+        if (cs.charAt(tagEnd) != '@') {
+            for (int i = tagEnd; i < stop; i++) {
+                char c = cs.charAt(i);
+                if (c == '\n') {
+                    return i + 1;
+                }
+            }
+        } else {
+            for (int i = tagEnd - 1; i > tagBegin; i--) {
+                char c = cs.charAt(i);
+                if (c == '\n') {
+                    return i + 1;
+                }
             }
         }
 
-        return offset;
+        return tagEnd;
     }
     
 }

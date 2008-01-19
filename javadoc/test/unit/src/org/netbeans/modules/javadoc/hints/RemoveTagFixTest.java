@@ -193,4 +193,52 @@ public class RemoveTagFixTest extends JavadocTestSupport {
                 "}\n");        
     }
 
+    public void testRemoveParamTagFix() throws Exception {
+        doFirstMemberFixTest(
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @param p1 description\n" +
+                "     */\n" +
+                "    void leden() {\n" +
+                "    }\n" +
+                "}\n",
+                
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     */\n" +
+                "    void leden() {\n" +
+                "    }\n" +
+                "}\n");        
+    }
+
+    public void testRemoveParamTagFix_124353() throws Exception {
+        doFirstMemberFixTest(
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @param p1 description\n" +
+                "     * @return int\n" +
+                "     */\n" +
+                "    int leden() {\n" +
+                "        return 0;\n" +
+                "    }\n" +
+                "}\n",
+                
+                "package test;\n" +
+                "class Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @return int\n" +
+                "     */\n" +
+                "    int leden() {\n" +
+                "        return 0;\n" +
+                "    }\n" +
+                "}\n");        
+    }
+
 }
