@@ -17,7 +17,6 @@ import java.awt.image.ColorModel;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import org.openide.nodes.Node.Cookie;
 import org.openide.util.Utilities;
 
