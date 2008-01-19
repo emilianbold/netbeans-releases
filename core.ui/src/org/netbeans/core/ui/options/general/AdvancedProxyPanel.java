@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -55,7 +55,7 @@ public class AdvancedProxyPanel extends javax.swing.JPanel {
     private String oldSocksPort;
     
     /** Creates new form AdvancedProxyPanel */
-    public AdvancedProxyPanel (GeneralOptionsModel model) {
+    AdvancedProxyPanel (GeneralOptionsModel model) {
         options = model;
         initComponents ();
         tfHttpProxyHost.getDocument().addDocumentListener (new DocumentListener () {
@@ -118,10 +118,10 @@ public class AdvancedProxyPanel extends javax.swing.JPanel {
         pfUserPassword.setText (new String (options.getProxyAuthenticationPassword ()));
         tfNonProxyHosts.setText (options.getNonProxyHosts ());
         
-        oldHttpsHost = tfHttpsProxyHost.getText ();
-        oldHttpsPort = tfHttpsProxyPort.getText ();
-        oldSocksHost = tfSocksHost.getText ();
-        oldSocksPort = tfSocksPort.getText ();
+        oldHttpsHost = options.getOriginalHttpsHost ();
+        oldHttpsPort = options.getOriginalHttpsPort ();
+        oldSocksHost = options.getOriginalSocksHost ();
+        oldSocksPort = options.getOriginalSocksPort ();
         
         followHttpProxyIfDemand();
         updateAuthentication ();
@@ -132,10 +132,12 @@ public class AdvancedProxyPanel extends javax.swing.JPanel {
         options.setUseProxyAuthentication(cbUseProxyAuthentication.isSelected ());
         options.setHttpProxyHost (tfHttpProxyHost.getText ());
         options.setHttpProxyPort (tfHttpProxyPort.getText ());
-        options.setHttpsProxyHost (tfHttpsProxyHost.getText ());
-        options.setHttpsProxyPort (tfHttpsProxyPort.getText ());
-        options.setSocksHost (tfSocksHost.getText ());
-        options.setSocksPort (tfSocksPort.getText ());
+        if (! cbSameProxySettings.isSelected ()) {
+            options.setHttpsProxyHost (tfHttpsProxyHost.getText ());
+            options.setHttpsProxyPort (tfHttpsProxyPort.getText ());
+            options.setSocksHost (tfSocksHost.getText ());
+            options.setSocksPort (tfSocksPort.getText ());
+        }
         options.setNonProxyHosts (tfNonProxyHosts.getText ());
         options.setAuthenticationUsername (tfUserName.getText ());
         options.setAuthenticationPassword (pfUserPassword.getPassword ());
@@ -387,9 +389,9 @@ private void cbSameProxySettingsActionPerformed(java.awt.event.ActionEvent evt) 
         oldSocksPort = tfSocksPort.getText ();
     } else {
         tfHttpsProxyHost.setText (oldHttpsHost);
-         tfHttpsProxyPort.setText (oldHttpsPort);
-         tfSocksHost.setText (oldSocksHost);
-         tfSocksPort.setText (oldSocksPort);
+        tfHttpsProxyPort.setText (oldHttpsPort);
+        tfSocksHost.setText (oldSocksHost);
+        tfSocksPort.setText (oldSocksPort);
     }
     followHttpProxyIfDemand ();
 }//GEN-LAST:event_cbSameProxySettingsActionPerformed

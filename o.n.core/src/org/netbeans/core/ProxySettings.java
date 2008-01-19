@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -96,19 +96,35 @@ public class ProxySettings {
     }
     
     public static String getHttpsHost () {
-        return getPreferences ().get (PROXY_HTTPS_HOST, "");
+        if (useProxyAllProtocols ()) {
+            return getHttpHost ();
+        } else {
+            return getPreferences ().get (PROXY_HTTPS_HOST, "");
+        }
     }
     
     public static String getHttpsPort () {
-        return getPreferences ().get (PROXY_HTTPS_PORT, "");
+        if (useProxyAllProtocols ()) {
+            return getHttpPort ();
+        } else {
+            return getPreferences ().get (PROXY_HTTPS_PORT, "");
+        }
     }
     
     public static String getSocksHost () {
-        return getPreferences ().get (PROXY_SOCKS_HOST, "");
+        if (useProxyAllProtocols ()) {
+            return getHttpHost ();
+        } else {
+            return getPreferences ().get (PROXY_SOCKS_HOST, "");
+        }
     }
     
     public static String getSocksPort () {
-        return getPreferences ().get (PROXY_SOCKS_PORT, "");
+        if (useProxyAllProtocols ()) {
+            return getHttpPort ();
+        } else {
+            return getPreferences ().get (PROXY_SOCKS_PORT, "");
+        }
     }
     
     public static String getNonProxyHosts () {
@@ -124,7 +140,7 @@ public class ProxySettings {
     }
     
     public static boolean useProxyAllProtocols () {
-        return getPreferences ().getBoolean (USE_PROXY_ALL_PROTOCOLS, true);
+        return getPreferences ().getBoolean (USE_PROXY_ALL_PROTOCOLS, false);
     }
     
     public static String getAuthenticationUsername () {

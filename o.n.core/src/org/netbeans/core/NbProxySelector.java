@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -70,7 +70,7 @@ public final class NbProxySelector extends ProxySelector {
         
     /** Creates a new instance of NbProxySelector */
     public NbProxySelector () {
-        original = super.getDefault ();
+        original = ProxySelector.getDefault ();
         log.fine ("Override the original ProxySelector: " + original);
         log.fine ("java.net.useSystemProxies has been set to " + useSystemProxies ());
         ProxySettings.addPreferenceChangeListener (new ProxySettingsListener ());
@@ -147,7 +147,9 @@ public final class NbProxySelector extends ProxySelector {
         } else {
             assert false : "Invalid proxy type: " + ProxySettings.getProxyType ();
         }
-        log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () + "] returns " + res + " for URI " + uri);
+        log.finest ("NbProxySelector[Type: " + ProxySettings.getProxyType () +
+                ", Use HTTP for all protocols: " + ProxySettings.useProxyAllProtocols ()+
+                "] returns " + res + " for URI " + uri);
         return res;
     }
     

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -77,7 +77,7 @@ class GeneralOptionsModel {
     }
     
     void setHttpProxyPort (String proxyPort) {
-        if (proxyPort != getHttpProxyPort()) {
+        if (! proxyPort.equals (getHttpProxyPort())) {
             getProxyPreferences().put(ProxySettings.PROXY_HTTP_PORT, validatePort (proxyPort) ? proxyPort : "");
         }
     }
@@ -97,7 +97,7 @@ class GeneralOptionsModel {
     }
     
     void setHttpsProxyPort (String proxyPort) {
-        if (proxyPort != getHttpsProxyPort()) {
+        if (! proxyPort.equals (getHttpsProxyPort())) {
             getProxyPreferences().put(ProxySettings.PROXY_HTTPS_PORT, validatePort (proxyPort) ? proxyPort : "");
         }
     }
@@ -107,7 +107,7 @@ class GeneralOptionsModel {
     }
     
     void setSocksHost (String socksHost) {
-        if (socksHost != getSocksHost()) {
+        if (! socksHost.equals (getSocksHost())) {
             getProxyPreferences ().put (ProxySettings.PROXY_SOCKS_HOST, socksHost);
         }
     }
@@ -117,9 +117,25 @@ class GeneralOptionsModel {
     }
     
     void setSocksPort (String socksPort) {
-        if (socksPort != getSocksPort()) {
+        if (! socksPort.equals (getSocksPort())) {
             getProxyPreferences ().put (ProxySettings.PROXY_SOCKS_PORT, validatePort (socksPort) ? socksPort : "");
         }
+    }
+    
+    String getOriginalHttpsHost () {
+        return getProxyPreferences ().get (ProxySettings.PROXY_HTTPS_HOST, "");
+    }
+    
+    String getOriginalHttpsPort () {
+        return getProxyPreferences ().get (ProxySettings.PROXY_HTTPS_PORT, "");
+    }
+    
+    String getOriginalSocksHost () {
+        return getProxyPreferences ().get (ProxySettings.PROXY_SOCKS_HOST, "");
+    }
+    
+    String getOriginalSocksPort () {
+        return getProxyPreferences ().get (ProxySettings.PROXY_SOCKS_PORT, "");
     }
     
     String getNonProxyHosts () {
