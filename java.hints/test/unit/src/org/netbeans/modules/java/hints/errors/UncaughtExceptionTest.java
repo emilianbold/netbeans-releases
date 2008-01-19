@@ -128,8 +128,13 @@ public class UncaughtExceptionTest extends HintsTestBase {
     public void testBug123850d() throws Exception {
         performTestDoNotPerform("TestBug123850d", 7, 18);
     }
+    
     public void testBug123850e() throws Exception {
         performTestDoNotPerform("TestBug123850e", 7, 18);
+    }
+    
+    public void testBug123093() throws Exception {
+        performTestDoNotPerform("TestBug123093", 11, 18);
     }
     
     /**

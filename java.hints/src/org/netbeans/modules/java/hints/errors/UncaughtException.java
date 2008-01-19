@@ -103,8 +103,9 @@ public final class UncaughtException implements ErrorRule<Void> {
         
         result.addAll(exceptions);
         
+        Tree lastTree = null;
+        
         while (path != null) {
-
             TypeMirror tm = info.getTrees().getTypeMirror(path);
             
             if (tm != null && tm.getKind() == TypeKind.EXECUTABLE) {
@@ -121,14 +122,17 @@ public final class UncaughtException implements ErrorRule<Void> {
             if (currentTree.getKind() == Kind.TRY) {
                 TryTree tt = (TryTree) currentTree;
                 
-                for (CatchTree c : tt.getCatches()) {
-                    TreePath catchPath = new TreePath(new TreePath(path, c), c.getParameter());
-                    VariableElement variable = (VariableElement) info.getTrees().getElement(catchPath);
-                    
-                    result.remove(variable.asType());
+                if (tt.getBlock() == lastTree) {
+                    for (CatchTree c : tt.getCatches()) {
+                        TreePath catchPath = new TreePath(new TreePath(path, c), c.getParameter());
+                        VariableElement variable = (VariableElement) info.getTrees().getElement(catchPath);
+
+                        result.remove(variable.asType());
+                    }
                 }
             }
             
+            lastTree = path.getLeaf();
             path = path.getParentPath();
         }
         
