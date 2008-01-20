@@ -84,7 +84,7 @@ public class StaticAccess extends AbstractHint {
         return EnumSet.of(Kind.MEMBER_SELECT);
     }
 
-    protected List<Fix> computeFixes(CompilationInfo info, TreePath treePath, Document doc, int[] bounds) {
+    protected List<Fix> computeFixes(CompilationInfo info, TreePath treePath, Document doc, int[] bounds, int[] kind, String[] simpleName) {
         if (treePath.getLeaf().getKind() != Kind.MEMBER_SELECT) {
             return null;
         }
@@ -147,6 +147,18 @@ public class StaticAccess extends AbstractHint {
             return null;
         }
         
+        if (used.getKind().isField()) {
+            kind[0] = 0;
+        } else {
+            if (used.getKind() == ElementKind.METHOD) {
+                kind[0] = 1;
+            } else {
+                kind[0] = 2;
+            }
+        }
+        
+        simpleName[0] = used.getSimpleName().toString();
+        
         List<Fix> fixes = new ArrayList<Fix>(2);
         fixes.add( new FixImpl(
             TreePathHandle.create(expr, info),
@@ -186,14 +198,16 @@ public class StaticAccess extends AbstractHint {
             }
         
             int[] span = new int[2];
-            List<Fix> fixes = computeFixes(compilationInfo, treePath, doc, span);
+            int[] kind = new int[1];
+            String[] simpleName = new String[1];
+            List<Fix> fixes = computeFixes(compilationInfo, treePath, doc, span, kind, simpleName);
             if (fixes == null) {
                 return null;
             }
 
             ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
                 getSeverity().toEditorSeverity(),
-                NbBundle.getMessage(StaticAccess.class, "MSG_StaticAccess"), // NOI18N
+                NbBundle.getMessage(StaticAccess.class, "MSG_StaticAccess", kind[0], simpleName[0]), // NOI18N
                 fixes,
                 doc,
                 doc.createPosition(span[0]),

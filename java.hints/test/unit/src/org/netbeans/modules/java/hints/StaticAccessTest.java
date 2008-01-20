@@ -47,6 +47,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -78,7 +79,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         String golden = (before + after).replace('\n', ' ').replace("b.value", "Boolean.value");
         
         performFixTest("test/Test.java", before + after, before.length(), 
-            "3:4-3:5:verifier:Accessing static field",
+            "3:4-3:5:verifier:AS1valueOf",
             "FixStaticAccess",
             golden
         );
@@ -102,7 +103,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         
         
         performFixTest("test/Test.java", before + after, before.length(), 
-            "3:4-3:5:verifier:Accessing static field",
+            "3:4-3:5:verifier:AS1valueOf",
             "FixStaticAccess",
             golden
         );
@@ -138,7 +139,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         String after = "UE;";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:50-0:51:verifier:Accessing static field"
+            "0:50-0:51:verifier:AS0TRUE"
         );
     }
     public void testOkAccessingStaticField() throws Exception {
@@ -158,7 +159,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
         String after = "UE;";
         
         performAnalysisTest("test/Test.java", before + after, before.length(), 
-            "0:74-0:77:verifier:Accessing static field"
+            "0:74-0:77:verifier:AS0TRUE"
         );
     }
     public void testOkToCallEqualsOnString() throws Exception {
@@ -185,7 +186,7 @@ public class StaticAccessTest extends TreeRuleTestBase {
             "}";
         
         performAnalysisTest("test/Test.java", before + after, before.length(),
-                "2:0-2:1:verifier:Accessing static field"
+                "2:0-2:1:verifier:AS1test"
         );
     }
     
@@ -235,5 +236,9 @@ public class StaticAccessTest extends TreeRuleTestBase {
     }
     
     private String sourceLevel = "1.5";
+    
+    static {
+        NbBundle.setBranding("test");
+    }
     
 }
