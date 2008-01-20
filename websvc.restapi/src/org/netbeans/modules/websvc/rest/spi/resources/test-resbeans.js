@@ -46,7 +46,7 @@
 function TestSupport() {
     this.wadlDoc = null;
     this.wadlURL = baseURL+"/application.wadl";
-    this.wadlErr = 'MSG_TEST_RESBEANS_wadlErr';
+    this.wadlErr = 'Cannot access WADL: Please restart your RESTful application, and refresh this page.';
     this.currentValidUrl = '';
     this.breadCrumbs = [];
     this.currentMethod = '';
@@ -58,9 +58,14 @@ function TestSupport() {
     this.childrenContent = '';
     this.currentXmlHttpReq = '';
     this.tcStr = '';
+    this.tcCount = 0;
     this.prettyContent = '';
-    this.colSize = "65";
+    this.colSize = "86";
+    this.rowSize = "20";
+    this.iframeWidth = "530";
+    this.iframeHeight = "400";
     this.allcat = [];
+    this.projectName = '';
     
     this.expand = new Image();
     this.expand.src = "expand.gif";
@@ -72,11 +77,11 @@ function TestSupport() {
     this.cg.src = "cg.gif";
 
     this.viewIds = [
-        { "id" : "table" , "name":"MSG_TEST_RESBEANS_TabularView", "type":"tableContent"}, 
-        { "id" : "raw" , "name":"MSG_TEST_RESBEANS_RawView", "type":"rawContent"}, 
-        { "id" : "structure" , "name":"MSG_TEST_RESBEANS_SubResources", "type":"structureInfo"},
-        { "id" : "header" , "name":"MSG_TEST_RESBEANS_Headers", "type":"headerInfo"},
-        { "id" : "monitor" , "name":"MSG_TEST_RESBEANS_Monitor", "type":"monitorContent"}];
+        { "id" : "table" , "name":"Tabular View", "type":"tableContent"}, 
+        { "id" : "raw" , "name":"Raw View", "type":"rawContent"}, 
+        { "id" : "structure" , "name":"Sub-Resource", "type":"structureInfo"},
+        { "id" : "header" , "name":"Headers", "type":"headerInfo"},
+        { "id" : "monitor" , "name":"Http Monitor", "type":"monitorContent"}];
     
     this.xhr = new XHR();
     this.wdr = new WADLParser();
@@ -91,7 +96,7 @@ TestSupport.prototype = {
             this.wdr.updateMenu(wadlData);
         } else {
             this.setvisibility('main', 'inherit');
-            document.getElementById('content').innerHTML = 'MSG_TEST_RESBEANS_Help';
+            this.updatepage('content', '<span class=bld>Help Page</span><br/><br/><p>Cannot access WADL: Please restart your REST application, and refresh this page.</p><p>If you still see this error and if you are accessing this page using Firefox with Firebug plugin, then<br/>you need to disable firebug for local files. That is from Firefox menubar, check <br/>Tools > Firebug > Disable Firebug for Local Files</p>');
         }            
     },
     
@@ -124,23 +129,23 @@ TestSupport.prototype = {
             request = m.getElementsByTagName("request");
         }
         var paramRep = this.getParamRep(request, this.currentMethod);
-        document.getElementById("paramHook").innerHTML = paramRep;
-        document.getElementById("mimeType").value = this.currentMimeType;
-        this.updatepage('result', '');
-        this.updatepage('resultheaders', '');
+        this.updatepage('paramHook', paramRep);
+        this.updatepage('mimeType', this.currentMimeType);
+        ts.clearOutput();
     },
     
     changeMimeType : function ()
     {
         var mimeNode = document.getElementById("mimeSel");
         var mime = mimeNode.options[mimeNode.selectedIndex].value;
-        document.getElementById("mimeType").value = mime;
+        ts.updatepage('mimeType', mime);
     },
     
     getMethodMimeTypeCombo : function (resource) {
         var methods = resource.getElementsByTagName('method');
-        var str = "<span class=bld>Method: </span>";
-        str += "<select id='methodSel' name='methodSel' onchange='javascript:ts.changeMethod();'>";
+        var str = '<table border=0><tbody><tr><td valign="top"><span id="j_id14"><label for="methodSel" class="LblLev2Txt_sun4">'+
+                            '<span>Choose method to test: </span></label></span></td>';
+        str += "<td><span id=j_id14><select id='methodSel' class=MnuJmp_sun4 name='methodSel' onchange='javascript:ts.changeMethod();'>";
         for(var j=0;j<methods.length;j++) {
             var m = methods[j];                            
             var mName = m.attributes.getNamedItem("name").nodeValue;
@@ -152,16 +157,17 @@ TestSupport.prototype = {
                 var mimeType = mimeTypes[k];
                 var dispName = this.wdr.getMethodNameForDisplay(mName, mimeType);
                 if(mName == 'GET')
-                    str += "  <option selected value='"+dispName+"["+j+"]' selected>"+dispName+"</option>";
+                    str += "  <option class=MnuJmp_sun4 selected value='"+dispName+"["+j+"]' selected>"+dispName+"</option>";
                 else
-                    str += "  <option selected value='"+dispName+"["+j+"]'>"+dispName+"</option>";
+                    str += "  <option class=MnuJmp_sun4 selected value='"+dispName+"["+j+"]'>"+dispName+"</option>";
             }
         }   
-        str += "</select>";
+        str += "</select></span></td><td width=46/><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>Test</a></td></tr></tbody></table>";
         return str;
     },
     
     doShowContent : function (uri) {
+        this.clearInput();
         var r = this.wdr.findResource(uri);
         if(r != null) {
             var app1 = this.wadlDoc.documentElement;     
@@ -174,15 +180,10 @@ TestSupport.prototype = {
     },
 
     doShowContentForId : function (ndx) {
+        this.clearInput();
         var cat = ts.allcat[ndx];
         var r = cat.r;
         var uri = cat.uri;
-        var aUri = uri;
-        var ndx = aUri.indexOf('{');
-        if(ndx > -1) {
-            aUri = aUri.substring(0, ndx) + 'H' + aUri.substring(aUri.indexOf('}', ndx)+1);
-        }
-        //var c = this.xhr.get(aUri, 'application/vnd.sun.wadl+xml');
         if(r != null && !ts.wdr.isTemplateResource(r)) {
             var app1 = this.wadlDoc.documentElement;     
             this.currentResource = r;
@@ -207,8 +208,7 @@ TestSupport.prototype = {
     },
     
     doShowDynamicResource : function (uri, mName, mediaType) {
-        this.updatepage('result', '');
-        this.updatepage('resultheaders', '');
+        ts.clearOutput();
         paramNumber = 1;
         var qmName = '';
         if(mediaType != null)
@@ -216,25 +216,29 @@ TestSupport.prototype = {
         else
             mediaType = this.getDefaultMime();
         this.showBreadCrumbs(uri);
-        var str = "<span class=bld>Method: </span>";
-        str += "<select id='methodSel' name='methodSel' onchange='javascript:ts.changeMethod();'>";
-        str += "  <option selected value='GET'>GET</option>";
-        str += "  <option value='PUT'>PUT</option>";
-        str += "  <option value='DELETE'>DELETE</option>";
-        str += "</select>";
-        str += "&nbsp;&nbsp;<span class=bld>MIME: </span>";
-        str += "<select id='mimeSel' name='mimeSel' onchange='javascript:ts.changeMimeType();'>";
-        str += "  <option value='application/xml'>application/xml</option>";
-        str += "  <option value='application/json'>application/json</option>";
-        str += "  <option value='text/xml'>text/xml</option>";
-        str += "  <option value='text/plain'>text/plain</option>";
-        str += "  <option value='text/html'>text/html</option>";
-        str += "  <option value='image/*'>image/*</option>"; 
-        str += "</select>";
-        str += "&nbsp;&nbsp;<input value='MSG_TEST_RESBEANS_AddParamButton' type='button' onclick='ts.addParam()'>";
-        str += "<br/><br/>";
+        
+        var str = '<br/><table border=0><tbody><tr><td valign="top"><span id="j_id14"><label for="methodSel" class="LblLev2Txt_sun4">'+
+                            '<span>Choose method to test: </span></label></span></td>';
+        str += "<td><span id=j_id14><select id='methodSel' class=MnuJmp_sun4 name='methodSel' onchange='javascript:ts.changeMethod();'>";
+        str += "  <option class=MnuJmp_sun4 selected value='GET'>GET</option>";
+        str += "  <option class=MnuJmp_sun4 value='PUT'>PUT</option>";
+        str += "  <option class=MnuJmp_sun4 value='DELETE'>DELETE</option>";
+        str += "</select></span></td>";
+        str += '<td valign="top"><span id="j_id14"><label for="methodSel" style="padding-left: 6px;" class="LblLev2Txt_sun4">'+
+            '<span>MIME: </span></label></span></td>';
+        str += "<td><span id=j_id14><select id='mimeSel' class=MnuJmp_sun4 name='mimeSel' onchange='javascript:ts.changeMimeType();'>";
+        str += "  <option class=MnuJmp_sun4 value='application/xml'>application/xml</option>";
+        str += "  <option class=MnuJmp_sun4 value='application/json'>application/json</option>";
+        str += "  <option class=MnuJmp_sun4 value='text/xml'>text/xml</option>";
+        str += "  <option class=MnuJmp_sun4 value='text/plain'>text/plain</option>";
+        str += "  <option class=MnuJmp_sun4 value='text/html'>text/html</option>";
+        str += "  <option class=MnuJmp_sun4 value='image/*'>image/*</option>"; 
+        str += "</select></span></td>";
+        str += "<td width=30/>"
+        str += "<td><span id=j_id14><a class='Btn2_sun4 Btn1Hov_sun4' onclick='ts.addParam()'>Add Parameter</a>";
+        str += "</span></td><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>Test</a></td></tr></tbody></table><br/>";
         str += this.getFormRep(null, uri, mName, mediaType);
-        document.getElementById('testres').innerHTML = str;
+        ts.updatepage('testaction', str);
         var paramRep = "";
         var req = this.getDisplayUri(uri);
         var paths = req.split('/');
@@ -242,29 +246,31 @@ TestSupport.prototype = {
             var path = paths[i];
             if(path.indexOf('{') > -1) {
                 var pname = path.substring(1, path.length-1);
-                paramRep += "<span class=bld>"+pname+":</span>"+"<input id='tparams' name='"+pname+"' type='text' value=''><br><br>";
+                paramRep += '<td valign="top"><span id="j_id14"><label for="tparams" class="LblLev2Txt_sun4">';
+                paramRep += '<span>'+pname+': </span></label></span></td>';
+                paramRep += '<td><span id="j_id14"><input id=tparams name="'+pname+'" type=text value="" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td>';
             }
         }
         if(paramRep != "") {
-            document.getElementById("paramHook").innerHTML = paramRep;
+            paramRep = '<tr><td valign="top"><span id="j_id14"><label for="dummy" class="LblLev2Txt_sun4">'+
+                            '<span>Click \'Test\' to continue:</span></label></span></td>'+
+                            '<td><span id="j_id14"></span></td></tr>' + paramRep;
+            ts.updatepage('paramHook', "<table border=0><tbody><tr>"+paramRep+"</tr></tbody></table>");
         }
         var req = uri;
         var disp = this.getDisplayUri(req);
-        var uriLink = "<a id='"+req+"' href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
-        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)<hr>');
+        var uriLink = "<a id='"+req+"' class=Hyp_sun4 href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
+        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" class=Hyp_sun4 target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)');
     },
     
     doShowStaticResource : function (uri, r) {
-        this.updatepage('result', '');
-        this.updatepage('resultheaders', '');
+        ts.clearOutput();
         this.paramNumber = 1;
         this.showBreadCrumbs(uri);
         var mName = this.wdr.getDefaultMethod();
         var mediaType = this.wdr.getDefaultMime();    
-        var str = this.getMethodMimeTypeCombo(r);
-        str += "<br/><br/>";
-        str += this.getFormRep(null, uri, mName, mediaType);
-        document.getElementById('testres').innerHTML = str;
+        this.updatepage('testaction', '<br/>'+this.getMethodMimeTypeCombo(r)+'<br/>');
+        this.updatepage('testinput', this.getFormRep(null, uri, mName, mediaType));
         var methodNode = document.getElementById("methodSel");
         var options = methodNode.options;
         for(var i=0;i<options.length;i++) {
@@ -275,8 +281,8 @@ TestSupport.prototype = {
         this.changeMethod();    
         var req = uri;
         var disp = this.getDisplayUri(req);
-        var uriLink = "<a id='"+req+"' href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
-        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)<hr>');
+        var uriLink = "<a id='"+req+"' class=Hyp_sun4 href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
+        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" class=Hyp_sun4 target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)');
     },
     
     getFormRep : function (req, uri, mName, mediaType) {
@@ -286,24 +292,34 @@ TestSupport.prototype = {
             mediaType = this.getDefaultMime();
         //ts.debug(req + uri + mName + mediaType);
         var str = "<div id='formSubmittal'>";
-        str += "<form action='' method="+mName+" id='form1' name='form1'>";
+        str += "<form action='javascript:ts.dummyMethod()' method="+mName+" id='form1' name='form1'>";
         str += "<div id='paramHook'></div>";
         str += "<input name='path' value='"+uri+"' type='hidden'>";
         str += "<input id='methodName' name='methodName' value='"+mName+"' type='hidden'>";
         str += "<input id='mimeType' name='mimeType' value='"+mediaType+"' type='hidden'>";
-        str += "<br/><input class='button' value='MSG_TEST_RESBEANS_TestButton' type='button' onclick='ts.testResource()'>";
         str += "</form>";
         str += "</div>";
         return str;
     },
     
+    dummyMethod : function() {
+    },
+    
     addParam : function () {
-        var str = "<span class=bld>MSG_TEST_RESBEANS_NewParamName:&nbsp;</span>"+
-            "<input id='newParamNames' name='param"+paramNumber+"' type='text' value='param"+paramNumber+"' size='15'>"+
-            "&nbsp;&nbsp;&nbsp;<span class=bld>MSG_TEST_RESBEANS_NewParamValue:&nbsp;</span>"+
-            "<input id='newParamValues' name='value"+paramNumber+"' type='text' value='value"+paramNumber+"' size='15'>"+"<br>";
+        var str = '<tr><td valign="top"><span id="j_id14"><label for="newParamNames" class="LblLev2Txt_sun4">';
+        str += '<span>param'+paramNumber+': </span></label></span></td>';
+        str += '<td><span id="j_id14"><input id=newParamNames name="param'+paramNumber+'" type=text value="param'+paramNumber+'" size=40 title="param'+paramNumber+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
+        
+        str += '<tr><td valign="top"><span id="j_id14"><label for="newParamValues" class="LblLev2Txt_sun4">';
+        str += '<span>value'+paramNumber+': </span></label></span></td>';
+        str += '<td><span id="j_id14"><input id=newParamValues name="param'+paramNumber+'" type=text value="value'+paramNumber+'" size=40 title="value'+paramNumber+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
         var prevParam = document.getElementById("paramHook").innerHTML;
-        document.getElementById("paramHook").innerHTML = prevParam + "<br>" + str;
+        if(prevParam.indexOf('Additional parameters') == -1) {
+            str = '<tr><td valign="top"><span id="j_id14"><label for="dummy" class="LblLev2Txt_sun4">'+
+                            '<span>Additional parameters:</span></label></span></td>'+
+                            '<td><span id="j_id14"></span></td></tr>'+str;
+        }
+        document.getElementById("paramHook").innerHTML = prevParam + str;
         this.saveFormInput('form1', 'resttest-');
         paramNumber++;
     },
@@ -355,37 +371,62 @@ TestSupport.prototype = {
         }
     },
 
+    clearAll : function() {
+        this.clearOutput();
+        this.updatepage('request', 'Select a node on the navigation bar (on the left side of this page) to test.');
+        this.updatepage('testaction', '');
+        this.updatepage('testinput', '');
+        this.updatepage('navigation', '');
+    },
+    
+    clearInput : function() {
+        this.updatepage('paramHook', '');
+        var testInput = document.getElementById('testinput');
+        testInput.className = 'ConMgn_sun4';
+    },
+    
+    clearOutput : function() {
+        this.updatepage('result', '');
+        this.updatepage('resultheaders', '');
+    },
+    
     showBreadCrumbs : function (uri) {
-        var nav = document.getElementById('navigation');
         var disp = this.getDisplayUri(uri);
-        var count = 0;
-        for(var i=0;i<this.breadCrumbs.length;i++) {
-            if(this.breadCrumbs[i] == disp) {
-                count++;
+        this.breadCrumbs[1] = disp;
+        var str = "<a class=Hyp_sun4 href=javascript:ts.clearAll() >"+ts.projectName+"</a>";
+        var req = this.getDisplayUri(uri);
+        var currPath = baseURL;
+        if(req.substring(req.length-1) == '/')
+            req = req.substring(0, req.length-1);
+        var paths = req.split('/');
+        for(var i=0;i<paths.length-1;i++) {
+            var pname = paths[i];
+            if(pname == '')
+                continue;
+            currPath += '/'+pname;
+            var ndx = 0;
+            var jsmethod = "ts.doShowContent('"+currPath+"')";
+            for(var j=0;j<ts.allcat.length;j++) {
+                if(ts.allcat[j].uri == currPath) {
+                    ndx = j;
+                    jsmethod = "ts.doShowContentForId('"+ndx+"')";
+                }
             }
+            str += "&nbsp;&gt; <a id='"+currPath+"' class=Hyp_sun4 href=javascript:"+jsmethod+" >"+pname+"</a>";
         }
-        if(count == 0) {
-            this.breadCrumbs[this.breadCrumbs.length+1] = disp;
-            var uriLink = "<a id='"+uri+"' href=javascript:ts.doShowContent('"+uri+"') >"+this.getDisplayURL(disp, 90)+"</a>";
-            if(nav.innerHTML != '') {
-                this.bcCount++;
-                var uriPerLine = 4;
-                if(Math.round(this.bcCount/uriPerLine) == this.bcCount/uriPerLine)
-                    nav.innerHTML = nav.innerHTML + " , <br/>" + uriLink;
-                else
-                    nav.innerHTML = nav.innerHTML + " , " + uriLink;
-            } else
-                nav.innerHTML = uriLink;
-        }
+        str += "<span>&nbsp;&gt; "+paths[paths.length-1]+"</span>";
+        this.updatepage('navigation', str);
     },
 
     getParamRep : function (req, mName) {
-        var str = "";
-        if(req != null && req.length > 0) {       
-            //ts.debug(req.length);             
+        var str = '<table border="0"><tbody>';        
+        if(req != null && req.length > 0) {      
             for(var i=0;i<req.length;i++) {
                 var params = req[i].childNodes;
                 if(params != null) {
+                    str += '<tr><td valign="top"><span id="j_id14"><label for="dummy" class="LblLev2Txt_sun4">'+
+                            '<span>Click \'Test\' to continue:</span></label></span></td>'+
+                            '<td><span id="j_id14"></span></td></tr>';
                     for(var j=0;j<params.length;j++) {
                         var param = params[j];
                         if(param.nodeName == null || param.nodeName != 'param')
@@ -402,20 +443,26 @@ TestSupport.prototype = {
                             paramsId = 'tparams';
                         else if(type == 'matrix')
                             paramsId = 'mparams';
-                        str += "<span class=bld>"+pname+":</span>"+"<input id='"+paramsId+"' name='"+pname+"' type='text' value='"+defaultVal+"'>"+"<br><br>";
+                        str += '<tr><td valign="top"><span id="j_id14"><label for="'+paramsId+'" class="LblLev2Txt_sun4">'+
+                            '<span>'+pname+'</span></label></span></td>'+
+                            '<td><span id="j_id14"><input type="text" id="'+paramsId+'" name="'+pname+'" value="'+defaultVal+'" size=40 title="'+pname+'" class="TxtFld_sun4 TxtFldVld_sun4"/></span></td></tr>';
                     }
                 }
             }
         }
-        if(mName == 'PUT' || mName == 'POST')
-            str += "<span class=bld>Content:</span>: <br><textarea id='blobParam' name='params' rows='6' cols="+this.colSize+">MSG_TEST_RESBEANS_Insert</textarea><br/>";       
-        if(str != "")
-            str = "<span class=bld>MSG_TEST_RESBEANS_ResourceInputs</span><br><br><div class='ml20'>"+str+"</div><br/>";
+        if(mName == 'PUT' || mName == 'POST') {   
+            str += '<tr><td valign="top"><span id="j_id14"><label for="blobParam" class="LblLev2Txt_sun4">'+
+                '<span>Content: </span></label></span></td>'+
+                '<td><span id="j_id14"><textarea class="TxtAra_sun4 TxtAraVld_sun4" id=blobParam name=params rows=6 cols=65>Insert content here.</textarea></span></td></tr>';
+        }
+        str += '</tbody></table>';
         return str;
     },
     
     testResource : function () {
-        this.updatepage('result', 'MSG_TEST_RESBEANS_Loading');
+        this.updatepage('result', 'Loading...');
+        var testInput = document.getElementById('testinput');
+        testInput.className = 'ConMgn_sun4 fxdHeight';
         var mimetype = this.getFormMimeType();
         var method = this.getFormMethod();
         var p = '';
@@ -554,8 +601,9 @@ TestSupport.prototype = {
     
     createIFrameForUrl : function (url) {
         var c = 
-            '<iframe id="iFrame_" src="'+url+'" class="frame" width="475" height="200" align="left">'+
-                '<p>See <a href="'+url+'">"'+url+'"</a>.</p>'+
+            //'<iframe id="iFrame_" src="'+url+'" class="frame" width="'+ts.iframeWidth+'" height="'+ts.iframeHeight+'" align="left">'+
+            '<iframe id="iFrame_" src="'+url+'" class="frame" width="'+ts.iframeWidth+'" align="left">'+
+                '<p>See <a class=Hyp_sun4 href="'+url+'">"'+url+'"</a>.</p>'+
             '</iframe>';
         return c;
     },
@@ -565,8 +613,8 @@ TestSupport.prototype = {
         if (document.createElement && (iframe =
             document.createElement('iframe'))) {
             iframe.name = iframe.id = 'iFrame_';
-            iframe.width = 600;
-            iframe.height = 400;
+            iframe.width = ts.iframeWidth;
+            iframe.height = ts.iframeHeight;
             iframe.src = 'about:blank';
             document.getElementById('rawContent').appendChild(iframe);
         }
@@ -590,41 +638,47 @@ TestSupport.prototype = {
     },
     
     showViews : function (name) {
+        var c = '';
         for(var i in this.viewIds) {
             var vid = this.viewIds[i]['id'];
-            var tab = document.getElementById('tab'+vid);
-            tab.className = 'tab';
             var tabMain = document.getElementById(this.viewIds[i]['type']);
-            tabMain.style.display="none";
             if(name == vid) {
-                tab.className += ' activeTab';
-                tab.blur();
+                c += this.getTab(vid, true);
                 tabMain.style.display="block";
+            } else {
+                c += this.getTab(vid, false);
+                tabMain.style.display="none";
             }
         }
+        this.updatepage('tabRow', c);
     },
 
     monitor : function (xmlHttpReq, param) {
         var nodisp = ' class="nodisp" ';
         var rawViewStyle = ' ';
         var headerViewStyle = nodisp;
-        var rawContent = 'Received:\n'+this.printPretty(xmlHttpReq.responseText)+'\n';
+        var rawContent = 'Received:\n<br/>'+this.printPretty(xmlHttpReq.responseText)+'\n<br/>';
         if(param != null && param != undefined)
-            rawContent = 'Sent:\n'+this.printPretty(param) + '\n\n' + rawContent;
+            rawContent = 'Sent:\n<br/>'+this.printPretty(param) + '\n\n<br/><br/>' + rawContent;
         var prev = document.getElementById('monitorText');
         var cURL = this.currentValidUrl;
-        var s = 'Request: ' + this.currentMethod + ' ' + cURL + 
-                    '\n\nStatus: ' + xmlHttpReq.status + ' (' + xmlHttpReq.statusText + ')'+
-                    '\n\nTimeStamp: ' + ' ' + xmlHttpReq.getResponseHeader('Date') + '';
+        var params = '';
+        if(cURL.indexOf('?') > 0) {
+            params = cURL.substring(cURL.indexOf('?')+1);
+            cURL = cURL.substring(0, cURL.indexOf('?')+1);
+        }
+        var s = 'Request: ' + this.currentMethod + ' ' + cURL + '\n<br/>' + params +
+                    '\n\n<br/><br/>Status: ' + xmlHttpReq.status + ' (' + xmlHttpReq.statusText + ')'+
+                    '\n\n<br/><br/>Time-Stamp: ' + ' ' + xmlHttpReq.getResponseHeader('Date') + '';
         var prevs = '';
         if(this.currMonitorText != null && this.currMonitorText != undefined) {
             prevs = this.currMonitorText;        
             this.currMonitorText = 
-                s + '\n\n' + rawContent+
-                '\n-----------------------------------------------------------------------\n\n'+
+                s + '\n\n<br/><br/>' + rawContent+
+                '\n<br/>-----------------------------------------------------------------------\n\n<br/><br/>'+
                 prevs;  
         } else {
-            this.currMonitorText = s + '\n\n' + rawContent;
+            this.currMonitorText = s + '\n\n<br/><br/>' + rawContent;
         }
     },
 
@@ -632,11 +686,11 @@ TestSupport.prototype = {
         var showRaw = true;
         if(content != null && content != undefined) {
             if(content == '')
-                content = 'MSG_TEST_RESBEANS_NoContents'
+                content = '---No Content---'
             else 
                 content = content.replace(/'/g,"\'");
             try {
-                var cErr = '<table border=1><tr><td>MSG_TEST_RESBEANS_No_Container</td></tr></table>';
+                var cErr = 'Content may not have Container-Containee Relationship. See Raw View for content.';
                 var tableContent = cErr;
                 if(content.indexOf("<?xml ") != -1 || 
                         content.indexOf('{"') != -1) {
@@ -657,24 +711,27 @@ TestSupport.prototype = {
                 var structure = this.xhr.options(this.currentValidUrl, 'application/vnd.sun.wadl+xml');
                 var subResources = this.getContainerTable(ts.wdr.evaluateWADLUpdate(this.currentValidUrl, structure));
                 if(subResources == null)
-                    subResources = 'MSG_TEST_RESBEANS_No_SubResources';
-                this.updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Status</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
-                    '<span class=bld>MSG_TEST_RESBEANS_Content</span> '+
-                    '<div class="menu"><table class="result"><tr>'+
-                    this.getTab('table', tableViewStyle)+this.getTab('raw', rawViewStyle)+
-                    this.getTab('structure', nodisp)+
-                    this.getTab('header', nodisp)+this.getTab('monitor', nodisp)+   
-                    '</tr></table></div>'+
+                    subResources = 'No Sub-Resources available.';
+                this.updatepage('result', '<br/><span class=bld>Status:</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
+                    '<span class=bld>Response:</span> '+
+                    '<div class="Tab1Div_sun4">'+
+                        '<table cellspacing="0" cellpadding="0" border="0" title="" class="Tab1TblNew_sun4">'+
+                            '<tbody>'+
+                                '<tr id="tabRow">'+
+                                '</tr>'+
+                            '</tbody>'+
+                        '</table>'+
+                    '</div>'+
                     '<div class="tabMain">'+
                     '<div id="menu_bottom" class="stab tabsbottom"></div>'+
                     '<div id="headerInfo"'+nodisp+'>'+this.getHeaderAsTable(this.currentXmlHttpReq)+'</div>'+
                     '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
-                    '<div id="rawContent"'+rawViewStyle+'>'+
-                        '<textarea rows=15 cols='+this.colSize+' align=left readonly>'+this.printPretty(rawContent)+'</textarea></div>'+ 
                     '<div id="structureInfo"'+nodisp+'>'+subResources+'</div>'+
-                    '<div id="monitorContent"'+nodisp+'>'+
-                        '<textarea id="monitorText" rows=15 cols='+this.colSize+' align=left readonly>'+this.currMonitorText+'</textarea></div>')+
-                    '</div>';
+                    '<div id="rawContent"'+rawViewStyle+'>'+this.printPretty(rawContent)+'</div>'+ 
+                        //'<textarea class="TxtAra_sun4 TxtAraVld_sun4" rows='+this.rowSize+' cols='+this.colSize+' align=left readonly>'+this.printPretty(rawContent)+'</textarea></div>'+ 
+                    '<div id="monitorContent"'+nodisp+'>'+this.currMonitorText+'</div>'+
+                        //'<textarea class="TxtAra_sun4 TxtAraVld_sun4" id="monitorText" rows='+this.rowSize+' cols='+this.colSize+' align=left readonly>'+this.currMonitorText+'</textarea></div>')+
+                    '</div>');
                 if(showRaw) {
                     if(content.length > 7 && content.substring(0, 7) == "http://")
                         this.currentValidUrl = content;
@@ -691,8 +748,8 @@ TestSupport.prototype = {
             } catch( e ) {
                 ts.debug('updateContent() err name: [' + e.name + '] message: [' + e.message+"]");
                 var c = this.createIFrameForUrl(this.currentValidUrl);
-                this.updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Content</span> '+c);
-                this.updatepage('resultheaders', '<span class=bld>MSG_TEST_RESBEANS_ResponseHeaders</span> '+this.getHeaderAsTable(this.currentXmlHttpReq));                    
+                this.updatepage('result', '<span class=bld>Response:</span> '+c);
+                this.updatepage('resultheaders', '<span class=bld>Response Headers:</span> '+this.getHeaderAsTable(this.currentXmlHttpReq));                    
             }  
         }
     },
@@ -710,6 +767,7 @@ TestSupport.prototype = {
     },
     
     prettyPrint : function (/*Node*/ node) {
+       var lineBrk = 30;
        printIndented(node, 0);
 
        function printIndented(/*Node*/ node, /*int*/ indent) {
@@ -717,15 +775,15 @@ TestSupport.prototype = {
              prettyContent += node.nodeValue;
          } else {
              var nd = getIndent(indent);
-             prettyContent += nd + getContent(node, true);
+             prettyContent += nd + breakLine(getContent(node, true), this.lineBrk, nd);
              if(node.childNodes != null && node.childNodes.length > 0) {
                  for (var i = 0; i < node.childNodes.length; ++i) {
                    printIndented(node.childNodes[i], indent+2);
                  }
                  if(node.childNodes[0].nodeValue == null)
-                    prettyContent += nd + getContent(node, false);
+                    prettyContent += nd + breakLine(getContent(node, false), this.lineBrk, nd);
                  else
-                    prettyContent += getContent(node, false);
+                    prettyContent += breakLine(getContent(node, false), this.lineBrk, nd);
              }
          }
        }
@@ -735,10 +793,10 @@ TestSupport.prototype = {
          if(n.nodeValue == null) {//DOM Elements only
             if(n.nodeName == '#document') {
                 if(start)
-                    c += '<?xml version="1.0" encoding="UTF-8"?>    ';
+                    c += '&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;    ';
             } else {
                 if(start) {
-                    c += '<'+n.nodeName;
+                    c += '&lt;'+n.nodeName;
                     if(n.attributes != null && n.attributes.length > 0) {
                         for (var i = 0; i < n.attributes.length; ++i) {
                            var attr = n.attributes[i];
@@ -747,7 +805,7 @@ TestSupport.prototype = {
                     }
                     c += '>';
                 } else {
-                    c += '</'+n.nodeName+'>';
+                    c += '&lt;/'+n.nodeName+'&gt;';
                 }
             }
          } else {
@@ -762,14 +820,29 @@ TestSupport.prototype = {
          if(indent < 0)
              return s;
          while (indent) {
-           s+=' ';
+           s+=' &nbsp;';
            --indent; 
          }
-         return "\n"+s;
+         return "\n<br/>"+s;
+       }
+       
+       function breakLine(line, len, indent) {
+         //var c = breakLine2(line, len, indent);
+         var c = line;
+         return c;
+       }
+       
+       function breakLine2(line, len, indent) {
+         var c = line;
+         if(indent.length + c.length > 100) {
+             var len2 = 55;
+             c = c.substring(0, len2) + indent + '&nbsp;&nbsp;&nbsp;' + breakLine2(c.substring(len2), len, indent);
+         }
+         return c;
        }
     },
 
-    getTab : function (id, style) {
+    getTab : function (id, actived) {
         var name = '';
         for(var i in this.viewIds) {
             var vid = this.viewIds[i]['id'];
@@ -778,30 +851,29 @@ TestSupport.prototype = {
                 break;
             }
         }
-        var c = '<td><a id="tab'+id+'" href="javascript:ts.showViews(\''+
-                id+'\')" class="tab"><span class="stext">'+name+'</span></a></td>';
-        return c;
+        if(actived)
+            return '<td class="Tab1TblSelTd_sun4"><div title="Current Selection: Text Field" class="Tab1SelTxtNew_sun4"><a name="selectedTabAnchor" id="tab'+id+'"/>'+name+'</div></td>';
+        else {
+            if(id == '')
+                return '<td style="visibility: hidden;"><a href="javascript:ts.showViews(\''+id+'\')" class="Tab1Lnk_sun4" id="tab'+id+'">'+name+'</a></td>';
+            else
+                return '<td><a href="javascript:ts.showViews(\''+id+'\')" class="Tab1Lnk_sun4" id="tab'+id+'">'+name+'</a></td>';
+        }
     },
     
     getHeaderAsTable : function (xmlHttpReq) { 
-        var header = xmlHttpReq.getAllResponseHeaders();    
-        var str = "<table class='results' border='1'>";
-        str += "<thead class='resultHeader'>";
+        var header = xmlHttpReq.getAllResponseHeaders();
         var colNames = new Array()
-        colNames[0] = "MSG_TEST_RESBEANS_HeaderName"
-        colNames[1] = "MSG_TEST_RESBEANS_HeaderValue"
+        colNames[0] = "Name"
+        colNames[1] = "Value"
         var colSizes = new Array()
         colSizes[0] = ""
         colSizes[1] = ""
-        for (i=0;i<colNames.length;i++) {
-            str += "<th width='"+colSizes[i]+"'><span class='bld wht'>"+colNames[i]+"</span></th>";
-        }
-        str += "</thead>";
-        str += "<tbody>";
         var rows = header.split('\r\n');
         if(rows.length == 1)
             rows = header.split('\n');
         var count = 0;
+        var str2 = '';
         for(var i=0;i<rows.length;i++) {
             var index = rows[i].indexOf(':');
             var name = rows[i].substring(0, index);
@@ -809,15 +881,21 @@ TestSupport.prototype = {
                 continue;
             count++;
             var val = rows[i].substring(index+1);
-            str += "<tr>";
-            str += "<td>"+name+"</td>";
-            str += "<td>"+val+"</td>";
-            str += "</tr>";
+            str2 += '<tr><th align="left" scope="row" class="TblTdLyt_sun4" ><span id="j_id9"><span class="">'+name+'</span></span></th>';    
+            str2 += '<td align="left" class="TblTdLyt_sun4" ><span id="j_id10"><span class="">'+val+'</span></span></td></tr>';
         }    
-        if(count == 0)
-            str = "<textarea rows=15 cols="+this.colSize+" align=left readonly>MSG_TEST_RESBEANS_NoHeaders</textarea>";
-        else
-            str += "</tbody></table>";
+        var req = this.currentValidUrl;
+        if(req.indexOf('?') > 0)
+            req = req.substring(0, req.indexOf('?'));
+        var str = '<table width="100%" cellspacing="0" cellpadding="0" border="0" class="Tbl_sun4">'+
+                    '<caption class="TblTtlTxt_sun4">'+this.getDisplayUri(req)+' ('+count+')</caption>';
+        str += '<tbody><tr>';
+        for (i=0;i<colNames.length;i++) {
+            str += '<th align="left" scope="col" class="TblColHdr_sun4"><span class="TblHdrTxt_sun4">'+colNames[i]+'</span></th>';
+        }
+        str += "</tr>";
+        str += str2;
+        str += "</tbody></table>";
         return str;
     },
 
@@ -841,13 +919,6 @@ TestSupport.prototype = {
             var colSizes = new Array()
             colSizes[0] = ""
             colSizes[1] = ""
-            var str = "<table class='results' border='1'>";
-            str += "<thead class='resultHeader'>";
-            for (i=0;i<colNames.length;i++) {
-                str += "<th "+colSizes[i]+"><span class='bld wht'>"+colNames[i]+"</span></th>";
-            }
-            str += "</thead>";
-            str += "<tbody id='containerTable'>";
             var str2 = null;
             if(container != null)
                 str2 = this.findUriFromXml(container);
@@ -855,6 +926,16 @@ TestSupport.prototype = {
                 str2 = this.findUriFromContent(content);
             if(str2 == null || str2 == '')
                 return null;
+            var req = this.currentValidUrl;
+            if(req.indexOf('?') > 0)
+                req = req.substring(0, req.indexOf('?'));
+            var str = '<table width="100%" cellspacing="0" cellpadding="0" border="0" class="Tbl_sun4">'+
+                    '<caption class="TblTtlTxt_sun4">'+this.getDisplayUri(req)+' ('+this.tcCount+')</caption>';
+            str += '<tbody><tr>';
+            for (i=0;i<colNames.length;i++) {
+                str += '<th align="left" scope="col" class="TblColHdr_sun4"><span class="TblHdrTxt_sun4">'+colNames[i]+'</span></th>';
+            }
+            str += "</tr>";
             str += str2;
             str += "</tbody></table>";
             ret = str;
@@ -868,6 +949,7 @@ TestSupport.prototype = {
     
     findUriFromXml : function (container) {
         this.tcStr = '';
+        this.tcCount = 0;
         this.getChildUriFromXml(container);
         return this.tcStr;
     },
@@ -901,16 +983,24 @@ TestSupport.prototype = {
         }
         if(id == null)
             id = '-';
-        str += "<tr>";    
-        str += "<td>"+id+"</td>";
+        this.tcCount++;
+        str += '<tr><th align="left" scope="row" class="TblTdLyt_sun4" ><span id="j_id9"><span class="">'+id+'</span></span></th>';
         var uri = refChild.attributes.getNamedItem('uri').nodeValue;
-        str += "<td>";
+        str += '<td align="left" class="TblTdLyt_sun4" ><span id="j_id10"><span class="">';
         var disp = this.getDisplayUri(uri);
+        var subsUri = this.getSubstitutedUri(uri);
         str += "<a id='"+uri+"' href=javascript:ts.doShowContent('"+uri+"') >"+this.getDisplayURL(disp, 70)+"</a>";
-        str += "<br/>(<a href='"+uri+"' target='_blank'><span>"+this.getDisplayURL(uri, 70)+"</span></a>)";
-        str += "</td>";
-        str += "</tr>";
+        str += "<br/>(<a href='"+subsUri+"' target='_blank'><span>"+this.getDisplayURL(uri, 70)+"</span></a>)";
+        str += '</span></span></td></tr>';
         return str;
+    },
+    
+    getSubstitutedUri : function (uri) {
+        var subsUri = uri;
+        var ndx = subsUri.indexOf('{');
+        if(ndx > 0)
+            subsUri = subsUri.substring(0, ndx) + '1' + subsUri.substring(subsUri.indexOf('}', ndx)+1);
+        return subsUri;
     },
     
     findUriFromContent : function (content) {
@@ -923,17 +1013,16 @@ TestSupport.prototype = {
         var cvl = this.currentValidUrl.indexOf("?");
         if(cvl == -1)
             cvl = this.currentValidUrl.length;
+        this.tcCount = uris.length;
         for(var i=0;i<uris.length;i++) {
             var uri = uris[i];
             if(uri.indexOf(baseURL) == 0 && uri.length > cvl) {
-                str += "<tr>";    
-                str += "<td>"+(count++)+"</td>";
-                str += "<td>";
+                str += '<tr><th align="left" scope="row" class="TblTdLyt_sun4" ><span id="j_id9"><span class="">'+(count++)+'</span></span></th>';    
+                str += '<td align="left" class="TblTdLyt_sun4" ><span id="j_id10"><span class="">';
                 var disp = this.getDisplayUri(uri);
                 str += "<a id='"+uri+"' href=javascript:ts.doShowContent('"+uri+"') >"+this.getDisplayURL(disp, 70)+"</a>";
                 str += "<br/>(<a href='"+uri+"' target='_blank'><span>"+this.getDisplayURL(uri, 70)+"</span></a>)";
-                str += "</td>";
-                str += "</tr>";            
+                str += '</span></span></td></tr>';           
             }            
         }
         return str;
@@ -951,7 +1040,9 @@ TestSupport.prototype = {
     },
     
     updatepage : function (id, str){
-        document.getElementById(id).innerHTML = str;
+        var n = document.getElementById(id);
+        if(n != null)
+            n.innerHTML = str;
     },
     
     getFormMimeType : function () {
@@ -1041,7 +1132,7 @@ WADLParser.prototype = {
             return;
         }
         ts.setvisibility('main', 'inherit');
-        document.getElementById('subheader').innerHTML = '<br/><span class=bld>WADL: </span>'+ts.wadlURL;
+        ts.updatepage('subheader', '<br/><span class=bld>WADL: </span>'+ts.wadlURL);
         ts.wadlDoc = ts.xhr.loadXml(rtext);
         if(ts.wadlDoc != null) {                
             this.initTree(ts.wadlDoc);
@@ -1051,14 +1142,14 @@ WADLParser.prototype = {
     initTree : function (wadlDoc) {
         var myTree = this.createTree(wadlDoc);
         var treeString = myTree.toString();
-        document.getElementById('leftSidebar').innerHTML = treeString;
+        ts.updatepage('leftSidebar', treeString);
         this.showCategory('resources');
     },
     
     refreshTree : function (wadlDoc) {
         var myTree = this.createTree(wadlDoc);
         var treeString = myTree.toString();                            
-        document.getElementById('leftSidebar').innerHTML = treeString;
+        ts.updatepage('leftSidebar', treeString);
     },
     
     createTree : function (wadlDoc) {
@@ -1067,14 +1158,14 @@ WADLParser.prototype = {
         var rs;
         if(app != null) {
             rs = app.getElementsByTagName('resources')[0];
-            var context = rs.attributes.getNamedItem('base').nodeValue;
-            var begin = context.indexOf('/', 7);
+            ts.projectName = rs.attributes.getNamedItem('base').nodeValue;
+            var begin = ts.projectName.indexOf('/', 7);
             if(begin != -1)
-                context = context.substring(begin, context.length);
-            var index = context.indexOf('/', 1);
-            if(context.length > 1 && index != -1)
-                context = context.substring(1, index);
-            var resources = new category(rs, rs.nodeName, baseURL, context);
+                ts.projectName = ts.projectName.substring(begin, ts.projectName.length);
+            var index = ts.projectName.indexOf('/', 1);
+            if(ts.projectName.length > 1 && index != -1)
+                ts.projectName = ts.projectName.substring(1, index);
+            var resources = new category(rs, rs.nodeName, baseURL, ts.projectName);
             myTree.add(resources);
             this.createChildNodes(rs, resources);
         }
@@ -1185,7 +1276,6 @@ WADLParser.prototype = {
         if(cName != null) {
             if(cName.substring(0, 1) == '/')
                 cName = cName.substring(1);
-            //ts.debug(cName.substring(cName.length-1, cName.length));
             if(cName.substring(cName.length-1, cName.length) == '/')
                 cName = cName.substring(0, cName.length-1);
         }
@@ -1200,10 +1290,7 @@ WADLParser.prototype = {
             };
             return ns[prefix] || null;
         }
-        
-        //var path = '/xmlns:application/xmlns:resources/xmlns:resource[@path="/customers/"]/xmlns:resource[@path="{customerId}/"]';
-        //var nodeToAdd = ts.wadlDoc.evaluate(path, ts.wadlDoc, nsResolver, XPathResult.FIRST_ORDERED_NODE_TYPE, null );
-        
+
         var xmlDoc = ts.xhr.loadXml(content);
         var iterator = xmlDoc.evaluate('//xmlns:resource', xmlDoc, nsResolver, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null );
 
@@ -1224,11 +1311,11 @@ WADLParser.prototype = {
     },
     
     showCategory : function (category){
-        var categoryNode = document.getElementById(category).style;
-        if(categoryNode.display=="block")
-            categoryNode.display="none";
+        var categoryChildNodes = document.getElementById(category).style;
+        if(categoryChildNodes.display=="block")
+            categoryChildNodes.display="none";
         else
-            categoryNode.display="block";
+            categoryChildNodes.display="block";
         ts.toggleCategory(category);
     },
 
@@ -1238,7 +1325,7 @@ WADLParser.prototype = {
             return;
         }
         var myTree = this.createTree(ts.wadlDoc);
-        document.getElementById('leftSidebar').innerHTML = myTree.toString();
+        ts.updatepage('leftSidebar', myTree.toString());
         childrenContent = '';
         this.getChildren(catId);
         currentCategory = catId;
@@ -1247,8 +1334,7 @@ WADLParser.prototype = {
 
     refreshCategory : function(){
         var catId = currentCategory;
-        var categoryNode = document.getElementById(catId);
-        categoryNode.innerHTML = childrenContent;
+        ts.updatepage(catId, childrenContent);
         this.showCategory('resources');
         this.showCategory(catId);
     },
@@ -1463,21 +1549,15 @@ function category(resource, id, uri, text){
 
 category.prototype = {
     write : function (){
-
-
-
-        var categoryString = '<span class="category"';
+        var categoryString = '<span id="nodeSel' + this.id + '" class="category TreeContent_sun4"';
         if(this.uri != baseURL) {
             categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="ts.wdr.showCategory(\'' + this.id + '\')">';
             categoryString += '<img src="collapse.gif" id="I' + this.id + '">';
-            categoryString += "<div class='item2'><a href=javascript:ts.doShowContentForId('"+this.ndx+"') >"+ this.text + "</a></div>";
+            categoryString += "<div class='item2'><a class=Hyp_sun4 href=javascript:ts.doShowContentForId('"+this.ndx+"') >"+ this.text + "</a></div>";
         } else {
             categoryString += '><img src="cg.gif" id="I1' + this.id + '" onClick="ts.wdr.updateTree(\'' + this.id + '\')">';
             categoryString += '<img src="app.gif" id="I' + this.id + '">';
-
-
-
-            categoryString += "<div class='item2'>"+this.text+"</div>";
+            categoryString += "<div class='item2'><a class=Hyp_sun4 href=javascript:ts.clearAll() >"+ this.text + "</a></div>";
         }
         categoryString += '</span>';
         categoryString += '<span class="item" id="';
@@ -1509,11 +1589,11 @@ function item(resource, id, uri, text, ndx){
 
 item.prototype = {
     write : function (){
-        var itemString = '<span class="category"><img src="cc.gif" border="0">';
+        var itemString = '<span class="category TreeContent_sun4"><img src="cc.gif" border="0">';
 
         itemString += '<img src="item.gif" border="0">';
         if(this.uri != null)
-            itemString += "<div class=item1><a href=javascript:ts.doShowContentForId('"+this.ndx+"') >"+ this.text + "</a></div>";
+            itemString += "<div class=item1><a class=Hyp_sun4 href=javascript:ts.doShowContentForId('"+this.ndx+"') >"+ this.text + "</a></div>";
         else
             itemString += this.text;
         itemString += '</span>';
@@ -1545,7 +1625,7 @@ XHR.prototype = {
                 }
                 catch (e)
                 {
-                    ts.debug("MSG_TEST_RESBEANS_No_AJAX");
+                    ts.debug("Your browser does not support AJAX!");
                 }
             }
         }
@@ -1595,7 +1675,7 @@ XHR.prototype = {
         var xmlHttpReq = this.connect('GET', url, mime, 0, false);
         try {
             xmlHttpReq.send(null);
-            if (this.isResponseReady(xmlHttpReq, '')) {
+            if (this.isResponseReady(xmlHttpReq, '', true)) {
               var rtext = xmlHttpReq.responseText;
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
                   var err = 'Get failed: Server returned --> Status: (' + status+')\n'+
@@ -1615,7 +1695,7 @@ XHR.prototype = {
         var xmlHttpReq = this.connect('POST', url, mime, content.length, false);
         try {
             xmlHttpReq.send(content);
-            if (this.isResponseReady(xmlHttpReq, content)) {
+            if (this.isResponseReady(xmlHttpReq, content, true)) {
                 var status = xmlHttpReq.status;
                 if(status != 201) {
                   var err = 'Post failed: Server returned --> Status: (' + status+')\n'+
@@ -1634,7 +1714,7 @@ XHR.prototype = {
         var xmlHttpReq = this.connect('PUT', url, mime, content.length, false);
         try {
             xmlHttpReq.send(content);
-            if (this.isResponseReady(xmlHttpReq, content)) {
+            if (this.isResponseReady(xmlHttpReq, content, true)) {
               var status = xmlHttpReq.status;
               if(status != 204) {
                   var err = 'Put failed: Server returned --> Status: (' + status+')\n'+
@@ -1653,7 +1733,7 @@ XHR.prototype = {
         var xmlHttpReq = this.connect('DELETE', url, 'application/xml', 0, false);
         try {
             xmlHttpReq.send(null);  
-            if (this.isResponseReady(xmlHttpReq, '')) {
+            if (this.isResponseReady(xmlHttpReq, '', true)) {
               var status = xmlHttpReq.status;
               if(status != 204) {
                   var err = 'Delete failed: Server returned --> Status: (' + status+')\n'+
@@ -1672,7 +1752,7 @@ XHR.prototype = {
         var xmlHttpReq = this.connect('OPTIONS', url, mime, 0, false);
         try {
             xmlHttpReq.send(null);
-            if (this.isResponseReady(xmlHttpReq, '')) {
+            if (this.isResponseReady(xmlHttpReq, '', false)) {
               var rtext = xmlHttpReq.responseText;
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
                   var err = 'Get failed: Server returned --> Status: (' + status+')\n'+
@@ -1706,10 +1786,11 @@ XHR.prototype = {
         return doc2;
     },
     
-    isResponseReady : function (xmlHttpReq, param) {
+    isResponseReady : function (xmlHttpReq, param, monitor) {
         if (xmlHttpReq.readyState == 4) {
             ts.currentXmlHttpReq = xmlHttpReq;
-            ts.monitor(xmlHttpReq, param);
+            if(monitor)
+                ts.monitor(xmlHttpReq, param);
             return true;
         } else
             return false;

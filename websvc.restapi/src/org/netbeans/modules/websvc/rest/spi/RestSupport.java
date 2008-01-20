@@ -106,6 +106,7 @@ public abstract class RestSupport {
     public static final String TEST_RESBEANS_HTML = TEST_RESBEANS + ".html";
     public static final String TEST_RESBEANS_JS = TEST_RESBEANS + ".js";
     public static final String TEST_RESBEANS_CSS = TEST_RESBEANS + ".css";
+    public static final String TEST_RESBEANS_CSS2 = "css_master-all.css";
     public static final String REST_SERVLET_ADAPTOR = "ServletAdaptor";
     public static final String REST_SERVLET_ADAPTOR_CLASS = "com.sun.ws.rest.impl.container.servlet.ServletAdaptor";   
     public static final String REST_SERVLET_ADAPTOR_MAPPING = "/resources/*";
@@ -298,6 +299,7 @@ public abstract class RestSupport {
         FileObject testFO = copyFile(testdir, TEST_RESBEANS_HTML, replaceKeys1, true);
         copyFile(testdir, TEST_RESBEANS_JS, replaceKeys2, false);
         copyFile(testdir, TEST_RESBEANS_CSS);
+        copyFile(testdir, TEST_RESBEANS_CSS2);
         copyFile(testdir, "expand.gif");
         copyFile(testdir, "collapse.gif");
         copyFile(testdir, "item.gif");
@@ -305,6 +307,23 @@ public abstract class RestSupport {
         copyFile(testdir, "og.gif");
         copyFile(testdir, "cg.gif");
         copyFile(testdir, "app.gif");
+
+        File testdir2 = new File(testdir, "images");
+        testdir2.mkdir();
+        copyFile(testdir, "images/background_border_bottom.gif");
+        copyFile(testdir, "images/pbsel.png");
+        copyFile(testdir, "images/bg_gradient.gif");
+        copyFile(testdir, "images/pname.png");
+        copyFile(testdir, "images/level1_selected-1lvl.jpg");
+        copyFile(testdir, "images/primary-enabled.gif");
+        copyFile(testdir, "images/masthead.png");
+        copyFile(testdir, "images/primary-roll.gif");
+        copyFile(testdir, "images/pbdis.png");
+        copyFile(testdir, "images/secondary-enabled.gif");
+        copyFile(testdir, "images/pbena.png");
+        copyFile(testdir, "images/tbsel.png");
+        copyFile(testdir, "images/pbmou.png");
+        copyFile(testdir, "images/tbuns.png");
         return testFO;
     }
 
