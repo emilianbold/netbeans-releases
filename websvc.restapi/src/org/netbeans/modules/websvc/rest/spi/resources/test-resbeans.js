@@ -118,7 +118,6 @@ TestSupport.prototype = {
         var mimeNode = document.getElementById("mimeSel");
         if(mimeNode == null || mimeNode == undefined) {
             this.currentMimeType = this.wdr.getMimeType(method);
-            document.getElementById("mimeType").value = this.currentMimeType;
         }
         this.currentMethod = this.wdr.getMethod(method);
         document.getElementById("methodName").value = this.currentMethod;
@@ -130,7 +129,7 @@ TestSupport.prototype = {
         }
         var paramRep = this.getParamRep(request, this.currentMethod);
         this.updatepage('paramHook', paramRep);
-        this.updatepage('mimeType', this.currentMimeType);
+        document.getElementById("mimeType").value = this.currentMimeType;
         ts.clearOutput();
     },
     
