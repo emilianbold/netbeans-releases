@@ -209,12 +209,12 @@ public class DbSchemaEjbGenerator {
     
     private void addJoinTable(TableElement table) {
         ForeignKeyElement[] foreignKeys = table.getForeignKeys();
+        String tableAName = foreignKeys[0].getReferencedTable().getName().getName();
+        String tableBName = foreignKeys[1].getReferencedTable().getName().getName();
         
         // create role A
-        EntityClass roleAHelper = getBean(
-                foreignKeys[0].getReferencedTable().getName().getName());
-        EntityClass roleBHelper = getBean(
-                foreignKeys[1].getReferencedTable().getName().getName());
+        EntityClass roleAHelper = getBean(tableAName);
+        EntityClass roleBHelper = getBean(tableBName);
         
         String roleAname = getRoleName(foreignKeys[0], roleAHelper.getClassName());
         String roleBname = getRoleName(foreignKeys[1], roleBHelper.getClassName());
@@ -223,7 +223,16 @@ public class DbSchemaEjbGenerator {
         String roleBCmr = EntityMember.makeRelationshipFieldName(roleAname, true);
         
         roleACmr = uniqueAlgorithm(getFieldNames(roleAHelper), roleACmr, null);
-        roleBCmr = uniqueAlgorithm(getFieldNames(roleBHelper), roleBCmr, null);
+        List roleBFieldNames = getFieldNames(roleBHelper);
+        if (tableAName.equals(tableBName)) {
+            // Handle the special case when both parts of the join table reference
+            // the same table -- in that case both roleACmr and roleBCmr
+            // will be added to the same class, but they have the same name.
+            // So pretend roleACmr was already added when computing an unique
+            // name for roleBCmr
+            roleBFieldNames.add(roleACmr);
+        }
+        roleBCmr = uniqueAlgorithm(roleBFieldNames, roleBCmr, null);
         
         RelationshipRole roleA = new RelationshipRole(
                 roleAname,
