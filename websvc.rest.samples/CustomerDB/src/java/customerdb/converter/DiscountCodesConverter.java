@@ -50,15 +50,16 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import java.util.ArrayList;
 
+
 /**
  *
- * @author Peter Liu
+ * @author nam
  */
 
 @XmlRootElement(name = "discountCodes")
 public class DiscountCodesConverter {
     private Collection<DiscountCode> entities;
-    private Collection<customerdb.converter.DiscountCodeRefConverter> references;
+    private Collection<DiscountCodeRefConverter> references;
     private URI uri;
     
     /** Creates a new instance of DiscountCodesConverter */
@@ -82,7 +83,7 @@ public class DiscountCodesConverter {
      * @return a collection of DiscountCodeRefConverter
      */
     @XmlElement(name = "discountCodeRef")
-    public Collection<customerdb.converter.DiscountCodeRefConverter> getReferences() {
+    public Collection<DiscountCodeRefConverter> getReferences() {
         references = new ArrayList<DiscountCodeRefConverter>();
         if (entities != null) {
             for (DiscountCode entity : entities) {
@@ -97,7 +98,7 @@ public class DiscountCodesConverter {
      *
      * @param a collection of DiscountCodeRefConverter to set
      */
-    public void setReferences(Collection<customerdb.converter.DiscountCodeRefConverter> references) {
+    public void setReferences(Collection<DiscountCodeRefConverter> references) {
         this.references = references;
     }
 
@@ -106,8 +107,8 @@ public class DiscountCodesConverter {
      *
      * @return the uri
      */
-    @XmlAttribute
-    public URI getUri() {
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
         return uri;
     }
 

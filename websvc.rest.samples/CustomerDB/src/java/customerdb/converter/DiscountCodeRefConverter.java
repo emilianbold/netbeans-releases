@@ -48,9 +48,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 
+
 /**
  *
- * @author Peter Liu
+ * @author nam
  */
 
 @XmlRootElement(name = "discountCodeRef")
@@ -91,10 +92,10 @@ public class DiscountCodeRefConverter {
      *
      * @return the converted uri
      */
-    @XmlAttribute
-    public URI getUri() {
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
         if (isUriExtendable) {
-            return uri.resolve(getDiscountCode().toString() + "/");
+            return uri.resolve(entity.getDiscountCode() + "/");
         }
         return uri;
     }
@@ -103,7 +104,7 @@ public class DiscountCodeRefConverter {
      * Sets the URI for this reference converter.
      *
      */
-    public void setUri(URI uri) {
+    public void setResourceUri(URI uri) {
         this.uri = uri;
     }
 

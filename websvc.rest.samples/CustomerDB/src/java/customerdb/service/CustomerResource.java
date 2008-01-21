@@ -57,7 +57,7 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  *
- * @author Peter Liu
+ * @author nam
  */
 
 public class CustomerResource {

@@ -48,9 +48,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 
+
 /**
  *
- * @author Peter Liu
+ * @author nam
  */
 
 @XmlRootElement(name = "customerRef")
@@ -91,10 +92,10 @@ public class CustomerRefConverter {
      *
      * @return the converted uri
      */
-    @XmlAttribute
-    public URI getUri() {
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
         if (isUriExtendable) {
-            return uri.resolve(getCustomerId().toString() + "/");
+            return uri.resolve(entity.getCustomerId() + "/");
         }
         return uri;
     }
@@ -103,7 +104,7 @@ public class CustomerRefConverter {
      * Sets the URI for this reference converter.
      *
      */
-    public void setUri(URI uri) {
+    public void setResourceUri(URI uri) {
         this.uri = uri;
     }
 

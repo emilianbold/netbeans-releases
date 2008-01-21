@@ -61,7 +61,7 @@ import customerdb.converter.DiscountCodeConverter;
 
 /**
  *
- * @author Peter Liu
+ * @author nam
  */
 
 @Path("/discountCodes/")

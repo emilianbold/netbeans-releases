@@ -50,7 +50,7 @@ import javax.persistence.Query;
 /**
  * Utility class for dealing with persistence.
  *
- * @author Peter Liu
+ * @author nam
  */
 public class PersistenceService {
     private static String DEFAULT_PU = "CustomerDBPU";

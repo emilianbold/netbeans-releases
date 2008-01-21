@@ -52,7 +52,7 @@ import customerdb.service.PersistenceService;
 /**
  * Utility class for resolving an uri into an entity.
  * 
- * @author Peter Liu
+ * @author nam
  */
 public class UriResolver {
     

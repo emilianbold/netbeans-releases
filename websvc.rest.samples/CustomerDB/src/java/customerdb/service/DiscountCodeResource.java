@@ -58,7 +58,7 @@ import javax.ws.rs.core.UriInfo;
 
 /**
  *
- * @author Peter Liu
+ * @author nam
  */
 
 public class DiscountCodeResource {
@@ -172,7 +172,7 @@ public class DiscountCodeResource {
      */
     protected DiscountCode getEntity() {
         try {
-            return (DiscountCode) PersistenceService.getInstance().createQuery("SELECT e FROM DiscountCode e where e.discountCode = :discountCode").setParameter("discountCode", id.charAt(0)).getSingleResult();
+            return (DiscountCode) PersistenceService.getInstance().createQuery("SELECT e FROM DiscountCode e where e.discountCode = :discountCode").setParameter("discountCode", id).getSingleResult();
         } catch (NoResultException ex) {
             throw new WebApplicationException(new Throwable("Resource for " + context.getAbsolutePath() + " does not exist."), 404);
         }

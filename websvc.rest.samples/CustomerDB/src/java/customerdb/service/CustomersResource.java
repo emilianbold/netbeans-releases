@@ -60,7 +60,7 @@ import customerdb.converter.CustomerConverter;
 
 /**
  *
- * @author Peter Liu
+ * @author nam
  */
 
 @Path("/customers/")

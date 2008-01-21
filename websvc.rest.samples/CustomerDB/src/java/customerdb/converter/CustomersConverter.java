@@ -50,9 +50,10 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import java.util.ArrayList;
 
+
 /**
  *
- * @author Peter Liu
+ * @author nam
  */
 
 @XmlRootElement(name = "customers")
@@ -106,8 +107,8 @@ public class CustomersConverter {
      *
      * @return the uri
      */
-    @XmlAttribute
-    public URI getUri() {
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
         return uri;
     }
 

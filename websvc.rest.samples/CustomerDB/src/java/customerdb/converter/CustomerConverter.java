@@ -48,9 +48,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 
+
 /**
  *
- * @author Peter Liu
+ * @author nam
  */
 
 @XmlRootElement(name = "customer")
@@ -312,8 +313,8 @@ public class CustomerConverter {
      *
      * @return the uri
      */
-    @XmlAttribute
-    public URI getUri() {
+    @XmlAttribute(name = "uri")
+    public URI getResourceUri() {
         return uri;
     }
 
