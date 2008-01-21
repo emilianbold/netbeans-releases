@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.3" maxVersion="1.3" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Component class="javax.swing.ButtonGroup" name="schemaSource">
     </Component>
@@ -30,8 +30,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="dbschemaComboBox" alignment="0" pref="364" max="32767" attributes="0"/>
-                  <Component id="datasourceComboBox" alignment="0" pref="364" max="32767" attributes="0"/>
+                  <Component id="dbschemaComboBox" alignment="0" pref="380" max="32767" attributes="0"/>
+                  <Component id="datasourceComboBox" alignment="0" pref="380" max="32767" attributes="0"/>
               </Group>
           </Group>
           <Component id="tablesPanel" alignment="1" pref="500" max="32767" attributes="0"/>
@@ -152,6 +152,9 @@
                   <ResourceString bundle="org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle.properties" key="ACSD_AvailableTables" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="TableUISupport.createTableList()"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>
@@ -191,6 +194,9 @@
                   <ResourceString bundle="org/netbeans/modules/j2ee/persistence/wizard/fromdb/Bundle.properties" key="ACSD_SelectedTables" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </AccessibilityProperties>
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="TableUISupport.createTableList()"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>

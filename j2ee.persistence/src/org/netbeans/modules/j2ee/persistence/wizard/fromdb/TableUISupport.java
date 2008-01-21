@@ -55,12 +55,14 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.Position.Bias;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.Table.DisabledReason;
 import org.openide.util.NbBundle;
 
@@ -71,6 +73,10 @@ import org.openide.util.NbBundle;
 public class TableUISupport {
 
     private TableUISupport() {
+    }
+
+    public static JList createTableList() {
+        return new TableJList();
     }
 
     public static void connectAvailable(JList availableTablesList, TableClosure tableClosure) {
@@ -112,7 +118,12 @@ public class TableUISupport {
         }
     }
 
-    private static final class AvailableTablesModel extends AbstractListModel implements ChangeListener {
+    private static abstract class TableModel extends AbstractListModel {
+
+        public abstract Table getElementAt(int index);
+    }
+
+    private static final class AvailableTablesModel extends TableModel implements ChangeListener {
 
         private final TableClosure tableClosure;
 
@@ -124,7 +135,7 @@ public class TableUISupport {
             refresh();
         }
 
-        public Object getElementAt(int index) {
+        public Table getElementAt(int index) {
             return displayTables.get(index);
         }
 
@@ -144,7 +155,7 @@ public class TableUISupport {
         }
     }
 
-    private static final class SelectedTablesModel extends AbstractListModel implements ChangeListener {
+    private static final class SelectedTablesModel extends TableModel implements ChangeListener {
 
         private final TableClosure tableClosure;
 
@@ -156,7 +167,7 @@ public class TableUISupport {
             refresh();
         }
 
-        public Object getElementAt(int index) {
+        public Table getElementAt(int index) {
             return displayTables.get(index);
         }
 
@@ -393,6 +404,31 @@ public class TableUISupport {
             component.setForeground((validClass) ? nonErrorForeground : errorForeground);
            
             return component;
+        }
+    }
+
+    private static final class TableJList extends JList {
+
+        @Override
+        public int getNextMatch(String prefix, int startIndex, Bias bias) {
+            ListModel model = getModel();
+            if (!(model instanceof TableModel)) {
+                return super.getNextMatch(prefix, startIndex, bias);
+            }
+            TableModel tablesModel = (TableModel)model;
+            int max = tablesModel.getSize();
+            int increment = (bias == Bias.Forward) ? 1 : -1;
+            int index = startIndex;
+            prefix = prefix.toUpperCase();
+            do {
+                Table table = tablesModel.getElementAt(index);
+                String tableName = table.getName().toUpperCase();
+                if (tableName.startsWith(prefix)) {
+                    return index;
+                }
+                index = (index + increment + max) % max;
+            } while (index != startIndex);
+            return -1;
         }
     }
 }
