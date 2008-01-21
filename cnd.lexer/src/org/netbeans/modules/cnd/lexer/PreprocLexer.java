@@ -54,10 +54,10 @@ package org.netbeans.modules.cnd.lexer;
 
 import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
@@ -152,7 +152,7 @@ public final class PreprocLexer extends CndLexer {
                 id = preprocFilter.check(text);
                 break;
             case EXPRESSION:
-                if (CharSequenceUtilities.textEquals(CppTokenId.PREPROCESSOR_DEFINED.fixedText(), text)) {
+                if (TokenUtilities.textEquals(CppTokenId.PREPROCESSOR_DEFINED.fixedText(), text)) {
                     id = CppTokenId.PREPROCESSOR_DEFINED;
                     break;
                 }

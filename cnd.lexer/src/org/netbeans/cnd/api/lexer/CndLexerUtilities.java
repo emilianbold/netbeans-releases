@@ -40,6 +40,11 @@
  */
 package org.netbeans.cnd.api.lexer;
 
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
+
 /**
  *
  * @author Vladirmir Voskresensky
@@ -49,6 +54,32 @@ public final class CndLexerUtilities {
     private CndLexerUtilities() {
     }
 
+    public static TokenSequence<CppTokenId> getCppTokenSequence(final JTextComponent component, final int offset) {
+        Document doc = component.getDocument();
+        TokenHierarchy th = doc != null ? TokenHierarchy.get(doc) : null;
+        TokenSequence<CppTokenId> ts = th != null ? getCppTokenSequence(th, offset) : null;
+        return ts;
+    }
+    
+    public static TokenSequence<CppTokenId> getCppTokenSequence(final TokenHierarchy hierarchy, final int offset) {
+        if (hierarchy != null) {
+            TokenSequence<?> ts = hierarchy.tokenSequence();
+            while(ts != null && (offset == 0 || ts.moveNext())) {
+                ts.move(offset);
+                if (ts.language() == CppTokenId.languageC() ||
+                        ts.language() == CppTokenId.languageCpp() ||
+                        ts.language() == CppTokenId.languagePreproc()) {
+                    return (TokenSequence<CppTokenId>)ts;
+                }
+                if (!ts.moveNext() && !ts.movePrevious()) {
+                    return null;
+                }
+                ts = ts.embedded();
+            }
+        }
+        return null;
+    }
+    
     public static boolean isCppIdentifierStart(char ch) {
         return Character.isJavaIdentifierStart(ch);
     }
