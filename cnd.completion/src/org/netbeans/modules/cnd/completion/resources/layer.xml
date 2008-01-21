@@ -69,6 +69,10 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
                 
+                <folder name="CodeTemplateFilterFactories">
+                    <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCodeTemplateFilter$Factory.instance"/>
+                </folder>  
+                
                 <folder name="Popup">
                     <folder name="goto">
                         <attr name="position" intvalue="900"/>
@@ -102,6 +106,10 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>                    
                 </folder>
+                
+                <folder name="CodeTemplateFilterFactories">
+                    <file name="org-netbeans-modules-cnd-completion-cplusplus-CsmCodeTemplateFilter$Factory.instance"/>
+                </folder>  
                 
                 <folder name="Popup">
                     <folder name="goto">
