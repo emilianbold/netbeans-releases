@@ -239,7 +239,8 @@ public class CompactFileIndex implements FileIndex, SelfPersistent {
         @Override
 	public String toString() {
 	    final Formatter f = new Formatter();
-	    f.format("ChunkInfo [offset=%d (%H) size=%d long=%d]", getOffset(), getSize(), entry); // NOI18N
+            long offset = getOffset();
+	    f.format("ChunkInfo [offset=%d (%H) size=%d long=%d]", offset, offset, getSize(), entry); // NOI18N
 	    return f.toString();
 	}
 
