@@ -100,6 +100,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 	    }
 	    catch(NumberFormatException e) {
 		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value); // NOI18N
+		DiagnosticExceptoins.register(e);
 	    }
 	}
 //	propertyName = "cnd.model.memory.fatal.threashold";
@@ -389,9 +390,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             try {
                 listener.projectOpened(csmProject);
             } catch (AssertionError ex){
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             }
         }
     }
@@ -401,9 +402,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             try {
                 listener.projectClosed(csmProject);
             } catch (AssertionError ex){
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             }
         }
     }
@@ -414,9 +415,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             try {
                 listener.modelChanged(e);
             } catch (AssertionError ex){
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             }
         }
     }
@@ -426,9 +427,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
             try {
                 listener.modelStateChanged(newState, oldState);
             } catch (AssertionError ex){
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             } catch (Exception ex) {
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             }
         }
     }
@@ -463,7 +464,6 @@ public class ModelImpl implements CsmModel, LowMemoryListener, Installer.Startup
 		}
 		catch( Throwable thr ) {
 		    DiagnosticExceptoins.register(thr);
-		    thr.printStackTrace();
 		}
 		finally {
 		    Thread.currentThread().setName(oldName);

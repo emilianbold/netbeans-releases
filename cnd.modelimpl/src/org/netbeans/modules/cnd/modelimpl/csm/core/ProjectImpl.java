@@ -57,8 +57,8 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -90,7 +90,7 @@ public final class ProjectImpl extends ProjectBase {
 		// just report to console;
 		// the code below will create project "from scratch"
 		cleanRepository(platformProject, false);
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
 	}
 	if( instance == null ) {
@@ -158,7 +158,7 @@ public final class ProjectImpl extends ProjectBase {
         try {
             file.scheduleParsing(true);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            DiagnosticExceptoins.register(ex);
         }
     }
     
@@ -368,9 +368,9 @@ public final class ProjectImpl extends ProjectBase {
                     try {
                         addToQueue(buf, file);
                     } catch (AssertionError ex) {
-                        ex.printStackTrace();
+                        DiagnosticExceptoins.register(ex);
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        DiagnosticExceptoins.register(ex);
                     }
                 }
             }, true);

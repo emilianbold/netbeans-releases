@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.platform.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
@@ -441,7 +442,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
                         System.err.println("woke up after sleep");
                     } catch (InterruptedException ex) {
-                        ex.printStackTrace();
+                        // do nothing
                     }
                     ParserQueue.instance().resume();
                 }
@@ -463,7 +464,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
                 System.err.println("woke up after sleep");
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                // do nothing
             }
         }
         long time = System.currentTimeMillis();
@@ -522,7 +523,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 Thread.sleep(TraceFlags.SUSPEND_PARSE_TIME  * 1000);
                 System.err.println("woke up after sleep");
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
+                // do nothing
             }
         }
         if(TraceFlags.DUMP_PROJECT_ON_OPEN ) {
@@ -587,7 +588,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             try {
                 createIfNeed(nativeFileItem, sources, validator);
             } catch (Exception ex){
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             }
         }
     }
@@ -705,7 +706,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 		    waitParseImpl();
 		    checkForRemoved();
 		} catch( Exception e ) {
-		    e.printStackTrace(System.err);
+		    DiagnosticExceptoins.register(e);
 		}
 	    }
 	    if( disposing ) {
@@ -1509,6 +1510,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             } catch (IOException ex) {
                 System.err.println("can't restore preprocessor state for " + interestedFile + //NOI18N
                         "\nreason: " + ex.getMessage());//NOI18N
+		DiagnosticExceptoins.register(ex);
 	    }
             boolean ppStateRestored = false;
 	    if (aptLight != null) {

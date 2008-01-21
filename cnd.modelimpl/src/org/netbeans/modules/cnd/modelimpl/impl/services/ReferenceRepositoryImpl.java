@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -225,7 +226,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
                     token = (APTToken) ts.nextToken();
                 }
             } catch (TokenStreamException ex) {
-                ex.printStackTrace(System.err);
+                DiagnosticExceptoins.register(ex);
             }
         }
         return tokens;
@@ -239,14 +240,14 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
             stream = file.getBuffer().getInputStream();
             ts = APTTokenStreamBuilder.buildTokenStream(file.getAbsolutePath(), stream);
         } catch (IOException ex) {
-            ex.printStackTrace(System.err);
+            DiagnosticExceptoins.register(ex);
             ts = null;
         } finally {
             if (stream != null) {
                 try {
                     stream.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace(System.err);
+                    DiagnosticExceptoins.register(ex);
                 }
             }
         }

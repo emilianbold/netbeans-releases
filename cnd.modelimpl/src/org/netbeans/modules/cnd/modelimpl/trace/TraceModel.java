@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.editor.parser.FoldingParser;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
@@ -382,7 +383,7 @@ public class TraceModel extends TraceModelBase {
 	    doTest();
 	} catch( Error thr ) {
 	    System.err.printf("\n");
-	    thr.printStackTrace();
+	    DiagnosticExceptoins.register(thr);
 	    return;
 	} finally {
 	    getModel().shutdown();
@@ -412,7 +413,7 @@ public class TraceModel extends TraceModelBase {
 	    try {
 		cache = new Cache(useZip);
 	    } catch (Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 		return;
 	    }
 	}
@@ -607,7 +608,7 @@ public class TraceModel extends TraceModelBase {
 		try {
 		    Diagnostic.dumpUnresolvedStatistics(this.dumpFile, true);
 		} catch (FileNotFoundException e) {
-		    e.printStackTrace(System.err);
+		    DiagnosticExceptoins.register(e);
 		}
 	    }
 	}
@@ -642,7 +643,7 @@ public class TraceModel extends TraceModelBase {
 	try {
 	    System.in.read();
 	} catch (IOException ex) {
-	    ex.printStackTrace();
+	    DiagnosticExceptoins.register(ex);
 	}
     }
         
@@ -670,7 +671,7 @@ public class TraceModel extends TraceModelBase {
 	try {
 	    System.in.read();
 	} catch (IOException ex) {
-	    ex.printStackTrace();
+	    DiagnosticExceptoins.register(ex);
 	}
     }
 
@@ -687,7 +688,7 @@ public class TraceModel extends TraceModelBase {
 		    testFolding(item.getFile());
 		}
 	    } catch (Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
 	}
 

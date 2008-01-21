@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.LibraryManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -92,8 +93,10 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                         included = includeAction(inclFileOwner, path, mode, apt);
                     } catch (FileNotFoundException ex) {
                         APTUtils.LOG.log(Level.WARNING, "APTProjectFileBasedWalker: file {0} not found", new Object[] {path});// NOI18N
+			DiagnosticExceptoins.register(ex);
                     } catch (IOException ex) {
                         APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: error on including {0}:\n{1}", new Object[] {path, ex});
+			DiagnosticExceptoins.register(ex);
                     }
                 } else {
                     APTUtils.LOG.log(Level.SEVERE, "APTProjectFileBasedWalker: file {0} without project!!!", new Object[] {file});// NOI18N

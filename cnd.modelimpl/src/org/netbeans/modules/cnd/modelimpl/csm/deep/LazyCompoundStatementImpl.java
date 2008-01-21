@@ -56,6 +56,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -156,6 +157,7 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
 	        Utils.LOG.severe("Can't find token at offset " + firstTokenOffset + " in file: " + getContainingFile().getAbsolutePath() + " while restoring function body"); // NOI18N
 	    } catch (TokenStreamException ex) {
 		Utils.LOG.severe("Can't create compound statement: " + ex.getMessage());
+		DiagnosticExceptoins.register(ex);
 		return null;
 	    }
 	}

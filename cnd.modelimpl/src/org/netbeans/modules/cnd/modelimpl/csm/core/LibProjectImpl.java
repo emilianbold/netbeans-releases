@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -77,7 +78,7 @@ public final class LibProjectImpl extends ProjectBase {
 		// just report to console;
 		// the code below will create project "from scratch"
 		cleanRepository(includePathName, true);
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
 	}
 	if( instance == null ) {

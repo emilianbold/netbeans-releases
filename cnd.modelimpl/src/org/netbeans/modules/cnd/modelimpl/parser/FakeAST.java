@@ -47,6 +47,7 @@ import antlr.collections.AST;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -109,9 +110,9 @@ public class FakeAST extends BaseAST implements Serializable {
                         String name = field.getName();
                         tokenText[value]=name;
                     } catch (IllegalArgumentException ex) {
-                        ex.printStackTrace();
+                        DiagnosticExceptoins.register(ex);
                     } catch (IllegalAccessException ex) {
-                        ex.printStackTrace();
+                        DiagnosticExceptoins.register(ex);
                     }
                 }
             }

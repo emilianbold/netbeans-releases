@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 /**
  * simple test implementation of walker
@@ -99,6 +100,7 @@ public class APTWalkerTest extends APTAbstractWalker {
                 resolvingTime += walker.resolvingTime;
                 res = true;               
             } catch (IOException ex) {
+		DiagnosticExceptoins.register(ex);
                 APTUtils.LOG.log(Level.SEVERE, "error on include " + resolvedPath, ex);// NOI18N
             } finally {
                 getIncludeHandler().popInclude(); 

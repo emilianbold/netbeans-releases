@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 import java.util.Iterator;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.util.WeakList;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -82,7 +83,7 @@ public class ProgressSupport {
 		listener.fileInvalidated(file);
 	    }
 	    catch(Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
         }
     }
@@ -93,7 +94,7 @@ public class ProgressSupport {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.fileParsingStarted(file);
 	    } catch(Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
         }
     }
@@ -105,7 +106,7 @@ public class ProgressSupport {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.fileParsingFinished(file);
 	    } catch(Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
         }
     }
@@ -116,7 +117,7 @@ public class ProgressSupport {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.projectParsingStarted(project);
 	    } catch(Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
         }
     }
@@ -126,7 +127,7 @@ public class ProgressSupport {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.projectParsingFinished(project);
 	    } catch(Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
         }
     }
@@ -136,7 +137,7 @@ public class ProgressSupport {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.projectLoaded(project);
 	    } catch(Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
         }
     }
@@ -146,7 +147,7 @@ public class ProgressSupport {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.parserIdle();
 	    } catch(Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
         }
     }
@@ -157,7 +158,7 @@ public class ProgressSupport {
 	    try { // have to do this to not allow a listener to crush code model threads
 		listener.projectFilesCounted(project, cnt);
 	    } catch(Exception e) {
-		e.printStackTrace(System.err);
+		DiagnosticExceptoins.register(e);
 	    }
         }
     }

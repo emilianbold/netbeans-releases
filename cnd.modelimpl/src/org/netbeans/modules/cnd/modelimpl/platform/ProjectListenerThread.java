@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelimpl.platform;
 
 import java.util.LinkedList;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 /**
  * See issue #76034 (When add a lot of source files into the project, then GUI hangs for long time)
@@ -96,7 +97,8 @@ public class ProjectListenerThread implements Runnable {
                     task.run();
                 }
             } catch (InterruptedException ex) {
-                ex.printStackTrace();
+		DiagnosticExceptoins.register(ex);
+
             }
         }
     }

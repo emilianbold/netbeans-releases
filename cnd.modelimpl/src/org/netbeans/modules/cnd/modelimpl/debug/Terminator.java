@@ -121,7 +121,7 @@ public class Terminator implements Runnable {
                     out.write("<parsetime>" + ptime + "</parsetime>"); // NOI18N
                     out.close();
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    DiagnosticExceptoins.register(ex);
                 }
             }
         }

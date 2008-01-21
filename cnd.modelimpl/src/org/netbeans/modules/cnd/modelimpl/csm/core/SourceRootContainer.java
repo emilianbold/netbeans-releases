@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -86,7 +87,7 @@ public class SourceRootContainer {
                 addPath(canonicalPath);
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            DiagnosticExceptoins.register(ex);
         }
     }
     

@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
@@ -332,12 +333,14 @@ final class FileCacheSyncBridge {
                     }
                 } catch (IOException ex) {
                     APTUtils.LOG.log(Level.INFO, "create stream: {0}", new Object[] {ex.getMessage()});// NOI18N
+		    DiagnosticExceptoins.register(ex);
                 } finally {
                     if (stream != null) {
                         try {
                             stream.close();
                         } catch (IOException ex) {
                             APTUtils.LOG.log(Level.INFO, "closing stream: {0}", new Object[] {ex.getMessage()});// NOI18N
+			    DiagnosticExceptoins.register(ex);
                         }
                     }
                 }

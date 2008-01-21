@@ -27,40 +27,23 @@
  */
 package org.netbeans.modules.cnd.modelimpl.impl.services;
 
-import antlr.Token;
-import antlr.TokenStream;
-import antlr.TokenStreamException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindMacrosWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTFindUnusedBlocksWalker;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
-import org.openide.util.Exceptions;
 
 /**
  * implementaion of CsmFileInfoQuery
@@ -120,7 +103,8 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                     out = walker.getBlocks();
                 }
             } catch (IOException ex) {
-                System.err.println("skip getting unused blockes\nreason:" + ex.getMessage()); //NOI18N
+                System.err.println("skip getting unused blocks\nreason:" + ex.getMessage()); //NOI18N
+		DiagnosticExceptoins.register(ex);
             }
         }
         return out;
@@ -155,6 +139,7 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
                 }
             } catch (IOException ex) {
                 System.err.println("skip marking macros\nreason:" + ex.getMessage()); //NOI18N
+		DiagnosticExceptoins.register(ex);
             }
         }
         return out;

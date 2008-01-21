@@ -685,7 +685,7 @@ public final class ParserQueue {
                 try {
                     prjWaitEmptyLock.wait();
                 } catch (InterruptedException ex) {
-                    ex.printStackTrace();
+                    // nothing
                 }
             }
         }

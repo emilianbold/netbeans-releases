@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ParserThreadManager;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -284,6 +285,7 @@ public final class CacheManagerImpl {
             } catch (IOException io) {
                 // null cache
             } catch (ClassNotFoundException e) {
+		DiagnosticExceptoins.register(e);
                 APTUtils.LOG.log(Level.SEVERE, "load cache file: {0}", new Object[] { e.getMessage() });// NOI18N
             } finally {
                 if (ois != null) {

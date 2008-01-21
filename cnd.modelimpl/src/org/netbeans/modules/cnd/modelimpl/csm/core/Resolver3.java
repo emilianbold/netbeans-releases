@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -282,7 +283,7 @@ public class Resolver3 implements Resolver {
                 if( FileImpl.reportErrors ) {
                     // FIXUP: do not crush on NPE
                     System.err.println("Unexpected NULL element in declarations collection");
-                    ex.printStackTrace(System.err);
+                    DiagnosticExceptoins.register(ex);
                 }
             }
         }

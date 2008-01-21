@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.GuardBlockWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
@@ -495,7 +496,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	    try {
 		apt = APTDriver.getInstance().findAPT(fileBuffer);
 	    } catch (IOException ex) {
-		ex.printStackTrace(System.err);
+		DiagnosticExceptoins.register(ex);
 	    }
 	}
         if (apt == null) {
@@ -544,8 +545,9 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
             } catch(FileNotFoundException ex){
                 APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found", new Object[] {getBuffer().getFile().getAbsolutePath()});// NOI18N
+		DiagnosticExceptoins.register(ex);
             } catch (IOException ex) {
-                ex.printStackTrace(System.err);
+		DiagnosticExceptoins.register(ex);
             }
         }
         if (ast != null) {
@@ -719,7 +721,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return fileBuffer.getText(start, end);
         }
         catch( IOException e ) {
-            e.printStackTrace(System.err);
+            DiagnosticExceptoins.register(e);
             return "";
         }
     }
@@ -729,7 +731,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return fileBuffer.getText();
         }
         catch( IOException e ) {
-            e.printStackTrace(System.err);
+            DiagnosticExceptoins.register(e);
             return "";
         }
     }

@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 /**
  * implementation of walker used when parse files/collect macromap
@@ -123,6 +124,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             return inclFileOwner.onFileIncluded(getStartProject(), inclPath, getPreprocHandler(), mode);
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, "file without project!!!", ex);// NOI18N
+	    DiagnosticExceptoins.register(ex);
         } finally {
             getIncludeHandler().popInclude();
         }
@@ -193,7 +195,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
             }
             return (APTToken)last;
         } catch( TokenStreamException e ) {
-            e.printStackTrace(System.err);
+            DiagnosticExceptoins.register(e);
             return null;
         }
     }    

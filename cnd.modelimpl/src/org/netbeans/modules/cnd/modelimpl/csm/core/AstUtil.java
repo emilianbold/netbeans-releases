@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheUtil;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 
 /**
@@ -344,7 +345,7 @@ public class AstUtil {
             try {
                 astRead = CacheUtil.readAST(ois);
             } catch (ClassNotFoundException ex) {
-                ex.printStackTrace();
+                DiagnosticExceptoins.register(ex);
             } finally {
                 ois.close();                
             }
@@ -352,7 +353,7 @@ public class AstUtil {
             if (false) System.err.println("read AST of file " + file.getAbsolutePath() + " withing " + readTime + "ms"); // NOI18N
             out.delete();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            DiagnosticExceptoins.register(ex);
         }
         return astRead;
     }

@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
@@ -195,7 +196,7 @@ public class TraceXRef extends TraceModel {
                     line = Integer.parseInt(split[2]);
                     column = Integer.parseInt(split[3]);
                 } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
+                    DiagnosticExceptoins.register(ex);
                     line = 0;
                     column = 0;
                 }

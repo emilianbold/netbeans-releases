@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.openide.util.Exceptions;
 
@@ -156,7 +157,7 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
                     analyzeToken(token);
                 }
             } catch (TokenStreamException ex) {
-                Exceptions.printStackTrace(ex);
+		DiagnosticExceptoins.register(ex);
             }
         }
     }

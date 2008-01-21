@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.*;
 import java.lang.ref.SoftReference;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -71,7 +72,7 @@ public class FileBufferFile extends AbstractFileBuffer {
             }
             return new String(b, start, end-start);
         } catch( IOException e ) {
-            e.printStackTrace(System.err);
+            DiagnosticExceptoins.register(e);
             return "";
         }
     }

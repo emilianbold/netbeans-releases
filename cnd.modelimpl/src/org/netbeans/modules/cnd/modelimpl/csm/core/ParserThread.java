@@ -92,7 +92,6 @@ public class ParserThread implements Runnable {
                     }
                     catch( Throwable thr ) {
 			DiagnosticExceptoins.register(thr);
-                        thr.printStackTrace(System.err);
                     }
                     finally {
                         if( stw != null ) stw.stopAndReport("parsing " + file.getAbsolutePath()); // NOI18N

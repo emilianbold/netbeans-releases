@@ -46,6 +46,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.openide.util.NbBundle;
 
 
@@ -123,8 +124,7 @@ final class ParsingProgress {
                 //assert(curWorkedUnits <= maxWorkUnits);
             } catch (NullPointerException ex) {
                 // very strange... but do not interrupt process
-                //assert(false);
-                ex.printStackTrace(System.err);
+                DiagnosticExceptoins.register(ex);
             }
         }
     }

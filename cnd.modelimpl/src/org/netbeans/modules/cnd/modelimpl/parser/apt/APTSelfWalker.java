@@ -41,6 +41,7 @@ import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBufferFile;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 /**
  * APT Walker which only gathers macromap. Shouldn't be used directly but
@@ -72,8 +73,10 @@ public class APTSelfWalker extends APTAbstractWalker {
                 createIncludeWalker(apt, this, resolvedPath.getPath()).visit();
             } catch (FileNotFoundException ex) {
                 APTUtils.LOG.log(Level.WARNING, "APTSelfWalker: file {0} not found", new Object[] {resolvedPath.getPath()});// NOI18N
+		DiagnosticExceptoins.register(ex);
             } catch (IOException ex) {
                 APTUtils.LOG.log(Level.SEVERE, "APTSelfWalker: error on including {0}:\n{1}", new Object[] {resolvedPath.getPath(), ex});
+		DiagnosticExceptoins.register(ex);
             } finally {
                 getIncludeHandler().popInclude();
             }

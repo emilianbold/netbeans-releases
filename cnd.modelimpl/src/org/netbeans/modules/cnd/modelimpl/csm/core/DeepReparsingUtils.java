@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -160,7 +161,7 @@ public final class DeepReparsingUtils {
                 }
             }
         } catch( Exception e ) {
-            e.printStackTrace(System.err);
+            DiagnosticExceptoins.register(e);
         } finally {
             ParserQueue.instance().onEndAddingProjectFiles(project);
         }
@@ -284,7 +285,7 @@ public final class DeepReparsingUtils {
                 }
             }
         } catch( Exception e ) {
-            e.printStackTrace(System.err);
+            DiagnosticExceptoins.register(e);
         } finally{
             if (progress) {
                 ParserQueue.instance().onEndAddingProjectFiles(project);

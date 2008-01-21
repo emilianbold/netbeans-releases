@@ -50,6 +50,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.*;
 import java.util.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -257,7 +258,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                     Integer index = Integer.parseInt(fqn.substring(greaterInd+1));
                     unnamedNrs.remove(index);
                 } catch (NumberFormatException ex) {
-                    ex.printStackTrace(System.err);
+                    DiagnosticExceptoins.register(ex);
                 }
             } else {
                 unnamedNrs.remove(new Integer(0));

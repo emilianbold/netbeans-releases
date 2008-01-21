@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 /**
@@ -88,9 +89,10 @@ public class UIDCsmConverter {
 //	}
             return result;
         } catch (StackOverflowError ex) {
-            // needed to analyze IZ99230
-            System.err.println("StackOverflowError for UID " + uid);
-            ex.printStackTrace(System.err);
+            // needed to analyze IZ99230; it's fixed!
+	    Exception ex2 = new Exception("StackOverflowError for UID " + uid);
+	    ex2.setStackTrace(ex.getStackTrace());
+	    DiagnosticExceptoins.register(ex2);
             return null;
         }
     }

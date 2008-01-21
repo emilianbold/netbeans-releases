@@ -83,7 +83,6 @@ public class ParserThreadManager  {
             }
 	    catch(Throwable thr) {
 		DiagnosticExceptoins.register(thr);
-		thr.printStackTrace();
 	    }
             finally {
                 wrappers.remove(this);

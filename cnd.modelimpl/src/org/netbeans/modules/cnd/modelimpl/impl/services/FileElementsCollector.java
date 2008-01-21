@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 
 /**
  *
@@ -351,7 +352,7 @@ public class FileElementsCollector {
                 if( FileImpl.reportErrors ) {
                     // FIXUP: do not crush on NPE
                     System.err.println("Unexpected NULL element in declarations collection");
-                    ex.printStackTrace(System.err);
+                    DiagnosticExceptoins.register(ex);
                 }
             }
         }
