@@ -79,6 +79,7 @@
 
     <target name="get-sources">
         <cvs package="${sources.cvs.modules}" cvsRoot="${sources.cvs.root}" dest="${home}" command="-q co -P ${sources.cvs.branch}" failonerror="true"/>
+        <ant dir="${home}/xtest" target="netbeans"/>
     </target>
 
     <!-- zip -->
