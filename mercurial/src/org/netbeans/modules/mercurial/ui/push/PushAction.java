@@ -161,7 +161,7 @@ public class PushAction extends AbstractAction {
                 // Warn user if there are local changes which Push will overwrite
                 if (!bNoChanges && !PullAction.confirmWithLocalChanges(pushFile, PushAction.class,
                         "MSG_PUSH_LOCALMODS_CONFIRM_TITLE", "MSG_PUSH_LOCALMODS_CONFIRM_QUERY", listOutgoing)) { // NOI18N
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PullAction.class, "MSG_PULL_LOCALMODS_CANCEL")); // NOI18N
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(PushAction.class, "MSG_PUSH_LOCALMODS_CANCEL")); // NOI18N
                     HgUtils.outputMercurialTab(""); // NOI18N
                     return;
                 }
