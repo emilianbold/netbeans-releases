@@ -53,6 +53,7 @@ import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
+import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
@@ -118,7 +119,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             throws IOException, RubyDebuggerException {
         DebuggerPreferences prefs = DebuggerPreferences.getInstance();
         final RubyPlatform platform = descriptor.getPlatform();
-        final GemManager gemManager = platform.getGemManager();
         boolean jrubySet = platform.isJRuby();
 
         if (!checkAndTuneSettings(descriptor)) {
@@ -153,12 +153,12 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         Util.finest("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
         boolean forceRubyDebug = Boolean.getBoolean("org.netbeans.modules.ruby.debugger.force.rdebug");
-//        if (!forceRubyDebug && (jrubySet || prefs.isUseClassicDebugger())) {
-        // XXX the above is right, the below is cheat for 6.1M1
-        if (!forceRubyDebug && (jrubySet || !Util.hasFastDebuggerInstalled(gemManager))) {
+        if (!forceRubyDebug && (jrubySet || prefs.isUseClassicDebugger(platform))) {
+            Util.LOGGER.fine("Running classic(slow) debugger...");
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
+            Util.LOGGER.fine("Running fast debugger...");
             File rDebugF = new File(Util.findRDebugExecutable(platform));
             proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
                     rDebugF.getAbsolutePath(), interpreter, timeout);
@@ -182,7 +182,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
         DebuggerPreferences prefs = DebuggerPreferences.getInstance();
         final RubyPlatform platform = descriptor.getPlatform();
-        final GemManager gemManager = platform.getGemManager();
 
         boolean jrubySet = platform.isJRuby();
         
@@ -193,40 +192,36 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         // See issue #114183
         if (!jrubySet && prefs.isFirstTime()) {
             prefs.setFirstTime(false);
-            Util.offerToInstallFastDebugger(gemManager);
+            Util.offerToInstallFastDebugger(platform);
         }
         
         // JRuby vs. ruby-debug-ide
-        /*
         if (jrubySet) {
             if (fastDebuggerRequired) {
                 Util.showMessage(getMessage("RubyDebugger.jruby.cannot.be.used"));
                 return false;
             }
-            if (!prefs.isUseClassicDebugger() && !shouldContinueWithCD()) {
+            if (!prefs.isUseClassicDebugger(platform) && !shouldContinueWithCD(platform)) {
                 return false;
             }
         }
-        */
         
-        if (fastDebuggerRequired && prefs.isUseClassicDebugger()
-                && !Util.ensureRubyDebuggerIsPresent(gemManager, true, getMessage("RubyDebugger.wrong.fast.debugger.required"))) {
+        if (fastDebuggerRequired && prefs.isUseClassicDebugger(platform)
+                && !Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.wrong.fast.debugger.required")) {
             return false;
         }
 
-        if (!jrubySet && !Util.hasFastDebuggerInstalled(gemManager) && !Util.offerToInstallFastDebugger(gemManager)) {
+        if (!jrubySet && !platform.hasFastDebuggerInstalled() && !Util.offerToInstallFastDebugger(platform)) {
             // user really wants classic debugger, ensure it
-            DebuggerPreferences.getInstance().setUseClassicDebugger(true);
+            prefs.setUseClassicDebugger(platform, true);
         }
 
-        if (jrubySet || prefs.isUseClassicDebugger()) {
+        if (jrubySet || prefs.isUseClassicDebugger(platform)) {
             if (!platform.isValidRuby(true)) {
                 return false;
             }
         } else { // ruby-debug
-            String message = NbBundle.getMessage(RubyDebugger.class,
-                    "RubyDebugger.requiredMessage", Util.RDEBUG_IDE_VERSION); // NOI18N
-            if (!Util.ensureRubyDebuggerIsPresent(gemManager, true, message)) {
+            if (!Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.requiredMessage")) { // NOI18N
                 return false;
             }
             String rDebugPath = Util.findRDebugExecutable(platform);
@@ -241,13 +236,13 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         return true;
     }
     
-    private static boolean shouldContinueWithCD() {
+    private static boolean shouldContinueWithCD(final RubyPlatform platform) {
         Confirmation confirmation = new Confirmation(getMessage("RubyDebugger.jruby.vs.fast.debugger"),
                 Confirmation.OK_CANCEL_OPTION);
         DialogDisplayer.getDefault().notify(confirmation);
         boolean continueWithCD = confirmation.getValue() != Confirmation.CANCEL_OPTION;
         if (continueWithCD) {
-            DebuggerPreferences.getInstance().setUseClassicDebugger(true);
+            DebuggerPreferences.getInstance().setUseClassicDebugger(platform, true);
         }
         return continueWithCD;
     }

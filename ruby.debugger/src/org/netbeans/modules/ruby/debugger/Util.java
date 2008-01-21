@@ -47,7 +47,7 @@ import javax.swing.JButton;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor.Message;
@@ -62,14 +62,6 @@ public final class Util {
     public static final Logger LOGGER = Logger.getLogger(Util.class.getName());
     
     private static final String SPECIFICATIONS = "specifications"; // NOI18N
-    
-    /** Name of the Ruby Debug IDE gem. */
-    static final String RUBY_DEBUG_IDE_NAME = "ruby-debug-ide";
-    static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base";
-    
-    /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION = "0.1.9"; // NOI18N
-    static final String RDEBUG_BASE_VERSION = "0.9.3"; // NOI18N
     
     private static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
     private static final String ERB_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
@@ -102,30 +94,6 @@ public final class Util {
     
     public static String rdebugPattern() {
         return "rdebug-ide"; // NOI18N
-    }
-
-    /**
-     * @param gemManager
-     * @return whether everything needed for fast debugging is installed
-     */
-    public static boolean hasFastDebuggerInstalled(final GemManager gemManager) {
-        return getFastDebuggerProblems(gemManager) == null;
-        
-    }
-    
-    /**
-     * @param gemManager
-     * @return null if everthing is OK or errors in String
-     */
-    public static String getFastDebuggerProblems(final GemManager gemManager) {
-        StringBuilder errors = new StringBuilder();
-        if (!gemManager.isGemInstalled(RUBY_DEBUG_IDE_NAME, RDEBUG_IDE_VERSION)) {
-            errors.append(RUBY_DEBUG_IDE_NAME + " in version " + RDEBUG_IDE_VERSION + " is not installed").append('\n');
-        }
-        if (!gemManager.isGemInstalled(RUBY_DEBUG_BASE_NAME, RDEBUG_BASE_VERSION)) {
-            errors.append(RUBY_DEBUG_BASE_NAME + " in version " + RDEBUG_BASE_VERSION + " is not installed");
-        }
-        return errors.length() == 0 ? null : errors.toString();
     }
 
     public static String findRDebugExecutable(final RubyPlatform platform) {
@@ -165,22 +133,27 @@ public final class Util {
             (RubySession) currentEngine.lookupFirst(null, RubySession.class);
     }
     
-    static boolean offerToInstallFastDebugger(final GemManager gemManager) {
-        return Util.ensureRubyDebuggerIsPresent(gemManager, false, getMessage("RubyDebugger.askMessage"));
+    static boolean offerToInstallFastDebugger(final RubyPlatform platform) {
+        return Util.ensureRubyDebuggerIsPresent(platform, false, "RubyDebugger.askMessage");
     }
     
-    static boolean ensureRubyDebuggerIsPresent(final GemManager gemManager,
-            final boolean strict, final String message) {
-        if (Util.hasFastDebuggerInstalled(gemManager)) {
-            turnOnRubyDebugOptions(gemManager);
+    static boolean ensureRubyDebuggerIsPresent(final RubyPlatform platform,
+            final boolean strict, final String messageKey) {
+        if (!platform.hasRubyGemsInstalled()) {
+            return false;
+        }
+        String problems = platform.getFastDebuggerProblems();
+        if (problems == null) {
+            turnOnRubyDebugOptions(platform);
             return true;
         }
         if (!strict && DebuggerPreferences.getInstance().isDoNotAskAgain()) {
             return false;
         }
+        String message = NbBundle.getMessage(RubyDebugger.class, messageKey, problems);
         RubyDebugInstallPanel rubyDebugPanel = new RubyDebugInstallPanel(strict, message);
         DialogDescriptor descriptor = new DialogDescriptor(rubyDebugPanel,
-                NbBundle.getMessage(Util.class, "Util.installation.panel.title", Util.RDEBUG_IDE_VERSION));
+                NbBundle.getMessage(Util.class, "Util.installation.panel.title"));
         JButton installButton = new JButton(getMessage("Util.installation.panel.installbutton"));
         JButton nonInstallButton;
         if (strict) {
@@ -191,32 +164,26 @@ public final class Util {
         Object[] options = new Object[] { installButton, nonInstallButton };
         descriptor.setOptions(options);
         if (DialogDisplayer.getDefault().notify(descriptor) == installButton) {
-            Util.installRubyDebugGem(gemManager);
-            if (Util.hasFastDebuggerInstalled(gemManager)) {
-                turnOnRubyDebugOptions(gemManager);
+            if (platform.installFastDebugger()) {
+                turnOnRubyDebugOptions(platform);
+            } else {
+                Util.showWarning(getMessage("Util.fast.debugger.install.failed"));
             }
         }
         if (!strict) {
             DebuggerPreferences.getInstance().setDoNotAskAgain(rubyDebugPanel.isDoNotAskAgain());
         }
-        return Util.hasFastDebuggerInstalled(gemManager);
-    }
-    
-    static void installRubyDebugGem(final GemManager gemManager) {
-        gemManager.installGem(Util.RUBY_DEBUG_IDE_NAME, false, false);
-        if (!Util.hasFastDebuggerInstalled(gemManager)) {
-            Util.showWarning(getMessage("Util.fast.debugger.install.failed"));
-        }
+        return platform.hasFastDebuggerInstalled();
     }
     
     private static String getMessage(final String key) {
         return NbBundle.getMessage(Util.class, key);
     }
     
-    private static void turnOnRubyDebugOptions(final GemManager gemManager) {
+    private static void turnOnRubyDebugOptions(final RubyPlatform platform) {
         DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-        if (Util.hasFastDebuggerInstalled(gemManager)) {
-            prefs.setUseClassicDebugger(false);
+        if (platform.hasFastDebuggerInstalled()) {
+            prefs.setUseClassicDebugger(platform, false);
         }
     }
     

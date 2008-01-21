@@ -78,6 +78,14 @@ public final class RubyPlatform {
     /** Version number of the rubystubs */
     private static final String RUBYSTUBS_VERSION = "1.8.6-p110"; // NOI18N
 
+    /** Name of the Ruby Debug IDE gem. */
+    static final String RUBY_DEBUG_IDE_NAME = "ruby-debug-ide"; // NOI18N
+    static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
+    
+    /** Required version of ruby-debug-ide gem. */
+    static final String RDEBUG_IDE_VERSION = "0.1.9"; // NOI18N
+    static final String RDEBUG_BASE_VERSION = "0.9.3"; // NOI18N
+    
     private Info info;
     
     private final String id;
@@ -524,7 +532,7 @@ public final class RubyPlatform {
         if (stubsFO == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
             File clusterFile = InstalledFileLocator.getDefault().locate(
-                    "modules/org-netbeans-modules-ruby-project.jar", null, false); // NOI18N
+                    "modules/org-netbeans-modules-ruby-project.jar", null, false);
 
             if (clusterFile != null) {
                 File rubyStubs =
@@ -546,6 +554,34 @@ public final class RubyPlatform {
         }
 
         return stubsFO;
+    }
+
+    /**
+     * @return whether everything needed for fast debugging is installed
+     */
+    public boolean hasFastDebuggerInstalled() {
+        return gemManager != null && getFastDebuggerProblems() == null;
+    }
+
+    /**
+     * @return null if everthing is OK or errors in String
+     */
+    public String getFastDebuggerProblems() {
+        assert gemManager != null : "has gemManager when asking whether Fast Debugger is installed";
+        StringBuilder errors = new StringBuilder();
+        if (!gemManager.isGemInstalled(RUBY_DEBUG_IDE_NAME, RDEBUG_IDE_VERSION)) {
+            errors.append("<b>" + RUBY_DEBUG_IDE_NAME + "</b> in version <b>" + RDEBUG_IDE_VERSION + "</b> is not installed").append('\n'); // XXX NOI18N
+        }
+        if (!gemManager.isGemInstalled(RUBY_DEBUG_BASE_NAME, RDEBUG_BASE_VERSION)) {
+            errors.append("<b>" + RUBY_DEBUG_BASE_NAME + "</b> in version <b>" + RDEBUG_BASE_VERSION + "</b> is not installed"); // XXX NOI18N
+        }
+        return errors.length() == 0 ? null : errors.toString();
+    }
+
+    public boolean installFastDebugger() {
+        assert gemManager != null : "has gemManager when trying to install fast debugger";
+        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false);
+        return hasFastDebuggerInstalled();
     }
 
     /*
@@ -718,7 +754,7 @@ public final class RubyPlatform {
             StringBuilder sb = new StringBuilder(kind + ' ' + version + ' ' + '(' + releaseDate);
             if (patchlevel != null) {
                 sb.append(" patchlevel ").append(patchlevel); // NOI18N
-            }
+        }
             sb.append(") [").append(platform).append(']'); // NOI18N
             return sb.toString();
         }

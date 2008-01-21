@@ -60,6 +60,7 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.RubyTestBase;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
+import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.openide.filesystems.FileObject;
@@ -102,7 +103,7 @@ public abstract class TestBase extends RubyTestBase {
         super.setUp();
         platform = RubyPlatformManager.addPlatform(TestBase.getFile("ruby.executable", true));
         assertTrue(platform.getInterpreter() + " has RubyGems installed", platform.hasRubyGemsInstalled());
-        String problems = Util.getFastDebuggerProblems(platform.getGemManager());
+        String problems = platform.getFastDebuggerProblems();
         assertNull("fast debugger installed: " + problems, problems);
         
         engines = new Stack<Engine>();
@@ -156,7 +157,7 @@ public abstract class TestBase extends RubyTestBase {
         Engine engine = engines.pop();
         switch (engine) {
             case CLASSIC:
-                DebuggerPreferences.getInstance().setUseClassicDebugger(true);
+                DebuggerPreferences.getInstance().setUseClassicDebugger(platform, true);
                 break;
             case RDEBUG_IDE:
                 switchToRDebugIDE();

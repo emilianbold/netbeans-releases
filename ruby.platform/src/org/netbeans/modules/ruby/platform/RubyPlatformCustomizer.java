@@ -49,6 +49,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
+import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -66,11 +67,11 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-public class RubyPlatformCustomizer extends javax.swing.JPanel {
+public class RubyPlatformCustomizer extends JPanel {
     
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
-
+    
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
         JButton closeButton = new JButton();
@@ -88,6 +89,12 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         dlg.setVisible(true);
         dlg.dispose();
+    }
+
+    public @Override void removeNotify() {
+        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
+        prefs.setUseClassicDebugger(getSelectedPlatform(), classicDebuggerEngine.isSelected());
+        super.removeNotify();
     }
 
     public RubyPlatformCustomizer() {
@@ -180,6 +187,8 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         gemHomeValue.setForeground(color);
         gemToolValue.setForeground(color);
         removeButton.setEnabled(!plaf.isDefault());
+
+        refreshDebugger();
     }
 
     /** This method is called from within the constructor to
@@ -191,6 +200,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        debuggerEngineGroup = new javax.swing.ButtonGroup();
         platformsListSP = new javax.swing.JScrollPane();
         platformsList = PlatformComponentFactory.getRubyPlatformsList();
         addButton = new javax.swing.JButton();
@@ -209,6 +219,13 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         progressPanel = new javax.swing.JPanel();
         autoDetectLabel = new javax.swing.JLabel();
         autoDetectProgress = new javax.swing.JProgressBar();
+        debuggerPanel = new javax.swing.JPanel();
+        rubyDebuggerLabel = new javax.swing.JLabel();
+        upperSep = new javax.swing.JSeparator();
+        engineLabel = new javax.swing.JLabel();
+        classicDebuggerEngine = new javax.swing.JRadioButton();
+        rubyDebugEngine = new javax.swing.JRadioButton();
+        installFastDebugger = new javax.swing.JButton();
 
         platformsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         platformsListSP.setViewportView(platformsList);
@@ -329,6 +346,72 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         autoDetectProgress.setIndeterminate(true);
         progressPanel.add(autoDetectProgress);
 
+        org.openide.awt.Mnemonics.setLocalizedText(rubyDebuggerLabel, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.rubyDebuggerLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(engineLabel, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.engineLabel.text")); // NOI18N
+
+        debuggerEngineGroup.add(classicDebuggerEngine);
+        classicDebuggerEngine.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(classicDebuggerEngine, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.classicDebuggerEngine.text")); // NOI18N
+        classicDebuggerEngine.setOpaque(false);
+        classicDebuggerEngine.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                classicDebuggerEngineActionPerformed(evt);
+            }
+        });
+
+        debuggerEngineGroup.add(rubyDebugEngine);
+        org.openide.awt.Mnemonics.setLocalizedText(rubyDebugEngine, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.rubyDebugEngine.text")); // NOI18N
+        rubyDebugEngine.setOpaque(false);
+        rubyDebugEngine.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rubyDebugEngineActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(installFastDebugger, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.installFastDebugger.text")); // NOI18N
+        installFastDebugger.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                installFastDebuggerActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout debuggerPanelLayout = new org.jdesktop.layout.GroupLayout(debuggerPanel);
+        debuggerPanel.setLayout(debuggerPanelLayout);
+        debuggerPanelLayout.setHorizontalGroup(
+            debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(debuggerPanelLayout.createSequentialGroup()
+                .add(rubyDebuggerLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE))
+            .add(debuggerPanelLayout.createSequentialGroup()
+                .add(engineLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(debuggerPanelLayout.createSequentialGroup()
+                        .add(rubyDebugEngine)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(installFastDebugger))
+                    .add(classicDebuggerEngine))
+                .addContainerGap())
+        );
+        debuggerPanelLayout.setVerticalGroup(
+            debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(debuggerPanelLayout.createSequentialGroup()
+                .add(debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                    .add(rubyDebuggerLabel)
+                    .add(upperSep, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(engineLabel)
+                    .add(classicDebuggerEngine))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(debuggerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(rubyDebugEngine)
+                    .add(installFastDebugger))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -339,14 +422,16 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(platformsListSP, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 235, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(configPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(debuggerPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(configPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 565, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(autoDetectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 44, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 98, Short.MAX_VALUE)
                         .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -358,7 +443,10 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
                     .add(layout.createSequentialGroup()
                         .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 413, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(configPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(configPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(32, 32, 32)
+                        .add(debuggerPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
@@ -423,17 +511,61 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_browseGemHomeActionPerformed
 
+    private void classicDebuggerEngineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classicDebuggerEngineActionPerformed
+        DebuggerPreferences.getInstance().setUseClassicDebugger(getSelectedPlatform(), true);
+        refreshDebugger();
+    }//GEN-LAST:event_classicDebuggerEngineActionPerformed
+
+    private void rubyDebugEngineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rubyDebugEngineActionPerformed
+        DebuggerPreferences.getInstance().setUseClassicDebugger(getSelectedPlatform(), false);
+        refreshDebugger();
+    }//GEN-LAST:event_rubyDebugEngineActionPerformed
+
+    private void installFastDebuggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installFastDebuggerActionPerformed
+        if (getSelectedPlatform().installFastDebugger()) {
+            refreshDebugger();
+            rubyDebugEngine.setSelected(true);
+        }
+    }//GEN-LAST:event_installFastDebuggerActionPerformed
+
+    private void refreshDebugger() {
+        refreshDebugger(false);
+    }
+
+    private void refreshDebugger(final boolean autoswitch) {
+        RubyPlatform platform = getSelectedPlatform();
+        
+        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
+        rubyDebugEngine.setSelected(!prefs.isUseClassicDebugger(platform));
+        
+        boolean isJRuby = platform.isJRuby();
+        boolean fdInstalled = platform.hasFastDebuggerInstalled();
+        rubyDebugEngine.setEnabled(!isJRuby && fdInstalled);
+        installFastDebugger.setEnabled(!isJRuby && platform.hasRubyGemsInstalled());
+        installFastDebugger.setVisible(!isJRuby && !fdInstalled);
+        if (isJRuby || !fdInstalled || prefs.isUseClassicDebugger(platform)) {
+            classicDebuggerEngine.setSelected(true);
+        } else {
+            rubyDebugEngine.setSelected(true);
+        }
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton autoDetectButton;
     private javax.swing.JLabel autoDetectLabel;
     private javax.swing.JProgressBar autoDetectProgress;
     private javax.swing.JButton browseGemHome;
+    private javax.swing.JRadioButton classicDebuggerEngine;
     private javax.swing.JPanel configPanel;
+    private javax.swing.ButtonGroup debuggerEngineGroup;
+    private javax.swing.JPanel debuggerPanel;
+    private javax.swing.JLabel engineLabel;
     private javax.swing.JLabel gemHome;
     private javax.swing.JTextField gemHomeValue;
     private javax.swing.JLabel gemTool;
     private javax.swing.JTextField gemToolValue;
+    private javax.swing.JButton installFastDebugger;
     private javax.swing.JList platformsList;
     private javax.swing.JScrollPane platformsListSP;
     private javax.swing.JLabel plfInterpreter;
@@ -442,5 +574,8 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     private javax.swing.JTextField plfNameValue;
     private javax.swing.JPanel progressPanel;
     private javax.swing.JButton removeButton;
+    private javax.swing.JRadioButton rubyDebugEngine;
+    private javax.swing.JLabel rubyDebuggerLabel;
+    private javax.swing.JSeparator upperSep;
     // End of variables declaration//GEN-END:variables
 }
