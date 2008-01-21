@@ -104,7 +104,7 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
     
     private CsmAST getStartAst(AST node) {
         if( node != null ) {
-            CsmAST csmAst = getFirstCsmAST(node);
+            CsmAST csmAst = AstUtil.getFirstCsmAST(node);
             if( csmAst != null ) {
                 return csmAst;
             }
@@ -117,18 +117,6 @@ public class OffsetableBase implements CsmOffsetable, Disposable {
             AST lastChild = AstUtil.getLastChildRecursively(node);
             if( lastChild instanceof CsmAST ) {
                 return ((CsmAST) lastChild);
-            }
-        }
-        return null;
-    }
-    
-    private static CsmAST getFirstCsmAST(AST node) {
-        if( node != null ) {
-            if( node instanceof CsmAST ) {
-                return (CsmAST) node;
-            }
-            else {
-                return getFirstCsmAST(node.getFirstChild());
             }
         }
         return null;

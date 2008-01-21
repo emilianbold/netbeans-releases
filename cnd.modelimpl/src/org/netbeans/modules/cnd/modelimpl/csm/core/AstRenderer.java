@@ -47,12 +47,15 @@ import antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.*;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
  * @author Vladimir Kvasihn
@@ -102,8 +105,14 @@ public class AstRenderer {
                     renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                     break;
                 }
-                case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                 case CPPTokenTypes.CSM_FUNCTION_DECLARATION:
+		    if (isFuncLikeVariable(token)) {
+			if( renderFuncLikeVariable(token, currentNamespace, container)) {
+                            break;
+			}
+		    }
+		    //nobreak!
+                case CPPTokenTypes.CSM_FUNCTION_RET_FUN_DECLARATION:
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST:
                     FunctionImpl fi = new FunctionImpl(token, file, currentNamespace);
@@ -214,6 +223,167 @@ public class AstRenderer {
                 }
             }
         }
+    }
+
+    /**
+     * Parser don't use a symbol table, so constructs like
+     * int a(b) 
+     * are parsed as if they were functions.
+     * At the moment of rendering, we check whether this is a variable of a function
+     * @return true if it's a variable, otherwise false (it's a function)
+     */
+    private boolean isFuncLikeVariable(AST ast) {
+	AST astParmList = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_PARMLIST);
+	if( astParmList != null ) {
+            for( AST node = astParmList.getFirstChild(); node != null; node = node.getNextSibling() ) {
+                if( ! isRefToVariable(node) ) {
+                    return false;
+                }
+            }
+	    return true;
+	}
+	return false;
+    }
+
+    /**
+     * Determines whether the given parameter can actually be a reference to a variable,
+     * not a parameter
+     * @param node an AST node that corresponds to parameter
+     * @return true if might be just a reference to a variable, otherwise false
+     */
+    private boolean isRefToVariable(AST node) {
+
+	if( node.getType() != CPPTokenTypes.CSM_PARAMETER_DECLARATION ) { // paranoja
+	    return false;
+	}
+	
+	AST child = node.getFirstChild(); 
+
+	AST name = null;
+	
+	// AST structure is different for int f1(A) and int f2(*A)
+	if( child != null && child.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
+	    while( child != null && child.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
+		child = child.getNextSibling();
+	    }
+	    // now it's CSM_VARIABLE_DECLARATION
+	    if( child != null ) {
+		name = child.getFirstChild();
+	    }
+	}
+	else if( child.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ) {
+	    if( child.getNextSibling() != null ) {
+		return false;
+	    }
+	    name = child.getFirstChild();
+	}
+
+	if( name == null ) {
+	    return false;
+	}
+	if( name.getType() != CPPTokenTypes.CSM_QUALIFIED_ID && 
+	    name.getType() != CPPTokenTypes.ID ) {
+	    return false;
+	}
+	
+	CsmAST csmAST = AstUtil.getFirstCsmAST(name);
+	if(name == null) {
+	    return false;
+	}
+
+	return findVariable( name.getText(), csmAST.getOffset());
+    }
+    
+    /**
+     * Finds variable in globals and in the current file
+     */
+    private boolean findVariable(CharSequence name, int offset) {
+        String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.VARIABLE) + 
+                OffsetableDeclarationBase.UNIQUE_NAME_SEPARATOR + "::" + name;
+        if( findGlobal(file.getProject(), uname, new ArrayList<CsmProject>()) ) {
+            return true;
+        }
+        return findVariable(name, file.getDeclarations(), offset);
+    }
+    
+    private boolean findGlobal(CsmProject project, String uname, Collection<CsmProject> processedProjects) {
+        if( processedProjects.contains(project) ) {
+            return false;
+        }
+        processedProjects.add(project);
+        if( project.findDeclaration(uname) != null ) {
+            return true;
+        }
+        for( CsmProject lib : project.getLibraries() ) {
+            if( findGlobal(lib, uname, processedProjects) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean findVariable(CharSequence name, List<CsmOffsetableDeclaration> declarations, int offset) {
+        for( CsmOffsetableDeclaration decl : declarations ) {
+            if( decl.getStartOffset() >= offset ) {
+                break;
+            }
+            switch( decl.getKind() ) {
+                case VARIABLE:
+                    if( CharSequenceKey.Comparator.compare(name, ((CsmVariable) decl).getName()) == 0 ) {
+                        return true;
+                    }
+                    break;
+                case NAMESPACE_DEFINITION:
+                    CsmNamespaceDefinition nd = (CsmNamespaceDefinition) decl;
+                    if( nd.getStartOffset() <= offset && nd.getEndOffset() >= offset ) {
+                        if( findVariable(name, nd.getDeclarations(), offset) ) {
+                            return true;
+                        }
+                    }
+                    break;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * In the case of the "function-like variable" - construct like
+     * int a(b) 
+     * renders the AST to create the variable
+     */
+    private boolean renderFuncLikeVariable(AST token, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
+	if( token != null ) {
+	    token = token.getFirstChild();
+	    switch( token.getType() ) {
+	    	case CPPTokenTypes.CSM_TYPE_BUILTIN:
+	    	case CPPTokenTypes.CSM_TYPE_COMPOUND:
+		    AST typeToken = token;
+		    AST next = token.getNextSibling();
+		    while( next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
+			next = next.getNextSibling();
+		    }
+		    if (next != null && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                        TypeImpl type;
+                        if (typeToken.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
+                            type = TypeFactory.createBuiltinType(typeToken.getText(), null, 0, typeToken, file);
+                        } else {
+                            type = TypeFactory.createType(typeToken, file, null, 0);
+                        }
+                        String name = next.getText();
+                        VariableImpl var = createVariable(next, file, type, name, false, currentNamespace, container, null);
+			if( currentNamespace != null ) {
+			    currentNamespace.addDeclaration(var);
+			}
+			if( container != null ) {
+			    container.addDeclaration(var);
+			}
+			return true;
+		    }
+		    break;
+		
+	    }
+	}
+	return false;
     }
     
     

@@ -1,0 +1,142 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE functions_and_variables.cc
+Includes:
+    <no includes>
+Macros:
+    <no macros>
+VARIABLE A [9:1/67-9:14/80]  TYPE: int TEXT=int  [9:1/67-9:11/77]  INIT: null  SCOPE: functions_and_variables.cc
+VARIABLE pA [10:6/86-10:8/88]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [10:1/81-10:5/85]  INIT: null  SCOPE: $Global$ 
+VARIABLE ppA [11:7/100-11:10/103]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [11:1/94-11:6/99]  INIT: null  SCOPE: $Global$ 
+VARIABLE pppA [12:8/117-12:12/121]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [12:1/110-12:7/116]  INIT: null  SCOPE: $Global$ 
+VARIABLE f2 [14:5/134-14:7/136]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [14:1/130-14:4/133]  INIT: null  SCOPE: $Global$ 
+VARIABLE f3 [15:5/147-15:7/149]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [15:1/143-15:4/146]  INIT: null  SCOPE: $Global$ 
+VARIABLE f4 [16:5/162-16:7/164]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [16:1/158-16:4/161]  INIT: null  SCOPE: $Global$ 
+VARIABLE a [18:5/180-18:6/181]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [18:1/176-18:4/179]  INIT: null  SCOPE: $Global$ 
+VARIABLE pa [19:6/191-19:8/193]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [19:1/186-19:5/190]  INIT: null  SCOPE: $Global$ 
+VARIABLE foo_pa [20:5/203-20:11/209]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [20:1/199-20:4/202]  INIT: null  SCOPE: $Global$ 
+VARIABLE foo_1 [22:5/221-22:10/226]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [22:1/217-22:4/220]  INIT: null  SCOPE: $Global$ 
+FUNCTION foo_2 [24:1/232-24:19/250] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE foo_2(optind)
+    UNIQUE NAME F:foo_2(optind)
+    PARAMETERS:
+         [24:11/242-24:17/248]  TYPE: $unresolved$::optind TEXT=optind  [24:11/242-24:17/248]  INIT: null  SCOPE: foo_2 
+    RETURNS int TEXT=int  [24:1/232-24:4/235]
+NAMESPACE DEFINITOIN qwe [26:1/252-37:2/455] SCOPE: functions_and_variables.cc
+    VARIABLE q [27:5/272-27:11/278]  TYPE: int TEXT=int  [27:5/272-27:8/275]  INIT: null  SCOPE: qwe 
+    NAMESPACE DEFINITOIN asd [28:5/283-36:6/453] SCOPE: functions_and_variables.cc
+        VARIABLE a [29:9/307-29:15/313]  TYPE: int TEXT=int  [29:9/307-29:12/310]  INIT: null  SCOPE: asd 
+        NAMESPACE DEFINITOIN zxc [30:9/322-35:10/447] SCOPE: functions_and_variables.cc
+            VARIABLE z [31:13/350-31:19/356]  TYPE: int TEXT=int  [31:13/350-31:16/353]  INIT: null  SCOPE: zxc 
+            VARIABLE qweqwe [32:17/373-32:23/379]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [32:13/369-32:16/372]  INIT: null  SCOPE: zxc 
+            VARIABLE asdasd [33:17/400-33:23/406]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [33:13/396-33:16/399]  INIT: null  SCOPE: zxc 
+            VARIABLE zxczxc [34:17/427-34:23/433]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [34:13/423-34:16/426]  INIT: null  SCOPE: zxc 
+USING NAMESPACE. qwe  [39:1/457-39:20/476]; REF NS: qwe SCOPE: null
+USING NAMESPACE. qwe::asd  [40:1/478-40:25/502]; REF NS: qwe::asd SCOPE: null
+USING NAMESPACE. qwe::asd::zxc  [41:1/504-41:30/533]; REF NS: qwe::asd::zxc SCOPE: null
+CLASS C (C ) [48:1/557-48:12/568] lcurly=565 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+FUNCTION f11 [50:1/570-50:12/581] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE f11(C)
+    UNIQUE NAME F:f11(C)
+    PARAMETERS:
+         [50:9/578-50:10/579]  TYPE: C TEXT=C  [50:9/578-50:10/579]  INIT: null  SCOPE: f11 
+    RETURNS int TEXT=int  [50:1/570-50:4/573]
+FUNCTION f23 [51:1/582-51:13/594] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE f23(C*)
+    UNIQUE NAME F:f23(C*)
+    PARAMETERS:
+         [51:9/590-51:11/592]  TYPE: *C TEXT=C*  [51:9/590-51:10/591]  INIT: null  SCOPE: f23 
+    RETURNS int TEXT=int  [51:1/582-51:4/585]
+FUNCTION DEFINITION main  [53:1/596-59:2/714] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE main(int,char**)
+    UNIQUE NAME f:main(int,char**)
+    DECLARATION: main  [53:1/596-59:2/714]
+    PARAMETERS:
+        argc [53:10/605-53:18/613]  TYPE: int TEXT=int  [53:10/605-53:13/608]  INIT: null  SCOPE: main 
+        argv [53:20/615-53:31/626]  TYPE: **char TEXT=char**  [53:20/615-53:26/621]  INIT: null  SCOPE: main 
+    RETURNS int TEXT=int  [53:1/596-53:4/599]
+    STATEMENT COMPOUND  [53:33/628-59:2/714] SCOPE: main 
+        STATEMENT DECLARATION  [54:5/634-54:13/642] SCOPE: Stmt  [53:33/628-59:2/714]
+            VARIABLE foo [54:5/634-54:13/642]  TYPE: int TEXT=int  [54:5/634-54:8/637]  INIT: null  SCOPE: Stmt  [53:33/628-59:2/714]
+        STATEMENT EXPRESSION  [55:5/647-55:17/659] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = qweqwe'
+        STATEMENT EXPRESSION  [56:5/665-56:17/677] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = asdasd'
+        STATEMENT EXPRESSION  [57:5/683-57:17/695] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = zxczxc'
+        STATEMENT RETURN  [58:5/701-58:16/712] SCOPE: Stmt  [53:33/628-59:2/714] text: 'return foo;'
+
+========== Dumping model of PROJECT DummyProject
+VARIABLE pA [10:6/86-10:8/88]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [10:1/81-10:5/85]  INIT: null  SCOPE: $Global$ 
+VARIABLE ppA [11:7/100-11:10/103]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [11:1/94-11:6/99]  INIT: null  SCOPE: $Global$ 
+VARIABLE pppA [12:8/117-12:12/121]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [12:1/110-12:7/116]  INIT: null  SCOPE: $Global$ 
+VARIABLE f2 [14:5/134-14:7/136]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [14:1/130-14:4/133]  INIT: null  SCOPE: $Global$ 
+VARIABLE f3 [15:5/147-15:7/149]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [15:1/143-15:4/146]  INIT: null  SCOPE: $Global$ 
+VARIABLE f4 [16:5/162-16:7/164]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [16:1/158-16:4/161]  INIT: null  SCOPE: $Global$ 
+VARIABLE a [18:5/180-18:6/181]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [18:1/176-18:4/179]  INIT: null  SCOPE: $Global$ 
+VARIABLE pa [19:6/191-19:8/193]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [19:1/186-19:5/190]  INIT: null  SCOPE: $Global$ 
+VARIABLE foo_pa [20:5/203-20:11/209]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [20:1/199-20:4/202]  INIT: null  SCOPE: $Global$ 
+VARIABLE foo_1 [22:5/221-22:10/226]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [22:1/217-22:4/220]  INIT: null  SCOPE: $Global$ 
+FUNCTION foo_2 [24:1/232-24:19/250] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE foo_2(optind)
+    UNIQUE NAME F:foo_2(optind)
+    PARAMETERS:
+         [24:11/242-24:17/248]  TYPE: $unresolved$::optind TEXT=optind  [24:11/242-24:17/248]  INIT: null  SCOPE: foo_2 
+    RETURNS int TEXT=int  [24:1/232-24:4/235]
+CLASS C (C ) [48:1/557-48:12/568] lcurly=565 SCOPE: $Global$ 
+    BASE CLASSES:
+    MEMBERS:
+FUNCTION f11 [50:1/570-50:12/581] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE f11(C)
+    UNIQUE NAME F:f11(C)
+    PARAMETERS:
+         [50:9/578-50:10/579]  TYPE: C TEXT=C  [50:9/578-50:10/579]  INIT: null  SCOPE: f11 
+    RETURNS int TEXT=int  [50:1/570-50:4/573]
+FUNCTION f23 [51:1/582-51:13/594] FunctionImpl SCOPE: $Global$ 
+    DEFINITION: null
+    SIGNATURE f23(C*)
+    UNIQUE NAME F:f23(C*)
+    PARAMETERS:
+         [51:9/590-51:11/592]  TYPE: *C TEXT=C*  [51:9/590-51:10/591]  INIT: null  SCOPE: f23 
+    RETURNS int TEXT=int  [51:1/582-51:4/585]
+FUNCTION DEFINITION main  [53:1/596-59:2/714] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE main(int,char**)
+    UNIQUE NAME f:main(int,char**)
+    DECLARATION: main  [53:1/596-59:2/714]
+    PARAMETERS:
+        argc [53:10/605-53:18/613]  TYPE: int TEXT=int  [53:10/605-53:13/608]  INIT: null  SCOPE: main 
+        argv [53:20/615-53:31/626]  TYPE: **char TEXT=char**  [53:20/615-53:26/621]  INIT: null  SCOPE: main 
+    RETURNS int TEXT=int  [53:1/596-53:4/599]
+    STATEMENT COMPOUND  [53:33/628-59:2/714] SCOPE: main 
+        STATEMENT DECLARATION  [54:5/634-54:13/642] SCOPE: Stmt  [53:33/628-59:2/714]
+            VARIABLE foo [54:5/634-54:13/642]  TYPE: int TEXT=int  [54:5/634-54:8/637]  INIT: null  SCOPE: Stmt  [53:33/628-59:2/714]
+        STATEMENT EXPRESSION  [55:5/647-55:17/659] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = qweqwe'
+        STATEMENT EXPRESSION  [56:5/665-56:17/677] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = asdasd'
+        STATEMENT EXPRESSION  [57:5/683-57:17/695] SCOPE: Stmt  [53:33/628-59:2/714] text: 'foo = zxczxc'
+        STATEMENT RETURN  [58:5/701-58:16/712] SCOPE: Stmt  [53:33/628-59:2/714] text: 'return foo;'
+NAMESPACE DEFINITIONS for qwe (qwe) 
+    functions_and_variables.cc  [26:1/252-37:2/455]
+NAMESPACE qwe (qwe) 
+    VARIABLE q [27:5/272-27:11/278]  TYPE: int TEXT=int  [27:5/272-27:8/275]  INIT: null  SCOPE: qwe 
+    NAMESPACE DEFINITIONS for asd (qwe::asd) 
+        functions_and_variables.cc  [28:5/283-36:6/453]
+    NAMESPACE asd (qwe::asd) 
+        VARIABLE a [29:9/307-29:15/313]  TYPE: int TEXT=int  [29:9/307-29:12/310]  INIT: null  SCOPE: asd 
+        NAMESPACE DEFINITIONS for zxc (qwe::asd::zxc) 
+            functions_and_variables.cc  [30:9/322-35:10/447]
+        NAMESPACE zxc (qwe::asd::zxc) 
+            VARIABLE z [31:13/350-31:19/356]  TYPE: int TEXT=int  [31:13/350-31:16/353]  INIT: null  SCOPE: zxc 
+            VARIABLE qweqwe [32:17/373-32:23/379]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [32:13/369-32:16/372]  INIT: null  SCOPE: zxc 
+            VARIABLE asdasd [33:17/400-33:23/406]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [33:13/396-33:16/399]  INIT: null  SCOPE: zxc 
+            VARIABLE zxczxc [34:17/427-34:23/433]  TYPE: CSM_TYPE_BUILTIN TEXT=CSM_TYPE_BUILTIN  [34:13/423-34:16/426]  INIT: null  SCOPE: zxc 
+

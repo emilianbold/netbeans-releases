@@ -252,6 +252,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("k_and_r_params.c"); // NOI18N
     }
     
+    public void testFunctionsAndVariables() throws Exception {
+        performTest("functions_and_variables.cc"); // NOI18N
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

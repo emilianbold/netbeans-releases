@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.CacheUtil;
+import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 
 /**
  * Miscellaneous AST-related static utility functions
@@ -273,6 +274,20 @@ public class AstUtil {
             return getLastChildRecursively(child);
         }
     }
+    
+    public static CsmAST getFirstCsmAST(AST node) {
+        if( node != null ) {
+            if( node instanceof CsmAST ) {
+                return (CsmAST) node;
+            }
+            else {
+                return getFirstCsmAST(node.getFirstChild());
+            }
+        }
+        return null;
+    }
+    
+    
     
     public static void toStream(AST ast, final PrintStream ps) {
         ASTVisitor impl = new ASTVisitor() {
