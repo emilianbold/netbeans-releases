@@ -169,6 +169,7 @@ public abstract class TestBase extends RubyTestBase {
     }
     
     protected boolean tryToSwitchToRDebugIDE() {
+        assertFalse("JRuby Fast debugger not supported yet", platform.isJRuby());
         boolean available = isRDebugExecutableCorrectlySet();
         if (available) {
             switchToRDebugIDE();
@@ -177,23 +178,21 @@ public abstract class TestBase extends RubyTestBase {
     }
     
     protected void switchToRDebugIDE() {
-        throw new UnsupportedOperationException("not implemented yet");
-        // XXX
-//        DebuggerPreferences.getInstance().setUseClassicDebugger(false);
-//        File rubyExecutable = TestBase.getFile("ruby.executable", true);
-//        RubyInstallation.getInstance().setRuby(rubyExecutable.getAbsolutePath());
+        assertFalse("JRuby Fast debugger not supported yet", platform.isJRuby());
+        DebuggerPreferences.getInstance().setUseClassicDebugger(platform, false);
     }
 
     protected void switchToJRuby() {
         platform = RubyPlatformManager.getDefaultPlatform();
     }
 
-    private File getRDebugExecutable(boolean failIfNotAvailable) {
-        return TestBase.getFile("rdebug.executable", failIfNotAvailable);
+    private File getRDebugExecutable() {
+        String rdebug = Util.findRDebugExecutable(platform);
+        return rdebug == null ? null : new File(rdebug);
     }
 
     private boolean isRDebugExecutableCorrectlySet() {
-        File rdebugExecutable = getRDebugExecutable(false);
+        File rdebugExecutable = getRDebugExecutable();
         return rdebugExecutable != null && rdebugExecutable.isFile();
     }
 
