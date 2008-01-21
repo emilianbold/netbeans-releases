@@ -39,17 +39,11 @@
 
 package org.netbeans.api.server.properties;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-
 /**
  *
  * @author Petr Hejl
  */
 public abstract class InstanceProperties {
-
-    private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
     private final String id;
 
@@ -57,66 +51,43 @@ public abstract class InstanceProperties {
         this.id = id;
     }
 
+    /**
+     * Returns unique id of these properties. It is guaranteed that this id is
+     * unique in the scope of single plugin (plugin identifier) used in manager.
+     *
+     * @return id of the properties unique in the scope of the single plugin
+     * @see PropertiesManager#createProperties(String)
+     */
     public String getId() {
         return id;
     }
 
-    @Override
-    public final boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final InstanceProperties other = (InstanceProperties) obj;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
-            return false;
-        }
-        return true;
-    }
+    public abstract String getString(String key, String def);
 
-    @Override
-    public final int hashCode() {
-        int hash = 3;
-        hash = 29 * hash + (this.id != null ? this.id.hashCode() : 0);
-        return hash;
-    }
+    public abstract void putString(String key, String value);
 
-    public final void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(propertyName, listener);
-    }
+    public abstract boolean getBoolean(String key, boolean def);
 
-    public final void addPropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.addPropertyChangeListener(listener);
-    }
+    public abstract void putBoolean(String key, boolean value);
 
-    public final void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(propertyName, listener);
-    }
+    public abstract int getInt(String key, int def);
 
-    public final void removePropertyChangeListener(PropertyChangeListener listener) {
-        changeSupport.removePropertyChangeListener(listener);
-    }
+    public abstract void putInt(String key, int value);
 
-    public abstract String get(String key, String def);
+    public abstract long getLong(String key, long def);
 
-    public abstract void put(String key, String value);
+    public abstract void putLong(String key, long value);
+
+    public abstract float getFloat(String key, float def);
+
+    public abstract void putFloat(String key, float value);
+
+    public abstract double getDouble(String key, double def);
+
+    public abstract void putDouble(String key, double value);
 
     public abstract void removeKey(String key);
 
     public abstract void remove();
-
-    protected final void firePropertyChange(PropertyChangeEvent evt) {
-        changeSupport.firePropertyChange(evt);
-    }
-
-    protected final void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-        changeSupport.firePropertyChange(propertyName, oldValue, newValue);
-    }
-
-    protected final void fireIndexedPropertyChange(String propertyName, int index, Object oldValue, Object newValue) {
-        changeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
-    }
 
 }
