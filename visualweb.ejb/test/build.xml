@@ -27,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -42,15 +42,18 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project basedir="." default="all" name="org.netbeans.modules.visualweb.ejb/test">
-    <!-- Name of tested module   -->    <property name="xtest.module" value="org.netbeans.modules.visualweb.ejb"/>
-    <property name="xtest.home" location="../../../xtest"/>
+<project basedir="." default="all" name="visualweb/ejb/test">
+
+    <!-- Name of tested module   -->
+    <property name="xtest.module" value="visualweb/ejb"/>
 
     <import file="../../../nbbuild/templates/xtest.xml"/>
 
-    <!-- default testtypes, attributes used when no value is supplied from command line -->    <property name="xtest.testtype" value="qa-functional"/>
+    <!-- default testtypes, attributes used when no value is supplied from command line -->
+    <property name="xtest.testtype" value="qa-functional"/>
     <property name="xtest.attribs" value="acceptance"/>
     <!-- Set xtest.ide.error.manager to false only if need to disable all Exception thrown by IDE-->
     <property name="xtest.ide.error.manager" value="true"/>
 
 </project>
+
