@@ -482,7 +482,7 @@ public final class RubyPlatform {
         do {
             String binDir = getBinDir();
             if (binDir != null) {
-                LOGGER.finest("Looking for '" + toFind + "' gem executable; used intepreter: '" + getInterpreter() + "'"); // NOI18N
+                LOGGER.finest("Looking for '" + toFind + "' executable; used intepreter: '" + getInterpreter() + "'"); // NOI18N
                 exec = RubyPlatform.findExecutable(binDir, toFind);
             } else {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
@@ -500,6 +500,9 @@ public final class RubyPlatform {
         // try *.bat commands on Windows
         if (exec == null && !toFind.endsWith(".bat") && Utilities.isWindows()) { // NOI18N
             exec = findExecutable(toFind + ".bat"); // NOI18N
+        }
+        if (exec != null) {
+            LOGGER.finest("Found '" + toFind + "': '" + exec + "'");
         }
         return exec;
     }
@@ -532,7 +535,7 @@ public final class RubyPlatform {
         if (stubsFO == null) {
             // Core classes: Stubs generated for the "builtin" Ruby libraries.
             File clusterFile = InstalledFileLocator.getDefault().locate(
-                    "modules/org-netbeans-modules-ruby-project.jar", null, false);
+                    "modules/org-netbeans-modules-ruby-project.jar", null, false); // NOI18N
 
             if (clusterFile != null) {
                 File rubyStubs =
