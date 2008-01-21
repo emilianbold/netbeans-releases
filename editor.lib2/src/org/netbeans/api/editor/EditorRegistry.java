@@ -271,8 +271,10 @@ public final class EditorRegistry {
                 // In practice this notification happens first before focusLost() from focus listener.
                 if (textComponent != null) {
                     focusLost(textComponent, null); // Checks if the component is focused and does nothing otherwise
+                    item = removeFromRegistry(item);
+                } else { // Null text component - just remove the item
+                    item = removeItem(item);
                 }
-                item = removeFromRegistry(item);
             } else {
                 item = item.next;
             }
