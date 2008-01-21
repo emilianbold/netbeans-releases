@@ -55,10 +55,13 @@ import javax.swing.text.Position;
 
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtEditorUI;
+import org.netbeans.editor.ext.ExtSettingsDefaults;
+import org.netbeans.editor.ext.ExtSettingsNames;
 import org.netbeans.editor.ext.ExtUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -131,6 +134,8 @@ public class CsmCompletionProvider implements CompletionProvider {
         
         private String filterPrefix;
         
+        private boolean caseSensitive = false;
+        
         Query(int caretOffset) {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
@@ -140,6 +145,8 @@ public class CsmCompletionProvider implements CompletionProvider {
         protected void preQueryUpdate(JTextComponent component) {
             int caretOffset = component.getCaretPosition();
             Document doc = component.getDocument();
+            Class kitClass = Utilities.getKitClass(component);
+            caseSensitive = kitClass != null ? getCaseSensitive(kitClass) : false;
             if (creationCaretOffset > 0 && caretOffset >= creationCaretOffset) {
                 try {
                     if (isJavaIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset)))
@@ -150,6 +157,12 @@ public class CsmCompletionProvider implements CompletionProvider {
             Completion.get().hideCompletion();
         }        
         
+        private boolean getCaseSensitive(Class kitClass) {
+            return SettingsUtil.getBoolean(kitClass,
+                ExtSettingsNames.COMPLETION_CASE_SENSITIVE,
+                ExtSettingsDefaults.defaultCompletionCaseSensitive);
+        }        
+    
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             boolean hide = (caretOffset > creationCaretOffset) && (filterPrefix == null);
             if (!hide) {
@@ -229,13 +242,17 @@ public class CsmCompletionProvider implements CompletionProvider {
             for (Iterator it = data.iterator(); it.hasNext();) {
                 CompletionQuery.ResultItem itm = (CompletionQuery.ResultItem) it.next();
                 // TODO: filter
-                if (itm.getItemText().startsWith(prefix) /* || prefix.length() == 0*/ ) {
+                if (matchPrefix(itm.getItemText(), prefix, caseSensitive) /* || prefix.length() == 0*/ ) {
 //                if (JMIUtils.startsWith(itm.getItemText(), prefix)
 //                        || (camelCase && (itm instanceof NbJMIResultItem.ClassResultItem) && JMIUtils.matchesCamelCase(itm.getItemText(), prefix)))
                     ret.add(itm);
                 }
             }
             return ret;
+        }
+        
+        private boolean matchPrefix(String text, String prefix, boolean caseSensitive) {
+            return caseSensitive ? text.startsWith(prefix) : text.toLowerCase().startsWith(prefix.toLowerCase());
         }
         
         private String getFilteredTitle(String title, String prefix) {
