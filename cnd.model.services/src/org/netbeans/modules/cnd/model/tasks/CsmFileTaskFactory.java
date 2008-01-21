@@ -157,7 +157,7 @@ public abstract class CsmFileTaskFactory {
         Runnable task = csm2task.get(file);
         
         if (task!=null) {
-            WORKER.post(task);
+            WORKER.post(new SafeRunner(task, file));
         }
     }
     
@@ -176,7 +176,7 @@ public abstract class CsmFileTaskFactory {
 
         @Override
         public void fileParsingFinished(CsmFile file) {
-            runTask(file);
+                runTask(file);
         }
     }
     
@@ -193,6 +193,21 @@ public abstract class CsmFileTaskFactory {
                 // do nothing either
             }
         };
+    }
+    
+    private static final class SafeRunner implements Runnable {
+        private CsmFile file;
+        private Runnable run;
+        public SafeRunner(Runnable run, CsmFile file) {
+            this.run = run;
+            this.file = file;
+        }
+
+        public void run() {
+            if (file.isValid() && (file.isHeaderFile() || file.isSourceFile())) {
+                run.run();
+            }
+        }
     }
 
 }
