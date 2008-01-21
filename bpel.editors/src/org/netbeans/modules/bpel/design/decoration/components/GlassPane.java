@@ -54,6 +54,7 @@ import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.geometry.FStroke;
@@ -66,7 +67,7 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
     
     private JPanel labelPane;
     private JButton hideButton;
-    private JEditorPane editorPane;
+    private JTextComponent editorPane;
     private JScrollPane scrollPane;
     private StringBuffer html = new StringBuffer();
     
@@ -76,27 +77,24 @@ public class GlassPane extends JPanel implements ActionListener, FocusListener, 
         setPreferredSize(new Dimension(320, 180)); 
         setOpaque(false);
 
-        editorPane = new JEditorPane() {
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                        RenderingHints.VALUE_ANTIALIAS_ON);
-                super.paintComponent(g2);
-                g2.dispose();
-            }
-        };
-        String type;
-        editorPane.setEditable(editable);
-
         if (editable) {
-          type = "text/plain";
+          editorPane = new javax.swing.JTextArea();
         }
         else {
-          type = "text/html";
+          editorPane = new JEditorPane() {
+              protected void paintComponent(Graphics g) {
+                  Graphics2D g2 = (Graphics2D) g.create();
+                  g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                          RenderingHints.VALUE_ANTIALIAS_ON);
+                  super.paintComponent(g2);
+                  g2.dispose();
+              }
+          };
+          String type = "text/html"; // NOI18N
+          ((JEditorPane) editorPane).setContentType(type);
+          ((JEditorPane) editorPane).setEditorKitForContentType(type, new HTMLEditorKit());
         }
-        editorPane.setEditorKitForContentType(type, new HTMLEditorKit());
-        editorPane.setContentType(type);
-
+        editorPane.setEditable(editable);
         editorPane.setBackground(null);
         editorPane.setBorder(null);
         editorPane.setOpaque(false);

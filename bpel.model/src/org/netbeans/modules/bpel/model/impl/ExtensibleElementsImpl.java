@@ -60,7 +60,14 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
       return documentation.getContent();
     }
 
-    public void setDocumentation(String content) throws VetoException {
+    public void setDocumentation(String value) throws VetoException {
+      String content = getContent(value);
+//System.out.println();
+//System.out.println("SET DOCUMENTATION");
+//System.out.println("  value: '" + value + "'");
+//System.out.println("content: '" + content + "'");
+//System.out.println();
+      
       if (content == null) {
         if (sizeOfDocumentations() != 0) {
           removeDocumentation(0);
@@ -75,6 +82,18 @@ public abstract class ExtensibleElementsImpl extends BpelContainerImpl implement
         }
         insertDocumentation(documentation, 0);
       }
+    }
+
+    private String getContent(String value) {
+      if (value == null) {
+        return null;
+      }
+      value = value.trim();
+
+      if (value.length() == 0) {
+        return null;
+      }
+      return value;
     }
 
     public void removeDocumentation() throws VetoException {
