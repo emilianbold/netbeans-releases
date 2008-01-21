@@ -387,13 +387,40 @@ public class Settings {
 
         // read the value according to the guessed type of the setting
         if (settingName != null && SettingsNames.ABBREV_MAP.equals(settingName)) {
-            value = findCodeTemplates(mimePath);
+            Object abbrevsFromInitializers = getValueOld(kitClass, SettingsNames.ABBREV_MAP, true);
+            Map<String, String> abbrevs = findCodeTemplates(mimePath);
+            
+            if (abbrevsFromInitializers instanceof Map) {
+                value = new HashMap((Map)abbrevsFromInitializers);
+                ((Map) value).putAll(abbrevs);
+            } else {
+                value = abbrevs;
+            }
+            
             hasValue = true;
         } else if (settingName != null && SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
-            value = findKeyBindings(mimePath);
+            Object keybindingsFromInitializers = getValueOld(kitClass, SettingsNames.KEY_BINDING_LIST, true);
+            List<MultiKeyBinding> keybindings = findKeyBindings(mimePath);
+            
+            if (keybindingsFromInitializers instanceof List) {
+                value = new ArrayList((List) keybindingsFromInitializers);
+                ((List) value).addAll(keybindings);
+            } else {
+                value = keybindings;
+            }
+            
             hasValue = true;
         } else if (settingName != null && SettingsNames.MACRO_MAP.equals(settingName)) {
-            value = findMacros(mimePath);
+            Object macrosFromInitializers = getValueOld(kitClass, SettingsNames.MACRO_MAP, true);
+            Map<String, String> macros = findMacros(mimePath);
+
+            if (macrosFromInitializers instanceof Map) {
+                value = new HashMap((Map)macrosFromInitializers);
+                ((Map) value).putAll(macros);
+            } else {
+                value = macros;
+            }
+            
             hasValue = true;
         } else {
             // Check if the requested setting is a coloring
@@ -469,25 +496,32 @@ public class Settings {
         
         // Fallback on to the kitmaps
         if (!hasValue) {
-            List allKitMaps = getAllKitMaps(kitClass);
-            assert allKitMaps.size() % 2 == 0 : "allKitMaps should contain pairs of [kitClass, settingsMap]."; //NOI18N
-            
-            for(int i = 0; i < allKitMaps.size() / 2; i++) {
-                Class kc = (Class) allKitMaps.get(2 * i);
-                Map map = (Map) allKitMaps.get(2 * i + 1);
-                value = map.get(settingName);
-                if (evaluateEvaluators && value instanceof Evaluator) {
-                    value = ((Evaluator)value).getValue(kc, settingName);
-                }
-                if (value != null) {
-                    break;
-                }
-            }
+            value = getValueOld(kitClass, settingName, evaluateEvaluators);
         }
 
         return value;
     }
 
+    private static Object getValueOld(Class kitClass, String settingName, boolean evaluateEvaluators) {
+        Object value = null;
+        List allKitMaps = getAllKitMaps(kitClass);
+        assert allKitMaps.size() % 2 == 0 : "allKitMaps should contain pairs of [kitClass, settingsMap]."; //NOI18N
+
+        for(int i = 0; i < allKitMaps.size() / 2; i++) {
+            Class kc = (Class) allKitMaps.get(2 * i);
+            Map map = (Map) allKitMaps.get(2 * i + 1);
+            value = map.get(settingName);
+            if (evaluateEvaluators && value instanceof Evaluator) {
+                value = ((Evaluator)value).getValue(kc, settingName);
+            }
+            if (value != null) {
+                break;
+            }
+        }
+        
+        return value;
+    }
+    
     /** Get the value hierarchy and evaluate the evaluators */
     public static KitAndValue[] getValueHierarchy(Class kitClass, String settingName) {
         return getValueHierarchy(kitClass, settingName, true);
@@ -862,17 +896,6 @@ public class Settings {
                 }
             }
 
-            // Add the bridge for loading values supplied from MimeLookup
-            if (!emptyMap.containsKey(SettingsNames.ABBREV_MAP)) {
-                emptyMap.put(SettingsNames.ABBREV_MAP, S2ML_BRIDGE);
-            }
-            if (!emptyMap.containsKey(SettingsNames.KEY_BINDING_LIST)) {
-                emptyMap.put(SettingsNames.KEY_BINDING_LIST, S2ML_BRIDGE);
-            }
-            if (!emptyMap.containsKey(SettingsNames.MACRO_MAP)) {
-                emptyMap.put(SettingsNames.MACRO_MAP, S2ML_BRIDGE);
-            }
-            
             kitMap = emptyMap;
             
             kit2Maps.put(kitClass, kitMap);
@@ -1406,27 +1429,6 @@ public class Settings {
         return macros;
     }
 
-    private static final SettingsToMimeLookupBridge S2ML_BRIDGE = new SettingsToMimeLookupBridge();
-    
-    private static final class SettingsToMimeLookupBridge implements Evaluator {
-        public Object getValue(Class kitClass, String settingName) {
-            String mimeType = BaseKit.kitsTracker_FindMimeType(kitClass);
-            MimePath mimePath = mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType);
-            
-            if (SettingsNames.ABBREV_MAP.equals(settingName)) {
-                return findCodeTemplates(mimePath);
-            }
-            if (SettingsNames.KEY_BINDING_LIST.equals(settingName)) {
-                return findKeyBindings(mimePath);
-            }
-            if (SettingsNames.MACRO_MAP.equals(settingName)) {
-                return findMacros(mimePath);
-            }
-            
-            return null;
-        }
-    } // End of SettingsToMimeLookupBridge class
-    
     /** Coverts Insets to String representation */
     private static String insetsToString(Insets ins) {
         StringBuilder sb = new StringBuilder();
