@@ -979,6 +979,7 @@ public class BindingDesignSupport {
                 buf.append(", "); // NOI18N
             }
             buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getTarget().getCodeExpression(), "this")); // NOI18N
+            buildBindingNameCode(prop, buf);
             buf.append(");\n"); // NOI18N
             if (bindingDef.hasSubBindings()) {
                 for (MetaBinding sub : bindingDef.getSubBindings()) {
@@ -1042,6 +1043,7 @@ public class BindingDesignSupport {
                 buf.append(", "); // NOI18N
             }
             buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getTarget().getCodeExpression(), "this")); // NOI18N
+            buildBindingNameCode(prop, buf);
             buf.append(");\n"); // NOI18N
             String detailPath = bindingDef.getParameter(MetaBinding.DISPLAY_PARAMETER);
             if (detailPath != null) {
@@ -1071,16 +1073,8 @@ public class BindingDesignSupport {
                 buf.append(", "); // NOI18N
             }
             buf.append(JavaCodeGenerator.getExpressionJavaString(bindingDef.getTarget().getCodeExpression(), "this")); // NOI18N
+            buildBindingNameCode(prop, buf);
             buf.append(");\n"); // NOI18N
-//            String detailPath = bindingDef.getParameter(MetaBinding.DISPLAY_PARAMETER);
-//            if (detailPath != null) {
-//                buf.append(variable);
-//                buf.append(".setDetailBinding("); // NOI18N
-//                buf.append(ELProperty.class.getName());
-//                buf.append(".create(\""); // NOI18N
-//                buf.append(detailPath);
-//                buf.append("\"));\n"); // NOI18N
-//            }
         } else {
             variable = generator.getBindingDescriptionVariable(Binding.class, buf, false);
             StringBuilder sb = new StringBuilder();
@@ -1152,6 +1146,12 @@ public class BindingDesignSupport {
             buf.append(ObjectProperty.class.getName());
             buf.append(".create()"); // NOI18N
         }
+        buildBindingNameCode(prop, buf);
+        buf.append(");\n"); // NOI18N
+    }
+
+    private static void buildBindingNameCode(BindingProperty prop, StringBuilder buf) {
+        MetaBinding bindingDef = prop.getValue();
         if (bindingDef.isNameSpecified()) {
             try {
                 FormProperty property = prop.getNameProperty();
@@ -1166,7 +1166,6 @@ public class BindingDesignSupport {
                 itex.printStackTrace();
             }
         }
-        buf.append(");\n"); // NOI18N
     }
 
     private static Binding createBinding0(MetaBinding bindingDef, Object source, Object target, BindingGroup group) {
