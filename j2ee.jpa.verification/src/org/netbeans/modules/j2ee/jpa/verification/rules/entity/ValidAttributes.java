@@ -52,7 +52,6 @@ import org.netbeans.modules.j2ee.jpa.verification.JPAEntityAttributeCheck;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemContext;
 import org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder;
 import org.netbeans.modules.j2ee.jpa.verification.common.ProblemContext;
-import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.AttrIsEncapsulated;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.GeneratedValueIsId;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.MVRelationshipForEntityTypeAttrDefined;
 import org.netbeans.modules.j2ee.jpa.verification.rules.attribute.RelationshipForEntityTypeAttrDefined;
@@ -81,7 +80,6 @@ public class ValidAttributes extends JPAClassRule {
         new ValidBasicType(),
         new RelationshipForEntityTypeAttrDefined(),
         new MVRelationshipForEntityTypeAttrDefined(),
-        new AttrIsEncapsulated(),
         new ValidVersionType(),
         new GeneratedValueIsId(),
         new TemporalFieldsAnnotated()
