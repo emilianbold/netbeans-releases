@@ -164,6 +164,10 @@
         <cvs package="${test.cvs.modules}" cvsRoot="${test.cvs.root}" dest="${test}" command="-q co -P ${test.cvs.branch}" failonerror="false"/>
     </target>
 
+    <target name="test">
+        <ant dir="${home}/print" target="test"/>
+    </target>
+
     <target name="test-0">
         <!-- samples -->
         <subant target="default" inheritAll="false">

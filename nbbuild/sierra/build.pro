@@ -71,6 +71,7 @@
     <property name="sources.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
     <property name="sources.cvs.branch" value="-A"/>
     <property name="sources.cvs.modules" value="
+        ant/browsetask/nbproject
         ant/nbproject
         ant/project/nbproject
         apisupport/harness/external
@@ -95,6 +96,7 @@
         debuggercore/api/nbproject
         debuggercore/nbproject
         debuggercore/viewmodel/nbproject
+        debuggerjpda/ant/nbproject
         debuggerjpda/api/nbproject
         diff/nbproject
         editor/codetemplates/nbproject
@@ -103,6 +105,7 @@
         editor/errorstripe/nbproject
         editor/fold/nbproject
         editor/guards/nbproject
+        editor/hints/highlights/nbproject
         editor/hints/nbproject
         editor/indent/nbproject
         editor/lib/nbproject
@@ -119,12 +122,14 @@
         j2ee/ejbapi/nbproject
         j2ee/metadata/nbproject
         j2ee/metadata/support/nbproject
+        j2ee/persistenceapi/nbproject
         j2ee/utilities/nbproject
         j2eeserver/j2eeapis/external
         j2eeserver/j2eeapis/nbproject
         j2eeserver/nbproject
         java/api/nbproject
         java/editor/lib/nbproject
+        java/j2seproject/nbproject
         java/lexer/nbproject
         java/platform/nbproject
         java/project/nbproject
@@ -170,6 +175,7 @@
         serverplugins/server/nbproject
         serverplugins/sun/appsrv/nbproject
         serverplugins/sun/sunddapi/nbproject
+        utilities/gototest/nbproject
         utilities/jumpto/nbproject
         web/webapi/nbproject
         websvc/clientapi/nbproject
