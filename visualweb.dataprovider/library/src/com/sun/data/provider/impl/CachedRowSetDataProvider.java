@@ -179,7 +179,12 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
      * Set to true if the rowset has been executed
      */
     private boolean executed = false;
-
+    
+    /**
+     * Set to true when rowset command had changed
+     */
+    private boolean refreshMetaDataFile = false; 
+    
     /**
      * <p>{@link PropertyChangeListener} registered with the {@link CachedRowSetX}.</p>
      */
@@ -1130,6 +1135,7 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                     fieldKeys = null;
                     fieldKeysMap = null;
                     executed = false;
+                    refreshMetaDataFile = true;
                     fireProviderChanged();
                 }
         }
@@ -1430,17 +1436,39 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
      */
     private ResultSetMetaData getMetaData() {
 
-        if (metaData == null) {
+        if (metaData == null) {          
             if (getCachedRowSet() != null) {
                 try {
-                    metaData = getCachedRowSet().getMetaData();
+                    // Generate filename for serialized result set metadata
+                    MetaDataSerializer mdSerializer = new MetaDataSerializer();
+                    String filename = mdSerializer.generateMetaDataName(generateFilename());                    
+                    
+                    // the filename path begins with NetBeans userdir which is underdetermined at runtime
+                    if (filename.startsWith("null")){ // NOI18N
+                        metaData = getCachedRowSet().getMetaData();
+                    } else {             
+                        // if it's the first time using a rowset then need to get live data prior to serializing
+                        if (!mdSerializer.mdFileNameExists(filename)) {
+                            metaData = getCachedRowSet().getMetaData();
+                            mdSerializer.serialize(metaData, filename);
+                        } else {
+                            // create metadata file if flag is true
+                            if (refreshMetaDataFile && ((new File(filename).exists()))) {
+                                metaData = getCachedRowSet().getMetaData();
+                                mdSerializer.serialize(metaData, filename);
+                                refreshMetaDataFile = false;
+                            }
+                            // Deserialize file now that it is available                            
+                            metaData = new MetaDataDeserializer().deserialize(filename);
+                        }
+                    }                                       
                 } catch (SQLException e) {
-                    throw new RuntimeException(e); // FIXME - exception type?
+                    throw new RuntimeException(e);
                 }
             }
         }
+                
         return metaData;
-
     }
 
 
@@ -1664,5 +1692,20 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
 
         }
 
+    }        
+    
+    private String generateFilename() {
+        // Serialize ResultSetMetaData for improved design-time performance
+
+        String dataSourceName = getCachedRowSet().getDataSourceName().replaceFirst("java:comp/env/jdbc/", ""); // NOI18N   
+        String commandName = getCachedRowSet().getCommand().replaceAll(" ", "").replaceAll("\\p{Punct}+", ""); // NOI18N
+        commandName = commandName.replaceFirst("SELECTFROM", ""); // NOI18N
+        commandName = commandName.replaceFirst("SELECTALL", ""); // NOI18N
+
+        if (commandName.length() > 20) {
+            commandName = commandName.substring(0, 20);
+        }
+
+        return dataSourceName + "_" + commandName; // NOI18N
     }
 }
