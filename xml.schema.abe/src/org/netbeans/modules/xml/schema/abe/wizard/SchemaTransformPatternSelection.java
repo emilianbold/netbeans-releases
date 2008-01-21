@@ -42,6 +42,7 @@
 package org.netbeans.modules.xml.schema.abe.wizard;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -49,19 +50,21 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.axi.Element;
 import org.netbeans.modules.xml.axi.SchemaGenerator;
 import org.netbeans.modules.xml.axi.SchemaGeneratorFactory;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class SchemaTransformPatternSelection implements WizardDescriptor.Panel, ChangeListener {
     private static final long serialVersionUID = 1L;
+    private static final long file_size_warning = 512*1024L;
     
     SchemaGenerator.Pattern inferedPattern;
     
@@ -167,11 +170,17 @@ public class SchemaTransformPatternSelection implements WizardDescriptor.Panel, 
                                     "LBL_SchemaTransform_"+other.toString())});
                     return false;
                 } else {
+                    String perfWarning = "";
+                    if(canAddPerformanceWarning()) {
+                        perfWarning = NbBundle.getMessage(
+                                    SchemaTransformPatternSelectionUI.class,
+                                    "MSG_SchemaTransform_Warning_BIG_SCHEMA");
+                    }                    
                     String warningMsgKey = "MSG_SchemaTransform_Warning_"+hint.toString();
                     setErrorMessage(warningMsgKey,
                             new Object[]{NbBundle.getMessage(
                                     SchemaTransformPatternSelectionUI.class,
-                                    "LBL_SchemaTransform_"+selectedPattern.toString())});
+                                    "LBL_SchemaTransform_"+selectedPattern.toString()), perfWarning});
                     return true;
                 }
             }
@@ -213,6 +222,26 @@ public class SchemaTransformPatternSelection implements WizardDescriptor.Panel, 
             setLocalizedErrorMessage(
                     NbBundle.getMessage(SchemaTransformPatternSelection.class, key, params)); // NOI18N
         }
+    }
+    
+    private boolean canAddPerformanceWarning() {
+            SchemaGenerator.Pattern selectedPattern = (SchemaGenerator.Pattern)
+            wizard.getProperty(SchemaTransformWizard.SELECTED_DESIGN_PATTERN_KEY);
+            if(selectedPattern != SchemaGenerator.Pattern.SALAMI_SLICE) {
+                return false;
+            }
+            SchemaModel sm = (SchemaModel)
+            wizard.getProperty(SchemaTransformWizard.SCHEMA_MODEL_KEY);
+            FileObject fo = (FileObject) sm.getModelSource().getLookup().
+                    lookup(FileObject.class);
+            if(fo == null)
+                return false;
+            
+            File file = FileUtil.toFile(fo); 
+            if(file.length() > file_size_warning)
+                return true;
+            
+            return false;
     }
     
     private void setLocalizedErrorMessage(String message) {
