@@ -48,6 +48,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -87,6 +88,22 @@ import org.openide.util.NbBundle;
 public final class UI {
 
   private UI() {}
+
+  public static boolean isAlt(int modifiers) {
+    return isModifier(modifiers, KeyEvent.ALT_MASK);
+  }
+
+  public static boolean isShift(int modifiers) {
+    return isModifier(modifiers, KeyEvent.SHIFT_MASK);
+  }
+
+  public static boolean isCtrl(int modifiers) {
+    return isModifier(modifiers, KeyEvent.CTRL_MASK);
+  }
+
+  private static boolean isModifier(int modifiers, int mask) {
+    return (modifiers & mask) != 0;
+  }
 
   public static JLabel createLabel(String message) {
     JLabel label = new JLabel();
