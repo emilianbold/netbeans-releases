@@ -365,7 +365,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
     
     private void ensureFolderExists(File folder) throws IOException {
         if(!folder.exists()) {
-            folder.mkdir();
+            FileUtil.createFolder(folder);
         }
     }
     
