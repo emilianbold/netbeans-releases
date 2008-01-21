@@ -106,8 +106,6 @@ public class CCKit extends NbEditorKit {
         super.initDocument(doc);
         doc.putProperty(InputAttributes.class, getLexerAttributes());        
         doc.putProperty(Language.class, getLanguage());
-        // Force '\n' as write line separator
-        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
     }
     
     protected Language<CppTokenId> getLanguage() {
