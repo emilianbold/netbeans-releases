@@ -247,7 +247,7 @@ public abstract class BackupFacility {
             if (parent!=null) {
                 createNewFolder(parent);
             }
-            f.createNewFile();
+            FileUtil.createData(f);
             return false;
         }
         
@@ -257,7 +257,7 @@ public abstract class BackupFacility {
                 if (parent != null) {
                     createNewFolder(parent);
                 }
-                f.mkdir();
+                 FileUtil.createFolder(f);
             }
         }
         
