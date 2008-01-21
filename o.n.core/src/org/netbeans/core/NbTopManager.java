@@ -58,6 +58,7 @@ import java.util.prefs.PreferenceChangeListener;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.ModuleManager;
 import org.netbeans.TopSecurityManager;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ModuleSystem;

@@ -1072,13 +1072,13 @@ final class NbInstaller extends ModuleInstaller {
         for (String[] cpjar : CLASSPATH_JARS) {
             if (kosher != null && name.startsWith(cpjar[0])) {
                 // Restricted JAR.
-                StringBuffer entry = null; // will be set if there are any packages
+                StringBuilder entry = null; // will be set if there are any packages
                 for (int k = 1; k < cpjar.length; k++) {
                     String pkg = cpjar[k];
                     if (kosher.contains(pkg)) {
                         // Module is permitted to use this package.
                         if (entry == null) {
-                            entry = new StringBuffer(100);
+                            entry = new StringBuilder(100);
                             entry.append(cpEntry.getAbsolutePath());
                             entry.append('['); // NOI18N
                         } else {
@@ -1137,7 +1137,7 @@ final class NbInstaller extends ModuleInstaller {
                 return;
             }
             // Only certain packages are exported, so list them explicitly.
-            StringBuffer b = new StringBuffer(100);
+            StringBuilder b = new StringBuilder(100);
             b.append('['); // NOI18N
             for (int i = 0; i < exports.length; i++) {
                 if (i > 0) {

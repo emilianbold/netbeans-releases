@@ -54,6 +54,7 @@ import org.openide.util.*;
 import org.openide.modules.*;
 import java.io.*;
 import java.net.URI;
+import java.util.logging.Level;
 import org.openide.filesystems.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -67,6 +68,7 @@ public class ModuleListTest extends SetupHid {
     static {
         System.setProperty("org.openide.util.Lookup", L.class.getName());
     }
+    private File ud;
     public static final class L extends ProxyLookup {
         public L() {
             super(new Lookup[] {
@@ -101,6 +103,11 @@ public class ModuleListTest extends SetupHid {
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
+        
+        ud = new File(getWorkDir(), "ud");
+        ud.mkdirs();
+        System.setProperty("netbeans.user", ud.getPath());
+        
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
         mgr = new ModuleManager(installer, ev);
@@ -183,6 +190,53 @@ public class ModuleListTest extends SetupHid {
         // ModuleList, parsed, and result in org.foo being turned back on.
         listener2.waitForChange(m1, Module.PROP_ENABLED);
         assertTrue("m1 is enabled now", m1.isEnabled());
+        
+        assertCache();
+    }
+    
+    private void assertCache() throws Exception {
+        File f = new File(new File(new File(System.getProperty("netbeans.user"), "var"), "cache"), "all-modules.xml");
+        assertTrue("Cache exists", f.exists());
+
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(getWorkDir());
+        FileObject mf = lfs.findResource(modulesfolder.getPath());
+        assertNotNull("config folder exits", mf);
+        
+        CountingSecurityManager.initialize(new File(lfs.getRootDirectory(), "Modules").getPath());
+        
+        FakeModuleInstaller installer = new FakeModuleInstaller();
+        FakeEvents ev = new FakeEvents();
+        ModuleManager mgr2 = new ModuleManager(installer, ev);
+        assertNotNull(mf);
+        ModuleList list2 = new ModuleList(mgr2, mf, ev);
+        mgr2.mutexPrivileged().enterWriteAccess();
+        CharSequence log = Log.enable("org.netbeans.core.startup.ModuleList", Level.FINEST);
+        try {
+            list2.readInitial();
+        } finally {
+            mgr2.mutexPrivileged().exitWriteAccess();
+        }
+        if (log.toString().indexOf("no cache") >= 0) {
+            fail("Everything shall be read from cache:\n" + log);
+        }
+        if (log.toString().indexOf("Reading cache") < 0) {
+            fail("Cache shall be read:\n" + log);
+        }
+
+        Set<String> moduleNew = cnbs(mgr2.getModules());
+        Set<String> moduleOld = cnbs(mgr.getModules());
+        
+        assertEquals("Same set of modules:", moduleOld, moduleNew);
+        
+        CountingSecurityManager.assertCounts("Do not access the module config files", 0);
+    }
+    private static Set<String> cnbs(Set<Module> modules) {
+        TreeSet<String> set = new TreeSet<String>();
+        for (Module m : modules) {
+            set.add(m.getCodeNameBase());
+        }
+        return set;
     }
     
     /** Check that adding a new module via XML, as Auto Update does, works.

@@ -285,11 +285,14 @@ public final class ModuleSystem {
      */
     public boolean shutDown(Runnable midHook) {
         mgr.mutexPrivileged().enterWriteAccess();
+        boolean res;
         try {
-            return mgr.shutDown(midHook);
+            res = mgr.shutDown(midHook);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
+        list.writeCache();
+        return res;
     }
     
     /** Load a module in test (reloadable) mode.

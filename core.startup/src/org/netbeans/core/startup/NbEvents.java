@@ -160,13 +160,13 @@ final class NbEvents extends Events {
             Module m = (Module)args[0];
             // ignore args[1]: InvalidException
             {
-                StringBuffer buf = new StringBuffer(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
+                StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
                 NbProblemDisplayer.problemMessagesForModules(buf, Collections.singleton(m), false);
                 logger.log(Level.INFO, buf.toString());
             }
 
             {
-                StringBuffer buf = new StringBuffer(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
+                StringBuilder buf = new StringBuilder(NbBundle.getMessage(NbEvents.class, "MSG_failed_install_new_unexpected", m.getDisplayName()));
                 NbProblemDisplayer.problemMessagesForModules(buf, Collections.singleton(m), true);
                 notify(buf.toString(), true);
             }
@@ -181,7 +181,7 @@ final class NbEvents extends Events {
         } else if (message == MODULES_FILE_PROCESSED) {
             Splash.getInstance().increment(1);
             if (StartLog.willLog()) {
-                StartLog.logProgress("file " + ((FileObject)args[0]).getNameExt() + " processed"); // NOI18N
+                StartLog.logProgress("module " + args[0] + " processed"); // NOI18N
             }
         } else if (message == FINISH_READ) {
 	    if (moduleCount < 100) {
@@ -223,7 +223,7 @@ final class NbEvents extends Events {
             if (! Boolean.getBoolean("netbeans.moduleitem.dontverifyclassloader") && Util.err.isLoggable(Level.WARNING)) { // NOI18N
                 Class clazz = (Class)args[1];
                 // Message for developers, no need for I18N.
-                StringBuffer b = new StringBuffer();
+                StringBuilder b = new StringBuilder();
                 b.append("The module " + ((Module)args[0]).getDisplayName() + " loaded the class " + clazz.getName() + "\n"); // NOI18N
                 b.append("from the wrong classloader. The expected classloader was " + args[2] + "\n"); // NOI18N
                 b.append("whereas it was actually loaded from " + clazz.getClassLoader() + "\n"); // NOI18N
