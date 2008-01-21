@@ -739,7 +739,10 @@ TestSupport.prototype = {
                         this.updatepage('rawContent', '');
                         this.updatepage('rawContent', this.printPretty(content));
                     } else {
-                        this.updatepage('rawContent', this.createIFrameForUrl(this.currentValidUrl));
+                        if(this.currentMethod == 'GET')
+                            this.updatepage('rawContent', this.createIFrameForUrl(this.currentValidUrl));
+                        else
+                            this.updatepage('rawContent', content);
                     }
                     this.showViews('raw');
                 } else {
@@ -1795,9 +1798,10 @@ XHR.prototype = {
     
     isResponseReady : function (xmlHttpReq, param, monitor) {
         if (xmlHttpReq.readyState == 4) {
-            ts.currentXmlHttpReq = xmlHttpReq;
-            if(monitor)
+            if(monitor) {
+                ts.currentXmlHttpReq = xmlHttpReq;
                 ts.monitor(xmlHttpReq, param);
+            }
             return true;
         } else
             return false;
