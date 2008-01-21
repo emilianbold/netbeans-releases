@@ -69,6 +69,7 @@ import javax.swing.text.Element;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseDocumentEvent;
 import org.netbeans.editor.CharSeq;
+import org.netbeans.editor.Formatter;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
 import org.netbeans.modules.editor.structure.api.DocumentModelException;
@@ -126,8 +127,8 @@ public final class SVGFileModel {
                 SceneManager.log(Level.FINE, "Transaction started."); //NOI18N
                 try {
                     updateModel();
-
                     //assert SwingUtilities.isEventDispatchThread() : "Transaction must be called in AWT thread.";
+                    getDoc().getFormatter().reformatLock();
                     getDoc().atomicLock();
                     //checkModel();
                     m_model.readLock();
@@ -138,6 +139,7 @@ public final class SVGFileModel {
                 } finally {
                     m_model.readUnlock();
                     getDoc().atomicUnlock();
+                    getDoc().getFormatter().reformatUnlock();
                     SceneManager.log(Level.FINE, "Transaction completed."); //NOI18N
                     if (decrementTransactionCounter() == 0) {
                         getSceneManager().setBusyState(TRANSACTION_TOKEN, false);
@@ -774,9 +776,26 @@ public final class SVGFileModel {
                     DocumentElement lastChild = getLastTagChild(svgRoot.getChildren());
                     int insertPosition;
                     if (lastChild != null) {
+                        CharSequence chars = (CharSequence) doc.getProperty(CharSequence.class);
+                        
                         //insert new text after last child
                         insertPosition = lastChild.getEndOffset() + 1;
-                        doc.insertString(insertPosition, insertString, null);
+                        String str = insertString;
+                        int i = insertPosition;
+                        int c;
+                        
+                        while( i > 0) {
+                            if ( (c=chars.charAt(--i)) <= ' ') {
+                                if ( c == '\n') {
+                                    break;
+                                }
+                            } else {
+                                str = '\n' + str;
+                                break;
+                            }
+                        }
+                        doc.insertString(insertPosition, str, null);
+                        doc.getFormatter().reformat(doc, insertPosition, insertPosition + str.length());
                     } else {
                         String docText = doc.getText(0, doc.getLength());
                         int startOff = svgRoot.getStartOffset();
@@ -791,7 +810,7 @@ public final class SVGFileModel {
                                 doc.insertString(insertPosition, insertString, null);
                             } else {
                                 StringBuilder sb = new StringBuilder(docText.substring(startOff, insertPosition + 1));
-                                sb.append(">"); //NOI18N
+                                sb.append(">\n"); //NOI18N
                                 sb.append(insertString);
                                 sb.append("\n</svg>"); //NOI18N
                                 doc.replace(startOff, svgRoot.getEndOffset() - startOff + 1, sb.toString(), null);

@@ -47,6 +47,8 @@ import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 
@@ -87,6 +89,7 @@ public abstract class SVGImagePanel extends JPanel {
         this.imagePanel = imagePanel;
         setLayout( new CenteredLayoutManager());
         add(imagePanel);
+        setDoubleBuffered(true);
     }
     
     protected void paintChildren(Graphics g) {
@@ -95,13 +98,20 @@ public abstract class SVGImagePanel extends JPanel {
         int yOff = imagePanel.getY();
 
         g.setColor(Color.BLACK);
-        //g.drawRect( xOff - 1, yOff - 1, imagePanel.getWidth() + 2, imagePanel.getHeight() + 2);
-        drawCross( g, xOff - 1, yOff -1);
-        drawCross( g, xOff - 1, yOff + imagePanel.getHeight() + 1);
-        drawCross( g, xOff + imagePanel.getWidth() + 1, yOff -1);
-        drawCross( g, xOff + imagePanel.getWidth() + 1, yOff + imagePanel.getHeight() + 1);
+        int w = imagePanel.getWidth(),
+            h = imagePanel.getHeight();
 
-        g.setClip( getVisibleRect());
+        drawCross( g, xOff - 1, yOff -1);
+        drawCross( g, xOff - 1, yOff + h + 1);
+        drawCross( g, xOff + w + 1, yOff -1);
+        drawCross( g, xOff + w + 1, yOff + h + 1);
+
+        Rectangle2D clip = new Rectangle2D.Float( xOff, yOff, w, h);
+        Rectangle visible = getVisibleRect();
+        if (visible != null) {
+            clip = visible.createIntersection(clip);
+        }
+        g.setClip( clip);
         paintPanel(g, xOff, yOff);
     }   
 
