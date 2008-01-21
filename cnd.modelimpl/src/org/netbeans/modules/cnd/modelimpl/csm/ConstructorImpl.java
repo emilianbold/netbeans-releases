@@ -46,6 +46,7 @@ import java.util.*;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.IOException;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
 /**
  * CsmConstructor implementation
@@ -59,8 +60,8 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         registerInProject();
     }
 
-    public List getInitializerList() {
-        return Collections.EMPTY_LIST;
+    public List<CsmExpression> getInitializerList() {
+        return Collections.<CsmExpression>emptyList();
     }
         
     @Override

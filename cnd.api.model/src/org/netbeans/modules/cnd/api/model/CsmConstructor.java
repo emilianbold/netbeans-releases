@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.api.model;
 
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
 /**
  * Represents constructor
@@ -49,6 +50,6 @@ import java.util.List;
  */
 public interface CsmConstructor extends CsmMethod<CsmConstructor> {
 
-    List/*<? ConstructorInitialiser>*/ getInitializerList();
+    List<CsmExpression> getInitializerList();
 
 }
