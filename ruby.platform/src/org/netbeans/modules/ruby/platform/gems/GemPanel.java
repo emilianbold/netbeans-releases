@@ -1022,9 +1022,7 @@ public final class GemPanel extends JPanel implements Runnable {
     }//GEN-LAST:event_reloadInstalledButtonActionPerformed
 
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
-        RubyPlatformCustomizer.showCustomizer();
-        platforms.setModel(new PlatformComponentFactory.RubyPlatformListModel()); // refresh
-        platforms.requestFocus();
+        RubyPlatformCustomizer.manage(platforms);
     }//GEN-LAST:event_manageButtonActionPerformed
 
     private void browseGemHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseGemHomeActionPerformed

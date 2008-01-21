@@ -81,7 +81,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.openide.DialogDisplayer;
@@ -455,9 +454,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_configComboActionPerformed
 
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
-        RubyPlatformCustomizer.showCustomizer();
-        platforms.setModel(new PlatformComponentFactory.RubyPlatformListModel()); // refresh
-        platforms.requestFocus();
+        RubyPlatformCustomizer.manage(platforms);
     }//GEN-LAST:event_manageButtonActionPerformed
 
     private void configChanged(String activeConfig) {

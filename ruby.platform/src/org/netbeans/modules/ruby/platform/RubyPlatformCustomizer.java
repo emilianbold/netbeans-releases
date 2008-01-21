@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.Locale;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
@@ -59,7 +60,6 @@ import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.gems.GemPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -70,7 +70,7 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
     
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
-    
+
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
         JButton closeButton = new JButton();
@@ -107,6 +107,14 @@ public class RubyPlatformCustomizer extends javax.swing.JPanel {
         } else {
             setAutoDetecting(false);
         }
+    }
+
+    public static void manage(JComboBox platforms) {
+        RubyPlatformCustomizer.showCustomizer();
+        RubyPlatform origPlatform = (RubyPlatform) platforms.getSelectedItem();
+        platforms.setModel(new PlatformComponentFactory.RubyPlatformListModel()); // refresh
+        platforms.setSelectedItem(origPlatform);
+        platforms.requestFocus();
     }
 
     private RubyPlatform getSelectedPlatform() {

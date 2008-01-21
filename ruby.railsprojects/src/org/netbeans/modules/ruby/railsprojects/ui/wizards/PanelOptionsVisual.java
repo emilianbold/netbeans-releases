@@ -46,7 +46,6 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -250,9 +249,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     }// </editor-fold>//GEN-END:initComponents
 
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
-        RubyPlatformCustomizer.showCustomizer();
-        platforms.setModel(new PlatformComponentFactory.RubyPlatformListModel()); // refresh
-        platforms.requestFocus();
+        RubyPlatformCustomizer.manage(platforms);
     }//GEN-LAST:event_manageButtonActionPerformed
     
     private RubyPlatform getPlatform() {

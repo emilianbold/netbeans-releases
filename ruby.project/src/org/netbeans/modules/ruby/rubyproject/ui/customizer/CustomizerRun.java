@@ -69,7 +69,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.SourceRoots;
@@ -499,9 +498,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_jButtonWorkingDirectoryBrowseActionPerformed
 
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
-        RubyPlatformCustomizer.showCustomizer();
-        platforms.setModel(new PlatformComponentFactory.RubyPlatformListModel()); // refresh
-        platforms.requestFocus();
+        RubyPlatformCustomizer.manage(platforms);
     }//GEN-LAST:event_manageButtonActionPerformed
 
     private void configChanged(String activeConfig) {
