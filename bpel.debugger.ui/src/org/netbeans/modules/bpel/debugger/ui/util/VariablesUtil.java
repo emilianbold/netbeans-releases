@@ -27,6 +27,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
+import org.netbeans.modules.bpel.debugger.api.Position;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.SourcePath;
 import org.netbeans.modules.bpel.debugger.api.variables.NamedValueHost;
@@ -42,8 +43,10 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
+import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
@@ -422,7 +425,14 @@ public class VariablesUtil {
                 if (part.getType() != null) {
                     qName = part.getType().getQName();
                 } else {
-                    qName = part.getElement().get().getType().getQName();
+                    final NamedComponentReference<? extends GlobalType> type = 
+                            part.getElement().get().getType();
+                    
+                    if (type != null) {
+                        qName = type.getQName();
+                    } else {
+                        qName = part.getElement().getQName();
+                    }
                 }
                 
                 return qName;
@@ -894,8 +904,18 @@ public class VariablesUtil {
         variables.addAll(Arrays.asList(model.getProcess().
                 getVariableContainer().getVariables()));
         
-        final String xpath = myDebugger.getCurrentProcessInstance().
-                getCurrentPosition().getXpath();
+        final ProcessInstance currentInstance = 
+                myDebugger.getCurrentProcessInstance();
+        if (currentInstance == null) {
+            return null;
+        }
+        
+        final Position currentPosition = currentInstance.getCurrentPosition();
+        if (currentPosition == null) {
+            return null;
+        }
+        
+        final String xpath = currentPosition.getXpath();
         
         int scopeIndex = xpath.indexOf("scope"); // NOI18N
         while (scopeIndex != -1) {
