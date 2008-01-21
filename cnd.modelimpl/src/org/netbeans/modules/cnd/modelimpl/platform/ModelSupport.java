@@ -63,6 +63,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ui.OpenProjects;
 
+import org.netbeans.modules.cnd.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -71,6 +72,8 @@ import org.netbeans.modules.cnd.modelimpl.options.CodeAssistanceOptions;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 
 import org.openide.filesystems.FileUtil;
@@ -97,13 +100,12 @@ public class ModelSupport implements PropertyChangeListener {
     
     private Set sourceExtensions = new TreeSet();
     
-    private FileChangeListener modifiedListener;
+    private final ModifiedObjectsChangeListener modifiedListener = new ModifiedObjectsChangeListener();
 
     private static final boolean TRACE_STARTUP = false;
     private volatile boolean postponeParse = false;
     
     private ModelSupport() {
-        modifiedListener = new FileChangeListener();
     }
     
     public static ModelSupport instance() {
@@ -341,8 +343,13 @@ public class ModelSupport implements PropertyChangeListener {
         try {
             final ProjectBase project = getProject(item, false);
             if( project != null ) {
-                File file = item.getFile();
-                project.onFileRemoved(file);
+                final File file = item.getFile();
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    fo.addFileChangeListener(FileUtil.weakFileChangeListener(new FileDeleteListener(project), fo));
+                } else {
+                    project.onFileRemoved(file);
+                }
             }
         } catch( Exception e ) {
             //TODO: FIX (most likely in Makeproject: path == null in this situation,
@@ -650,7 +657,7 @@ public class ModelSupport implements PropertyChangeListener {
         public final NativeFileItem nativeFile;
     }
     
-    private class FileChangeListener implements ChangeListener {
+    private class ModifiedObjectsChangeListener implements ChangeListener {
         
         private Map<DataObject, Collection<BufAndProj>> buffers = new HashMap<DataObject, Collection<BufAndProj>>();
 	
@@ -698,7 +705,7 @@ public class ModelSupport implements PropertyChangeListener {
        
         private boolean isCndDataObject(FileObject fo){
             String type = fo.getMIMEType();
-            return "text/x-c++".equals(type) || "text/x-c".equals(type); //NOI18N
+            return MIMENames.CPLUSPLUS_MIME_TYPE.equals(type) || MIMENames.C_MIME_TYPE.equals(type);
         }
         
         private NativeFileItemSet findCanonicalSet(DataObject curObj){
@@ -816,4 +823,19 @@ public class ModelSupport implements PropertyChangeListener {
             return false;
         }
     }
+    
+    private static class FileDeleteListener extends FileChangeAdapter {
+        private final ProjectBase project;
+
+        public FileDeleteListener(ProjectBase project) {
+            this.project = project;
+        }
+        
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            FileObject fo = fe.getFile();
+            project.onFileRemoved(FileUtil.toFile(fo));
+            fo.removeFileChangeListener(this);
+        }
+    };
 }
