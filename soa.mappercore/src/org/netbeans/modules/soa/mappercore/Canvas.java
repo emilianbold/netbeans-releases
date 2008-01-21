@@ -121,6 +121,7 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         registerAction(new MoveLeftCanvasAction(this));
         registerAction(new MoveUpCanvasAction(this));
         registerAction(new MoveDownCanvasAction(this));
+        registerAction(new LinkConnectAction(this));
    }
     
     public void registerAction(MapperKeyboardAction action) {

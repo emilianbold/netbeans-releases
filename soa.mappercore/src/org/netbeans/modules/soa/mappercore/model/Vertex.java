@@ -322,7 +322,8 @@ public abstract class Vertex implements SourcePin, GraphItem {
             g2.setPaint((rendererContext.isSelected(treePath, this)) 
                     ? MapperStyle.SELECTION_COLOR
                     : MapperStyle.ICON_COLOR);
-            g2.fillRoundRect(x1, y1, x2 - x1, y2 - y1, d, d);
+             g2.fillRoundRect(x1, y1, x2 - x1, y2 - y1, d, d);
+             //g2.fillOval(x1, y1, x2 - x1, y2 - y1);
 
             GeneralPath gp = new GeneralPath();
             gp.moveTo(x1 + off, y1 + 0.5f);

@@ -529,12 +529,17 @@ public class Mapper extends JPanel {
         List<Link> linksCandidateGraph = new ArrayList<Link>();
         // find links with rows == currentRow
         for (Link l : ingoingLinks) {
-            leftPath = ((TreeSourcePin) l.getSource()).getTreePath();
-            int row = getLeftTree().getParentsRowForPath(leftPath);
-            if (row == currentRow) {
-                linksCandidateRow.add(l);
-            }
+            //if (l != link) {
+                leftPath = ((TreeSourcePin) l.getSource()).getTreePath();
+                int row = getLeftTree().getParentsRowForPath(leftPath);
+                if (row == currentRow) {
+                    linksCandidateRow.add(l);
+                }
+          //  }
         }
+//        if (linksCandidateRow.size() == 1) {
+//            return linksCandidateRow.get(0);
+//        }
         if (linksCandidateRow.size() > 1) {
             // find prevLinks in own Row with nearest Graph
             linksCandidateGraph.clear();
@@ -596,6 +601,7 @@ public class Mapper extends JPanel {
                                 }
                             }
                         }
+                        if (maxGraph == null) return null;
                         prevLink = maxGraph.getPrevLink(null, linksCandidateGraph);
                         return prevLink;
                     }    
