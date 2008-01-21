@@ -62,12 +62,10 @@ public final class DebuggerAnnotation extends Annotation {
     public static final String CURRENT_LINE_PART_ANNOTATION_TYPE2 = "CurrentPC2LinePart";
     public static final String CALL_STACK_FRAME_ANNOTATION_TYPE = "CallSite";
     
-    private Annotatable annotatable;
     private String type;
     
     public DebuggerAnnotation(final String type, final Annotatable annotatable) {
         this.type = type;
-        this.annotatable = annotatable;
         attach(annotatable);
     }
     

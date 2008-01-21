@@ -437,7 +437,7 @@ public final class RubySession {
         };
     }
 
-    private class RubySessionListener extends DebuggerManagerAdapter {
+    private static class RubySessionListener extends DebuggerManagerAdapter {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {

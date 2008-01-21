@@ -529,10 +529,6 @@ public class RubyPlatformCustomizer extends JPanel {
     }//GEN-LAST:event_installFastDebuggerActionPerformed
 
     private void refreshDebugger() {
-        refreshDebugger(false);
-    }
-
-    private void refreshDebugger(final boolean autoswitch) {
         RubyPlatform platform = getSelectedPlatform();
         
         DebuggerPreferences prefs = DebuggerPreferences.getInstance();
