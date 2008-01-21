@@ -56,7 +56,7 @@ public class StatFiles extends SecurityManager {
     public static final int READ = 1;
     public static final int WRITE = 2;
     public static final int DELETE = 3;
-    Results results;
+    private Results results;
     private Monitor monitor;
 
     StatFiles() {
@@ -65,6 +65,10 @@ public class StatFiles extends SecurityManager {
 
     void reset() {
         results = new Results();
+    }
+    
+    Results getResults() {
+        return results;
     }
 
     void setMonitor(Monitor monitor) {

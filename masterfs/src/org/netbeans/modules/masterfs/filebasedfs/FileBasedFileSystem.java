@@ -79,6 +79,7 @@ public final class FileBasedFileSystem extends FileSystem {
     private static Map allInstances = new HashMap();
     private transient final FileObjectFactory factory;
     transient private final StatusImpl status = new StatusImpl();
+    public static boolean WARNINGS = true;
     
 
     //only for tests purposes
@@ -139,31 +140,7 @@ public final class FileBasedFileSystem extends FileSystem {
     }
     
     public final FileObject findFileObject(final FileInfo fInfo) {
-        File f = fInfo.getFile();
-        boolean issue45485 = fInfo.isWindows() && f.getName().endsWith(".");//NOI18N        
-        if (issue45485) {
-            File f2 = FileUtil.normalizeFile(f);
-            issue45485 = !f2.getName().endsWith(".");
-            if (issue45485) return null;
-        }
-        if (fInfo.getFile().getParentFile() == null) {
-            return getRoot();
-        }
-        final FileObject retVal = (getFactory().findFileObject(fInfo));
-        if (retVal == null) {
-            if (retVal == null) {
-                boolean assertionsOn = false;
-                assert assertionsOn = true;
-                if (assertionsOn && f.exists() && !WriteLockUtils.hasActiveLockFileSigns(f.getAbsolutePath())) {
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    PrintStream ps = new PrintStream(bos);
-                    new Exception().printStackTrace(ps);
-                    ps.close();
-                    String h = "WARNING: externally created " + (f.isDirectory() ? "folder: " : "file: ") + f.getAbsolutePath();
-                    Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));
-                } 
-            }
-        }
+        final FileObject retVal = (getFactory().findFileObject(fInfo, this, false));
         return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 

@@ -40,15 +40,25 @@
  */
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.masterfs.filebasedfs.naming.FileNaming;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.openide.filesystems.FileObject;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
+import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
+import org.openide.util.Utilities;
 
 /**
  * 
@@ -65,14 +75,122 @@ public final class FileObjectFactory {
         return root;
     }
     public int getSize() {        
+        int retval = 0;
+    
+        List list = new ArrayList();
         synchronized (allInstances) {
-            return allInstances.size();
+            list.addAll(allInstances.values());
         }
+        List list2 = new ArrayList();
+
+        
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            Object obj = it.next();
+            if (obj instanceof Reference) {
+                list2.add(obj);
+            } else {
+                list2.addAll((List)obj);
+            }
+        }
+        
+        for (Iterator it = list2.iterator(); it.hasNext();) {
+            Reference ref = (Reference) it.next();
+            FileObject fo = (ref != null) ? (FileObject) ref.get() : null;
+            if (fo != null) {
+                retval++;
+            }
+        }
+
+        return retval;
+    }
+    public FileObject findFileObject(final File file, FileBasedFileSystem lfs, boolean syncCheck) {
+        return findFileObject(new FileInfo(file), lfs, syncCheck);
     }
 
-    public final FileObject findFileObject(final FileInfo fInfo) {
+    
+    public FileObject findFileObject(FileInfo fInfo, FileBasedFileSystem lfs, boolean syncCheck) {        
+        return findFileObject(fInfo, lfs, syncCheck, true);
+    }
+    
+    public FileObject findFileObject(FileInfo fInfo, FileBasedFileSystem lfs, boolean syncCheck, boolean warningOn) {        
+        assert lfs != null;        
+        File file = fInfo.getFile();
+        FileObject retVal = null;
+        FolderObj parent = BaseFileObj.getExistingParentFor(file, lfs); 
+        FileNaming child = null;
+        if (parent != null) {
+            final ChildrenCache childrenCache = parent.getChildrenCache();
+            final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
+            mutexPrivileged.enterReadAccess();
+            try {
+                final String nameExt = BaseFileObj.getNameExt(file);
+                child = childrenCache.getChild(nameExt, false);
+            } finally {
+                mutexPrivileged.exitReadAccess();
+            }
+        }
+        boolean warning = false;
+        if (FileBasedFileSystem.WARNINGS) {
+            assert (warning = ((parent != null) ? child != null : (get(file) != null || file.exists())) != file.exists()) ? true : true;
+            if (warning) {
+                warning = ((parent != null) ? (warningOn && child != null) : (get(file) != null || file.exists())) != file.exists();
+            }
+        }
+        
+        if (warning) {
+            if (!WriteLockUtils.hasActiveLockFileSigns(file.getAbsolutePath())) {
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                PrintStream ps = new PrintStream(bos);
+                new Exception().printStackTrace(ps);
+                ps.close();
+                String h = "WARNING: externally created " + (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath();
+                if (Utilities.isWindows()) {
+                    h = h.replace('\\', '/');
+                }
+                Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));
+            }
+        }        
+        boolean exists = false;        
+        if (syncCheck) {
+            exists = file.exists();
+        } else {
+            exists = (parent != null) ? child != null : (get(file) != null || file.exists());
+        }
+        if (parent != null) {
+            if (child != null) {
+                if (exists) {
+                    retVal = getOrCreate(new FileInfo(file, 1));
+                } else {
+                    parent.refresh(true);
+                }
+            } else {
+                if (exists) {
+                    parent.refresh(true);
+                    retVal = getOrCreate(new FileInfo(file, 1));
+                } 
+            }
+        } else {
+            retVal = exists ? getOrCreate(new FileInfo(file, 1)) : null;
+        }
+                
+        return retVal;        
+    }
+    
+            
+    private final FileObject getOrCreate(final FileInfo fInfo) {        
         FileObject retVal = null;
         File f = fInfo.getFile();
+
+        boolean issue45485 = fInfo.isWindows() && f.getName().endsWith(".");//NOI18N        
+        if (issue45485) {
+            File f2 = FileUtil.normalizeFile(f);
+            issue45485 = !f2.getName().endsWith(".");
+            if (issue45485) return null;
+        }
+        if (fInfo.getFile().getParentFile() == null) {
+            return getRoot();
+        }
+        
         
         synchronized (allInstances) {
             retVal = this.get(f);
@@ -84,9 +202,7 @@ public final class FileObjectFactory {
                     retVal = this.getRoot();
                 }
                 
-            }
-     
-            assert retVal == null || retVal.isValid() : retVal.toString();
+            }     
             return retVal;
         }
     }
@@ -109,21 +225,11 @@ public final class FileObjectFactory {
 
         if (name.isFile() && !name.isDirectory()) {
             final FileObj realRoot = new FileObj(file, name);
-            /*FolderObj par = (FolderObj)realRoot.getExistingParent();
-            if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
-                par.refresh(true);
-                //par.getChildrenCache().getChild(name.getName(), true);
-            }*/
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
         
         if (!name.isFile() && name.isDirectory()) {            
             final FolderObj realRoot = new FolderObj(file, name);
-            /*FolderObj par = (FolderObj)realRoot.getExistingParent();
-            if (par != null && par.getChildrenCache().getChild(name.getName(), false) == null) {
-                par.refresh(true);
-                //par.getChildrenCache().getChild(name.getName(), true); 
-            }*/
             return putInCache(realRoot, realRoot.getFileName().getId());
         }
 
@@ -312,4 +418,23 @@ public final class FileObjectFactory {
 
         return newValue;
     }
+
+    @Override
+    public String toString() {
+        List list = new ArrayList();
+        synchronized (allInstances) {
+            list.addAll(allInstances.values());
+        }
+        List l2 = new ArrayList();
+        for (Iterator it = list.iterator(); it.hasNext();) {
+            Reference ref = (Reference) it.next();
+            FileObject fo = (ref != null) ? (FileObject) ref.get() : null;
+            if (fo != null) {
+                l2.add(fo.getPath());
+            }
+        }
+
+        
+        return l2.toString();
+    }        
 }

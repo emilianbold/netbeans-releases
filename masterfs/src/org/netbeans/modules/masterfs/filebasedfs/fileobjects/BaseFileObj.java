@@ -371,7 +371,7 @@ public abstract class BaseFileObj extends FileObject {
                 retVal = getLocalFileSystem().getRoot();
             } else {
                 retVal = localFileSystem.getFactory().get(file);
-                retVal = (retVal == null) ? localFileSystem.findFileObject(file) : retVal;
+                retVal = (retVal == null) ? localFileSystem.getFactory().findFileObject(file,localFileSystem, true) : retVal;
             }
         } /*else {
         retVal = getLocalFileSystem().getRoot();
@@ -748,10 +748,13 @@ public abstract class BaseFileObj extends FileObject {
         return extensions;
     }
 
+    public static FolderObj getExistingFor(File f, FileBasedFileSystem fbs) {         
+        return (FolderObj) fbs.getFactory().get(f);
+    }
+    
     public static FolderObj getExistingParentFor(File f, FileBasedFileSystem fbs) {         
         final File parentFile = f.getParentFile();
-        final FolderObj parent = (parentFile == null) ? null : (FolderObj) fbs.getFactory().get(parentFile);
-        return parent;
+        return (parentFile == null) ? null : getExistingFor(parentFile, fbs);
     }
     
     FolderObj getExistingParent() {         

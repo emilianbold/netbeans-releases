@@ -1582,25 +1582,6 @@ public class FolderObjTest extends NbTestCase {
         assertEquals(new String (b),new String (b), content);                        
     }
 
-    public void testIsLightWeightLockRequiredRequired() throws Exception {
-        File f = getWorkDir();
-        FileSystem fs = FileBasedFileSystem.getInstance(f);
-        assertNotNull(fs);
-        FolderObj fo = (FolderObj)FileBasedFileSystem.getFileObject(f);        
-        assertNotNull(fo);
-        
-        assertFalse(fo.isLightWeightLockRequired());
-        FileLock fakeLock = (FileLock)fo.getAttribute(FolderObj.LIGHTWEIGHT_LOCK_SET);
-        assertNotNull(fakeLock);
-        assertTrue(fo.isLightWeightLockRequired());
-        fakeLock.releaseLock();
-        assertFalse(fo.isLightWeightLockRequired());        
-        fakeLock = (FileLock)fo.getAttribute(FolderObj.LIGHTWEIGHT_LOCK_SET);
-        assertNotNull(fakeLock);        assertTrue(fo.isLightWeightLockRequired());
-        fakeLock.releaseLock();
-        assertFalse(fo.isLightWeightLockRequired());                
-    }
-    
     
     
     public File getWorkDir() throws IOException {

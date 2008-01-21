@@ -41,9 +41,13 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.io.IOException;
 import org.netbeans.modules.masterfs.*;
 import java.io.File;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
@@ -71,12 +75,31 @@ public class FileObjectFactoryTest extends NbTestCase {
         if (!testFile.exists()) {
             assert testFile.createNewFile();
         }
-        testFo = FileUtil.toFileObject(testFile);
-        assert testFo != null;
         
     }
 
-    
+
+    public void testIssuingFileObject() throws IOException {      
+        FileBasedFileSystem fbs = FileBasedFileSystem.getInstance(getWorkDir());
+        assertEquals(1, fbs.getFactory().getSize());
+        FileObject workDir = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(workDir);
+        //root + workdir
+        assertEquals(2, fbs.getFactory().getSize());
+        fbs.findResource(workDir.getPath());
+        assertEquals(2, fbs.getFactory().getSize());
+        Reference rf = new  WeakReference(workDir.getParent());
+        assertGC("", rf);
+        assertNull(((BaseFileObj)workDir).getExistingParent());
+        assertEquals(2, fbs.getFactory().getSize());
+        fbs.getRoot().getFileObject(workDir.getPath());
+        assertEquals(2, fbs.getFactory().getSize());
+        rf = new  WeakReference(workDir.getParent());
+        assertGC("", rf);
+        assertNull(((BaseFileObj)workDir).getExistingParent());
+        assertEquals(2, fbs.getFactory().getSize());
+        
+    }
     
     public void testRefreshFor() throws Exception {
         EventsEvaluator fdc = new EventsEvaluator();        
@@ -303,8 +326,9 @@ public class FileObjectFactoryTest extends NbTestCase {
         private int folderCreatedCount;
         private int dataCreatedCount;
         private int deletedCount;        
+        private FileSystem fs;
         EventsEvaluator() throws FileStateInvalidException {
-            FileSystem fs = testFo.getFileSystem();
+            fs = FileUtil.toFileObject(testFile).getFileSystem();
             fs.refresh(true);
             fs.addFileChangeListener(this);
         }
@@ -354,7 +378,7 @@ public class FileObjectFactoryTest extends NbTestCase {
         }
         
         public void cleanUp() throws FileStateInvalidException {
-            testFo.getFileSystem().removeFileChangeListener(this);
+            fs.removeFileChangeListener(this);
         }
     }
     

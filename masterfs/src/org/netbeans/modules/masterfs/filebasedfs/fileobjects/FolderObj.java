@@ -59,6 +59,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
+import org.openide.util.Utilities;
 
 /**
  * @author rm111737
@@ -87,45 +88,24 @@ public final class FolderObj extends BaseFileObj {
         return true;
     }
 
+     @Override
+    public FileObject getFileObject(String relativePath) {
+        if (relativePath.startsWith("/")) {
+            relativePath = relativePath.substring(1);
+        }
+        File file = new File(getFileName().getFile(), relativePath);
+        FileBasedFileSystem lfs = getLocalFileSystem();
+        return lfs.getFactory().findFileObject(file, lfs, false);
+    }
+    
 
     public final FileObject getFileObject(final String name, final String ext) {
-        FileObject retVal = null;
-        final File f = getFileName().getFile();
-        final ChildrenCache childrenCache = getChildrenCache();        
-        FileNaming child;
-        File file;
-        final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
-
-        mutexPrivileged.enterReadAccess();
-        try {
-            file = BaseFileObj.getFile(f, name, ext);
-            final String nameExt = BaseFileObj.getNameExt(file);
-            child = childrenCache.getChild(nameExt, false);
-        } finally {
-            mutexPrivileged.exitReadAccess();
-        }
-
-        final FileBasedFileSystem lfs = getLocalFileSystem();
-        assert lfs != null;
-
-        if (child != null) {
-            retVal = lfs.findFileObject(new FileInfo(file, 1));
-        } else {
-            boolean assertionsOn = false;
-            assert assertionsOn=true;
-            if (assertionsOn && file.exists() && f.equals(file.getParentFile()) && !WriteLockUtils.hasActiveLockFileSigns(file.getAbsolutePath())) {
-                ByteArrayOutputStream bos  = new ByteArrayOutputStream();
-                PrintStream ps = new PrintStream(bos);
-                new Exception().printStackTrace(ps);
-                ps.close();
-                String h = "WARNING: externally created "+ (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath() ;                
-                Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING,bos.toString().replaceAll("java[.]lang[.]Exception", h));
-            }
-        }
-
-        return retVal;
+        File file = BaseFileObj.getFile(getFileName().getFile(), name, ext);
+        FileBasedFileSystem lfs = getLocalFileSystem();
+        return lfs.getFactory().findFileObject(file, lfs, false);
     }
 
+  
     public final FileObject[] getChildren() {
         final List results = new ArrayList();
 
@@ -148,7 +128,7 @@ public final class FolderObj extends BaseFileObj {
             fInfo.setFileNaming(fileName);
             fInfo.setValueForFlag(FileInfo.FLAG_exists, true);
             
-            final FileObject fo = lfs.findFileObject(fInfo);
+            final FileObject fo = lfs.getFactory().findFileObject(fInfo, lfs,false, false);
             if (fo != null) {
                 results.add(fo);
             }
@@ -346,7 +326,7 @@ public final class FolderObj extends BaseFileObj {
             final FileName child = (FileName) entry.getKey();
             final Integer operationId = (Integer) entry.getValue();
 
-            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? (BaseFileObj) factory.findFileObject(new FileInfo(child.getFile())) : factory.get(child.getFile());
+            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? (BaseFileObj) localFileSystem.getFactory().findFileObject(new FileInfo(child.getFile()), localFileSystem, false) : factory.get(child.getFile());
             newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
             if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
 

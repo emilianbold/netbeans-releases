@@ -120,7 +120,7 @@ public final class FileBasedURLMapper extends URLMapper {
                 if (f.startsWith("//")) {
                     file = new File(f);
                 } else {
-                    file = FileUtil.normalizeFile(new File(new URI(url.toExternalForm())));
+                    file = new File(new URI(url.toExternalForm()));
                 }
             }
         } catch (URISyntaxException e) {
@@ -134,24 +134,12 @@ public final class FileBasedURLMapper extends URLMapper {
         }
         final FileBasedFileSystem instance = FileBasedFileSystem.getInstance(file);
         if (instance != null) {
-            retVal = issueFileObject(file, instance);
+            retVal = instance.getFactory().findFileObject(file, instance, true);
         }
 
         return new FileObject[]{retVal};
     }
 
-    private FileObject issueFileObject(File file, FileBasedFileSystem instance) {
-        FileObject retVal = null;
-        FolderObj parent = BaseFileObj.getExistingParentFor(file, instance);
-        retVal = (parent != null) ? parent.getFileObject(file.getName()) : instance.findFileObject(file);
-        if (parent != null) {
-            if ((retVal == null && file.exists()) || (retVal != null && !file.exists())) {
-                parent.refresh(true);
-                return parent.getFileObject(file.getName());
-            }
-        }
-        return retVal;
-    }
     
     private static URL fileToURL(final File file, final FileObject fo) throws MalformedURLException {
         URL retVal = null;
