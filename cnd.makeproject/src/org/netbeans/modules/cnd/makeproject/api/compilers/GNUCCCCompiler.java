@@ -156,6 +156,19 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         getFreshSystemIncludesAndDefines();
     }
     
+    private boolean startsWithPath(String line) {
+        line = line.trim();
+        if( line.startsWith("/") ) {
+            return true;
+        }
+        else if( System.getProperty("os.name").indexOf("Windows") >= 0 ) {
+            if( Character.isLetter(line.charAt(0)) && line.charAt(1) == ':' ) {
+                return true;
+            }
+        }
+        return false;
+    }
+            
     @Override
     protected void parseCompilerOutput(InputStream is) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(is));
@@ -170,7 +183,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                     continue;
                 }
 		if (startIncludes) {
-                    if (line.startsWith("End of search") || ! line.trim().startsWith("/")) { // NOI18N
+                    if (line.startsWith("End of search") || ! startsWithPath(line)) { // NOI18N
                         startIncludes = false;
                         continue;
                     }
