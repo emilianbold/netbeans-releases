@@ -115,12 +115,7 @@ made subject to such option by the copyright holder.
     
     <!-- This target executes tests inside IDE. It is defined in default-build-qa-functional.xml.
          If you need to customize it, you can uncomment the following and override it.-->
-    <target name="runidetest" depends="data-preparation">
-        <condition property="jemmy.jar" value="jemmy-mac.jar" else="jemmy.jar">
-            <contains string="${os.name}" substring="Mac"
-                    casesensitive="false"/> 
-        </condition>
-        <echo message="jemmy.jar = ${jemmy.jar}"/>
+    <target name="runidetest" depends="data-preparation,init-cp">
         <path id="httpunit.jars">
             <pathelement location="${nb_all}/testtools/external/httpunit.jar"/>
             <pathelement location="${netbeans.dest.dir}/visualweb1/modules/ext/tidy-mod.jar"/>
@@ -128,8 +123,7 @@ made subject to such option by the copyright holder.
         <property name="coverage.lib.path" refid="httpunit.jars"/>
         <executeTests  pluginName="ide">
             <classpath>
-                <pathelement location="${nb_all}/jemmy/builds/${jemmy.jar}"/>
-                <pathelement location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
+                <path refid="jemmy.and.jelly.path"/>
                 <pathelement location="${nb_all}/visualweb/kit/gravy/builds/gravy.jar"/>
              </classpath>
         </executeTests>
