@@ -439,15 +439,25 @@ public final class GemManager {
      * 
      * @param errors list to which the errors, which happen during gems
      *        reload, will be accumulated 
+     * @return list of the installed gems. Returns an empty list if they could not
+     * be read, never null. 
      */
     public List<Gem> getInstalledGems(List<String> errors) {
         reloadIfNeeded(errors);
-        return installed;
+        return installed != null ? installed : Collections.<Gem>emptyList();
     }
     
+    /**
+     * Gets the available remote gems. <em>WARNING:</em> Slow! Synchronous gem execution.
+     * 
+     * @param errors list to which the errors, which happen during gems
+     *        reload, will be accumulated 
+     * @return list of the available remote gems. Returns an empty list if they could not
+     * be read, never null. 
+     */
     public List<Gem> getRemoteGems(List<String> errors) {
         reloadIfNeeded(errors);
-        return remote;
+        return remote != null ? remote : Collections.<Gem>emptyList();
     }
 
     public boolean haveGemTool() {
