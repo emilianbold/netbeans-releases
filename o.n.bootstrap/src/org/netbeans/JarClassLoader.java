@@ -114,10 +114,12 @@ public class JarClassLoader extends ProxyClassLoader {
     public static void saveArchive() {
         archive.stopGathering();
         archive.stopServing();
-        try {
-            archive.save(cacheFile);
-        } catch (IOException ioe) {
-            LOGGER.log(Level.WARNING, null, ioe);
+        if (cacheFile != null) {
+            try {
+                archive.save(cacheFile);
+            } catch (IOException ioe) {
+                LOGGER.log(Level.WARNING, null, ioe);
+            }
         }
     }
     
