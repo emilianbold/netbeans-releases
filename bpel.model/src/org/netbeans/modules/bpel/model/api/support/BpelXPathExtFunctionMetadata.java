@@ -266,7 +266,7 @@ public interface BpelXPathExtFunctionMetadata {
         }
         
         public String getDisplayName() {
-            return "Current Data & Time"; // NOI18N
+            return "Current Date & Time"; // NOI18N
         }
 
         public String getShortDescription() {
