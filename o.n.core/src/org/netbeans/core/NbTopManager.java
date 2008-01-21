@@ -398,11 +398,6 @@ public abstract class NbTopManager {
 //                        if (windowSystem != null) {
 //                            windowSystem.save();
 //                        }
-                        try {
-                            ((MainLookup)Lookup.getDefault()).storeCache();
-                        } catch (IOException ioe) {
-                            Logger.getLogger(NbTopManager.class.getName()).log(Level.WARNING, null, ioe);
-                        }
                         SessionManager.getDefault().close();
                     } catch (ThreadDeath td) {
                         throw td;

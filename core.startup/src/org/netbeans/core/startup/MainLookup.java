@@ -195,14 +195,6 @@ public final class MainLookup extends ProxyLookup {
     //StartLog.logEnd ("NbTopManager$MainLookup: initialization of FolderLookup"); // NOI18N
     }
 
-    public void storeCache() throws java.io.IOException {
-        Lookup[] ls = getLookups();
-        if (ls.length == 5) {
-            // modulesClassPathInitialized has been called, so store folder lookup
-            CoreBridge.getDefault ().lookupCacheStore (ls[4]);
-        }
-    }
-
     protected void beforeLookup(Lookup.Template templ) {
         Class type = templ.getType();
 

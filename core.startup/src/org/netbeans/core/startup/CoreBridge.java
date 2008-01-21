@@ -151,7 +151,6 @@ public abstract class CoreBridge {
     protected abstract void loadSettings();
 
     public abstract Lookup lookupCacheLoad ();
-    public abstract void lookupCacheStore (Lookup l) throws java.io.IOException;
     
     /** Delegates to status displayer.
      */

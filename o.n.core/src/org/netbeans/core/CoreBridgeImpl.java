@@ -47,6 +47,12 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.ManifestSection;
+import org.netbeans.core.startup.StartLog;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /** Implements necessary callbacks from module system.
  *
@@ -115,10 +121,22 @@ implements Runnable {
     }
 
     public org.openide.util.Lookup lookupCacheLoad () {
-        return LookupCache.load ();
-    }
-    public void lookupCacheStore (org.openide.util.Lookup l) throws java.io.IOException {
-        LookupCache.store (l);
+        FileObject services = Repository.getDefault().getDefaultFileSystem().findResource("Services"); // NOI18N
+        if (services != null) {
+            StartLog.logProgress("Got Services folder"); // NOI18N
+            DataFolder servicesF;
+            try {
+                servicesF = DataFolder.findFolder(services);
+            } catch (RuntimeException e) {
+                Exceptions.printStackTrace(e);
+                return Lookup.EMPTY;
+            }
+            org.openide.loaders.FolderLookup f = new org.openide.loaders.FolderLookup(servicesF, "SL["); // NOI18N
+            StartLog.logProgress("created FolderLookup"); // NOI18N
+            return f.getLookup();
+        } else {
+            return Lookup.EMPTY;
+        }
     }
 
     public void cliUsage(PrintWriter printWriter) {
