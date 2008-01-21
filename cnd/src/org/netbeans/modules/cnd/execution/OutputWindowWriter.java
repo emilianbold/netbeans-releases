@@ -200,11 +200,14 @@ public class OutputWindowWriter extends Writer {
         return myObj;
     }
     
+    private static final int LENGTH_TRESHOLD = 2048;
+    
     private void handleLine(String line) throws IOException {
         if (parseOutputForErrors && 
-                line.length() < 2048) // We can safely ignore large lines for analyzing because 
-                                      // max path length on most systems is about 256, and
-                                      // text message are even shorter. See IZ#124796 for reasons.
+                line.length() < LENGTH_TRESHOLD) 
+                // We can ignore strings which can't be compiler messages 
+                // (their's length is capped by max(filename) + max(error desc)).
+                // See IZ#124796 for details about perf issues with very long lines.
         {
             for (int cntr = 0; cntr < parsers.length; cntr++) {
                 Pattern[] patterns = parsers[cntr].getPattern();
