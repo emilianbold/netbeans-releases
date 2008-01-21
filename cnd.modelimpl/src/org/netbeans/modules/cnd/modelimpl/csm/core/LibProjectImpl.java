@@ -120,22 +120,6 @@ public final class LibProjectImpl extends ProjectBase {
     public void onFilePropertyChanged(NativeFileItem nativeFile) {}
     public void onFilePropertyChanged(List<NativeFileItem> nativeFiles) {}
     
-    /**
-     * called to inform that file was #included from another file with specific callback
-     * @param file included file path
-     * @param callback callback with which the file is including
-     * @return true if it's first time of file including
-     *          false if file was included before
-     */
-    @Override
-    public FileImpl onFileIncluded(ProjectBase base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
-        if( ONLY_LEX_SYS_INCLUDES ) {
-            return super.onFileIncluded(base, file, preprocHandler, GATHERING_MACROS);
-        } else {
-            return super.onFileIncluded(base, file, preprocHandler, mode);
-        }
-    }
-    
     
     protected void scheduleIncludedFileParsing(FileImpl csmFile, APTPreprocHandler.State state) {
         // add library file to the tail

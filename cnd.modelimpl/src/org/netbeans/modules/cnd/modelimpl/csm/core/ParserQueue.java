@@ -604,7 +604,8 @@ public final class ParserQueue {
     private boolean needEnqueue(FileImpl file) {
         // we know, that each file is parsed only once =>
         // let's speed up work with queue ~75% by skipping such files
-        return !file.isParsed();
+        // Also check that file project was not closed
+        return !file.isParsed() && !file.getProjectImpl().isDisposing();
     }
     
     public void onStartAddingProjectFiles(ProjectBase project) {

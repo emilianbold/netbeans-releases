@@ -928,7 +928,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * @return true if it's first time of file including
      *          false if file was included before
      */
-    public FileImpl onFileIncluded(ProjectBase base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
+    public final FileImpl onFileIncluded(ProjectBase base, String file, APTPreprocHandler preprocHandler, int mode) throws IOException {
         try {
             disposeLock.readLock().lock();
             if( disposing ) {
@@ -950,7 +950,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 walker.visit();
             }
             
-            if (state != null) {
+            if (state != null && !isDisposing() && !base.isDisposing()) {
                 scheduleIncludedFileParsing(csmFile, state);
             }
             return csmFile;
@@ -1910,7 +1910,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     //private NamespaceImpl fakeNamespace;
     
     // test variables.
-    protected static final boolean ONLY_LEX_SYS_INCLUDES = Boolean.getBoolean("cnd.modelimpl.lex.sys.include");
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
     private static final boolean REMEMBER_RESTORED = TraceFlags.CLEAN_MACROS_AFTER_PARSE && (DebugUtils.getBoolean("cnd.remember.restored", false) || TRACE_PP_STATE_OUT);
     public static final int GATHERING_MACROS    = 0;
