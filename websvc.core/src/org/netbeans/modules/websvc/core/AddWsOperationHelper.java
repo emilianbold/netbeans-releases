@@ -320,7 +320,8 @@ public class AddWsOperationHelper {
                                 method.getThrows(),
                                 (BlockTree)null,
                                 (ExpressionTree)method.getDefaultValue());
-                        Comment comment = Comment.create(Style.JAVADOC, 0,0,0,NbBundle.getMessage(AddWsOperationHelper.class, "TXT_WSOperation"));
+                        Comment comment = Comment.create(Style.JAVADOC, -2, -2, -2,
+                                NbBundle.getMessage(AddWsOperationHelper.class, "TXT_WSOperation"));
                         make.addComment(annotatedMethod, comment, true);
                         
                         if (increaseProgress) handle.progress(90);
