@@ -18,19 +18,7 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 <project name="etl.project" default="netbeans" basedir=".">
-    <import file="../../../nbbuild/templates/projectized.xml"/>
-    
-     <target name="netbeans-extra" depends="init">
-        <mkdir dir="${cluster}/modules/ext/etlpro" />
-        <antcall target="compile-i18" />
-        <copy todir="${cluster}/modules/ext/etlpro">
-            <fileset dir="${basedir}/../eTLEditor/external">
-                <include name="*.jar" />
-                <include name="*.zip" />
-            </fileset>
-        </copy>
-    </target>
-    
+    <import file="../../../nbbuild/templates/projectized.xml"/>  
     <target name="ant-extra" depends="init">
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" >
@@ -41,7 +29,7 @@
                 <pathelement location="${cluster}/modules/org-netbeans-modules-etl-editor.jar"/>
             </classpath>
          </javac>
-        
+          <antcall target="compile-i18" />
         <copy todir="build/antclasses">
             <fileset dir="antsrc" includes="**/*.wsdl.template">
             </fileset>
@@ -53,7 +41,7 @@
         </jar>
     </target>
 
-    <!--target name="netbeans-extra" depends="ant-extra"/--> 
+    <target name="netbeans-extra" depends="ant-extra"/> 
     <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/../eTLEditor/external/net.java.hulp.i18ntask.jar"></taskdef>
 	  <target name="compile-i18" depends="init">
         <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties" prefix="DM-DI-" strict="false" pattern="([A-Z][A-Z][A-Z]\d\d\d)(: )(.*)"></i18n>   
