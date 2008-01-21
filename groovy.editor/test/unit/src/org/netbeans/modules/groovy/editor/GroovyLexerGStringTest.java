@@ -121,6 +121,66 @@ public class GroovyLexerGStringTest extends TestCase {
         
     }
     
+    public void testMinimalKiller(){
+        TokenSequence<?> ts = seqForText("\"$a\"");
+        dumpTokenStream(ts);  
+    }
+    
+    public void testMinimalKiller2(){
+        TokenSequence<?> ts = seqForText("\"$bb\"");
+        dumpTokenStream(ts);  
+    }
+    
+    public void testMinimalKiller3(){
+        TokenSequence<?> ts = seqForText("\"c$\"");
+        dumpTokenStream(ts);  
+    }
+ 
+    public void testMinimalKiller4(){
+        TokenSequence<?> ts = seqForText("\"$a\"1");
+        dumpTokenStream(ts);  
+    }
+
+    public void testMinimalKiller4b(){
+        TokenSequence<?> ts = seqForText("\"$a\"co");
+        dumpTokenStream(ts);  
+    }    
+    
+    public void testMinimalKiller5(){
+        TokenSequence<?> ts = seqForText("\"$a\"12");
+        dumpTokenStream(ts);  
+    }
+    
+    public void testMinimalKiller6(){
+        TokenSequence<?> ts = seqForText("\"$\"");
+        dumpTokenStream(ts);  
+    }
+    
+    
+    public void testDumpSimpleString(){
+        
+        TokenSequence<?> ts = seqForText("def s = \"this is a simple text to expose some errors\"");
+        
+        dumpTokenStream(ts);  
+        
+    }
+    
+    public void testDumpSimpleString2(){
+        TokenSequence<?> ts = seqForText("$");
+        dumpTokenStream(ts);  
+    }
+
+    public void testDumpSimpleString3(){
+        TokenSequence<?> ts = seqForText("\"$\"");
+        dumpTokenStream(ts);  
+    }
+
+    public void testDumpSimpleString4(){
+        TokenSequence<?> ts = seqForText("test $");
+        dumpTokenStream(ts);  
+    }
+
+    
         public void testFullSyntaxGstring(){
         String text = "def name = 'World'; println \"Hello, ${name}\"";
         
@@ -163,6 +223,8 @@ public class GroovyLexerGStringTest extends TestCase {
     
     
     void dumpTokenStream (TokenSequence ts){
+        System.out.println("#############################################");
+        
         while (ts.moveNext()) {
               Token t = ts.token();
               System.out.println("-------------------------------");  

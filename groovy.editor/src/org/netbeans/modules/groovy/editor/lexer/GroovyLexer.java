@@ -117,18 +117,6 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
                     len = Math.max( len, antlrToken.getText().length() );
                 }
 
-                if ( len == 0 ) {
-                    if ( lexerInput.readLength() > 0 ) {
-                        if ("\"".equals(lexerInput.readText().toString())) {
-                            return createToken(GroovyTokenTypes.STRING_LITERAL, 1);
-                        } else if ("\n".equals(lexerInput.readText().toString())) {
-                            return createToken(GroovyTokenTypes.NLS, 1);
-                        } else {
-                            return createToken(GroovyTokenTypes.WS, lexerInput.readLength());
-                        }
-                    }
-                }
-
                 // state 8 occured with '}' character closing expression in gstring
                 if ( scanner.getStringCtorState() != 0 && scanner.getStringCtorState() != 8) {
                     intId = GroovyTokenTypes.STRING_LITERAL;
@@ -163,14 +151,17 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
             
             scanner.resetText();
             
-            if (lexerInput.readText().toString().startsWith("/")) {
-                lexerInput.backup(lexerInput.readLength() - 1);
+            String remainderText = lexerInput.readText().toString();
+            int    moveback  = lexerInput.readLength() - 1;
+            
+            if (remainderText.startsWith("/")) {
+                lexerInput.backup(moveback);
                 return createToken(GroovyTokenTypes.DIV, 1);
-            } else if (lexerInput.readText().toString().startsWith("\"")) {
-                lexerInput.backup(lexerInput.readLength() - 1);
+            } else if (remainderText.startsWith("\"")) {
+                lexerInput.backup(moveback);
                 return createToken(GroovyTokenTypes.STRING_LITERAL, 1);
-            } else if (lexerInput.readText().toString().startsWith("\n")) {
-                lexerInput.backup(lexerInput.readLength() - 1);
+            } else if (remainderText.startsWith("\n")) {
+                lexerInput.backup(moveback);
                 return createToken(GroovyTokenTypes.NLS, 1);
             } else {
                 return createToken(GroovyTokenId.ERROR.ordinal(), tokenLength);
