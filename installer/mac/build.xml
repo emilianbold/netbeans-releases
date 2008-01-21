@@ -133,7 +133,7 @@
     </exec>
   </target>
 
-  <property name="glassfish.appname" value="glassfish-v2-ur1"/>
+  <property name="glassfish.appname" value="glassfish-v2ur1"/>
   <target name="build-glassfish-pkg" if="build_glassfish">
     <echo message="Building ${glassfish.appname} into ${basedir}/glassfish"/>
     <ant dir="glassfish" target="build-pkg" inheritAll="false">

@@ -69,6 +69,6 @@ fi
 
 "$script_dir"/perm.sh
 
-if [ -d "/Library/Receipts/glassfish-v2-ur1.pkg" ] ; then
-    rm -rf "/Library/Receipts/glassfish-v2-ur1.pkg"
+if [ -d "/Library/Receipts/glassfish-v2ur1.pkg" ] ; then
+    rm -rf "/Library/Receipts/glassfish-v2ur1.pkg"
 fi
