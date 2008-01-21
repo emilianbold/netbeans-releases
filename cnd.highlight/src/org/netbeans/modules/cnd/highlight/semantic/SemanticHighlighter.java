@@ -228,21 +228,21 @@ public class SemanticHighlighter extends HighlighterBase {
         boolean validate(CsmReference ref);
     }
     // Runnable
-    public void run() {
-        try {
-            update();
-        } catch (AssertionError ex) {
-            ex.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    public void cleanAfterYourself() {
-        BaseDocument doc = getDocument();
-        if (doc != null) {
-            //System.err.println("cleanAfterYourself");
-            getHighlightsBag(doc).clear();
+    public void run(Phase phase) {
+        if (phase == Phase.PARSED || phase == Phase.INIT) {
+            try {
+                update();
+            } catch (AssertionError ex) {
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } else if (phase == Phase.CLEANUP) {
+            BaseDocument doc = getDocument();
+            if (doc != null) {
+                //System.err.println("cleanAfterYourself");
+                getHighlightsBag(doc).clear();
+            }
         }
     }
 }

@@ -57,15 +57,13 @@ import org.openide.util.WeakListeners;
  *
  * @author Sergey Grinev
  */
-public abstract class HighlighterBase implements LookupListener, PhaseRunner {
+public abstract class HighlighterBase implements PhaseRunner, LookupListener {
 
     private final String mime;
     private final OffsetsBag bag;
     private final WeakReference<BaseDocument> weakDoc;
-    private final Runnable runMe;
 
-    public HighlighterBase(Document doc, Runnable runMe) {
-        this.runMe = runMe == null ? this : runMe;
+    public HighlighterBase(Document doc) {
         bag = new OffsetsBag(doc);
         mime = (String) doc.getProperty("mimeType"); //NOI18N
         Lookup lookup = MimeLookup.getLookup(MimePath.get(mime));
@@ -83,11 +81,6 @@ public abstract class HighlighterBase implements LookupListener, PhaseRunner {
         updateFontColors();
     }
     
-    public HighlighterBase(Document doc) {
-        this(doc, null);
-    }
-
-
     protected BaseDocument getDocument() {
         return weakDoc != null ? weakDoc.get() : null;
     }
@@ -99,7 +92,7 @@ public abstract class HighlighterBase implements LookupListener, PhaseRunner {
     // LookupListener
     public void resultChanged(LookupEvent ev) {
         updateFontColors();
-        runMe.run();
+        run(PhaseRunner.Phase.INIT);
     }
     
     public void updateFontColors() {

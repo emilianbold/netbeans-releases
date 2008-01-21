@@ -127,33 +127,31 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         //annotations.clear();
     }
 
-    public MarkOccurrencesHighlighter(Document doc, Runnable runMe) {
-        super(doc, runMe);
-    }
-
     public MarkOccurrencesHighlighter(Document doc) {
         super(doc);
     }
 
-
     // Runnable
-    public void run() {
-        //System.err.println("MarkOccurrencesHighlighter.run()");
-        if (!SemanticHighlightingOptions.getEnableMarkOccurences()) {
-            clean();
-            return;
-        }
-        Collection<CsmReference> out = getOccurences();
-        if (out == null) {
-            if (SemanticHighlightingOptions.getKeepMarks()) {
+    public void run(Phase phase) {
+        if (phase == Phase.PARSED || phase == Phase.INIT /*&& getCsmFile().isParsed()*/) {
+            if (!SemanticHighlightingOptions.getEnableMarkOccurences()) {
+                clean();
                 return;
             }
-            out = Collections.<CsmReference>emptyList();
-        }
-        clean();
-        for (CsmReference csmReference : out) {
-            getHighlightsBag(getDocument()).addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
-           // addAnnotation(csmReference.getStartOffset());
+            Collection<CsmReference> out = getOccurences();
+            if (out == null) {
+                if (SemanticHighlightingOptions.getKeepMarks()) {
+                    return;
+                }
+                out = Collections.<CsmReference>emptyList();
+            }
+            clean();
+            for (CsmReference csmReference : out) {
+                getHighlightsBag(getDocument()).addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
+               // addAnnotation(csmReference.getStartOffset());
+            }
+        } else if (phase == Phase.CLEANUP) {
+            // removeAnnotations();
         }
     }
     
@@ -174,10 +172,6 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     @Override
     protected void initFontColors(FontColorSettings fcs) {
         defaultColors = fcs.getTokenFontColors(COLORS);
-    }
-
-    public void cleanAfterYourself() {
-        // removeAnnotations();
     }
 
     // annotations stuff

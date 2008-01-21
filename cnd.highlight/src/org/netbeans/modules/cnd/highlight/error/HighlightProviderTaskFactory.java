@@ -65,12 +65,12 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
             final Document doc = ec.getDocument();
             if (doc != null && file != null) {
                 pr = new PhaseRunner() {
-                    public void run() {
-                        HighlightProvider.getInstance().update(file, doc);
-                    }
-
-                    public void cleanAfterYourself() {
-                        HighlightProvider.getInstance().clear(file);
+                    public void run(Phase phase) {
+                        if (phase == Phase.PARSED || phase == Phase.INIT) {
+                            HighlightProvider.getInstance().update(file, doc);
+                        } else if (phase == Phase.CLEANUP) {
+                            HighlightProvider.getInstance().clear(file);
+                        }
                     }
                 };
             }

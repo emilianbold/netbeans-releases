@@ -46,9 +46,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
@@ -63,12 +66,13 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class CsmFileTaskFactory {
     private final Map<FileObject, CsmFile> fobj2csm = new HashMap<FileObject, CsmFile>();
-    private final Map<CsmFile, Runnable> csm2task = new HashMap<CsmFile, Runnable>();
-    private final ProgressListener progressListener;
+    private final Map<CsmFile, PhaseRunner> csm2task = new HashMap<CsmFile, PhaseRunner>();
+    private final ProgressListener progressListener = new ProgressListener();
+    private final ModelListener modelListener = new ModelListener();
 
     protected CsmFileTaskFactory() {
-        progressListener = new ProgressListener();
         CsmModelAccessor.getModel().addProgressListener(progressListener);
+        CsmModelAccessor.getModel().addModelListener(modelListener);
     }
 
     protected abstract PhaseRunner createTask(FileObject fo);
@@ -88,8 +92,8 @@ public abstract class CsmFileTaskFactory {
 
     private void stateChangedImpl(List<FileObject> currentFiles) {
         //System.err.println("stateChangedImpl, newFiles: " + currentFiles.size() + ", file2Tasks: " + fobj2csm.size());
-        Map<CsmFile, Runnable> toRemove = new HashMap<CsmFile, Runnable>();
-        Map<CsmFile, Runnable> toAdd = new HashMap<CsmFile, Runnable>();
+        Map<CsmFile, PhaseRunner> toRemove = new HashMap<CsmFile, PhaseRunner>();
+        Map<CsmFile, PhaseRunner> toAdd = new HashMap<CsmFile, PhaseRunner>();
 
         synchronized (this) {
             List<FileObject> addedFiles = new ArrayList<FileObject>(currentFiles);
@@ -121,7 +125,7 @@ public abstract class CsmFileTaskFactory {
                 CsmFile csmFile = CsmUtilities.getCsmFile(fileObject, false);
 
                 if (csmFile != null) {
-                    Runnable task = createTask(fileObject);
+                    PhaseRunner task = createTask(fileObject);
 
                     toAdd.put(csmFile, task);
 
@@ -132,17 +136,20 @@ public abstract class CsmFileTaskFactory {
         }
 
 
-        for (Entry<CsmFile, Runnable> e : toRemove.entrySet()) {
+        for (Entry<CsmFile, PhaseRunner> e : toRemove.entrySet()) {
             if (e!=null && e.getValue()!=null ) {
-                ((PhaseRunner)e.getValue()).cleanAfterYourself();
+                post(e.getValue(), e.getKey(), PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
             }
         }
 
-        for (Entry<CsmFile, Runnable> e : toAdd.entrySet()) {
-             WORKER.post(e.getValue());
+        for (Entry<CsmFile, PhaseRunner> e : toAdd.entrySet()) {
+            post(e.getValue(), e.getKey(), e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, DELAY);
         }
     }
 
+    private static final int DELAY = 500;
+    private static final int IMMEDIATELY = 0;
+    
     public final synchronized void reschedule(FileObject file) throws IllegalArgumentException {
         CsmFile source = fobj2csm.get(file);
 
@@ -150,15 +157,19 @@ public abstract class CsmFileTaskFactory {
             return;
         }
         
-        runTask(source);
+        runTask(source, PhaseRunner.Phase.PARSED, DELAY);
     }
     
-    private final void runTask(CsmFile file) {
-        Runnable task = csm2task.get(file);
+    private final void runTask(CsmFile file, PhaseRunner.Phase phase, int delay) {
+        PhaseRunner pr = csm2task.get(file);
         
-        if (task!=null) {
-            WORKER.post(new SafeRunner(task, file));
+        if (pr!=null) {
+            post(pr, file, phase, delay);
         }
+    }
+    
+    private final void post(PhaseRunner pr, CsmFile file, PhaseRunner.Phase phase, int delay) {
+        WORKER.post(new CsmSafeRunnable( getRunnable(pr,phase), file), delay );
     }
     
     private static RequestProcessor WORKER = new RequestProcessor("CsmFileTaskFactory", 1); //NOI18N
@@ -176,29 +187,73 @@ public abstract class CsmFileTaskFactory {
 
         @Override
         public void fileParsingFinished(CsmFile file) {
-                runTask(file);
+            runTask(file, PhaseRunner.Phase.PARSED, IMMEDIATELY);
+        }
+
+        @Override
+        public void fileParsingStarted(CsmFile file) {
+            runTask(file, PhaseRunner.Phase.PARSING_STARTED, IMMEDIATELY);
         }
     }
     
-    public interface PhaseRunner extends Runnable {
-        void cleanAfterYourself();
+    private class ModelListener implements CsmModelListener {
+
+        public void projectOpened(CsmProject project) {
+            // do nothing
+        }
+
+        public void projectClosed(CsmProject project) {
+            // TODO: do something? Cleanup, maybe?
+        }
+
+        public void modelChanged(CsmChangeEvent e) {
+            for (CsmFile f : e.getRemovedFiles()){
+                if (csm2task.get(f) != null) {
+                    synchronized (this) {
+                        runTask(f, PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
+                        csm2task.put(f, lazyRunner());
+                    }
+                }
+            }
+            if (!e.getNewFiles().isEmpty()){
+                fileObjectsChanged();
+            }
+        }
+        
+    }
+    
+    public static interface PhaseRunner {
+        public enum Phase { 
+            INIT,
+            PARSING_STARTED, 
+            PARSED, 
+            CLEANUP
+        
+        };
+        public abstract void run(Phase phase);
+
+    }
+    
+    private static final Runnable getRunnable(final PhaseRunner pr, final PhaseRunner.Phase phase) {
+        return new Runnable() {
+            public void run() {
+                pr.run(phase);
+            }
+        };
     }
 
     protected static PhaseRunner lazyRunner() {
         return new PhaseRunner() {
-            public void run() {
-                // do nothing 
-            }
-            public void cleanAfterYourself() {
-                // do nothing either
+            public void run(Phase phase) {
+                // do nothing for all phases
             }
         };
     }
     
-    private static final class SafeRunner implements Runnable {
+    private static final class CsmSafeRunnable implements Runnable {
         private CsmFile file;
         private Runnable run;
-        public SafeRunner(Runnable run, CsmFile file) {
+        public CsmSafeRunnable(Runnable run, CsmFile file) {
             this.run = run;
             this.file = file;
         }
