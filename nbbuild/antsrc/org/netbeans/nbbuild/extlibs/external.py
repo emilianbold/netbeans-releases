@@ -90,6 +90,7 @@ def upload(s, cmd, filename=None, ui=None, repo=None, **kwargs):
         handle = open(cachefile, 'wb')
         handle.write(s)
         handle.close()
+        # XXX check if file exists on server; if so, don't try to upload it again
         url = cmd
         pm = httprepo.passwordmgr(ui)
         m = re.match(r'(https?://)(([^:@]+)(:([^@]+))?@)?(.+)', url)
