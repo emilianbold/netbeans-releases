@@ -601,7 +601,6 @@ TestSupport.prototype = {
     
     createIFrameForUrl : function (url) {
         var c = 
-            //'<iframe id="iFrame_" src="'+url+'" class="frame" width="'+ts.iframeWidth+'" height="'+ts.iframeHeight+'" align="left">'+
             '<iframe id="iFrame_" src="'+url+'" class="frame" width="'+ts.iframeWidth+'" align="left">'+
                 '<p>See <a class=Hyp_sun4 href="'+url+'">"'+url+'"</a>.</p>'+
             '</iframe>';
@@ -728,9 +727,7 @@ TestSupport.prototype = {
                     '<div id="tableContent"'+tableViewStyle+'>'+tableContent+'</div>'+
                     '<div id="structureInfo"'+nodisp+'>'+subResources+'</div>'+
                     '<div id="rawContent"'+rawViewStyle+'>'+this.printPretty(rawContent)+'</div>'+ 
-                        //'<textarea class="TxtAra_sun4 TxtAraVld_sun4" rows='+this.rowSize+' cols='+this.colSize+' align=left readonly>'+this.printPretty(rawContent)+'</textarea></div>'+ 
                     '<div id="monitorContent"'+nodisp+'>'+this.currMonitorText+'</div>'+
-                        //'<textarea class="TxtAra_sun4 TxtAraVld_sun4" id="monitorText" rows='+this.rowSize+' cols='+this.colSize+' align=left readonly>'+this.currMonitorText+'</textarea></div>')+
                     '</div>');
                 if(showRaw) {
                     if(content.length > 7 && content.substring(0, 7) == "http://")
@@ -738,6 +735,9 @@ TestSupport.prototype = {
                     if(this.currentMethod == 'GET' && this.currentMimeType == 'text/html') {
                         this.updatepage('rawContent', '');
                         this.createIFrameForContent(content);
+                    } else if(content.indexOf("<?xml ") != -1) {
+                        this.updatepage('rawContent', '');
+                        this.updatepage('rawContent', this.printPretty(content));
                     } else {
                         this.updatepage('rawContent', this.createIFrameForUrl(this.currentValidUrl));
                     }
@@ -1201,8 +1201,18 @@ WADLParser.prototype = {
        
        function createNode(/*Node*/ n, parentCat) {  
          var pathVal = ts.wdr.getNormailizedPath(n);
+         var pathElem = '';
+         if(pathVal.substring(0,1) == '/')
+             pathElem = pathVal.substring(1);
+         else
+             pathElem = pathVal;
+         var parentUri = parentCat.uri;
+         var uri ='';
+         if(parentUri.substring(parentUri.length-1) == '/')
+             uri = parentCat.uri+pathElem;
+         else
+             uri = parentCat.uri+'/'+pathElem;
          var cName = ts.wdr.trimSeperator(pathVal);
-         var uri = parentCat.uri+'/'+cName;
          if(ts.wdr.hasResource(n)) {
             return new category(n, pathVal, uri, cName);
          } else {
@@ -1211,9 +1221,6 @@ WADLParser.prototype = {
                 return new item(n, pathVal, uri, cName);
             } else {
                 var n2 = ts.wdr.findResource(baseURL+pathVal);
-                //if(n2 == null)
-                //    n2 = n;
-                //return new item(n2, pathVal, cName);
                 if(n2 == null) {
                     return new item(n, pathVal, uri, cName);
                 } else {
