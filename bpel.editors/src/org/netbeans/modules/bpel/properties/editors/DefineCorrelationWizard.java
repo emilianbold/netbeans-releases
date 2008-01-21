@@ -78,7 +78,6 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.ElementReference;
 import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnAlarmPick;
 import org.netbeans.modules.bpel.model.api.OnEvent;
@@ -106,12 +105,12 @@ import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
-import org.netbeans.modules.xml.wsdl.model.Input;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Operation;
+import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
-import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -227,7 +226,7 @@ public class DefineCorrelationWizard implements WizardProperties {
         mapIcons.put(OnMessage.class, new ImageIcon(Utilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_ELEMENT" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(ElementReference.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(GlobalElement.class, new ImageIcon(Utilities.loadImage(iconFileName)));
         
         return mapIcons;
     }
@@ -258,7 +257,7 @@ public class DefineCorrelationWizard implements WizardProperties {
         protected Set<Class> permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(
             new Class[] {Requester.class, Responder.class}));
         
-        protected BpelEntity getActualParentEntity(BpelEntity mainBpelEntity) {
+        protected BpelEntity getTopParentEntity(BpelEntity mainBpelEntity) {
             BpelEntity parentEntity = mainBpelEntity.getParent();
             while ((parentEntity != null) && 
                    (!(parentEntity instanceof Scope)) && 
@@ -271,10 +270,10 @@ public class DefineCorrelationWizard implements WizardProperties {
         
         public List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity) {
             List<BpelEntity> bpelEntityList = new ArrayList<BpelEntity>();
-            BpelEntity parentEntity = getActualParentEntity(mainBpelEntity);
+            BpelEntity parentEntity = getTopParentEntity(mainBpelEntity);
             if (parentEntity == null) return bpelEntityList;
             
-            List<BpelEntity> activities = getActivitiesFrom(parentEntity, new ArrayList<BpelEntity>());
+            List<BpelEntity> activities = chooseActivities(parentEntity, new ArrayList<BpelEntity>());
             for (BpelEntity bpelEntity : activities) {
                 if (mainBpelEntity.equals(bpelEntity)) {
                     bpelEntityList.add(bpelEntity);
@@ -297,13 +296,13 @@ public class DefineCorrelationWizard implements WizardProperties {
             return bpelEntityList;
         }
     
-        private List<BpelEntity> getActivitiesFrom(BpelEntity bpelEntity, 
+        private List<BpelEntity> chooseActivities(BpelEntity bpelEntity, 
             List<BpelEntity> bpelEntityList) {
             if (bpelEntityList == null) return (new ArrayList<BpelEntity>());
             
             if (bpelEntity instanceof Sequence) {
                 for (Activity activity : bpelEntity.getChildren(Activity.class)) {
-                    bpelEntityList.addAll(getActivitiesFrom(activity, new ArrayList<BpelEntity>()));
+                    bpelEntityList.addAll(chooseActivities(activity, new ArrayList<BpelEntity>()));
                 }
             } else if ((bpelEntity instanceof Requester) || (bpelEntity instanceof Responder)) {
                 bpelEntityList.add(bpelEntity);
@@ -311,17 +310,17 @@ public class DefineCorrelationWizard implements WizardProperties {
                 for (OnMessage onMessage : ((Pick) bpelEntity).getOnMessages()) {
                     bpelEntityList.add(onMessage);
                     for (Sequence sequence : onMessage.getChildren(Sequence.class)) {
-                        bpelEntityList.addAll(getActivitiesFrom(sequence, new ArrayList<BpelEntity>()));
+                        bpelEntityList.addAll(chooseActivities(sequence, new ArrayList<BpelEntity>()));
                     }
                 }
                 for (OnAlarmPick onAlarmPick : ((Pick) bpelEntity).getOnAlarms()) {
                     for (Sequence sequence : onAlarmPick.getChildren(Sequence.class)) {
-                        bpelEntityList.addAll(getActivitiesFrom(sequence, new ArrayList<BpelEntity>()));
+                        bpelEntityList.addAll(chooseActivities(sequence, new ArrayList<BpelEntity>()));
                     }
                 }
             } else {
                 for (Sequence sequence : bpelEntity.getChildren(Sequence.class)) {
-                    bpelEntityList.addAll(getActivitiesFrom(sequence, new ArrayList<BpelEntity>()));
+                    bpelEntityList.addAll(chooseActivities(sequence, new ArrayList<BpelEntity>()));
                 }
             }
             return bpelEntityList;
@@ -329,15 +328,14 @@ public class DefineCorrelationWizard implements WizardProperties {
         
         protected  List<BpelEntity> removeResponderActivityAbove(List<BpelEntity> activityList, 
             BpelEntity mainBpelEntity) {
-            // keep only Responder-activities below mainBpelEntity 
-            // (remove all Responder-activities above mainBpelEntity)
+            // remove all Responder-activities above mainBpelEntity
             BpelEntity activity = null;
             int index = 0;
             while (true) {
                 activity = activityList.get(index);
                 if (activity.equals(mainBpelEntity)) break;
 
-                if (activity instanceof Responder) {
+                if ((activity instanceof Responder) && (! (activity instanceof Requester))) {
                     activityList.remove(index);
                 } else {
                     ++index;
@@ -348,15 +346,14 @@ public class DefineCorrelationWizard implements WizardProperties {
         
         protected  List<BpelEntity> removeRequesterActivityBelow(List<BpelEntity> activityList, 
             BpelEntity mainBpelEntity) {
-            // keep only Requester-activities above mainBpelEntity 
-            // (remove all Requester-activities below mainBpelEntity)
+            // remove all Requester-activities below mainBpelEntity
             BpelEntity activity = null;
             int index = activityList.size() - 1;
             while (true) {
                 activity = activityList.get(index);
                 if (activity.equals(mainBpelEntity)) break;    
                     
-                if (activity instanceof Requester) {
+                if ((activity instanceof Requester) && (! (activity instanceof Responder))) {
                     activityList.remove(index);
                 }
                 --index;
@@ -376,8 +373,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             List<BpelEntity> activityList = super.getPermittedActivityList(mainBpelEntity);
             if (activityList.isEmpty()) return activityList;
             
-            // keep only Responder-activities below mainBpelEntity (remove all 
-            // Responder-activities above mainBpelEntity including mainBpelEntity itself)
+            // remove all Responder-activities above mainBpelEntity and mainBpelEntity itself
             activityList = removeResponderActivityAbove(activityList, mainBpelEntity);
             activityList.remove(mainBpelEntity);
             return activityList;
@@ -395,8 +391,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             List<BpelEntity> activityList = super.getPermittedActivityList(mainBpelEntity);
             if (activityList.isEmpty()) return activityList;
 
-            // keep only Requester-activities above mainBpelEntity (remove all 
-            // Requester-activities below mainBpelEntity including mainBpelEntity itself)
+            // remove all Requester-activities below mainBpelEntity and mainBpelEntity itself
             activityList = removeRequesterActivityBelow(activityList, mainBpelEntity);
             activityList.remove(mainBpelEntity);
             return activityList;
@@ -409,12 +404,10 @@ public class DefineCorrelationWizard implements WizardProperties {
             List<BpelEntity> activityList = super.getPermittedActivityList(mainBpelEntity);
             if (activityList.isEmpty()) return activityList;
             
-            // keep only Responder-activities below mainBpelEntity 
-            // (remove all Responder-activities above mainBpelEntity)
+            // remove all Responder-activities above mainBpelEntity
             activityList = removeResponderActivityAbove(activityList, mainBpelEntity);
             
-            // keep only Requester-activities above mainBpelEntity 
-            // (remove all Requester-activities below mainBpelEntity)
+            // remove all Requester-activities below mainBpelEntity
             activityList = removeRequesterActivityBelow(activityList, mainBpelEntity);
             
             // remove mainBpelEntity from the list
@@ -476,7 +469,7 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     //========================================================================//
     public class WizardSelectMessagingActivityPanel extends WizardAbstractPanel {
-        private final Dimension COMBOBOX_DIMENSION = new Dimension(220, 20);
+        private final Dimension COMBOBOX_DIMENSION = new Dimension(350, 20);
         private final int COMBOBOX_MAX_ROW_COUNT = 16;
         private final JComboBox activityComboBox = new JComboBox();
         private BpelEntity previousSelectedActivity, currentSelectedActivity;
@@ -560,7 +553,18 @@ public class DefineCorrelationWizard implements WizardProperties {
                     } catch (Exception e) {
                         itemText = value.toString();
                     }
-                    ((JLabel) component).setText(itemText);
+                    String messagePattern = NbBundle.getMessage(ComboBoxRenderer.class, "LBL_ComboBox_Item_Name_Pattern");
+                    Object[] messageValues = new Object[] {itemText, ((BpelEntity) value).getElementType().getSimpleName()};
+                    if (itemText == null) {
+                        if (value instanceof OnMessage) {
+                            String pickEntityName = ((BpelEntity) value).getParent().getAttribute(BpelAttributes.NAME),
+                                   operationName = ((BpelEntity) value).getAttribute(BpelAttributes.OPERATION);
+                            itemText = ((BpelEntity) value).getElementType().getSimpleName();
+                            messagePattern = NbBundle.getMessage(ComboBoxRenderer.class, "LBL_ComboBox_OnMessage_Name_Pattern");
+                            messageValues = new Object[] {itemText, pickEntityName, operationName};
+                        }
+                    }
+                    ((JLabel) component).setText(MessageFormat.format(messagePattern, messageValues));
                 }
                 return component;
             }
@@ -577,21 +581,34 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         
         public void buildCorrelationMapper(BpelEntity leftBpelEntity, BpelEntity rightBpelEntity) {
-            CorrelationMapperTreeModel leftTreeModel = null, rightTreeModel = null;
+            boolean isMapperChanged = (correlationMapper == null);
+            CorrelationMapperTreeModel 
+                leftTreeModel  = (CorrelationMapperTreeModel) (correlationMapper == null ? null : 
+                    correlationMapper.getModel().getLeftTreeModel()), 
+                rightTreeModel = (CorrelationMapperTreeModel) (correlationMapper == null ? null : 
+                    ((CorrelationMapperModel) correlationMapper.getModel()).getRightTreeModel());
             if (leftBpelEntity != null) {
                 leftTreeModel = new CorrelationMapperTreeModel();
                 CorrelationMapperTreeNode topLeftTreeNode = buildCorrelationTree(leftBpelEntity,
-                    NbBundle.getMessage(WizardDefineCorrelationPanel.class, "LBL_Left_Mapper_Top_Tree_Node_Name_Pattern"));
+                    NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
+                    leftBpelEntity instanceof OnMessage ? "LBL_Mapper_Tree_OnMessage_Name_Pattern" : 
+                                                          "LBL_Mapper_Tree_Top_Node_Name_Pattern"));
                 leftTreeModel.buildCorrelationMapperTree(topLeftTreeNode);
+                isMapperChanged = true;
             }
             if (rightBpelEntity != null) {
                 rightTreeModel = new CorrelationMapperTreeModel();
                 CorrelationMapperTreeNode topRightTreeNode = buildCorrelationTree(rightBpelEntity,
-                    NbBundle.getMessage(WizardDefineCorrelationPanel.class, "LBL_Right_Mapper_Top_Tree_Node_Name_Pattern"));
+                    NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
+                    rightBpelEntity instanceof OnMessage ? "LBL_Mapper_Tree_OnMessage_Name_Pattern" : 
+                                                           "LBL_Mapper_Tree_Top_Node_Name_Pattern"));
                 rightTreeModel.buildCorrelationMapperTree(topRightTreeNode);
+                isMapperChanged = true;
             }
-            
-            MapperModel mapperModel = new CorrelationMapperModel(leftTreeModel, rightTreeModel);
+            MapperModel mapperModel = null;
+            if (isMapperChanged) {
+                mapperModel = new CorrelationMapperModel(leftTreeModel, rightTreeModel);
+            }
             if (correlationMapper == null) {
                 wizardPanel.setLayout(new BorderLayout());
                 EtchedBorder panelBorder = (EtchedBorder) BorderFactory.createEtchedBorder(EtchedBorder.LOWERED, 
@@ -604,7 +621,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                 
                 wizardPanel.add(correlationMapper);
                 wizardPanel.revalidate();
-            } else {
+            } else if (isMapperChanged) {
                 correlationMapper.setModel(mapperModel);
             }
         }
@@ -620,23 +637,50 @@ public class DefineCorrelationWizard implements WizardProperties {
             CorrelationMapperTreeNode topTreeNode) {
             PortType portType = ((PortTypeReference) topBpelEntity).getPortType().get();
             Collection<Operation> operations = portType.getOperations();
+            String requiredOperationName = topBpelEntity.getAttribute(BpelAttributes.OPERATION);
+            Operation requiredOperation = null;
             for (Operation operation : operations) {
-                if (operation instanceof RequestResponseOperation) {
-                    Input input = operation.getInput();
-                    Message message = input.getMessage().get();
-                    Collection<Part> parts = message.getParts();
-                    if (! parts.isEmpty()) {
-                        CorrelationMapperTreeNode messageNode = new CorrelationMapperTreeNode(message, null);
-                        for (Part part : parts) {
-                            messageNode.add(new CorrelationMapperTreeNode(part, null));
-                        }
-                        topTreeNode.add(messageNode);
-                    }
+                if (operation.getName().equals(requiredOperationName)) {
+                    requiredOperation = operation;
+                    break;
                 }
             }
+            handleOperations(topBpelEntity, topTreeNode, requiredOperation);
             return topTreeNode;
         }
-
+        
+        private void handleOperations(BpelEntity topBpelEntity, 
+            CorrelationMapperTreeNode topTreeNode, Operation operation) {
+            List<Message> messages = new ArrayList<Message>();
+            if (topBpelEntity instanceof Requester) {
+                try {
+                    OperationParameter output = operation.getOutput();
+                    messages.add(output.getMessage().get());
+                } catch (Exception exception) {}
+            }
+            if (topBpelEntity instanceof Responder) {
+                try {
+                    OperationParameter input = operation.getInput();
+                    messages.add(input.getMessage().get());
+                } catch (Exception exception) {}
+            }
+            handleMessages(topBpelEntity, topTreeNode, messages);
+        }
+        
+        private void handleMessages(BpelEntity topBpelEntity, 
+            CorrelationMapperTreeNode topTreeNode, Collection<Message> messages) {
+            for (Message message : messages) {
+                Collection<Part> parts = message.getParts();
+                if (! parts.isEmpty()) {
+                    CorrelationMapperTreeNode messageNode = new CorrelationMapperTreeNode(message, null);
+                    for (Part part : parts) {
+                        messageNode.add(new CorrelationMapperTreeNode(part, null));
+                    }
+                    topTreeNode.add(messageNode);
+                }
+            }
+        }
+        
         private void defineCorrelationMapperKeyBindings() {
             if (correlationMapper == null) return;
             InputMap inputMap = correlationMapper.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -754,13 +798,27 @@ public class DefineCorrelationWizard implements WizardProperties {
             public String toString() {
                 String userObjectName = null;
                 Object userObj = getUserObject();
+                Object[] patternValues = new Object[0]; 
                 try {
                     if (userObj instanceof BpelEntity) {
-                        userObjectName = ((BpelEntity) userObj).getAttribute(BpelAttributes.NAME);
+                        if (userObj instanceof OnMessage) {
+                            String pickEntityName = ((BpelEntity) userObj).getParent().getAttribute(BpelAttributes.NAME),
+                                   operationName = ((BpelEntity) userObj).getAttribute(BpelAttributes.OPERATION);
+                            userObjectName = ((BpelEntity) userObj).getElementType().getSimpleName();
+                            patternValues = new Object[] {userObjectName, pickEntityName, operationName};
+                        } else {
+                            userObjectName = ((BpelEntity) userObj).getAttribute(BpelAttributes.NAME);
+                            patternValues = new Object[] {userObjectName, ((BpelEntity) userObj).getElementType().getSimpleName()};
+                        }
                     } else if (userObj instanceof Message) {
                         userObjectName = ((Message) userObj).getName();
-                    }  else if (userObj instanceof Part) {
+                        patternValues = new Object[] {userObjectName, "Message"};
+                    } else if (userObj instanceof Part) {
                         userObjectName = ((Part) userObj).getName();
+                        patternValues = new Object[] {userObjectName, "Part"};
+                    } else if (userObj instanceof GlobalElement) {
+                        userObjectName = ((GlobalElement) userObj).getName();
+                        patternValues = new Object[] {userObjectName, "GlobalElement"};
                     } else {
                         userObjectName = userObj.toString();
                     }
@@ -768,13 +826,21 @@ public class DefineCorrelationWizard implements WizardProperties {
                     userObjectName = userObj.toString();
                 }
                 String nodeName = (nodeNamePattern == null ? userObjectName : 
-                    MessageFormat.format(nodeNamePattern, new Object[] {userObjectName}));
+                    MessageFormat.format(nodeNamePattern, patternValues));
                 return nodeName;
             }
 
             public Icon getIcon() {
                 Object userObj = getUserObject();
-                Icon icon = mapTreeNodeIcons.get(((BpelEntity) userObj).getElementType());
+                Class userObjClass = Object.class;
+                if (userObj instanceof BpelEntity) {
+                    userObjClass = ((BpelEntity) userObj).getElementType();
+                } else {
+                    if (userObj instanceof Message) userObjClass = Message.class;
+                    if (userObj instanceof Part) userObjClass = Part.class;
+                    if (userObj instanceof GlobalElement) userObjClass = GlobalElement.class;
+                }
+                Icon icon = mapTreeNodeIcons.get(userObjClass);
                 if (icon == null) {
                     icon = mapTreeNodeIcons.get(Object.class);
                 }
@@ -815,6 +881,7 @@ public class DefineCorrelationWizard implements WizardProperties {
                     result = treeNode.isLeaf();
                     result &= ! treeNode.getUserObject().equals(
                         ((CorrelationMapperTreeModel) leftTreeModel).getTopBpelEntity());
+                    result &= ! isLeftTreePathLinked(sourceTreePath);
                 }
                 treeNode = (CorrelationMapperTreeNode) treePath.getLastPathComponent();
                 result &= treeNode.isLeaf();
@@ -862,6 +929,18 @@ public class DefineCorrelationWizard implements WizardProperties {
                     }
                 }
                 return treePath;
+            }
+            
+            public boolean isLeftTreePathLinked(TreePath leftTreePath) {
+                for (Graph graph : mapTreePathGraphs.values()) {
+                    for (Link link : graph.getLinks()) {
+                        TreePath sourceTreePath = ((TreeSourcePin) link.getSource()).getTreePath();
+                        if (sourceTreePath.equals(leftTreePath)) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
             }
             
             public Graph getGraph(TreePath treePath) {
