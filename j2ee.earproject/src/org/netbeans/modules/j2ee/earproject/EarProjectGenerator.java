@@ -199,12 +199,14 @@ public final class EarProjectGenerator {
         FileObject docBase = FileUtil.createFolder(srcPrjDirFO, DEFAULT_DOC_BASE_FOLDER);
         
         AntProjectHelper earHelper = setupProject();
-        EditableProperties ep = earHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         ReferenceHelper referenceHelper = new ReferenceHelper(earHelper,
                 earHelper.createAuxiliaryConfiguration(), earHelper.getStandardPropertyEvaluator());
-        ep.setProperty(EarProjectProperties.SOURCE_ROOT,
-                referenceHelper.createForeignFileReference(srcPrjDir, null));
-        ep.setProperty(EarProjectProperties.META_INF, createFileReference(referenceHelper, srcPrjDirFO, docBase));
+        String sourceRoot = referenceHelper.createForeignFileReference(srcPrjDir, null);
+        String metaInf = createFileReference(referenceHelper, srcPrjDirFO, docBase);
+        
+        EditableProperties ep = earHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty(EarProjectProperties.SOURCE_ROOT, sourceRoot);
+        ep.setProperty(EarProjectProperties.META_INF, metaInf);
         earHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
         FileObject earDirFO = earHelper.getProjectDirectory();
