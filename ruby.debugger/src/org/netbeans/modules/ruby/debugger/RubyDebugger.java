@@ -131,17 +131,6 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.setScriptPath(descriptor.getScript());
         if (descriptor.getInitialArgs() != null) {
             List<String> additionalOptions = new ArrayList<String>();
-            // TODO unneeded: [Charles> I have committed a change such that if
-            // you specify -rdebug it will not try to compile anything]. But
-            // still might be need in some cases. So safe to use it always for
-            // now. But currently does not work well with jruby.bat. So
-            // uncomment following code after you switch to calling java
-            // directly instead of jruby.bat.
-//            if (jrubySet) {
-//                // be sure JIT is not enabled during debugging since the
-//                // set_trace_func does not work reliably in the JIT mode.
-//                additionalOptions.add("-J-Djruby.jit.enabled=false"); // NOI18N
-//            }
             additionalOptions.addAll(Arrays.asList(descriptor.getInitialArgs()));
             debugDesc.setAdditionalOptions(additionalOptions);
         }
