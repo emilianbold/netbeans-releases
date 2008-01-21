@@ -60,6 +60,7 @@ mkdir -p $NB_ALL
 DIST=$BASE_DIR/dist
 LOGS=$DIST/logs
 BASENAME=netbeans-$BUILDNUM
+export BASENAME_PREFIX=netbeans-$BUILD_DESC
 
 mkdir -p $DIST/zip
 mkdir -p $LOGS
