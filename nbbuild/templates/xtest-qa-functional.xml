@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -71,7 +71,12 @@ made subject to such option by the copyright holder.
         <!-- Used built jar preferably. If not available use the latest from CVS. -->
         <available file="${nb_all}/jellytools/jelly2-nb.jar" property="jelly.jar" value="${nb_all}/jellytools/jelly2-nb.jar"/>
         <property name="jelly.jar" location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
-        <property name="jemmy.jar" location="${nb_all}/jemmy/builds/jemmy.jar"/>
+        <!-- This is a hack for Mac. There is special jemmy-mac.jar which works on Mac,
+             but we don't have sources for it to be merged into regular jemmy.jar. -->
+        <condition property="jemmy.jar.filename" value="jemmy-mac.jar" else="jemmy.jar">
+            <os family="mac"/>
+        </condition>
+        <property name="jemmy.jar" location="${nb_all}/jemmy/builds/${jemmy.jar.filename}"/>
         
         <!-- path reference used in both compiler and executor -->
         <path id="jemmy.and.jelly.path">
@@ -90,8 +95,8 @@ made subject to such option by the copyright holder.
         <property name="test.qa-functional.run.cp.extra" value=""/>
         <property name="test.qa-functional.runtime.cp" value=""/>
         <path id="test.qa-functional.run.cp">
-<!--  don't add modules to xtest classpath when tests are run in test mode          
-<pathelement path="${test.qa-functional.runtime.cp}"/>-->
+            <!--  don't add modules to xtest classpath when tests are run in ide mode
+            <pathelement path="${test.qa-functional.runtime.cp}"/>-->
             <path refid="jemmy.and.jelly.path"/>
             <pathelement path="${test.qa-functional.run.cp.extra}"/>
         </path>
