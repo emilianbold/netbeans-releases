@@ -48,6 +48,11 @@ made subject to such option by the copyright holder.
         jemmy and jellytools jars are on classpath for both. -->
     <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
 
+    <target name="qa-functional-compiler">
+        <ant inheritAll="false" antfile="../../../websvc/kit/test/build.xml" target="buildtests"/>
+        <antcall target="xtest-qa-functional.qa-functional-compiler"/>
+    </target>
+
     <target name="set-appserver-path" unless="j2ee.appserver.path">
         <!-- Load private.properties where user can set own j2ee.appserver.path. -->
         <property file="../nbproject/private/private.properties"/>
