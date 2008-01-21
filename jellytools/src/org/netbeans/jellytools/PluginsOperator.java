@@ -34,7 +34,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.jellytools;
 
@@ -44,8 +44,8 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
-import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
@@ -380,7 +380,7 @@ public class PluginsOperator extends NbDialogOperator {
      * <ul>
      *      <li>waits for "NetBeans IDE Installer" dialog</li>
      *      <li>in "NetBeans IDE Installer" dialog click Next</li>
-     *      <li>click "I accept..." radio button</li>
+     *      <li>click "I accept..." check box</li>
      *      <li>click Install button</li>
      *      <li>wait until the module is turned on (message in main window status bar)</li>
      *      <li>click Finish button to dismiss the dialog</li>
@@ -392,15 +392,15 @@ public class PluginsOperator extends NbDialogOperator {
         // "I accept the terms..."
         String acceptLabel = Bundle.getStringTrimmed(
                 "org.netbeans.modules.autoupdate.ui.wizards.Bundle",
-                "LicenseApprovalPanel_rbAccept_Text");
-        JRadioButtonOperator acceptRadioButtonOper = new JRadioButtonOperator(installerOper, acceptLabel);
-        if (!acceptRadioButtonOper.isEnabled()) {
+                "LicenseApprovalPanel.cbAccept.text");
+        JCheckBoxOperator acceptCheckboxOper = new JCheckBoxOperator(installerOper, acceptLabel);
+        if (!acceptCheckboxOper.isEnabled()) {
             // wait until licence is shown and dialog is re-created
-            acceptRadioButtonOper.waitComponentShowing(false);
-            // find radio button again
-            acceptRadioButtonOper = new JRadioButtonOperator(installerOper, acceptLabel);
+            acceptCheckboxOper.waitComponentShowing(false);
+            // find check box again
+            acceptCheckboxOper = new JCheckBoxOperator(installerOper, acceptLabel);
         }
-        acceptRadioButtonOper.push();
+        acceptCheckboxOper.push();
         // "Install"
         String installInDialogLabel = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.autoupdate.ui.wizards.Bundle", "InstallUnitWizardModel_Buttons_Install");
         new JButtonOperator(installerOper, installInDialogLabel).push();
