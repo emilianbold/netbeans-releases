@@ -118,7 +118,7 @@ TestSupport.prototype = {
         var mimeNode = document.getElementById("mimeSel");
         if(mimeNode == null || mimeNode == undefined) {
             this.currentMimeType = this.wdr.getMimeType(method);
-            //ts.debug(currentMimeType);
+            document.getElementById("mimeType").value = this.currentMimeType;
         }
         this.currentMethod = this.wdr.getMethod(method);
         document.getElementById("methodName").value = this.currentMethod;
@@ -138,7 +138,7 @@ TestSupport.prototype = {
     {
         var mimeNode = document.getElementById("mimeSel");
         var mime = mimeNode.options[mimeNode.selectedIndex].value;
-        ts.updatepage('mimeType', mime);
+        document.getElementById("mimeType").value = mime;
     },
     
     getMethodMimeTypeCombo : function (resource) {
@@ -1354,20 +1354,24 @@ WADLParser.prototype = {
         var mName = m.attributes.getNamedItem("name").nodeValue;
         var request = m.getElementsByTagName('request');
         var response = m.getElementsByTagName('response');
-        var mediaType = null;
+        var mediaType = '';
         var io = request;
         if(mName == 'GET')
             io = response;
         if(io != null && io.length > 0) {
             var rep = io[0].getElementsByTagName('representation');
-            if(rep != null && rep.length > 0) {                        
-                if(rep[0].attributes.length > 0) {
-                    var att = rep[0].attributes.getNamedItem('mediaType');
-                    if(att != null)
-                        mediaType = att.nodeValue
+            if(rep != null) {    
+                for(var i=0;i<rep.length;i++) {
+                    if(rep[i].attributes.length > 0) {
+                        var att = rep[i].attributes.getNamedItem('mediaType');
+                        if(att != null)
+                            mediaType += att.nodeValue + ',';
+                    }
                 }
             }
         }
+        if(mediaType.length > 1)
+            mediaType = mediaType.substring(0, mediaType.length-1);
         return mediaType;
     },
     
