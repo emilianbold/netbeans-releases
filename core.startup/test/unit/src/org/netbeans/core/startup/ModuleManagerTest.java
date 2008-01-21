@@ -73,6 +73,7 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import org.netbeans.InvalidException;
+import org.netbeans.JarClassLoader;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.Util;
@@ -1798,7 +1799,8 @@ public class ModuleManagerTest extends SetupHid {
             Class c = m.getClassLoader().loadClass("org.foo.Something");
             URL u = m.getClassLoader().getResource("org/foo/Something.class");
             URLConnection uc = u.openConnection();
-            assertTrue("using JarURLConnection", uc instanceof JarURLConnection);
+            assertNotNull("connetion", uc);
+            assertTrue("using JarURLConnection or JarClassLoader's one: " + uc, uc.getClass().getName().indexOf("JarClassLoader") >= 0);
             uc.connect();
             mgr.disable(m);
             mgr.delete(m);
