@@ -111,7 +111,7 @@ public class ConflictResolvedAction extends AbstractAction {
                 }
             }
         };
-        support.start(rp, repository.getAbsolutePath(), NbBundle.getMessage(ConflictResolvedAction.class, "MSG_ConlictResolved_Progress")); // NOI18N
+        support.start(rp, repository.getAbsolutePath(), NbBundle.getMessage(ConflictResolvedAction.class, "MSG_ConflictResolved_Progress")); // NOI18N
     }
     
     private static void perform(File file) {
