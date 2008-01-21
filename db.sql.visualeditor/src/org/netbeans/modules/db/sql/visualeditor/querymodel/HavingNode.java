@@ -70,7 +70,7 @@ public class HavingNode implements Having {
     public String genText(SQLIdentifiers.Quoter quoter) {
         String res="";    // NOI18N
         if (_condition != null) {
-            res = "\nHAVING " + _condition.genText(quoter);  // NOI18N
+            res = " HAVING " + _condition.genText(quoter);  // NOI18N
         }
 
         return res;

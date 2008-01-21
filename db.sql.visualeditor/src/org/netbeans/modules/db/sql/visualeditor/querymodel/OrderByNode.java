@@ -74,10 +74,10 @@ public class OrderByNode implements OrderBy {
         String res = "";    // NOI18N
         if (_sortSpecificationList != null && _sortSpecificationList.size() > 0) {
 
-            res = "\nORDER BY " + ((SortSpecification)_sortSpecificationList.get(0)).genText(quoter);  // NOI18N
+            res = " ORDER BY " + ((SortSpecification)_sortSpecificationList.get(0)).genText(quoter);  // NOI18N
 
             for (int i=1; i<_sortSpecificationList.size(); i++) {
-                res += ", " + "\n                    " +    // NOI18N
+                res += ", " + "                    " +    // NOI18N
                   ((SortSpecification)_sortSpecificationList.get(i)).genText(quoter);
             }
         }

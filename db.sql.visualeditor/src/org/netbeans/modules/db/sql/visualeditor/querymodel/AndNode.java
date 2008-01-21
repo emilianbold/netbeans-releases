@@ -71,7 +71,7 @@ public class AndNode extends BooleanExpressionList implements And {
         String res = ((Expression)_expressions.get(0)).genText(quoter);    // NOI18N
 
         for (int i=1; i<_expressions.size(); i++)
-            res += "\n          AND " + ((Expression)_expressions.get(i)).genText(quoter);    // NOI18N
+            res += "          AND " + ((Expression)_expressions.get(i)).genText(quoter);    // NOI18N
 
         return res;
     }

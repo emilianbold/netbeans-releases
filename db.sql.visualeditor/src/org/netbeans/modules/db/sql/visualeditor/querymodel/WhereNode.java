@@ -124,7 +124,7 @@ public class WhereNode implements Where {
     // Return the Where clause as a SQL string
     public String genText(SQLIdentifiers.Quoter quoter) {
         if (_cond!=null)
-            return "\nWHERE " + _cond.genText(quoter) ;  // NOI18N
+            return " WHERE " + _cond.genText(quoter) ;  // NOI18N
         else
             return "";  // NOI18N
     }

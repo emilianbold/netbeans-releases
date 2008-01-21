@@ -221,7 +221,7 @@ public class QueryBuilderPane extends JSplitPane {
         // Wrap the SQL text area in a scroll pane, and add to bottom panel
         JScrollPane qbSqlTextAreaSP = new JScrollPane(_queryBuilderSqlTextArea,
                                                       JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                                                      JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                                                      JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         c.gridx = 0;
         c.gridy = 1;
         gridbag.setConstraints(qbSqlTextAreaSP, c);

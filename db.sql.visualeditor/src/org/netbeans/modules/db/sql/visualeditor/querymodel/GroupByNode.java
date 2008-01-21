@@ -70,7 +70,7 @@ public class GroupByNode implements GroupBy {
     // Return the Select clause as a SQL string
 
     public String genText(SQLIdentifiers.Quoter quoter) {
-        String res = "\nGROUP BY ";  // NOI18N
+        String res = " GROUP BY ";  // NOI18N
 
         if (_columnList.size() > 0) {
             res += ((ColumnNode)_columnList.get(0)).genText(quoter);

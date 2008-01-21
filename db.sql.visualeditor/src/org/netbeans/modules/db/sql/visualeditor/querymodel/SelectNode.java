@@ -88,7 +88,7 @@ public class SelectNode implements Select {
                 ColumnItem col = (ColumnItem)_selectItemList.get(i);
                 if (col != null)
                 {
-                    res += ", " + "\n                    " + col.genText(quoter, true);  // NOI18N
+                    res += ", "  + col.genText(quoter, true);  // NOI18N
                 }
             }
         }

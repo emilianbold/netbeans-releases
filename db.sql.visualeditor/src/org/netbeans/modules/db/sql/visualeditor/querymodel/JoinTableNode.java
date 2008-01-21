@@ -85,7 +85,7 @@ public class JoinTableNode implements JoinTable {
         String res =
             (((_joinType==null)||(_joinType.equals("CROSS")))
              ? ", "
-             : "\n          " +_joinType + " JOIN ")  // NOI18N
+             : "          " +_joinType + " JOIN ")  // NOI18N
             + _table.genText(quoter, true);
 
         if (_condition != null) {

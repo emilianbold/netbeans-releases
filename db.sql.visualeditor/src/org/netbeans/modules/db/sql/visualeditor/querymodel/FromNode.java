@@ -76,7 +76,7 @@ public class FromNode implements From {
 
         if (_tableList.size() > 0) {
 
-            res = "\nFROM " + ((JoinTableNode)_tableList.get(0)).genText(quoter, true);  // NOI18N
+            res = " FROM " + ((JoinTableNode)_tableList.get(0)).genText(quoter, true);  // NOI18N
 
             for (int i=1; i<_tableList.size(); i++)
                 res += ((JoinTableNode)_tableList.get(i)).genText(quoter);
@@ -88,10 +88,10 @@ public class FromNode implements From {
 
     public String toString() {
 
-        String res = "FROM:\n";  // NOI18N
+        String res = "FROM:";  // NOI18N
 
         for (int i=0; i<_tableList.size(); i++)
-            res += "\t" + ((JoinTableNode)_tableList.get(i)).toString() + "\n";    // NOI18N
+            res += ((JoinTableNode)_tableList.get(i)).toString() + "";    // NOI18N
 
         return res;
     }
