@@ -1,13 +1,12 @@
 package org.netbeans.test.codegen;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public abstract class ImportsTest7 {
     
     public ImportsTest7() {
-    LinkedList[] s;
+    ImportsTest6[] s;
     }
     
 }
