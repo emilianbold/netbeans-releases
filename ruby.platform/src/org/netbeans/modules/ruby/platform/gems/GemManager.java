@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -274,6 +275,23 @@ public final class GemManager {
         // TODO - use gemVersions map instead!
         initGemList();
 
+        // extra logging for #125084
+        if (gemName != null && LOGGER.isLoggable(Level.FINE)){
+            LOGGER.fine("Getting version for: " + gemName);
+            if (gemFiles == null){
+                LOGGER.fine("gemFiles is null");
+            } else {
+                LOGGER.fine("Found " + gemFiles.size() + " gems.");
+                for (String key : gemFiles.keySet()){
+                    Map<String, File> value = gemFiles.get(key);
+                    LOGGER.fine(key + " has "+ (value == null ? "null" : "" + value.size()) + " version(s):");
+                    for (String version : value.keySet()){
+                        LOGGER.fine(version + " at " + value.get(version));
+                    }
+                }
+            }
+        }
+        
         if (gemFiles == null) {
             return null;
         }
@@ -281,10 +299,13 @@ public final class GemManager {
         Map<String, File> highestVersion = gemFiles.get(gemName);
 
         if ((highestVersion == null) || (highestVersion.size() == 0)) {
+            LOGGER.fine("No version for " + gemName);
             return null;
         }
 
-        return highestVersion.keySet().iterator().next();
+        String result = highestVersion.keySet().iterator().next();
+        LOGGER.fine("Returning version " + result + " for " + gemName);
+        return result;
     }
 
     private void initGemList() {
