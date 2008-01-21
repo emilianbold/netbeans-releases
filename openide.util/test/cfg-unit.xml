@@ -58,6 +58,6 @@ made subject to such option by the copyright holder.
     </testbag>
 
     <compiler name="default-compiler" antfile="build-unit.xml" target="default-compiler" default="true"/>
-    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test" default="true"/>
     
 </mconfig>

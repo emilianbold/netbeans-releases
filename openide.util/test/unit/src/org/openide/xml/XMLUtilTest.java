@@ -47,15 +47,13 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
-import java.net.URL;
-import java.net.URLClassLoader;
 import javax.xml.parsers.DocumentBuilderFactory;
-import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.w3c.dom.CDATASection;
 import org.w3c.dom.Document;
 import org.w3c.dom.DocumentType;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
@@ -379,5 +377,31 @@ public class XMLUtilTest extends NbTestCase {
         doc = null;
         
         assertGC("Document should be freed", wr);
+    }
+    
+    public void testCDATA() throws Exception {
+        Document doc = XMLUtil.createDocument("root", null, null, null);
+        Element e = doc.createElement("sometag");
+        doc.getDocumentElement().appendChild(e);
+
+        String cdataContent = "!&<>*\n[[]]";
+        CDATASection cdata = doc.createCDATASection(cdataContent);
+        e.appendChild(cdata);
+        
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        XMLUtil.write(doc, baos, "UTF-8");
+
+        String data = baos.toString("UTF-8");
+        assertTrue("Can't find CDATA section", data.indexOf("<![CDATA[" + cdataContent + "]]>") != -1);
+        
+        // parse the data back to DOM
+        Document doc2 = XMLUtil.parse(new InputSource(new ByteArrayInputStream(baos.toByteArray())), false, false, null, null);
+        NodeList nl = doc2.getElementsByTagName("sometag");
+        assertEquals("Wrong number of <sometag/> elements", 1, nl.getLength());
+        nl = nl.item(0).getChildNodes();
+        assertEquals("Wrong number of <sometag/> child elements", 1, nl.getLength());
+        Node child = nl.item(0);
+        assertTrue("Expecting CDATASection node", child instanceof CDATASection);
+        assertEquals("Wrong CDATASection content", cdataContent, ((CDATASection) child).getNodeValue());
     }
 }
