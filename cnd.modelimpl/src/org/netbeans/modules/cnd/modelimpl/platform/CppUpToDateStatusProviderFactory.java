@@ -58,8 +58,7 @@ public class CppUpToDateStatusProviderFactory implements UpToDateStatusProviderF
     public UpToDateStatusProvider createUpToDateStatusProvider(Document document) {
         if (document instanceof BaseDocument) {
             BaseDocument bdoc = (BaseDocument) document;
-            CppUpToDateStatusProvider provider = new CppUpToDateStatusProvider(bdoc);
-            return provider;
+            return CppUpToDateStatusProvider.get(bdoc);
         }
         return null;
     }

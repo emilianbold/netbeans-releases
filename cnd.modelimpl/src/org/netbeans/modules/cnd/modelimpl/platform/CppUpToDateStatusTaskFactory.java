@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,57 +31,44 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.modelimpl.platform;
 
+import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
-import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
-import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
+import org.netbeans.modules.cnd.model.tasks.EditorAwareCsmFileTaskFactory;
+import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
- *org.netbeans.modules.cnd.highlight.CppUpToDateStatusProvider
- * @author Alexander Simon
+ *
+ * @author Sergey Grinev
  */
-public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements PhaseRunner {
+public class CppUpToDateStatusTaskFactory extends EditorAwareCsmFileTaskFactory {
 
-    private UpToDateStatus current = UpToDateStatus.UP_TO_DATE_OK;
-
-    public CppUpToDateStatusProvider() {
-	current = UpToDateStatus.UP_TO_DATE_DIRTY;
-    }
-    
     @Override
-    public UpToDateStatus getUpToDate() {
-        return current;
+    protected PhaseRunner createTask(FileObject fo) {
+        CppUpToDateStatusProvider ph = null;
+        try {
+            DataObject dobj = DataObject.find(fo);
+            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            Document doc = ec.getDocument();
+            if (doc instanceof BaseDocument) {
+                ph = CppUpToDateStatusProvider.get((BaseDocument)doc);
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return ph != null ? ph : lazyRunner();
     }
 
-    public void run(Phase phase) {
-        UpToDateStatus status;
-        switch (phase) {
-            default : status = UpToDateStatus.UP_TO_DATE_DIRTY; break;
-            case PARSING_STARTED: 
-            case INIT: status = UpToDateStatus.UP_TO_DATE_PROCESSING; break;
-            case PARSED : status = UpToDateStatus.UP_TO_DATE_OK; break;
-        }
-        if (current != status){
-            firePropertyChange(PROP_UP_TO_DATE, current, status);
-            current = status;
-        }
-    }
-    
-    public static synchronized CppUpToDateStatusProvider get(BaseDocument doc) {
-        if (doc == null) {
-            return null;
-        }
-        
-        CppUpToDateStatusProvider provider = (CppUpToDateStatusProvider) doc.getProperty(CppUpToDateStatusProvider.class);
-
-        if (provider == null) {
-            doc.putProperty(CppUpToDateStatusProvider.class, provider = new CppUpToDateStatusProvider());
-        }
-
-        return provider;
-    }
 }
