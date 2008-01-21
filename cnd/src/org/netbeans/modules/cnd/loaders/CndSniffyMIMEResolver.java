@@ -118,7 +118,8 @@ public class CndSniffyMIMEResolver extends MIMEResolver {
                     line.startsWith("#!/bin/sh") ||  // NOI18N
                     line.startsWith("#!/bin/ksh") ||  // NOI18N
                     line.startsWith("#!/bin/csh") ||  // NOI18N
-                    line.startsWith("#!/bin/zsh")) {  // NOI18N
+                    line.startsWith("#!/bin/csh") ||  // NOI18N
+                    line.startsWith("#!/usr/bin/perl")) {  // NOI18N
                 return true;
             }
         }
