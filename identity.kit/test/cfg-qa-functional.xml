@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <testbag testattribs="validation,identity" executor="ide" name="Identity support validation (basic)">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/modules/identity/qaf/identity/IdentityValidation.class"/>
+                <include name="org/netbeans/modules/identity/qaf/IdentityValidation.class"/>
             </patternset>
         </testset>
     </testbag>

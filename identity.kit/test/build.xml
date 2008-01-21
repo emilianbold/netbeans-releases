@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
-    <property name="xtest.attribs" value="validation,stable"/>
+    <property name="xtest.attribs" value="validation,identity"/>
 
 </project>
 

@@ -79,7 +79,8 @@ public class IdentityValidation extends WsValidation {
     private static final String SERVERS = Bundle.getString(
             "org.netbeans.modules.j2ee.deployment.impl.ui.Bundle",
             "SERVER_REGISTRY_NODE"); //NOI18N
-    private static final String TARGET_SERVER_NAME = "SDK Glassfish"; //NOI18N
+//    private static final String TARGET_SERVER_NAME = "SDK Glassfish"; //NOI18N
+    private static final String TARGET_SERVER_NAME = "Glassfish V2"; //NOI18N
     public static File PROJECTS_FOLDER_FILE;
     public static File WSP_PROJECT_FILE;
     public static File WSC_PROJECT_FILE;
@@ -166,40 +167,40 @@ public class IdentityValidation extends WsValidation {
      * Add SDK Glassfish - key component to use AM security 
      * - adds SDK Glassfish with Access manager component
      */
-    public void addSDKGlassfish() {
-        SERVER_PATH = "/space/SDK"; //NOI18N
-        String osType = System.getProperty("os.name"); //NOI18N
-        if (osType.contains("Windows")) { //NOI18N
-            SERVER_PATH = "E:\\Space\\Sun\\SDK";
-//            SERVER_PATH = "C:\\Sun\\SDK";      //NOI18N For testing purpose only
-        }
-        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); //NOI18N
-        RuntimeTabOperator runtime = new RuntimeTabOperator();
-        runtime.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 90000); //NOI18N
-        Node servers = new Node(runtime.getRootNode(), SERVERS);
-        servers.expand();
-        servers.callPopup().pushMenuNoBlock(actionName);
-        WizardOperator dialog = new WizardOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title")); //NOI18N
-        new JTextFieldOperator(dialog, 0).setText(TARGET_SERVER_NAME);
-        dialog.next();
-        new JTextFieldOperator(dialog, 0).setText(SERVER_PATH);
-        new org.netbeans.jemmy.EventTool().waitNoEvent(10000);
-        dialog.next();
-        new JTextFieldOperator(dialog, 1).setText("adminadmin"); //NOI18N
-        new JButtonOperator(dialog, "Finish").push(); //NOI18N
-    }
+//    public void addSDKGlassfish() {
+//        SERVER_PATH = "/space/SDK"; //NOI18N
+//        String osType = System.getProperty("os.name"); //NOI18N
+//        if (osType.contains("Windows")) { //NOI18N
+//            SERVER_PATH = "E:\\Space\\Sun\\SDK";
+////            SERVER_PATH = "C:\\Sun\\SDK";      //NOI18N For testing purpose only
+//        }
+//        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.actions.Bundle", "LBL_Add_Server_Instance"); //NOI18N
+//        RuntimeTabOperator runtime = new RuntimeTabOperator();
+//        runtime.getTimeouts().setTimeout("JTreeOperator.WaitNextNodeTimeout", 90000); //NOI18N
+//        Node servers = new Node(runtime.getRootNode(), SERVERS);
+//        servers.expand();
+//        servers.callPopup().pushMenuNoBlock(actionName);
+//        WizardOperator dialog = new WizardOperator(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.j2ee.deployment.impl.ui.wizard.Bundle", "LBL_ASIW_Title")); //NOI18N
+//        new JTextFieldOperator(dialog, 0).setText(TARGET_SERVER_NAME);
+//        dialog.next();
+//        new JTextFieldOperator(dialog, 0).setText(SERVER_PATH);
+//        new org.netbeans.jemmy.EventTool().waitNoEvent(10000);
+//        dialog.next();
+//        new JTextFieldOperator(dialog, 1).setText("adminadmin"); //NOI18N
+//        new JButtonOperator(dialog, "Finish").push(); //NOI18N
+//    }
 
     /** 
      * Start SDK Glassfish  - to test AM functionality 
      * - this feature is neccessary,when we want to test AM profiles,since these are
      * available in Runtime tab only if server is running
      */
-    public void startSDKGlassfish() {
-        System.out.println("########  TestCase: " + getName() + "  #######"); //NOI18N
-        J2eeServerNode serverNode = J2eeServerNode.invoke(TARGET_SERVER_NAME);
-        JemmyProperties.setCurrentTimeout("Waiter.WaitingTime", 120000); //NOI18N
-        serverNode.start();
-    }
+//    public void startSDKGlassfish() {
+//        System.out.println("########  TestCase: " + getName() + "  #######"); //NOI18N
+//        J2eeServerNode serverNode = J2eeServerNode.invoke(TARGET_SERVER_NAME);
+//        JemmyProperties.setCurrentTimeout("Waiter.WaitingTime", 120000); //NOI18N
+//        serverNode.start();
+//    }
 
     /** 
      * Test AM Profiles 
@@ -345,22 +346,22 @@ public class IdentityValidation extends WsValidation {
      * Changes server for test projects,created on default server to SDK Glassfish.
      * @param client is for determination of project name.
      */
-    private void testChangeServer(boolean client) {
-        String actual = getWsProjectName();
-        if(client){
-            actual = getWsClientProjectName();
-        }
-        ProjectRootNode prj = ProjectsTabOperator.invoke().getProjectRootNode(actual);
-        prj.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.nodes.Bundle", "Properties")); //NOI18N
-        // "Project Properties"
-        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title"); //NOI18N
-        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
-        // "Run"
-        String runLabel = Bundle.getString("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Config_Run"); //NOI18N
-        // select "Run" category
-        new Node(new JTreeOperator(propertiesDialogOper), runLabel).select();
-        JComboBoxOperator server = new JComboBoxOperator(propertiesDialogOper,0);
-        server.selectItem(TARGET_SERVER_NAME);
-        propertiesDialogOper.ok();
-    }  
+//    private void testChangeServer(boolean client) {
+//        String actual = getWsProjectName();
+//        if(client){
+//            actual = getWsClientProjectName();
+//        }
+//        ProjectRootNode prj = ProjectsTabOperator.invoke().getProjectRootNode(actual);
+//        prj.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.nodes.Bundle", "Properties")); //NOI18N
+//        // "Project Properties"
+//        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title"); //NOI18N
+//        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+//        // "Run"
+//        String runLabel = Bundle.getString("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Config_Run"); //NOI18N
+//        // select "Run" category
+//        new Node(new JTreeOperator(propertiesDialogOper), runLabel).select();
+//        JComboBoxOperator server = new JComboBoxOperator(propertiesDialogOper,0);
+//        server.selectItem(TARGET_SERVER_NAME);
+//        propertiesDialogOper.ok();
+//    }  
 }
