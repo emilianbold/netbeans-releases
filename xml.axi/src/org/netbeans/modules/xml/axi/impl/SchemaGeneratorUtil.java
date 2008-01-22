@@ -1265,8 +1265,11 @@ public class SchemaGeneratorUtil {
                 le.setType(le.createReferenceTo(
                         (GlobalComplexType)((ContentModel)newValue).getPeer(),
                         GlobalComplexType.class));
-            } else if(newValue instanceof Datatype)
+            } else if(newValue instanceof Datatype) {
                 modifyDatatype(sm, le, (Datatype) newValue, pc);
+            } else {
+                le.setInlineType(null);                
+            }
         }
     }
     
@@ -1320,8 +1323,11 @@ public class SchemaGeneratorUtil {
                 ge.setType(ge.createReferenceTo(
                         (GlobalComplexType)((ContentModel)newValue).getPeer(),
                         GlobalComplexType.class));
-            } else if(newValue instanceof Datatype)
+            } else if(newValue instanceof Datatype) {
                 modifyDatatype(sm, ge, (Datatype) newValue, pc);
+            } else {
+                ge.setInlineType(null);                
+            }
         }
     }
     
