@@ -159,6 +159,14 @@ public class ExpressionPool {
         
         int line = loc.lineNumber(language);
         
+        final List<Location> methodLocations;
+        try {
+            methodLocations = method.allLineLocations(language, null);
+        } catch (AbsentInformationException aiex) {
+            logger.log(Level.FINE, aiex.getLocalizedMessage());
+            return null;
+        }
+        
         Operation[] ops = EditorContextBridge.getContext().getOperations(
                 url, line, new EditorContext.BytecodeProvider() {
             public byte[] constantPool() {
@@ -170,7 +178,7 @@ public class ExpressionPool {
             }
 
             public int[] indexAtLines(int startLine, int endLine) {
-                return getIndexesAtLines(method, language, startLine, endLine);
+                return getIndexesAtLines(methodLocations, language, startLine, endLine, bytecodes.length);
             }
             
         });
@@ -194,33 +202,21 @@ public class ExpressionPool {
         return expr;
     }
     
-    private static int[] getIndexesAtLines(Method method, String language, int startLine, int endLine) {
-        try {
-            List<Location> startLocations;
-            int startlocline = 0;
-            int endlocline;
-            do {
-                startLocations = method.locationsOfLine(language, null, startLine - startlocline++);
-            } while (startLocations.isEmpty());
-            if (endLine > startLine - (startlocline - 1)) {
-                endlocline = 0;
-            } else {
-                endlocline = 1;
-            }
-            startLine -= (startlocline - 1);
-            endLine += endlocline;
-        } catch (AbsentInformationException aiex) {
-            logger.log(Level.FINE, aiex.getLocalizedMessage());
-            return null;
+    private static int[] getIndexesAtLines(List<Location> allLocations, String language, int startLine, int endLine, int methodEndIndex) {
+        Location startLocation;
+        int startlocline = 0;
+        int endlocline;
+        do {
+            startLocation = getLocationOfLine(allLocations, language, startLine - startlocline++);
+        } while (startLocation == null);
+        if (endLine > startLine - (startlocline - 1)) {
+            endlocline = 0;
+        } else {
+            endlocline = 1;
         }
+        startLine -= (startlocline - 1);
+        endLine += endlocline;
         List<int[]> indexes = new ArrayList<int[]>();
-        List<Location> allLocations;
-        try {
-            allLocations = method.allLineLocations(language, null);
-        } catch (AbsentInformationException aiex) {
-            logger.log(Level.FINE, aiex.getLocalizedMessage());
-            return null;
-        }
         int startIndex = -1;
         for (Location l : allLocations) {
             int line = l.lineNumber(language);
@@ -234,7 +230,7 @@ public class ExpressionPool {
         if (indexes.size() == 0) {
             if (startIndex >= 0) {
                 // End of the method
-                return new int[] { startIndex, method.bytecodes().length };
+                return new int[] { startIndex, methodEndIndex };
             }
             return null;
         } else if (indexes.size() == 1) {
@@ -247,6 +243,15 @@ public class ExpressionPool {
             }
             return arr;
         }
+    }
+    
+    private static Location getLocationOfLine(List<Location> allLocations, String language, int line) {
+        for (Location l : allLocations) {
+            if (l.lineNumber(language) == line) {
+                return l;
+            }
+        }
+        return null;
     }
     
     //private int[] singleIndexHolder = new int[1]; // Perf. optimization only
