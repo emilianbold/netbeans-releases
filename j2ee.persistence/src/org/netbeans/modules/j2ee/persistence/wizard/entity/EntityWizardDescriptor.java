@@ -107,15 +107,6 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
             wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class,"ERR_PrimaryKeyNotEmpty")); //NOI18N
             return false;
         }
-        try{
-            if (!isPersistenceUnitDefined()) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit"));
-                return true; // just warning
-            }
-        } catch (InvalidPersistenceXmlException ipx){
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_InvalidPersistenceXml", ipx.getPath()));
-            return true; // just a warning
-        }
         
         wizardDescriptor.putProperty("WizardPanel_errorMessage", " "); //NOI18N
         return true;
@@ -130,12 +121,14 @@ public class EntityWizardDescriptor implements WizardDescriptor.FinishablePanel,
         
         try{
             if (ProviderUtil.isValidServerInstanceOrNone(project) && !isPersistenceUnitDefined()) {
-                wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit"));
-                p.setPersistenceUnitButtonVisibility(true);
+                String warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_NoPersistenceUnit");
+                p.setPersistenceUnitButtonVisibility(true, warning);
+            } else {
+                p.setPersistenceUnitButtonVisibility(false, null);
             }
         } catch (InvalidPersistenceXmlException ipx){
-            wizardDescriptor.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_InvalidPersistenceXml", ipx.getPath()));
-            p.setPersistenceUnitButtonVisibility(false);
+            String warning = NbBundle.getMessage(EntityWizardDescriptor.class, "ERR_InvalidPersistenceXml", ipx.getPath());
+            p.setPersistenceUnitButtonVisibility(false, warning);
         }
     }
     
