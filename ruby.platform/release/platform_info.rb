@@ -11,6 +11,7 @@ $stdout.printf "ruby_version=#{RUBY_VERSION}\n"
 $stdout.printf "jruby_version=#{JRUBY_VERSION}\n" if jruby
 $stdout.printf "ruby_patchlevel=#{RUBY_PATCHLEVEL}\n" if defined? RUBY_PATCHLEVEL
 $stdout.printf "ruby_release_date=#{RUBY_RELEASE_DATE}\n"
+RbConfig = Config unless defined?(RbConfig) # 1.8.4 support
 ruby = File.join(RbConfig::CONFIG["bindir"], RbConfig::CONFIG["ruby_install_name"])
 ruby << RbConfig::CONFIG["EXEEXT"]
 $stdout.printf "ruby_executable=#{ruby}\n"
