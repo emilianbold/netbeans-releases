@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
         <testset dir="qa-functional/src">
             <patternset>
 		<include name="**/EJBAppSubnodeTest.class"/>
-                <include name="org/netbeans/modules/visualweb/ejb/test/EJBAppSubnodeTest.class/testEJB_Subnode_04_Modify" expectedFail="Issue #120165"/>
+                <include name="org/netbeans/test/ejb/EJBAppSubnodeTest.class/testEJB_Subnode_04_Modify" expectedFail="Issue #120165"/>
 		<include name="**/EJBNodeTest.class"/>
 		<include name="**/ImportEJBTest.class"/>
                 <include name="**/ExportEJBTest.class"/>

@@ -50,9 +50,9 @@ made subject to such option by the copyright holder.
     <property name="rave.disablebrowser" value="true"/>
     <!-- Pass ${rave.disablebrowser} property value to xtest command line -->
 
-    <property name="xtest.data.dir" location="../../test/data"/>
+    <property name="xtest.data.dir" location="../../kit/test/data"/>
     <property name="xtest.properties-file.dir" value="${xtest.data.dir}"/>
-    <property name="xtest.ejb.dir" location="./qa-functional/src/org/netbeans/modules/visualweb/ejb/test/data/"/>
+    <property name="xtest.ejb.dir" location="./qa-functional/src/org/netbeans/test/ejb/data/"/>
     <property name="xtest.ejb_jars.dir" location="${xtest.ejb.dir}/ejb_jars"/>
 
     <available file="${xtest.properties-file.dir}/DeploymentTargets.properties" property="xtest.dt-properties-file.present"/>
@@ -78,7 +78,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="data-deployment" if="asadmin.present">
-      <unjar src="qa-functional/src/org/netbeans/modules/visualweb/ejb/test/data/ejb_jars.jar" dest="${xtest.ejb.dir}"/>
+      <unjar src="qa-functional/src/org/netbeans/test/ejb/data/ejb_jars.jar" dest="${xtest.ejb.dir}"/>
       <property name="SunAppServer.dir" location="${deployment.target.path.GlassFish V2}/bin"/>
       <touch file="./passwd"/>
       <echo file="./passwd" message="AS_ADMIN_PASSWORD=${deployment.target.password.GlassFish V2}"/>
