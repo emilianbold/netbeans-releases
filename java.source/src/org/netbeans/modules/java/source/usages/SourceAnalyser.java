@@ -63,6 +63,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Name;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -142,14 +143,22 @@ public class SourceAnalyser {
                 final String rsName = (index == -1 ? uv.sourceName : uv.sourceName.substring(index+1)) + '.' + FileObjects.RS;    //NOI18N
                 javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, sibling);
                 assert fo != null;
-                BufferedReader in = new BufferedReader ( new InputStreamReader (fo.openInputStream(), "UTF-8"));
                 try {
-                    String line;
-                    while ((line = in.readLine())!=null) {
-                        uv.rsList.add (line);
+                    BufferedReader in = new BufferedReader ( new InputStreamReader (fo.openInputStream(), "UTF-8"));
+                    try {
+                        String line;
+                        while ((line = in.readLine())!=null) {
+                            uv.rsList.add (line);
+                        }
+                    } finally {
+                        in.close();
                     }
-                } finally {
-                    in.close();
+                } catch (FileNotFoundException e) {
+                    //The manager.getFileForInput() should be used which returns null when file doesn't exist.
+                    //but the javac API doesn't allow to specify siblink  which will not work if there are two roots
+                    //with the same class name in the same wrong package.
+                    //workarond: use manager.getFileForOutput() which may return non existing javac FileObject and
+                    //cahch FileNotFoundException when it doens't exist, there is nothing to add into rsList
                 }
                 PrintWriter rsOut = new PrintWriter( new OutputStreamWriter (fo.openOutputStream(), "UTF-8"));
                 try {
