@@ -206,7 +206,7 @@ public class JavaScript {
         while (it.hasNext ()) {
             ASTItem item = it.next ();
             if ((item instanceof ASTNode) && ((ASTNode) item).getNT ().equals ("FunctionDeclaration") &&
-                ((ASTNode) item).getNode ("FunctionName") == null) {
+                ((ASTNode) item).getNode ("FunctionHeader.FunctionName") == null) {
                 return null;
             }
         } // while
@@ -276,14 +276,14 @@ public class JavaScript {
                 return null;
             }
             if (n.getNT ().equals ("FunctionDeclaration") && n != path.getLeaf () &&
-                    n.getNode ("FunctionName") == null) {
+                    n.getNode ("FunctionHeader.FunctionName") == null) {
                 return null;
             }
         } // while
         
         ASTNode node = (ASTNode) path.getLeaf ();
         String name = null;
-        ASTNode nameNode = node.getNode ("FunctionName");
+        ASTNode nameNode = node.getNode ("FunctionHeader.FunctionName");
         if (nameNode == null) {
             return null;
         }
