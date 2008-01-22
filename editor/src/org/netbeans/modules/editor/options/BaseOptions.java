@@ -1351,7 +1351,7 @@ public class BaseOptions extends OptionSupport {
 //
         if (!BASE.equals(getTypeName())) {
             Preferences prefs = MimeLookup.getLookup(MimePath.parse(getContentType())).lookup(Preferences.class);
-            String handle = prefs.get(INDENT_ENGINE_PROP, null);
+            String handle = prefs != null ? prefs.get(INDENT_ENGINE_PROP, null) : null;
             if (handle != null) {
                 Object instance = null;
                 String handleString = (String) handle;
@@ -1420,7 +1420,11 @@ public class BaseOptions extends OptionSupport {
                 if (id == null) {
                     id = NO_INDENT_ENGINE;
                 } 
-                prefs.put(INDENT_ENGINE_PROP, id);
+                if (prefs != null) {
+                    prefs.put(INDENT_ENGINE_PROP, id);
+                } else {
+                    LOG.warning("Could not find Preferences instance for " + getContentType());
+                }
             }
 
             refreshIndentEngineSettings();
