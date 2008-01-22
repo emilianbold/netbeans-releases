@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.groovy.editor;
 
-import junit.framework.TestCase;
-import org.netbeans.api.lexer.Language;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
@@ -56,7 +57,7 @@ import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
  * 
  * @author Martin Adamek
  */
-public class GroovyLexerGStringTest extends TestCase {
+public class GroovyLexerGStringTest extends NbTestCase {
 
     public GroovyLexerGStringTest(String testName) {
         super(testName);
@@ -64,12 +65,20 @@ public class GroovyLexerGStringTest extends TestCase {
 
     @Override
     protected void setUp() throws java.lang.Exception {
+        Logger.getLogger("org.netbeans.modules.groovy.editor.lexer.GroovyLexer").setLevel(Level.FINEST);
     }
 
     @Override
     protected void tearDown() throws java.lang.Exception {
     }
 
+    // uncomment this to have logging from GroovyLexer
+//    protected Level logLevel() {
+//        // enabling logging
+//        return Level.INFO;
+//        // we are only interested in a single logger, so we set its level in setUp(),
+//        // as returning Level.FINEST here would log from all loggers
+//    }
     
     public void testGstringSimple(){
         
@@ -89,16 +98,16 @@ public class GroovyLexerGStringTest extends TestCase {
         
         TokenSequence<?> ts = seqForText("def s = \"hallo: $a\"");
         
-//        next(ts, GroovyTokenId.LITERAL_def, "def");
-//        next(ts, GroovyTokenId.WHITESPACE, " ");
-//        next(ts, GroovyTokenId.IDENTIFIER, "s");
-//        next(ts, GroovyTokenId.WHITESPACE, " ");
-//        next(ts, GroovyTokenId.ASSIGN, "=");
-//        next(ts, GroovyTokenId.WHITESPACE, " ");
-//        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo: \"");
+        next(ts, GroovyTokenId.LITERAL_def, "def");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.IDENTIFIER, "s");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.ASSIGN, "=");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo: $");
+        next(ts, GroovyTokenId.IDENTIFIER, "a");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"");
         
-        // FIXME: this will cause an IOUB exception, so there seems to 
-        // to be a trailing empty token. I have to fix this.
         dumpTokenStream(ts);  
         
     }
@@ -107,16 +116,18 @@ public class GroovyLexerGStringTest extends TestCase {
         
         TokenSequence<?> ts = seqForText("def s = \"hallo: ${a}\"");
         
-//        next(ts, GroovyTokenId.LITERAL_def, "def");
-//        next(ts, GroovyTokenId.WHITESPACE, " ");
-//        next(ts, GroovyTokenId.IDENTIFIER, "s");
-//        next(ts, GroovyTokenId.WHITESPACE, " ");
-//        next(ts, GroovyTokenId.ASSIGN, "=");
-//        next(ts, GroovyTokenId.WHITESPACE, " ");
-//        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo: \"");
+        next(ts, GroovyTokenId.LITERAL_def, "def");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.IDENTIFIER, "s");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.ASSIGN, "=");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"hallo: $");
+        next(ts, GroovyTokenId.LBRACE, "{");
+        next(ts, GroovyTokenId.IDENTIFIER, "a");
+        next(ts, GroovyTokenId.RBRACE, "}");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"");
         
-        // FIXME: this will cause an IOUB exception, so there seems to 
-        // to be a trailing empty token. I have to fix this.
         dumpTokenStream(ts);  
         
     }
@@ -223,13 +234,13 @@ public class GroovyLexerGStringTest extends TestCase {
     
     
     void dumpTokenStream (TokenSequence ts){
-        System.out.println("#############################################");
+//        System.out.println("#############################################");
         
         while (ts.moveNext()) {
               Token t = ts.token();
-              System.out.println("-------------------------------");  
-              System.out.println("Token-Text :" + t.toString());  
-              System.out.println("Token-ID   :" + t.id());  
+//              System.out.println("-------------------------------");  
+//              System.out.println("Token-Text :" + t.toString());  
+//              System.out.println("Token-ID   :" + t.id());  
             }
     }
     

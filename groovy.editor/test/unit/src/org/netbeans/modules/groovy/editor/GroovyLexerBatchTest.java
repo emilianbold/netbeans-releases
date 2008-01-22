@@ -41,11 +41,14 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 
@@ -56,7 +59,7 @@ import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
  * 
  * @author Martin Adamek
  */
-public class GroovyLexerBatchTest extends TestCase {
+public class GroovyLexerBatchTest extends NbTestCase {
 
     public GroovyLexerBatchTest(String testName) {
         super(testName);
@@ -64,11 +67,20 @@ public class GroovyLexerBatchTest extends TestCase {
 
     @Override
     protected void setUp() throws java.lang.Exception {
+        Logger.getLogger("org.netbeans.modules.groovy.editor.lexer.GroovyLexer").setLevel(Level.FINEST);
     }
 
     @Override
     protected void tearDown() throws java.lang.Exception {
     }
+
+    // uncomment this to have logging from GroovyLexer
+//    protected Level logLevel() {
+//        // enabling logging
+//        return Level.INFO;
+//        // we are only interested in a single logger, so we set its level in setUp(),
+//        // as returning Level.FINEST here would log from all loggers
+//    }
 
     public void testDiv() {
         String text = "def s = 4 / 2\n";
@@ -144,28 +156,38 @@ public class GroovyLexerBatchTest extends TestCase {
     
     public void testGstringLexing5(){
         
-        TokenSequence<?> ts = seqForText("println \"Hello $name!\"\r\n");
-        
-        // FIXME: This test is meant to be brocken, since I'm still
-        // hunting the trailing doubleqoutes errer. BEWARE!
+        TokenSequence<?> ts = seqForText("println \"Hello $name here!\"\r\n");
         
         next(ts, GroovyTokenId.IDENTIFIER, "println");
         next(ts, GroovyTokenId.WHITESPACE, " ");
         next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $");
         next(ts, GroovyTokenId.IDENTIFIER, "name");
-        next(ts, GroovyTokenId.LNOT, "!");
+        next(ts, GroovyTokenId.STRING_LITERAL, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "here");
+        next(ts, GroovyTokenId.STRING_LITERAL, "!");
         next(ts, GroovyTokenId.STRING_LITERAL, "\"");
-        
-        assertTrue(ts.moveNext());
-        Token t = ts.token();
-        
-        System.out.println("-------------------------------");  
-        System.out.println("Token-Text   :" + t.toString() + ":CLOSED");  
-        System.out.println("Token-Length :" + t.length());  
-        System.out.println("Token-ID     :" + t.id());
-        System.out.println("-------------------------------"); 
+        next(ts, GroovyTokenId.NLS, "\r\n");
     }
     
+    public void testGstringLexing6(){
+        
+        TokenSequence<?> ts = seqForText("println \"Hello $name here!\"; println 'aaa'\n");
+        
+        next(ts, GroovyTokenId.IDENTIFIER, "println");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $");
+        next(ts, GroovyTokenId.IDENTIFIER, "name");
+        next(ts, GroovyTokenId.STRING_LITERAL, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "here");
+        next(ts, GroovyTokenId.STRING_LITERAL, "!");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"");
+        next(ts, GroovyTokenId.SEMI, ";");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.IDENTIFIER, "println");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "'aaa'");
+        next(ts, GroovyTokenId.NLS, "\n");
+    }
     
     public void testMultipleStringConstants(){
         
@@ -224,19 +246,6 @@ public class GroovyLexerBatchTest extends TestCase {
         assertFalse(ts.moveNext());
     }     
     
-    
-    TokenSequence<?> seqForText(String text){
-        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
-        return hi.tokenSequence();
-    }
-    
-    
-    void next(TokenSequence<?> ts, GroovyTokenId id, String fixedText){
-        assertTrue(ts.moveNext());
-        LexerTestUtilities.assertTokenEquals(ts,id, fixedText, -1);
-    }
-    
-    
     public void testLengthTest1(){
         String text = "true";
         
@@ -293,7 +302,6 @@ public class GroovyLexerBatchTest extends TestCase {
         assertTrue(ts.moveNext());
         t = ts.token();
         assertTrue(t.length() == 7);
-        System.out.println("4-Token:" + t.toString());
         
         assertTrue(ts.moveNext());
         t = ts.token();
@@ -330,8 +338,6 @@ public class GroovyLexerBatchTest extends TestCase {
      
         assertTrue(ts.moveNext());
         t = ts.token();
-        System.out.println("5-Token:" + t.toString());
-        System.out.println("5-Token-ID:" + t.id());
         assertTrue(t.length() == 7);
     }    
     
@@ -353,7 +359,6 @@ public class GroovyLexerBatchTest extends TestCase {
      
         assertTrue(ts.moveNext());
         t = ts.token();
-        System.out.println("6-Token:" + t.toString());
         assertTrue(t.length() == 7);
     }
      
@@ -625,8 +630,17 @@ public class GroovyLexerBatchTest extends TestCase {
         }
         tm = System.currentTimeMillis() - tm;
         assertTrue("Timeout tm = " + tm + "msec", tm < 3000); // Should be fast
-        System.out.println("Lexed input " + text.length()
-                + " chars long and created " + cntr + " tokens in " + tm + " ms.");
+    }
+    
+    TokenSequence<?> seqForText(String text){
+        TokenHierarchy<?> hi = TokenHierarchy.create(text,GroovyTokenId.language());
+        return hi.tokenSequence();
+    }
+    
+    
+    void next(TokenSequence<?> ts, GroovyTokenId id, String fixedText){
+        assertTrue(ts.moveNext());
+        LexerTestUtilities.assertTokenEquals(ts,id, fixedText, -1);
     }
     
 }

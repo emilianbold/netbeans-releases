@@ -48,6 +48,7 @@ import groovyjarjarantlr.LexerSharedInputState;
 import groovyjarjarantlr.TokenStreamException;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.logging.Logger;
 import org.codehaus.groovy.antlr.parser.GroovyRecognizer;
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
 import org.netbeans.api.lexer.Token;
@@ -59,10 +60,15 @@ import org.netbeans.spi.lexer.TokenFactory;
 /**
  * Lexer based on old coyote groovy lexer.
  * 
+ * @todo cannot call lexerInput.readText() in some test, because it goes wrong on some EOFs
+ * @todo curly braces in expression in gstring should be resolved as STRING_LITERAL?
+ * 
  * @author Mila Metelka
  * @author Martin Adamek
  */
-final class GroovyLexer implements Lexer<GroovyTokenId> {
+public final class GroovyLexer implements Lexer<GroovyTokenId> {
+    
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.groovy.editor.lexer.GroovyLexer");
     
     private GroovyScanner scanner;
     private LexerInput lexerInput;
@@ -101,30 +107,57 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
 
     private Token<GroovyTokenId> createToken(int tokenIntId, int tokenLength) {
         GroovyTokenId id = GroovyTokenId.getTokenId(tokenIntId);
+        LOG.finest("Creating token: " + id.name() + ", length: " + tokenLength);
         String fixedText = id.fixedText();
         return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
                                    : tokenFactory.createToken(id, tokenLength);
     }
 
+    int previousGstringState = 0;
+
     public Token<GroovyTokenId> nextToken() {
+        LOG.finest("");
         try {
             groovyjarjarantlr.Token antlrToken = scanner.nextToken();
+            LOG.finest("Received token from antlr: " + antlrToken);
             if (antlrToken != null) {
                 int intId = antlrToken.getType();
 
                 int len = lexerInput.readLengthEOF() - myCharBuffer.getExtraCharCount();
                 if ( antlrToken.getText() != null ) {
                     len = Math.max( len, antlrToken.getText().length() );
+                    LOG.finest("Counting length from " + lexerInput.readLengthEOF() + " and " + myCharBuffer.getExtraCharCount());
                 }
+                LOG.finest("Length of token to create: " + len);
 
                 // state 8 occured with '}' character closing expression in gstring
-                if ( scanner.getStringCtorState() != 0 && scanner.getStringCtorState() != 8) {
-                    intId = GroovyTokenTypes.STRING_LITERAL;
+                int gstringState = scanner.getStringCtorState();
+                LOG.finest("Gstring state: " + gstringState);
+                if ( gstringState != 0) {
+                    if (gstringState == 8 && previousGstringState == 4) {
+                    } else {
+                        LOG.finest("Changing token type from " + intId + " to STRING_LITERAL");
+                        intId = GroovyTokenTypes.STRING_LITERAL;
+                    }
+                    previousGstringState = gstringState;
                 }
 
                 // this wasn't in original coyote lexer
                 // without this len was counted as -1 and thrown exception
                 if (intId == GroovyTokenTypes.EOF) {
+                    int lexerInputLength = lexerInput.readLength();
+                    if (lexerInputLength > 0) {
+//                        if (lexerInput.readText().charAt(0) == '\n') {
+//                            if (lexerInputLength > 1) {
+//                                lexerInput.backup(lexerInputLength - 1);
+//                            }
+                        if (lexerInputLength == 1) {
+                            return createToken(GroovyTokenTypes.NLS, 1);
+                        } else {
+                            return createToken(GroovyTokenId.ERROR.ordinal(), lexerInputLength);
+                        }
+                    }
+                    LOG.finest("Token type is EOF, returning null");
                     return null;
                 }
 
@@ -132,6 +165,7 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
 
             } 
             else { // antlrToken is null
+                LOG.finest("Antlr token was null");
                 int scannerTextTokenLength = scanner.getText().length();
                 if ( scannerTextTokenLength > 0 ) {
                     return createToken(GroovyTokenTypes.WS, scannerTextTokenLength);
@@ -139,31 +173,44 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
                 return null;  // no more tokens from tokenManager
             }
         } catch (TokenStreamException e) {
+            LOG.finest("Caught exception: " + e);
             int len = lexerInput.readLength() - myCharBuffer.getExtraCharCount();
             int tokenLength = lexerInput.readLength();
             
             scanner.resetText();
             
             while (len < tokenLength) {
+                LOG.finest("Consuming character");
                 scannerConsumeChar();
                 len++;
             }
             
-            scanner.resetText();
+//            scanner.resetText();
             
             String remainderText = lexerInput.readText().toString();
-            int    moveback  = lexerInput.readLength() - 1;
+            int moveback  = lexerInput.readLength() - 1;
             
             if (remainderText.startsWith("/")) {
+                LOG.finest("Lexer text starts with [/]: [" + remainderText + "]");
                 lexerInput.backup(moveback);
                 return createToken(GroovyTokenTypes.DIV, 1);
             } else if (remainderText.startsWith("\"")) {
+                LOG.finest("Lexer text starts with [\"]: [" + remainderText + "]");
+                if (scanner.getStringCtorState() == 8) {
+                    scanner.resetState();
+                }
                 lexerInput.backup(moveback);
                 return createToken(GroovyTokenTypes.STRING_LITERAL, 1);
             } else if (remainderText.startsWith("\n")) {
+                LOG.finest("Lexer text starts with [\\n]: [" + remainderText + "]");
                 lexerInput.backup(moveback);
                 return createToken(GroovyTokenTypes.NLS, 1);
+            } else if (remainderText.startsWith("\r\n")) {
+                LOG.finest("Lexer text starts with [\\r\\n]: [" + remainderText + "]");
+                lexerInput.backup(moveback);
+                return createToken(GroovyTokenTypes.NLS, 2);
             } else {
+                LOG.finest("Lexer text start not familiar: [" + remainderText + "]");
                 return createToken(GroovyTokenId.ERROR.ordinal(), tokenLength);
             }
         }
@@ -229,6 +276,10 @@ final class GroovyLexer implements Lexer<GroovyTokenId> {
         
         public int getStringCtorState() {
             return stringCtorState;
+        }
+        
+        public void resetState() {
+            stringCtorState = 0;
         }
         
     }
