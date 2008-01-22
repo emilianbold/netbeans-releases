@@ -48,7 +48,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import org.openide.WizardDescriptor;
 
-public final class MakeSharableVisualPanel2 extends JPanel {
+final class MakeSharableVisualPanel2 extends JPanel {
     DefaultTableModel model;
     
     String ACTION_COPY = "copy"; //NOI18N
