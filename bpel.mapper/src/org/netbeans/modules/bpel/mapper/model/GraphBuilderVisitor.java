@@ -341,15 +341,13 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
             if (dataObject instanceof ArgumentDescriptor) {
                 //
                 // A new real vertex item has to be inserted after the hairline item
-                VertexItem newRealVItem = 
-                        new VertexItem(mVertex, dataObject, hairline.getValue(),
-                        hairline.getValueType(), false);
+                VertexItem newRealVItem = VertexFactory.constructVItem(
+                        mVertex, (ArgumentDescriptor)dataObject);
                 result.add(newRealVItem);
                 //
                 // A new hairline item has to be inserted after the real vertex item
                 VertexItem newHirelineVItem = 
-                        new VertexItem(mVertex, dataObject, hairline.getValue(), 
-                        hairline.getValueType(), true);
+                        VertexFactory.constructHairline(mVertex, dataObject);
                 result.add(newHirelineVItem);
             } else if (dataObject instanceof ArgumentGroup) {
                 List<VertexItem> itemsList = VertexFactory.getInstance().
@@ -358,9 +356,8 @@ public class GraphBuilderVisitor extends XPathVisitorAdapter {
                 result.addAll(itemsList);
                 //
                 // A new hairline item will appear just after the group's items.
-                VertexItem newHirelineVItem = new VertexItem(
-                        mVertex, hairline.getDataObject(), 
-                        hairline.getValue(), hairline.getValueType(), true);
+                VertexItem newHirelineVItem = 
+                        VertexFactory.constructHairline(mVertex, dataObject);
                 result.add(newHirelineVItem);
             }
             //

@@ -49,4 +49,11 @@ public interface MapperModel extends TreeModel {
     
     public void valueChanged(TreePath treePath, VertexItem vertexItem, 
             Object newValue);
+    
+    /**
+     * Indicates if it is allowed editing the specified vertex item inplace. 
+     * @param vItem
+     * @return
+     */
+    public boolean canEditInplace(VertexItem vItem);
 }

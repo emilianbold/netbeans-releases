@@ -386,4 +386,8 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
     {
         vertexItem.setValue(newValue);
     }
+
+    public boolean canEditInplace(VertexItem vItem) {
+        return true;
+    }
 }

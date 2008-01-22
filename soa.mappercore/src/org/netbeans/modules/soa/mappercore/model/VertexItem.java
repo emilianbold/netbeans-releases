@@ -52,6 +52,7 @@ public class VertexItem implements TargetPin, GraphItem {
     
     private Object value;
     private Class valueType;
+    private String shortDescription;
     
 
     public VertexItem(Vertex vertex) {
@@ -60,12 +61,12 @@ public class VertexItem implements TargetPin, GraphItem {
 
 
     public VertexItem(Vertex vertex, Object dataObject) {
-        this(vertex, dataObject, null, null, true);
+        this(vertex, dataObject, null, null, null, true);
     }
 
     
     public VertexItem(Vertex vertex, String text) {
-        this(vertex, null, text, String.class, false);
+        this(vertex, null, text, String.class, null, false);
     }
     
 
@@ -78,12 +79,12 @@ public class VertexItem implements TargetPin, GraphItem {
     public VertexItem(Vertex vertex, Object dataObject, Object value, 
             Class valueType) 
     {
-        this(vertex, dataObject, value, valueType, false);
+        this(vertex, dataObject, value, valueType, null, false);
     }
     
     
     public VertexItem(Vertex vertex, Object dataObject, Object value, 
-            Class valueType, boolean hairline) 
+            Class valueType, String shortDescription, boolean hairline) 
     {
         if (vertex == null) throw new IllegalArgumentException();
         
@@ -92,6 +93,7 @@ public class VertexItem implements TargetPin, GraphItem {
         
         this.value = value;
         this.valueType = valueType;
+        this.shortDescription = shortDescription;
         
         this.dataObject = dataObject;
     }
@@ -126,6 +128,9 @@ public class VertexItem implements TargetPin, GraphItem {
         return valueType;
     }
     
+    public String getShortDescription() {
+        return shortDescription;
+    }
     
     public void setValue(Object value) {
         setValueAndType(value, getValueType());

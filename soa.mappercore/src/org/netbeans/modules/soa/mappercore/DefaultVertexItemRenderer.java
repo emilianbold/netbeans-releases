@@ -44,28 +44,42 @@ public class DefaultVertexItemRenderer extends JLabel
         setFont(getFont().deriveFont(Font.PLAIN));
 
         Object value = vertexItem.getValue();
-        Class type = vertexItem.getValueType();
-        
         String text = null;
-        
-        if (type == null) {
-            prepareCommentRenderer();
-            text = (value == null) ? null : value.toString();
-        } else if (value == null) {
-            prepareCommentRenderer();
-            if (Utils.equal(type, Number.class)) {
-                text = "Number";
-            } else if (Utils.equal(type, String.class)) {
-                text = "String";
-            } else if (type != null) {
-                text = type.getCanonicalName();
-            }
-        } else {
+        //
+        // Indicates if the VertexItem's value is going to be shown
+        boolean valuePrepared = false; 
+        //
+        if (value != null) {
             text = value.toString();
-            if (Utils.equal(type, Number.class)) {
-                prepareNumberRenderer();
+            if (text != null && text.length() != 0) {
+                Class type = vertexItem.getValueType();
+                if (Utils.equal(type, Number.class)) {
+                    prepareNumberRenderer();
+                } else {
+                    prepareTextRenderer();
+                }
+                valuePrepared = true;
+            }
+        } 
+        //
+        if (!valuePrepared) {
+            // value == null here
+            prepareCommentRenderer();
+            //
+            String shortDescr = vertexItem.getShortDescription();
+            if (shortDescr != null && shortDescr.length() != 0) {
+                text = shortDescr;
             } else {
-                prepareTextRenderer();
+                Class type = vertexItem.getValueType();
+                if (type != null) {
+                    if (Utils.equal(type, Number.class)) {
+                        text = "Number";
+                    } else if (Utils.equal(type, String.class)) {
+                        text = "String";
+                    } else if (type != null) {
+                        text = type.getCanonicalName();
+                    }
+                }
             }
         }
         

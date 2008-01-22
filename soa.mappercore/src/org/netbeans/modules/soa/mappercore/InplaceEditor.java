@@ -81,6 +81,8 @@ public class InplaceEditor extends MapperPropertyAccess implements
         if (vertexItem.isHairline()) return;
         if (vertexItem.getVertex() instanceof Operation) return;
         
+        if (!canvas.getMapperModel().canEditInplace(vertexItem)) return;
+        
         Class valueType = vertexItem.getValueType();
         
         if (valueType == null) return;

@@ -1595,27 +1595,31 @@ public class XPathModelImpl implements XPathModel {
             XPathModelFactory factory = null;
             //
             for (ArgumentDescriptor argDescr : argDescrList) {
-                childIndex++;
-                //
-                XPathExpression argumentExpr = null;
-                if (childIndex < func.getChildCount()) {
-                    argumentExpr = func.getChild(childIndex);
-                }
-                //
-                if (argumentExpr != null) {
-                    continue;
-                }
-                //
-                if (argDescr.isMandatory()) {
-                    if (factory == null) {
-                        // lazy initialization
-                        factory = func.getModel().getFactory();
+                int minOccurs = argDescr.getMinOccurs();
+                for (int index = 0; index < minOccurs; index ++) {
+                    //
+                    childIndex++;
+                    //
+                    XPathExpression argumentExpr = null;
+                    if (childIndex < func.getChildCount()) {
+                        argumentExpr = func.getChild(childIndex);
                     }
                     //
-                    XPathExtensionFunction newStub = 
-                            factory.newXPathExtensionFunction(
-                            StubExtFunction.STUB_FUNC_NAME);
-                    func.insertChild(childIndex, newStub);
+                    if (argumentExpr != null) {
+                        continue;
+                    }
+                    //
+                    if (argDescr.isMandatory()) {
+                        if (factory == null) {
+                            // lazy initialization
+                            factory = func.getModel().getFactory();
+                        }
+                        //
+                        XPathExtensionFunction newStub = 
+                                factory.newXPathExtensionFunction(
+                                StubExtFunction.STUB_FUNC_NAME);
+                        func.insertChild(childIndex, newStub);
+                    }
                 }
             }
         }

@@ -53,6 +53,9 @@ public class BpelMapperFactory {
         actionMap.put(deleteActionKey, 
                 new DeleteGraphSelectionAction(newMapper)); // NOI18N
         //
+        // Tune up Vertex Item editors
+        // newMapper.getCanvas().setVertexItemEditor(valueType, editor);
+        //
         return newMapper;
     }
     

@@ -1161,6 +1161,10 @@ public class DefineCorrelationWizard implements WizardProperties {
             public void valueForPathChanged(TreePath path, Object newValue) {
                 rightTreeModel.valueForPathChanged(path, newValue);
             }
+
+            public boolean canEditInplace(VertexItem vItem) {
+                return true;
+            }
         }
     }
     //========================================================================//

@@ -71,6 +71,8 @@ import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xpath.ext.XPathAxis;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
+import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentDescriptor;
+import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
 import org.openide.ErrorManager;
 
 /**
@@ -329,6 +331,8 @@ public class AbstractBpelModelUpdater {
             //
             // Calculate index of the vertex item to which 
             // the last (in order of appearance) incoming links is connected 
+            // or which contains a not empty value (it is equal to connection
+            // to a constant value)
             int lastConnectedItemIndex = -1;
             for (int index = 0; index < vertex.getItemCount(); index++) {
                 VertexItem vItem = vertex.getItem(index);
@@ -336,13 +340,20 @@ public class AbstractBpelModelUpdater {
                     // Skip hirelines
                     continue;
                 }
+                //
+                Object value = vItem.getValue();
+                if (value != null) {
+                    lastConnectedItemIndex = index;
+                    continue;
+                }
+                //
                 Link incomingLink = vItem.getIngoingLink();
                 if (incomingLink != null) {
                     lastConnectedItemIndex = index;
                 }
             }
             //
-            // Process incoming links
+            // Process incoming links and inplace values
             for (int index = 0; index < vertex.getItemCount(); index++) {
                 VertexItem vItem = vertex.getItem(index);
                 if (vItem.isHairline()) {
@@ -350,24 +361,54 @@ public class AbstractBpelModelUpdater {
                     continue;
                 }
                 XPathExpression childExpr = null;
-                Link incomingLink = vItem.getIngoingLink();
-                if (incomingLink == null) {
-                    //
-                    // Vertex item without connected link
-                    if (index >= lastConnectedItemIndex) {
-                        // There is not any more items with connected links
-                        break;
+                Link ingoingLink = vItem.getIngoingLink();
+                if (ingoingLink == null) {
+                    boolean valueProcessed = false;
+                    Object value = vItem.getValue();
+                    if (value != null) {
+                        // Add value as a constant
+                        Object dataObject = vItem.getDataObject();
+                        assert dataObject instanceof ArgumentDescriptor;
+                        //
+                        XPathType argType = ((ArgumentDescriptor)dataObject)
+                                .getArgumentType();
+                        if (argType == XPathType.NUMBER_TYPE) {
+                            if (value instanceof Number) {
+                                childExpr = xPathModel.getFactory().
+                                        newXPathNumericLiteral((Number)value);
+                                valueProcessed = true;
+                            }
+                        } else if (argType == XPathType.STRING_TYPE) {
+                            if (value instanceof String && 
+                                    ((String)value).length() != 0 ) {
+                                childExpr = xPathModel.getFactory().
+                                        newXPathStringLiteral((String)value);
+                                valueProcessed = true;
+                            }
+                        } else {
+                            assert false : "Unsupported constant's type"; // NOI18N
+                        }
                     }
                     //
-                    // The stub() function will be added to output text.
-                    // It is necessary to protect place where the following 
-                    // links are connected. Otherwise the links move to the 
-                    // first positions after mapper is reloaded. 
-                    childExpr = new StubExtFunction(xPathModel);
+                    // Consider the value is empty or wrong it it is not processed
+                    if (!valueProcessed) {
+                        //
+                        // Vertex item without connected link
+                        if (index >= lastConnectedItemIndex) {
+                            // There is not any more items with connected links
+                            break;
+                        }
+                        //
+                        // The stub() function will be added to output text.
+                        // It is necessary to protect place where the following 
+                        // links are connected. Otherwise the links move to the 
+                        // first positions after mapper is reloaded. 
+                        childExpr = new StubExtFunction(xPathModel);
+                    }
                 } else {
                     //
                     // Vertex item with connected link
-                    SourcePin sourcePin = incomingLink.getSource();
+                    SourcePin sourcePin = ingoingLink.getSource();
                     //
                     if (sourcePin instanceof Vertex) {
                         Vertex sourceVertex = (Vertex)sourcePin;

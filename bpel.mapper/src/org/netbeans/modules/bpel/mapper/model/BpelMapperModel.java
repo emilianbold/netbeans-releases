@@ -219,6 +219,13 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         }
         //
         if (target instanceof VertexItem) {
+            //
+            // Check if the target vertex item has a value
+            Object value = ((VertexItem) target).getValue();
+            if (value != null) {
+                return false;
+            }
+            //
             // Check the item doesn't have incoming link yet
             Link ingoingLink = ((VertexItem) target).getIngoingLink();
             if (ingoingLink != null) {
@@ -279,15 +286,13 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                 if (dataObject instanceof ArgumentDescriptor) {
                     //
                     // A new real vertex item has to be inserted after the hairline item
-                    VertexItem newRealVItem = 
-                            new VertexItem(vertex, dataObject,
-                            vItem.getValue(), vItem.getValueType(), false);
+                    VertexItem newRealVItem = VertexFactory.constructVItem(
+                            vertex, (ArgumentDescriptor)dataObject);
                     vertex.addItem(newRealVItem, index + 1);
                     //
                     // A new hairline item has to be inserted after the real vertex item
                     VertexItem newHirelineVItem = 
-                            new VertexItem(vertex, dataObject, vItem.getValue(), 
-                                    vItem.getValueType(), true);
+                            VertexFactory.constructHairline(vertex, dataObject);
                     vertex.addItem(newHirelineVItem, index + 2);
                     //
                     // Eventually 2 new vertex item is added: real and additional hairline
@@ -299,9 +304,8 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                     // Insert new vertex items in the back direction
                     //
                     // A new hairline item will appear just after the group's items.
-                    VertexItem newHirelineVItem = new VertexItem(
-                            vertex, dataObject, vItem.getValue(), 
-                            vItem.getValueType(), true);
+                    VertexItem newHirelineVItem = 
+                            VertexFactory.constructHairline(vertex, dataObject);
                     vertex.addItem(newHirelineVItem, index + 1);
                     //
                     // Insert a sequence of vertex items to the position next to 
@@ -546,6 +550,10 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
                 graph.removeLink(link);
             }
         }
+    }
+
+    public boolean canEditInplace(VertexItem vItem) {
+        return vItem.getIngoingLink() == null;
     }
     
 }

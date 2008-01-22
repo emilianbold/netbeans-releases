@@ -56,6 +56,34 @@ public final class VertexFactory  {
         return singleton;
     }
     
+    public static Class getEditorClass(ArgumentDescriptor argDescr) {
+        XPathType argType = argDescr.getArgumentType();
+        if (argType == XPathType.STRING_TYPE) {
+            return String.class;
+        } else if (argType == XPathType.NUMBER_TYPE) {
+            return Number.class;
+        } else {
+            return null;
+        }
+    }
+    
+    public static VertexItem constructVItem(
+            Vertex vertex, ArgumentDescriptor argDescr) {
+        //
+        String argTypeName = argDescr.getArgumentType().getName();
+        VertexItem newVItem = new VertexItem(vertex, argDescr, null, 
+                getEditorClass(argDescr), argTypeName, false);
+        return newVItem;
+    }
+    
+    public static VertexItem constructHairline(
+            Vertex vertex, Object dataObject) {
+        //
+        VertexItem newVItem = new VertexItem(vertex, dataObject, null, 
+                null, null, true);
+        return newVItem;
+    }
+    
     // vlv
     private Vertex createVertex(Object object) {
       if (object instanceof CoreFunctionType) {
@@ -201,8 +229,7 @@ public final class VertexFactory  {
         //
         if (!argDescr.isRepeated()) {
             // Simple case - there is only one simple argument
-            VertexItem newVItem = new VertexItem(vertex, argDescr, argTypeName, 
-                    null, false);
+            VertexItem newVItem = constructVItem(vertex, argDescr);
             itemsList.add(newVItem);
         } else {
             // Complex case - the argument is repeated. 
@@ -214,9 +241,7 @@ public final class VertexFactory  {
             //
             // Add the first hireline
             if (addEmbracingHairlines) {
-                VertexItem newVItem = 
-                        new VertexItem(vertex, argDescr, argTypeName,
-                        null, true);
+                VertexItem newVItem = constructHairline(vertex, argDescr);
                 itemsList.add(newVItem);
             }
             //
@@ -226,23 +251,18 @@ public final class VertexFactory  {
                     isFirst = false;
                 } else {
                     // Add intermediate hairlines
-                    VertexItem newVItem = 
-                            new VertexItem(vertex, argDescr, argTypeName,
-                            null, true);
+                    VertexItem newVItem = constructHairline(vertex, argDescr);
                     itemsList.add(newVItem);
                 }
                 //
                 // Add real item
-                VertexItem newVItem = new VertexItem(vertex, argDescr, 
-                        argTypeName, null, false);
+                VertexItem newVItem = constructVItem(vertex, argDescr);
                 itemsList.add(newVItem);
             }
             //
             // Add the final hireline
             if (addEmbracingHairlines) {
-                VertexItem newVItem = 
-                        new VertexItem(vertex, argDescr, argTypeName,
-                        null, true);
+                VertexItem newVItem = constructHairline(vertex, argDescr);
                 itemsList.add(newVItem);
             }
         }
@@ -266,9 +286,7 @@ public final class VertexFactory  {
             //
             // Add the first hireline
             if (addEmbracingHairlines) {
-                VertexItem newVItem = 
-                        new VertexItem(vertex, argumentGroup, "", 
-                        String.class, true);
+                VertexItem newVItem = constructHairline(vertex, argumentGroup);
                 itemsList.add(newVItem);
             }
             //
@@ -279,9 +297,7 @@ public final class VertexFactory  {
                     isFirst = false;
                 } else {
                     // Add intermediate hairlines
-                    VertexItem newVItem = 
-                            new VertexItem(vertex, argumentGroup, "", 
-                            String.class, true);
+                    VertexItem newVItem = constructHairline(vertex, argumentGroup);
                     itemsList.add(newVItem);
                 }
                 //
@@ -291,9 +307,7 @@ public final class VertexFactory  {
             //
             // Add the final hireline
             if (addEmbracingHairlines) {
-                VertexItem newVItem = 
-                        new VertexItem(vertex, argumentGroup, "",
-                        String.class, true);
+                VertexItem newVItem = constructHairline(vertex, argumentGroup);
                 itemsList.add(newVItem);
             }
         }
@@ -305,5 +319,6 @@ public final class VertexFactory  {
         populateGroupItems(vertex, argumentGroup, itemsList, false);
         return itemsList;
     }
+    
 }
     
