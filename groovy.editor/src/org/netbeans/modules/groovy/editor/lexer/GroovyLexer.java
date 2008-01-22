@@ -130,7 +130,6 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                 }
                 LOG.finest("Length of token to create: " + len);
 
-                // state 8 occured with '}' character closing expression in gstring
                 int gstringState = scanner.getStringCtorState();
                 LOG.finest("Gstring state: " + gstringState);
                 if ( gstringState != 0) {
@@ -142,15 +141,9 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     previousGstringState = gstringState;
                 }
 
-                // this wasn't in original coyote lexer
-                // without this len was counted as -1 and thrown exception
                 if (intId == GroovyTokenTypes.EOF) {
                     int lexerInputLength = lexerInput.readLength();
                     if (lexerInputLength > 0) {
-//                        if (lexerInput.readText().charAt(0) == '\n') {
-//                            if (lexerInputLength > 1) {
-//                                lexerInput.backup(lexerInputLength - 1);
-//                            }
                         if (lexerInputLength == 1) {
                             return createToken(GroovyTokenTypes.NLS, 1);
                         } else {
@@ -184,8 +177,6 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                 scannerConsumeChar();
                 len++;
             }
-            
-//            scanner.resetText();
             
             String remainderText = lexerInput.readText().toString();
             int moveback  = lexerInput.readLength() - 1;
