@@ -750,6 +750,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         
         private final WsdlCreationListener wsdlListener;
         private final MetaInfListener metaInfListener;
+        private final JaxWsChangeListener jaxWsListener;
         private FileObject wsdlFolder;
         private Car jp;
         
@@ -761,6 +762,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             this.testSources = project.getTestSourceRoots();
             this.metaInfListener = new MetaInfListener();
             this.wsdlListener = new WsdlCreationListener();
+            this.jaxWsListener = new JaxWsChangeListener();
             Car jps[] = Car.getCars(project);
             assert jps.length > 0;
             jp = jps[0];
@@ -799,6 +801,9 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             if (wsdlFolder != null) {
                 wsdlFolder.addFileChangeListener(wsdlListener);
             }
+            JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel!=null) jaxWsModel.addPropertyChangeListener(jaxWsListener);
+
             setKeys(getKeys());
         }
         
@@ -826,6 +831,9 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 wsdlFolder.removeFileChangeListener(wsdlListener);
             }
             
+            JaxWsModel jaxWsModel = (JaxWsModel)project.getLookup().lookup(JaxWsModel.class);
+            if (jaxWsModel!=null) jaxWsModel.removePropertyChangeListener(jaxWsListener);
+
             super.removeNotify();
         }
         
@@ -904,12 +912,13 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
 //                if (wm!=null && (J2eeModule.JAVA_EE_5.equals(wm.getJ2eePlatformVersion()))) {
 //                    JAXWSClientView view = JAXWSClientView.getJAXWSClientView();
 //                    result = view == null ? new Node[0] : new Node[] {view.createJAXWSClientView(project)};
-//                } else {             
+//                } else {
+                ArrayList<Node> refNodes = new ArrayList<Node>();
                 JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
                 JAXWSClientSupport jwcss = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
                 if ((jwcss != null) && (jaxWsModel != null) &&  (jaxWsModel.getClients().length > 0)) {
                     JAXWSClientView view = JAXWSClientView.getJAXWSClientView();
-                    result = view == null ? new Node[0] : new Node[] {view.createJAXWSClientView(project)};
+                    if (view != null) refNodes.add(view.createJAXWSClientView(project));
                 }
                 FileObject clientRoot = project.getProjectDirectory();
                 WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
@@ -927,12 +936,13 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                                 }
                             }
                             if (foundWsdl) {
-                                result = new Node[] {clientView.createWebServiceClientView(wsdlFolder)};
+                                refNodes.add(clientView.createWebServiceClientView(wsdlFolder));
                             }
                         }
                     }
                 }
 //                }
+                result = refNodes.toArray(new Node[refNodes.size()]);
             } else {
                 assert false : "Unknown key type";  //NOI18N
                 result = new Node[0];
@@ -1088,6 +1098,16 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 } else if (fe.getFile().isFolder() && "META-INF".equals(fe.getFile().getName())) { //NOI18N
                     fe.getFile().removeFileChangeListener(metaInfListener);
                 }
+            }
+        }
+
+        private final class JaxWsChangeListener implements PropertyChangeListener {
+            public void propertyChange(PropertyChangeEvent evt) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        refreshKey(KEY_SERVICE_REFS);
+                    }
+                });
             }
         }
     }
