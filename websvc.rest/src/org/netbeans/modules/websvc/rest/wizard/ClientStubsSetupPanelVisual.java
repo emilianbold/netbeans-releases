@@ -88,7 +88,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
     private FileObject stubRootFolder;
     private SourceGroup[] sourceGroups;
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-    private File wadlFile;
+    private FileObject wadlFile;
     private boolean isProjectSelection = true;
     
     /** Creates new form ClientStubVisualPanel1 */
@@ -133,7 +133,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
         wizard.putProperty(WizardProperties.PROJECT_SELECTION, isProjectSelection);
         wizard.putProperty(WizardProperties.PROJECTS_TO_STUB, projects);
         if(wadlFile != null)
-            wizard.putProperty(WizardProperties.WADL_TO_STUB, FileUtil.toFileObject(wadlFile));
+            wizard.putProperty(WizardProperties.WADL_TO_STUB, wadlFile);
         wizard.putProperty(WizardProperties.OVERWRITE_EXISTING, overwriteCheckBox.isSelected());
         wizard.putProperty(WizardProperties.CREATE_JMAKI_REST_COMPONENTS, createJmakiCheckBox.isSelected());
         
@@ -169,8 +169,9 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 AbstractPanel.setErrorMessage(wizard, "MSG_NoWadlFile");
                 return false;
             } else {
-                wadlFile = new File(wadlTextField.getText());
-                if(!wadlFile.exists() || !wadlFile.isFile()) {
+                String fileName = wadlTextField.getText().trim();
+                boolean isValid = validateWadlFile(fileName);
+                if(!isValid) {
                     AbstractPanel.setErrorMessage(wizard, "MSG_NoValidWadlFile");
                     return false;
                 }
@@ -366,6 +367,11 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                 wadlTextFieldFocusLost(evt);
             }
         });
+        wadlTextField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                wadlTextFieldKeyTyped(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -402,9 +408,7 @@ public final class ClientStubsSetupPanelVisual extends JPanel implements Abstrac
                             .add(wadlTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 535, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(layout.createSequentialGroup()
-                                .add(wadlBrowseButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                                .addContainerGap())
+                            .add(wadlBrowseButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 124, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                 .add(removeButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .add(addButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -574,20 +578,39 @@ private void wadlBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     chooser.setPreferredSize( new Dimension( 650, 380 ) );
     int option = chooser.showOpenDialog(this);
     if(option == JFileChooser.APPROVE_OPTION) {
-        File wadl = chooser.getSelectedFile();
-        if(wadl != null && wadlFile != wadl) {
-            wadlFile = wadl;
-            wadlTextField.setText(wadlFile.getAbsolutePath());
-            fireChange();
-        }
+        File f = chooser.getSelectedFile();
+        wadlTextField.setText(f.getAbsolutePath());
+        fireChange();
     }
 }//GEN-LAST:event_wadlBrowseButtonActionPerformed
 
 private void wadlTextFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_wadlTextFieldFocusLost
-    wadlFile = new File(wadlTextField.getText());
+
     fireChange();
 }//GEN-LAST:event_wadlTextFieldFocusLost
+
+private void wadlTextFieldKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_wadlTextFieldKeyTyped
+    fireChange();
+}//GEN-LAST:event_wadlTextFieldKeyTyped
     
+    private boolean validateWadlFile(final String fileName) {
+        String name = fileName.replaceAll(File.separator, "/");
+        if(!name.startsWith("/"))
+            name = "/"+name;
+        File f = new File(name);
+        boolean isValid = false;
+        try {
+            if(f.isFile()) {
+                FileObject newWadl = FileUtil.toFileObject(f);
+                if(newWadl != null) {
+                    wadlFile = newWadl;
+                    isValid = true;
+                }
+            }
+        } catch(Exception ex) {
+        }
+        return isValid;
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;

@@ -56,6 +56,8 @@ import java.io.OutputStreamWriter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -748,10 +750,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
             String fileNameExt = r.getName() + "." + JS;
             FileObject fo = jsFolder.getFileObject(fileNameExt);
             if (fo != null) {
-                if(canOverwrite())
+                if(canOverwrite()) {
                     fo.delete();
-                else
-                    throw new IOException("File: "+jsFolder.getPath()+File.separator+fileNameExt+" already exists.");
+                } else {
+                    Logger.getLogger(this.getClass().getName()).log(
+                        Level.INFO, NbBundle.getMessage(ClientStubsGenerator.class,
+                            "MSG_SkippingStubGeneration", jsFolder.getPath()+
+                                    File.separator+fileNameExt));
+                }
             }
             
             if(r.isContainer())
