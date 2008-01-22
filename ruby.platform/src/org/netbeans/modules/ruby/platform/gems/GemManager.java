@@ -323,7 +323,9 @@ public final class GemManager {
                 LOGGER.finest("Initializing \"" + gemDir + "\" repository");
                 // Add each of */lib/
                 File[] gems = specDir.listFiles();
-                gems = chooseGems(gems);
+                if (gems != null){
+                    gems = chooseGems(gems);
+                }
             } else {
                 LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
             }
@@ -336,70 +338,11 @@ public final class GemManager {
      * version of each.
      */
     private File[] chooseGems(File[] gems) {
-        gemFiles = new HashMap<String, Map<String, File>>();
-
-        for (File f : gems) {
-            // See if it looks like a gem
-            String n = f.getName();
-            if (!n.endsWith(DOT_GEM_SPEC)) {
-                continue;
-            }
-
-            n = n.substring(0, n.length()-DOT_GEM_SPEC.length());
-            
-            int dashIndex = n.lastIndexOf('-');
-            
-            if (dashIndex == -1) {
-                // Probably not a gem
-                continue;
-            }
-            
-            String name;
-            String version;
-
-            if (dashIndex < n.length()-1 && Character.isDigit(n.charAt(dashIndex+1))) {
-                // It's a gem without a platform suffix such as -mswin or -ruby
-                name = n.substring(0, dashIndex);
-                version = n.substring(dashIndex + 1);
-            } else {
-                String nosuffix = n.substring(0, dashIndex);
-                int versionIndex = nosuffix.lastIndexOf('-');
-                if (versionIndex != -1) {
-                    name = n.substring(0, versionIndex);
-                    version = n.substring(versionIndex+1, dashIndex);
-                } else {
-                    name = n.substring(0, dashIndex);
-                    version = n.substring(dashIndex + 1);
-                }
-            }
-
-            Map<String, File> nameMap = gemFiles.get(name);
-
-            if (nameMap == null) {
-                nameMap = new HashMap<String, File>();
-                gemFiles.put(name, nameMap);
-                nameMap.put(version, f);
-            } else {
-                // Decide whether this version is more recent than the one already there
-                String oldVersion = nameMap.keySet().iterator().next();
-
-                if (GemManager.compareGemVersions(version, oldVersion) > 0) {
-                    // New version is higher
-                    nameMap.clear();
-                    nameMap.put(version, f);
-                }
-            }
-        }
-
-        List<File> result = new ArrayList<File>();
-
-        for (Map<String, File> map : gemFiles.values()) {
-            for (File f : map.values()) {
-                result.add(f);
-            }
-        }
-
-        return result.toArray(new File[result.size()]);
+        
+        GemFilesParser gemFilesParser = new GemFilesParser(gems);
+        gemFilesParser.chooseGems();
+        gemFiles = gemFilesParser.getGemMap();
+        return gemFilesParser.getFiles();
     }
 
     public Set<String> getInstalledGemsFiles() {
