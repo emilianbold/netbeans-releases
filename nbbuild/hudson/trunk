@@ -152,6 +152,8 @@ echo SigTest: Incompatible Changes Done
 
 ###############  Commit validation tests  ##########################
 TESTS_STARTED=`date`
+# Clean previous test results - if xtest compilation fails, old results stays in workdir and it passes
+rm -rf xtest/instance/results
 # Different JDK for tests because JVM crashes often (see 6598709, 6607038)
 JDK_TESTS=/opt/jdk1.5.0_14
 # standard NetBeans unit and UI validation tests
