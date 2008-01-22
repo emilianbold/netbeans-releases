@@ -40,20 +40,24 @@
  */
 package org.netbeans.modules.xml.wsdl.ui.completion;
 
-import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+
+import javax.xml.XMLConstants;
+import javax.xml.namespace.QName;
 
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.schema.model.SchemaModelFactory;
+import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElement;
+import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementInfo;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElements;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.WSDLExtensibilityElementsFactory;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl.ExtensibilityUtils;
+import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.WSDLElementNode;
 
 /**
  * CompletionModelProvider for WSDL document. The extensibility elements need to write their own completionmodelprovider.
@@ -62,8 +66,10 @@ import org.openide.util.lookup.Lookups;
  */
 public class WSDLCompletionModelProvider extends CompletionModelProvider {
     
+    String XMLNS_COLON_CONSTANT = XMLConstants.XMLNS_ATTRIBUTE + ":";
+    
     public WSDLCompletionModelProvider() {
-    }
+    }   
 
     /**
      * Returns a list of CompletionModel. Default implementation looks for
@@ -76,18 +82,44 @@ public class WSDLCompletionModelProvider extends CompletionModelProvider {
         if (!context.getPrimaryFile().getExt().equals("wsdl")) {
             return null;
         }
-        
-        SchemaModel wsdlSchemaModel = createWSDLSchemaModel();
-        if(wsdlSchemaModel == null)
-            return null;        
-        CompletionModel cm = new WSDLCompletionModel(context, wsdlSchemaModel, "wsdl"); //NOI18N
         List<CompletionModel> models = new ArrayList<CompletionModel>();
-        models.add(cm);
+        
+        String extensibilityElementType = null;
+        
+        List<QName> path = context.getPathFromRoot();
+        if (path != null && !path.isEmpty()) {
+            QName elementQName = path.get(path.size() - 1);
+            extensibilityElementType = ExtensibilityUtils.getExtensibilityElementType(elementQName);
+        }
+        
         
         try {
             WSDLExtensibilityElements elements = WSDLExtensibilityElementsFactory.getInstance().getWSDLExtensibilityElements();
-            for (XMLSchemaFileInfo info : elements.getAllXMLSchemaFileInfos()) {
-                CompletionModel model = createExtensibilityElementSchemaCompletionModel(info);
+            XMLSchemaFileInfo wsdlXMLSchemaInfo = elements.getXMLSchemaFileInfo(WSDLElementNode.WSDL_NAMESPACE);
+            
+            List<XMLSchemaFileInfo> xmlSchemaFileInfos = new ArrayList<XMLSchemaFileInfo>();
+            
+            //Get only those models that make sense at this point
+            if (extensibilityElementType != null) {
+                WSDLExtensibilityElement element = elements.getWSDLExtensibilityElement(extensibilityElementType);
+                List<WSDLExtensibilityElementInfo> infos = element.getAllWSDLExtensibilityElementInfos();
+                for (WSDLExtensibilityElementInfo info : infos) {
+                    String ns = info.getSchema().getTargetNamespace();
+                    xmlSchemaFileInfos.add(elements.getXMLSchemaFileInfo(ns));
+                }
+            }
+            
+            if (xmlSchemaFileInfos.isEmpty()) {
+                xmlSchemaFileInfos = Arrays.asList(elements.getAllXMLSchemaFileInfos());
+            } else {
+                //Add wsdl xsd
+                xmlSchemaFileInfos.add(wsdlXMLSchemaInfo);
+            }
+            
+
+            
+            for (XMLSchemaFileInfo info : xmlSchemaFileInfos) {
+                CompletionModel model = createExtensibilityElementSchemaCompletionModel(info, context);
                 if (model != null) {
                     models.add(model);
                 }
@@ -98,55 +130,83 @@ public class WSDLCompletionModelProvider extends CompletionModelProvider {
         return models;
     }
     
-    private CompletionModel createExtensibilityElementSchemaCompletionModel(XMLSchemaFileInfo info) {
+    private CompletionModel createExtensibilityElementSchemaCompletionModel(XMLSchemaFileInfo info, CompletionContext context) {
         if (info.getSchema() != null) {
-            return new ExtensibilityElementCompletionModel(info.getSchema().getModel(), info.getPrefix(), info.getSchema().getTargetNamespace());
+            return new ExtensibilityElementCompletionModel(context, info);
         }
         return null;
     }
-
-    private SchemaModel createWSDLSchemaModel() {
-        try {
-            InputStream in = getClass().getResourceAsStream("/org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/wsdl.xsd"); //NOI18N
-            javax.swing.text.Document d = AbstractDocumentModel.
-            getAccessProvider().loadSwingDocument(in);
-            ModelSource ms = new ModelSource(Lookups.singleton(d), false);
-            SchemaModel m = SchemaModelFactory.getDefault().createFreshModel(ms);
-            m.sync();
-            return m;
-        } catch (Exception ex) {
-            //just catch
-        } 
-        return null;
-    }
-    
     
     class ExtensibilityElementCompletionModel extends CompletionModel {
 
-        SchemaModel schemaModel;
-        String targetNamespace;
+        XMLSchemaFileInfo xmlSchemaFileInfo;
+        CompletionContext context;
         String prefix;
         
-        public ExtensibilityElementCompletionModel(SchemaModel schemaModel, String prefix, String targetNamespace) {
-            this.schemaModel = schemaModel; 
-            this.prefix = prefix;
-            this.targetNamespace = targetNamespace;
+        public ExtensibilityElementCompletionModel(CompletionContext context, XMLSchemaFileInfo xmlSchemaFileInfo) {
+            this.xmlSchemaFileInfo = xmlSchemaFileInfo;
+            this.context = context;
         }
         
         @Override
         public SchemaModel getSchemaModel() {
-            return schemaModel;
+            return xmlSchemaFileInfo.getSchema().getModel();
         }
 
         @Override
         public String getSuggestedPrefix() {
-            return prefix;
+            if (prefix != null) return prefix;
+            
+            return prefix = generatePrefix();
         }
+        
+        
+        private String generatePrefix() {   
+            String tns = getTargetNamespace();
+            String dns = context.getDefaultNamespace();
+            if (dns != null && dns.equals(tns)) {
+                return "";
+            }
+
+            HashMap<String, String> map = context.getDeclaredNamespaces();
+            if (map.containsValue(tns)) {
+                for (String key : map.keySet()) {
+                    String ns = map.get(key);
+                    if (ns.equals(tns)) {
+                        return key.replace(XMLNS_COLON_CONSTANT, "");
+                    }
+                }
+            }
+
+            String suggestedPrefix = xmlSchemaFileInfo.getPrefix();
+
+            String nsDecl = XMLNS_COLON_CONSTANT +suggestedPrefix;
+            if (map.containsKey(nsDecl)) {
+                if (map.get(nsDecl).equals(tns)) {
+                    return suggestedPrefix;
+                }
+                //generate a new prefix.
+                int i = 0;
+                String newPrefix = suggestedPrefix; 
+                while(context.getDeclaredNamespaces().get(nsDecl) != null) {
+                    String ns = context.getDeclaredNamespaces().get(nsDecl);
+                    if(ns.equals(tns))
+                        return newPrefix;
+
+                    newPrefix = newPrefix + i;  //NOI18N
+                    nsDecl = XMLNS_COLON_CONSTANT + newPrefix;
+                    i++;
+                }        
+                return newPrefix;
+            }
+
+            return suggestedPrefix;
+        }
+        
 
         @Override
         public String getTargetNamespace() {
-            
-            return targetNamespace;
+            return xmlSchemaFileInfo.getSchema().getTargetNamespace();
         }
         
     }
