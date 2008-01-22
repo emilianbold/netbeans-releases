@@ -43,6 +43,7 @@ package org.netbeans.modules.visualweb.designer.jsf.text;
 
 
 import com.sun.rave.designtime.DesignBean;
+import com.sun.rave.designtime.markup.MarkupDesignBean;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
@@ -1789,8 +1790,17 @@ public class DomDocumentImpl implements DomProvider.DomDocument {
                         Element element = MarkupService.getSourceElementForElement(boxComponentRootElement);
 
                         if (element == null) {
+                            // XXX #124560 Give one more try.
+                            MarkupDesignBean markupDesignBean = MarkupUnit.getMarkupDesignBeanForElement(boxComponentRootElement);
+                            if (markupDesignBean != null) {
+                                element = markupDesignBean.getElement();
+                            }
+                            
+                            
                             // XXX #109112 This box is not to move.
-                            continue;
+                            if (element == null) {
+                                continue;
+                            }
                         }
                         
                         if (element.getParentNode() != null
