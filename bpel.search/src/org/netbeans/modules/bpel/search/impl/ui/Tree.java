@@ -363,22 +363,6 @@ final class Tree extends JTree implements SearchListener {
     return EMPTY;
   }
 
-  private boolean isAlt(int modifiers) {
-    return isModifier(modifiers, KeyEvent.ALT_MASK);
-  }
-
-  private boolean isShift(int modifiers) {
-    return isModifier(modifiers, KeyEvent.SHIFT_MASK);
-  }
-
-  private boolean isCtrl(int modifiers) {
-    return isModifier(modifiers, KeyEvent.CTRL_MASK);
-  }
-
-  private boolean isModifier(int modifiers, int mask) {
-    return (modifiers & mask) != 0;
-  }
-
   private void updateSize() {
     putClientProperty(Dimension.class, getMaximumSize());
   }
