@@ -81,7 +81,6 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuil
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
-import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.jdbc.DBConstants;
@@ -128,8 +127,10 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
 
         /** Must be executed in AWT Thread and before stopProgressBar() is called. **/
         protected void startProgressBar() {
-            String title = NbBundle.getMessage(SQLStatementPanel.class, "MSG_ShowSQL");
-            String message = NbBundle.getMessage(SQLStatementPanel.class, "MSG_GeneratingSQL");
+            String nbBundle1 = mLoc.t("PRSR001: Show SQL");
+            String title = Localizer.parse(nbBundle1);
+            String nbBundle2 = mLoc.t("PRSR001: Generating SQL, please wait...");
+            String message = Localizer.parse(nbBundle2);
             UIUtil.startProgressDialog(title, message);
         }
 
@@ -159,7 +160,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
                 StatementContext context = new StatementContext();
 
                 if (sqlObjectLocalRef.getObjectType() == SQLConstants.SOURCE_TABLE) {
-                    sql = NbBundle.getMessage(SQLStatementPanel.class, "LBL_source_select_sql");
+                    String nbBundle3 = mLoc.t("PRSR001: -- Select statement for Source Table\n");
+                    sql = Localizer.parse(nbBundle3);
                     sql += db.getStatements().getSelectStatement((SourceTable) sqlObj, context).getSQL();
                 } else {
                     context.setUseSourceTableAliasName(true);
@@ -172,7 +174,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
 
             } catch (Exception exp) {
                 this.ex = exp;
-                sqlText = NbBundle.getMessage(SQLStatementPanel.class, "MSG_cant_evaluate_sql", sqlObj.getDisplayName());
+                String nbBundle4 = mLoc.t("PRSR001: Cannot evaluate SQL:\n{0}", sqlObj.getDisplayName());
+                sqlText = Localizer.parse(nbBundle4);
                 mLogger.errorNoloc(mLoc.t("PRSR151: Cannot evaluate SQL for{0}", sqlObj.getDisplayName()), ex);
                 mLogger.errorNoloc(mLoc.t("PRSR152: Can't get contents for table{0}", (sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);
 
@@ -186,7 +189,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
             SQLStatementPanel.this.textArea.setText(this.sqlText);
             stopProgressBar();
             if (this.ex != null) {
-                String errorMsg = NbBundle.getMessage(SQLStatementPanel.class, "MSG_error_fetch_failed", sqlObj.getDisplayName(), this.ex.getMessage());
+                String nbBundle5 = mLoc.t("PRSR001: Error fetching data for table {0}.\nCause: {1}", sqlObj.getDisplayName(), this.ex.getMessage());
+                String errorMsg = Localizer.parse(nbBundle5);
                 DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.ERROR_MESSAGE));
             }
         }
@@ -218,7 +222,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
         putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
         putClientProperty("PersistenceType", "Never"); //NOI18N
         this.setLayout(new BorderLayout());
-        this.setName(NbBundle.getMessage(SQLStatementPanel.class, "LBL_tab_sql", obj.getDisplayName()));
+        String nbBundle6 = mLoc.t("PRSR001: SQL: {0}", obj.getDisplayName());
+        this.setName(Localizer.parse(nbBundle6));
 
 
         JPanel panel = new JPanel();
@@ -229,7 +234,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
         toolbar.setFloatable(false);
         panel.add(toolbar);
 
-        JLabel dbTypeLabel = new JLabel(NbBundle.getMessage(SQLStatementPanel.class, "LBL_db_type"));
+        String nbBundle7 = mLoc.t("PRSR001: Database Type:");
+        JLabel dbTypeLabel = new JLabel(Localizer.parse(nbBundle7));
         dbTypeLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(dbTypeLabel);
 
@@ -345,7 +351,8 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
 
     public void updateSQLObject(SQLObject obj) {
         this.sqlObj = obj;
-        this.setName(NbBundle.getMessage(SQLStatementPanel.class, "LBL_tab_sql", obj.getDisplayName()));
+        String nbBundle8 = mLoc.t("PRSR001: SQL: {0}", obj.getDisplayName());
+        this.setName(Localizer.parse(nbBundle8));
     }
 
     private String getDBType(SQLObject obj) {

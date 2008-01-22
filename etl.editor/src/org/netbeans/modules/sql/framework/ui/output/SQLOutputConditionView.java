@@ -49,36 +49,41 @@ import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.IConditionGraphViewContainer;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
  */
-public final class SQLOutputConditionView extends TopComponent implements PropertyChangeListener,Lookup.Provider  {
+public final class SQLOutputConditionView extends TopComponent implements PropertyChangeListener, Lookup.Provider {
 
     private static SQLOutputConditionView instance;
-
     private static final String PREFERRED_ID = "ETLOutputWindowTopComponent";
     private static IConditionGraphViewContainer sqlView;
     private Set<Component> components = new HashSet<Component>(1);
     private JTabbedPane tabbedPane = TabbedPaneFactory.createCloseButtonTabbedPane();
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLOutputConditionView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public SQLOutputConditionView(IConditionGraphViewContainer view) {
         this.sqlView = view;
         initComponents();
-       // setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/etl/ui/resources/images/ETLCollab.gif"));
+        // setIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/etl/ui/resources/images/ETLCollab.gif"));
         setLayout(new BorderLayout());
-        setName(NbBundle.getMessage(SQLOutputConditionView.class, "CTL_ETLOutputWindowTopComponent"));
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SQLOutputConditionView.class, "ETL_Output_Title"));
-        setToolTipText(NbBundle.getMessage(SQLOutputConditionView.class, "HINT_ETLOutputWindowTopComponent"));
+        String nbBundle1 = mLoc.t("PRSR001: Conditional Builder Output View");
+        setName(Localizer.parse(nbBundle1));
+        String nbBundle2 = mLoc.t("PRSR001: Conditional Builder Output View");
+        getAccessibleContext().setAccessibleDescription(Localizer.parse(nbBundle2));
+        String nbBundle3 = mLoc.t("PRSR001: Conditional Builder Output View");
+        setToolTipText(Localizer.parse(nbBundle3));
         tabbedPane.addPropertyChangeListener(this);
     }
 
@@ -104,7 +109,6 @@ public final class SQLOutputConditionView extends TopComponent implements Proper
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
-
     /**
      * Gets default instance. Do not use directly: reserved for *.settings files only,
      * i.e. deserialization routines; otherwise you could get a non-deserialized instance.
@@ -125,20 +129,21 @@ public final class SQLOutputConditionView extends TopComponent implements Proper
     public static synchronized SQLOutputConditionView findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            Logger.getLogger(SQLOutputConditionView.class.getName()).warning("Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
+            mLogger.infoNoloc(mLoc.t("PRSR180: Cannot find{0}component. It will not be located properly in the window system.in{1}", PREFERRED_ID, SQLOutputConditionView.class.getName()));
             return getDefault();
         }
         if (win instanceof SQLOutputConditionView) {
             return (SQLOutputConditionView) win;
         }
-        Logger.getLogger(SQLOutputConditionView.class.getName()).warning("There seem to be multiple components with the '" + PREFERRED_ID + "' ID. That is a potential source of errors and unexpected behavior.");
+        mLogger.infoNoloc(mLoc.t("PRSR181: There seem to be multiple components with the '{0}' ID. That is a potential source of errors and unexpected behavior.", PREFERRED_ID, SQLOutputConditionView.class.getName()));
         return getDefault();
     }
 
     public void addComponent(Component c) {
         assert SwingUtilities.isEventDispatchThread();
-        if (!components.add(c))
+        if (!components.add(c)) {
             return;
+        }
         if (components.size() == 1) {
             assert getComponentCount() == 0;
             add(c);
@@ -182,5 +187,4 @@ public final class SQLOutputConditionView extends TopComponent implements Proper
         // updateName();
         revalidate();
     }
-    
-    }
+}

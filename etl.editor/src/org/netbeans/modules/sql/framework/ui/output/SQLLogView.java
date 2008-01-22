@@ -57,7 +57,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
-import org.openide.util.NbBundle;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.windows.TopComponent;
 
 /**
@@ -71,13 +73,16 @@ public class SQLLogView extends TopComponent implements IMessageView, ETLOutputP
     private JButton refreshButton;
     private ActionListener aListener;
     private JButton[] btn = new JButton[1];
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLLogView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of SQLLogView */
     public SQLLogView() {
-        String viewLabel = NbBundle.getMessage(SQLLogView.class, "LBL_logview_tab");
+        String nbBundle1 = mLoc.t("PRSR001: Execution Log");
+        String viewLabel = Localizer.parse(nbBundle1);
         this.setName(viewLabel);
         this.setLayout(new BorderLayout());
-        setBorder (BorderFactory.createEmptyBorder());
+        setBorder(BorderFactory.createEmptyBorder());
 
         //add refresh button
         URL url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/rerun.png");
