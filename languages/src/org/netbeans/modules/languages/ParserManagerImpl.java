@@ -330,11 +330,15 @@ public class ParserManagerImpl extends ParserManager {
         if (cancel [0]) return;                                                 //long start = System.currentTimeMillis ();
         try {
             Feature astProperties = language.getFeatureList ().getFeature ("AST");
-            if (astProperties != null && astProperties.getType () != Feature.Type.NOT_SET)
-                ast = (ASTNode) astProperties.getValue (
+            if (astProperties != null) {
+                ASTNode processedAst = (ASTNode) astProperties.getValue (
                     "process", 
                     SyntaxContext.create (document, ASTPath.create (ast))
                 );
+                if (processedAst != null) {
+                    ast = processedAst;
+                }
+            }
         } catch (Exception ex) {
             Utils.notify (ex);
             ast = ASTNode.create (language, "Root", 0);
