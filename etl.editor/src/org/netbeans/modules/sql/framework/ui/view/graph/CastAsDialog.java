@@ -72,9 +72,10 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
-import org.openide.util.NbBundle;
-
 
 /**
  * Configures type, precision and scale (as appropriate) of a cast as operator.
@@ -83,7 +84,7 @@ import org.openide.util.NbBundle;
  * @version $Revision$
  */
 public class CastAsDialog extends JDialog implements ActionListener {
-    
+
     /* Array of Strings representing available SQL datatypes */
     public static final String[] DISPLAY_NAMES;
 
@@ -92,18 +93,15 @@ public class CastAsDialog extends JDialog implements ActionListener {
 
     /* Action command string representing Cancel user option */
     private static final String CMD_CANCEL = "cancel"; //NOI18N
-    
     private static final SpinnerNumberModel PRECISION_MODEL = new SpinnerNumberModel(1, 1, 38, 1);
-    
     private static final SpinnerNumberModel SCALE_MODEL = new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1);
-    
     private static final Integer MAX_NUMBER_PRECISION = new Integer(100);
-    
     private static final Integer MAX_CHAR_PRECISION = new Integer(Integer.MAX_VALUE);
-
     private static final Integer ZERO = new Integer(0);
-
     private static final Integer ONE = new Integer(1);
+    private static transient final Logger mLogger = LogUtil.getLogger(CastAsDialog.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
 
     static {
         List types = SQLUtils.getSupportedCastTypes();
@@ -117,10 +115,8 @@ public class CastAsDialog extends JDialog implements ActionListener {
 
     /* Holds precision/length value */
     private JSpinner mPrecLength = new JSpinner();
-    
     /* Holds scale value */
     private JSpinner mScale = new JSpinner();
-    
     /* OK dialog button */
     private JButton mOkButton;
 
@@ -140,8 +136,10 @@ public class CastAsDialog extends JDialog implements ActionListener {
         super(parent, title, modal);
 
         try {
-            mOkButton = new JButton(NbBundle.getMessage(CastAsDialog.class, "BTN_ok")); //NOI18N
-            mCancelButton = new JButton(NbBundle.getMessage(CastAsDialog.class, "BTN_cancel")); //NOI18N
+            String nbBundle1 = mLoc.t("PRSR001: Ok");
+            mOkButton = new JButton(Localizer.parse(nbBundle1)); //NOI18N
+            String nbBundle2 = mLoc.t("PRSR001: Cancel");
+            mCancelButton = new JButton(Localizer.parse(nbBundle2)); //NOI18N
 
             initComponents();
         } catch (Exception e) {
@@ -179,7 +177,7 @@ public class CastAsDialog extends JDialog implements ActionListener {
     public void setJdbcTypeEditable(boolean editable) {
         mTypesBox.setEnabled(editable);
     }
-    
+
     /**
      * Gets user-selected JDBC datatype for this cast-as operator.
      * 
@@ -199,7 +197,7 @@ public class CastAsDialog extends JDialog implements ActionListener {
         updatePrecisionModel();
         updateScaleModel();
     }
-    
+
     /**
      * Gets current precision value in dialog.
      * 
@@ -210,20 +208,20 @@ public class CastAsDialog extends JDialog implements ActionListener {
         Integer value = (Integer) PRECISION_MODEL.getValue();
         return (mPrecLength.isEnabled() && value != null) ? value.intValue() : 0;
     }
-    
+
     /**
      * Sets current precision value in dialog, subject to model limits.
      * 
      * @param newValue new value for precision
-     */    
+     */
     public void setPrecision(int newValue) {
         Integer newValueObj = new Integer(newValue);
         Integer maxValueObj = (Integer) PRECISION_MODEL.getMaximum();
-        
+
         newValueObj = setBoundedValue(newValueObj, ONE, maxValueObj);
         PRECISION_MODEL.setValue(newValueObj);
     }
-    
+
     /**
      * Gets current scale value in dialog.
      * 
@@ -234,7 +232,7 @@ public class CastAsDialog extends JDialog implements ActionListener {
         Integer value = (Integer) SCALE_MODEL.getValue();
         return (mScale.isEnabled() && value != null) ? value.intValue() : 0;
     }
-    
+
     /**
      * Sets current scale value in dialog, subject to model limits.
      * 
@@ -243,22 +241,21 @@ public class CastAsDialog extends JDialog implements ActionListener {
     public void setScale(int newValue) {
         Integer newValueObj = new Integer(newValue);
         Integer maxValueObj = (Integer) SCALE_MODEL.getMaximum();
-        
+
         newValueObj = setBoundedValue(newValueObj, ZERO, maxValueObj);
         SCALE_MODEL.setValue(newValueObj);
     }
-    
-    
+
     private Integer setBoundedValue(Integer value, Integer min, Integer max) {
         if (value.compareTo(max) > 0) {
             value = max;
         } else if (value.compareTo(min) < 0) {
             value = min;
         }
-        
+
         return value;
-    }    
-    
+    }
+
     /**
      * Indicates whether user canceled this dialog box.
      * 
@@ -281,6 +278,7 @@ public class CastAsDialog extends JDialog implements ActionListener {
                 this.setVisible(false);
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         mTypesBox.requestFocusInWindow();
                     }
@@ -331,6 +329,7 @@ public class CastAsDialog extends JDialog implements ActionListener {
         mCancelButton.addKeyListener(bKeyAdapter);
 
         this.addWindowListener(new WindowAdapter() {
+
             public void windowClosing(WindowEvent e) {
                 mIsCanceled = true;
             }
@@ -361,7 +360,8 @@ public class CastAsDialog extends JDialog implements ActionListener {
         constraints.gridwidth = 1;
         constraints.insets = leftInsets;
 
-        JLabel typeLabel = new JLabel(NbBundle.getMessage(CastAsDialog.class, "LBL_castas_type")); //NOI18N
+        String nbBundle3 = mLoc.t("PRSR001: Type:");
+        JLabel typeLabel = new JLabel(Localizer.parse(nbBundle3)); //NOI18N
         gridBag.setConstraints(typeLabel, constraints);
         formPanel.add(typeLabel);
 
@@ -375,7 +375,8 @@ public class CastAsDialog extends JDialog implements ActionListener {
         constraints.gridy = 1;
         constraints.insets = leftInsets;
         constraints.weightx = 1.0;
-        JLabel precLengthLabel = new JLabel(NbBundle.getMessage(CastAsDialog.class, "LBL_castas_precision")); //NOI18N
+        String nbBundle4 = mLoc.t("PRSR001: Precision/length:");
+        JLabel precLengthLabel = new JLabel(Localizer.parse(nbBundle4)); //NOI18N
         gridBag.setConstraints(precLengthLabel, constraints);
         formPanel.add(precLengthLabel);
 
@@ -387,12 +388,13 @@ public class CastAsDialog extends JDialog implements ActionListener {
         constraints.weightx = 0.0;
         gridBag.setConstraints(mPrecLength, constraints);
         formPanel.add(mPrecLength);
-        
+
         constraints.gridx = 0;
         constraints.gridy = 2;
         constraints.insets = leftInsets;
         constraints.weightx = 1.0;
-        JLabel scaleLabel = new JLabel(NbBundle.getMessage(CastAsDialog.class, "LBL_castas_scale")); //NOI18N
+        String nbBundle5 = mLoc.t("PRSR001: Scale:");
+        JLabel scaleLabel = new JLabel(Localizer.parse(nbBundle5)); //NOI18N
         gridBag.setConstraints(scaleLabel, constraints);
         formPanel.add(scaleLabel);
 
@@ -402,19 +404,19 @@ public class CastAsDialog extends JDialog implements ActionListener {
         constraints.insets = rightInsets;
         constraints.weightx = 0.0;
         gridBag.setConstraints(mScale, constraints);
-        formPanel.add(mScale);        
+        formPanel.add(mScale);
 
         initEventHandle();
         contentPane.add(formPanel, BorderLayout.CENTER);
         contentPane.add(getButtonPane(), BorderLayout.SOUTH);
         this.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
-        
+
         mTypesBox.addItemListener(new TypeChangeItemListener());
     }
-    
+
     private void updatePrecisionModel() {
         int type = SQLUtils.getStdJdbcType((String) mTypesBox.getSelectedItem());
-        if(SQLUtils.isPrecisionRequired(type)) {
+        if (SQLUtils.isPrecisionRequired(type)) {
             mPrecLength.setEnabled(true);
             switch (type) {
                 case Types.NUMERIC:
@@ -425,8 +427,8 @@ public class CastAsDialog extends JDialog implements ActionListener {
                     }
                     PRECISION_MODEL.setMaximum(MAX_NUMBER_PRECISION);
                     break;
-                
-                default:    
+
+                default:
                     mPrecLength.setEnabled(true);
                     PRECISION_MODEL.setMaximum(MAX_CHAR_PRECISION);
                     break;
@@ -435,10 +437,10 @@ public class CastAsDialog extends JDialog implements ActionListener {
             mPrecLength.setEnabled(false);
         }
     }
-    
+
     private void updateScaleModel() {
         int type = SQLUtils.getStdJdbcType((String) mTypesBox.getSelectedItem());
-        if(SQLUtils.isScaleRequired(type)) {
+        if (SQLUtils.isScaleRequired(type)) {
             mScale.setEnabled(true);
             Integer currentVal = (Integer) SCALE_MODEL.getValue();
             Integer currentPrecision = (Integer) PRECISION_MODEL.getValue();
@@ -450,21 +452,24 @@ public class CastAsDialog extends JDialog implements ActionListener {
             mScale.setEnabled(false);
         }
     }
-    
+
     class TypeChangeItemListener implements ItemListener {
+
         public void itemStateChanged(ItemEvent e) {
             CastAsDialog.this.updatePrecisionModel();
             CastAsDialog.this.updateScaleModel();
         }
     }
-    
+
     class PrecisionChangeListener implements ChangeListener {
+
         public void stateChanged(ChangeEvent e) {
             CastAsDialog.this.updateScaleModel();
         }
     }
 
     class ButtonKeyAdapter extends KeyAdapter {
+
         public void keyPressed(KeyEvent evt) {
             if (evt.getKeyCode() == KeyEvent.VK_ENTER) {
                 buttonActionPerformed(evt.getSource());

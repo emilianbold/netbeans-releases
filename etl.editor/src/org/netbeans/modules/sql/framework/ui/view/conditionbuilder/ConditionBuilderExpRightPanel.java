@@ -92,7 +92,6 @@ import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
 import org.netbeans.modules.sql.framework.ui.output.IMessageView;
 import org.netbeans.modules.sql.framework.ui.output.SQLLogView;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions.ValidateSQLAction;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
@@ -387,7 +386,8 @@ public class ConditionBuilderExpRightPanel extends TopComponent {
                 errorList.addAll(ConditionBuilderUtil.filterValidations(visitor.getValidationInfoList()));
                 showSplitPaneView(logView);
             } else {
-                String error = NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_expression_not_a_condition");
+                String nbBundle1 = mLoc.t("PRSR001: Condition expression does not contain a valid predicate.");
+                String error = Localizer.parse(nbBundle1);
                 ValidationInfo info = SQLModelObjectFactory.getInstance().createValidationInfo(null, error, ValidationInfo.VALIDATION_ERROR);
                 errorList.add(info);
 
@@ -400,12 +400,15 @@ public class ConditionBuilderExpRightPanel extends TopComponent {
             }
 
             if (errorList.size() == 0) {
-                logView.refreshView(NbBundle.getMessage(SQLValidationVisitor.class, "MSG_condition_valid"));
+                String nbBundle2 = mLoc.t("PRSR001: Condition is valid.");
+                logView.refreshView(Localizer.parse(nbBundle2));
             } else {
                 if (visitor.hasErrors(errorList)) {
-                    logView.refreshView(NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_condition_invalid"));
+                    String nbBundle3 = mLoc.t("PRSR001: Condition is not valid.");
+                    logView.refreshView(Localizer.parse(nbBundle3));
                 } else {
-                    logView.refreshView(NbBundle.getMessage(SQLValidationVisitor.class, "WARNING_condition_haswarnings"));
+                    String nbBundle4 = mLoc.t("PRSR001: Condition is valid, but has warnings.");
+                    logView.refreshView(Localizer.parse(nbBundle4));
                 }
                 logView.appendToView("\n");
 
@@ -423,7 +426,8 @@ public class ConditionBuilderExpRightPanel extends TopComponent {
             if (ex instanceof ParseException) {
                 logView.refreshView("Condition is invalid - cannot parse text.");
             } else {
-                logView.refreshView(NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_condition_invalid"));
+                String nbBundle5 = mLoc.t("PRSR001: Condition is not valid.");
+                logView.refreshView(Localizer.parse(nbBundle5));
                 logView.appendToView("\n");
                 if (ex.getMessage() != null) {
                     logView.appendToView(ex.getMessage());

@@ -48,9 +48,10 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
-import org.openide.util.NbBundle;
-
 
 /**
  * @author Ritesh Adval
@@ -59,16 +60,20 @@ import org.openide.util.NbBundle;
 public class AutoLayoutAction extends GraphAction {
 
     private static final URL autoLayoutImgUrl = AutoLayoutAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/layout_edm.png");
+    private static transient final Logger mLogger = LogUtil.getLogger(AutoLayoutAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public AutoLayoutAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(AutoLayoutAction.class, "ACTION_AUTOLAYOUT"));
+        String nbBundle = mLoc.t("PRSR001: AutoLayout");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(autoLayoutImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(AutoLayoutAction.class, "ACTION_AUTOLAYOUT_TOOLTIP"));
+        String nbBundle1 = mLoc.t("PRSR001: AutoLayout All Graph Objects");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
 
         // Acceleratot Cntl-Shift-L
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('L', InputEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));

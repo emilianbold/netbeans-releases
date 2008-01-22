@@ -44,9 +44,11 @@ import java.util.Vector;
 
 import javax.swing.AbstractListModel;
 
-import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.exception.BaseException;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * This class represents model for SQLCaseArea
@@ -56,6 +58,8 @@ import com.sun.sql.framework.exception.BaseException;
 public class CaseListModel extends AbstractListModel {
 
     private Vector listItems = new Vector();
+    private static transient final Logger mLogger = LogUtil.getLogger(CaseListModel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of CaseListModel */
     public CaseListModel() {
@@ -127,15 +131,16 @@ public class CaseListModel extends AbstractListModel {
         if (listItems.size() == 1) {
             return false;
         }
-        
+
         if (!listItems.contains(val)) {
-            throw new BaseException(NbBundle.getMessage(CaseListModel.class, "ERROR_casewhen_cannotremove"));            
+            String nbBundle1 = mLoc.t("PRSR001: Cannot remove selected when condition.");
+            throw new BaseException(Localizer.parse(nbBundle1));
         }
 
         int idx = listItems.indexOf(val);
         listItems.remove(idx);
         fireIntervalRemoved(this, idx, idx);
-        
+
         return true;
     }
 }

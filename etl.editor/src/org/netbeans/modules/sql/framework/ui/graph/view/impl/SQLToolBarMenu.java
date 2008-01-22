@@ -87,12 +87,13 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorManager;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfoCategory;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
-
 
 /**
  * ToolBar drop down Menu for displaying menu of Operators.
@@ -103,6 +104,7 @@ import org.openide.util.NbBundle;
  * @version $Revision$
  */
 public class SQLToolBarMenu extends JToggleButton {
+
     private static final Object _SEPARATOR = new Object();
     private SQLToolBar mToolBar;
     private IOperatorXmlInfoCategory mCategory;
@@ -110,6 +112,8 @@ public class SQLToolBarMenu extends JToggleButton {
     private List mMenuItemModelList;
     private List mMenuItemList;
     private ButtonPopupMenu mButtonMenu;
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLToolBarMenu.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public SQLToolBarMenu(IOperatorXmlInfoCategory catNode, IOperatorManager manager, SQLToolBar toolbar) {
         super();
@@ -126,6 +130,7 @@ public class SQLToolBarMenu extends JToggleButton {
         }
 
         addItemListener(new ItemListener() {
+
             public void itemStateChanged(ItemEvent e) {
                 if (isSelected()) {
                     showButtonMenu();
@@ -134,14 +139,15 @@ public class SQLToolBarMenu extends JToggleButton {
                 }
             }
         });
-        
+
         setContentAreaFilled(false);
-        
+
         setRolloverEnabled(false);
         setMargin(new Insets(1, 5, 0, 12));
         setIconTextGap(2);
 
         addMouseListener(new MouseAdapter() {
+
             public void mouseEntered(MouseEvent e) {
                 SQLToolBarMenu active = mToolBar.getActiveMenu();
                 if ((active != null) && (active != SQLToolBarMenu.this)) {
@@ -149,8 +155,8 @@ public class SQLToolBarMenu extends JToggleButton {
                 }
             }
         });
-
-        this.setToolTipText(catNode.getDisplayName() + " " + NbBundle.getMessage(this.getClass(), "TOOLTIP_Operator_Category_Menu"));
+        String nbBundle = mLoc.t("PRSR001: Operators");
+        this.setToolTipText(catNode.getDisplayName() + " " + Localizer.parse(nbBundle));
     }
 
     public void setToolBar(SQLToolBar group) {
@@ -251,6 +257,7 @@ public class SQLToolBarMenu extends JToggleButton {
     }
 
     private class ButtonPopupMenu extends JWindow {
+
         private JPanel mButtonList;
         private Border mButtonBorder;
         private int mButtonHeight;
@@ -277,6 +284,7 @@ public class SQLToolBarMenu extends JToggleButton {
             registerDefaultKeyActionBindings();
 
             mComponentListener = new ComponentListener() {
+
                 public void componentHidden(ComponentEvent e) {
                     SQLToolBarMenu.this.setSelected(false);
                 }
@@ -296,10 +304,13 @@ public class SQLToolBarMenu extends JToggleButton {
             getOwner().addComponentListener(mComponentListener);
 
             addSeparator();
-            AbstractButton setupButton = new JButton(NbBundle.getMessage(this.getClass(), "LBL_Category_Configuration_Item"));
+
+            String nbBundle1 = mLoc.t("PRSR001: Settings...");
+            AbstractButton setupButton = new JButton(Localizer.parse(nbBundle1));
             addButton(1, setupButton);
             mButtonHeight = setupButton.getPreferredSize().height + 2;
             setupButton.addActionListener(new ActionListener() {
+
                 public void actionPerformed(ActionEvent e) {
                     mManager.show((Node) mCategory);
                 }
@@ -314,13 +325,12 @@ public class SQLToolBarMenu extends JToggleButton {
                 mToolBar.setActiveMenu(null);
             }
         }
-
         private ActionListener mActionListener = new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
                 SQLToolBarMenu.this.setSelected(false);
             }
         };
-
         private FocusListener mFocusListener = new FocusListener() {
 
             public void focusGained(FocusEvent e) {
@@ -328,6 +338,7 @@ public class SQLToolBarMenu extends JToggleButton {
 
             public void focusLost(FocusEvent e) {
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         Component owner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
 
@@ -339,8 +350,8 @@ public class SQLToolBarMenu extends JToggleButton {
                 });
             }
         };
-
         private Action mNextFocusAction = new AbstractAction() {
+
             public void actionPerformed(ActionEvent e) {
                 KeyboardFocusManager fMgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
                 Component owner = fMgr.getFocusOwner();
@@ -355,8 +366,8 @@ public class SQLToolBarMenu extends JToggleButton {
                 }
             }
         };
-
         private Action mPrevFocusAction = new AbstractAction() {
+
             public void actionPerformed(ActionEvent e) {
                 KeyboardFocusManager fMgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
                 Component owner = fMgr.getFocusOwner();
@@ -371,8 +382,8 @@ public class SQLToolBarMenu extends JToggleButton {
                 }
             }
         };
-
         private Action mNextMenuAction = new AbstractAction() {
+
             public void actionPerformed(ActionEvent e) {
                 Component parent = SQLToolBarMenu.this.getParent();
                 if (parent instanceof SQLToolBar) {
@@ -385,8 +396,8 @@ public class SQLToolBarMenu extends JToggleButton {
                 }
             }
         };
-
         private Action mPrevMenuAction = new AbstractAction() {
+
             public void actionPerformed(ActionEvent e) {
                 Component parent = SQLToolBarMenu.this.getParent();
                 if (parent instanceof SQLToolBar) {
@@ -399,14 +410,14 @@ public class SQLToolBarMenu extends JToggleButton {
                 }
             }
         };
-
         private Action mHideAction = new AbstractAction() {
+
             public void actionPerformed(ActionEvent e) {
                 SQLToolBarMenu.this.setSelected(false);
             }
         };
-
         private Action mDefaultButtonAction = new AbstractAction() {
+
             public void actionPerformed(ActionEvent e) {
                 KeyboardFocusManager fMgr = KeyboardFocusManager.getCurrentKeyboardFocusManager();
                 Component owner = fMgr.getFocusOwner();
@@ -423,8 +434,8 @@ public class SQLToolBarMenu extends JToggleButton {
                 }
             }
         };
-
         private MouseMotionListener mButtonFocusListener = new MouseMotionAdapter() {
+
             @Override
             public void mouseMoved(MouseEvent e) {
                 if (e.getSource() instanceof Component) {
@@ -573,7 +584,6 @@ public class SQLToolBarMenu extends JToggleButton {
             mToolBar = null;
         }
     }
-
     Color mDisabledTextColor = null;
 
     // Draw a small down arrow over the right margin of the button

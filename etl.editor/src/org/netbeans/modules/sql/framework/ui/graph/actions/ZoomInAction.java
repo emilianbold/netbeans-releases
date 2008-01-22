@@ -35,54 +35,53 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  *
  */
-
 package org.netbeans.modules.sql.framework.ui.graph.actions;
 
 import java.awt.event.ActionEvent;
 import java.net.URL;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 
 
 
-import org.netbeans.modules.etl.ui.ETLDataObject;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
-import org.netbeans.modules.sql.framework.model.SQLConstants;
-import org.openide.util.NbBundle;
-
 
 /**
  *
  * @author karthikeyan s
  */
 public class ZoomInAction extends GraphAction {
-    
+
     private static final URL zoomInImgUrl = ZoomInAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/zoom_in_edm.png");
-  
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(ZoomInAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     public ZoomInAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(ZoomInAction.class, "ACTION_ZOOMIN"));
+        String nbBundle = mLoc.t("PRSR001: Zoom In...");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(zoomInImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(ZoomInAction.class, "ACTION_ZOOMIN_TOOLTIP"));
+        String nbBundle1 = mLoc.t("PRSR001: Zoom In");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
     }
-  
-    
+
     public void actionPerformed(ActionEvent e) {
-         ETLCollaborationTopPanel etlEditor = null;
+        ETLCollaborationTopPanel etlEditor = null;
         try {
             etlEditor = DataObjectProvider.getProvider().getActiveDataObject().getETLEditorTopPanel();
         } catch (Exception ex) {
             // ignore
         }
         if (etlEditor != null) {
-             etlEditor.setZoomFactor(etlEditor.getZoomFactor() * 1.1);
+            etlEditor.setZoomFactor(etlEditor.getZoomFactor() * 1.1);
         }
-    }    
+    }
 }

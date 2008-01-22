@@ -32,19 +32,16 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.graph.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 
-import org.netbeans.modules.etl.ui.DataObjectProvider;
-import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.view.graph.actions.TestRunAction;
-import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-
 
 /**
  * Abstract action class to register accelerator keys with top component.
@@ -53,25 +50,28 @@ import org.openide.util.NbBundle;
  * @author karthikeyan s
  */
 public class RunAction extends AbstractAction {
-    
+
     private static final String LOG_CATEGORY = RunAction.class.getName();
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(RunAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     public String getName() {
-        return NbBundle.getMessage(RunAction.class, "CTL_Run");
+        String nbBundle = mLoc.t("PRSR001: Run");
+        return Localizer.parse(nbBundle);
     }
-    
+
     protected String iconResource() {
         return "/org/netbeans/modules/sql/framework/ui/resources/images/runCollaboration.png";
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     protected boolean asynchronous() {
         return false;
     }
-    
+
     public void actionPerformed(ActionEvent e) {
         TestRunAction action = new TestRunAction();
         action.actionPerformed(e);

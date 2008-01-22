@@ -65,7 +65,6 @@ import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
 import org.netbeans.modules.sql.framework.ui.output.SQLStatementPanel;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions.ValidateGraphAction;
 import org.netbeans.modules.sql.framework.ui.view.validation.SQLValidationView;
-import org.openide.util.NbBundle;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
@@ -104,10 +103,12 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
         // Runs on the event-dispatching thread.
         public void finished() {
             if (execModel.getAllObjects().size() == 0) {
-                String msg = NbBundle.getMessage(ConditionBuilderRightPanel.class, "LBL_validation_no_expression");
+                String nbBundle1 = mLoc.t("PRSR001: \nNo expression to be validated in the Graph.");
+                String msg = Localizer.parse(nbBundle1);
                 validationView.appendToView(msg);
             } else if (list.size() == 0) {
-                String msg = NbBundle.getMessage(ConditionBuilderRightPanel.class, "LBL_validation_ok");
+                String nbBundle2 = mLoc.t("PRSR001: \nCondition is valid.");
+                String msg = Localizer.parse(nbBundle2);
                 validationView.appendToView(msg);
             } else {
                 validationView.setValidationInfos(list);
@@ -167,8 +168,8 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
         try {
             if (model != null) {
                 validationView.clearView();
-
-                String msg = NbBundle.getMessage(ConditionBuilderRightPanel.class, "LBL_validation_inprogress");
+                String nbBundle3 = mLoc.t("PRSR001: Performing validation...");
+                String msg = Localizer.parse(nbBundle3);
                 validationView.appendToView(msg);
 
                 SQLCondition cond1 = model.getSQLCondition();
@@ -176,7 +177,8 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
                 vThread.start();
             }
         } catch (Exception ex) {
-            String msg = NbBundle.getMessage(ConditionBuilderRightPanel.class, "LBL_validation_error", ex.getMessage());
+            String nbBundle4 = mLoc.t("PRSR001: \nError occurred during validation: {0}", ex.getMessage());
+            String msg = Localizer.parse(nbBundle4);
 
             mLogger.errorNoloc(mLoc.t("PRSR154: error doing condition validation{0}", LOG_CATEGORY), ex);
             validationView.appendToView(msg);
@@ -342,7 +344,8 @@ public class ConditionBuilderRightPanel extends JPanel implements IConditionGrap
         this.add(hSplitPane, BorderLayout.CENTER);
 
         validationView = new SQLValidationView(graphView);
-        String name = NbBundle.getMessage(ConditionBuilderRightPanel.class, "LBL_cb_validation");
+        String nbBundle5 = mLoc.t("PRSR001: Validation:");
+        String name = Localizer.parse(nbBundle5);
         validationView.setName(name);
 
         BasicToolBar tlBar = (BasicToolBar) viewFactory.getOperatorView();

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import java.awt.event.ActionEvent;
@@ -48,12 +47,12 @@ import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
-
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
-import org.openide.util.NbBundle;
-
 
 /**
  * This action is used to toggle output view
@@ -64,16 +63,19 @@ import org.openide.util.NbBundle;
 public class ToggleOutputAction extends GraphAction {
 
     private static final URL outputGraphImgUrl = ToggleOutputAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/showOutput.png");
+    private static transient final Logger mLogger = LogUtil.getLogger(ToggleOutputAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public ToggleOutputAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(ToggleOutputAction.class, "ACTION_TOGGLEOUTPUT"));
+        String nbBundle = mLoc.t("PRSR001: Toggle Output View");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(outputGraphImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(ToggleOutputAction.class, "ACTION_TOGGLEOUTPUT_TOOLTIP"));
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle));
 
         // Acceleratot Cntl-Shift-O
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('O', InputEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));

@@ -261,7 +261,8 @@ public class ResultSetTablePanel extends JPanel {
 
     private static class NullObjectCellRenderer extends DefaultTableCellRenderer {
 
-        static final String NULL_LABEL = NbBundle.getMessage(ResultSetTablePanel.class, "LBL_showdata_null");
+        static String nbBundle1 = mLoc.t("PRSR001: <NULL>");
+        static final String NULL_LABEL = Localizer.parse(nbBundle1);
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {

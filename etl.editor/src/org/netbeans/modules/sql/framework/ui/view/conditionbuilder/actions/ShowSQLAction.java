@@ -46,28 +46,34 @@ import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.IConditionGraphViewContainer;
-import org.openide.util.NbBundle;
-
 
 /**
  * @author Ritesh Adval
  * @version $Revision$
  */
 public class ShowSQLAction extends GraphAction {
+
     private static URL showSqlUrl = ShowSQLAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Show_Sql.png");
+    private static transient final Logger mLogger = LogUtil.getLogger(ShowSQLAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public ShowSQLAction() {
         // Action name
-        this.putValue(Action.NAME, NbBundle.getMessage(ShowSQLAction.class, "ACTION_SHOWSQL"));
+        String nbBundle1 = mLoc.t("PRSR001: Show SQL");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         // Action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(showSqlUrl));
 
         // Action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(ShowSQLAction.class, "ACTION_SHOWSQL_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Toggle SQL For Condition");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
     }
 
     /**
@@ -80,6 +86,5 @@ public class ShowSQLAction extends GraphAction {
         IConditionGraphViewContainer container = (IConditionGraphViewContainer) graphView.getGraphViewContainer();
         container.showSQL();
     }
-
 }
 

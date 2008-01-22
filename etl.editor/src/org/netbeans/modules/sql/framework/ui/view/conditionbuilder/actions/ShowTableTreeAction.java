@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.view.conditionbuilder.actions;
 
 import java.awt.event.ActionEvent;
@@ -47,12 +46,13 @@ import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderView;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionViewManager;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-
 
 /**
  * @author Ritesh Adval
@@ -61,16 +61,20 @@ import org.openide.util.NbBundle;
 public class ShowTableTreeAction extends GraphAction {
 
     private static URL validateSqlUrl = ShowTableTreeAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Show_Source_Columns.png");
+    private static transient final Logger mLogger = LogUtil.getLogger(ShowTableTreeAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public ShowTableTreeAction() {
         // Action name
-        this.putValue(Action.NAME, NbBundle.getMessage(ShowTableTreeAction.class, "ACTION_SHOWTABLETREE"));
+        String nbBundle1 = mLoc.t("PRSR001: Toggle Tree View");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         // Action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(validateSqlUrl));
 
         // Action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(ShowTableTreeAction.class, "ACTION_SHOWTABLETREE_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Toggle Table Tree View");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
     }
 
     /**
@@ -108,6 +112,5 @@ public class ShowTableTreeAction extends GraphAction {
             cView.showTableTree();
         }
     }
-
 }
 

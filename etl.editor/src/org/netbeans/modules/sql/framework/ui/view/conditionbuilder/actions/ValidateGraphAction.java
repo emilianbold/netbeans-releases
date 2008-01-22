@@ -46,11 +46,12 @@ import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderView;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionViewManager;
-import org.openide.util.NbBundle;
-
 
 /**
  * Action to validate the sql entered by the user
@@ -61,17 +62,20 @@ import org.openide.util.NbBundle;
 public class ValidateGraphAction extends GraphAction {
 
     private static URL showSqlUrl = ValidateGraphAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/validate.png");
+    private static transient final Logger mLogger = LogUtil.getLogger(ValidateGraphAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public ValidateGraphAction() {
         // Action name
-        this.putValue(Action.NAME, NbBundle.getMessage(ValidateGraphAction.class, "ACTION_VALIDATEGRAPH"));
+        String nbBundle1 = mLoc.t("PRSR001: Validate Graph");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         // Action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(showSqlUrl));
 
         // Action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(ValidateGraphAction.class, "ACTION_VALIDATEGRAPH_TOOLTIP"));
-
+        String nbBundle2 = mLoc.t("PRSR001: Validate Graph");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
     }
 
     /**
@@ -85,6 +89,5 @@ public class ValidateGraphAction extends GraphAction {
             cView.doGraphValidation();
         }
     }
-
 }
 

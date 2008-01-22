@@ -40,17 +40,21 @@
  */
 package org.netbeans.modules.sql.framework.ui.output.dataview;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
-import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
-import org.openide.util.NbBundle;
 
 /**
  * @author Ahimanikya Satapathy
  */
 public class SourceTableDataPanel extends DataOutputPanel {
+
+    private static transient final Logger mLogger = LogUtil.getLogger(SourceTableDataPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public SourceTableDataPanel(SourceTable etlObject, SQLDefinition sqlDefinition) {
         super(etlObject, sqlDefinition, false, true);
@@ -62,9 +66,12 @@ public class SourceTableDataPanel extends DataOutputPanel {
 
     public void generateResult(SQLObject aTable) {
         this.table = aTable;
-        this.setName(NbBundle.getMessage(DataOutputPanel.class, "LBL_tab_data", table.getDisplayName()));
-        String title = NbBundle.getMessage(BasicTopView.class, "MSG_LoadData");
-        String msg = NbBundle.getMessage(BasicTopView.class, "MSG_LoadProgress");
+        String nbBundle1 = mLoc.t("PRSR001: Data: {0}", table.getDisplayName());
+        this.setName(Localizer.parse(nbBundle1));
+        String nbBundle2 = mLoc.t("PRSR001: Loading Data");
+        String title = Localizer.parse(nbBundle2);
+        String nbBundle3 = mLoc.t("PRSR001: Loading from database, please wait...");
+        String msg = Localizer.parse(nbBundle3);
         UIUtil.startProgressDialog(title, msg);
         generateSelectAllTableData();
     }

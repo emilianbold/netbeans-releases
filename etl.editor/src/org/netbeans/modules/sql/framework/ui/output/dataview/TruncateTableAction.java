@@ -65,7 +65,6 @@ import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.SwingWorker;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
-import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
@@ -86,14 +85,17 @@ class TruncateTableAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        String confirmMsg = NbBundle.getMessage(DataOutputPanel.class, "MSG_confirm_truncate_table", outer.table.getDisplayName());
+        String nbBundle1 = mLoc.t("PRSR001: Truncate contents of table {0}?", outer.table.getDisplayName());
+        String confirmMsg = Localizer.parse(nbBundle1);
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(confirmMsg, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE);
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.CANCEL_OPTION) {
             return;
         }
-        String title = NbBundle.getMessage(BasicTopView.class, "MSG_TruncateData");
-        String msg = NbBundle.getMessage(BasicTopView.class, "MSG_TruncateProgress");
+        String nbBundle2 = mLoc.t("PRSR001: Truncating Table");
+        String title = Localizer.parse(nbBundle2);
+        String nbBundle3 = mLoc.t("PRSR001: Truncating Table from database, please wait...");
+        String msg = Localizer.parse(nbBundle3);
         UIUtil.startProgressDialog(title, msg);
 
         if (outer.truncateButton != null) {

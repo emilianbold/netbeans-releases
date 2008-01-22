@@ -18,9 +18,9 @@
  * fields enclosed by brackets [] replaced by your own identifying 
  * information: "Portions Copyrighted [year] [name of copyright owner]"
  */
-
 package org.netbeans.modules.etl.logger;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.java.hulp.i18n.LocalizationSupport;
 
@@ -29,17 +29,16 @@ import net.java.hulp.i18n.LocalizationSupport;
  * @author rtam
  */
 public class Localizer extends LocalizationSupport {
-    
-    private static final String DEFAULT_PATTERN = "([A-Z][A-Z][A-Z][A-Z]\\d\\d\\d)(: )(.*)";
 
+    private static final String DEFAULT_PATTERN = "([A-Z][A-Z][A-Z][A-Z]\\d\\d\\d)(: )(.*)";
     private static final String DEFAULT_PREFIX = "DM-DI-";
     private static final String DEFAULT_BUNDLENAME = "msgs";
-    private static Localizer instance = null; 
-    
+    private static Localizer instance = null;
+
     public Localizer(Pattern idpattern, String prefix, String bundlename) {
         super(idpattern, prefix, bundlename);
     }
-    
+
     /**  Returns an instance of Localizer.
      * 
      * @return a Localizer instance.
@@ -49,16 +48,21 @@ public class Localizer extends LocalizationSupport {
         if (instance == null) {
             Pattern pattern = Pattern.compile(DEFAULT_PATTERN);
             instance = new Localizer(pattern, DEFAULT_PREFIX, DEFAULT_BUNDLENAME);
-
         }
         return instance;
-    } 
-    /* public static Localizer get(String prefix, String bundlename) {
-       
-            Pattern pattern = Pattern.compile(DEFAULT_PATTERN);
-           Localizer instanceLocal = new Localizer(pattern, prefix, bundlename);
+    }
 
-       
-        return instanceLocal;
+    public static String parse(String str) {
+        String s = "DM-DI-PRSR001:";
+        if (str.contains(s)) {
+            str = str.replace(s, "");
+        }
+        return str;
+    }
+    /* public static Localizer get(String prefix, String bundlename) {
+    
+    Pattern pattern = Pattern.compile(DEFAULT_PATTERN);
+    Localizer instanceLocal = new Localizer(pattern, prefix, bundlename);
+    return instanceLocal;
     } */
 }

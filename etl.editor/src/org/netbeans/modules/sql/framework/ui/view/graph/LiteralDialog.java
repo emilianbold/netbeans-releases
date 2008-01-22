@@ -73,9 +73,11 @@ import org.netbeans.modules.sql.framework.common.jdbc.SQLUtils;
 import org.netbeans.modules.sql.framework.model.SQLLiteral;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.StringUtil;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Configures type and value of an SQLBuilder literal element.
@@ -93,6 +95,7 @@ public class LiteralDialog extends JDialog implements ActionListener {
 
     /* Action command string representing Cancel user option */
     private static final String CMD_CANCEL = "cancel"; //NOI18N
+    
 
     static {
         List<String> types = SQLLiteral.VALID_TYPE_NAMES;
@@ -121,6 +124,8 @@ public class LiteralDialog extends JDialog implements ActionListener {
 
     /* Indicates whether user cancelled dialog box */
     private boolean mIsCanceled = true;
+    private static transient final Logger mLogger = LogUtil.getLogger(LiteralDialog.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     /**
      * Creates a new LiteralDialog object.
@@ -132,9 +137,10 @@ public class LiteralDialog extends JDialog implements ActionListener {
         super(parent, title, modal);
 
         try {
-            mOkButton = new JButton(NbBundle.getMessage(LiteralDialog.class, "BTN_ok")); //NOI18N
-            mCancelButton = new JButton(NbBundle.getMessage(LiteralDialog.class, "BTN_cancel")); //NOI18N
-
+            String nbBundle1 = mLoc.t("PRSR001: Ok");
+            mOkButton = new JButton(Localizer.parse(nbBundle1)); //NOI18N
+            String nbBundle2 = mLoc.t("PRSR001: Cancel");
+            mCancelButton = new JButton(Localizer.parse(nbBundle2)); //NOI18N
             initComponents();
         } catch (Exception e) {
             e.printStackTrace();
@@ -151,19 +157,19 @@ public class LiteralDialog extends JDialog implements ActionListener {
      */
     public static final boolean isValidLiteral(String literalVal, int type) {
         boolean returnVal = true;
-        
+
         String errorMessage = evaluateIfLiteralValid(literalVal, type);
         if (errorMessage != null) {
             returnVal = false;
             showMessage(errorMessage);
         }
-        
+
         return returnVal;
     }
-    
+
     public static final String evaluateIfLiteralValid(String literalVal, int type) {
         String errorMsg = null;
-        
+
         switch (type) {
             // We'll accept blank text for char-like literals, so treat
             // them differently from other types.
@@ -174,7 +180,8 @@ public class LiteralDialog extends JDialog implements ActionListener {
 
             case Types.BOOLEAN:
                 if (!(Boolean.TRUE.toString().equals(literalVal) || Boolean.FALSE.toString().equalsIgnoreCase(literalVal))) {
-                    errorMsg = NbBundle.getMessage(LiteralDialog.class, "ERROR_literal_trueorfalse"); //NOI18N
+                    String nbBundle3 = mLoc.t("PRSR001: Please enter either true or false.");
+                    errorMsg = Localizer.parse(nbBundle3);//NOI18N
                 }
                 break;
 
@@ -186,7 +193,8 @@ public class LiteralDialog extends JDialog implements ActionListener {
                 try {
                     Double.valueOf(literalVal);
                 } catch (NumberFormatException e) {
-                    errorMsg = NbBundle.getMessage(LiteralDialog.class, "ERROR_literal_validnumber"); //NOI18N
+                    String nbBundle4 = mLoc.t("PRSR001: Please enter a valid number value.");
+                    errorMsg = Localizer.parse(nbBundle4);//NOI18N
                 }
                 break;
 
@@ -195,7 +203,8 @@ public class LiteralDialog extends JDialog implements ActionListener {
             case Types.SMALLINT:
             case Types.TINYINT:
                 if (!StringUtil.isValid(literalVal, "[0-9]+")) {
-                    errorMsg = NbBundle.getMessage(LiteralDialog.class, "ERROR_literal_validinteger"); //NOI18N
+                    String nbBundle5 = mLoc.t("PRSR001: Please enter a valid whole number value.");
+                    errorMsg = Localizer.parse(nbBundle5);//NOI18N
                 }
                 break;
 
@@ -203,13 +212,15 @@ public class LiteralDialog extends JDialog implements ActionListener {
                 try {
                     DateFormat.getDateInstance().parse(literalVal);
                 } catch (ParseException e) {
-                    errorMsg = NbBundle.getMessage(LiteralDialog.class, "ERROR_literal_validdate"); //NOI18N
+                    String nbBundle6 = mLoc.t("PRSR001: Please enter a valid date string.");
+                    errorMsg = Localizer.parse(nbBundle6);//NOI18N
                 }
                 break;
 
             case Types.TIME:
                 if (!StringUtil.isValid(literalVal, "[0-9]?[0-9]:[0-9][0-9].?[AP]?[M]?")) { //NOI18N
-                    errorMsg = NbBundle.getMessage(LiteralDialog.class, "ERROR_literal_validtime"); //NOI18N
+                    String nbBundle7 = mLoc.t("PRSR001: Please enter a valid time string.");
+                    errorMsg = Localizer.parse(nbBundle7); //NOI18N
                 }
                 break;
 
@@ -217,13 +228,14 @@ public class LiteralDialog extends JDialog implements ActionListener {
                 try {
                     java.sql.Timestamp.valueOf(literalVal);
                 } catch (IllegalArgumentException e) {
-                    errorMsg = NbBundle.getMessage(LiteralDialog.class, "ERROR_literal_validtimestamp");
+                    String nbBundle8 = mLoc.t("PRSR001: Please enter a valid timestamp string, in the form\n yyyy-mm-dd hh:mm:ss.fffffffff (fractional seconds optional).");
+                    errorMsg = Localizer.parse(nbBundle8);
                 }
                 break;
-
             default:
                 if (StringUtil.isNullString(literalVal)) {
-                    errorMsg = NbBundle.getMessage(LiteralDialog.class, "ERROR_literal_valuerequired");
+                    String nbBundle9 = mLoc.t("PRSR001: Please enter a value.");
+                    errorMsg = Localizer.parse(nbBundle9);
                 }
         }
 
@@ -233,7 +245,6 @@ public class LiteralDialog extends JDialog implements ActionListener {
     public static void showMessage(String msg) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
     }
-    
 
     @Override
     @SuppressWarnings("deprecation")
@@ -311,6 +322,7 @@ public class LiteralDialog extends JDialog implements ActionListener {
                 this.setVisible(false);
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
+
                     public void run() {
                         String text = mInput.getText();
                         int len = (text == null) ? -1 : text.length();
@@ -371,6 +383,7 @@ public class LiteralDialog extends JDialog implements ActionListener {
         //FIXME: Uncomment the following line if date literals are supported.
         // mTypesBox.addItemListener(new FormatTypesChangeListener());
         this.addWindowListener(new WindowAdapter() {
+
             @Override
             public void windowClosing(WindowEvent e) {
                 mIsCanceled = true;
@@ -402,7 +415,8 @@ public class LiteralDialog extends JDialog implements ActionListener {
         constraints.gridwidth = 1;
         constraints.insets = leftInsets;
 
-        JLabel typeLabel = new JLabel(NbBundle.getMessage(LiteralDialog.class, "LBL_literal_type")); //NOI18N
+        String nbBundle10 = mLoc.t("PRSR001: Type:");
+        JLabel typeLabel = new JLabel(Localizer.parse(nbBundle10)); //NOI18N
         gridBag.setConstraints(typeLabel, constraints);
         formPanel.add(typeLabel);
 
@@ -418,7 +432,8 @@ public class LiteralDialog extends JDialog implements ActionListener {
         constraints.weightx = 0.0;
         constraints.gridwidth = 2;
 
-        JLabel valueLabel = new JLabel(NbBundle.getMessage(LiteralDialog.class, "LBL_literal_value")); //NOI18N
+        String nbBundle11 = mLoc.t("PRSR001: Value:");
+        JLabel valueLabel = new JLabel(Localizer.parse(nbBundle11)); //NOI18N
         gridBag.setConstraints(valueLabel, constraints);
         formPanel.add(valueLabel);
 
@@ -455,6 +470,7 @@ public class LiteralDialog extends JDialog implements ActionListener {
     //        }
     //    }
     class ButtonKeyAdapter extends KeyAdapter {
+
         @Override
         public void keyPressed(KeyEvent evt) {
             if (evt.getKeyCode() == KeyEvent.VK_ENTER) {

@@ -51,7 +51,9 @@ import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 
-import org.openide.util.NbBundle;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Displays the palette of available operators for the Collaboration Definition Editor.
@@ -63,14 +65,17 @@ public class OperatorPaletteDialog extends JDialog implements ActionListener {
 
     /* flag on whether to show palette item names */
     private static boolean showName = true;
-
-    private static Dimension minSize = null;    
+    private static transient final Logger mLogger = LogUtil.getLogger(OperatorPaletteDialog.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    private static Dimension minSize = null;
 
     /* cancel button */
-    private JButton mBtnCancel = new JButton(NbBundle.getMessage(OperatorPaletteDialog.class, "BTN_Close"));
+    String nbBundle = mLoc.t("PRSR001: Close");
+    private JButton mBtnCancel = new JButton(Localizer.parse(nbBundle));
 
     /* "Show name" check box */
-    private JCheckBox mCheckName = new JCheckBox(NbBundle.getMessage(OperatorPaletteDialog.class, "CTL_ShowNames"), showName);
+    String nbBundle1 = mLoc.t("PRSR001: Show Names");
+    private JCheckBox mCheckName = new JCheckBox(Localizer.parse(nbBundle1), showName);
 
     /* selection (tabbed) panel */
     private OperatorSelectionPanel mPanel = null;
@@ -87,7 +92,8 @@ public class OperatorPaletteDialog extends JDialog implements ActionListener {
 
         mPanel = sp;
 
-        setTitle(NbBundle.getMessage(OperatorPaletteDialog.class, "CTL_DialogTitle"));
+        String nbBundle2 = mLoc.t("PRSR001: Operator Palette");
+        setTitle(Localizer.parse(nbBundle2));
 
         JPanel pane = new JPanel();
 

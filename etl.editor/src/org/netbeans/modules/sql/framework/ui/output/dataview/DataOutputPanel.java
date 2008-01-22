@@ -154,7 +154,9 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         putClientProperty("TabPolicy", "HideWhenAlone"); //NOI18N
         putClientProperty("PersistenceType", "Never"); //NOI18N
         this.setLayout(new BorderLayout());
-        this.setName(NbBundle.getMessage(DataOutputPanel.class, "LBL_tab_output", sqlDefinition.getDisplayName()));
+
+        String nbBundle = mLoc.t("PRSR001: Output: {0}", sqlDefinition.getDisplayName());
+        this.setName(Localizer.parse(nbBundle));
         setBorder(BorderFactory.createEmptyBorder());
 
         JPanel panel = new JPanel();
@@ -192,7 +194,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         if (showFilter) {
             //add Filter button  
             showDataFilter_ActionPerformed filterAction = new showDataFilter_ActionPerformed();
-            filterAction.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_filter"));
+            String nbBundle1 = mLoc.t("PRSR001: Enable/Disable of Table Content filtering");
+            filterAction.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
             url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/funnel.png");
             filterAction.putValue(Action.SMALL_ICON, new ImageIcon(url));
             filterButton = new JButton(filterAction);
@@ -228,14 +231,16 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         //add refresh button
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
         refreshButton = new JButton(new ImageIcon(url));
-        refreshButton.setToolTipText(NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_refresh"));
+        String nbBundle2 = mLoc.t("PRSR001: Refresh records");
+        refreshButton.setToolTipText(Localizer.parse(nbBundle2));
         refreshButton.addActionListener(outputListener);
         btn[1] = refreshButton;
 
         // add navigation buttons
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/navigate_beginning.png");
         first = new JButton(new ImageIcon(url));
-        first.setToolTipText(NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_first"));
+        String nbBundle3 = mLoc.t("PRSR001: Go to the first page");
+        first.setToolTipText(Localizer.parse(nbBundle3));
         first.addActionListener(outputListener);
         first.setEnabled(false);
         toolbar.add(first);
@@ -243,7 +248,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/navigate_left.png");
         previous = new JButton(new ImageIcon(url));
-        previous.setToolTipText(NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_previous"));
+        String nbBundle4 = mLoc.t("PRSR001: Go to the previous page");
+        previous.setToolTipText(Localizer.parse(nbBundle4));
         previous.addActionListener(outputListener);
         previous.setEnabled(false);
         toolbar.add(previous);
@@ -251,7 +257,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/navigate_right.png");
         next = new JButton(new ImageIcon(url));
-        next.setToolTipText(NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_next"));
+        String nbBundle5 = mLoc.t("PRSR001: Go to the next page");
+        next.setToolTipText(Localizer.parse(nbBundle5));
         next.addActionListener(outputListener);
         next.setEnabled(false);
         toolbar.add(next);
@@ -259,13 +266,15 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/navigate_end.png");
         last = new JButton(new ImageIcon(url));
-        last.setToolTipText(NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_last"));
+        String nbBundle6 = mLoc.t("PRSR001: Go to the last page");
+        last.setToolTipText(Localizer.parse(nbBundle6));
         last.addActionListener(outputListener);
         last.setEnabled(false);
         toolbar.add(last);
         toolbar.addSeparator(new Dimension(10, 10));
         //add limit row label
-        limitRow = new JLabel(NbBundle.getMessage(DataOutputPanel.class, "LBL_max_rows"));
+        String nbBundle7 = mLoc.t("PRSR001: Page size:");
+        limitRow = new JLabel(Localizer.parse(nbBundle7));
         limitRow.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(limitRow);
 
@@ -286,7 +295,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         refreshField.addActionListener(outputListener);
         toolbar.add(refreshField);
 
-        JLabel totalRowsNameLabel = new JLabel(NbBundle.getMessage(DataOutputPanel.class, "LBL_total_rows"));
+        String nbBundle8 = mLoc.t("PRSR001: Total Rows:");
+        JLabel totalRowsNameLabel = new JLabel(Localizer.parse(nbBundle8));
         totalRowsNameLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 8));
         toolbar.add(totalRowsNameLabel);
         totalRowsLabel = new JLabel();
@@ -295,21 +305,24 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/row_add.png");
         insert = new JButton(new ImageIcon(url));
-        insert.setToolTipText(NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_insert"));
+        String nbBundle9 = mLoc.t("PRSR001: Insert a record.");
+        insert.setToolTipText(Localizer.parse(nbBundle9));
         insert.addActionListener(outputListener);
         insert.setEnabled(false);
         btn[2] = insert;
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/row_delete.png");
         deleteRow = new JButton(new ImageIcon(url));
-        deleteRow.setToolTipText(NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_deleterow"));
+        String nbBundle10 = mLoc.t("PRSR001: Delete Selected Records.");
+        deleteRow.setToolTipText(Localizer.parse(nbBundle10));
         deleteRow.addActionListener(outputListener);
         deleteRow.setEnabled(false);
         btn[3] = deleteRow;
 
         url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/row_preferences.png");
         commit = new JButton(new ImageIcon(url));
-        commit.setToolTipText(NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_commit"));
+        String nbBundle11 = mLoc.t("PRSR001: Commit the Changes done on this page.");
+        commit.setToolTipText(Localizer.parse(nbBundle11));
         commit.addActionListener(outputListener);
         commit.setEnabled(false);
         btn[4] = commit;
@@ -400,7 +413,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
 
         int intVal = totalCount;
         if (intVal <= 0) {
-            String errorMsg = NbBundle.getMessage(DataOutputPanel.class, "MSG_error_bad_limit", table.getDisplayName());
+            String nbBundle12 = mLoc.t("PRSR001: Enter a valid number to refresh records.{0}", table.getDisplayName());
+            String errorMsg = Localizer.parse(nbBundle12);
             DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.INFORMATION_MESSAGE));
             return;
         }
@@ -707,7 +721,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
     protected void setTotalCount(ResultSet rs) {
         try {
             if (rs == null) {
-                totalRowsLabel.setText(NbBundle.getMessage(DataOutputPanel.class, "LBL_not_available"));
+                String nbBundle13 = mLoc.t("PRSR001: N/A");
+                totalRowsLabel.setText(Localizer.parse(nbBundle13));
             } else {
                 if (rs.next()) {
                     int count = rs.getInt(1);

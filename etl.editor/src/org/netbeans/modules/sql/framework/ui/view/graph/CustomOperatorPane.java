@@ -68,9 +68,11 @@ import org.netbeans.modules.sql.framework.model.SQLModelObjectFactory;
 import org.netbeans.modules.sql.framework.model.SQLOperatorArg;
 import org.netbeans.modules.sql.framework.model.SourceColumn;
 import org.netbeans.modules.sql.framework.model.TargetColumn;
-import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.jdbc.SQLUtils;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Configures type, precision and scale (as appropriate) of a cast as operator.
@@ -79,16 +81,20 @@ import com.sun.sql.framework.jdbc.SQLUtils;
  * @version $Revision$
  */
 public class CustomOperatorPane extends JPanel {
-    private static  String[] headers = new String[] { "Argument Name", "SQL Type"};
+
+    private static String[] headers = new String[]{"Argument Name", "SQL Type"};
     private List args;
     private JTextField nameField = new JTextField(20);
     private TableColumnModel tableModel = null;
+    private static transient final Logger mLogger = LogUtil.getLogger(CustomOperatorPane.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public CustomOperatorPane() {
         initArguments();
         this.tableModel = new TableColumnModel(this.args);
         this.initComponents();
     }
+
     public CustomOperatorPane(List args) {
         this.args = args;
         if (args.isEmpty()) {
@@ -97,7 +103,7 @@ public class CustomOperatorPane extends JPanel {
         this.tableModel = new TableColumnModel(this.args);
         this.initComponents();
     }
-    
+
     /**
      * Overloaded constructor which takes input args and return type and
      * generates the custom operator wizard
@@ -112,7 +118,6 @@ public class CustomOperatorPane extends JPanel {
         this.tableModel = new TableColumnModel(this.args);
         this.initComponents();
     }
-    
 
     /**
      * Returns a list of arguments
@@ -130,14 +135,13 @@ public class CustomOperatorPane extends JPanel {
         }
         return inputArgs;
     }
-    
+
     /**
      * setter for argument list does the transformation of SQLOperatorArg to
      * ColumnWrapper before populating the list of args.
      * 
      * @param args
      */
-
     public void setArgList(List args) {
         this.args.clear();
         Iterator iter = args.iterator();
@@ -149,8 +153,7 @@ public class CustomOperatorPane extends JPanel {
             this.args.add(new ColumnWrapper(inputArg));
         }
     }
-    
-    
+
     /**
      * Returns the SourceColumn as return type
      */
@@ -159,12 +162,13 @@ public class CustomOperatorPane extends JPanel {
         ColumnWrapper wrapper = (ColumnWrapper) this.tableModel.getColumns().get(size - 1);
         return new SQLOperatorArg(wrapper.getName(), wrapper.getJdbcType());
     }
+
     /**
      * sets the return type used for custom functions
      * @param retType
      */
     public void setReturnType(SQLOperatorArg retType) {
-        SourceColumn retArg = SQLModelObjectFactory.getInstance().createSourceColumn(retType.getArgName(), retType.getJdbcType(),0, 0, true);
+        SourceColumn retArg = SQLModelObjectFactory.getInstance().createSourceColumn(retType.getArgName(), retType.getJdbcType(), 0, 0, true);
         this.args.add(new ColumnWrapper(retArg));
     }
 
@@ -172,12 +176,13 @@ public class CustomOperatorPane extends JPanel {
         String name = this.nameField.getText().trim();
         return (name.length() == 0) ? "userFx" : name;
     }
+
     /**
      * populates the name value in the textfield
      * @param name
      */
     public void setFunctionName(String name) {
-    	this.nameField.setText(name);
+        this.nameField.setText(name);
     }
 
     private void initArguments() {
@@ -186,62 +191,64 @@ public class CustomOperatorPane extends JPanel {
         this.args.add(new ColumnWrapper(arg1));
         this.args.add(new ColumnWrapper(retArg));
     }
-    
+
     private void initComponents() {
         this.setLayout(new GridBagLayout());
-        JLabel nameLabel = new JLabel(NbBundle.getMessage(CustomOperatorPane.class,
-                "LBL_function_name")); //NOI18N
+        String nbBundle1 = mLoc.t("PRSR001: Function Name");
+        JLabel nameLabel = new JLabel(Localizer.parse(nbBundle1)); //NOI18N
         this.add(nameLabel,
-                 new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.WEST,
-                                        GridBagConstraints.NONE,
-                                        new Insets(5, 5, 5, 5), 0, 0));
+                new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0,
+                GridBagConstraints.WEST,
+                GridBagConstraints.NONE,
+                new Insets(5, 5, 5, 5), 0, 0));
         nameField.setText("userFx");
         this.add(nameField,
-                 new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
-                                        GridBagConstraints.WEST,
-                                        GridBagConstraints.HORIZONTAL,
-                                        new Insets(5, 5, 5, 5), 0, 0));
+                new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0,
+                GridBagConstraints.WEST,
+                GridBagConstraints.HORIZONTAL,
+                new Insets(5, 5, 5, 5), 0, 0));
         JButton addButton = new JButton("Add");
         this.add(addButton,
-                 new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.WEST,
-                                        GridBagConstraints.HORIZONTAL,
-                                        new Insets(5, 5, 5, 5), 0, 0));
-        
+                new GridBagConstraints(0, 1, 1, 1, 0.0, 0.0,
+                GridBagConstraints.WEST,
+                GridBagConstraints.HORIZONTAL,
+                new Insets(5, 5, 5, 5), 0, 0));
+
         JButton removeButton = new JButton("Remove");
         this.add(removeButton,
-                 new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.WEST,
-                                        GridBagConstraints.NONE,
-                                        new Insets(5, 5, 5, 5), 0, 0));
+                new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0,
+                GridBagConstraints.WEST,
+                GridBagConstraints.NONE,
+                new Insets(5, 5, 5, 5), 0, 0));
         JLabel argLabel = new JLabel("Arguments");
 
         this.add(argLabel,
-                 new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
-                                        GridBagConstraints.WEST,
-                                        GridBagConstraints.NONE,
-                                        new Insets(5, 5, 5, 5), 0, 0));
+                new GridBagConstraints(0, 2, 1, 1, 0.0, 0.0,
+                GridBagConstraints.WEST,
+                GridBagConstraints.NONE,
+                new Insets(5, 5, 5, 5), 0, 0));
         final JTable table = new JTable();
         table.setModel(this.tableModel);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         TableColumn typeColumn = table.getColumnModel().getColumn(1);
         typeColumn.setCellEditor(new DefaultCellEditor(new JComboBox(new Vector(SQLUtils.getSupportedLiteralTypes()))));
         this.add(new JScrollPane(table),
-                 new GridBagConstraints(0, 3, 2, 2, 0.0, 0.0,
-                                        GridBagConstraints.WEST,
-                                        GridBagConstraints.NONE,
-                                        new Insets(5, 5, 5, 5), 0, 0));
-        
-       
-       
+                new GridBagConstraints(0, 3, 2, 2, 0.0, 0.0,
+                GridBagConstraints.WEST,
+                GridBagConstraints.NONE,
+                new Insets(5, 5, 5, 5), 0, 0));
+
+
+
         addButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent ae) {
                 tableModel.addEmptyRow();
             }
         });
-      
+
         removeButton.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent ae) {
                 int index = table.getSelectedRow();
                 if (index >= 0) {
@@ -251,6 +258,7 @@ public class CustomOperatorPane extends JPanel {
             }
         });
     }
+
     private class TableColumnModel extends AbstractTableModel {
         // local list for table column
         private List columnList = new ArrayList();
@@ -411,7 +419,9 @@ public class CustomOperatorPane extends JPanel {
             }
         }
     }
+
     class ColumnWrapper {
+
         private SQLDBColumn column;
         private String columnOldName;
         private boolean isNew = false;

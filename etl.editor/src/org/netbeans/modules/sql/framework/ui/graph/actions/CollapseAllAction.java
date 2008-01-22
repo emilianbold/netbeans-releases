@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sql.framework.ui.graph.actions;
 
 import java.awt.event.ActionEvent;
@@ -47,9 +46,10 @@ import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
-import org.openide.util.NbBundle;
-
 
 /**
  * @author Ritesh Adval
@@ -58,16 +58,20 @@ import org.openide.util.NbBundle;
 public class CollapseAllAction extends GraphAction {
 
     private static final URL collapseAllImgUrl = CollapseAllAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/collapse_all_edm.png");
+    private static transient final Logger mLogger = LogUtil.getLogger(ExpandAllAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public CollapseAllAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(CollapseAllAction.class, "ACTION_COLLAPSEALL"));
+        String nbBundle = mLoc.t("PRSR001: Collapse All");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(collapseAllImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(CollapseAllAction.class, "ACTION_COLLAPSEALL_TOOLTIP"));
+        String nbBundle1 = mLoc.t("PRSR001: Collapse All Graph Objects");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle1));
     }
 
     /**

@@ -64,7 +64,6 @@ import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
@@ -179,7 +178,8 @@ public class BasicSQLGraphController implements IGraphController {
 
                     String dlgTitle = null;
                     try {
-                        dlgTitle = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_dlg_table_type");
+                        String nbBundle1 = mLoc.t("PRSR001: Add a table");
+                        dlgTitle = Localizer.parse(nbBundle1);
                     } catch (MissingResourceException mre) {
                         dlgTitle = "Add a table";
                     }
@@ -439,10 +439,12 @@ public class BasicSQLGraphController implements IGraphController {
             // target tables or can not map if both source tables belong to different
             // join view
             if (t1 != null && t2 != null && !t1.equals(t2)) {
-                String msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERROR_bad_link_src_mapped_to_tgttbl", srcObj.getDisplayName(), t1.getDisplayName());
+                String nbBundle2 = mLoc.t("PRSR001: Link is not allowed. ''{0}'' is already mapped to target table ''{1}''.", srcObj.getDisplayName(), t1.getDisplayName());
+                String msg = Localizer.parse(nbBundle2);
 
                 if (!(srcObj instanceof SourceTable) && s1 != null) {
-                    msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERROR_bad_link_src_mapped_to_mapped_srctbl", srcObj.getDisplayName(), s1.getName(), t1.getDisplayName());
+                    String nbBundle3 = mLoc.t("PRSR001: Link is not allowed. ''{0}'' is mapped to source table ''{1}'' which is already mapped to target table ''{2}''.", srcObj.getDisplayName(), s1.getName(), t1.getDisplayName());
+                    msg = Localizer.parse(nbBundle3);
                 }
 
                 NotifyDescriptor d = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
@@ -451,8 +453,8 @@ public class BasicSQLGraphController implements IGraphController {
 
                 return;
             } else if (jv1 != null && jv2 != null && !jv1.equals(jv2)) {
-                NotifyDescriptor d = new NotifyDescriptor.Message(NbBundle.getMessage(BasicSQLGraphController.class, "ERROR_bad_joinview_link", jv1.getAliasName(), jv2.getAliasName()), NotifyDescriptor.INFORMATION_MESSAGE);
-
+                String nbBundle4 = mLoc.t("PRSR001: Link is not allowed between join view ''{0}'' and ''{1}''.", jv1.getAliasName(), jv2.getAliasName());
+                NotifyDescriptor d = new NotifyDescriptor.Message(Localizer.parse(nbBundle4), NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(d);
                 return;
             }
@@ -520,7 +522,8 @@ public class BasicSQLGraphController implements IGraphController {
 
     private boolean promptForNewJoinView(List<DBTable> sTables) throws BaseException {
         boolean userResponse = false;
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(NbBundle.getMessage(BasicSQLGraphController.class, "ERROR_two_tbl_map_create_join_view"), NotifyDescriptor.WARNING_MESSAGE);
+        String nbBundle5 = mLoc.t("PRSR001: You need to create a join view if you want to map columns of two or more tables.  Create a join view?");
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(Localizer.parse(nbBundle5), NotifyDescriptor.WARNING_MESSAGE);
         Object response = DialogDisplayer.getDefault().notify(d);
 
         if (response.equals(NotifyDescriptor.OK_OPTION)) {
@@ -564,8 +567,8 @@ public class BasicSQLGraphController implements IGraphController {
 
     private boolean promptForAddToExistingJoinView(SourceTable sTable, SQLJoinView initJoinView) throws BaseException {
         boolean userResponse = false;
-
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(NbBundle.getMessage(BasicSQLGraphController.class, "ERROR_add_table_join_view", sTable.getName()), NotifyDescriptor.WARNING_MESSAGE);
+        String nbBundle6 = mLoc.t("PRSR001: You need to add table ''{0}'' to the already existing join view in order to map columns.  Add table to existing join view?", sTable.getName());
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(Localizer.parse(nbBundle6), NotifyDescriptor.WARNING_MESSAGE);
         Object response = DialogDisplayer.getDefault().notify(d);
 
         if (response.equals(NotifyDescriptor.OK_OPTION)) {
@@ -610,9 +613,11 @@ public class BasicSQLGraphController implements IGraphController {
                 String srcName = destObj.getDisplayName();
 
                 if (srcName != null && destParam1 != null) {
-                    msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERR_object_check_incompatible_with_argnames", new String[]{srcObjType, destObjType, destObj.getDisplayName(), destParam1});
+                    String nbBundle7 = mLoc.t("PRSR001: Cannot connect {0} to {1} ''{2}'' at input ''{3}''.", new String[]{srcObjType, destObjType, destObj.getDisplayName(), destParam1});
+                    msg = Localizer.parse(nbBundle7);
                 } else {
-                    msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERR_object_check_incompatible_no_argnames", srcObjType, destObjType);
+                    String nbBundle8 = mLoc.t("PRSR001: Cannot connect {0} to {1}", srcObjType, destObjType);
+                    msg = Localizer.parse(nbBundle8);
                 }
             } catch (Exception e) {
                 mLogger.errorNoloc(mLoc.t("PRSR165: Caught Exception while resolving error message{0}", LOG_CATEGORY), e);
@@ -629,7 +634,8 @@ public class BasicSQLGraphController implements IGraphController {
         switch (destObj.isInputCompatible(destParam1, input)) {
             case SQLConstants.TYPE_CHECK_INCOMPATIBLE:
                 try {
-                    msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERR_type_check_incompatible");
+                    String nbBundle9 = mLoc.t("PRSR001: Incompatible source and target datatypes.");
+                    msg = Localizer.parse(nbBundle9);
                 } catch (MissingResourceException e) {
                     msg = "Incompatible source and target datatypes.";
                 }
@@ -640,14 +646,16 @@ public class BasicSQLGraphController implements IGraphController {
                 return false;
             case SQLConstants.TYPE_CHECK_DOWNCAST_WARNING:
                 try {
-                    msg = NbBundle.getMessage(BasicSQLGraphController.class, "ERR_type_check_downcast");
+                    String nbBundle11 = mLoc.t("PRSR001: Connecting these types may result in a loss of precision or data truncation.  Continue?");
+                    msg = Localizer.parse(nbBundle11);
                 } catch (MissingResourceException e) {
                     msg = "Connecting these datatypes may result in a loss of " + "precision or data truncation in the target.  Continue?";
                 }
 
                 String title = null;
                 try {
-                    title = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_dlg_type_check_confirm");
+                    String nbBundle12 = mLoc.t("PRSR001: Datatype conversion");
+                    title = Localizer.parse(nbBundle12);
                 } catch (MissingResourceException e) {
                     title = "Datatype conversion";
                 }
@@ -747,7 +755,8 @@ public class BasicSQLGraphController implements IGraphController {
             // do special processing for following objects
             switch (sqlObj.getObjectType()) {
                 case SQLConstants.CAST_OPERATOR:
-                    CastAsDialog castDlg = new CastAsDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_new_castas"), true);
+                    String nbBundle13 = mLoc.t("PRSR001: New Cast-As Operator");
+                    CastAsDialog castDlg = new CastAsDialog(WindowManager.getDefault().getMainWindow(), Localizer.parse(nbBundle13), true);
                     castDlg.show();
                     if (castDlg.isCanceled()) {
                         return;
@@ -767,7 +776,8 @@ public class BasicSQLGraphController implements IGraphController {
                     break;
                 case SQLConstants.CUSTOM_OPERATOR:
                     CustomOperatorPane customOptPane = new CustomOperatorPane(new ArrayList());
-                    String title = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_user_function");
+                    String nbBundle14 = mLoc.t("PRSR001: User Function");
+                    String title = Localizer.parse(nbBundle14);
                     DialogDescriptor dlgDesc = new DialogDescriptor(customOptPane, title, true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                     Dialog customOptDialog = DialogDisplayer.getDefault().createDialog(dlgDesc);
                     customOptDialog.setVisible(true);
@@ -794,7 +804,8 @@ public class BasicSQLGraphController implements IGraphController {
                     sqlObj.setDisplayName(xmlInfo.getDisplayName());
                     break;
                 case SQLConstants.VISIBLE_LITERAL:
-                    LiteralDialog dlg = new LiteralDialog(WindowManager.getDefault().getMainWindow(), NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_new_literal"), true);
+                    String nbBundle15 = mLoc.t("PRSR001: New Literal Object");
+                    LiteralDialog dlg = new LiteralDialog(WindowManager.getDefault().getMainWindow(), Localizer.parse(nbBundle15), true);
                     dlg.show();
 
                     // OK button is not pressed so return
@@ -922,7 +933,8 @@ public class BasicSQLGraphController implements IGraphController {
 
             String title = "";
             try {
-                title = NbBundle.getMessage(BasicSQLGraphController.class, "TITLE_panel_table_type");
+                String nbBundle16 = mLoc.t("PRSR001: Select table type:");
+                title = Localizer.parse(nbBundle16);
             } catch (MissingResourceException mre) {
                 title = "Specify table type:";
             }
@@ -931,14 +943,16 @@ public class BasicSQLGraphController implements IGraphController {
 
             String sourceLabel = "";
             try {
-                sourceLabel = NbBundle.getMessage(BasicSQLGraphController.class, "BTN_table_type_source");
+                String nbBundle17 = mLoc.t("PRSR001: Source table");
+                sourceLabel = Localizer.parse(nbBundle17);
             } catch (MissingResourceException mre) {
                 sourceLabel = "Source table";
             }
 
             String targetLabel = "";
             try {
-                targetLabel = NbBundle.getMessage(BasicSQLGraphController.class, "BTN_table_type_target");
+                String nbBundle18 = mLoc.t("PRSR001: Target table");
+                targetLabel = Localizer.parse(nbBundle18);
             } catch (MissingResourceException mre) {
                 targetLabel = "Target table";
             }
