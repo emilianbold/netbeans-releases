@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
+import org.netbeans.modules.cnd.discovery.api.ProviderProperty.PropertyKind;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -97,6 +98,7 @@ public class ProviderControl {
         label = new JLabel();
         Mnemonics.setLocalizedText(label, property.getName());
         switch(property.getKind()) {
+            case MakeLogFile:
             case BinaryFile:
                 field = new JTextField();
                 chooserMode = JFileChooser.FILES_ONLY;
@@ -106,7 +108,7 @@ public class ProviderControl {
                 layout(panel);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        rootFolderButtonActionPerformed(evt);
+                        rootFolderButtonActionPerformed(evt, ProviderControl.this.property.getKind()==PropertyKind.BinaryFile);
                     }
                 });
                 addListeners();
@@ -120,7 +122,7 @@ public class ProviderControl {
                 layout(panel);
                 button.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent evt) {
-                        rootFolderButtonActionPerformed(evt);
+                        rootFolderButtonActionPerformed(evt, true);
                     }
                 });
                 addListeners();
@@ -213,6 +215,7 @@ public class ProviderControl {
     
     public void store(){
         switch(property.getKind()) {
+            case MakeLogFile:
             case Folder:
             case BinaryFile:
                 property.setValue(field.getText());
@@ -243,6 +246,7 @@ public class ProviderControl {
                     return true;
                 }
                 break;
+            case MakeLogFile:
             case BinaryFile:
                 if (path.length() == 0) {
                     return false;
@@ -323,7 +327,7 @@ public class ProviderControl {
         }
     }
     
-    private void rootFolderButtonActionPerformed(ActionEvent evt) {
+    private void rootFolderButtonActionPerformed(ActionEvent evt, boolean isBinary) {
         String seed = null;
         if (field.getText().length() > 0) {
             seed = field.getText();
@@ -334,18 +338,25 @@ public class ProviderControl {
         }
         FileFilter[] filters = null;
         if (chooserMode == JFileChooser.FILES_ONLY){
-            if (Utilities.isWindows()){
-                filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
-                ElfStaticLibraryFileFilter.getInstance(),
-                PeDynamicLibraryFileFilter.getInstance()};
-            } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
-                filters = new FileFilter[] {MacOSXExecutableFileFilter.getInstance(),
-                ElfStaticLibraryFileFilter.getInstance(),
-                MacOSXDynamicLibraryFileFilter.getInstance()};
-            }  else {
-                filters = new FileFilter[] {ElfExecutableFileFilter.getInstance(),
-                ElfStaticLibraryFileFilter.getInstance(),
-                ElfDynamicLibraryFileFilter.getInstance()};
+            if (isBinary) {
+                if (Utilities.isWindows()) {
+                    filters = new FileFilter[]{PeExecutableFileFilter.getInstance(),
+                        ElfStaticLibraryFileFilter.getInstance(),
+                        PeDynamicLibraryFileFilter.getInstance()
+                    };
+                } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
+                    filters = new FileFilter[]{MacOSXExecutableFileFilter.getInstance(),
+                        ElfStaticLibraryFileFilter.getInstance(),
+                        MacOSXDynamicLibraryFileFilter.getInstance()
+                    };
+                } else {
+                    filters = new FileFilter[]{ElfExecutableFileFilter.getInstance(),
+                        ElfStaticLibraryFileFilter.getInstance(),
+                        ElfDynamicLibraryFileFilter.getInstance()
+                    };
+                }
+            } else {
+                filters = new FileFilter[]{new LogFileFilter()};
             }
         }
         
@@ -379,5 +390,22 @@ public class ProviderControl {
     
     private String getString(String key) {
         return NbBundle.getBundle(ProviderControl.class).getString(key);
+    }
+    
+    private class LogFileFilter extends javax.swing.filechooser.FileFilter {
+        public LogFileFilter() {
+        }
+        public String getDescription() {
+            return(getString("FILECHOOSER_MAK_LOG_FILEFILTER")); // NOI18N
+        }
+        public boolean accept(File f) {
+            if (f != null) {
+                if (f.isDirectory()) {
+                    return true;
+                }
+                return f.getName().endsWith(".log"); // NOI18N
+            }
+            return false;
+        }
     }
 }

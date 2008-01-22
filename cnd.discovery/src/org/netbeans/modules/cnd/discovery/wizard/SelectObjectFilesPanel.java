@@ -72,6 +72,7 @@ public final class SelectObjectFilesPanel extends JPanel {
             for(String key : provider.getPropertyKeys()){
                 ProviderProperty property = provider.getProperty(key);
                 switch(property.getKind()) {
+                    case MakeLogFile:
                     case BinaryFile:
                     case Folder:
                     case BinaryFiles:

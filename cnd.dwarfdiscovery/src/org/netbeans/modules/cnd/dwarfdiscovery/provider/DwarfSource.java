@@ -468,6 +468,8 @@ public class DwarfSource implements SourceFileProperties{
                     String include = PathCache.getString(defaultSearchPath);
                     addUserIncludePath(include);
                 }
+            } else if (option.equals("-fopenmp")){ // NOI18N
+                    userMacros.put("_OPENMP", null); // NOI18N
             }
         }
     }

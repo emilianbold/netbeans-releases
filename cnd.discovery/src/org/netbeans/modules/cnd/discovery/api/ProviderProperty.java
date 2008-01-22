@@ -77,6 +77,7 @@ public interface ProviderProperty {
         BinaryFile,
         BinaryFiles,
         SourceFile,
+        MakeLogFile,
         Folder,
         Folders,
         String,

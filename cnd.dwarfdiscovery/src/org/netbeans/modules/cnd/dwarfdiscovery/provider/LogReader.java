@@ -62,6 +62,8 @@ public class LogReader {
     private static final String CURRENT_DIRECTORY = "Current working directory";
     private static final String INVOKE_SUN_C = "cc -";
     private static final String INVOKE_SUN_CC = "CC -";
+    private static final String INVOKE_GNU_C = "gcc -";
+    private static final String INVOKE_GNU_CC = "g++ -";
     
     private String workingDir;
     private List<SourceFileProperties> result = new ArrayList<SourceFileProperties>();
@@ -110,7 +112,10 @@ public class LogReader {
        if (workingDir == null) {
            return false;
        }
-       int i = line.indexOf(INVOKE_SUN_C);
+       int i = line.indexOf(INVOKE_GNU_C);
+       if (i < 0) {
+           i = line.indexOf(INVOKE_SUN_C);
+       }
        if (i >= 0) {
            if (i > 0){
                if (line.charAt(i-1)!='/'){
@@ -122,14 +127,18 @@ public class LogReader {
            return true;
        } else {
            i = line.indexOf(INVOKE_SUN_CC);
+           if (i < 0) {
+               i = line.indexOf(INVOKE_GNU_CC);
+           }
            if (i >= 0) {
                if (i > 0){
                    if (line.charAt(i-1)!='/'){
                        return false;
-                }
-            }
-            gatherLine(line, true);
-            return true;
+                   }
+               }
+               if (gatherLine(line, true)) {
+                  return true;
+               }
            }
        }
        return false;
@@ -209,6 +218,13 @@ public class LogReader {
                 }
                 String include = PathCache.getString(path);
                 userIncludes.add(include);
+            } else if (option.startsWith("-isystem")){ // NOI18N
+                String path = option.substring(8);
+                if (path.length()==0 && st.hasNext()){
+                    path = st.next();
+                }
+                String include = PathCache.getString(path);
+                userIncludes.add(include);
             } else if (option.startsWith("-Y")){ // NOI18N
                 String defaultSearchPath = option.substring(2);
                 if (defaultSearchPath.length()==0 && st.hasNext()){
@@ -254,6 +270,8 @@ public class LogReader {
                 if (st.hasNext()){
                     st.next();
                 }
+            } else if (option.equals("-fopenmp")){ // NOI18N
+                    userMacros.put("_OPENMP", null); // NOI18N
             } else if (option.startsWith("-")){ // NOI18N
                 // Skip option
             } else if (option.startsWith("ccfe")){ // NOI18N

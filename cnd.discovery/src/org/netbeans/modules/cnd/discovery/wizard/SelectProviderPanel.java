@@ -177,7 +177,7 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
 
         prividersComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                prividersComboBoxItemStateChanged(evt);
+                providersComboBoxItemStateChanged(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -221,14 +221,19 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         add(restrictCompile, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     
-    private void prividersComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_prividersComboBoxItemStateChanged
+    private void providersComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_providersComboBoxItemStateChanged
         Object item = evt.getItem();
         if (item instanceof ProviderItem) {
             ProviderItem provider = (ProviderItem)item;
             instructionsTextArea.setText(provider.getDescription());
             wizard.stateChanged(null);
+            if ("make-log".equals(provider.getID())) {// NOI18N
+                restrictCompile.setSelected(true);
+            } else {
+                restrictCompile.setSelected(false);
+            }
         }
-    }//GEN-LAST:event_prividersComboBoxItemStateChanged
+}//GEN-LAST:event_providersComboBoxItemStateChanged
     
     private void update(DocumentEvent e) {
         wizard.stateChanged(null);
@@ -289,6 +294,29 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
         for(DiscoveryProvider provider : providers.allInstances()){
             provider.clean();
             if (provider.isApplicable(proxy)) {
+                if ("make-log".equals(provider.getID())){ // NOI18N
+                    String root = wizardDescriptor.getRootFolder();
+                    boolean foundLog = false;
+                    int i = root.indexOf("/usr/src/"); // NOI18N
+                    if (i > 0) {
+                        String logfolder = root.substring(0, i)+"/log"; // NOI18N
+                        File log = new File(logfolder);
+                        if (log.exists() && log.isDirectory()) {
+                            for(File when : log.listFiles()){
+                                if(when.isDirectory()){
+                                    for(File l : when.listFiles()){
+                                        if (l.getAbsolutePath().endsWith("/nightly.log")) { // NOI18N
+                                            foundLog = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (!foundLog) {
+                        continue;
+                    }
+                }
                 list.add(new ProviderItem(provider));
             }
         }
