@@ -338,7 +338,7 @@ public class FormatContext {
                 if (yPos == CssBox.UNINITIALIZED || yPos == CssBox.AUTO) {
 //                    break;
                 } else {
-                    yb += floatParent.getY();
+                    yf += floatParent.getY();
                 }
                 
                 //floatParent = floatParent.getParent();
