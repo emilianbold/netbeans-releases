@@ -762,6 +762,37 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
     }
     
+    public void test122637() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        final String code = "package test;\n" + 
+                      "public class Test {\n" +
+                      "    private void x() {\n" +
+                      "        RequestProcessor.post(new Runnable() {\n" +
+                      "            public void run() {\n" +
+                      "                String test = null;\n" +
+                      "                test.length();\n" +
+                      "            }\n" +
+                      "        });\n" +
+                      "    }\n" +
+                      "}\n";
+        
+        performTest(code, code.indexOf("test.length") + 1, new UiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(code.indexOf("String"), pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+        
+        assertTrue(wasCalled[0]);
+    }
+    
     private void writeIntoFile(FileObject file, String what) throws Exception {
         FileLock lock = file.lock();
         OutputStream out = file.getOutputStream(lock);
