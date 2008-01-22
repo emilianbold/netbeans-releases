@@ -89,6 +89,22 @@
         -->
     </target>
 
+    <target name="-remove-wrong-locale-files" if="nb.locales.isset">
+        <echo file="${nbi.all.dir}/locales.tmp">**/*_${nb.locales}.*</echo> 
+        <loadfile srcFile="${nbi.all.dir}/locales.tmp" property="locale.pattern.excludes">
+            <filterchain>
+                <tokenfilter>
+                    <replaceregex pattern="\," replace="\.\* \*\*\/\*_" flags="g"/>
+           	</tokenfilter>
+               </filterchain>
+        </loadfile>
+        <delete file="${nbi.all.dir}/locales.tmp"/>
+
+	<delete failonerror="false" verbose="true">
+            	<fileset dir="${nbi.all.dir}/translatedfiles" excludes="${locale.pattern.excludes}"/>
+	</delete>
+    </target>
+
     <target name="-checkout-translatedfiles" if="ml.build">
 	<cvs 
             command="checkout -P"
@@ -114,6 +130,11 @@
     <target name="-init-ml">
         <condition property="ml.build">
 	     <equals arg1="${nb.build.type}" arg2="ml"/>
+        </condition>
+        <condition property="nb.locales.isset">
+ 	     <not>
+ 	     	<equals arg1="${nb.locales}" arg2=""/>
+ 	     </not>
         </condition>
     </target>
 
@@ -482,7 +503,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <replace file="${environment.properties}" token="\" value="/"/>
     </target>
     
-    <target name="-post-init-clean">
+    <target name="-post-init-clean" depends="-remove-wrong-locale-files">
         <delete dir="${basedir}/cache/raw" failonerror="false"/>
         <delete failonerror="false">
             <fileset dir="${basedir}/cache/packaged">
