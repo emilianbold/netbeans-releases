@@ -49,7 +49,10 @@ import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
 /**
+ * This class acts as a manager of the properties. It manages the set
+ * of persisted properties grouped by the plugin identifier.
  *
+ * This class is <i>ThreadSafe</i>.
  * @author Petr Hejl
  */
 public final class InstancePropertiesManager {
@@ -58,7 +61,7 @@ public final class InstancePropertiesManager {
 
     private static InstancePropertiesManager manager;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     private InstancePropertiesManager() {
         super();
@@ -147,130 +150,130 @@ public final class InstancePropertiesManager {
 
         @Override
         public boolean getBoolean(String key, boolean def) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 return prefs.getBoolean(key, def);
             }
         }
 
         @Override
         public double getDouble(String key, double def) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 return prefs.getDouble(key, def);
             }
         }
 
         @Override
         public float getFloat(String key, float def) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 return prefs.getFloat(key, def);
             }
         }
 
         @Override
         public int getInt(String key, int def) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 return prefs.getInt(key, def);
             }
         }
 
         @Override
         public long getLong(String key, long def) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 return prefs.getLong(key, def);
             }
         }
 
         @Override
         public String getString(String key, String def) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 return prefs.get(key, def);
             }
         }
 
         @Override
         public void putBoolean(String key, boolean value) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 prefs.putBoolean(key, value);
             }
         }
 
         @Override
         public void putDouble(String key, double value) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 prefs.putDouble(key, value);
             }
         }
 
         @Override
         public void putFloat(String key, float value) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 prefs.putFloat(key, value);
             }
         }
 
         @Override
         public void putInt(String key, int value) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 prefs.putInt(key, value);
             }
         }
 
         @Override
         public void putLong(String key, long value) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 prefs.putLong(key, value);
             }
         }
 
         @Override
         public void putString(String key, String value) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 prefs.put(key, value);
             }
         }
 
         @Override
         public void removeKey(String key) {
-            if (prefs == null) {
-                throw new IllegalStateException("Poperties are not valid anymore");
-            }
             synchronized (this) {
+                if (prefs == null) {
+                    throw new IllegalStateException("Properties are not valid anymore");
+                }
                 prefs.remove(key);
             }
         }
