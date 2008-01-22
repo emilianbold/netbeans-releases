@@ -145,7 +145,7 @@ public class FauxRefactoringElement extends SimpleRefactoringElementImplementati
     }
     
      public void showPreview() {
-         //UI.setComponentForRefactoringPreview(null);
+         UI.setComponentForRefactoringPreview(null);
      }
      
      public void openInEditor(){
