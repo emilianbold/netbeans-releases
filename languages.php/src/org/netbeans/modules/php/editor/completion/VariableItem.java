@@ -56,6 +56,7 @@ import org.netbeans.api.gsf.Modifier;
 class VariableItem extends CompletionItem {
     
     enum VarTypes {
+        PSEUDO("Pseudo-variable"), // NOI18N  a pseudo-variable $this
         GLOBAL("Global"),             // NOI18N  variable that declared with global keyword
         STATIC("Static"),             // NOI18N  variable that declared with static keyword
         LOCAL("Local"),               // NOI18N  local variable with scope ( inside file, method )

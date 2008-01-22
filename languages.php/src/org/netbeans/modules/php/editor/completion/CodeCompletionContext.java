@@ -137,5 +137,15 @@ public class CodeCompletionContext {
 
     public int getInsertOffset() {
         return isEmptyPrefix() ? caretOffset : caretOffset - prefix.length();
-    } 
+    }
+    
+    public static CodeCompletionContext changePrefix(CodeCompletionContext c,
+            String newPrefix) {
+        CodeCompletionContext newContext = 
+                new CodeCompletionContext(c.sourceElement, c.compilationInfo, 
+                c.caretOffset, newPrefix, c.nameKind, c.queryType, 
+                c.caseSensitive, c.formatter);
+        newContext.setCurrentSourceElement(c.currentSourceElement);
+        return newContext;
+    }
 }

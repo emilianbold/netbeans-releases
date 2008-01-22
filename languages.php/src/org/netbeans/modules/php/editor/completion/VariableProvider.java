@@ -49,12 +49,19 @@ import java.util.Map.Entry;
 
 import org.netbeans.api.gsf.CompletionProposal;
 import org.netbeans.api.gsf.HtmlFormatter;
+import org.netbeans.modules.languages.php.lang.PseudoVariables;
 import org.netbeans.modules.php.editor.completion.VariableItem.VarTypes;
+import org.netbeans.modules.php.model.Block;
+import org.netbeans.modules.php.model.ClassBody;
+import org.netbeans.modules.php.model.ClassDefinition;
+import org.netbeans.modules.php.model.ClassFunctionDefinition;
 import org.netbeans.modules.php.model.Expression;
+import org.netbeans.modules.php.model.FunctionDefinition;
 import org.netbeans.modules.php.model.GlobalStatement;
 import org.netbeans.modules.php.model.InitializedDeclaration;
 import org.netbeans.modules.php.model.Literal;
 import org.netbeans.modules.php.model.SourceElement;
+import org.netbeans.modules.php.model.Statement;
 import org.netbeans.modules.php.model.StaticStatement;
 import org.netbeans.modules.php.model.Variable;
 import org.netbeans.modules.php.model.VariableAppearance;
@@ -112,18 +119,96 @@ public class VariableProvider implements CompletionResultProvider {
      * @see org.netbeans.modules.php.editor.completion.CompletionResultProvider#getProposals(org.netbeans.modules.php.editor.completion.CodeCompletionContext)
      */
     public List<CompletionProposal> getProposals(CodeCompletionContext context) {
+        List<CompletionProposal> list = new LinkedList<CompletionProposal>();
+        addSuperglobal(list, context);
+        addUserDefined(list, context);
+        addPseudoVariable(list, context);
+        return list;
+    }
+    
+    /**
+     * Adds a <code>CompletionProposal</code> for the pseudo-variable $this 
+     * if the specified <code>CodeCompletionContext</code> is located in the 
+     * class definition scope.
+     *  
+     * @param list the target list of the <code>CompletionProposal</code>s.
+     * @param context the code completion context.
+     */
+    public static void addPseudoVariable(List<CompletionProposal> list,
+            CodeCompletionContext context) {
+        
+        int caretOffset = context.getCaretOffset();
+        String prefix = context.getPrefix();
+        HtmlFormatter formatter = context.getFormatter();
+        String var = PseudoVariables.THIS.value();
+
+        if (!startsWith(var, prefix)) {
+            return;
+        }
+        if(!isClassDefinitionScope(context)) {
+            return;
+        }
+        list.add(new VariableItem(var,
+                        caretOffset - prefix.length(), VarTypes.PSEUDO,
+                        formatter, false));
+    }
+    
+    private static boolean isClassDefinitionScope(CodeCompletionContext context) {
+        SourceElement e = context.getCurrentSourceElement();
+        ClassFunctionDefinition cfd = getOuterMethod(e);
+        if(cfd == null) {
+            return false;
+        }
+        ClassDefinition cd = getOuterClass(cfd);
+        if(cd == null) {
+            return false;
+        }
+        return true;
+    }
+    
+    private static ClassDefinition getOuterClass(ClassFunctionDefinition cfd) {
+        SourceElement e = cfd;
+        ClassDefinition cd = null;
+        while(e != null) {
+            if (e.getElementType().equals(ClassBody.class)) {
+                e = e.getParent();
+                if (e instanceof ClassDefinition) {
+                    return (ClassDefinition) e;
+                } else {
+                    return null;
+                }
+            }
+            e = e.getParent();
+        }
+        return cd;
+    }
+    
+    private static ClassFunctionDefinition getOuterMethod(SourceElement e) {
+        ClassFunctionDefinition cfd = null;
+        while(e != null) {
+            if (e.getElementType().equals(ClassFunctionDefinition.class)) {
+                if (e instanceof ClassFunctionDefinition) {
+                    return (ClassFunctionDefinition) e;
+                }
+            }
+            e = e.getParent();
+        }
+        return cfd;
+    }
+        
+    public static void addUserDefined(List<CompletionProposal> list,
+            CodeCompletionContext context) {
+        
+        List<ReferenceResolver> resolvers = getResolvers();
         SourceElement currentElement = context.getSourceElement();
         int caretOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
         HtmlFormatter formatter = context.getFormatter();
-
-        List<CompletionProposal> list = new LinkedList<CompletionProposal>();
-        Map<String, VariableAppearance> map = new HashMap<String, VariableAppearance>();
-
-        addSuperglobal(list, caretOffset, prefix, formatter);
-
-        List<ReferenceResolver> resolvers = getResolvers();
-        for( ReferenceResolver resolver : resolvers ){
+        
+        Map<String, VariableAppearance> map = 
+                new HashMap<String, VariableAppearance>();
+        
+        for (ReferenceResolver resolver : resolvers) {
             List<VariableAppearance> vars = resolver.resolve(currentElement,
                     prefix, VariableAppearance.class, false);
             for (VariableAppearance appearance : vars) {
@@ -152,11 +237,14 @@ public class VariableProvider implements CompletionResultProvider {
                         formatter, false));
             }
         }
-        return list;
     }
 
-    private void addSuperglobal(List<CompletionProposal> list, int caretOffset,
-            String prefix, HtmlFormatter formatter) {
+    public static void addSuperglobal(List<CompletionProposal> list, 
+            CodeCompletionContext context) {
+        int caretOffset = context.getCaretOffset();
+        String prefix = context.getPrefix();
+        HtmlFormatter formatter = context.getFormatter();
+
         for (String var : SUPERGLOBAL_VARIABLE_NAMES) {
             if (startsWith(var, prefix)) {
                 list.add(new VariableItem(var,
@@ -175,32 +263,32 @@ public class VariableProvider implements CompletionResultProvider {
         return variableName.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
-    private void collectVars(VariableAppearance appearance,
+    public static void collectVars(VariableAppearance appearance,
             Map<String, VariableAppearance> collectedVars) {
         String name = appearance.getText();
         VariableAppearance var = collectedVars.get(name);
+        // TODO: Only actual var decl should be added.
+        // e.g. in case $v->m() , the var $v sould not be added.
         if (var == null) {
             collectedVars.put(name, appearance);
         } else {
-            if (!var.getElementType().equals(VariableDeclaration.class) && !var.getElementType().equals(InitializedDeclaration.class)) {
+            if (!var.getElementType().equals(VariableDeclaration.class) && 
+                   !var.getElementType().equals(InitializedDeclaration.class)) {
                 collectedVars.put(name, appearance);
             }
         }
     }
 
-    private List<ReferenceResolver> getResolvers() {
-        if (myResolvers != null) {
-            return myResolvers;
-        }
-        myResolvers = new LinkedList<ReferenceResolver>();
+    public static List<ReferenceResolver> getResolvers() {
+        List<ReferenceResolver> resolvers = new LinkedList<ReferenceResolver>();
         Collection<? extends ReferenceResolver> collection =
                 Lookup.getDefault().lookupAll(ReferenceResolver.class);
         for (ReferenceResolver resolver : collection) {
             if (resolver.isApplicable(VariableAppearance.class)) {
-                myResolvers.add(resolver);
+                resolvers.add(resolver);
             }
         }
-        return myResolvers;
+        return resolvers;
     }
     /**
      * List of the 'superglobal', or automatic global, variable names.
@@ -221,5 +309,4 @@ public class VariableProvider implements CompletionResultProvider {
         SUPERGLOBAL_VARIABLE_NAMES.add(REQUEST);
         SUPERGLOBAL_VARIABLE_NAMES.add(SESSION);
     }
-    private List<ReferenceResolver> myResolvers;
 }
