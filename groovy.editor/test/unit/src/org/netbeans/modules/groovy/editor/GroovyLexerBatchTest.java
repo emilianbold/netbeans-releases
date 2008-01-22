@@ -43,7 +43,6 @@ package org.netbeans.modules.groovy.editor;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.TestCase;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -162,10 +161,7 @@ public class GroovyLexerBatchTest extends NbTestCase {
         next(ts, GroovyTokenId.WHITESPACE, " ");
         next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $");
         next(ts, GroovyTokenId.IDENTIFIER, "name");
-        next(ts, GroovyTokenId.STRING_LITERAL, " ");
-        next(ts, GroovyTokenId.STRING_LITERAL, "here");
-        next(ts, GroovyTokenId.STRING_LITERAL, "!");
-        next(ts, GroovyTokenId.STRING_LITERAL, "\"");
+        next(ts, GroovyTokenId.STRING_LITERAL, " here!\"");
         next(ts, GroovyTokenId.NLS, "\r\n");
     }
     
@@ -177,15 +173,46 @@ public class GroovyLexerBatchTest extends NbTestCase {
         next(ts, GroovyTokenId.WHITESPACE, " ");
         next(ts, GroovyTokenId.STRING_LITERAL, "\"Hello $");
         next(ts, GroovyTokenId.IDENTIFIER, "name");
-        next(ts, GroovyTokenId.STRING_LITERAL, " ");
-        next(ts, GroovyTokenId.STRING_LITERAL, "here");
-        next(ts, GroovyTokenId.STRING_LITERAL, "!");
-        next(ts, GroovyTokenId.STRING_LITERAL, "\"");
+        next(ts, GroovyTokenId.STRING_LITERAL, " here!\"");
         next(ts, GroovyTokenId.SEMI, ";");
         next(ts, GroovyTokenId.WHITESPACE, " ");
         next(ts, GroovyTokenId.IDENTIFIER, "println");
         next(ts, GroovyTokenId.WHITESPACE, " ");
         next(ts, GroovyTokenId.STRING_LITERAL, "'aaa'");
+        next(ts, GroovyTokenId.NLS, "\n");
+    }
+    
+    public void testGstringLexing7(){
+        
+        TokenSequence<?> ts = seqForText("def mappings = { \"/$controller/$action?/$id?\" { constraints { } } }\n");
+        
+        next(ts, GroovyTokenId.LITERAL_def, "def");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.IDENTIFIER, "mappings");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.ASSIGN, "=");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.LBRACE, "{");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.STRING_LITERAL, "\"/$");
+        next(ts, GroovyTokenId.IDENTIFIER, "controller");
+        next(ts, GroovyTokenId.STRING_LITERAL, "/$");
+        next(ts, GroovyTokenId.IDENTIFIER, "action");
+        next(ts, GroovyTokenId.STRING_LITERAL, "?/$");
+        next(ts, GroovyTokenId.IDENTIFIER, "id");
+        next(ts, GroovyTokenId.STRING_LITERAL, "?\"");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.LBRACE, "{");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.IDENTIFIER, "constraints");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.LBRACE, "{");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.RBRACE, "}");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.RBRACE, "}");
+        next(ts, GroovyTokenId.WHITESPACE, " ");
+        next(ts, GroovyTokenId.RBRACE, "}");
         next(ts, GroovyTokenId.NLS, "\n");
     }
     
