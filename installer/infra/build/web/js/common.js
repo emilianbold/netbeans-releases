@@ -175,6 +175,26 @@ function write_page_languages() {
     }
 }
 
+function startList() {
+    // source: http://www.netbeans.org/branding/scripts/lang-pulldown.js
+    if (document.all&&document.getElementById) {
+        navRoot = document.getElementById("nav");
+        if (navRoot!=null) { //if the language panel is active
+            for (i=0; i<navRoot.childNodes.length; i++) {
+                node = navRoot.childNodes[i];
+                if (node.nodeName=="LI") {
+                    node.onmouseover=function() {
+                        this.className+=" over";
+                    }
+                    node.onmouseout=function() {
+                        this.className=this.className.replace(" over", "");
+                    }
+                }	
+	    }
+	}
+    }
+}
+
 function message(msg) {
     document.write(msg);
 }
