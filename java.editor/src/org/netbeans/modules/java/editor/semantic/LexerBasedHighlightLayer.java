@@ -108,6 +108,10 @@ public class LexerBasedHighlightLayer extends AbstractHighlightsContainer {
         }
     }
 
+    public synchronized void clearColoringCache() {
+        CACHE.clear();
+    }
+    
     synchronized AttributeSet getColoring(Coloring c) {
         AttributeSet a = CACHE.get(c);
         
