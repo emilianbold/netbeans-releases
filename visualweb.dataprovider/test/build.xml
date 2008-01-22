@@ -50,5 +50,11 @@ made subject to such option by the copyright holder.
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable,validation"/>
+    <!--
+    <property name="xtest.testtype" value="qa-functional"/>
+    <property name="xtest.attribs" value="acceptance"/>
+    -->
+    <!-- Set xtest.ide.error.manager to false only if need to disable all Exception thrown by IDE-->    
+    <property name="xtest.ide.error.manager" value="true"/>
 </project>
 
