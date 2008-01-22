@@ -129,11 +129,12 @@ public final class FileObjectFactory {
                 mutexPrivileged.exitReadAccess();
             }
         }
+        boolean exists = false;                
         boolean warning = false;
         if (FileBasedFileSystem.WARNINGS) {
-            assert (warning = ((parent != null) ? child != null : (get(file) != null || file.exists())) != file.exists()) ? true : true;
+            assert (warning = ((parent != null) ? child != null : (get(file) != null || file.exists())) != (exists = file.exists())) ? true : true;
             if (warning) {
-                warning = ((parent != null) ? (warningOn && child != null) : (get(file) != null || file.exists())) != file.exists();
+                warning = warningOn;
             }
         }
         
@@ -143,14 +144,16 @@ public final class FileObjectFactory {
                 PrintStream ps = new PrintStream(bos);
                 new Exception().printStackTrace(ps);
                 ps.close();
-                String h = "WARNING: externally created " + (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath();
+                String h = exists ? "WARNING: externally created " : "WARNING: externally deleted ";//NOI18N
+                h += (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath();//NOI18N
+                h += "  - please report. (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)";
                 if (Utilities.isWindows()) {
                     h = h.replace('\\', '/');
                 }
                 Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));
             }
         }        
-        boolean exists = false;        
+        exists = false;        
         if (syncCheck) {
             exists = file.exists();
         } else {
