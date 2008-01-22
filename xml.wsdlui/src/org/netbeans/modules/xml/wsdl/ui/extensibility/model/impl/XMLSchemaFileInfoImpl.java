@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.xml.wsdl.ui.extensibility.model.impl;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.wsdl.ui.common.Constants;
 import org.netbeans.modules.xml.wsdl.ui.extensibility.model.XMLSchemaFileInfo;
@@ -56,18 +59,27 @@ public class XMLSchemaFileInfoImpl implements XMLSchemaFileInfo {
 
 	private DataObject mDataObject;
 	
-	private Schema mSchema;
+	//Weak reference to the schema. So that this gets collected, when there are no more instances being used.
+	private WeakReference<Schema> mSchemaWeakRef;
 	
 	public XMLSchemaFileInfoImpl(DataObject dataObject) {
 		this.mDataObject = dataObject;
-		this.mSchema = ExtensibilityUtils.readSchema(this.mDataObject);
 	}
 	
 	public Schema getSchema() {
-		return this.mSchema;
+	    return getSchemaReference().get();
 	}
 	
-	public DataObject getDataObject() {
+	
+	
+	private Reference<Schema> getSchemaReference() {
+	    if (mSchemaWeakRef == null || mSchemaWeakRef.get() == null) {
+	        this.mSchemaWeakRef = new WeakReference<Schema>(ExtensibilityUtils.readSchema(this.mDataObject));
+	    }
+	    return mSchemaWeakRef;
+    }
+
+    public DataObject getDataObject() {
 		return this.mDataObject;
 	}
 	
