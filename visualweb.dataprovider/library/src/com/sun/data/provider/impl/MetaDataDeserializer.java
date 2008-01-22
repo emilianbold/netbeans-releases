@@ -57,6 +57,11 @@ import java.util.logging.Logger;
 public class MetaDataDeserializer {  
     private static Logger LOGGER = Logger.getLogger(CachedRowSetDataProvider.class.getName());
     
+    /**
+     * Deserializes the file that contains the serialized metadata from a result set and returns a ResultSetMetaData object
+     * @param mdFileName name of file that contains serialized metadata
+     * @return an instance of ResultSetMetaData
+     */
     public ResultSetMetaData deserialize(String mdFileName) {
         ResultSetMetaData resultSetMetaData = null;
             ObjectInputStream is = null;

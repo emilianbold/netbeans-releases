@@ -41,7 +41,6 @@
 
 package com.sun.data.provider.impl;
 
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -56,20 +55,35 @@ import java.util.logging.Logger;
  */
 public class MetaDataSerializer {
     private static Logger LOGGER = Logger.getLogger(CachedRowSetDataProvider.class.getName());
+    
+    /**
+     * Creates a new folder in the userdir and if needed and generates a new serialized filename
+     * @param serFileName name of file used to generate an absolute filename
+     * @return an absolute filename
+     */
     public String generateMetaDataName(String serFileName) {      
-        File cachedMetadataUserdirFolder = new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" +
-                File.separator + "CachedMetadata");
+        File cachedMetadataUserdirFolder = new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" +  File.separator + "CachedMetadata"); // NO18N
         if (!cachedMetadataUserdirFolder.exists()) {
             cachedMetadataUserdirFolder.mkdir();
         }
         
-        return cachedMetadataUserdirFolder + File.separator + serFileName + ".ser";               
+        return cachedMetadataUserdirFolder + File.separator + serFileName + ".ser";    // NO18N           
     }
     
+    /**
+     * Checks if file containing a serialized object exists
+     * @param mdFileName absolute filename 
+     * @return
+     */
     public boolean mdFileNameExists(String mdFileName) {
         return new File(mdFileName).exists();
     }
     
+    /**
+     * Serializes an instance of ResultSetMetaData and writes the object to a file
+     * @param resultSetMetaData metadata to serialized
+     * @param mdFileName absolute filename
+     */
     public void serialize(ResultSetMetaData resultSetMetaData, String mdFileName) {
 
         if (resultSetMetaData != null) {

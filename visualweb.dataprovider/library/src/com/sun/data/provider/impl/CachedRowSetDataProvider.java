@@ -186,6 +186,11 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
     private boolean refreshMetaDataFile = false; 
     
     /**
+     * Store filename for deletion when rowset command changes
+     */
+    private String metaDataFilename;
+    
+    /**
      * <p>{@link PropertyChangeListener} registered with the {@link CachedRowSetX}.</p>
      */
     private RowSetPropertyChangeListener propertyChangeListener = null;
@@ -1451,15 +1456,25 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
                         if (!mdSerializer.mdFileNameExists(filename)) {
                             metaData = getCachedRowSet().getMetaData();
                             mdSerializer.serialize(metaData, filename);
+                            metaDataFilename = filename;
                         } else {
-                            // create metadata file if flag is true
-                            if (refreshMetaDataFile && ((new File(filename).exists()))) {
-                                metaData = getCachedRowSet().getMetaData();
+                            // create metadata file if refresh flag is true
+                            if (refreshMetaDataFile) {  
+                                if (metaDataFilename != null) {
+                                    File metaDataFile = new File(metaDataFilename);
+                                    if (metaDataFile.exists()) {
+                                        metaDataFile.delete();
+                                    }
+                                }
+                                 
+                                metaDataFilename = filename;
+                                metaData = getCachedRowSet().getMetaData();                                
                                 mdSerializer.serialize(metaData, filename);
                                 refreshMetaDataFile = false;
-                            }
-                            // Deserialize file now that it is available                            
-                            metaData = new MetaDataDeserializer().deserialize(filename);
+                            } else {
+                                // Deserialize file now that it is available                                                    
+                                metaData = new MetaDataDeserializer().deserialize(filename);
+                            }                            
                         }
                     }                                       
                 } catch (SQLException e) {
@@ -1699,13 +1714,14 @@ public class CachedRowSetDataProvider extends AbstractTableDataProvider
 
         String dataSourceName = getCachedRowSet().getDataSourceName().replaceFirst("java:comp/env/jdbc/", ""); // NOI18N   
         String commandName = getCachedRowSet().getCommand().replaceAll(" ", "").replaceAll("\\p{Punct}+", ""); // NOI18N
-        commandName = commandName.replaceFirst("SELECTFROM", ""); // NOI18N
-        commandName = commandName.replaceFirst("SELECTALL", ""); // NOI18N
+        commandName = commandName.toLowerCase();
+        commandName = commandName.replaceFirst("selectfrom", ""); // NOI18N
+        commandName = commandName.replaceFirst("selectall", ""); // NOI18N
 
-        if (commandName.length() > 20) {
-            commandName = commandName.substring(0, 20);
+        if (commandName.length() > 200) {
+            commandName = commandName.substring(0, 200);
         }
 
-        return dataSourceName + "_" + commandName; // NOI18N
+        return dataSourceName + "_"  + "_" + commandName; // NOI18N
     }
 }
