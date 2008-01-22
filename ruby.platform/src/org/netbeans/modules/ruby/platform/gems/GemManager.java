@@ -56,7 +56,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.ruby.platform.Util;
@@ -722,7 +721,7 @@ public final class GemManager {
         boolean valid = (autoTest != null) && new File(autoTest).exists();
 
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "autotest"); // NOI18N
+            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", "autotest");
             NotifyDescriptor nd =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -790,7 +789,7 @@ public final class GemManager {
         boolean valid = (rakePath != null) && new File(rakePath).exists();
 
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "rake"); // NOI18N
+            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", "rake");
             NotifyDescriptor nd =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
@@ -811,7 +810,7 @@ public final class GemManager {
         boolean valid = (railsPath != null) && new File(railsPath).exists();
 
         if (warn && !valid) {
-            String msg = NbBundle.getMessage(RubyInstallation.class, "NotInstalledCmd", "rails"); // NOI18N
+            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", "rails");
             NotifyDescriptor nd =
                     new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
