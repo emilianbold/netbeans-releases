@@ -176,6 +176,16 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+    <folder name="Plugins">
+        <folder name="XML">
+            <folder name="UserCatalogs">
+                <file name="org-netbeans-modules-hibernate-catalog-HibernateCatalog.instance">
+                    <attr name="instanceCreate" newvalue="org.netbeans.modules.hibernate.catalog.HibernateCatalog"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="Hibernate">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
