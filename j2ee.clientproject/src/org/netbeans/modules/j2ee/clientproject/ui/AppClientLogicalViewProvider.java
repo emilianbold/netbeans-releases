@@ -899,32 +899,40 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
                 
                 Car wm = Car.getCar(project.getProjectDirectory());
                 result = null;
-                if (wm!=null && (J2eeModule.JAVA_EE_5.equals(wm.getJ2eePlatformVersion()))) {
+                // we can have a mix of jaxrpc and jaxws clients in j2ee5
+                // we will check for clients list to be empty to create the ref node
+//                if (wm!=null && (J2eeModule.JAVA_EE_5.equals(wm.getJ2eePlatformVersion()))) {
+//                    JAXWSClientView view = JAXWSClientView.getJAXWSClientView();
+//                    result = view == null ? new Node[0] : new Node[] {view.createJAXWSClientView(project)};
+//                } else {             
+                JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
+                JAXWSClientSupport jwcss = JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory());
+                if ((jwcss != null) && (jaxWsModel != null) &&  (jaxWsModel.getClients().length > 0)) {
                     JAXWSClientView view = JAXWSClientView.getJAXWSClientView();
                     result = view == null ? new Node[0] : new Node[] {view.createJAXWSClientView(project)};
-                } else {             
-                    FileObject clientRoot = project.getProjectDirectory();
-                    WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
-                    if (clientView != null) {
-                        WebServicesClientSupport wss = WebServicesClientSupport.getWebServicesClientSupport(clientRoot);
-                        if (wss!=null) {
-                            FileObject wsdlFolder = wss.getWsdlFolder();
-                            if (wsdlFolder!=null) {
-                                FileObject[] children = wsdlFolder.getChildren();
-                                boolean foundWsdl = false;
-                                for (int i=0;i<children.length;i++) {
-                                    if (children[i].getExt().equalsIgnoreCase(WSDL_FOLDER)) { //NOI18N
-                                        foundWsdl=true;
-                                        break;
-                                    }
+                }
+                FileObject clientRoot = project.getProjectDirectory();
+                WebServicesClientView clientView = WebServicesClientView.getWebServicesClientView(clientRoot);
+                if (clientView != null) {
+                    WebServicesClientSupport wss = WebServicesClientSupport.getWebServicesClientSupport(clientRoot);
+                    if (wss!=null && !wss.getServiceClients().isEmpty()) {
+                        FileObject wsdlFolder = wss.getWsdlFolder();
+                        if (wsdlFolder!=null) {
+                            FileObject[] children = wsdlFolder.getChildren();
+                            boolean foundWsdl = false;
+                            for (int i=0;i<children.length;i++) {
+                                if (children[i].getExt().equalsIgnoreCase(WSDL_FOLDER)) { //NOI18N
+                                    foundWsdl=true;
+                                    break;
                                 }
-                                if (foundWsdl) {
-                                    result = new Node[] {clientView.createWebServiceClientView(wsdlFolder)};
-                                }
+                            }
+                            if (foundWsdl) {
+                                result = new Node[] {clientView.createWebServiceClientView(wsdlFolder)};
                             }
                         }
                     }
                 }
+//                }
             } else {
                 assert false : "Unknown key type";  //NOI18N
                 result = new Node[0];
