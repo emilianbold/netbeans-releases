@@ -7,8 +7,7 @@
 		<tocitem text="BPEL Designer" expand="false">
 			<tocitem text="Web Service Orchestration Basics" target="orch_basics_about" />
 			<tocitem text="Understanding Service Oriented Architecture Projects" target="orch_basics_project_lifecycle" />
-			<tocitem text="Trial Topic" target="orch_trial" />
-			<tocitem text="Working with BPEL Module Projects" expand="false">
+				<tocitem text="Working with BPEL Module Projects" expand="false">
 				<tocitem text="About BPEL Module Projects" target="org.netbeans.modules.bpel.project.ui.IcanproLogicalViewProvider" />
 				<tocitem text="Creating BPEL Module Projects" target="orch_basics_create_project" />
 				<tocitem text="Creating Sample Processes in the BPEL Designer" target="orch_basics_create_sample" />
