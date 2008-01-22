@@ -42,11 +42,19 @@ package org.netbeans.modules.languages.php;
 
 import java.io.IOException;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.gsf.Index;
 import org.netbeans.api.gsf.Indexer;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
-
+import org.netbeans.modules.php.model.FunctionDefinition;
+import org.netbeans.modules.php.model.Statement;
+import org.openide.util.Exceptions;
 
 /**
  * @author ads
@@ -57,19 +65,94 @@ public class PhpIndexer implements Indexer {
     /* (non-Javadoc)
      * @see org.netbeans.api.gsf.Indexer#isIndexable(org.netbeans.api.gsf.ParserFile)
      */
-    public boolean isIndexable( ParserFile file ) {
-        // TODO Auto-generated method stub
-        return false;
+    public boolean isIndexable(ParserFile file) {
+        String ext = file.getNameExt();
+        return ext.endsWith(".php") || ext.endsWith(".phtml"); // NOI18N
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.api.gsf.Indexer#updateIndex(org.netbeans.api.gsf.Index, org.netbeans.api.gsf.ParserResult)
      */
-    public void updateIndex( Index index, ParserResult result )
-            throws IOException
-    {
-        // TODO Auto-generated method stub
-
+    public void updateIndex(Index index, ParserResult result)
+            throws IOException {
+        new Job(index, result).process();
     }
 
+    class Job {
+
+        private Index index;
+        private ParserResult result;
+
+        public Job(Index index, ParserResult result) {
+            this.result = result;
+            this.index = index;
+        }
+
+        public void process() {
+            PhpParseResult r = (PhpParseResult) result;
+            try {
+                r.getModel().readLock();
+                List<Statement> statements = r.getModel().getStatements();
+                ParserFile file = r.getFile();
+
+                String url;
+                try {
+                    url = file.getFileObject().getURL().toExternalForm();
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                    return;
+                }
+
+                if (!file.isPlatform()) {
+                    Set<Map<String, String>> indexedList = Collections.emptySet();
+                    Set<Map<String, String>> notIndexedList = Collections.emptySet();
+                    Map<String, String> toDelete = new HashMap<String, String>();
+                    toDelete.put("source", url);
+
+                    try {
+                        index.gsfStore(indexedList, notIndexedList, toDelete);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+
+                
+
+                Set<Map<String, String>> indexedList = new HashSet<Map<String, String>>();
+                Set<Map<String, String>> notIndexedList = new HashSet<Map<String, String>>();
+
+                Map<String, String> urli = new HashMap<String, String>();
+                indexedList.add(urli);
+                urli.put("source", url);
+
+                for (Statement statement : statements) {
+                    if (statement.getElementType() != FunctionDefinition.class) {
+                        continue;
+                    }
+
+                    // Add indexed info
+                    Map<String, String> indexed = new HashMap<String, String>();
+                    indexedList.add(indexed);
+
+                    Map<String, String> notIndexed = new HashMap<String, String>();
+                    notIndexedList.add(notIndexed);
+
+                    
+                    FunctionDefinition func = (FunctionDefinition) statement;
+
+                    String signature = func.getDeclaration().getName();
+                    indexed.put("func", signature);
+                }
+
+                try {
+                    Map<String, String> toDelete = Collections.emptyMap();
+                    index.gsfStore(indexedList, notIndexedList, toDelete);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            } finally {
+                r.getModel().readUnlock();
+            }
+        }
+    }
 }
