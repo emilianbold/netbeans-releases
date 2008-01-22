@@ -99,20 +99,20 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
-    public void testMethodTakingNonPublicInnerClass() throws Exception {
-        String before = "package test; public class Test extends Object {" +
-            " public void ret(Inner in)";
-        String after = " {" +
-            " }" +
-            " private class Inner { }" +
-            "}";
-        
-        String res = (before + after).replace("public void", "void");
-        performFixTest("test/Test.java", before + after, before.length(), 
-            "0:61-0:64:verifier:Exporting non-public type through public API",
-            "FixExportNonAccessibleElement",
-            res);
-    }
+//    public void testMethodTakingNonPublicInnerClass() throws Exception {
+//        String before = "package test; public class Test extends Object {" +
+//            " public void ret(Inner in)";
+//        String after = " {" +
+//            " }" +
+//            " private class Inner { }" +
+//            "}";
+//        
+//        String res = (before + after).replace("public void", "void");
+//        performFixTest("test/Test.java", before + after, before.length(), 
+//            "0:61-0:64:verifier:Exporting non-public type through public API",
+//            "FixExportNonAccessibleElement",
+//            res);
+//    }
     public void testNoProblemInNotPublicClasses() throws Exception {
         String before = "package test; class Test extends Object {" +
             " public void";
@@ -133,33 +133,33 @@ public class ExportNonAccessibleElementTest extends TreeRuleTestBase {
         String res = (before + after).replace("public ", "");
         performAnalysisTest("test/Test.java", before + after, before.length());
     }
-    public void testOnFieldsAsWell() throws Exception {
-        String first = "package test; public class Test extends ";
-        String before = "Object {" +
-            " public Inner ";
-        String after = "in;" +
-            " private class Inner { }" +
-            "}";
-        
-        String res = first + (before + after).replace("public ", "");
-        performFixTest("test/Test.java", first + before + after, (first + before).length(), 
-            "0:62-0:64:verifier:Exporting non-public type through public API",
-            "FixExportNonAccessibleElement",
-            res);
-    }
-    public void testNonPublicSuperClass() throws Exception {
-        String before = "package test; " +
-            "class TestBase {} " +
-            "public class Test e"; String after = "xtends TestBase {" +
-            "}";
-        
-            
-        String res = (before + after).replace("public ", "");
-        performFixTest("test/Test.java", before + after, before.length(), 
-            "0:45-0:49:verifier:Exporting non-public type through public API", 
-            "FixExportNonAccessibleElement",
-            res);
-    }
+//    public void testOnFieldsAsWell() throws Exception {
+//        String first = "package test; public class Test extends ";
+//        String before = "Object {" +
+//            " public Inner ";
+//        String after = "in;" +
+//            " private class Inner { }" +
+//            "}";
+//        
+//        String res = first + (before + after).replace("public ", "");
+//        performFixTest("test/Test.java", first + before + after, (first + before).length(), 
+//            "0:62-0:64:verifier:Exporting non-public type through public API",
+//            "FixExportNonAccessibleElement",
+//            res);
+//    }
+//    public void testNonPublicSuperClass() throws Exception {
+//        String before = "package test; " +
+//            "class TestBase {} " +
+//            "public class Test e"; String after = "xtends TestBase {" +
+//            "}";
+//        
+//            
+//        String res = (before + after).replace("public ", "");
+//        performFixTest("test/Test.java", before + after, before.length(), 
+//            "0:45-0:49:verifier:Exporting non-public type through public API", 
+//            "FixExportNonAccessibleElement",
+//            res);
+//    }
     public void testWhyEachMethodIsInaccessible() throws Exception {
         String before = "package test; " +
             "public class Test {" +

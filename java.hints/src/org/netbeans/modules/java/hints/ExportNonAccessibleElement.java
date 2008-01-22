@@ -131,11 +131,12 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
                     parent = parent.getEnclosingElement();
                 }
 
-                List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
-                    "MSG_ExportNonAccessibleElementMakeNonVisible", // NOI18N
-                    TreePathHandle.create(e, compilationInfo), 
-                    compilationInfo.getFileObject()
-                ));
+                //#124456: disabling the fix:
+//                List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+//                    "MSG_ExportNonAccessibleElementMakeNonVisible", // NOI18N
+//                    TreePathHandle.create(e, compilationInfo), 
+//                    compilationInfo.getFileObject()
+//                ));
 
                 int[] span = Utilities.findIdentifierSpan(treePath, compilationInfo, doc);
 
@@ -143,7 +144,7 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
                     ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
                             getSeverity().toEditorSeverity(),
                             NbBundle.getMessage(ExportNonAccessibleElement.class, "MSG_ExportNonAccessibleElement"),
-                            fixes,
+//                            fixes,
                             doc,
                             doc.createPosition(span[0]),
                             doc.createPosition(span[1])
