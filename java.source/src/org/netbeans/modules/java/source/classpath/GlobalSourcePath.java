@@ -80,6 +80,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -116,10 +117,10 @@ public class GlobalSourcePath {
     private final BinaryPathImplementation binaryPath;
     private final UnknownSourcePathImplementation unknownSourcePath;
     
-    private final LibraryManager lm;
     private final JavaPlatformManager pm;
     private Set<JavaPlatform> seenPlatforms;
     private Set<Library> seenLibs;
+    private Collection<LibraryManager> seenLibManagers;
     
     private Set<URL> libsSrcs;
     
@@ -143,9 +144,9 @@ public class GlobalSourcePath {
         this.gpr.addGlobalPathRegistryListener ((GlobalPathRegistryListener)WeakListeners.create(GlobalPathRegistryListener.class,this.listener,this.gpr));        
         this.seenPlatforms = new HashSet<JavaPlatform>();
         this.seenLibs = new HashSet<Library> ();
+        this.seenLibManagers = new HashSet<LibraryManager>();
         this.libsListener = new LibsListener ();
-        this.lm = LibraryManager.getDefault();
-        this.lm.addPropertyChangeListener(WeakListeners.propertyChange(libsListener, this.lm));
+        LibraryManager.addOpenManagersPropertyChangeListener(WeakListeners.propertyChange(libsListener, null));
         this.pm = JavaPlatformManager.getDefault();
         this.pm.addPropertyChangeListener(WeakListeners.propertyChange(libsListener, this.pm));
     }
@@ -391,6 +392,8 @@ public class GlobalSourcePath {
     }
     
     private Set<URL> getLibsSources () {
+        // retrieve list outside of java mutex:
+        final Collection<LibraryManager> libraryManagers = LibraryManager.getOpenManagers();
         final Mutex.Action<Set<URL>> libsTask = new Mutex.Action<Set<URL>> () {
             public Set<URL> run () {
                 synchronized (GlobalSourcePath.this) {
@@ -432,41 +435,53 @@ public class GlobalSourcePath {
                         }
                         GlobalSourcePath.this.seenPlatforms = platforms;
 
-                        Set<Library> libs = new HashSet<Library> (Arrays.asList(lm.getLibraries()));
-                        Set<Library> oldLibs = new HashSet<Library> (GlobalSourcePath.this.seenLibs);
-                        OUTER: for (Library lib :libs) {
-                            if (!oldLibs.remove(lib)) {
-                                lib.addPropertyChangeListener(GlobalSourcePath.this.libsListener);
-                            }
-                            if (lib.getContent("classpath") != null) {      //NOI18N
-                                List<URL> libSrc = lib.getContent("src");      //NOI18N
-                                for (URL url : libSrc) {                        
-                                    try {
-                                        Project p = FileOwnerQuery.getOwner(url.toURI());
-                                        if (p != null) {
-                                            Sources src = p.getLookup().lookup(Sources.class);
-                                            if (src != null) {
-                                                for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
-                                                    if (url.equals(group.getRootFolder().getURL())) {
-                                                        continue OUTER;
+                        for (LibraryManager lm : GlobalSourcePath.this.seenLibManagers) {
+                            lm.removePropertyChangeListener(libsListener);
+                        }
+                        Set<Library> oldLibs = new HashSet<Library>(GlobalSourcePath.this.seenLibs);
+                        Set<Library> newLibs = new HashSet<Library>();
+                        for (LibraryManager lm : libraryManagers) {
+                            lm.addPropertyChangeListener(libsListener);
+
+                            Set<Library> libs = new HashSet<Library> (Arrays.asList(lm.getLibraries()));
+                            OUTER: for (Library lib :libs) {
+                                newLibs.add(lib);
+                                if (!oldLibs.remove(lib)) {
+                                    lib.addPropertyChangeListener(GlobalSourcePath.this.libsListener);
+                                }
+                                if (lib.getContent("classpath") != null) {      //NOI18N
+                                    List<URL> libSrc = lib.getContent("src");      //NOI18N
+                                    for (URL url : libSrc) {                        
+                                        try {
+                                            url = LibrariesSupport.resolveLibraryEntryURL(lm.getLocation(), url);
+                                            Project p = FileOwnerQuery.getOwner(url.toURI());
+                                            if (p != null) {
+                                                Sources src = p.getLookup().lookup(Sources.class);
+                                                if (src != null) {
+                                                    for (SourceGroup group : src.getSourceGroups("java")) {        //NOI18N
+                                                        if (url.equals(group.getRootFolder().getURL())) {
+                                                            continue OUTER;
+                                                        }
                                                     }
                                                 }
                                             }
+                                        } catch (URISyntaxException ex) {
+                                            Exceptions.printStackTrace(ex);
                                         }
-                                    } catch (URISyntaxException ex) {
-                                        Exceptions.printStackTrace(ex);
+                                        catch (FileStateInvalidException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }                        
+                                        _libSrcs.add(url);
                                     }
-                                    catch (FileStateInvalidException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }                        
-                                    _libSrcs.add(url);
-                                }
 
+                                }
                             }
                         }
                         for (Library lib : oldLibs) {
                             lib.removePropertyChangeListener(GlobalSourcePath.this.libsListener);
                         }
+                        GlobalSourcePath.this.seenLibManagers = libraryManagers;
+                        GlobalSourcePath.this.seenLibs = newLibs;
                         GlobalSourcePath.this.libsSrcs = _libSrcs;
                     }
                     return GlobalSourcePath.this.libsSrcs;

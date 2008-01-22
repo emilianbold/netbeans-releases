@@ -44,10 +44,7 @@ package org.netbeans.modules.form.project;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.text.MessageFormat;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.openide.util.Lookup;
@@ -55,12 +52,9 @@ import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ant.*;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 
 /**
  * Utility methods related to classpath in projects.
@@ -157,43 +151,13 @@ public class ClassPathUtils {
             return null;
 
         ClassLoader loader = null;
-        int cpRootCount = classSource.getCPRootCount();
 
-        if (cpRootCount == 0) {
+        if (!classSource.hasEntries()) {
             // for loading JDK classes
             loader = Lookup.getDefault().lookup(ClassLoader.class);
         }
         else try {
-            List<URL> urlList = new ArrayList<URL>();
-            for (int i=0; i < cpRootCount; i++) {
-                String type = classSource.getCPRootType(i);
-                String name = classSource.getCPRootName(i);
-
-                if (ClassSource.JAR_SOURCE.equals(type)) {
-                    File jarFile = new File(name);
-                    urlList.add(FileUtil.getArchiveRoot(jarFile.toURI().toURL()));
-                }
-                else if (ClassSource.LIBRARY_SOURCE.equals(type)) {
-                    Library lib = LibraryManager.getDefault().getLibrary(name);
-                    if (lib != null) {
-                        List content = lib.getContent("classpath"); // NOI18N
-                        for (Iterator it=content.iterator(); it.hasNext(); ) {
-                            URL rootURL = (URL) it.next();
-                            if (FileUtil.isArchiveFile(rootURL))
-                                rootURL = FileUtil.getArchiveRoot(rootURL);
-                            urlList.add(rootURL);
-                        }
-                    }
-                }
-                else if (ClassSource.PROJECT_SOURCE.equals(type)) {
-                    File outputFile = new File(name);
-                    URL rootURL = FileUtil.getArchiveRoot(outputFile.toURI().toURL());
-                    if (FileUtil.isArchiveFile(rootURL))
-                        rootURL = FileUtil.getArchiveRoot(rootURL);
-                    urlList.add(rootURL);
-                }
-            }
-
+            List<URL> urlList = classSource.getClasspath();
             if (urlList.size() > 0) {
                 URL[] roots = new URL[urlList.size()];
                 urlList.toArray(roots);
@@ -231,64 +195,32 @@ public class ClassPathUtils {
         if (artifacts.length == 0)
             return null; // there is no project output
 
-        String[] outputs = null;
-
-        for (int i=0; i < artifacts.length; i++) {
-            URI scriptLocation = artifacts[i].getScriptLocation().toURI();
-            URI[] artifactLocations = artifacts[i].getArtifactLocations();
-            for (int k=0; k < artifactLocations.length; k++) {
-                File outputFile = new File(scriptLocation.resolve(artifactLocations[k]).normalize());
-
-                URL outputURL;
-                try {
-                    outputURL = outputFile.toURI().toURL();
-                }
-                catch (MalformedURLException ex) { // should not happen
-                    continue;
-                }
-
-                if (FileUtil.isArchiveFile(outputURL))
-                    outputURL = FileUtil.getArchiveRoot(outputURL);
-                FileObject sourceRoots[] =
-                    SourceForBinaryQuery.findSourceRoots(outputURL).getRoots();
-                for (int j=0; j < sourceRoots.length; j++)
-                    if (FileUtil.isParentOf(sourceRoots[j], fileInProject)) {
-                        outputs = new String[] { outputFile.getAbsolutePath() };
-                        break;
+        for (AntArtifact aa : artifacts) {
+            ClassSource.Entry entry = new ClassSource.ProjectEntry(aa);
+            for (URL binaryRoot : entry.getClasspath()) {
+                for (FileObject sourceRoot : SourceForBinaryQuery.findSourceRoots(binaryRoot).getRoots()) {
+                    if (FileUtil.isParentOf(sourceRoot, fileInProject)) {
+                        // Looks like the one.
+                        return new ClassSource(classname, entry);
                     }
-                if (outputs != null)
-                    break;
-            }
-        }
-
-        if (outputs == null) {
-            // no output found for given source file - the file might not be
-            // a source file ... but a binary output file - in this case return
-            // simply all project outputs as there is no good way to recognize
-            // the right one (and j2se project has just one output anyway)
-
-            if (!fileInProject.getExt().equals("class")) // NOI18N
-                return null; // not interested in other than .class binary files
-
-            List<String> outputList = new ArrayList<String>(artifacts.length);
-            for (int i=0; i < artifacts.length; i++) {
-                URI[] artifactLocations = artifacts[i].getArtifactLocations();
-                for (int j=0; j < artifactLocations.length; j++) {
-                    File outputFile = new File(
-                        artifacts[i].getScriptLocation().getParent()
-                        + File.separator
-                        + artifactLocations[j].getPath());
-                    outputList.add(outputFile.getAbsolutePath());
                 }
             }
-            outputs = outputList.toArray(new String[outputList.size()]);
         }
 
-        String[] types = new String[outputs.length];
-        for (int i=0; i < types.length; i++)
-            types[i] = ClassSource.PROJECT_SOURCE;
+        // no output found for given source file - the file might not be
+        // a source file ... but a binary output file - in this case return
+        // simply all project outputs as there is no good way to recognize
+        // the right one (and j2se project has just one output anyway)
 
-        return new ClassSource(classname, types, outputs);
+        if (!fileInProject.getExt().equals("class")) // NOI18N
+            return null; // not interested in other than .class binary files
+
+        List<ClassSource.Entry> entries = new ArrayList<ClassSource.Entry>();
+        for (AntArtifact aa : artifacts) {
+            ClassSource.Entry entry = new ClassSource.ProjectEntry(aa);
+            entries.add(entry);
+        }
+        return new ClassSource(classname, entries);
     }
     
     public static boolean isOnClassPath(FileObject fileInProject, String className) {
@@ -309,54 +241,28 @@ public class ClassPathUtils {
     }
 
     /** Updates project'c classpath with entries from ClassSource object.
+     * @return null if operation was cancelled by user otherwise true or false
+     *  if project classpath was changed or not
      */
-    public static boolean updateProject(FileObject fileInProject,
+    public static Boolean updateProject(FileObject fileInProject,
                                         ClassSource classSource)
         throws IOException
     {
-        if (classSource.getCPRootCount() == 0)
-            return false; // nothing to add to project
+        if (!classSource.hasEntries())
+            return Boolean.FALSE; // nothing to add to project
 
         Project project = FileOwnerQuery.getOwner(fileInProject);
 	if(project==null)
-	    return false;
-	
-        for (int i=0, n=classSource.getCPRootCount(); i < n; i++) {
-            String type = classSource.getCPRootType(i);
-            String name = classSource.getCPRootName(i);
+	    return Boolean.FALSE;
 
-            if (ClassSource.JAR_SOURCE.equals(type)) {
-                FileObject jarFile = FileUtil.toFileObject(new File(name));
-                URL url = URLMapper.findURL(FileUtil.getArchiveRoot(jarFile), URLMapper.EXTERNAL);
-                ProjectClassPathModifier.addRoots(new URL[] {url}, fileInProject, ClassPath.COMPILE);
-            }
-            else if (ClassSource.LIBRARY_SOURCE.equals(type)) {
-                Library lib = LibraryManager.getDefault().getLibrary(name);
-                if (lib == null) {
-                    Logger.getLogger(ClassPathUtils.class.getName()).log(Level.INFO, "Library " + name + " not found!"); // NOI18N
-                } else {
-                    ProjectClassPathModifier.addLibraries(new Library[] {lib}, fileInProject, ClassPath.COMPILE);
-                } 
-            }
-            else if (ClassSource.PROJECT_SOURCE.equals(type)) {
-                File jarFile = new File(name);
-                AntArtifact artifact =
-                    AntArtifactQuery.findArtifactFromFile(jarFile);
-                if (artifact.getProject() != project) {
-                    URI[] locs = artifact.getArtifactLocations();
-                    ProjectClassPathModifier.addAntArtifacts(new AntArtifact[] {artifact}, locs, fileInProject, ClassPath.COMPILE);
-                }
-            }
-        }
-
-        return true;
+        return classSource.addToProjectClassPath(fileInProject, ClassPath.COMPILE);
     }
 
     /** Provides description for ClassSource object usable e.g. for error
      * messages.
      */
     public static String getClassSourceDescription(ClassSource classSource) {
-        if (classSource == null || classSource.getCPRootCount() == 0) {
+        if (classSource == null || !classSource.hasEntries()) {
             String className = classSource.getClassName();
             if (className != null) {
                 if (className.startsWith("javax.") // NOI18N
@@ -365,36 +271,11 @@ public class ClassPathUtils {
                 if (className.startsWith("org.netbeans.")) // NOI18N
                     return getBundleString("MSG_NetBeansSource"); // NOI18N
             }
+            return NbBundle.getMessage(ClassPathUtils.class, "MSG_UnspecifiedSource");
         }
         else {
-            String type = classSource.getCPRootType(0);
-            String name = classSource.getCPRootName(0);
-
-            if (ClassSource.JAR_SOURCE.equals(type)) {
-                return MessageFormat.format(
-                    getBundleString("FMT_JarSource"), // NOI18N
-                    new Object[] { name });
-            }
-            else if (ClassSource.LIBRARY_SOURCE.equals(type)) {
-                Library lib = LibraryManager.getDefault().getLibrary(name);
-                return MessageFormat.format(
-                    getBundleString("FMT_LibrarySource"), // NOI18N
-                    new Object[] { lib != null ? lib.getDisplayName() : name });
-            }
-            else if (ClassSource.PROJECT_SOURCE.equals(type)) {
-                try {
-                    Project project = FileOwnerQuery.getOwner(new File(name).toURI());
-                    return MessageFormat.format(
-                          getBundleString("FMT_ProjectSource"), // NOI18N
-                          new Object[] { project == null ? name :
-                                         project.getProjectDirectory().getPath()
-                                           .replace('/', File.separatorChar) });
-                }
-                catch (Exception ex) {} // ignore
-            }
+            return classSource.getEntries().iterator().next().getDisplayName();
         }
-
-        return getBundleString("MSG_UnspecifiedSource"); // NOI18N
     }
 
     static String getBundleString(String key) {

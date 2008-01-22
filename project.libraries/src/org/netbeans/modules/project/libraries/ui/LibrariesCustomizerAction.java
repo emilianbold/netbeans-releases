@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.project.libraries.ui;
 
+import java.awt.Dialog;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -54,7 +57,7 @@ public class LibrariesCustomizerAction extends CallableSystemAction {
     }
 
     public void performAction() {
-        org.netbeans.api.project.libraries.LibrariesCustomizer.showCustomizer(null);
+        showCustomizer();
     }
 
     public String getName() {
@@ -68,5 +71,28 @@ public class LibrariesCustomizerAction extends CallableSystemAction {
     protected boolean asynchronous () {
         return false;
     }
+
+    /**
+     * Shows libraries customizer displaying all currently open library managers.
+     * @return true if user pressed OK and libraries were sucessfully modified
+     */
+    private static boolean showCustomizer () {
+        AllLibrariesCustomizer  customizer =
+                new AllLibrariesCustomizer();
+        DialogDescriptor descriptor = new DialogDescriptor (customizer,
+                NbBundle.getMessage(LibrariesCustomizerAction.class, "TXT_LibrariesManager"));
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        try {
+            dlg.setVisible(true);
+            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                return customizer.apply();
+            } else {
+                return false;
+            }
+        } finally {
+            dlg.dispose();
+        }
+    }
+    
     
 }

@@ -47,14 +47,15 @@ import javax.swing.BorderFactory;
 import javax.swing.event.*;
 import java.beans.*;
 import java.util.*;
-import java.net.URI;
 
 import org.openide.WizardDescriptor;
 import org.openide.ErrorManager;
 import org.openide.filesystems.*;
 import org.netbeans.api.project.ant.*;
 import org.netbeans.api.project.*;
+import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.util.ChangeSupport;
 
 /**
  * The first panel in the wizard for adding new components to the palette from
@@ -64,12 +65,12 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
  * @author Tomas Pavek
  */
 
-class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
+class ChooseProjectWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard> {
 
     private JFileChooser projectChooser;
     private static String lastDirectoryUsed;
 
-    private EventListenerList listenerList;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     // ----------
     // WizardDescriptor.Panel implementation
@@ -93,7 +94,7 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
                     String propName = ev.getPropertyName();
                     if (JFileChooser.SELECTED_FILE_CHANGED_PROPERTY.equals(propName)
                          || JFileChooser.DIRECTORY_CHANGED_PROPERTY.equals(propName))
-                        fireStateChanged();
+                        cs.fireChange();
                 }
             });
         }
@@ -128,10 +129,10 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
         return false;
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(AddToPaletteWizard settings) {
     }
 
-    public void storeSettings(Object settings) {
+    public void storeSettings(AddToPaletteWizard settings) {
         if (projectChooser == null)
             return;
 
@@ -154,49 +155,19 @@ class ChooseProjectWizardPanel implements WizardDescriptor.Panel {
         if (project == null)
             return;
 
-        List<File> fileList = new ArrayList<File>();
-        AntArtifact[] artifacts =
-            AntArtifactQuery.findArtifactsByType(project, "jar"); // NOI18N
-
-        for (int i=0; i < artifacts.length; i++) {
-            URI scriptLocation = artifacts[i].getScriptLocation().toURI();
-            URI[] artifactLocations = artifacts[i].getArtifactLocations();
-            for (int j=0; j < artifactLocations.length; j++) {
-                File outputFile = new File(scriptLocation.resolve(artifactLocations[j]).normalize());
-                fileList.add(outputFile);
-            }
+        List<ClassSource.ProjectEntry> entries = new ArrayList<ClassSource.ProjectEntry>();
+        for (AntArtifact aa : AntArtifactQuery.findArtifactsByType(project, /* XXX JavaProjectConstants.ARTIFACT_TYPE_JAR */ "jar")) { // NOI18N
+            entries.add(new ClassSource.ProjectEntry(aa));
         }
-
-        File[] outputFiles = new File[fileList.size()];
-        fileList.toArray(outputFiles);
-        ((AddToPaletteWizard)settings).setJARFiles(outputFiles);
+        settings.setJARFiles(entries);
     }
 
     public void addChangeListener(ChangeListener listener) {
-        if (listenerList == null)
-            listenerList = new EventListenerList();
-        listenerList.add(ChangeListener.class, listener);
+        cs.addChangeListener(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        if (listenerList != null)
-            listenerList.remove(ChangeListener.class, listener);
+        cs.removeChangeListener(listener);
     }
 
-    // -----
-
-    void fireStateChanged() {
-        if (listenerList == null)
-            return;
-
-        ChangeEvent e = null;
-        Object[] listeners = listenerList.getListenerList();
-        for (int i=listeners.length-2; i >= 0; i-=2) {
-            if (listeners[i] == ChangeListener.class) {
-                if (e == null)
-                    e = new ChangeEvent(this);
-                ((ChangeListener)listeners[i+1]).stateChanged(e);
-            }
-        }
-    }
 }

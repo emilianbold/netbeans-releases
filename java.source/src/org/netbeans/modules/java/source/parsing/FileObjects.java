@@ -876,26 +876,9 @@ public class FileObjects {
                 private ZipFile zipfile;
                 private InputStream delegate;
 
-                /**
-                 * Creates new ZipInputStream.
-                 * When ZipInputStream is created it owns the given ZipFile
-                 * and closes it when this InputStream is closed or IOException
-                 * is thrown by the constructer.
-                 */
                 public ZipInputStream (ZipFile zf) throws IOException {
-                    assert zf != null;
                     this.zipfile = zf;
-                    try {
-                        this.delegate = zf.getInputStream(new ZipEntry(resName));
-                        if (this.delegate == null) {                        
-                            throw new IOException();
-                        }
-                    } catch (IOException e) {
-                        try {
-                            this.zipfile.close();
-                        } catch (IOException e2) {/*Outher exception is more important*/}
-                        throw e;
-                    }
+                    this.delegate = zf.getInputStream(new ZipEntry(resName));
                 }
 
                 public int read() throws IOException {

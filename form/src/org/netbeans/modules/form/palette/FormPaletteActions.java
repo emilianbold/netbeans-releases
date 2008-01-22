@@ -63,7 +63,7 @@ public class FormPaletteActions extends PaletteActions {
 
         res[0] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddJAR_Button") ) { // NOI18N
                     public void actionPerformed(java.awt.event.ActionEvent e) {
-                        BeanInstaller.installBeans(ClassSource.JAR_SOURCE);
+                        BeanInstaller.installBeans(ClassSource.JarEntry.class);
                     }
                  };
         res[0].putValue( Action.LONG_DESCRIPTION, 
@@ -71,7 +71,7 @@ public class FormPaletteActions extends PaletteActions {
         
         res[1] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddLibrary_Button") ) { // NOI18N
                     public void actionPerformed(java.awt.event.ActionEvent e) {
-                        BeanInstaller.installBeans(ClassSource.LIBRARY_SOURCE);
+                        BeanInstaller.installBeans(ClassSource.LibraryEntry.class);
                     }
                 };
         res[1].putValue( Action.LONG_DESCRIPTION, 
@@ -79,7 +79,7 @@ public class FormPaletteActions extends PaletteActions {
         
         res[2] = new AbstractAction( PaletteUtils.getBundleString("CTL_AddProject_Button") ) { // NOI18N
                     public void actionPerformed(java.awt.event.ActionEvent e) {
-                        BeanInstaller.installBeans(ClassSource.PROJECT_SOURCE);
+                        BeanInstaller.installBeans(ClassSource.ProjectEntry.class);
                     }
                 };
         res[2].putValue( Action.LONG_DESCRIPTION, 

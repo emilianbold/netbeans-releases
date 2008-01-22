@@ -41,6 +41,7 @@
 
 package org.netbeans.api.java.project.classpath;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -52,6 +53,8 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.project.classpath.ProjectClassPathModifierAccessor;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -149,12 +152,20 @@ public class ProjectClassPathModifier {
             }
             else if (extensible.pcpe != null) {
                 boolean result = false;
+                final Project project = FileOwnerQuery.getOwner(projectArtifact);
+                final File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
                 for (int i=0; i< classPathRoots.length; i++) {
                     URL urlToAdd = classPathRoots[i];
                     if ("jar".equals(urlToAdd.getProtocol())) {
                         urlToAdd = FileUtil.getArchiveFile (urlToAdd);
                     }
-                    final FileObject fo = URLMapper.findFileObject(urlToAdd);
+                    final FileObject fo;
+                    if (LibrariesSupport.isAbsoluteURL(urlToAdd)) {
+                        fo = URLMapper.findFileObject(urlToAdd);
+                    } else {
+                        File f = PropertyUtils.resolveFile(projectFolderFile, LibrariesSupport.convertURLToFile(urlToAdd).getPath());
+                        fo = FileUtil.toFileObject(f);
+                    }
                     if (fo == null) {
                         throw new UnsupportedOperationException ("Adding of a non existent root is not supported by project.");  //NOI18N
                     }
@@ -251,7 +262,7 @@ public class ProjectClassPathModifier {
         throw new UnsupportedOperationException ();
     }
     
-    
+
     /**
      * Returns {@link ProjectClassPathModifier#Extensible} for given project artifact and classpath type. 
      * An Extensible implies a classpath to be extended. Different project type may provide different types

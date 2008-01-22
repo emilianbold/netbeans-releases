@@ -43,10 +43,14 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.MouseEvent;
 import java.beans.Customizer;
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Arrays;
 import java.util.Collections;
@@ -59,6 +63,7 @@ import javax.swing.JList;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.project.ant.FileChooser;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -66,8 +71,11 @@ import org.openide.NotifyDescriptor.Message;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 
 /**
  *
@@ -77,6 +85,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     
     private String volumeType;
     private LibraryImplementation impl;
+    private LibraryStorageArea area;
     private VolumeContentModel model;
 
     /** Creates new form J2SEVolumeCustomizer */
@@ -321,7 +330,11 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 
     private void addResource(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addResource
         // TODO add your handling code here:
-        JFileChooser chooser = new JFileChooser();
+        File baseFolder = null;
+        if (area != null) {
+            baseFolder = new File(URI.create(area.getLocation().toExternalForm())).getParentFile();
+        }
+        FileChooser chooser = new FileChooser(baseFolder, baseFolder);
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setAcceptAllFileFilterUsed(false);
         if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH)) {
@@ -352,19 +365,17 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         }
         if (lastFolder != null) {
             chooser.setCurrentDirectory (lastFolder);
+        } else if (baseFolder != null) {
+            chooser.setCurrentDirectory (baseFolder);
         }
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
                 lastFolder = chooser.getCurrentDirectory();
-                if (chooser.isMultiSelectionEnabled()) {
-                    addFiles (chooser.getSelectedFiles());
-                }
-                else {
-                    final File selectedFile = chooser.getSelectedFile();                    
-                    addFiles (new File[] {selectedFile});
-                }
+                addFiles (chooser.getFiles(), area != null ? area.getLocation() : null);
             } catch (MalformedURLException mue) {
                 ErrorManager.getDefault().notify(mue);
+            } catch (IOException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
         }
     }//GEN-LAST:event_addResource
@@ -391,7 +402,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
 //    }
 
 
-    private void addFiles (File[] files) throws MalformedURLException {
+    private void addFiles (File[] files, URL libraryLocation) throws MalformedURLException {
         int firstIndex = this.model.getSize();
         for (int i = 0; i < files.length; i++) {
             File f = files[i];
@@ -404,8 +415,16 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     f = parent;
                 }
             }
-            URL url = f.toURI().toURL();
-            if (FileUtil.isArchiveFile(url)) {
+            URL url = LibrariesSupport.convertFileToURL(f);
+            File realFile = f;
+            if (!f.isAbsolute()) {
+                assert area != null;
+                if (area != null) {
+                    realFile = FileUtil.normalizeFile(new File(
+                        new File(URI.create(area.getLocation().toExternalForm())).getParentFile(), f.getPath()));
+                }
+            }
+            if (FileUtil.isArchiveFile(realFile.toURI().toURL())) {
                 url = FileUtil.getArchiveRoot(url);
             }
             else if (!url.toExternalForm().endsWith("/")){
@@ -416,7 +435,8 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 }
             }
             if (this.volumeType.equals(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)
-                && !JavadocForBinaryQueryLibraryImpl.isValidLibraryJavadocRoot (url)) {
+                && !JavadocForBinaryQueryLibraryImpl.isValidLibraryJavadocRoot (
+                LibrariesSupport.resolveLibraryEntryURL(libraryLocation, url))) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(J2SEVolumeCustomizer.class,"TXT_InvalidJavadocRoot", f.getPath()),
                     NotifyDescriptor.ERROR_MESSAGE));
@@ -440,9 +460,14 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     }
     
     public void setObject(Object bean) {
+        if (bean instanceof LibraryStorageArea) {
+            this.area = (LibraryStorageArea)bean;
+        } else {
+            this.area = null;
+        }
         if (bean instanceof LibraryImplementation) {
             this.impl = (LibraryImplementation) bean;
-            this.model = new VolumeContentModel(this.impl,this.volumeType);
+            this.model = new VolumeContentModel(this.impl, this.area, this.volumeType);
             this.content.setModel(model);
             if (this.model.getSize()>0) {
                 this.content.setSelectedIndex(0);
@@ -497,7 +522,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
     private JButton addURLButton;
     
     private static class ContentRenderer extends DefaultListCellRenderer {
-                
+
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String displayName = null;
             Color color = null;
@@ -508,14 +533,28 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 if ("jar".equals(url.getProtocol())) {   //NOI18N
                     url = FileUtil.getArchiveFile (url);
                 }
-                FileObject fo = URLMapper.findFileObject (url);
+                boolean broken = false;
+                VolumeContentModel model = (VolumeContentModel)list.getModel();
+                LibraryStorageArea area = model.getArea();
+                FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(area != null ? area.getLocation() : null, url);
                 if (fo == null) {
-                    displayName = url.toExternalForm();
+                    broken = true;
+                    if ("file".equals(url.getProtocol())) { //NOI18N
+                        displayName = LibrariesSupport.convertURLToFile(url).getPath();
+                    } else {
+                        displayName = url.toExternalForm();
+                    }
+                } else {
+                    if (LibrariesSupport.isAbsoluteURL(url)) {
+                        displayName = FileUtil.getFileDisplayName(fo);
+                    } else {
+                        displayName = LibrariesSupport.convertURLToFile(url).getPath();
+                        toolTip = FileUtil.getFileDisplayName(fo);
+                    }
+                }
+                if (broken) {
                     color = new Color (164,0,0);
                     toolTip = NbBundle.getMessage (J2SEVolumeCustomizer.class,"TXT_BrokenFile");                    
-                }
-                else {
-                    displayName = FileUtil.getFileDisplayName(fo);
                 }
             }
             Component c = super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
@@ -524,12 +563,14 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     ((JComponent)c).setForeground (color);
                 }
                 if (toolTip != null) {
-                    ((JComponent)c).setToolTipText (toolTip);
+                    ((JComponent)c).setToolTipText(toolTip);
+                } else {
+                    ((JComponent)c).setToolTipText(null);
                 }
             }
             return c;
         }
-        
+
     }
 
 }

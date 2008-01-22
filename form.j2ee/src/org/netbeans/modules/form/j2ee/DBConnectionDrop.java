@@ -47,6 +47,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.NewComponentDrop;
@@ -93,8 +94,8 @@ public class DBConnectionDrop implements NewComponentDrop {
      */
     public PaletteItem getPaletteItem(DropTargetDragEvent dtde) {
         PaletteItem pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
-            new String[] { ClassSource.LIBRARY_SOURCE },
-            new String[] { "toplink" }), null); // NOI18N
+                new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
+                null);
         pItem.setIcon(new ImageIcon(
             Utilities.loadImage("org/netbeans/modules/form/j2ee/resources/EntityManager.png")).getImage()); // NOI18N
         return pItem;

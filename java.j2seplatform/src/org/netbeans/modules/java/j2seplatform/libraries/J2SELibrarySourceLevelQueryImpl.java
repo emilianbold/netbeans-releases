@@ -51,7 +51,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -61,10 +60,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
-/**
- *
- * @author  tom
- */
 public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplementation {
     
     private static final String JDK_12 = "1.2";     //NOI18N
@@ -82,11 +77,11 @@ public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplemen
     private static final int CF_15 = 0x31;
     
     //Cache for source level
-    private Map/*<Library, sourceLevel>*/ sourceLevelCache = new WeakHashMap ();
+    private Map<Library,String> sourceLevelCache = new WeakHashMap<Library,String>();
     
     //Cache for last used library, helps since queries are sequential
-    private /*Soft*/Reference lastUsedRoot;
-    private /*Weak*/Reference lastUsedLibrary;
+    private /*Soft*/Reference<FileObject> lastUsedRoot;
+    private /*Weak*/Reference<Library> lastUsedLibrary;
     
     /** Creates a new instance of J2SELibrarySourceLevelQueryImpl */
     public J2SELibrarySourceLevelQueryImpl() {
@@ -97,29 +92,30 @@ public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplemen
         if (ll != null) {
             return getSourceLevel (ll);
         }
-        Library[] libraries = LibraryManager.getDefault().getLibraries();
-        for (int i=0; i< libraries.length; i++) {
-            if (!J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(libraries[i].getType())) { 
-                continue;
-            }
-            List sourceRoots = libraries[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC);   //NOI18N
-            if (sourceRoots.size() == 0) {
-                continue;
-            }            
-            ClassPath cp = ClassPathSupport.createClassPath((URL[])sourceRoots.toArray(new URL[sourceRoots.size()]));
-            FileObject root;
-            if ((root = cp.findOwnerRoot(javaFile)) != null) {
-                setLastUsedRoot (root, libraries[i]);
-                return getSourceLevel(libraries[i]);
+        for (LibraryManager mgr : LibraryManager.getOpenManagers()) {
+            for (Library lib : mgr.getLibraries()) {
+                if (!lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
+                    continue;
+                }
+                List<URL> sourceRoots = J2SELibraryClassPathProvider.getResolvedVolume(lib, J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
+                if (sourceRoots.isEmpty()) {
+                    continue;
+                }
+                ClassPath cp = ClassPathSupport.createClassPath(sourceRoots.toArray(new URL[sourceRoots.size()]));
+                FileObject root = cp.findOwnerRoot(javaFile);
+                if (root != null) {
+                    setLastUsedRoot(root, lib);
+                    return getSourceLevel(lib);
+                }
             }
         }
         return null;
     }    
     
     private String getSourceLevel (Library lib) {
-        String slevel = (String)this.sourceLevelCache.get (lib);
+        String slevel = sourceLevelCache.get(lib);
         if (slevel == null) {
-            slevel = getSourceLevel (lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH));
+            slevel = getSourceLevel (J2SELibraryClassPathProvider.getResolvedVolume(lib, J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH));
             this.sourceLevelCache.put (lib,slevel);
         }
         return slevel == JDK_UNKNOWN ? null : slevel;                
@@ -206,8 +202,8 @@ public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplemen
     }
     
     private synchronized void setLastUsedRoot (FileObject root, Library lib) {
-        this.lastUsedRoot = new SoftReference (root);
-        this.lastUsedLibrary = new WeakReference (lib);
+        lastUsedRoot = new SoftReference<FileObject>(root);
+        lastUsedLibrary = new WeakReference<Library>(lib);
     }
     
     private synchronized Library isLastUsed (FileObject javaFile) {
@@ -215,13 +211,13 @@ public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplemen
             return null;
         }
         
-        FileObject root = (FileObject) lastUsedRoot.get ();
+        FileObject root = lastUsedRoot.get();
         if (root == null) {
             return null;
         }
         
         if (root.equals(javaFile) || FileUtil.isParentOf(root,javaFile)) {
-            return (Library) lastUsedLibrary.get ();
+            return lastUsedLibrary.get();
         }
         return null;
     }

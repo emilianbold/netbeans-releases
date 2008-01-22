@@ -47,6 +47,7 @@ import java.beans.*;
 
 import org.openide.WizardDescriptor;
 import org.openide.explorer.*;
+import org.openide.util.ChangeSupport;
 
 /**
  * The third panel in the wizard for adding new components to the palette.
@@ -56,11 +57,11 @@ import org.openide.explorer.*;
  * @author Tomas Pavek
  */
 
-class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel {
+class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel<AddToPaletteWizard> {
 
     private CategorySelector categorySelector;
 
-    private EventListenerList listenerList;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     // ----------
     // WizardDescriptor.Panel implementation
@@ -78,7 +79,7 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel {
                 new PropertyChangeListener() {
                     public void propertyChange(PropertyChangeEvent ev) {
                         if (ExplorerManager.PROP_SELECTED_NODES.equals(ev.getPropertyName()))
-                            fireStateChanged();
+                            cs.fireChange();
                     }
                 });
         }
@@ -96,23 +97,20 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel {
                && categorySelector.getSelectedCategory() != null;
     }
 
-    public void readSettings(Object settings) {
+    public void readSettings(AddToPaletteWizard settings) {
     }
 
-    public void storeSettings(Object settings) {
+    public void storeSettings(AddToPaletteWizard settings) {
         if (categorySelector != null)
-            ((AddToPaletteWizard)settings).setSelectedCategory(categorySelector.getSelectedCategory());
+            settings.setSelectedCategory(categorySelector.getSelectedCategory());
     }
 
     public void addChangeListener(ChangeListener listener) {
-        if (listenerList == null)
-            listenerList = new EventListenerList();
-        listenerList.add(ChangeListener.class, listener);
+        cs.addChangeListener(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        if (listenerList != null)
-            listenerList.remove(ChangeListener.class, listener);
+        cs.removeChangeListener(listener);
     }
 
     // WizardDescriptor.FinishablePanel implementation
@@ -120,20 +118,4 @@ class ChooseCategoryWizardPanel implements WizardDescriptor.FinishablePanel {
         return true;
     }
 
-    // -----
-
-    void fireStateChanged() {
-        if (listenerList == null)
-            return;
-
-        ChangeEvent e = null;
-        Object[] listeners = listenerList.getListenerList();
-        for (int i=listeners.length-2; i >= 0; i-=2) {
-            if (listeners[i] == ChangeListener.class) {
-                if (e == null)
-                    e = new ChangeEvent(this);
-                ((ChangeListener)listeners[i+1]).stateChanged(e);
-            }
-        }
-    }
 }

@@ -97,7 +97,7 @@ public final class PaletteUtils {
     static String getItemComponentDescription(PaletteItem item) {
         ClassSource classSource = item.getComponentClassSource();
         
-        if (classSource == null || classSource.getCPRootCount() == 0) {
+        if (classSource == null || !classSource.hasEntries()) {
             String className = classSource.getClassName();
             if (className != null) {
                 if (className.startsWith("javax.") // NOI18N
@@ -106,36 +106,11 @@ public final class PaletteUtils {
                 if (className.startsWith("org.netbeans.")) // NOI18N
                     return getBundleString("MSG_NetBeansComponent"); // NOI18N
             }
+            return getBundleString("MSG_UnspecifiedComponent"); // NOI18N
         }
         else {
-            String type = classSource.getCPRootType(0);
-            String name = classSource.getCPRootName(0);
-            
-            if (ClassSource.JAR_SOURCE.equals(type)) {
-                return MessageFormat.format(
-                        getBundleString("FMT_ComponentFromJar"), // NOI18N
-                        new Object[] { name });
-            }
-            else if (ClassSource.LIBRARY_SOURCE.equals(type)) {
-                Library lib = LibraryManager.getDefault().getLibrary(name);
-                return MessageFormat.format(
-                        getBundleString("FMT_ComponentFromLibrary"), // NOI18N
-                        new Object[] { lib != null ? lib.getDisplayName() : name });
-            }
-            else if (ClassSource.PROJECT_SOURCE.equals(type)) {
-                try {
-                    Project project = FileOwnerQuery.getOwner(new File(name).toURI());
-                    return MessageFormat.format(
-                            getBundleString("FMT_ComponentFromProject"), // NOI18N
-                            new Object[] { project == null ? name :
-                                FileUtil.getFileDisplayName(project.getProjectDirectory()) });
-                } catch (Exception ex) {
-                    // XXX must catch specific exceptions and notify them or explain why they are ignored!
-                }
-            }
+            return NbBundle.getMessage(PaletteUtils.class, "FMT_ComponentFrom", classSource.getEntries().iterator().next().getDisplayName());
         }
-        
-        return getBundleString("MSG_UnspecifiedComponent"); // NOI18N
     }
     
     public static FileObject getPaletteFolder() {
@@ -569,7 +544,7 @@ public final class PaletteUtils {
             if (item == null) // Issue 81506
                 return false;
 
-            if (item.getComponentClassSource().getCPRootCount() > 0
+            if (item.getComponentClassSource().hasEntries()
                 || PaletteItem.TYPE_CHOOSE_BEAN.equals(item.getExplicitComponentType())
                 || "org.netbeans.modules.form.layoutsupport.delegates.NullLayoutSupport".equals(item.getComponentClassName())) // NOI18N
                 return true; // this is not a platform component

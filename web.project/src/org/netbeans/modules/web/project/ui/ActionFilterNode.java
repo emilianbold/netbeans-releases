@@ -105,7 +105,7 @@ class ActionFilterNode extends FilterNode {
      * @return ActionFilterNode
      */
     static ActionFilterNode create (Node original, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
-        DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
+        DataObject dobj = original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
@@ -150,7 +150,7 @@ class ActionFilterNode extends FilterNode {
 
     private Action[] initActions () {
         if (actionCache == null) {
-            List result = new ArrayList(2);
+            List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
                 Action[] superActions = super.getActions(false);
                 for (int i=0; i<superActions.length; i++) {
@@ -172,7 +172,7 @@ class ActionFilterNode extends FilterNode {
                     result.add (SystemAction.get(RemoveClassPathRootAction.class));
                 }
             }            
-            actionCache = (Action[]) result.toArray(new Action[result.size()]);
+            actionCache = result.toArray(new Action[result.size()]);
         }
         return actionCache;
     }
@@ -192,7 +192,7 @@ class ActionFilterNode extends FilterNode {
             switch (mode) {
                 case MODE_ROOT:
                 case MODE_PACKAGE:
-                    DataObject dobj = (DataObject) n.getCookie(org.openide.loaders.DataObject.class);
+                    DataObject dobj = n.getCookie(DataObject.class);
                     if (dobj == null) {
                         assert false : "DataNode without DataObject in Lookup";  //NOI18N
                         return new Node[0];
@@ -260,6 +260,7 @@ class ActionFilterNode extends FilterNode {
    private static class Removable implements RemoveClassPathRootAction.Removable {
 
        private final UpdateHelper helper;
+       private final ReferenceHelper refHelper;
        private final String classPathId;
        private final String entryId;
        private final String webModuleElementName;
@@ -267,15 +268,12 @@ class ActionFilterNode extends FilterNode {
 
        Removable (UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, String classPathId, String entryId, String webModuleElementName) {
            this.helper = helper;
+           this.refHelper = refHelper;
            this.classPathId = classPathId;
            this.entryId = entryId;
            this.webModuleElementName = webModuleElementName;
            
-           this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
-                                        WebProjectProperties.WELL_KNOWN_PATHS, 
-                                        WebProjectProperties.LIBRARY_PREFIX, 
-                                        WebProjectProperties.LIBRARY_SUFFIX, 
-                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );        
+           this.cs = new ClassPathSupport(eval, refHelper, helper.getAntProjectHelper());
 
        }
 
@@ -296,9 +294,9 @@ class ActionFilterNode extends FilterNode {
             boolean removed = false;
             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String raw = props.getProperty (classPathId);
-            List resources = cs.itemsList( raw, webModuleElementName );
-            for (Iterator i = resources.iterator(); i.hasNext();) {
-                ClassPathSupport.Item item = (ClassPathSupport.Item)i.next();
+            List<ClassPathSupport.Item> resources = cs.itemsList( raw, webModuleElementName );
+            for (Iterator<ClassPathSupport.Item> i = resources.iterator(); i.hasNext();) {
+                ClassPathSupport.Item item = i.next();
                 if (entryId.equals(WebProjectProperties.getAntPropertyName(item.getReference()))) {
                     i.remove();
                     removed = true;
@@ -311,7 +309,7 @@ class ActionFilterNode extends FilterNode {
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                 //update lib references in private properties
                 EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                ArrayList l = new ArrayList ();
+                List<ClassPathSupport.Item> l = new ArrayList<ClassPathSupport.Item>();
                 l.addAll(resources);
                 l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
                 WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);

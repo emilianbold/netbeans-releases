@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -55,6 +56,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -62,8 +64,12 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
+import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -72,6 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.NbCollections;
+import org.openide.util.Parameters;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -352,6 +359,25 @@ public final class ReferenceHelper {
             };            
         }
         assert !Arrays.asList(values).contains(null) : "values=" + Arrays.toString(values) + " base=" + base + " path=" + path; // #119847
+        return setPathPropertyImpl(propertyName, values, propertiesFiles);
+    }
+    
+    /**
+     * Helper method which in project properties file sets up property with
+     * the given name and with (possibly relative) path value.
+     * @return was there any change or not
+     */
+    private boolean setPathProperty(File path, String propertyName) {
+        String[] propertiesFiles = new String[] {
+            AntProjectHelper.PROJECT_PROPERTIES_PATH
+        };
+        String[] values = new String[] {
+            path.getPath()
+        };
+        return setPathPropertyImpl(propertyName, values, propertiesFiles);
+    }
+    
+    private boolean setPathPropertyImpl(String propertyName, String[] values, String[] propertiesFiles) {
         
         boolean metadataChanged = false;
         for (int i=0; i<propertiesFiles.length; i++) {
@@ -917,9 +943,36 @@ public final class ReferenceHelper {
             throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
                 "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
         }
+        return createForeignFileReferenceImpl(file, expectedArtifactType, true);
+    }
+    
+    /**
+     * Create an Ant-interpretable string referring to a file on disk. Compared
+     * to {@link #createForeignFileReference} the file does not have to be 
+     * normalized (ie. it can be relative path to project base folder), no 
+     * relativization or absolutization of path is done and
+     * reference to file is always stored in project properties.
+     * If the file refers to a known Ant artifact according to
+     * {@link AntArtifactQuery#findArtifactFromFile}, of the expected type
+     * and associated with a particular project,
+     * the behavior is identical to {@link #createForeignFileReference(AntArtifact)}.
+     * <p>
+     * Acquires write access.
+     * @param file a file to refer to (need not currently exist)
+     * @param expectedArtifactType the required {@link AntArtifact#getType}
+     * @return a string which can refer to that file somehow
+     *
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public String createForeignFileReferenceAsIs(final File file, final String expectedArtifactType) {
+        return createForeignFileReferenceImpl(file, expectedArtifactType, false);
+    }
+
+    private String createForeignFileReferenceImpl(final File file, final String expectedArtifactType, final boolean performHeuristics) {
+        final File normalizedFile = FileUtil.normalizeFile(file);
         return ProjectManager.mutex().writeAccess(new Mutex.Action<String>() {
             public String run() {
-                AntArtifact art = AntArtifactQuery.findArtifactFromFile(file);
+                AntArtifact art = AntArtifactQuery.findArtifactFromFile(normalizedFile);
                 if (art != null && art.getType().equals(expectedArtifactType) && art.getProject() != null) {
                     try {
                         return createForeignFileReference(art);
@@ -927,8 +980,6 @@ public final class ReferenceHelper {
                         throw new AssertionError(iae);
                     }
                 } else {
-                    String propertiesFile;
-                    String path;
                     File myProjDir = FileUtil.toFile(AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory());
                     String fileID = file.getName();
                     // if the file is folder then add to ID string also parent folder name,
@@ -939,14 +990,42 @@ public final class ReferenceHelper {
                         fileID = file.getParentFile().getName()+"-"+file.getName();
                     }
                     fileID = PropertyUtils.getUsablePropertyName(fileID);
-                    String prop = findReferenceID(fileID, "file.reference.", file.getAbsolutePath()); // NOI18N
+                    String prop = findReferenceID(fileID, "file.reference.", normalizedFile.getAbsolutePath()); // NOI18N
                     if (prop == null) {
-                        prop = generateUniqueID(fileID, "file.reference.", file.getAbsolutePath()); // NOI18N
+                        prop = generateUniqueID(fileID, "file.reference.", normalizedFile.getAbsolutePath()); // NOI18N
                     }
-                    setPathProperty(myProjDir, file, "file.reference." + prop);
+                    if (performHeuristics) {
+                        setPathProperty(myProjDir, normalizedFile, "file.reference." + prop);
+                    } else {
+                        setPathProperty(file, "file.reference." + prop);
+                    }
                     return "${file.reference." + prop + '}'; // NOI18N
                 }
             }
+        });
+    }
+    
+    /**
+     * Create an Ant-interpretable string referring to a file on disk. Compared
+     * to {@link #createForeignFileReference} the file does not have to be 
+     * normalized (ie. it can be relative path to project base folder), no 
+     * relativization or absolutization of path is done and
+     * reference to file is always stored in project properties.
+     * <p>
+     * Acquires write access.
+     * @param file a file to refer to (need not currently exist)
+     * @param fileId
+     * @param propertyPrefix the prefix of the created property
+     * @return a string which can refer to that file somehow
+     *
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public String createExtraForeignFileReferenceAsIs(final File file, final String property) {
+        return ProjectManager.mutex().writeAccess(new Mutex.Action<String>() {
+            public String run() {
+                    setPathProperty(file, property);
+                    return "${" + property + '}'; // NOI18N
+                }
         });
     }
     
@@ -1127,6 +1206,7 @@ public final class ReferenceHelper {
     private static final Pattern FOREIGN_FILE_REFERENCE = Pattern.compile("\\$\\{reference\\.([^.${}]+)\\.([^.${}]+)\\.([\\d&&[^.${}]]+)\\}"); // NOI18N
     private static final Pattern FOREIGN_FILE_REFERENCE_OLD = Pattern.compile("\\$\\{reference\\.([^.${}]+)\\.([^.${}]+)\\}"); // NOI18N
     private static final Pattern FOREIGN_PLAIN_FILE_REFERENCE = Pattern.compile("\\$\\{file\\.reference\\.([^${}]+)\\}"); // NOI18N
+    private static final Pattern LIBRARY_REFERENCE = Pattern.compile("\\$\\{libs\\.([^${}]+)\\.[^${}]+\\}"); // NOI18N
     
     /**
      * Try to find an <code>AntArtifact</code> object corresponding to a given
@@ -1357,7 +1437,107 @@ public final class ReferenceHelper {
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, pub);
         h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
     }
+
+    /**
+     * Create a reference to one volume of a library.
+     * @param library a library
+     * @param volumeType a legal volume type for that library
+     * @return substitutable Ant text suitable for inclusion in a properties file when also loading {@link AntProjectHelper#getProjectLibrariesPropertyProvider}
+     * @see #findLibrary
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public String createLibraryReference(Library library, String volumeType) {
+        if (library.getManager() == LibraryManager.getDefault()) {
+            if (h.isSharableProject()) {
+                throw new IllegalArgumentException("Project ["+ // NOI18N
+                    h.getProjectDirectory()+
+                    "] is sharable and cannot reference global library "+library.getName()); // NOI18N
+            }
+        } else {
+            if (!ProjectLibraryProvider.isReachableLibrary(library, h)) {
+                throw new IllegalArgumentException("Project ["+ // NOI18N
+                    h.getProjectDirectory()+
+                    "] cannot reference a library from "+library.getManager().getLocation()); // NOI18N
+            }
+        }
+        return "${libs." + library.getName() + "." + volumeType + "}"; // NOI18N
+    }
+
+    /**
+     * Gets a library manager corresponding to library definition file referred to from this project.
+     * There is no guarantee that the manager is the same object from call to call
+     * even if the location remain the same; in particular, it is <em>not</em> guaranteed that
+     * the manager match that returned from {@link Library#getManager} for libraries added
+     * from {@link #createLibraryReference}.
+     * @return a library manager associated with project's libraries or null if project is 
+     *  not shared (will not include {@link LibraryManager#getDefault})
+     * @see #createLibraryReference
+     * @see #findLibrary
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public LibraryManager getProjectLibraryManager() {
+        return ProjectLibraryProvider.getProjectLibraryManager(h);
+    }
+
+    /**
+     * Copy global IDE library to sharable libraries definition associated with
+     * this project. Does nothing if project is not sharable.
+     * 
+     * <p>Library creation is done under write access of ProjectManager.mutex().
+     * 
+     * @param lib global library; cannot be null
+     * @return newly created sharable version of library in case of sharable
+     *  project or given global library in case of non-sharable project
+     * @throws java.io.IOException if there was problem copying files
+     * @throws IllegalArgumentException if library is not global one or library
+     *  with this name already exists in sharable libraries definition
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public Library copyLibrary(Library lib) throws IOException {
+        Parameters.notNull("lib", lib);
+        if (lib.getManager() != LibraryManager.getDefault()) {
+            throw new IllegalArgumentException("cannot copy non-global library "+lib.getManager().getLocation()); // NOI18N
+        }
+        if (!h.isSharableProject()) {
+            return lib;
+        }
+        File mainPropertiesFile = h.resolveFile(h.getLibrariesLocation());
+        return ProjectLibraryProvider.copyLibrary(lib, mainPropertiesFile.toURI().toURL(), false);
+    }
     
+    /**
+     * Returns library import handler which imports global library to sharable
+     * one. See {@link LibraryChooser#showDialog} for usage of this handler.
+     * @return copy handler
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public LibraryChooser.LibraryImportHandler getLibraryChooserImportHandler() {
+        return new LibraryChooser.LibraryImportHandler() {
+            public Library importLibrary(Library library) throws IOException {
+                return copyLibrary(library);
+            }
+        };        
+    }
+    /**
+     * Tries to find a library by name in library manager associated with the project.
+     * It is <em>not</em> guaranteed that any returned library is an identical object to one which passed in to {@link #createLibraryReference}.
+     * @param name either a bare {@link Library#getName}, or a reference as created by {@link #createLibraryReference}
+     * @return the first library to be found matching that name, or null if not found
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public Library findLibrary(String name) {
+        Matcher m = LIBRARY_REFERENCE.matcher(name);
+        if (m.matches()) {
+            name = m.group(1);
+        }
+        LibraryManager mgr = getProjectLibraryManager();
+        if (mgr == null) {
+            return LibraryManager.getDefault().getLibrary(name);
+        } else {
+            return mgr.getLibrary(name);
+        }
+    }
+
     /**
      * A raw reference descriptor representing a link to a foreign project
      * and some build artifact used from it.
@@ -1638,7 +1818,11 @@ public final class ReferenceHelper {
         public String getID() {
             return artifactID;
         }
-        
+
+        /**
+         * Get an extra properties used for target execution.
+         * @return a set of properties (may be empty but not null)
+         */
         public Properties getProperties() {
             return props;
         }

@@ -47,8 +47,12 @@ import javax.swing.BorderFactory;
 import javax.swing.event.*;
 import java.awt.event.*;
 import java.beans.*;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.form.project.ClassSource;
 
 import org.openide.WizardDescriptor;
+import org.openide.util.ChangeSupport;
 
 /**
  * The first panel in the wizard for adding new components to the palette from
@@ -59,14 +63,14 @@ import org.openide.WizardDescriptor;
  * @author Tomas Pavek
  */
 
-class ChooseJARWizardPanel implements WizardDescriptor.Panel {
+class ChooseJARWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard> {
 
     private JFileChooser fileChooser;
     private static String lastDirectoryUsed;
 
     private AddToPaletteWizard wizard;
 
-    private EventListenerList listenerList;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     // ----------
     // WizardDescriptor.Panel implementation
@@ -109,7 +113,7 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel {
                 public void propertyChange(PropertyChangeEvent ev) {
                     if (JFileChooser.SELECTED_FILES_CHANGED_PROPERTY
                                         .equals(ev.getPropertyName()))
-                        fireStateChanged();
+                        cs.fireChange();
                 }
             });
         }
@@ -130,40 +134,26 @@ class ChooseJARWizardPanel implements WizardDescriptor.Panel {
         return false;
     }
 
-    public void readSettings(Object settings) {
-        wizard = (AddToPaletteWizard) settings;
+    public void readSettings(AddToPaletteWizard settings) {
+        wizard = settings;
     }
 
-    public void storeSettings(Object settings) {
-        if (fileChooser != null)
-            ((AddToPaletteWizard)settings).setJARFiles(fileChooser.getSelectedFiles());
+    public void storeSettings(AddToPaletteWizard settings) {
+        if (fileChooser != null) {
+            List<ClassSource.JarEntry> entries = new ArrayList<ClassSource.JarEntry>();
+            for (File jar : fileChooser.getSelectedFiles()) {
+                entries.add(new ClassSource.JarEntry(jar));
+            }
+            settings.setJARFiles(entries);
+        }
     }
 
     public void addChangeListener(ChangeListener listener) {
-        if (listenerList == null)
-            listenerList = new EventListenerList();
-        listenerList.add(ChangeListener.class, listener);
+        cs.addChangeListener(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        if (listenerList != null)
-            listenerList.remove(ChangeListener.class, listener);
+        cs.removeChangeListener(listener);
     }
 
-    // -----
-
-    void fireStateChanged() {
-        if (listenerList == null)
-            return;
-
-        ChangeEvent e = null;
-        Object[] listeners = listenerList.getListenerList();
-        for (int i=listeners.length-2; i >= 0; i-=2) {
-            if (listeners[i] == ChangeListener.class) {
-                if (e == null)
-                    e = new ChangeEvent(this);
-                ((ChangeListener)listeners[i+1]).stateChanged(e);
-            }
-        }
-    }
 }

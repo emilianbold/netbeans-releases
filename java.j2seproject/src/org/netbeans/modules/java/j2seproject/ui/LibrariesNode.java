@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.java.j2seproject.ui;
 
-
-import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
@@ -66,12 +64,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -90,9 +85,13 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.ant.FileChooser;
+import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -101,13 +100,9 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
-import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender;
 import org.netbeans.modules.java.j2seproject.ui.customizer.AntArtifactChooser;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
-import org.netbeans.modules.java.j2seproject.ui.customizer.LibrariesChooser;
-
-
-
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.util.Exceptions;
 
 /**
  * LibrariesNode displays the content of classpath and optionaly Java platform.
@@ -128,7 +123,6 @@ final class LibrariesNode extends AbstractNode {
 
     private final String displayName;
     private final Action[] librariesNodeActions;
-
 
     /**
      * Creates new LibrariesNode named displayName displaying classPathProperty classpath
@@ -178,16 +172,28 @@ final class LibrariesNode extends AbstractNode {
     }
 
     //Static Action Factory Methods
-    public static Action createAddProjectAction (Project p, String classPathId) {
-        return new AddProjectAction (p, classPathId);
+    public static Action createAddProjectAction (J2SEProject p, boolean sources) {
+        if (sources) {
+            return new AddProjectAction(p, p.getSourceRoots().getRoots()[0]);
+        } else {
+            return new AddProjectAction(p, p.getTestSourceRoots().getRoots()[0]);
+        }
     }
 
-    public static Action createAddLibraryAction (Project p, String classPathId) {
-        return new AddLibraryAction (p, classPathId);
+    public static Action createAddLibraryAction (J2SEProject p, boolean sources) {
+        if (sources) {
+            return new AddLibraryAction(p, p.getSourceRoots().getRoots()[0]);
+        } else {
+            return new AddLibraryAction(p, p.getTestSourceRoots().getRoots()[0]);
+        }
     }
 
-    public static Action createAddFolderAction (Project p, String classPathId) {
-        return new AddFolderAction (p, classPathId);
+    public static Action createAddFolderAction (J2SEProject p, boolean sources) {
+        if (sources) {
+            return new AddFolderAction(p, p.getSourceRoots().getRoots()[0]);
+        } else {
+            return new AddFolderAction(p, p.getTestSourceRoots().getRoots()[0]);
+        }
     }
     
     /**
@@ -291,13 +297,21 @@ final class LibrariesNode extends AbstractNode {
 
         protected void addNotify() {
             this.eval.addPropertyChangeListener (this);
-            LibraryManager.getDefault().addPropertyChangeListener(this);
+            if (refHelper.getProjectLibraryManager() != null) {
+                refHelper.getProjectLibraryManager().addPropertyChangeListener(this);
+            } else {
+                LibraryManager.getDefault().addPropertyChangeListener(this);
+            }
             this.setKeys(getKeys ());
         }
 
         protected void removeNotify() {
             this.eval.removePropertyChangeListener(this);
-            LibraryManager.getDefault().removePropertyChangeListener(this);
+            if (refHelper.getProjectLibraryManager() != null) {
+                refHelper.getProjectLibraryManager().removePropertyChangeListener(this);
+            } else {
+                LibraryManager.getDefault().removePropertyChangeListener(this);
+            }
             synchronized (this) {
                 if (fsListener!=null) {
                     fsListener.removePropertyChangeListener (this);
@@ -321,7 +335,7 @@ final class LibrariesNode extends AbstractNode {
                         break;
                     case Key.TYPE_LIBRARY:
                         result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
-                            helper, key.getClassPathId(), key.getEntryId())};
+                            helper, refHelper, key.getClassPathId(), key.getEntryId())};
                         break;
                 }
             }
@@ -376,13 +390,14 @@ final class LibrariesNode extends AbstractNode {
                 }
                 else if (prop.startsWith( LIBRARY_PREFIX )) {
                     //Library reference
-                    String eval = prop.substring( LIBRARY_PREFIX.length(), prop.lastIndexOf('.') ); //NOI18N
-                    Library lib = LibraryManager.getDefault().getLibrary (eval);
+                    String val = prop.substring( LIBRARY_PREFIX.length(), prop.lastIndexOf('.') ); //NOI18N
+                    Library lib = refHelper.findLibrary(val);
                     if (lib != null) {
                         List/*<URL>*/ roots = lib.getContent("classpath");  //NOI18N
                         Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
                         for (Iterator it = roots.iterator(); it.hasNext();) {
                             URL rootUrl = (URL) it.next();
+                            rootUrl = LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), rootUrl);
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null) {
@@ -574,12 +589,12 @@ final class LibrariesNode extends AbstractNode {
     private static class AddProjectAction extends AbstractAction {
 
         private final Project project;
-        private final String classPathId;
+        private final FileObject projectSourcesArtifact;
 
-        public AddProjectAction (Project project, String classPathId) {
+        public AddProjectAction (Project project, FileObject projectSourcesArtifact) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddProject_Action" ) );
             this.project = project;
-            this.classPathId = classPathId;
+            this.projectSourcesArtifact = projectSourcesArtifact;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -592,64 +607,45 @@ final class LibrariesNode extends AbstractNode {
         }
 
         private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
-            J2SEProjectClassPathExtender cpExtender = (J2SEProjectClassPathExtender) project.getLookup().lookup(J2SEProjectClassPathExtender.class);
-            if (cpExtender != null) {
-                for (int i=0; i<artifactItems.length;i++) {
-                    try {
-                        cpExtender.addAntArtifact(classPathId, artifactItems[i].getArtifact(), artifactItems[i].getArtifactURI());
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
+            for (int i=0; i<artifactItems.length;i++) {
+                try {
+                    ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{artifactItems[i].getArtifact()}, 
+                            new URI[]{artifactItems[i].getArtifactURI()}, projectSourcesArtifact, ClassPath.COMPILE);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
-            }
-            else {
-                ErrorManager.getDefault().log ("J2SEProjectClassPathExtender not found in the project lookup of project: "+project.getProjectDirectory().getPath());    //NOI18N
             }
         }
     }
 
     private static class AddLibraryAction extends AbstractAction {
 
-        private final Project project;
-        private final String classPathId;
+        private final J2SEProject project;
+        private final FileObject projectSourcesArtifact;
 
-        public AddLibraryAction (Project project, String classPathId) {
+        public AddLibraryAction (J2SEProject project, FileObject projectSourcesArtifact) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddLibrary_Action" ) );
             this.project = project;
-            this.classPathId = classPathId;
+            this.projectSourcesArtifact = projectSourcesArtifact;
         }
 
         public void actionPerformed(ActionEvent e) {
-            Object[] options = new Object[] {
-                new JButton (NbBundle.getMessage (LibrariesNode.class,"LBL_AddLibrary")),
-                DialogDescriptor.CANCEL_OPTION
-            };
-            ((JButton)options[0]).setEnabled(false);
-            ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (LibrariesNode.class,"AD_AddLibrary"));
-            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0]);
-            DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( LibrariesNode.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
-            Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-            dlg.setVisible(true);
-            if (desc.getValue() == options[0]) {
-                addLibraries (panel.getSelectedLibraries());
+            Set<Library> added = LibraryChooser.showDialog(
+                    project.getReferenceHelper().getProjectLibraryManager(), null, 
+                    project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX restrict to j2se libs only?
+            if (added != null) {
+                addLibraries(added.toArray(new Library[added.size()]));
             }
-            dlg.dispose();
         }
 
         private void addLibraries (Library[] libraries) {
-            J2SEProjectClassPathExtender cpExtender = (J2SEProjectClassPathExtender) project.getLookup().lookup(J2SEProjectClassPathExtender.class);
-            if (cpExtender != null) {
-                for (int i=0; i<libraries.length;i++) {
-                    try {
-                        cpExtender.addLibrary(classPathId, libraries[i]);
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
-                    }
+            for (int i=0; i<libraries.length;i++) {
+                try {
+                    ProjectClassPathModifier.addLibraries(new Library[]{libraries[i]}, 
+                            projectSourcesArtifact, ClassPath.COMPILE);
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
-            }
-            else {
-                ErrorManager.getDefault().log ("J2SEProjectClassPathExtender not found in the project lookup of project: "+project.getProjectDirectory().getPath());    //NOI18N
             }
         }
 
@@ -679,17 +675,17 @@ final class LibrariesNode extends AbstractNode {
 
     private static class AddFolderAction extends AbstractAction {
 
-        private final Project project;
-        private final String classPathId;
+        private final J2SEProject project;
+        private final FileObject projectSourcesArtifact;
 
-        public AddFolderAction (Project project, String classPathId) {
+        public AddFolderAction (J2SEProject project, FileObject projectSourcesArtifact) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddFolder_Action" ) );
             this.project = project;
-            this.classPathId = classPathId;
+            this.projectSourcesArtifact = projectSourcesArtifact;
         }
 
         public void actionPerformed(ActionEvent e) {
-            JFileChooser chooser = new JFileChooser();
+            FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
             FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
             chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
             chooser.setMultiSelectionEnabled( true );
@@ -704,7 +700,13 @@ final class LibrariesNode extends AbstractNode {
             chooser.setCurrentDirectory (curDir);
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() );
             if ( option == JFileChooser.APPROVE_OPTION ) {
-                File files[] = chooser.getSelectedFiles();
+                File files[];
+                try {
+                    files = chooser.getFiles();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return;
+                }
                 addJarFiles( files, fileFilter );
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
@@ -712,25 +714,18 @@ final class LibrariesNode extends AbstractNode {
         }
 
         private void addJarFiles (File[] files, FileFilter fileFilter) {
-            J2SEProjectClassPathExtender cpExtender = (J2SEProjectClassPathExtender) project.getLookup().lookup(J2SEProjectClassPathExtender.class);
-            if (cpExtender != null) {
-                for (int i=0; i<files.length;i++) {
-                    try {
-                        //Check if the file is acceted by the FileFilter,
-                        //user may enter the name of non displayed file into JFileChooser
-                        if (fileFilter.accept(files[i])) {
-                            File normalizedFile = FileUtil.normalizeFile(files[i]);
-                            FileObject fo = FileUtil.toFileObject (normalizedFile);
-                            assert fo != null : normalizedFile;
-                            cpExtender.addArchiveFile(classPathId, fo);
-                        }
-                    } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify(ioe);
+            for (int i=0; i<files.length;i++) {
+                try {
+                    //Check if the file is acceted by the FileFilter,
+                    //user may enter the name of non displayed file into JFileChooser
+                    if (fileFilter.accept(files[i])) {
+                        URL u = LibrariesSupport.convertFileToURL(files[i]);
+                        u = FileUtil.getArchiveRoot(u);
+                        ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
                     }
+                } catch (IOException ioe) {
+                    ErrorManager.getDefault().notify(ioe);
                 }
-            }
-            else {
-                ErrorManager.getDefault().log ("J2SEProjectClassPathExtender not found in the project lookup of project: "+project.getProjectDirectory().getPath());    //NOI18N
             }
         }
 

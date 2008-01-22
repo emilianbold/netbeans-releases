@@ -41,9 +41,6 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
-import java.awt.Component;
-import java.awt.event.ActionListener;
-import java.beans.BeanInfo;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,30 +48,21 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import javax.swing.ButtonModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
+import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.util.Utilities;
+import org.openide.util.NbCollections;
 
 /**
  *
  * @author Petr Hrebejk
  */
 public class ClassPathUiSupport {
-    
+
     private ClassPathSupport cps;
      
     /** Creates a new instance of ClassPathSupport */
@@ -103,13 +91,13 @@ public class ClassPathUiSupport {
         return model;
     }
     
-    public static Iterator getIterator( DefaultListModel model ) {        
+    public static Iterator<ClassPathSupport.Item> getIterator( DefaultListModel model ) {        
         // XXX Better performing impl. would be nice
         return getList( model ).iterator();        
     }
     
-    public static List getList( DefaultListModel model ) {
-        return Collections.list( model.elements() );
+    public static List<ClassPathSupport.Item> getList( DefaultListModel model ) {
+        return Collections.list(NbCollections.checkedEnumerationByFilter(model.elements(), ClassPathSupport.Item.class, true));
     }
         
     
@@ -137,7 +125,40 @@ public class ClassPathUiSupport {
         return indices;
         
     } 
-        
+    
+    public static boolean canEdit( ListSelectionModel selectionModel, DefaultListModel listModel ) {        
+        boolean can =  selectionModel.getMinSelectionIndex() == selectionModel.getMaxSelectionIndex() 
+                          && selectionModel.getMinSelectionIndex() != -1;
+        if (can) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(selectionModel.getMinSelectionIndex());
+            can =  item.getType() == ClassPathSupport.Item.TYPE_JAR || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY;
+            if (item.isBroken()) {
+                can = false;
+            }
+        }
+        return can;
+    }
+    
+    static void edit(DefaultListModel listModel, int[] selectedIndices, AntProjectHelper helper) {
+        ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.getElementAt(selectedIndices[0]);
+        if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+            EditJarSupport.Item eji = new EditJarSupport.Item();
+            eji.jarFile = item.getFile();
+            eji.sourceFile = item.getSourceFile();
+            eji.javadocFile = item.getJavadocFile();
+            eji = EditJarSupport.showEditDialog(helper, eji);
+            if (eji != null) {
+                item.setJavadocFile(eji.javadocFile);
+                item.setSourceFile(eji.sourceFile);
+            }
+        }
+        if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+            if (item.getLibrary() != null) {
+                LibrariesCustomizer.showSingleLibraryCustomizer(item.getLibrary());
+            }
+        }
+    }
+    
     public static boolean canMoveUp( ListSelectionModel selectionModel ) {        
         return selectionModel.getMinSelectionIndex() > 0;
     }
@@ -207,7 +228,7 @@ public class ClassPathUiSupport {
                 listModel.add( lastIndex + j++, ClassPathSupport.Item.create( libraries[i], null ) );
             }
         }
-        Set addedLibs = new HashSet (Arrays.asList(libraries));
+        Set<Library> addedLibs = new HashSet<Library>(Arrays.asList(libraries));
         int[] indexes = new int[libraries.length];
         for (int i=0, j=0; i<listModel.getSize(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get (i);

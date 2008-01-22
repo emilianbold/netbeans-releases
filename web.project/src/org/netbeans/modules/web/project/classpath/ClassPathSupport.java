@@ -61,7 +61,6 @@ import org.w3c.dom.Text;
 
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -82,39 +81,40 @@ public class ClassPathSupport {
     private PropertyEvaluator evaluator;
     private ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
-    private Set /*<String>*/ wellKnownPaths;
-    private String libraryPrefix;
-    private String librarySuffix;
-    private String antArtifactPrefix;
         
     public final static String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
     public final static String TAG_WEB_MODULE__ADDITIONAL_LIBRARIES = "web-module-additional-libraries"; // NOI18N
 
+    // Prefixes and suffixes of classpath
+    private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
+    private static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
+    private static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
+
+    // Well known paths
+    private static final Set<String> WELL_KNOWN_PATHS = new HashSet<String>(Arrays.asList(new String[] {
+            "${" + WebProjectProperties.JAVAC_CLASSPATH + "}", //NOI18N
+            "${" + WebProjectProperties.JAVAC_TEST_CLASSPATH  + "}", //NOI18N
+            "${" + WebProjectProperties.RUN_TEST_CLASSPATH  + "}", //NOI18N
+            "${" + WebProjectProperties.BUILD_CLASSES_DIR  + "}", //NOI18N
+            "${" + WebProjectProperties.BUILD_TEST_CLASSES_DIR  + "}", //NOI18N
+    }));
+    
     /** Creates a new instance of ClassPathSupport */
     public ClassPathSupport( PropertyEvaluator evaluator, 
                               ReferenceHelper referenceHelper,
-                              AntProjectHelper antProjectHelper,
-                              String wellKnownPaths[],
-                              String libraryPrefix,
-                              String librarySuffix,
-                              String antArtifactPrefix) {
+                              AntProjectHelper antProjectHelper) {
         this.evaluator = evaluator;
         this.referenceHelper = referenceHelper;
         this.antProjectHelper = antProjectHelper;
-        this.wellKnownPaths = wellKnownPaths == null ? null : new HashSet( Arrays.asList( wellKnownPaths ) );
-        this.libraryPrefix = libraryPrefix;
-        this.librarySuffix = librarySuffix;
-        this.antArtifactPrefix = antArtifactPrefix;
     }
 
     /** Creates list of <CODE>Items</CODE> from given property.
      */    
-    public Iterator /*<Item>*/ itemsIterator( String propertyValue, String webModuleLibraries ) {
-        // XXX More performance frendly impl. would retrun a lazzy iterator.
+    public Iterator<Item> itemsIterator(String propertyValue, String webModuleLibraries) {
         return itemsList( propertyValue, webModuleLibraries ).iterator();
     }
     
-    public List /*<Item>*/ itemsList( String propertyValue, String webModuleLibraries ) {    
+    public List<Item> itemsList(String propertyValue, String webModuleLibraries) {
         
         // Get the list of items which are included in deployment
         Map warMap = ( webModuleLibraries != null ) ? createWarIncludesMap( antProjectHelper, webModuleLibraries) : new LinkedHashMap();
@@ -133,8 +133,9 @@ public class ClassPathSupport {
             } 
             else if ( isLibrary( pe[i] ) ) {
                 //Library from library manager
-                String libraryName = pe[i].substring( libraryPrefix.length(), pe[i].lastIndexOf('.') ); //NOI18N
-                Library library = LibraryManager.getDefault().getLibrary( libraryName );
+                String libraryName = getLibraryNameFromReference(pe[i]);
+                assert libraryName != null : "Not a library reference: "+pe[i];
+                Library library = referenceHelper.findLibrary(libraryName);
                 if ( library == null ) {
                     item = Item.createBroken( Item.TYPE_LIBRARY, pe[i], (String) warMap.get(property));
                 }
@@ -279,7 +280,7 @@ public class ClassPathSupport {
         if ( item.getType() != Item.TYPE_LIBRARY ) {
             throw new IllegalArgumentException( "Item must be of type LIBRARY" );
         }
-        return libraryPrefix + item.getLibrary().getName() + librarySuffix;        
+        return referenceHelper.createLibraryReference(item.getLibrary(), "classpath"); // NOI18N
     }
     
     /**
@@ -322,21 +323,15 @@ public class ClassPathSupport {
     // Private methods ---------------------------------------------------------
 
     private boolean isWellKnownPath( String property ) {
-        return wellKnownPaths == null ? false : wellKnownPaths.contains( property );
+        return WELL_KNOWN_PATHS.contains(property);
     }
     
     private boolean isAntArtifact( String property ) {        
-        return antArtifactPrefix == null ? false : property.startsWith( antArtifactPrefix );
+        return property.startsWith(ANT_ARTIFACT_PREFIX);
     }
     
-    private boolean isLibrary( String property ) {
-        if ( libraryPrefix != null && property.startsWith( libraryPrefix ) ) {
-            return librarySuffix == null ? true : property.endsWith( librarySuffix );
-        }
-        else {
-            return false;
-        }
-        
+    private static boolean isLibrary( String property ) {
+        return property.startsWith(LIBRARY_PREFIX) && property.endsWith(LIBRARY_SUFFIX);
     }
         
     // Private static methods --------------------------------------------------
@@ -728,4 +723,17 @@ public class ClassPathSupport {
         
     }
             
+    /**
+     * Returns library name if given property represents library reference 
+     * otherwise return null.
+     * 
+     * @param property property to test
+     * @return library name or null
+     */
+    public static String getLibraryNameFromReference(String property) {
+        if (!isLibrary(property)) {
+            return null;
+        }
+        return property.substring(LIBRARY_PREFIX.length(), property.lastIndexOf('.')); //NOI18N
+    }
 }

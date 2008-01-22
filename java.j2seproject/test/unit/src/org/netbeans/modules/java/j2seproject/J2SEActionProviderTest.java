@@ -122,7 +122,7 @@ public class J2SEActionProviderTest extends NbTestCase {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj","foo.Main","manifest.mf"); //NOI18N
+        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj","foo.Main","manifest.mf",null); //NOI18N
         EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.put(J2SEProjectProperties.DO_DEPEND, "true"); // to avoid too many changes in tests from issue #118079
         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
@@ -474,7 +474,7 @@ public class J2SEActionProviderTest extends NbTestCase {
     
     public void testGetTargetNamesFromConfig() throws Exception {
         final FileObject projdirFO = scratch.createFolder("projectwithconfigs");
-        J2SEProjectGenerator.createProject(FileUtil.toFile(projdirFO), "projectwithconfigs", null, null);
+        J2SEProjectGenerator.createProject(FileUtil.toFile(projdirFO), "projectwithconfigs", null, null, null);
         final J2SEProject proj = (J2SEProject) ProjectManager.getDefault().findProject(projdirFO);
         final ProjectConfigurationProvider pcp = proj.getLookup().lookup(ProjectConfigurationProvider.class);
         ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {

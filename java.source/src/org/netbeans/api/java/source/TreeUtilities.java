@@ -225,28 +225,6 @@ public final class TreeUtilities {
                 }
                 return null;
             }
-
-            @Override
-            public Void visitVariable(VariableTree node, Void p) {
-                int[] span = findNameSpan(node);
-                
-                if (span != null && span[0] <= pos && pos < span[1]) {
-                    throw new Result(new TreePath(getCurrentPath(), node));
-                }
-                
-                return super.visitVariable(node, p);
-            }
-
-            @Override
-            public Void visitMethod(MethodTree node, Void p) {
-                int[] span = findNameSpan(node);
-                
-                if (span != null && span[0] <= pos && pos < span[1]) {
-                    throw new Result(new TreePath(getCurrentPath(), node));
-                }
-                
-                return super.visitMethod(node, p);
-            }
         }
         
         try {
@@ -521,7 +499,7 @@ public final class TreeUtilities {
      * @since 0.25
      */
     public int[] findNameSpan(ClassTree clazz) {
-        return findNameSpan(clazz.getSimpleName().toString(), clazz, JavaTokenId.CLASS, JavaTokenId.INTERFACE, JavaTokenId.ENUM, JavaTokenId.AT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
+        return findNameSpan(clazz.getSimpleName().toString(), clazz, JavaTokenId.CLASS, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
     }
     
     /**Find span of the {@link MethodTree#getName()} identifier in the source.
@@ -534,27 +512,7 @@ public final class TreeUtilities {
      * @since 0.25
      */
     public int[] findNameSpan(MethodTree method) {
-        if (isSynthetic(info.getCompilationUnit(), method)) {
-            return null;
-        }
-        JCMethodDecl jcm = (JCMethodDecl) method;
-        String name;
-        if (jcm.name == jcm.name.table.init) {
-            TreePath path = info.getTrees().getPath(info.getCompilationUnit(), jcm);
-            if (path == null) {
-                return null;
-            }
-            Element em = info.getTrees().getElement(path);
-            Element clazz;
-            if (em == null || (clazz = em.getEnclosingElement()) == null || !clazz.getKind().isClass()) {
-                return null;
-            }
-            
-            name = clazz.getSimpleName().toString();
-        } else {
-            name = method.getName().toString();
-        }
-        return findNameSpan(name, method);
+        return findNameSpan(method.getName().toString(), method);
     }
     
     /**Find span of the {@link VariableTree#getName()} identifier in the source.

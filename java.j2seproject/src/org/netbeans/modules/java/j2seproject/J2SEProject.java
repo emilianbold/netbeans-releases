@@ -80,6 +80,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImp
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.queries.J2SEProjectEncodingQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
+import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -192,6 +193,7 @@ public final class J2SEProject implements Project, AntProjectListener {
                 helper.getPropertyProvider(J2SEConfigurationProvider.CONFIG_PROPS_PATH),
                 new ConfigPropertyProvider(baseEval1, "nbproject/private/configs", helper), // NOI18N
                 helper.getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                helper.getProjectLibrariesPropertyProvider(),
                 PropertyUtils.userPropertiesProvider(baseEval2,
                     "user.properties.file", FileUtil.toFile(getProjectDirectory())), // NOI18N
                 new ConfigPropertyProvider(baseEval1, "nbproject/configs", helper), // NOI18N
@@ -227,7 +229,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         return eval;
     }
 
-    ReferenceHelper getReferenceHelper () {
+    public ReferenceHelper getReferenceHelper () {
         return this.refHelper;
     }
 
@@ -281,6 +283,8 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SEProjectEncodingQueryImpl (evaluator()),
             new J2SEPropertyEvaluatorImpl(evaluator()),
             new J2SETemplateAttributesProvider(this.helper),
+            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(helper, eval),
+            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(helper, eval),
             new BinaryForSourceQueryImpl(this.sourceRoots, this.testRoots, this.helper, this.eval) //Does not use APH to get/put properties/cfgdata
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N

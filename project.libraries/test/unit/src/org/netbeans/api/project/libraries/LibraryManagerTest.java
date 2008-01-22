@@ -41,24 +41,16 @@
 
 package org.netbeans.api.project.libraries;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.IOException;
+import static org.netbeans.modules.project.libraries.TestUtil.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.StringTokenizer;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.project.libraries.WritableLibraryProvider;
+import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -68,37 +60,31 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.InstanceDataObject;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.Lookups;
-/**
- *
- * @author  Tomas Zezula
- */
+import org.openide.util.test.MockLookup;
+import org.openide.util.test.MockPropertyChangeListener;
+
 public class LibraryManagerTest extends NbTestCase {
-    
-    private TestLibraryProvider lp;
-    
+
+    private WLP lp;
+
     private static final String LIBRARY_TYPE = "j2se";  //NOI18N
     private static final String[] VOLUME_TYPES = new String[] {
         "bin",
         "src",
         "doc"
     };
-    
-    /** Creates a new instance of LibraryManagerTest */
+
     public LibraryManagerTest (String testName) {
         super (testName);
     }
-    
+
     protected void setUp() throws Exception {
         super.setUp();
-        lp = new TestLibraryProvider ();
-        TestUtil.setLookup (Lookups.fixed(new Object[] {
-            lp
-        }));
+        lp = new WLP();
+        MockLookup.setLookup(Lookups.singleton(lp));
         registerLibraryTypeProvider();
     }
-    
-    
+
     private static void registerLibraryTypeProvider () throws Exception {
         StringTokenizer tk = new StringTokenizer("org-netbeans-api-project-libraries/LibraryTypeProviders","/");
         FileObject root = Repository.getDefault().getDefaultFileSystem().getRoot();
@@ -114,30 +100,28 @@ public class LibraryManagerTest extends NbTestCase {
             InstanceDataObject.create (DataFolder.findFolder(root),"TestLibraryTypeProvider",TestLibraryTypeProvider.class);
         }
     }
-    
-    public void testGetLibraries () throws Exception {        
+
+    public void testGetLibraries () throws Exception {
         LibraryManager lm = LibraryManager.getDefault();
-        TestListener tl = new TestListener ();
-        lm.addPropertyChangeListener(tl);
+        MockPropertyChangeListener pcl = new MockPropertyChangeListener();
+        lm.addPropertyChangeListener(pcl);
         Library[] libs = lm.getLibraries();
         assertEquals ("Libraries count", 0, libs.length);
         LibraryImplementation[] impls = createTestLibs ();
-        lp.setLibraries(impls);        
+        lp.set(impls);
         libs = lm.getLibraries();
-        assertEventsEquals(tl.getEventNames(), new String[] {LibraryManager.PROP_LIBRARIES});
-        tl.reset();
+        pcl.assertEvents(LibraryManager.PROP_LIBRARIES);
         assertEquals ("Libraries count", 2, libs.length);
         assertLibsEquals (libs, impls);
-        lp.setLibraries(new LibraryImplementation[0]);        
-        assertEventsEquals(tl.getEventNames(), new String[] {LibraryManager.PROP_LIBRARIES});
-        tl.reset();
+        lp.set();
+        pcl.assertEvents(LibraryManager.PROP_LIBRARIES);
         libs = lm.getLibraries();
         assertEquals ("Libraries count", 0, libs.length);
     }
-    
+
     public void testGetLibrary () throws Exception {
         LibraryImplementation[] impls = createTestLibs ();
-        lp.setLibraries(impls);        
+        lp.set(impls);
         LibraryManager lm = LibraryManager.getDefault();
         Library[] libs = lm.getLibraries();
         assertEquals ("Libraries count", 2, libs.length);
@@ -151,10 +135,11 @@ public class LibraryManagerTest extends NbTestCase {
         lib = lm.getLibrary("Library3");
         assertNull ("Nonexisting library", lib);
     }
-    
+
+    @SuppressWarnings("deprecation")
     public void testAddRemoveLibrary () throws Exception {
         final LibraryImplementation[] impls = createTestLibs();
-        lp.setLibraries(impls);
+        lp.set(impls);
         final LibraryManager lm = LibraryManager.getDefault();
         Library[] libs = lm.getLibraries();
         assertEquals ("Libraries count", 2, libs.length);
@@ -175,11 +160,65 @@ public class LibraryManagerTest extends NbTestCase {
         assertEquals("Libraries count",2,libs.length);
         assertLibsEquals (libs, impls);
     }
-    
+
+    public void testCreateRemoveLibrary() throws Exception {
+        LibraryManager mgr = LibraryManager.getDefault();
+        URL fooJar = mkJar("foo.jar");
+        Library lib = mgr.createLibrary(LIBRARY_TYPE, "NewLib", Collections.singletonMap("bin", Arrays.asList(fooJar)));
+        assertEquals(mgr, lib.getManager());
+        assertEquals(Collections.singletonList(lib), Arrays.asList(mgr.getLibraries()));
+        assertEquals(1, lp.libs.size());
+        assertLibsEquals(new Library[] {lib}, lp.libs.toArray(new LibraryImplementation[1]));
+        mgr.removeLibrary(lib);
+        assertEquals(Collections.emptyList(), Arrays.asList(mgr.getLibraries()));
+        assertEquals(0, lp.libs.size());
+    }
+
+    public void testArealLibraryManagers() throws Exception {
+        ALP alp = new ALP();
+        MockLookup.setLookup(Lookups.fixed(lp, alp));
+        new LibrariesModel().createArea();
+        Area home = new Area("home");
+        Area away = new Area("away");
+        alp.setOpen(home, away);
+        List<String> locations = new ArrayList<String>(); // use list, not set, to confirm size also
+        for (LibraryManager mgr : LibraryManager.getOpenManagers()) {
+            URL loc = mgr.getLocation();
+            locations.add(loc != null ? loc.toString() : "<none>");
+        }
+        Collections.sort(locations);
+        assertEquals("[<none>, http://nowhere.net/away, http://nowhere.net/home, http://nowhere.net/new]", locations.toString());
+        alp.setOpen();
+        try {
+            LibraryManager.forLocation(new URL("http://even-less-anywhere.net/"));
+            fail();
+        } catch (IllegalArgumentException x) {}
+        LibraryManager mgr = LibraryManager.forLocation(home.getLocation());
+        assertEquals(home.getLocation(), mgr.getLocation());
+        assertEquals("home", mgr.getDisplayName());
+        assertEquals(0, mgr.getLibraries().length);
+        MockPropertyChangeListener pcl = new MockPropertyChangeListener();
+        mgr.addPropertyChangeListener(pcl);
+        URL fooJar = mkJar("foo.jar");
+        Library lib = mgr.createLibrary(LIBRARY_TYPE, "NewLib", Collections.singletonMap("bin", Arrays.asList(fooJar)));
+        assertEquals(mgr, lib.getManager());
+        pcl.assertEvents(LibraryManager.PROP_LIBRARIES);
+        assertEquals(Collections.singletonList(lib), Arrays.asList(mgr.getLibraries()));
+        assertEquals(1, alp.libs.get(home).size());
+        LibraryImplementation impl = alp.libs.get(home).iterator().next();
+        assertEquals("NewLib", impl.getName());
+        assertEquals(LIBRARY_TYPE, impl.getType());
+        assertEquals(Arrays.asList(fooJar), impl.getContent("bin"));
+        mgr.removeLibrary(lib);
+        pcl.assertEvents(LibraryManager.PROP_LIBRARIES);
+        assertEquals(Collections.emptyList(), Arrays.asList(mgr.getLibraries()));
+        assertEquals(0, alp.libs.get(home).size());
+    }
+
     static LibraryImplementation[] createTestLibs () throws MalformedURLException {
-        LibraryImplementation[] impls = new LibraryImplementation[] {
-            new TestLibraryImplementation (),
-            new TestLibraryImplementation ()
+        LibraryImplementation[] impls = {
+            LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES),
+            LibrariesSupport.createLibraryImplementation(LIBRARY_TYPE, VOLUME_TYPES),
         };
         impls[0].setName ("Library1");
         impls[1].setName ("Library2");
@@ -189,7 +228,7 @@ public class LibraryManagerTest extends NbTestCase {
         impls[1].setContent("bin", Collections.singletonList(new URL("file:/lib/libest2.so")));
         return impls;
     }
-    
+
     static void assertLibsEquals (Library[] libs, LibraryImplementation[] impls) {
         assertEquals ("libs equals (size)", impls.length, libs.length);
         for (int i=0; i< libs.length; i++) {
@@ -206,77 +245,9 @@ public class LibraryManagerTest extends NbTestCase {
             assertEquals ("libs equals (content doc)", ic, lc);
         }
     }
-    
-    static void assertEventsEquals (List eventNames, String[] expectedName) {
-        assertEquals ("Events equals", Arrays.asList(expectedName), eventNames);
-    }
-    
-    
-    static class TestLibraryProvider implements WritableLibraryProvider  {
-        
-        private PropertyChangeSupport support;
-        private List<LibraryImplementation> libraries;
-        
-        public TestLibraryProvider () {
-            this.support = new PropertyChangeSupport (this);
-            this.libraries = new ArrayList<LibraryImplementation>();
-        }
-        
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            this.support.removePropertyChangeListener(listener);
-        }
 
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            this.support.addPropertyChangeListener(listener);
-        }
-
-        public LibraryImplementation[] getLibraries() {
-            return this.libraries.toArray(new LibraryImplementation[libraries.size()]);
-        }                
-        
-        public void setLibraries (LibraryImplementation[] libraries) {
-            this.libraries = new ArrayList<LibraryImplementation>(Arrays.asList(libraries));
-            this.support.firePropertyChange(PROP_LIBRARIES,null,null);
-        }
-
-        public void addLibrary(LibraryImplementation library) throws IOException {
-            this.libraries.add (library);
-            this.support.firePropertyChange(PROP_LIBRARIES,null,null);
-        }
-
-        public void removeLibrary(LibraryImplementation library) throws IOException {
-            this.libraries.remove (library);
-            this.support.firePropertyChange(PROP_LIBRARIES,null,null);
-        }
-
-        public void updateLibrary(LibraryImplementation oldLibrary, LibraryImplementation newLibrary) throws IOException {
-            this.libraries.remove(oldLibrary);
-            this.libraries.add (newLibrary);
-            this.support.firePropertyChange(PROP_LIBRARIES,null,null);
-        }
-        
-    }
-    
-    static class TestListener implements PropertyChangeListener {
-        
-        private List<String> events = new ArrayList<String>();
-        
-        public void propertyChange(PropertyChangeEvent event) {
-            this.events.add(event.getPropertyName());
-        }                
-        
-        public void reset () {
-            this.events.clear();
-        }
-        
-        public List getEventNames () {
-            return this.events;
-        }
-    }
-    
-    
     public static class TestLibraryTypeProvider implements LibraryTypeProvider {
-            
+
 
         public String getDisplayName() {
             return LIBRARY_TYPE;
@@ -308,84 +279,5 @@ public class LibraryManagerTest extends NbTestCase {
             return null;
         }
     }
-    
-    static class TestLibraryImplementation implements LibraryImplementation {
-        
-        private static final Set<String> supportedTypes;
-        
-        private String name;
-        private String description;        
-        private Map<String,List<URL>> contents;
-        private PropertyChangeSupport support;
-        
-        static {            
-            supportedTypes = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(VOLUME_TYPES)));
-        }
-        
-        public TestLibraryImplementation () {
-            this.contents = new HashMap<String,List<URL>>();
-            this.support = new PropertyChangeSupport (this);
-        }
-        
-        public String getType() {
-            return LIBRARY_TYPE;
-        }
-        
-        public String getName() {
-            return this.name;
-        }
-        
-        public void setName(String name) {
-            this.name = name;
-            this.support.firePropertyChange(PROP_NAME, null, null);
-        }
 
-        public String getLocalizingBundle() {
-            return null;
-        }
-        
-        public void setLocalizingBundle(String resourceName) {  
-        }
-        
-        public String getDescription() {
-            return this.description;
-        }
-
-        public void setDescription(String text) {
-            this.description = text;
-            this.support.firePropertyChange(PROP_DESCRIPTION, null, null);
-        }
-
-        public List<URL> getContent(String volumeType) throws IllegalArgumentException {
-            if (supportedTypes.contains(volumeType)) {
-                List<URL> l = contents.get(volumeType);
-                if (l == null) {
-                    l = Collections.emptyList();
-                }
-                return Collections.unmodifiableList(l);
-            }
-            else {
-                throw new IllegalArgumentException ();
-            }
-        }
-        
-        public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
-            if (supportedTypes.contains(volumeType)) {
-                this.contents.put (volumeType, path);
-                this.support.firePropertyChange(PROP_CONTENT, null, null);
-            }
-            else {
-                throw new IllegalArgumentException ();
-            }
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-            this.support.removePropertyChangeListener(l);
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-            this.support.addPropertyChangeListener(l);
-        }              
-    }
-    
 }

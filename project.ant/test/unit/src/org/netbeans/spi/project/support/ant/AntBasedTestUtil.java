@@ -104,7 +104,7 @@ public class AntBasedTestUtil {
      * with namespaces <samp>urn:test:shared</samp> and <samp>urn:test:private</samp>.
      * Loading the project succeeds unless there is a file in it <samp>nbproject/broken</samp>.
      * The project's methods mostly delegate to the helper; its lookup uses the helper's
-     * supports for ExtensibleMetadataProvider, ActionProvider, and SubprojectProvider,
+     * supports for AuxiliaryConfiguration, CacheDirectoryProvider, and SubprojectProvider,
      * and also adds an instance of String, namely "hello".
      * It also puts the AntProjectHelper into its lookup to assist in testing.
      * <code>build-impl.xml</code> is generated from <code>data/build-impl.xsl</code>
@@ -188,6 +188,7 @@ public class AntBasedTestUtil {
                 genFilesHelper,
                 aux,
                 helper.createCacheDirectoryProvider(),
+                helper.createSharabilityQuery(helper.getStandardPropertyEvaluator(), new String[0], new String[0]),
                 refHelper.createSubprojectProvider(),
                 new TestAntArtifactProvider(),
                 new ProjectXmlSavedHook() {
@@ -436,7 +437,7 @@ public class AntBasedTestUtil {
     /**
      * Get a sample file collocation query provider.
      * Files under the supplied root are normally considered to be collocated.
-     * However the subdirectory <samp>separate<samp> (if it exists) forms its own root.
+     * However the subdirectory <samp>separate</samp> (if it exists) forms its own root.
      * And the subdirectory <samp>transient</samp> (if it exists) does not form a root,
      * but any files in there are not considered collocated with anything.
      */
@@ -481,6 +482,11 @@ public class AntBasedTestUtil {
                 return null;
             }
             return root;
+        }
+
+        @Override
+        public String toString() {
+            return "TestCollocationQueryImplementation[" + root + "]";
         }
         
     }

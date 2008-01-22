@@ -85,7 +85,6 @@ class PaletteItemDataObject extends MultiDataObject {
     static final String ATTR_URL = "urlvalue"; // NOI18N
     static final String TAG_ICON32 = "icon32"; // NOI18N
     // component types: "visual", "menu", "layout", "border"
-    // classpath resource types: "jar", "library", "project" (defined in ClassSource)
 
     private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
 
@@ -153,11 +152,11 @@ class PaletteItemDataObject extends MultiDataObject {
     }
 
     @Override
-    public Node.Cookie getCookie(Class cookieClass) {
+    public <T extends Node.Cookie> T getCookie(Class<T> cookieClass) {
         if (PaletteItem.class.equals(cookieClass)) {
             if (!fileLoaded)
                 loadFile();
-            return paletteItem;
+            return cookieClass.cast(paletteItem);
         }
         return super.getCookie(cookieClass);
     }
@@ -173,8 +172,7 @@ class PaletteItemDataObject extends MultiDataObject {
         FileObject file = getPrimaryFile();
         if (file.getSize() == 0L) { // item file is empty
             // just derive the component class name from the file name
-            item.setComponentClassSource(file.getName().replace('-', '.'),
-                                         null, null);
+            item.setComponentClassSource(new ClassSource(file.getName().replace('-', '.')));
             paletteItem = item;
             return;
         }
@@ -190,19 +188,7 @@ class PaletteItemDataObject extends MultiDataObject {
             
             item.setComponentExplicitType(handler.componentExplicitType);
             if (handler.componentClassName != null || displayName_key != null) {
-                String[] cpTypes;
-                String[] cpNames;
-                if (handler.cpTypeList.size() > 0) {
-                    cpTypes = new String[handler.cpTypeList.size()];
-                    handler.cpTypeList.toArray(cpTypes);
-                    cpNames = new String[handler.cpNameList.size()];
-                    handler.cpNameList.toArray(cpNames);
-                } else {
-                    cpTypes = cpNames = null;
-                }
-                
-                item.setComponentClassSource(handler.componentClassName, cpTypes, cpNames);
-                
+                item.setComponentClassSource(new ClassSource(handler.componentClassName, handler.entries));
                 paletteItem = item;
             }
         } catch (SAXException saxex) {
@@ -239,11 +225,11 @@ class PaletteItemDataObject extends MultiDataObject {
         buff.append(classname);
         buff.append("\" />\n"); // NOI18N
         buff.append("  <classpath>\n"); // NOI18N
-        for (int i=0, n=classSource.getCPRootCount(); i < n; i++) {
+        for (ClassSource.Entry entry : classSource.getEntries()) {
             buff.append("      <resource type=\""); // NOI18N
-            buff.append(classSource.getCPRootType(i));
+            buff.append(entry.getPicklingType());
             buff.append("\" name=\""); // NOI18N
-            buff.append(classSource.getCPRootName(i));
+            buff.append(entry.getPicklingName());
             buff.append("\" />\n"); // NOI18N
             buff.append("  </classpath>\n"); // NOI18N
             buff.append("</palette_item>\n"); // NOI18N
@@ -470,15 +456,13 @@ class PaletteItemDataObject extends MultiDataObject {
     }
     
     private class PaletteItemHandler extends DefaultHandler {
-        List<String> cpTypeList; // list for classpath type entries
-        List<String> cpNameList; // list for classpath root name entries
+        List<ClassSource.Entry> entries;
         String componentClassName;
         String componentExplicitType;
         
         @Override
         public void startDocument() throws SAXException {
-            cpTypeList = new ArrayList<String>();
-            cpNameList = new ArrayList<String>();
+            entries = new ArrayList<ClassSource.Entry>();
             componentClassName = null;
             componentExplicitType = null;
         }
@@ -508,8 +492,10 @@ class PaletteItemDataObject extends MultiDataObject {
                 String type = attributes.getValue(ATTR_TYPE);
                 String name = attributes.getValue(ATTR_NAME);
                 if ((type != null) && (name != null)) {
-                    cpTypeList.add(type);
-                    cpNameList.add(name);
+                    ClassSource.Entry entry = ClassSource.unpickle(type, name);
+                    if (entry != null) {
+                        entries.add(entry);
+                    }
                 }
             } else if (TAG_DESCRIPTION.equals(qName)) {
                 String bundle = attributes.getValue(ATTR_BUNDLE);

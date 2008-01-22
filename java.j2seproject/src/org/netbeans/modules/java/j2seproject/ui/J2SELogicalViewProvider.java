@@ -133,6 +133,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         this.spp = spp;
         assert spp != null;
         this.resolver = resolver;
+        assert resolver != null;
     }
     
     public Node createLogicalView() {

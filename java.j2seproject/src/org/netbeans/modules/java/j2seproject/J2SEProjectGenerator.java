@@ -46,9 +46,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -66,6 +66,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -84,18 +85,31 @@ public class J2SEProjectGenerator {
      * Create a new empty J2SE project.
      * @param dir the top-level directory (need not yet exist but if it does it must be empty)
      * @param name the name for the project
+     * @param librariesDefinition project relative or absolute OS path to libraries definition; can be null
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static AntProjectHelper createProject(final File dir, final String name, final String mainClass, final String manifestFile) throws IOException {
+    public static AntProjectHelper createProject(final File dir, final String name, final String mainClass, 
+            final String manifestFile, final String librariesDefinition) throws IOException {
         final FileObject dirFO = FileUtil.createFolder(dir);
         // if manifestFile is null => it's TYPE_LIB
         final AntProjectHelper[] h = new AntProjectHelper[1];
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
-                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, manifestFile == null); //NOI18N
-                Project p = ProjectManager.getDefault().findProject(dirFO);
+                h[0] = createProject(dirFO, name, "src", "test", mainClass, manifestFile, manifestFile == null, librariesDefinition); //NOI18N
+                final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
                 ProjectManager.getDefault().saveProject(p);
+                final ReferenceHelper refHelper = p.getReferenceHelper();
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                        public Void run() throws Exception {
+                            copyRequiredLibraries(h[0], refHelper);
+                            return null;
+                        }
+                    });
+                } catch (MutexException ex) {
+                    Exceptions.printStackTrace(ex.getException());
+                }
                 FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
                 dirFO.createFolder("test"); // NOI18N
                 if ( mainClass != null ) {
@@ -108,14 +122,15 @@ public class J2SEProjectGenerator {
     }
 
     public static AntProjectHelper createProject(final File dir, final String name,
-                                                  final File[] sourceFolders, final File[] testFolders, final String manifestFile) throws IOException {
+                                                  final File[] sourceFolders, final File[] testFolders, 
+                                                  final String manifestFile, final String librariesDefinition) throws IOException {
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         final FileObject dirFO = FileUtil.createFolder(dir);
         final AntProjectHelper[] h = new AntProjectHelper[1];
         // this constructor creates only java application type
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run () throws IOException {
-                h[0] = createProject(dirFO, name, null, null, null, manifestFile, false);
+                h[0] = createProject(dirFO, name, null, null, null, manifestFile, false, librariesDefinition);
                 final J2SEProject p = (J2SEProject) ProjectManager.getDefault().findProject(dirFO);
                 final ReferenceHelper refHelper = p.getReferenceHelper();
                 try {
@@ -183,6 +198,7 @@ public class J2SEProjectGenerator {
                         }
                         h[0].putPrimaryConfigurationData(data,true);
                         ProjectManager.getDefault().saveProject (p);
+                        copyRequiredLibraries(h[0], refHelper);
                         return null;
                     }
                 });
@@ -195,8 +211,9 @@ public class J2SEProjectGenerator {
     }
 
     private static AntProjectHelper createProject(FileObject dirFO, String name,
-                                                  String srcRoot, String testRoot, String mainClass, String manifestFile, boolean isLibrary) throws IOException {
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE);
+              String srcRoot, String testRoot, String mainClass, String manifestFile, 
+              boolean isLibrary, String librariesDefinition) throws IOException {
+        AntProjectHelper h = ProjectGenerator.createProject(dirFO, J2SEProjectType.TYPE, librariesDefinition);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
@@ -300,6 +317,21 @@ public class J2SEProjectGenerator {
         }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
+    }
+
+    private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {
+        if (!h.isSharableProject()) {
+            return; 
+        }
+        if (rh.getProjectLibraryManager().getLibrary("junit") == null) {
+            rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit")); // NOI18N
+        }
+        if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) {
+            rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
+        }
+        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
+            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
+        }
     }
     
     private static void createMainClass( String mainClassName, FileObject srcFolder ) throws IOException {

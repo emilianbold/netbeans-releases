@@ -177,7 +177,7 @@ public class BrokenReferencesCustomizer extends javax.swing.JPanel {
         BrokenReferencesModel.OneReference or = model.getOneReference(index);
         if (or.getType() == BrokenReferencesModel.REF_TYPE_LIBRARY ||
             or.getType() == BrokenReferencesModel.REF_TYPE_LIBRARY_CONTENT) {
-            LibrariesCustomizer.showCustomizer(null);
+            LibrariesCustomizer.showCustomizer(null, model.getProjectLibraryManager());
         } else if (or.getType() == BrokenReferencesModel.REF_TYPE_PLATFORM) {
             PlatformsCustomizer.showCustomizer(null);
         } else {

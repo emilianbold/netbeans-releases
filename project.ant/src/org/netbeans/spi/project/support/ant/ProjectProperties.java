@@ -409,6 +409,7 @@ final class ProjectProperties {
             standardPropertyEvaluator = PropertyUtils.sequentialPropertyEvaluator(
                 getStockPropertyPreprovider(),
                 getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH),
+                helper.getProjectLibrariesPropertyProvider(),
                 globalProperties,
                 getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         }

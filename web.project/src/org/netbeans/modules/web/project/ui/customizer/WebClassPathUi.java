@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -60,7 +59,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JTable;
@@ -72,9 +70,8 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.libraries.Library;
 
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -85,7 +82,9 @@ import org.openide.util.Utilities;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
@@ -126,7 +125,7 @@ public class WebClassPathUi {
         private PropertyEvaluator evaluator;
         
         // Contains well known paths in the WebProject
-        private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
+        private static final Map<String,String> WELL_KNOWN_PATHS_NAMES = new HashMap<String,String>();
         static {
             WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( WebClassPathUi.class, "LBL_JavacClasspath_DisplayName" ) );
             WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( WebClassPathUi.class,"LBL_JavacTestClasspath_DisplayName") );
@@ -164,7 +163,7 @@ public class WebClassPathUi {
                         return item.getLibrary().getDisplayName();
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
-                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( WebProjectProperties.getAntPropertyName( item.getReference() ) );
+                    String name = WELL_KNOWN_PATHS_NAMES.get(WebProjectProperties.getAntPropertyName(item.getReference()));
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {
@@ -315,7 +314,7 @@ public class WebClassPathUi {
 
     public static class EditMediator implements ActionListener, ListSelectionListener {
                 
-        private final Project project;
+        private final WebProject project;
         private final ListComponent list;
         private final DefaultListModel listModel;
         private final ListSelectionModel selectionModel;
@@ -326,7 +325,7 @@ public class WebClassPathUi {
         private final ButtonModel moveUp;
         private final ButtonModel moveDown;
                     
-        public EditMediator( Project project,
+        public EditMediator( WebProject project,
                              ListComponent list,
                              ButtonModel addJar,
                              ButtonModel addLibrary, 
@@ -339,12 +338,7 @@ public class WebClassPathUi {
             // Remember all buttons
             
             this.list = list;
-            
-            if ( !( list.getModel() instanceof DefaultListModel ) ) {
-                throw new IllegalArgumentException( "The list's model has to be of class DefaultListModel" ); // NOI18N
-            }
-            
-            this.listModel = (DefaultListModel)list.getModel();
+            this.listModel = list.getModel();
             this.selectionModel = list.getSelectionModel();
             
             this.addJar = addJar;
@@ -357,7 +351,7 @@ public class WebClassPathUi {
             this.project = project;
         }
 
-        public static void register(Project project,
+        public static void register(WebProject project,
                                     ListComponent list,
                                     ButtonModel addJar,
                                     ButtonModel addLibrary, 
@@ -424,32 +418,18 @@ public class WebClassPathUi {
                 }
             }
             else if ( source == addLibrary ) {
-                Set/*<Library>*/includedLibraries = new HashSet ();
+                Set<Library> includedLibraries = new HashSet<Library>();
                 for (int i=0; i< listModel.getSize(); i++) {
                     ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(i);
                     if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken() ) {
                         includedLibraries.add( item.getLibrary() );
                     }
                 }
-                Object[] options = new Object[] {
-                    new JButton (NbBundle.getMessage (WebClassPathUi.class,"LBL_AddLibrary")),
-                    DialogDescriptor.CANCEL_OPTION
-                };
-                ((JButton)options[0]).setEnabled(false);
-                ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WebClassPathUi.class,"AD_AddLibrary"));
-                
-                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-                String j2eeVersion = wm.getJ2eePlatformVersion();
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
-                DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( WebClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
-                Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-                dlg.setVisible(true);
-                if (desc.getValue() == options[0]) {
-                   int[] newSelection = ClassPathUiSupport.addLibraries( listModel, list.getSelectedIndices(), panel.getSelectedLibraries(), includedLibraries);
+                Library[] libs = showLibraryChooser(project);
+                if (libs != null) {
+                   int[] newSelection = ClassPathUiSupport.addLibraries( listModel, list.getSelectedIndices(), libs, includedLibraries);
                    list.setSelectedIndices( newSelection );
                 }
-                dlg.dispose();
             }
             else if ( source == addAntArtifact ) { 
                 AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project, list.getComponent().getParent());
@@ -611,4 +591,23 @@ public class WebClassPathUi {
         }
     }
         
+    /**
+     * Opens a library chooser dialog.
+     * @param project a reference project (used to check whether to filter out libraries incompatible with Java EE 1.3)
+     * @return a nonempty list of selected libraries, or null if cancelled
+     */
+    public static Library[] showLibraryChooser(WebProject project) {
+        LibraryChooser.Filter filter = null;
+        if (WebModule.getWebModule(project.getProjectDirectory()).getJ2eePlatformVersion().equals("1.3")) { // NOI18N
+            filter = new LibraryChooser.Filter() {
+                public boolean accept(Library library) {
+                    return !library.getName().matches("jstl11|jaxrpc16|toplink|Spring|jaxws20|jaxb20|struts|jsf"); // NOI18N
+                }
+            };
+        }
+        Set<Library> libs = LibraryChooser.showDialog(project.getReferenceHelper().getProjectLibraryManager(), 
+                filter, project.getReferenceHelper().getLibraryChooserImportHandler());
+        return libs != null ? libs.toArray(new Library[libs.size()]) : null;
+    }
+
 }

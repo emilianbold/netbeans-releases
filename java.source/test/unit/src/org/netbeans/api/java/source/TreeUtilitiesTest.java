@@ -44,7 +44,6 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.File;
@@ -130,36 +129,6 @@ public class TreeUtilitiesTest extends NbTestCase {
         int[] span = info.getTreeUtilities().findNameSpan(ct);
         
         assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {27, 31}));
-    }
-
-    public void testFindNameSpanEnum() throws Exception {
-        prepareTest("Test", "package test; public enum Test {}");
-        
-        ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
-        
-        int[] span = info.getTreeUtilities().findNameSpan(ct);
-        
-        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {56 - 30, 60 - 30}));
-    }
-
-    public void testFindNameSpanInterface() throws Exception {
-        prepareTest("Test", "package test; public interface Test {}");
-        
-        ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
-        
-        int[] span = info.getTreeUtilities().findNameSpan(ct);
-        
-        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {61 - 30, 65 - 30}));
-    }
-
-    public void testFindNameSpanAnnotationType() throws Exception {
-        prepareTest("Test", "package test; public @interface Test {}");
-        
-        ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
-        
-        int[] span = info.getTreeUtilities().findNameSpan(ct);
-        
-        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {62 - 30, 66 - 30}));
     }
     
     public void testFindNameSpan2() throws Exception {
@@ -270,44 +239,6 @@ public class TreeUtilitiesTest extends NbTestCase {
         int[] span = info.getTreeUtilities().findNameSpan(ct);
         
         assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {83 - 30, 87 - 30}));
-    }
-    
-    public void testFindNameSpanConstructor() throws Exception {
-        prepareTest("Test", "package test; public class Test {public Test(){}}");
-        
-        TreePath tp = info.getTreeUtilities().pathFor(70 - 30);
-        MethodTree ct = (MethodTree) tp.getParentPath().getLeaf();
-        
-        int[] span = info.getTreeUtilities().findNameSpan(ct);
-        
-        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {70 - 30, 74 - 30}));
-    }
-    
-    public void testFindNameSpanConstructor2() throws Exception {
-        prepareTest("Test", "package test; public class Test {}");
-        
-        ClassTree ct = (ClassTree) info.getCompilationUnit().getTypeDecls().get(0);
-        MethodTree mt = (MethodTree) ct.getMembers().get(0); // synthetic constructor
-        
-        int[] span = info.getTreeUtilities().findNameSpan(mt);
-        
-        assertNull(span);
-    }
-    
-    public void testTreePath124760a() throws Exception {
-        prepareTest("Test", "package test; public class Test {public Test(int iii[]){}}");
-        
-        TreePath tp = info.getTreeUtilities().pathFor(50);
-        
-        assertEquals(Kind.VARIABLE, tp.getLeaf().getKind());
-    }
-    
-    public void testTreePath124760b() throws Exception {
-        prepareTest("Test", "package test; public class Test {public int test()[]{}}");
-        
-        TreePath tp = info.getTreeUtilities().pathFor(47);
-        
-        assertEquals(Kind.METHOD, tp.getLeaf().getKind());
     }
     
 }

@@ -169,7 +169,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         File proj = getWorkDir();
         clearWorkDir();
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "test-project", null, "manifest.mf");
+        AntProjectHelper aph = J2SEProjectGenerator.createProject(proj, "test-project", null, "manifest.mf", null);
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         assertNotNull(aph);
         FileObject fo = aph.getProjectDirectory();
@@ -195,7 +195,7 @@ public class J2SEProjectGeneratorTest extends NbTestCase {
         File testRoot = new File (root, "test");
         testRoot.mkdir ();
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        AntProjectHelper helper = J2SEProjectGenerator.createProject(proj, "test-project-ext-src", new File[] {srcRoot}, new File[] {testRoot}, "manifest.mf");
+        AntProjectHelper helper = J2SEProjectGenerator.createProject(proj, "test-project-ext-src", new File[] {srcRoot}, new File[] {testRoot}, "manifest.mf", null);
         J2SEProjectGenerator.setDefaultSourceLevel(null);   //NOI18N
         assertNotNull (helper);
         FileObject fo = FileUtil.toFileObject(proj);

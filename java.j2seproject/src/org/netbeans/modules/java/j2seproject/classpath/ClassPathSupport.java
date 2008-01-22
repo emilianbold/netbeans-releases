@@ -49,10 +49,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -66,29 +69,31 @@ import org.openide.filesystems.FileUtil;
  */
 public class ClassPathSupport {
                 
+    // Prefixes and suffixes of classpath
+    private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
+    private static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
+
     private PropertyEvaluator evaluator;
-    private ReferenceHelper referenceHelper;
+    private final ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
     private Set<String> wellKnownPaths;
-    private String libraryPrefix;
-    private String librarySuffix;
     private String antArtifactPrefix;
+    private UpdateHelper updateHelper;
         
     /** Creates a new instance of ClassPathSupport */
     public  ClassPathSupport( PropertyEvaluator evaluator, 
                               ReferenceHelper referenceHelper,
                               AntProjectHelper antProjectHelper,
+                              UpdateHelper updateHelper,
                               String[] wellKnownPaths,
-                              String libraryPrefix,
-                              String librarySuffix,
                               String antArtifactPrefix ) {
         this.evaluator = evaluator;
         this.referenceHelper = referenceHelper;
+        assert referenceHelper != null;
         this.antProjectHelper = antProjectHelper;
         this.wellKnownPaths = wellKnownPaths == null ? null : new HashSet<String>(Arrays.asList(wellKnownPaths));
-        this.libraryPrefix = libraryPrefix;
-        this.librarySuffix = librarySuffix;
         this.antArtifactPrefix = antArtifactPrefix;
+        this.updateHelper = updateHelper;
     }
     
     /** Creates list of <CODE>Items</CODE> from given property.
@@ -112,8 +117,9 @@ public class ClassPathSupport {
             } 
             else if ( isLibrary( pe[i] ) ) {
                 //Library from library manager
-                String libraryName = pe[i].substring( libraryPrefix.length(), pe[i].lastIndexOf('.') ); //NOI18N
-                Library library = LibraryManager.getDefault().getLibrary( libraryName );
+                String libraryName = getLibraryNameFromReference(pe[i]);
+                assert libraryName != null : "Not a library reference: "+pe[i];
+                Library library = referenceHelper.findLibrary(libraryName);
                 if ( library == null ) {
                     item = Item.createBroken( Item.TYPE_LIBRARY, pe[i] );
                 }
@@ -146,14 +152,30 @@ public class ClassPathSupport {
                 File f = null;
                 if (eval != null) {
                     f = antProjectHelper.resolveFile( eval );
-                }                    
+                }
                 
                 if ( f == null || !f.exists() ) {
-                    item = Item.createBroken( f, pe[i] );
+                    item = Item.createBroken( new File(eval), pe[i] );
                 }
                 else {
-                    item = Item.create( f, pe[i] );
+                    item = Item.create( new File(eval), pe[i] );
                 }
+
+                //TODO these should be encapsulated in the Item class 
+                // but that means we need to pass evaluator and antProjectHelper there.
+                String ref = item.getSourceReference();
+                eval = evaluator.evaluate( ref );
+                f = null;
+                if (eval != null && !eval.contains(Item.SOURCE_START)) {
+                    f = antProjectHelper.resolveFile( eval );
+                }
+                ref = item.getJavadocReference();
+                eval = evaluator.evaluate( ref );
+                File f2 = null;
+                if (eval != null && !eval.contains(Item.JAVADOC_START)) {
+                    f2 = antProjectHelper.resolveFile( eval );
+                }
+                item.setInitialSourceAndJavadoc(f, f2);
             }
             
             items.add( item );
@@ -169,13 +191,12 @@ public class ClassPathSupport {
      */
     public String[] encodeToStrings(Iterator<Item> classpath) {
         
-        ArrayList result = new ArrayList();
+        List<String> result = new ArrayList<String>();
         
         while( classpath.hasNext() ) {
 
             Item item = classpath.next();
             String reference = null;
-            
             switch( item.getType() ) {
 
                 case Item.TYPE_JAR:
@@ -187,7 +208,27 @@ public class ClassPathSupport {
                         // New file
                         File file = item.getFile();
                         // pass null as expected artifact type to always get file reference
-                        reference = referenceHelper.createForeignFileReference(file, null);
+                        reference = referenceHelper.createForeignFileReferenceAsIs(file, null);
+                    }
+                    if (item.hasChangedSource()) {
+                        if (item.getSourceFile() != null) {
+                            referenceHelper.createExtraForeignFileReferenceAsIs(item.getSourceFile(), item.getSourceProperty());
+                        } else {
+                            //oh well, how do I do this otherwise??
+                            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            ep.remove(item.getSourceProperty());
+                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                        }
+                    }
+                    if (item.hasChangedJavadoc()) {
+                        if (item.getJavadocFile() != null) {
+                            referenceHelper.createExtraForeignFileReferenceAsIs(item.getJavadocFile(), item.getJavadocProperty());
+                        } else {
+                            //oh well, how do I do this otherwise??
+                            EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            ep.remove(item.getJavadocProperty());
+                            updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                        }
                     }
                     break;
                 case Item.TYPE_LIBRARY:
@@ -208,7 +249,7 @@ public class ClassPathSupport {
                     if ( item.isBroken() ) {
                         break;
                     }
-                    AntArtifact artifact = (AntArtifact)item.getArtifact();                                       
+                    AntArtifact artifact = item.getArtifact();
                     if ( reference == null) {
                         if ( artifact == null ) {
                             break;
@@ -233,7 +274,7 @@ public class ClassPathSupport {
                 items[i] = result.get( i ) + ":";
             }
             else  {       
-                items[i] = (String)result.get( i );    //NOI18N
+                items[i] = result.get(i);
             }
         }
         
@@ -244,7 +285,7 @@ public class ClassPathSupport {
         if ( item.getType() != Item.TYPE_LIBRARY ) {
             throw new IllegalArgumentException( "Item must be of type LIBRARY" );
         }
-        return libraryPrefix + item.getLibrary().getName() + librarySuffix;        
+        return referenceHelper.createLibraryReference(item.getLibrary(), "classpath"); // NOI18N
     }
     
     // Private methods ---------------------------------------------------------
@@ -257,14 +298,8 @@ public class ClassPathSupport {
         return antArtifactPrefix == null ? false : property.startsWith( antArtifactPrefix );
     }
     
-    private boolean isLibrary( String property ) {
-        if ( libraryPrefix != null && property.startsWith( libraryPrefix ) ) {
-            return librarySuffix == null ? true : property.endsWith( librarySuffix );
-        }
-        else {
-            return false;
-        }
-        
+    private static boolean isLibrary( String property ) {
+        return property.startsWith(LIBRARY_PREFIX) && property.endsWith(LIBRARY_SUFFIX);
     }
         
     // Innerclasses ------------------------------------------------------------
@@ -279,12 +314,22 @@ public class ClassPathSupport {
         public static final int TYPE_ARTIFACT = 2;
         public static final int TYPE_CLASSPATH = 3;
         
+        private static final String REF_START = "${file.reference."; //NOI18N
+        private static final int REF_START_INDEX = REF_START.length();
+        private static final String JAVADOC_START = "${javadoc.reference."; //NOI18N
+        private static final String SOURCE_START = "${source.reference."; //NOI18N
         
         private Object object;
         private URI artifactURI;
         private int type;
         private String property;
-        private final boolean broken;
+        private boolean broken;
+        private File sourceFile;
+        private File javadocFile;
+        
+        private File initialSourceFile;
+        private File initialJavadocFile;
+        private String libraryName;
         
         private Item( int type, Object object, String property, boolean broken ) {
             this.type = type;
@@ -301,6 +346,7 @@ public class ClassPathSupport {
             this( type, object, property, false);
             this.artifactURI = artifactURI;
         }
+        
               
         // Factory methods -----------------------------------------------------
         
@@ -309,7 +355,10 @@ public class ClassPathSupport {
             if ( library == null ) {
                 throw new IllegalArgumentException( "library must not be null" ); // NOI18N
             }
-            return new Item( TYPE_LIBRARY, library, property );
+            Item itm = new Item( TYPE_LIBRARY, library, property);
+            itm.libraryName = library.getName();
+            itm.reassignLibraryManager( library.getManager() );
+            return itm;
         }
         
         public static Item create( AntArtifact artifact, URI artifactURI, String property ) {
@@ -340,7 +389,17 @@ public class ClassPathSupport {
             if ( property == null ) {
                 throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
             }
-            return new Item( type, null, property, true);
+            Item itm = new Item( type, null, property, true);
+            if (type == TYPE_LIBRARY) {
+                Pattern LIBRARY_REFERENCE = Pattern.compile("\\$\\{libs\\.([^${}]+)\\.[^${}]+\\}"); // NOI18N
+                Matcher m = LIBRARY_REFERENCE.matcher(property);
+                if (m.matches()) {
+                    itm.libraryName = m.group(1);
+                } else {
+                    assert false : property;
+                }
+            }
+            return itm;
         }                
         
         public static Item createBroken( final File file, String property ) {
@@ -360,7 +419,7 @@ public class ClassPathSupport {
             if ( getType() != TYPE_LIBRARY ) {
                 throw new IllegalArgumentException( "Item is not of required type - LIBRARY" ); // NOI18N
             }
-            assert object instanceof Library :
+            assert object == null || object instanceof Library :
                 "Invalid object type: "+object.getClass().getName()+" instance: "+object.toString()+" expected type: Library";   //NOI18N
             return (Library)object;
         }
@@ -386,10 +445,116 @@ public class ClassPathSupport {
             return artifactURI;
         }
         
+        public void reassignLibraryManager(LibraryManager newManager) {
+            if (getType() != TYPE_LIBRARY) {
+                throw new IllegalArgumentException(" reassigning only works for type - LIBRARY");
+            }
+            assert libraryName != null;
+            if (getLibrary() == null || newManager != getLibrary().getManager()) {
+                Library lib = newManager.getLibrary(libraryName);
+                if (lib == null) {
+                    broken = true;
+                    object = null;
+                } else {
+                    object = lib;
+                    broken = false;
+                }
+            }
+        }
         
         public String getReference() {
             return property;
         }
+        
+        /**
+         * only applicable to TYPE_JAR
+         * 
+         * @return
+         */
+        public String getSourceReference() {
+            return property != null ? (SOURCE_START + property.substring(REF_START_INDEX)) : property;
+        }
+        
+        public String getSourceProperty() {
+            return property != null ? (getSourceReference().substring(2, getSourceReference().length() - 1)) : null;
+        }
+        
+        /**
+         * only applicable to TYPE_JAR
+         * 
+         * @return
+         */
+        public String getJavadocReference() {
+            return property != null ? (JAVADOC_START + property.substring(REF_START_INDEX)) : property;
+        }
+        
+        public String getJavadocProperty() {
+            return property != null ? (getJavadocReference().substring(2, getJavadocReference().length() - 1)) : null;
+        }
+        
+        /**
+         * only applicable to TYPE_JAR
+         * 
+         * @return
+         */
+        public File getSourceFile() {
+            return sourceFile;
+        }
+        
+        /**
+         * only applicable to TYPE_JAR
+         * 
+         * @return
+         */
+        public File getJavadocFile() {
+            return javadocFile;
+        }
+        
+        /**
+         * only applicable to TYPE_JAR
+         * 
+         * @return
+         */
+        public void setJavadocFile(File javadoc) {
+            javadocFile = javadoc;
+        }
+        
+        /**
+         * only applicable to TYPE_JAR
+         * 
+         * @return
+         */
+        public void setSourceFile(File source) {
+            sourceFile = source;
+        }
+        
+        public void setInitialSourceAndJavadoc(File source, File javadoc) {
+            initialSourceFile = source;
+            initialJavadocFile = javadoc;
+            sourceFile = source;
+            javadocFile = javadoc;
+        }
+        
+        public boolean hasChangedSource() {
+            if ((initialSourceFile == null) != (sourceFile == null)) {
+                return true;
+            }
+            if (initialSourceFile != null && sourceFile != null) {
+                return ! initialSourceFile.getPath().equals(sourceFile.getPath());
+            }
+            return true;
+        }
+        
+        public boolean hasChangedJavadoc() {
+            if ((initialJavadocFile == null) != (javadocFile == null)) {
+                return true;
+            }
+            if (initialJavadocFile != null && javadocFile != null) {
+                return ! initialJavadocFile.getPath().equals(javadocFile.getPath());
+            }
+            return true;
+        }
+        
         
         public boolean isBroken() {
             return this.broken;
@@ -464,43 +629,6 @@ public class ClassPathSupport {
     }
     
     /**
-     * Tokenize library classpath and try to relativize all the jars.
-     * @param ep the editable properties in which the result should be stored
-     * @param aph AntProjectHelper used to resolve files
-     * @param libCpProperty the library classpath property
-     */
-    public static boolean relativizeLibraryClassPath (final EditableProperties ep, final AntProjectHelper aph, final String libCpProperty) {
-        String value = PropertyUtils.getGlobalProperties().getProperty(libCpProperty);
-        // bugfix #42852, check if the classpath property is set, otherwise return null
-        if (value == null) {
-            return false;
-        }
-        String[] paths = PropertyUtils.tokenizePath(value);
-        StringBuffer sb = new StringBuffer();
-        File projectDir = FileUtil.toFile(aph.getProjectDirectory());
-        for (int i=0; i<paths.length; i++) {
-            File f = aph.resolveFile(paths[i]);
-            if (CollocationQuery.areCollocated(f, projectDir)) {
-                sb.append(PropertyUtils.relativizeFile(projectDir, f));
-            } else {
-                return false;
-            }
-            if (i+1<paths.length) {
-                sb.append(File.pathSeparatorChar);
-            }
-        }
-        if (sb.length() == 0) {
-            return false;
-        }            
-        ep.setProperty(libCpProperty, sb.toString());
-        ep.setComment(libCpProperty, new String[]{
-            // XXX this should be I18N! Not least because the English is wrong...
-            "# Property "+libCpProperty+" is set here just to make sharing of project simpler.",
-            "# The library definition has always preference over this property."}, false);
-        return true;
-    }
-    
-    /**
      * Converts the ant reference to the name of the referenced property
      * @param ant reference
      * @param the name of the referenced property
@@ -515,5 +643,18 @@ public class ClassPathSupport {
             return property;
         }
     }
-            
+
+    /**
+     * Returns library name if given property represents library reference 
+     * otherwise return null.
+     * 
+     * @param property property to test
+     * @return library name or null
+     */
+    public static String getLibraryNameFromReference(String property) {
+        if (!isLibrary(property)) {
+            return null;
+        }
+        return property.substring(LIBRARY_PREFIX.length(), property.lastIndexOf('.')); //NOI18N
+    }
 }

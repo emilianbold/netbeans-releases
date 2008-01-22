@@ -41,64 +41,57 @@
 
 package org.netbeans.api.project.libraries;
 
+import static org.netbeans.modules.project.libraries.TestUtil.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.openide.util.lookup.Lookups;
-/**
- *
- * @author  Tomas Zezula
- */
+import org.openide.util.test.MockLookup;
+import org.openide.util.test.MockPropertyChangeListener;
+
 public class LibraryTest extends NbTestCase {
 
-    private LibraryManagerTest.TestLibraryProvider lp;
+    private WLP lp;
 
-    /** Creates a new instance of LibraryManagerTest */
     public LibraryTest (String testName) {
         super (testName);
     }
     
     protected void setUp() throws Exception {
         super.setUp();
-        lp = new LibraryManagerTest.TestLibraryProvider ();
-        TestUtil.setLookup (Lookups.fixed(new Object[] {lp}));
+        lp = new WLP();
+        MockLookup.setLookup(Lookups.singleton(lp));
     }
     
     public void testGetLibraries () throws Exception {        
         LibraryManager lm = LibraryManager.getDefault();
         Library[] libs = lm.getLibraries();
         LibraryImplementation[] impls = LibraryManagerTest.createTestLibs ();
-        lp.setLibraries(impls);        
+        lp.set(impls);
         libs = lm.getLibraries();
         assertEquals ("Libraries count", 2, libs.length);
         LibraryManagerTest.assertLibsEquals (libs, impls);
-        LibraryManagerTest.TestListener tl = new LibraryManagerTest.TestListener ();
-        libs[0].addPropertyChangeListener(tl);
+        MockPropertyChangeListener pcl = new MockPropertyChangeListener();
+        libs[0].addPropertyChangeListener(pcl);
         impls[0].setName("NewLibrary1");
-        LibraryManagerTest.assertEventsEquals(tl.getEventNames(), new String[] {Library.PROP_NAME});
-        tl.reset();
+        pcl.assertEvents(Library.PROP_NAME);
         LibraryManagerTest.assertLibsEquals (new Library[] {libs[0]}, new LibraryImplementation[] {impls[0]});
         
         impls[0].setDescription("NewLibrary1Description");
-        LibraryManagerTest.assertEventsEquals(tl.getEventNames(), new String[] {Library.PROP_DESCRIPTION});
-        tl.reset();
+        pcl.assertEvents(Library.PROP_DESCRIPTION);
         LibraryManagerTest.assertLibsEquals (new Library[] {libs[0]}, new LibraryImplementation[] {impls[0]});
         List<URL> urls = new ArrayList<URL>();
         urls.add (new URL ("file:/lib/libnew1.so"));
         urls.add (new URL ("file:/lib/libnew2.so"));
         impls[0].setContent ("bin",urls);        
-        LibraryManagerTest.assertEventsEquals(tl.getEventNames(), new String[] {Library.PROP_CONTENT});
-        tl.reset();
+        pcl.assertEvents(Library.PROP_CONTENT);
         LibraryManagerTest.assertLibsEquals (new Library[] {libs[0]}, new LibraryImplementation[] {impls[0]});
         urls = new ArrayList<URL>();
         urls.add (new URL ("file:/src/new/src/"));
         impls[0].setContent ("src",urls);        
-        LibraryManagerTest.assertEventsEquals(tl.getEventNames(), new String[] {Library.PROP_CONTENT});
-        tl.reset();
+        pcl.assertEvents(Library.PROP_CONTENT);
         LibraryManagerTest.assertLibsEquals (new Library[] {libs[0]}, new LibraryImplementation[] {impls[0]});
     }    
     

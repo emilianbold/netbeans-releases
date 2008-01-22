@@ -44,8 +44,10 @@ package org.netbeans.spi.project.support.ant;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -57,8 +59,11 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.modules.queries.AlwaysRelativeCollocationQuery;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -66,9 +71,8 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.test.MockLookup;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -148,17 +152,12 @@ public class ReferenceHelperTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        super.setUp();        
-        Object[] instances = new Object[] {
-            AntBasedTestUtil.testAntBasedProjectType(),
-            AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir()),
-        };
+        super.setUp();
         ClassLoader l = ReferenceHelper.class.getClassLoader();
-        TestUtil.setLookup (new ProxyLookup (new Lookup[] {
-            Lookups.fixed(instances),
+        MockLookup.setLookup(
+            Lookups.fixed(AntBasedTestUtil.testAntBasedProjectType(), AntBasedTestUtil.testCollocationQueryImplementation(getWorkDir())),
             Lookups.singleton(l),
-            Lookups.exclude(Lookups.metaInfServices(l), new Class[] {AlwaysRelativeCollocationQuery.class})
-        }));
+            Lookups.exclude(Lookups.metaInfServices(l), AlwaysRelativeCollocationQuery.class));
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");
         TestUtil.createFileFromContent(ReferenceHelperTest.class.getResource("data/project.xml"), projdir, "nbproject/project.xml");
@@ -219,7 +218,6 @@ public class ReferenceHelperTest extends NbTestCase {
         p = null;
         h = null;
         //l = null;
-        TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
 
@@ -1093,6 +1091,68 @@ public class ReferenceHelperTest extends NbTestCase {
             actualScriptLocations.add(Util.findText(script));
         }
         assertEquals(Arrays.asList(scriptLocations), actualScriptLocations);
+    }
+
+    public void testProjectLibraryReferences() throws Exception {
+        ProjectLibraryProvider.FIRE_CHANGES_SYNCH = true;
+        assertProjectLibraryManagers(null);
+        File fooJar = new File(getWorkDir(), "foo.jar");
+        File f = new File(getWorkDir(), "libs.properties");
+        URL loc = f.toURI().toURL();
+        LibraryManager mgr = LibraryManager.forLocation(loc);
+        assertEquals(loc, mgr.getLocation());
+        Library fooLib = mgr.createLibrary("j2se", "foo",
+                Collections.singletonMap("classpath", Arrays.asList(new URL("jar:" + fooJar.toURI() + "!/"))));
+        assertEquals(mgr, fooLib.getManager());
+        try {
+            r.createLibraryReference(fooLib, "classpath");
+            fail("cannot reference library which is not reachable from project");
+        } catch (IllegalArgumentException ex) {
+            // as expected
+        }
+        h.setLibrariesLocation(f.getAbsolutePath());
+        String fooref = r.createLibraryReference(fooLib, "classpath");
+        assertEquals("${libs.foo.classpath}", fooref);
+        assertEquals(fooJar.getAbsolutePath(), pev.evaluate(fooref).replace('/', File.separatorChar));
+        assertProjectLibraryManagers(loc);
+        assertEquals("foo", r.findLibrary("foo").getName());
+        assertEquals("foo", r.findLibrary("${libs.foo.classpath}").getName());
+        assertNull(r.findLibrary("nonexistent"));
+        assertNull(r.findLibrary("${libs.nonexistent.classpath}"));
+        assertNull(r.findLibrary("${some.other.foo.stuff}"));
+        File barDir = new File(getWorkDir(), "bar");
+        barDir.mkdirs();
+        String barref = r.createLibraryReference(mgr.createLibrary("j2se", "bar",
+                Collections.singletonMap("classpath", Arrays.asList(barDir.toURI().toURL()))), "classpath");
+        assertEquals("${libs.bar.classpath}", barref);
+        assertEquals(barDir.getAbsolutePath(), pev.evaluate(barref).replace('/', File.separatorChar));
+        EditableProperties props = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        props.put("javac.classpath", "stuff:" + fooref + ":which-is-not-bar");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        assertProjectLibraryManagers(loc);
+        assertEquals("foo", r.findLibrary("foo").getName());
+        assertEquals("foo", r.findLibrary("${libs.foo.classpath}").getName());
+        assertEquals("bar", r.findLibrary("bar").getName());
+        assertEquals("bar", r.findLibrary("${libs.bar.classpath}").getName());
+        mgr.createLibrary("j2se", "empty", Collections.<String,List<URL>>emptyMap());
+        assertEquals("stuff:" + fooJar + ":which-is-not-bar", pev.evaluate("${javac.classpath}").replace('/', File.separatorChar));
+        props.put("javac.classpath", "nolibshere");
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+        assertEquals("nolibshere", pev.getProperty("javac.classpath"));
+        assertEquals(fooJar.getAbsolutePath(), pev.getProperty("libs.foo.classpath").replace('/', File.separatorChar));
+        assertProjectLibraryManagers(loc);
+        assertEquals("foo", r.findLibrary("foo").getName());
+        assertEquals("foo", r.findLibrary("${libs.foo.classpath}").getName());
+        assertEquals("bar", r.findLibrary("bar").getName());
+        assertEquals("bar", r.findLibrary("${libs.bar.classpath}").getName());
+    }
+    private void assertProjectLibraryManagers(URL expectedUrl) {
+        LibraryManager mgr = r.getProjectLibraryManager();
+        if (mgr == null) {
+            assertNull(expectedUrl);
+        } else {
+            assertEquals(expectedUrl, mgr.getLocation());
+        }
     }
 
 }

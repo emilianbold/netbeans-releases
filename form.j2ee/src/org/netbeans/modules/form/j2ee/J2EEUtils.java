@@ -48,6 +48,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -79,6 +80,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.form.FormEditor;
 import org.netbeans.modules.form.FormModel;
 import org.netbeans.modules.form.FormProperty;
@@ -282,8 +285,7 @@ public class J2EEUtils {
             FileObject fob = classPath.findResource("oracle/toplink/essentials/ejb/cmp3/EntityManagerFactoryProvider.class"); // NOI18N
             if (fob == null) {
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                    new String[] { ClassSource.LIBRARY_SOURCE },
-                    new String[] { "toplink" }); // NOI18N
+                        new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))); // NOI18N
                 return ClassPathUtils.updateProject(fileInProject, cs);
             }
         } catch (IOException ex) {
@@ -310,16 +312,12 @@ public class J2EEUtils {
             String resourceName = refClassName.replace('.', '/') + ".class"; // NOI18N
             FileObject fob = classPath.findResource(resourceName); // NOI18N
             if (fob == null) {
-                String[] cpTypes = new String[urls.length];
-                String[] cpRoots = new String[urls.length];
-
-                for (int i=0; i<urls.length; i++) {
-                    cpTypes[i] = ClassSource.JAR_SOURCE;
-                    cpRoots[i] = FileUtil.toFile(URLMapper.findFileObject(urls[i])).getAbsolutePath();
+                List<ClassSource.Entry> cpEntries = new ArrayList<ClassSource.Entry>(urls.length);
+                for (URL url : urls) {
+                    cpEntries.add(new ClassSource.JarEntry(
+                            FileUtil.toFile(URLMapper.findFileObject(url))));
                 }
-
-                ClassSource cs = new ClassSource("", cpTypes, cpRoots); // NOI18N
-                return ClassPathUtils.updateProject(fileInProject, cs);
+                return ClassPathUtils.updateProject(fileInProject, new ClassSource("", cpEntries)); // NOI18N
             }
         } catch (IOException ex) {
             Logger.getLogger(J2EEUtils.class.getName()).log(Level.INFO, ex.getMessage(), ex);

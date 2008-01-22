@@ -97,7 +97,7 @@ public class LibraryProviderImpl implements org.netbeans.spi.project.libraries.L
     }
 
     private void fireChange() {
-        support.firePropertyChange("xxx", null, null);
+        support.firePropertyChange(PROP_LIBRARIES, null, null);
     }
     
 }

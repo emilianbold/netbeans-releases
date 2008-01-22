@@ -42,18 +42,18 @@
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -63,33 +63,37 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ant.FileChooser;
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
+import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /** Classes containing code speciic for handling UI of J2SE project classpath 
@@ -114,6 +118,8 @@ public class J2SEClassPathUi {
         private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/java/j2seproject/ui/resources/projectDependencies.gif"; //NOI18N
         private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/java/j2seproject/ui/resources/referencedClasspath.gif"; //NOI18N
         private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif"; //NOI18N
+        private static String RESOURCE_ICON_SOURCE_BADGE = "org/netbeans/modules/java/j2seproject/ui/resources/jarSourceBadge.png"; //NOI18N
+        private static String RESOURCE_ICON_JAVADOC_BADGE = "org/netbeans/modules/java/j2seproject/ui/resources/jarJavadocBadge.png"; //NOI18N
         
         
         private static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
@@ -122,12 +128,15 @@ public class J2SEClassPathUi {
         private static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
         private static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
         private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
+        private static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
+        private static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
         
         private static ImageIcon ICON_BROKEN_JAR;
         private static ImageIcon ICON_BROKEN_LIBRARY;
         private static ImageIcon ICON_BROKEN_ARTIFACT;
                 
         private PropertyEvaluator evaluator;
+        private FileObject projectFolder;
         
         // Contains well known paths in the J2SEProject
         private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
@@ -140,11 +149,13 @@ public class J2SEClassPathUi {
             WELL_KNOWN_PATHS_NAMES.put( J2SEProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (J2SEProjectProperties.class,"LBL_BuildTestClassesDir_DisplayName") );
         };
                 
-        public ClassPathListCellRenderer( PropertyEvaluator evaluator ) {
+        public ClassPathListCellRenderer( PropertyEvaluator evaluator, FileObject projectFolder) {
             super();
             this.evaluator = evaluator;
+            this.projectFolder = projectFolder;
         }
         
+        @Override
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             
             ClassPathSupport.Item item = (ClassPathSupport.Item)value;
@@ -234,7 +245,14 @@ public class J2SEClassPathUi {
                     }
                     else {
                         File file = item.getFile();
-                        return file.isDirectory() ? getFolderIcon() : ICON_JAR;
+                        ImageIcon icn = file.isDirectory() ? getFolderIcon() : ICON_JAR;
+                        if (item.getSourceFile() != null) {
+                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_SOURCE_BADGE.getImage(), 8, 8 ));
+                        }
+                        if (item.getJavadocFile() != null) {
+                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
+                        }
+                        return icn;
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
                     return ICON_CLASSPATH;
@@ -250,8 +268,16 @@ public class J2SEClassPathUi {
                    item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT )  ) {
                 return evaluator.evaluate( item.getReference() );
             }
+            switch ( item.getType() ) {
+                case ClassPathSupport.Item.TYPE_JAR:
+                    File f = item.getFile();
+                    if (!f.isAbsolute()) {
+                        f = FileUtil.normalizeFile(new File(FileUtil.toFile(projectFolder), f.getPath()));
+                        return f.getAbsolutePath();
+                    }
+            }
             
-            return getDisplayName( item ); // XXX
+            return null;
         }
         
         private static ImageIcon getFolderIcon() {
@@ -273,6 +299,15 @@ public class J2SEClassPathUi {
 
         private String getLibraryName( ClassPathSupport.Item item ) {
             String ID = item.getReference();
+            if (ID == null) {
+                if (item.getLibrary() != null) {
+                    return item.getLibrary().getName();
+                }
+                //TODO HUH? happens when adding new library, then changing
+                // the library location to something that doesn't have a reference yet.
+                // why are there items without reference upfront?
+                return "XXX";
+            }
             // something in the form of "${libs.junit.classpath}"
             return ID.substring(7, ID.indexOf(".classpath")); // NOI18N
         }
@@ -298,7 +333,7 @@ public class J2SEClassPathUi {
     
     public static class EditMediator implements ActionListener, ListSelectionListener {
                 
-        private final Project project;
+        private final J2SEProject project;
         private final JList list;
         private final DefaultListModel listModel;
         private final ListSelectionModel selectionModel;
@@ -308,8 +343,10 @@ public class J2SEClassPathUi {
         private final ButtonModel remove;
         private final ButtonModel moveUp;
         private final ButtonModel moveDown;
+        private final ButtonModel edit;
+        private Document libraryPath;
                     
-        public EditMediator( Project project,
+        private EditMediator( J2SEProject project,
                              JList list,
                              DefaultListModel listModel, 
                              ButtonModel addJar,
@@ -317,7 +354,9 @@ public class J2SEClassPathUi {
                              ButtonModel addAntArtifact,
                              ButtonModel remove, 
                              ButtonModel moveUp,
-                             ButtonModel moveDown ) {
+                             ButtonModel moveDown,
+                             ButtonModel edit,
+                             Document libPath) {
                              
             // Remember all buttons
             
@@ -336,11 +375,13 @@ public class J2SEClassPathUi {
             this.remove = remove;
             this.moveUp = moveUp;
             this.moveDown = moveDown;
+            this.edit = edit;
 
             this.project = project;
+            this.libraryPath = libPath;
         }
 
-        public static void register(Project project,
+        public static void register(J2SEProject project,
                                     JList list,
                                     DefaultListModel listModel, 
                                     ButtonModel addJar,
@@ -348,7 +389,9 @@ public class J2SEClassPathUi {
                                     ButtonModel addAntArtifact,
                                     ButtonModel remove, 
                                     ButtonModel moveUp,
-                                    ButtonModel moveDown ) {    
+                                    ButtonModel moveDown,
+                                    ButtonModel edit, 
+                                    Document libraryPath) {    
             
             EditMediator em = new EditMediator( project, 
                                                 list,
@@ -358,7 +401,9 @@ public class J2SEClassPathUi {
                                                 addAntArtifact,
                                                 remove,    
                                                 moveUp,
-                                                moveDown  );
+                                                moveDown, 
+                                                edit,
+                                                libraryPath);
             
             // Register the listener on all buttons
             addJar.addActionListener( em ); 
@@ -367,6 +412,7 @@ public class J2SEClassPathUi {
             remove.addActionListener( em );
             moveUp.addActionListener( em );
             moveDown.addActionListener( em );
+            edit.addActionListener( em );
             // On list selection
             em.selectionModel.addListSelectionListener( em );
             // Set the initial state of the buttons
@@ -383,7 +429,7 @@ public class J2SEClassPathUi {
             
             if ( source == addJar ) { 
                 // Let user search for the Jar file
-                JFileChooser chooser = new JFileChooser();
+                FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
@@ -398,61 +444,84 @@ public class J2SEClassPathUi {
                 int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list ) ); // Sow the chooser
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {
-                    
-                    File files[] = chooser.getSelectedFiles();
+                    File files[];
+                    try {
+                        files = chooser.getFiles();
+                    } catch (IOException ex) {
+                        // TODO: add localized message
+                        Exceptions.printStackTrace(ex);
+                        return;
+                    }
+
                     int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), files  );
                     list.setSelectedIndices( newSelection );
                     curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                     FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
                 }
             }
-            else if ( source == addLibrary ) {                
-                Object[] options = new Object[] {
-                    new JButton (NbBundle.getMessage (J2SEClassPathUi.class,"LBL_AddLibrary")),
-                    DialogDescriptor.CANCEL_OPTION
-                };
-                ((JButton)options[0]).setEnabled(false);
-                ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (J2SEClassPathUi.class,"AD_AddLibrary"));
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0]);
-                DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( J2SEClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
-                Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-                dlg.setVisible(true);
-                //Refresh classpath items                    
-                final Set<Library> includedLibraries = new HashSet<Library> ();
-                for (int i=0; i< listModel.getSize(); i++) {
-                    ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(i);
-                    if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-                         if (item.isBroken()) {
-                             //Try to refresh the broken item, it may be already valid or invalid
-                             final String reference = item.getReference();
-                             final String libraryName = reference.substring( J2SEProjectProperties.LIBRARY_PREFIX.length(), reference.lastIndexOf('.') ); //NOI18N
-                             final Library library = LibraryManager.getDefault().getLibrary( libraryName );                                 
-                             if ( library != null ) {
-                                 listModel.remove(i);                                     
-                                 item = ClassPathSupport.Item.create( library, reference );
-                                 listModel.add(i, item);
-                             }
-                         }
-                         else {
-                             final Library origLibrary = item.getLibrary();
-                             final Library newLibrary = LibraryManager.getDefault().getLibrary(origLibrary.getName());
-                             if (newLibrary == null) {
-                                 listModel.remove(i);                                     
-                                 item = ClassPathSupport.Item.createBroken(ClassPathSupport.Item.TYPE_LIBRARY, item.getReference());
-                                 listModel.add(i, item);
-                             }
-                         }
-                         if (!item.isBroken()) {
-                            includedLibraries.add( item.getLibrary() );
-                         }
+            else if ( source == addLibrary ) {
+                //TODO this piece needs to go somewhere else?
+                LibraryManager manager = null;
+                boolean empty = false;
+                try {
+                    String path = libraryPath.getText(0, libraryPath.getLength());
+                    if (path != null && path.length() > 0) {
+                        File fil = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), path);
+                        URL url = FileUtil.normalizeFile(fil).toURI().toURL();
+                        manager = LibraryManager.forLocation(url);
+                    } else {
+                        empty = true;
                     }
+                } catch (BadLocationException ex) {
+                    empty = true;
+                    Exceptions.printStackTrace(ex);
+                } catch (MalformedURLException ex2) {
+                    Exceptions.printStackTrace(ex2);
                 }
-                if (desc.getValue() == options[0]) {                    
-                   int[] newSelection = ClassPathUiSupport.addLibraries( listModel, list.getSelectedIndices(), panel.getSelectedLibraries(), includedLibraries );
+                if (manager == null && empty) {
+                    manager = LibraryManager.getDefault();
+                }
+                if (manager == null) {
+                    //TODO some error message
+                    return;
+                }
+                
+                Set<Library> added = LibraryChooser.showDialog(manager,
+                        null, project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX filter to j2se libs only?
+                if (added != null) {
+                    Set<Library> includedLibraries = new HashSet<Library>();
+                    for (int i=0; i< listModel.getSize(); i++) {
+                        ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(i);
+                        if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                             if (item.isBroken()) {
+                                 //Try to refresh the broken item, it may be already valid or invalid
+                                 final String reference = item.getReference();
+                                 final String libraryName = ClassPathSupport.getLibraryNameFromReference(reference);
+                                 assert libraryName != null : "Not a library reference: "+reference;
+                                 final Library library = manager.getLibrary( libraryName );                                 
+                                 if ( library != null ) {
+                                     listModel.remove(i);                                     
+                                     item = ClassPathSupport.Item.create( library, reference );
+                                     listModel.add(i, item);
+                                 }
+                             }
+                             else {
+                                 final Library origLibrary = item.getLibrary();
+                                 final Library newLibrary = manager.getLibrary(origLibrary.getName());
+                                 if (newLibrary == null) {
+                                     listModel.remove(i);                                     
+                                     item = ClassPathSupport.Item.createBroken(ClassPathSupport.Item.TYPE_LIBRARY, item.getReference());
+                                     listModel.add(i, item);
+                                 }
+                             }
+                             if (!item.isBroken()) {
+                                includedLibraries.add( item.getLibrary() );
+                             }
+                        }
+                   }
+                   int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), added.toArray(new Library[added.size()]), includedLibraries);
                    list.setSelectedIndices( newSelection );
                 }
-                dlg.dispose();
             }
             else if ( source == addAntArtifact ) { 
                 AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
@@ -466,6 +535,11 @@ public class J2SEClassPathUi {
             else if ( source == remove ) { 
                 int[] newSelection = ClassPathUiSupport.remove( listModel, list.getSelectedIndices() );
                 list.setSelectedIndices( newSelection );
+            }
+            else if ( source == edit ) { 
+                ClassPathSupport.Item item = (Item) listModel.get(list.getSelectedIndices()[0]);
+                ClassPathUiSupport.edit( listModel, list.getSelectedIndices(),  project.getAntProjectHelper());
+                list.repaint(); //need to repaint to get the icon badges right..
             }
             else if ( source == moveUp ) {
                 int[] newSelection = ClassPathUiSupport.moveUp( listModel, list.getSelectedIndices() );
@@ -504,7 +578,7 @@ public class J2SEClassPathUi {
             // addJar allways enabled            
             // addLibrary allways enabled            
             // addArtifact allways enabled            
-            // editButton.setEnabled( edit );            
+            edit.setEnabled( ClassPathUiSupport.canEdit (selectionModel, listModel ));
             remove.setEnabled( canRemove );
             moveUp.setEnabled( ClassPathUiSupport.canMoveUp( selectionModel ) );
             moveDown.setEnabled( ClassPathUiSupport.canMoveDown( selectionModel, listModel.getSize() ) );       

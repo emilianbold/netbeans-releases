@@ -106,6 +106,31 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+    <change id="AttachJavadocSourceToJar">
+        <api name="ui"/>
+        <summary>Added support classes for attaching javadoc/source to jar-based classpath items</summary>
+        <version major="1" minor="14"/>
+        <date day="21" month="1" year="2008"/>
+        <author login="mkleint"/>
+        <compatibility addition="yes"/>
+        <description>
+            2 new utility classes to allow attaching javadoc/source to existing jar dependencies of an Ant-based project.
+            These classes are for use by project type owners. Specifically
+            <ul>
+                <li><code>ExtraSourceJavadocSupport.createExtraSourceQueryImplementation()</code> and 
+                <code>ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation()</code> 
+                create instances to be added to project's Lookup.</li>
+                <li><code>EditJarSupport.showEditDialog()</code> is a facotry method for creating editing UI. To be added to Project's properties dialog
+                preferably the "Libraries" panel. Client code (project type owner) is assumed to write down the ant properties
+               source.reference.__name__ and javadoc.reference.__name__ in the same manner as file.reference.__name__ is persisted.</li>
+            </ul>
+        </description>
+        <class package="org.netbeans.spi.java.project.support" name="ExtraSourceJavadocSupport"/>
+        <class package="org.netbeans.spi.java.project.support.ui" name="EditJarSupport"/>
+        <issue number="70497"/>
+    </change>
+        
     <change id="IncludeExcludeVisualizer">
         <api name="ui"/>
         <summary>Added <code>IncludeExcludeVisualizer</code> support class</summary>

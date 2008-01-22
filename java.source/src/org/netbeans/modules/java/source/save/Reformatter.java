@@ -675,13 +675,7 @@ public class Reformatter implements ReformatTask {
                 if (init != null) {
                     spaces(cs.spaceAroundAssignOps() ? 1 : 0);
                     accept(EQ);
-                    if (init.getKind() == Tree.Kind.NEW_ARRAY && ((NewArrayTree)init).getType() == null) {
-                        if (cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)
-                            spaces(cs.spaceAroundAssignOps() ? 1 : 0);
-                        scan(init, p);
-                    } else {
-                        wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, init);
-                    }
+                    wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, init);
                 }
                 fieldGroup = accept(SEMICOLON, COMMA) == COMMA;
             }
@@ -1551,14 +1545,7 @@ public class Reformatter implements ReformatTask {
             if (b || getCurrentPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION) {
                 spaces(cs.spaceAroundAssignOps() ? 1 : 0);
                 accept(EQ);
-                ExpressionTree expr = node.getExpression();
-                if (expr.getKind() == Tree.Kind.NEW_ARRAY && ((NewArrayTree)expr).getType() == null) {
-                    if (cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)
-                        spaces(cs.spaceAroundAssignOps() ? 1 : 0);
-                    scan(expr, p);
-                } else {
-                    wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, expr);
-                }
+                wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps() ? 1 : 0, node.getExpression());
             } else {
                 scan(node.getExpression(), p);
             }
@@ -1673,9 +1660,7 @@ public class Reformatter implements ReformatTask {
                 CodeStyle.BracePlacement bracePlacement = cs.getOtherBracePlacement();
                 boolean spaceBeforeLeftBrace = cs.spaceBeforeArrayInitLeftBrace();
                 int oldIndent = indent;
-                Tree parent = getCurrentPath().getParentPath().getLeaf();
-                if (parent.getKind() == Tree.Kind.VARIABLE || parent.getKind() == Tree.Kind.ASSIGNMENT)
-                    indent -= continuationIndentSize;
+                indent -= continuationIndentSize;
                 int old = indent;
                 int halfIndent = indent;
                 switch(bracePlacement) {
@@ -1705,7 +1690,6 @@ public class Reformatter implements ReformatTask {
                         break;
                 }
                 if (!inits.isEmpty()) {
-                    boolean oldAfterNewLine = afterNewline;
                     afterNewline = bracePlacement != CodeStyle.BracePlacement.SAME_LINE;
                     if (afterNewline)
                         newline();
@@ -1722,7 +1706,6 @@ public class Reformatter implements ReformatTask {
                         newline();
                     else
                         spaces(cs.spaceWithinBraces() ? 1 : 0);
-                    afterNewline = oldAfterNewLine;
                 }
                 indent = halfIndent;
                 Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
@@ -2107,12 +2090,8 @@ public class Reformatter implements ReformatTask {
                             if (preserveNewline) {
                                 String text = lastWSToken.text().toString();
                                 int idx = text.lastIndexOf('\n'); //NOI18N
-                                if (idx >= 0) {
+                                if (idx >= 0)
                                     spaces = getNewlines(1) + getIndent();
-                                    lastBlankLines = 1;
-                                    lastBlankLinesTokenIndex = tokens.index();
-                                    lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
-                                }
                             }
                             if (spaces.indexOf('\n') >= 0) //NOI18N
                                 afterNewline = true;
@@ -2146,9 +2125,6 @@ public class Reformatter implements ReformatTask {
                                 if (idx >= 0) {
                                     spaces = getNewlines(1) + getIndent();
                                     after = 3;
-                                    lastBlankLines = 1;
-                                    lastBlankLinesTokenIndex = tokens.index();
-                                    lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
                                 }
                             }
                             if (spaces.indexOf('\n') >= 0) //NOI18N
@@ -2194,9 +2170,6 @@ public class Reformatter implements ReformatTask {
                                 if (idx >= 0) {
                                     spaces = getNewlines(1) + getIndent();
                                     after = 3;
-                                    lastBlankLines = 1;
-                                    lastBlankLinesTokenIndex = tokens.index();
-                                    lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
                                 }
                             }
                             if (spaces.indexOf('\n') >= 0) //NOI18N
@@ -2242,9 +2215,6 @@ public class Reformatter implements ReformatTask {
                                 if (idx >= 0) {
                                     spaces = getNewlines(1) + getIndent();
                                     after = 3;
-                                    lastBlankLines = 1;
-                                    lastBlankLinesTokenIndex = tokens.index();
-                                    lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
                                 }
                             }
                             if (spaces.indexOf('\n') >= 0) //NOI18N

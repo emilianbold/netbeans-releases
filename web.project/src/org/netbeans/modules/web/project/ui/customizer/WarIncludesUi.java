@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -57,7 +56,6 @@ import javax.swing.ButtonModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -68,7 +66,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -80,8 +77,9 @@ import org.openide.util.Utilities;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.api.project.libraries.Library;
 
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.modules.web.project.ui.customizer.WarIncludesUiSupport.ClasspathTableModel;
@@ -98,7 +96,7 @@ public class WarIncludesUi {
 
     public static class EditMediator implements ActionListener, ListSelectionListener, TableModelListener {
                 
-        private final Project project;
+        private final WebProject project;
         private final JTable list;
         private final ClasspathTableModel listModel;
         private final ListSelectionModel selectionModel;
@@ -107,7 +105,7 @@ public class WarIncludesUi {
         private final ButtonModel addAntArtifact;
         private final ButtonModel remove;
                     
-        public EditMediator( Project project,
+        public EditMediator( WebProject project,
                              JTable list,
                              ButtonModel addJar,
                              ButtonModel addLibrary, 
@@ -131,7 +129,7 @@ public class WarIncludesUi {
             this.project = project;
         }
 
-        public static void register(Project project,
+        public static void register(WebProject project,
                                     JTable list,
                                     ButtonModel addJar,
                                     ButtonModel addLibrary, 
@@ -181,7 +179,7 @@ public class WarIncludesUi {
                 }
             }
             else if ( source == addLibrary ) {
-                Set/*<Library>*/includedLibraries = new HashSet ();
+                Set<Library> includedLibraries = new HashSet<Library>();
                 Iterator it = WarIncludesUiSupport.getIterator(listModel);
                 while (it.hasNext()) {
                     ClassPathSupport.Item item = (ClassPathSupport.Item) it.next();
@@ -189,24 +187,10 @@ public class WarIncludesUi {
                         includedLibraries.add( item.getLibrary() );
                     }
                 }
-                Object[] options = new Object[] {
-                    new JButton (NbBundle.getMessage (WarIncludesUi.class,"LBL_AddLibrary")),
-                    DialogDescriptor.CANCEL_OPTION
-                };
-                ((JButton)options[0]).setEnabled(false);
-                ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WarIncludesUi.class,"AD_AddLibrary"));
-
-                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-                String j2eeVersion = wm.getJ2eePlatformVersion();
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
-                DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( WarIncludesUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
-                Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-                dlg.setVisible(true);
-                if (desc.getValue() == options[0]) {
-                   WarIncludesUiSupport.addLibraries(panel.getSelectedLibraries(), includedLibraries, list);
+                Library[] libs = WebClassPathUi.showLibraryChooser(project);
+                if (libs != null) {
+                   WarIncludesUiSupport.addLibraries(libs, includedLibraries, list);
                 }
-                dlg.dispose();
             }
             else if ( source == addAntArtifact ) { 
                 AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project, list.getParent());
@@ -288,7 +272,7 @@ public class WarIncludesUi {
         private static ImageIcon ICON_BROKEN_ARTIFACT;
 
         // Contains well known paths in the WebProject
-        private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
+        private static final Map<String,String> WELL_KNOWN_PATHS_NAMES = new HashMap<String,String>();
         static {
             WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class, "LBL_JavacClasspath_DisplayName" ) );
             WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.JAVAC_TEST_CLASSPATH, NbBundle.getMessage( WarIncludesUi.class,"LBL_JavacTestClasspath_DisplayName") );
@@ -319,7 +303,7 @@ public class WarIncludesUi {
                         return item.getLibrary().getDisplayName();
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
-                    String name = (String)WELL_KNOWN_PATHS_NAMES.get( WebProjectProperties.getAntPropertyName( item.getReference() ) );
+                    String name = WELL_KNOWN_PATHS_NAMES.get( WebProjectProperties.getAntPropertyName( item.getReference() ) );
                     return name == null ? item.getReference() : name;
                 case ClassPathSupport.Item.TYPE_ARTIFACT:
                     if ( item.isBroken() ) {

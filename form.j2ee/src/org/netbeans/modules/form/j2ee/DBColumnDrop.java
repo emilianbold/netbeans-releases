@@ -49,6 +49,7 @@ import javax.swing.ImageIcon;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.form.BindingDesignSupport;
 import org.netbeans.modules.form.BindingProperty;
 import org.netbeans.modules.form.FormEditor;
@@ -113,8 +114,8 @@ public class DBColumnDrop extends DBConnectionDrop {
         if (isBindingOnly()) {
             FormEditor.getAssistantModel(model).setContext("columnDropBinding", "columnDropComponent"); // NOI18N
             pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
-                new String[] { ClassSource.LIBRARY_SOURCE },
-                new String[] { "toplink" }), null); // NOI18N
+                        new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
+                        null);
             pItem.setIcon(new ImageIcon(
                 Utilities.loadImage("org/netbeans/modules/form/j2ee/resources/binding.gif")).getImage()); // NOI18N
         } else {

@@ -45,6 +45,13 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import java.awt.Dialog;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
+import org.netbeans.modules.project.libraries.ui.LibrariesModel;
+import org.netbeans.modules.project.libraries.ui.NewLibraryPanel;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryStorageArea;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 
 /** Provides method for opening Libraries customizer
  *
@@ -55,32 +62,116 @@ public final class LibrariesCustomizer {
     }
 
     /**
-     * Shows libraries customizer
+     * Shows libraries customizer for given library manager.
      * @param activeLibrary if not null the activeLibrary is selected in the opened customizer
      * @return true if user pressed OK and libraries were sucessfully modified
      */
-    public static boolean showCustomizer (Library activeLibrary) {
+    public static boolean showCustomizer (Library activeLibrary, LibraryManager libraryManager) {
         org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
-                new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer ();
+                new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (libraryManager.getArea());
+        customizer.setBorder(new EmptyBorder(12, 12, 0, 12));
         if (activeLibrary != null)
             customizer.setSelectedLibrary (activeLibrary.getLibraryImplementation ());
         DialogDescriptor descriptor = new DialogDescriptor (customizer,NbBundle.getMessage(LibrariesCustomizer.class,
                 "TXT_LibrariesManager"));
-        Dialog dlg = null;
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
-            dlg = DialogDisplayer.getDefault().createDialog (descriptor);
             dlg.setVisible(true);
             if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
                 return customizer.apply();
-            }
-            else {
-                customizer.cancel();
+            } else {
+                return false;
             }
         } finally {
-            if (dlg != null)
-                dlg.dispose();
+            dlg.dispose();
         }
-        return false;
     }
+
+    /**
+     * Shows libraries customizer for global libraries.
+     * @param activeLibrary if not null the activeLibrary is selected in the opened customizer
+     * @return true if user pressed OK and libraries were sucessfully modified
+     */
+    public static boolean showCustomizer (Library activeLibrary) {
+        return showCustomizer(activeLibrary, LibraryManager.getDefault());
+    }
+    
+    /**
+     * Show customizer for creating new library in the given library manager.
+     * @param manager manager
+     * @return created persisted library or null if user cancelled operation
+     * @since org.netbeans.modules.project.libraries/1 1.16
+     */
+    public static Library showCreateNewLibraryCustomizer(LibraryManager manager) {                                             
+        if (manager == null) {
+            manager = LibraryManager.getDefault();
+        }
+        LibraryStorageArea area = manager.getArea();
+        if (area == null) {
+            area = LibrariesModel.GLOBAL_AREA;
+        }
+        org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
+                new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (area);
+        NewLibraryPanel p = new NewLibraryPanel(customizer.getModel(), null, area);
+        DialogDescriptor dd = new DialogDescriptor (p, 
+                NbBundle.getMessage(LibrariesCustomizer.class,"LibrariesCustomizer.createLibrary.title"),
+                true, DialogDescriptor.OK_CANCEL_OPTION, null, null);
+        p.setDialogDescriptor(dd);
+        Dialog dlg = DialogDisplayer.getDefault().createDialog (dd);
+        dlg.setVisible(true);
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            LibraryImplementation impl;
+            if (area != LibrariesModel.GLOBAL_AREA) {
+                impl = customizer.getModel().createArealLibrary(p.getLibraryType(), p.getLibraryName(), manager.getArea());
+            } else {
+                LibraryTypeProvider provider = LibraryTypeRegistry.getDefault().getLibraryTypeProvider(p.getLibraryType());
+                if (provider == null) {
+                    return null;
+                }
+                impl = provider.createLibrary();
+                impl.setName(p.getLibraryName());
+            }
+            customizer.getModel().addLibrary(impl);
+            customizer.forceTreeRecreation();
+            if (customizeLibrary(customizer, impl)) {
+                return manager.getLibrary(impl.getName());
+            }
+        }
+        return null;
+    }                                            
+
+    /**
+     * Show library customizer for the given library.
+     * @param library library
+     * @return true if library was modified or not
+     * @since org.netbeans.modules.project.libraries/1 1.16
+     */
+    public static boolean showSingleLibraryCustomizer(Library library) {                                             
+        org.netbeans.modules.project.libraries.ui.LibrariesCustomizer  customizer =
+                new org.netbeans.modules.project.libraries.ui.LibrariesCustomizer (library.getManager().getArea());
+        return customizeLibrary(customizer, library.getLibraryImplementation());
+    }
+    
+    private static boolean customizeLibrary(org.netbeans.modules.project.libraries.ui.LibrariesCustomizer customizer, 
+            LibraryImplementation activeLibrary) {
+        customizer.hideLibrariesList();
+        customizer.setBorder(new EmptyBorder(12, 8, 0, 10));
+        customizer.setSelectedLibrary (activeLibrary);
+        DialogDescriptor descriptor = new DialogDescriptor (customizer,NbBundle.getMessage(LibrariesCustomizer.class,
+                "LibrariesCustomizer.customizeLibrary.title"));
+        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+        try {
+            dlg.setVisible(true);
+            if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+                customizer.apply();
+                return true;
+            } else {
+                return false;
+            }
+        } finally {
+            dlg.dispose();
+        }
+    }
+    
 }
 

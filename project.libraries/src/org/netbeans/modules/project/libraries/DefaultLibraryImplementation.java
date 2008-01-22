@@ -139,8 +139,8 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
         this.listeners.remove (l);
     }
 
-    public String toString () {
-        return "LibraryImplementation[Name="+this.name+"]"; //NOI18N
+    public @Override String toString() {
+        return "DefaultLibraryImplementation[" + name + "]"; // NOI18N
     }
 
     private void firePropertyChange (String propName, Object oldValue, Object newValue) {

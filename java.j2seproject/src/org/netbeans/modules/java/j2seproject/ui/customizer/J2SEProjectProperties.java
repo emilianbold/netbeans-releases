@@ -63,6 +63,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.PlainDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -83,6 +84,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -163,6 +165,7 @@ public class J2SEProjectProperties {
     public static final String APPLICATION_ARGS = "application.args"; // NOI18N
     public static final String JAVADOC_PREVIEW="javadoc.preview"; // NOI18N
 
+    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
     
     // Well known paths
     public static final String[] WELL_KNOWN_PATHS = new String[] {            
@@ -174,9 +177,6 @@ public class J2SEProjectProperties {
             "${" + BUILD_TEST_CLASSES_DIR  + "}", 
     };
     
-    // Prefixes and suffixes of classpath
-    public static final String LIBRARY_PREFIX = "${libs."; // NOI18N
-    public static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
     // XXX looks like there is some kind of API missing in ReferenceHelper?
     public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
 
@@ -203,6 +203,7 @@ public class J2SEProjectProperties {
     ListCellRenderer CLASS_PATH_LIST_RENDERER;
     ListCellRenderer PLATFORM_LIST_RENDERER;
     ListCellRenderer JAVAC_SOURCE_RENDERER;
+    Document SHARED_LIBRARIES_MODEL;
     
     // CustomizerCompile
     ButtonModel JAVAC_DEPRECATION_MODEL; 
@@ -270,7 +271,7 @@ public class J2SEProjectProperties {
         this.evaluator = evaluator;
         this.refHelper = refHelper;
         this.genFileHelper = genFileHelper;
-        this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getAntProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX );
+        this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getAntProjectHelper(), updateHelper, WELL_KNOWN_PATHS, ANT_ARTIFACT_PREFIX );
                 
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();
@@ -284,7 +285,7 @@ public class J2SEProjectProperties {
      */
     private void init() {
         
-        CLASS_PATH_LIST_RENDERER = new J2SEClassPathUi.ClassPathListCellRenderer( evaluator );
+        CLASS_PATH_LIST_RENDERER = new J2SEClassPathUi.ClassPathListCellRenderer(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getSourceRoots() );
@@ -309,6 +310,12 @@ public class J2SEProjectProperties {
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET));
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
+        SHARED_LIBRARIES_MODEL = new PlainDocument(); 
+        try {
+            SHARED_LIBRARIES_MODEL.insertString(0, project.getAntProjectHelper().getLibrariesLocation(), null);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
                 
         // CustomizerCompile
         JAVAC_DEPRECATION_MODEL = projectGroup.createToggleButtonModel( evaluator, JAVAC_DEPRECATION );
@@ -379,6 +386,7 @@ public class J2SEProjectProperties {
     
     public void save() {
         try {                        
+            saveLibrariesLocation();
             // Store properties 
             boolean result = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
                 final FileObject projectDir = updateHelper.getAntProjectHelper().getProjectDirectory();
@@ -413,8 +421,24 @@ public class J2SEProjectProperties {
             ErrorManager.getDefault().notify( ex );
         }
     }
-    
-    
+
+    private void saveLibrariesLocation() throws IOException, IllegalArgumentException {
+        try {
+            String str = SHARED_LIBRARIES_MODEL.getText(0, SHARED_LIBRARIES_MODEL.getLength()).trim();
+            if (str.length() == 0) {
+                str = null;
+            }
+            String old = project.getAntProjectHelper().getLibrariesLocation();
+            if ((old == null && str == null) || (old != null && old.equals(str))) {
+                //ignore, nothing changed..
+            } else {
+                project.getAntProjectHelper().setLibrariesLocation(str);
+                ProjectManager.getDefault().saveProject(project);
+            }
+        } catch (BadLocationException x) {
+            ErrorManager.getDefault().notify(x);
+        }
+    }
         
     private void storeProperties() throws IOException {
         // Store special properties
@@ -487,7 +511,7 @@ public class J2SEProjectProperties {
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
         updateHelper.putProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties );
-        
+
         String value = additionalProperties.get(SOURCE_ENCODING);
         if (value != null) {
             try {
@@ -523,18 +547,30 @@ public class J2SEProjectProperties {
         Set<ClassPathSupport.Item> added = new HashSet<ClassPathSupport.Item>(newArtifacts);
         added.removeAll(oldArtifacts);
         
+        
         // 1. first remove all project references. The method will modify
         // project property files, so it must be done separately
         for (ClassPathSupport.Item item : removed) {
             if ( item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT ||
                     item.getType() == ClassPathSupport.Item.TYPE_JAR ) {
                 refHelper.destroyReference(item.getReference());
+                if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                    //oh well, how do I do this otherwise??
+                    EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                    if (item.getJavadocProperty() != null) {
+                        ep.remove(item.getJavadocProperty());
+                    }
+                    if (item.getSourceProperty() != null) {
+                        ep.remove(item.getSourceProperty());
+                    }
+                    updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+                }
             }
         }
         
+        boolean changed = false;
         // 2. now read project.properties and modify rest
         EditableProperties ep = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );
-        boolean changed = false;
         
         for (ClassPathSupport.Item item : removed) {
             if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
@@ -543,15 +579,6 @@ public class J2SEProjectProperties {
                 prop = ClassPathSupport.getAntPropertyName(prop);
                 ep.remove(prop);
                 changed = true;
-            }
-        }
-        for (ClassPathSupport.Item item : added) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken()) {
-                // add property to project.properties pointing to relativized 
-                // library jar(s) if possible                
-                String prop = cs.getLibraryReference( item );
-                prop = ClassPathSupport.getAntPropertyName(prop);
-                changed |= ClassPathSupport.relativizeLibraryClassPath(ep,updateHelper.getAntProjectHelper(),prop);
             }
         }
         if (changed) {

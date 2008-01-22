@@ -107,7 +107,7 @@ public class BrokenReferencesSupport {
      */
     public static boolean isBroken(AntProjectHelper projectHelper, 
             ReferenceHelper referenceHelper, String[] properties, String[] platformProperties) {
-        return BrokenReferencesModel.isBroken(projectHelper, 
+        return BrokenReferencesModel.isBroken(projectHelper, referenceHelper,
             projectHelper.getStandardPropertyEvaluator(), properties, platformProperties);
     }
     

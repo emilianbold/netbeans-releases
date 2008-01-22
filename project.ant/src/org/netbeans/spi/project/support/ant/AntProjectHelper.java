@@ -60,6 +60,7 @@ import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
 import org.netbeans.modules.project.ant.FileChangeSupport;
 import org.netbeans.modules.project.ant.FileChangeSupportEvent;
 import org.netbeans.modules.project.ant.FileChangeSupportListener;
+import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.modules.project.ant.UserQuestionHandler;
 import org.netbeans.modules.project.ant.Util;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -1019,6 +1020,11 @@ public final class AntProjectHelper {
      * It is permitted, and harmless, to include items that overlap others. For example,
      * you can have both a directory and one of its children in the include list.
      * </p>
+     * <p>
+     * Whether or not you use this method, all files named <code>*-private.properties</code>
+     * outside the project are marked unsharable, as are such files inside the project if currently referenced
+     * as project libraries. (See {@link #getProjectLibrariesPropertyProvider}.)
+     * </p>
      * <div class="nonnormative">
      * <p>
      * Typical usage would be:
@@ -1072,12 +1078,59 @@ public final class AntProjectHelper {
     public PropertyProvider getStockPropertyPreprovider() {
         return properties.getStockPropertyPreprovider();
     }
+
+    /**
+     * Creates a property provider which can load definitions of project libraries.
+     * If this project refers to any project library definition files, they will
+     * be included, with <code>${base}</code> replaced by the appropriate value.
+     * @return a property provider
+     * @since org.netbeans.modules.project.ant/1 1.19
+     * @see <a href="http://www.netbeans.org/ns/ant-project-libraries/1.xsd">Schema for project library references</a>
+     */
+    public PropertyProvider getProjectLibrariesPropertyProvider() {
+        return ProjectLibraryProvider.createPropertyProvider(this);
+    }
+    
+    /**
+     * Is this project shared with other or not, that is is it using shrared 
+     * libraries or not.
+     * @return <code>true</code> for shared project
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public boolean isSharableProject()
+    {
+        return getLibrariesLocation() != null;
+    }
+
+    /**
+     * Returns location of shared libraries associated with this project or null.
+     * @return relative or absolute OS path or null
+     * @since org.netbeans.modules.project.ant/1 1.19
+     */
+    public String getLibrariesLocation()
+    {
+        return ProjectLibraryProvider.getLibrariesLocationText(this.createAuxiliaryConfiguration());
+    }
+    
+    /**
+     * Change project's associated shared libraries location. If location is 
+     * <code>null</code> then project will not have shared libraries and will
+     * be considered as not being shared.
+     * 
+     * @param location project relative or absolute OS path or null
+     * @since org.netbeans.modules.project.ant/1 1.18
+     */
+    public void setLibrariesLocation(String location)
+    {
+        ProjectLibraryProvider.setLibrariesLocation(this, location);
+    }
     
     /**
      * Get a property evaluator that can evaluate properties according to the default
      * file layout for Ant-based projects.
      * First, {@link #getStockPropertyPreprovider stock properties} are predefined.
      * Then {@link #PRIVATE_PROPERTIES_PATH} is loaded via {@link #getPropertyProvider},
+     * then {@link #getProjectLibrariesPropertyProvider},
      * then global definitions from {@link PropertyUtils#globalPropertyProvider}
      * (though these may be overridden using the property <code>user.properties.file</code>
      * in <code>private.properties</code>), then {@link #PROJECT_PROPERTIES_PATH}.
@@ -1127,6 +1180,7 @@ public final class AntProjectHelper {
         return PropertyUtils.resolvePath(FileUtil.toFile(dir), path);
     }
     
+    @Override
     public String toString() {
         return "AntProjectHelper[" + getProjectDirectory() + "]"; // NOI18N
     }

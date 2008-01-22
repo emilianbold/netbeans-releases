@@ -38,63 +38,72 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.java.j2seplatform.libraries;
 
-
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
-
-import java.util.List;
-import java.net.URL;
-
-
-
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class J2SELibraryClassPathProvider implements ClassPathProvider {
 
     public ClassPath findClassPath(FileObject file, String type) {
         assert file != null;
-        Library[] libraries;
         Library ll = this.getLastUsedLibrary(file);
         if (ll != null) {
-            libraries = new Library[] {ll};
+            ClassPath[] cp = findClassPathOrNull(file, type, ll);
+            return cp != null ? cp[0] : null;
         }
         else {
-            libraries = LibraryManager.getDefault().getLibraries();
+            for (LibraryManager mgr : LibraryManager.getOpenManagers()) {
+                for (Library lib : mgr.getLibraries()) {
+                    ClassPath[] cp = findClassPathOrNull(file, type, lib);
+                    if (cp != null) {
+                        return cp[0];
+                    }
+                }
+            }
+            return null;
         }
-        for (int i=0; i< libraries.length; i++) {
-            if (J2SELibraryTypeProvider.LIBRARY_TYPE.equalsIgnoreCase(libraries[i].getType())) {
-                List resources = libraries[i].getContent (J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
-                ClassPath sourcePath = ClassPathSupport.createClassPath((URL[]) resources.toArray(new URL[resources.size()]));
-                FileObject root;
-                if ((root = sourcePath.findOwnerRoot(file))!=null) {
-                    this.setLastUsedLibrary(root,libraries[i]);
-                    if (ClassPath.SOURCE.equals(type)) {
-                        return sourcePath;
-                    }
-                    else if (ClassPath.COMPILE.equals(type)) {
-                        resources = libraries[i].getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
-                        return ClassPathSupport.createClassPath((URL[]) resources.toArray(new URL[resources.size()]));
-                    }
-                    else if (ClassPath.BOOT.equals(type)) {
-                        return JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-                    }
-                    else {
-                        break;
-                    }
+    }
+    private ClassPath[] findClassPathOrNull(FileObject file, String type, Library lib) {
+        if (lib.getType().equals(J2SELibraryTypeProvider.LIBRARY_TYPE)) {
+            List<URL> resources = getResolvedVolume(lib, J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
+            ClassPath sourcePath = ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]));
+            FileObject root = sourcePath.findOwnerRoot(file);
+            if (root != null) {
+                setLastUsedLibrary(root, lib);
+                if (ClassPath.SOURCE.equals(type)) {
+                    return new ClassPath[] {sourcePath};
+                } else if (ClassPath.COMPILE.equals(type)) {
+                    resources = getResolvedVolume(lib, J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+                    return new ClassPath[] {ClassPathSupport.createClassPath(resources.toArray(new URL[resources.size()]))};
+                } else if (ClassPath.BOOT.equals(type)) {
+                    return new ClassPath[] {JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries()};
+                } else {
+                    return new ClassPath[] {null};
                 }
             }
         }
         return null;
     }
-
+    
+    static List<URL> getResolvedVolume(Library lib, String volume) {
+        List<URL> resources = new ArrayList<URL>();
+        for (URL u : lib.getContent(volume)) {
+            resources.add(LibrariesSupport.resolveLibraryEntryURL(lib.getManager().getLocation(), u));
+        }
+        return resources;
+    }
 
     private synchronized Library getLastUsedLibrary (FileObject fo) {
         if (this.lastUsedRoot != null && FileUtil.isParentOf(this.lastUsedRoot,fo)) {

@@ -88,6 +88,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     private final WebProject project;
     private final UpdateHelper helper;
     private final PropertyEvaluator eval;    
+    private final ReferenceHelper refHelper;
     private final ClassPathSupport cs;    
 
     private volatile boolean projectDeleted;
@@ -105,11 +106,8 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         this.project = project;
         this.helper = helper;
         this.eval = eval;
-        this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
-                                        WebProjectProperties.WELL_KNOWN_PATHS, 
-                                        WebProjectProperties.LIBRARY_PREFIX, 
-                                        WebProjectProperties.LIBRARY_SUFFIX, 
-                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );
+        this.refHelper = refHelper;
+        this.cs = new ClassPathSupport(eval, refHelper, helper.getAntProjectHelper());
         
         //#56140
         eval.addPropertyChangeListener(listener); //listen for changes of libraries list
@@ -360,6 +358,12 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     }
     
     private void unregisterLibraryListeners() {
+        LibraryManager mgr = refHelper.getProjectLibraryManager();
+        if (mgr != null) {
+            for (Library lib : mgr.getLibraries()) {
+                lib.removePropertyChangeListener(this);
+            }
+        }
         Library libs [] = LibraryManager.getDefault().getLibraries();
         for (int i = 0; i < libs.length; i++) {
             libs [i].removePropertyChangeListener(listener);

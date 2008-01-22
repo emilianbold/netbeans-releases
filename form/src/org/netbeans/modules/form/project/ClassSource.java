@@ -41,49 +41,277 @@
 
 package org.netbeans.modules.form.project;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ant.AntArtifact;
+import org.netbeans.api.project.ant.AntArtifactQuery;
+import org.netbeans.api.project.ant.FileChooser;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+
 /**
  * Describes a source (i.e. classpath) of a component class to be used in form
  * editor.
  *
- * @author Tomas Pavek
+ * @author Tomas Pavek, Jesse Glick
  */
+public final class ClassSource {
 
-public class ClassSource {
-
-    // classpath source types
-    public static final String JAR_SOURCE = "jar"; // NOI18N
-    public static final String LIBRARY_SOURCE = "library"; // NOI18N
-    public static final String PROJECT_SOURCE = "project"; // NOI18N
-
-    private String className;
-    private String[] cpTypes;
-    private String[] cpRoots;
+    private final String className;
+    private final Collection<? extends Entry> entries;
 
     /**
      * @param className name of the class, can be null
-     * @param cpTypes types of classpath entries in cpRoots (see constants above)
-     * @param cpRoots names of classpath roots
      */
-    public ClassSource(String className, String[] cpTypes, String[] cpRoots) {
+    public ClassSource(String className, Entry... entries) {
+        this(className, Arrays.asList(entries));
+    }
+    public ClassSource(String className, Collection<? extends Entry> entries) {
         this.className = className;
-        this.cpTypes = cpTypes;
-        this.cpRoots = cpRoots;
+        this.entries = entries;
     }
 
     public String getClassName() {
         return className;
     }
 
-    public int getCPRootCount() {
-        return cpTypes != null ? cpTypes.length : 0;
+    public Collection<? extends Entry> getEntries() {
+        return entries;
     }
 
-    public String getCPRootType(int index) {
-        return cpTypes[index];
+    public boolean hasEntries() {
+        return !entries.isEmpty();
     }
 
-    public String getCPRootName(int index) {
-        return cpRoots[index];
+    /** Union of {@link ClassSource.Entry#getClasspath}. */
+    public List<URL> getClasspath() {
+        List<URL> cp = new ArrayList<URL>();
+        for (Entry entry : entries) {
+            cp.addAll(entry.getClasspath());
+        }
+        for (URL u : cp) {
+            assert u.toExternalForm().endsWith("/") : u;
+        }
+        return cp;
+    }
+
+    /** Calls all {@link ClassSource.Entry#addToProjectClassPath} in turn. */
+    public boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
+        for (Entry entry : entries) {
+            if (!entry.addToProjectClassPath(projectArtifact, classPathType)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static final String TYPE_JAR = "jar"; // NOI18N
+    private static final String TYPE_LIBRARY = "library"; // NOI18N
+    private static final String TYPE_PROJECT = "project"; // NOI18N
+
+    /**
+     * Reconstruct from serialized form.
+     * Used by {@link PaletteItemDataObject} for storing *.palette_item files.
+     * @param type as in {@link Entry#getPicklingType}
+     * @param name as in {@link Entry#getPicklingName}
+     */
+    public static Entry unpickle(String type, String name) {
+        if (type.equals(TYPE_JAR)) {
+            return new JarEntry(new File(name));
+        } else if (type.equals(TYPE_LIBRARY)) {
+            Library lib;
+            int hash = name.indexOf('#');
+            if (hash != -1) {
+                try {
+                    lib = LibraryManager.forLocation(new URL(name.substring(0, hash))).getLibrary(name.substring(hash + 1));
+                } catch (IllegalArgumentException x) {
+                    Exceptions.printStackTrace(x);
+                    return null;
+                } catch (MalformedURLException x) {
+                    Exceptions.printStackTrace(x);
+                    return null;
+                }
+            } else {
+                lib = LibraryManager.getDefault().getLibrary(name);
+            }
+            return lib != null ? new LibraryEntry(lib) : null;
+        } else if (type.equals(TYPE_PROJECT)) {
+            AntArtifact aa = AntArtifactQuery.findArtifactFromFile(new File(name));
+            return aa != null ? new ProjectEntry(aa) : null;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * One logical component of the classpath.
+     */
+    public static abstract class Entry {
+        private Entry() {}
+        /** List of folder URLs (dirs or roots of JARs) making up the classpath. */
+        public abstract List<URL> getClasspath();
+        /** Tries to add the classpath entries to a project, as with {@link ProjectClassPathModifier}. 
+         * @return null if operation was aborted or true if classpath was modified or false if it was not
+         */
+        public abstract Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException;
+        /** A label suitable for display. */
+        public abstract String getDisplayName();
+        /** @see #unpickle */
+        public abstract String getPicklingType();
+        /** @see #unpickle */
+        public abstract String getPicklingName();
+        public final @Override int hashCode() {
+            return getClasspath().hashCode();
+        }
+        public final @Override boolean equals(Object obj) {
+            return obj instanceof Entry && getClasspath().equals(((Entry) obj).getClasspath());
+        }
+        public final @Override String toString() {
+            return super.toString() + getClasspath();
+        }
+    }
+
+    private static URL translateURL(URL u) {
+        if (FileUtil.isArchiveFile(u)) {
+            return FileUtil.getArchiveRoot(u);
+        } else {
+            return u;
+        }
+    }
+
+    /** Entry based on a single JAR file. */
+    public static final class JarEntry extends Entry {
+        private final File jar;
+        public JarEntry(File jar) {
+            assert jar != null;
+            this.jar = jar;
+        }
+        public File getJar() {
+            return jar;
+        }
+        public List<URL> getClasspath() {
+            try {
+                return Collections.singletonList(translateURL(jar.toURI().toURL()));
+            } catch (MalformedURLException x) {
+                assert false : x;
+                return Collections.emptyList();
+            }
+        }
+        public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
+            File f = FileChooser.showRelativizeFilePathCustomizer(jar, projectArtifact, true);
+            if (f == null) {
+                return null;
+            }
+            URL u = LibrariesSupport.convertFileToURL(f);
+            if (FileUtil.isArchiveFile(FileUtil.toFileObject(jar))) {
+                u = FileUtil.getArchiveRoot(u);
+            }
+            return Boolean.valueOf(ProjectClassPathModifier.addRoots(new URL[] {u}, projectArtifact, classPathType));
+        }
+        public String getDisplayName() {
+            return NbBundle.getMessage(ClassSource.class, "FMT_JarSource", jar.getAbsolutePath());
+        }
+        public String getPicklingType() {
+            return TYPE_JAR;
+        }
+        public String getPicklingName() {
+            return jar.getAbsolutePath();
+        }
+    }
+
+    /** Entry based on a (global or project) library. */
+    public static final class LibraryEntry extends Entry {
+        private final Library lib;
+        public LibraryEntry(Library lib) {
+            assert lib != null;
+            this.lib = lib;
+        }
+        public Library getLibrary() {
+            return lib;
+        }
+        public List<URL> getClasspath() {
+            // No need to translate to jar protocol; Library.getContent should have done this already.
+            return lib.getContent("classpath"); // NOI18N
+        }
+        public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
+            return  Boolean.valueOf(ProjectClassPathModifier.addLibraries(new Library[] {lib}, projectArtifact, classPathType));
+        }
+        public String getDisplayName() {
+            return NbBundle.getMessage(ClassSource.class, "FMT_LibrarySource", lib.getDisplayName());
+        }
+        public String getPicklingType() {
+            return TYPE_LIBRARY;
+        }
+        public String getPicklingName() {
+            // For backward compatibility with old *.palette_item files, treat bare names as global libraries.
+            // Project libraries are given as e.g. "file:/some/where/libs/index.properties#mylib"
+            LibraryManager mgr = lib.getManager();
+            if (mgr == LibraryManager.getDefault()) {
+                return lib.getName();
+            } else {
+                return mgr.getLocation() + "#" + lib.getName(); // NOI18N
+            }
+        }
+    }
+
+    /** Entry based on a (sub-)project build artifact. */
+    public static final class ProjectEntry extends Entry {
+        private final AntArtifact artifact;
+        public ProjectEntry(AntArtifact artifact) {
+            assert artifact != null;
+            this.artifact = artifact;
+        }
+        public AntArtifact getArtifact() {
+            return artifact;
+        }
+        public List<URL> getClasspath() {
+            List<URL> cp = new ArrayList<URL>();
+            for (URI loc : artifact.getArtifactLocations()) {
+                try {
+                    cp.add(translateURL(artifact.getScriptLocation().toURI().resolve(loc).normalize().toURL()));
+                } catch (MalformedURLException x) {
+                    assert false : x;
+                }
+            }
+            return cp;
+        }
+        public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
+            if (artifact.getProject() != FileOwnerQuery.getOwner(projectArtifact)) {
+                return Boolean.valueOf(ProjectClassPathModifier.addAntArtifacts(new AntArtifact[] {artifact}, artifact.getArtifactLocations(), projectArtifact, classPathType));
+            }
+            return Boolean.FALSE;
+        }
+        public String getDisplayName() {
+            Project p = artifact.getProject();
+            return NbBundle.getMessage(ClassSource.class, "FMT_ProjectSource",
+                    p != null ? FileUtil.getFileDisplayName(p.getProjectDirectory()) : artifact.getScriptLocation().getAbsolutePath());
+        }
+        public String getPicklingType() {
+            return TYPE_PROJECT;
+        }
+        public String getPicklingName() {
+            if (artifact.getArtifactLocations().length > 0) {
+                return new File(artifact.getScriptLocation().toURI().resolve(artifact.getArtifactLocations()[0]).normalize()).getAbsolutePath();
+            } else {
+                return "";
+            }
+        }
     }
 
 }

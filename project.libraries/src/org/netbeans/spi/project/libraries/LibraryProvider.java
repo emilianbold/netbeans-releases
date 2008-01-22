@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.spi.project.libraries;
 
 import java.beans.PropertyChangeListener;
@@ -47,29 +48,31 @@ import java.beans.PropertyChangeListener;
  * Library storage is a source of libraries used by LibraryManager.
  * LibraryManager allows existence of multiple LibraryProviders registered in
  * the default lookup.
+ * @param L the type of implementation which will be produced by this provider
  */
-public interface LibraryProvider {
+public interface LibraryProvider<L extends LibraryImplementation> {
 
     /**
      * Name of libraries property
      */
-    public static final String PROP_LIBRARIES = "libraries";        //NOI18N
+    String PROP_LIBRARIES = "libraries"; // NOI18N
 
     /**
      * Returns libraries provided by the implemented provider.
-     * @return LibraryImplementation[] never return null, may return empty array.
+     * @return (possibly empty but not null) list of libraries
      */
-    public LibraryImplementation[] getLibraries();
+    L[] getLibraries();
 
     /**
      * Adds property change listener, the listener is notified when the libraries changed
      * @param listener
      */
-    public void addPropertyChangeListener (PropertyChangeListener listener);
+    void addPropertyChangeListener (PropertyChangeListener listener);
 
     /**
      * Removes property change listener
      * @param listener
      */
-    public void removePropertyChangeListener (PropertyChangeListener listener);
+    void removePropertyChangeListener (PropertyChangeListener listener);
+
 }

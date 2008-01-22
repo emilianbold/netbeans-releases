@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +59,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -69,7 +68,6 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 
 public class BrokenReferencesModel extends AbstractListModel {
@@ -92,7 +90,7 @@ public class BrokenReferencesModel extends AbstractListModel {
     
     public void refresh() {
         Set<OneReference> all = new LinkedHashSet<OneReference>();
-        Set<OneReference> s = getReferences(helper, helper.getStandardPropertyEvaluator(), props, false);
+        Set<OneReference> s = getReferences(helper, resolver, helper.getStandardPropertyEvaluator(), props, false);
         all.addAll(s);
         s = getPlatforms(helper.getStandardPropertyEvaluator(), platformsProps, false);
         all.addAll(s);
@@ -163,8 +161,8 @@ public class BrokenReferencesModel extends AbstractListModel {
         return references.size();
     }
 
-    public static boolean isBroken(AntProjectHelper helper, PropertyEvaluator evaluator, String[] props, String[] platformsProps) {
-        Set<OneReference> s = getReferences(helper, evaluator, props, true);
+    public static boolean isBroken(AntProjectHelper helper, ReferenceHelper refHelper, PropertyEvaluator evaluator, String[] props, String[] platformsProps) {
+        Set<OneReference> s = getReferences(helper, refHelper, evaluator, props, true);
         if (s.size() > 0) {
             return true;
         }
@@ -172,7 +170,7 @@ public class BrokenReferencesModel extends AbstractListModel {
         return s.size() > 0;
     }
 
-    private static Set<OneReference> getReferences(AntProjectHelper helper, PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
+    private static Set<OneReference> getReferences(AntProjectHelper helper, ReferenceHelper refHelper, PropertyEvaluator evaluator, String[] ps, boolean abortAfterFirstProblem) {
         Set<OneReference> set = new LinkedHashSet<OneReference>();
         StringBuffer all = new StringBuffer();
         for (String p : ps) {
@@ -243,7 +241,7 @@ public class BrokenReferencesModel extends AbstractListModel {
         
         //Check for libbraries with broken classpath content
         Set<String> usedLibraries = new HashSet<String>();
-        Pattern libPattern = Pattern.compile("\\$\\{(lib.[-._a-zA-Z0-9]+.classpath)\\}"); //NOI18N
+        Pattern libPattern = Pattern.compile("\\$\\{(libs\\.[-._a-zA-Z0-9]+\\.classpath)\\}"); //NOI18N
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         for (String p : ps) {
             String propertyValue = ep.getProperty(p);
@@ -258,7 +256,7 @@ public class BrokenReferencesModel extends AbstractListModel {
         }
         for (String libraryRef : usedLibraries) {
             String libraryName = libraryRef.substring(5,libraryRef.length()-10);
-            Library lib = LibraryManager.getDefault().getLibrary (libraryName);
+            Library lib = refHelper.findLibrary(libraryName);
             if (lib == null) {
                 set.add(new OneReference(REF_TYPE_LIBRARY, libraryRef, true));
             }
@@ -268,8 +266,10 @@ public class BrokenReferencesModel extends AbstractListModel {
                     if ("jar".equals(url.getProtocol())) {   //NOI18N
                         url = FileUtil.getArchiveFile (url);
                     }
-                    if (URLMapper.findFileObject (url) == null) {
+                    FileObject fo = LibrariesSupport.resolveLibraryEntryFileObject(lib.getManager().getLocation(), url);
+                    if (null == fo) {
                         set.add(new OneReference(REF_TYPE_LIBRARY_CONTENT, libraryRef, true));
+                        break;
                     }
                 }
             }
@@ -403,6 +403,12 @@ public class BrokenReferencesModel extends AbstractListModel {
                     }
                 }
             });
+    }
+    
+    /** @return non-null library manager */
+    LibraryManager getProjectLibraryManager() {
+        return resolver.getProjectLibraryManager() != null ? 
+            resolver.getProjectLibraryManager() : LibraryManager.getDefault();
     }
 
     public static final int REF_TYPE_PROJECT = 1;

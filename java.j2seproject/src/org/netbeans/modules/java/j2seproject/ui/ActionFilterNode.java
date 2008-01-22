@@ -69,6 +69,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
  * This class decorates package nodes and file nodes under the Libraries Nodes.
@@ -98,13 +99,13 @@ class ActionFilterNode extends FilterNode {
      * the node should not have the {@link RemoveClassPathRootAction}
      * @return ActionFilterNode
      */
-    static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId) {
+    static ActionFilterNode create (Node original, UpdateHelper helper, ReferenceHelper refHelper, String classPathId, String entryId) {
         DataObject dobj = original.getLookup().lookup(DataObject.class);
         assert dobj != null;
         FileObject root =  dobj.getPrimaryFile();
         Lookup lkp = new ProxyLookup (new Lookup[] {original.getLookup(), helper == null ?
             Lookups.singleton (new JavadocProvider(root,root)) :
-            Lookups.fixed(new Removable(helper, classPathId, entryId),
+            Lookups.fixed(new Removable(helper, refHelper, classPathId, entryId),
                           new JavadocProvider(root,root))});
         return new ActionFilterNode (original, helper == null ? MODE_PACKAGE : MODE_ROOT, root, lkp);
     }
@@ -144,12 +145,11 @@ class ActionFilterNode extends FilterNode {
 
     private Action[] initActions () {
         if (actionCache == null) {
-            List result = new ArrayList(2);
+            List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
-                Action[] superActions = super.getActions(false);
-                for (int i=0; i<superActions.length; i++) {
-                    if (superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction) {
-                        result.add (superActions[i]);
+                for (Action superAction : super.getActions(false)) {
+                    if (superAction instanceof OpenAction || superAction instanceof EditAction) {
+                        result.add(superAction);
                     }
                 }
                 result.add (SystemAction.get(ShowJavadocAction.class));
@@ -166,7 +166,7 @@ class ActionFilterNode extends FilterNode {
                     result.add (SystemAction.get(RemoveClassPathRootAction.class));
                 }
             }            
-            actionCache = (Action[]) result.toArray(new Action[result.size()]);
+            actionCache = result.toArray(new Action[result.size()]);
         }
         return actionCache;
     }
@@ -254,11 +254,13 @@ class ActionFilterNode extends FilterNode {
    private static class Removable implements RemoveClassPathRootAction.Removable {
 
        private final UpdateHelper helper;
+       private final ReferenceHelper refHelper;
        private final String classPathId;
        private final String entryId;
 
-       Removable (UpdateHelper helper, String classPathId, String entryId) {
+       Removable (UpdateHelper helper, ReferenceHelper refHelper, String classPathId, String entryId) {
            this.helper = helper;
+           this.refHelper = refHelper;
            this.classPathId = classPathId;
            this.entryId = entryId;
        }
@@ -276,18 +278,17 @@ class ActionFilterNode extends FilterNode {
                    EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                    String cp = props.getProperty (classPathId);
                    if (cp != null) {
-                       String[] entries = PropertyUtils.tokenizePath(cp);
-                       List/*<String>*/ result = new ArrayList ();                       
-                       for (int i=0; i<entries.length; i++) {
-                           if (!entryId.equals(ClassPathSupport.getAntPropertyName(entries[i]))) {
+                       List<String> result = new ArrayList<String>();
+                       for (String entry : PropertyUtils.tokenizePath(cp)) {
+                           if (!entryId.equals(ClassPathSupport.getAntPropertyName(entry))) {
                                int size = result.size();
                                if (size>0) {
-                                   result.set (size-1,(String)result.get(size-1) + ':'); //NOI18N
+                                   result.set(size - 1, result.get(size - 1) + ':'); //NOI18N
                                }
-                               result.add (entries[i]);                                                                                             
+                               result.add(entry);
                            }
                        }
-                       props.setProperty (classPathId, (String[])result.toArray(new String[result.size()]));
+                       props.setProperty(classPathId, result.toArray(new String[result.size()]));
                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,props);
                        Project project = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
                        assert project != null;

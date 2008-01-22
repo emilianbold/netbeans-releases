@@ -44,7 +44,7 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import java.io.IOException;
 
-public interface WritableLibraryProvider extends LibraryProvider {
+public interface WritableLibraryProvider<L extends LibraryImplementation> extends LibraryProvider<L> {
 
     void addLibrary(LibraryImplementation library) throws IOException;
 

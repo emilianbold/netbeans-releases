@@ -40,10 +40,19 @@
  */
 package org.netbeans.spi.project.libraries.support;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import org.netbeans.modules.project.libraries.LibraryTypeRegistry;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Parameters;
 
 /**
  * SPI Support class.
@@ -85,4 +94,130 @@ public final class LibrariesSupport {
     public static LibraryTypeProvider[] getLibraryTypeProviders () {
         return LibraryTypeRegistry.getDefault().getLibraryTypeProviders();
     }
+    
+    /**
+     * Properly converts possibly relative file to URL.
+     * @param f file to convert; can be relative; cannot be null
+     * @return url
+     */
+    public static URL convertFileToURL(File f) {
+        try {
+            if (f.isAbsolute()) {
+                return f.toURI().toURL();
+            } else {
+                // create hierarchical relative URI (that is no schema)
+                // to encode OS characters
+                URI uri = new URI(null, null, f.getPath().replace('\\', '/'), null);
+                return new URL("file", null, uri.getRawPath());
+            }
+
+        } catch (URISyntaxException ex) {
+	    IllegalArgumentException y = new IllegalArgumentException();
+	    y.initCause(ex);
+	    throw y;
+        } catch (MalformedURLException ex) {
+	    IllegalArgumentException y = new IllegalArgumentException();
+	    y.initCause(ex);
+	    throw y;
+        }
+    }
+    
+    /**
+     * Properly converts possibly relative URL to file.
+     * @param url file URL to convert; can be relative; cannot be null
+     * @return url
+     */
+    public static File convertURLToFile(URL url) {
+        if (!"file".equals(url.getProtocol())) {
+            throw new IllegalArgumentException("not file URL "+url); //NOI18N
+        }
+        try {
+            if (isAbsoluteURL(url)) {
+                return new File(new URI(url.toExternalForm()));
+            } else {
+                // workaround to decode URL path - created fake absolute URI 
+                // just to construct File instance and properly decoded path:
+                URI uri3 = new URI("file:/"+url.getPath());
+                return new File(new File(uri3).getPath().substring(1));
+            }
+        } catch (URISyntaxException ex) {
+	    IllegalArgumentException y = new IllegalArgumentException();
+	    y.initCause(ex);
+	    throw y;
+        }
+    }
+
+    /**
+     * Is given URL absolute?
+     * 
+     * @param url url to test; cannot be null
+     * @return is absolute
+     */
+    public static boolean isAbsoluteURL(URL url) {
+        if ("jar".equals(url.getProtocol())) { // NOI18N
+            url = FileUtil.getArchiveFile(url);
+        }
+        return url.getPath().startsWith("/");
+    }
+    
+    /**
+     * Helper method to resolve (possibly relative) library content URL to FileObject.
+     * 
+     * @param libraryLocation library location file; can be null for global libraries
+     * @param libraryEntry library entry to resolve
+     * @return file object
+     */
+    public static FileObject resolveLibraryEntryFileObject(URL libraryLocation, URL libraryEntry) {
+        URL u = resolveLibraryEntryURL(libraryLocation, libraryEntry);
+        return URLMapper.findFileObject(u);
+    }
+    
+    /**
+     * Helper method to resolve (possibly relative) library content URL.
+     * 
+     * @param libraryLocation library location file; can be null for global libraries
+     * @param libraryEntry library entry to resolve
+     * @return absolute URL
+     */
+    public static URL resolveLibraryEntryURL(URL libraryLocation, URL libraryEntry) {
+        Parameters.notNull("libraryEntry", libraryEntry); //NOI18N
+        if (isAbsoluteURL(libraryEntry)) {
+            return libraryEntry;
+        } else {
+            if (libraryLocation == null) {
+                throw new IllegalArgumentException("cannot resolve relative URL without library location"); //NOI18N
+            }
+            if (!"file".equals(libraryLocation.getProtocol())) { //NOI18N
+                throw new IllegalArgumentException("not file: protocol - "+libraryLocation.toExternalForm()); //NOI18N
+            }
+            File libLocation = new File(URI.create(libraryLocation.toExternalForm()));
+            if (!libLocation.getName().endsWith(".properties")) { //NOI18N
+                throw new IllegalArgumentException("library location must be a file - "+libraryLocation.toExternalForm()); //NOI18N
+            }
+            File libBase = libLocation.getParentFile();
+            boolean archiveURL = false;
+            if ("jar".equals(libraryEntry.getProtocol())) {
+                libraryEntry = FileUtil.getArchiveFile(libraryEntry);
+                archiveURL = true;
+            }
+            File f = convertURLToFile(libraryEntry);
+            f = FileUtil.normalizeFile(new File(libBase, f.getPath()));
+            URL u;
+            try {
+                u = f.toURI().toURL();
+            } catch (MalformedURLException ex) {
+                IllegalArgumentException y = new IllegalArgumentException();
+                y.initCause(ex);
+                throw y;
+            }
+            if (archiveURL) {
+                u = FileUtil.getArchiveRoot(u);
+            }
+            return u;
+        }
+    }
+
+    // TODO: add method which compares two libraries: compare content and file sizes and ...
+    
+    // TODO: move some of these methods to openide.FileUtil
 }

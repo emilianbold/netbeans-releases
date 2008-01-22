@@ -75,6 +75,8 @@ public interface LibraryTypeProvider extends Lookup.Provider {
 
     /**
      * Creates a new empty library implementation.
+     * Generally will use {@link LibrariesSupport#createLibraryImplementation}.
+     * This method is <strong>not</strong> used by {@link LibraryManager#createLibrary} except in the case of {@link LibraryManager#getDefault}.
      * @return the created library model, never null
      */
     public LibraryImplementation createLibrary ();
@@ -85,6 +87,7 @@ public interface LibraryTypeProvider extends Lookup.Provider {
      * If the LibraryTypeProvider implementation requires clean of
      * additional settings (e.g. remove properties in the build.properties)
      * it should be done in this method.
+     * This method is <strong>not</strong> used by {@link LibraryManager#createLibrary} except in the case of {@link LibraryManager#getDefault}.
      * @param libraryImpl
      */
     public void libraryDeleted (LibraryImplementation libraryImpl);
@@ -96,13 +99,13 @@ public interface LibraryTypeProvider extends Lookup.Provider {
      * If the LibraryTypeProvider implementation requires initialization of
      * additional settings (e.g. adding properties into the build.properties)
      * it should be done in this method.
-     *
+     * This method is <strong>not</strong> used by {@link LibraryManager#createLibrary} except in the case of {@link LibraryManager#getDefault}.
      */
     public void libraryCreated (LibraryImplementation libraryImpl);
 
     /**
      * Returns customizer for given volume's type, or null if the volume is not customizable.
-     * The object of the LibraryImplementation type is
+     * The object of the LibraryImplementation type and optionally LibraryStorageArea type is
      * passed to the customizer's setObject method.
      * The customized object describes the library created by this
      * provider, but the customizer cannot assume that the customized

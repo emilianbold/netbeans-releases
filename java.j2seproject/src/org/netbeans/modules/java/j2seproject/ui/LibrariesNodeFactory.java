@@ -140,9 +140,9 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         new String[] {J2SEProjectProperties.BUILD_CLASSES_DIR},
                         "platform.active", // NOI18N
                         new Action[] {
-                            LibrariesNode.createAddProjectAction(project, J2SEProjectProperties.JAVAC_CLASSPATH),
-                            LibrariesNode.createAddLibraryAction(project, J2SEProjectProperties.JAVAC_CLASSPATH),
-                            LibrariesNode.createAddFolderAction(project, J2SEProjectProperties.JAVAC_CLASSPATH),
+                            LibrariesNode.createAddProjectAction(project, true),
+                            LibrariesNode.createAddLibraryAction(project, true),
+                            LibrariesNode.createAddFolderAction(project, true),
                             null,
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
                         }
@@ -158,9 +158,9 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         },
                         null,
                         new Action[] {
-                            LibrariesNode.createAddProjectAction(project, J2SEProjectProperties.JAVAC_TEST_CLASSPATH),
-                            LibrariesNode.createAddLibraryAction(project, J2SEProjectProperties.JAVAC_TEST_CLASSPATH),
-                            LibrariesNode.createAddFolderAction(project, J2SEProjectProperties.JAVAC_TEST_CLASSPATH),
+                            LibrariesNode.createAddProjectAction(project, false),
+                            LibrariesNode.createAddLibraryAction(project, false),
+                            LibrariesNode.createAddFolderAction(project, false),
                             null,
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
                         }

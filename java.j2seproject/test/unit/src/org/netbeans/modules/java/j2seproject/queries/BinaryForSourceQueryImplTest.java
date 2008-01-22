@@ -90,7 +90,7 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj");        
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null);
+        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null);
         J2SEProjectGenerator.setDefaultSourceLevel(null);   //NOI18N
         pm = ProjectManager.getDefault();
         pp = pm.findProject(projdir);

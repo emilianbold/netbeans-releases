@@ -58,6 +58,11 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.*;
+import javax.swing.text.Document;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.editor.EditorUI;
+import org.netbeans.editor.ext.ExtCaret;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -623,10 +628,10 @@ public class FormEditor {
             Object className = fob.getAttribute("requiredClass"); // NOI18N
             if ((className == null) || !ClassPathUtils.isOnClassPath(fob, className.toString())) {
                 try {
+                    Library lib = LibraryManager.getDefault().getLibrary((String)libName);
                     ClassPathUtils.updateProject(fob, new ClassSource(
                             (className == null) ? null : className.toString(),
-                            new String[] { ClassSource.LIBRARY_SOURCE },
-                            new String[] { libName.toString() })
+                            new ClassSource.LibraryEntry(lib))
                     );
                 } catch (IOException ioex) {
                     Logger.getLogger(FormEditor.class.getName()).log(Level.INFO, ioex.getLocalizedMessage(), ioex);
@@ -1225,10 +1230,13 @@ public class FormEditor {
                 && formModel.getSettings().getLayoutCodeTarget() != JavaCodeGenerator.LAYOUT_CODE_JDK6
                 && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), org.jdesktop.layout.GroupLayout.class.getName())) {
             try {
+                Library lib = LibraryManager.getDefault().getLibrary("swing-layout"); // NOI18N
+                if (lib == null) {
+                    return false;
+                }
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                                                 new String[] { ClassSource.LIBRARY_SOURCE },
-                                                 new String[] { "swing-layout" }); // NOI18N
-                return ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
+                                                 new ClassSource.LibraryEntry(lib));
+                return Boolean.TRUE == ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
             }
             catch (IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -1251,10 +1259,13 @@ public class FormEditor {
         if (formEditor != null
                 && !ClassPathUtils.isOnClassPath(formEditor.getFormDataObject().getFormFile(), org.jdesktop.beansbinding.Binding.class.getName())) {
             try {
+                Library lib = LibraryManager.getDefault().getLibrary("beans-binding"); // NOI18N
+                if (lib == null) {
+                    return false;
+                }
                 ClassSource cs = new ClassSource("", // class name is not needed // NOI18N
-                                                 new String[] { ClassSource.LIBRARY_SOURCE },
-                                                 new String[] { "beans-binding" }); // NOI18N
-                return ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
+                                                 new ClassSource.LibraryEntry(lib));
+                return Boolean.TRUE == ClassPathUtils.updateProject(formEditor.getFormDataObject().getFormFile(), cs);
             }
             catch (IOException ex) {
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);

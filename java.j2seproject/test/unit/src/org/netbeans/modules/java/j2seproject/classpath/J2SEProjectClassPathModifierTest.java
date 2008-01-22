@@ -42,10 +42,14 @@
 package org.netbeans.modules.java.j2seproject.classpath;
 
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.net.URL;
 import java.util.Collections;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -56,6 +60,7 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
@@ -64,16 +69,16 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 import org.openide.util.test.MockLookup;
 
-/**
- * @author tom
- */
 public class J2SEProjectClassPathModifierTest extends NbTestCase {
 
     private FileObject scratch;
@@ -89,14 +94,12 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
 
     protected @Override void setUp() throws Exception {
         super.setUp();
-        MockLookup.setInstances(
-            new org.netbeans.modules.java.j2seproject.J2SEProjectType(),
-            new org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation(),
-            new TestLibraryProvider());
-        this.scratch = TestUtil.makeScratchDir(this);
+        MockLookup.setInstances(new TestLibraryProvider());
+        clearWorkDir();
+        scratch = FileUtil.toFileObject(getWorkDir());
         FileObject projdir = scratch.createFolder("proj");  //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        this.helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null); //NOI18N
+        this.helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj",null,null,null); //NOI18N
         this.eval = this.helper.getStandardPropertyEvaluator();
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         this.prj = FileOwnerQuery.getOwner(projdir);
@@ -137,7 +140,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
     public void testAddRemoveArtifact () throws Exception {
         FileObject projdir = scratch.createFolder("libPrj");  //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        AntProjectHelper h = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"libProj",null,null); //NOI18N
+        AntProjectHelper h = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"libProj",null,null,null); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         Project libPrj = FileOwnerQuery.getOwner(projdir);
         assertNotNull (this.prj);
@@ -194,6 +197,30 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         assertEquals(0,cpRoots.length);
     }
 
+    public void testProjectLibrary() throws Exception {
+        assertEquals(Collections.emptyList(), getPrjLibRefs());
+        URL base = getWorkDir().toURI().toURL();
+        helper.setLibrariesLocation(".."+File.separatorChar+"defs.properties");
+        Library lib = LibraryManager.forLocation(new URL(base, "defs.properties")).createLibrary("j2se", "test",
+                Collections.singletonMap("classpath", Collections.singletonList(new URL(base, "stuff/"))));
+        ProjectClassPathModifier.addLibraries(new Library[] {lib}, src, ClassPath.COMPILE);
+        assertEquals(getWorkDir().getPath() + File.separatorChar + "stuff", eval.getProperty("javac.classpath"));
+        assertEquals(Collections.singletonList(".."+ File.separatorChar +"defs.properties"), getPrjLibRefs());
+        ProjectClassPathModifier.removeLibraries(new Library[] {lib}, src, ClassPath.COMPILE);
+        assertEquals("", eval.getProperty("javac.classpath"));
+    }
+    private List<String> getPrjLibRefs() {
+        List<String> l = new ArrayList<String>();
+        Element libs = helper.createAuxiliaryConfiguration().getConfigurationFragment("libraries", "http://www.netbeans.org/ns/ant-project-libraries/1", true);
+        if (libs != null) {
+            NodeList nl = libs.getElementsByTagName("definitions");
+            for (int i = 0; i < nl.getLength(); i++) {
+                l.add(nl.item(i).getFirstChild().getNodeValue());
+            }
+        }
+        return l;
+    }
+    
     @SuppressWarnings("deprecation")
     public void testClassPathExtenderCompatibility () throws Exception {
         final FileObject rootFolder = this.scratch.createFolder("Root");
@@ -282,7 +309,7 @@ public class J2SEProjectClassPathModifierTest extends NbTestCase {
         private List<URL> cp = Collections.emptyList();
         private List<URL> src = Collections.emptyList();
         private List<URL> jdoc = Collections.emptyList();
-
+        
         public TestLibrary (String name) {
             this.name = name;
         }

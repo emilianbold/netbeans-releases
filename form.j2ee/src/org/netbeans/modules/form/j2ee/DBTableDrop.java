@@ -49,7 +49,15 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.api.db.explorer.DatabaseMetaDataTransfer;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.form.*;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.form.BindingDesignSupport;
+import org.netbeans.modules.form.BindingProperty;
+import org.netbeans.modules.form.FormEditor;
+import org.netbeans.modules.form.FormJavaSource;
+import org.netbeans.modules.form.FormModel;
+import org.netbeans.modules.form.MetaBinding;
+import org.netbeans.modules.form.RADComponent;
+import org.netbeans.modules.form.RADVisualContainer;
 import org.netbeans.modules.form.assistant.AssistantMessages;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.project.ClassPathUtils;
@@ -107,8 +115,8 @@ public class DBTableDrop extends DBConnectionDrop {
         if (isBindingOnly()) {
             FormEditor.getAssistantModel(model).setContext("tableDropBinding", "tableDropComponent"); // NOI18N
             pItem = new PaletteItem(new ClassSource("javax.persistence.EntityManager", // NOI18N
-                new String[] { ClassSource.LIBRARY_SOURCE },
-                new String[] { "toplink" }), null); // NOI18N
+                        new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
+                        null);
             pItem.setIcon(new ImageIcon(
                 Utilities.loadImage("org/netbeans/modules/form/j2ee/resources/binding.gif")).getImage()); // NOI18N
         } else {

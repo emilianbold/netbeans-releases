@@ -45,7 +45,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import javax.swing.*;
 import javax.swing.border.*;
-import java.io.File;
 import java.util.*;
 import javax.swing.event.*;
 import java.awt.event.*;
@@ -53,6 +52,8 @@ import java.awt.event.*;
 import org.openide.WizardDescriptor;
 
 import org.netbeans.modules.form.project.ClassSource;
+import org.openide.util.ChangeSupport;
+import org.openide.util.NbCollections;
 
 /**
  * The second panel in the wizard for adding new components to the palette.
@@ -62,19 +63,18 @@ import org.netbeans.modules.form.project.ClassSource;
  * @author Tomas Pavek
  */
 
-class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
+class ChooseBeansWizardPanel implements WizardDescriptor.Panel<AddToPaletteWizard> {
 
-    private File[] currentFiles; // roots (typically JAR files) chosen by the user
-    private Map libraryNameMap; // map from root file names to library names
+    private List<? extends ClassSource.Entry> currentFiles; // roots (typically JAR files) chosen by the user
 
-    private java.util.List<BeanInstaller.ItemInfo> markedBeans; // beans marked in JAR manifest
-    private java.util.List<BeanInstaller.ItemInfo> allBeans; // all bean classes under given roots
-    private String sourceType;
+    private List<BeanInstaller.ItemInfo> markedBeans; // beans marked in JAR manifest
+    private List<BeanInstaller.ItemInfo> allBeans; // all bean classes under given roots
+    private Class<? extends ClassSource.Entry> sourceType;
 
     private BeanSelector beanSelector;
     private JLabel noBeansLabel;
 
-    private EventListenerList listenerList;
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     // ----------
     // WizardDescriptor.Panel implementation
@@ -83,11 +83,11 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
         if ((markedBeans == null) && ((allBeans == null) || (allBeans.size() == 0))) {
             // No beans found
             String messageKey;
-            if (ClassSource.JAR_SOURCE.equals(sourceType))
+            if (sourceType == ClassSource.JarEntry.class)
                 messageKey = "MSG_NoBeanInJAR"; // NOI18N
-            else if (ClassSource.LIBRARY_SOURCE.equals(sourceType))
+            else if (sourceType == ClassSource.LibraryEntry.class)
                 messageKey = "MSG_NoBeanInLibrary"; // NOI18N
-            else if (ClassSource.PROJECT_SOURCE.equals(sourceType))
+            else if (sourceType == ClassSource.ProjectEntry.class)
                 messageKey = "MSG_NoBeanInProject"; // NOI18N
             else
                 throw new IllegalArgumentException();
@@ -128,33 +128,23 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
         return beanSelector != null && beanSelector.getSelectedBeans().size() > 0;
     }
 
-    public void readSettings(Object settings) {
-        AddToPaletteWizard wizard = (AddToPaletteWizard) settings;
+    public void readSettings(AddToPaletteWizard wizard) {
         sourceType = wizard.getSourceType();
-        File[] jarFiles = wizard.getJARFiles();
+        List<? extends ClassSource.Entry> jarFiles = wizard.getJARFiles();
 
-        if (currentFiles != null && currentFiles.length == jarFiles.length)
-            for (int i=0; i < jarFiles.length; i++)
-                if (jarFiles[i].equals(currentFiles[i])) {
-                    if (i+1 == jarFiles.length)
-                        return;  // no change from the last time
-                }
-                else break;
+        if (jarFiles.equals(currentFiles)) {
+            return;  // no change from the last time
+        }
 
         currentFiles = jarFiles;
-        libraryNameMap = wizard.libraryNameMap;
 
         allBeans = null; // don't read all the beans until needed
         markedBeans = BeanInstaller.findJavaBeansInJar(jarFiles);
         if (markedBeans != null) {
-            if (libraryNameMap != null) // need to change root file names to library names
-                remapLibraryNames(markedBeans, libraryNameMap);
             Collections.sort(markedBeans);
         }
         else {
             allBeans = BeanInstaller.findJavaBeans(jarFiles);
-            if (libraryNameMap != null) // need to change root file names to library names
-                remapLibraryNames(allBeans, libraryNameMap);
             Collections.sort(allBeans);
         }
 
@@ -162,52 +152,25 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
             beanSelector.setBeans(markedBeans, allBeans);
     }
 
-    public void storeSettings(Object settings) {
+    public void storeSettings(AddToPaletteWizard settings) {
         if (beanSelector != null) {
-            java.util.List itemList = beanSelector.getSelectedBeans();
+            List<BeanInstaller.ItemInfo> itemList = beanSelector.getSelectedBeans();
             BeanInstaller.ItemInfo[] itemArray =
                 new BeanInstaller.ItemInfo[itemList.size()];
             itemList.toArray(itemArray);
-            ((AddToPaletteWizard)settings).setSelectedBeans(itemArray);
+            settings.setSelectedBeans(itemArray);
         }
     }
 
     public void addChangeListener(ChangeListener listener) {
-        if (listenerList == null)
-            listenerList = new EventListenerList();
-        listenerList.add(ChangeListener.class, listener);
+        cs.addChangeListener(listener);
     }
 
     public void removeChangeListener(ChangeListener listener) {
-        if (listenerList != null)
-            listenerList.remove(ChangeListener.class, listener);
+        cs.removeChangeListener(listener);
     }
 
     // -----
-
-    void fireStateChanged() {
-        if (listenerList == null)
-            return;
-
-        ChangeEvent e = null;
-        Object[] listeners = listenerList.getListenerList();
-        for (int i=listeners.length-2; i >= 0; i-=2) {
-            if (listeners[i] == ChangeListener.class) {
-                if (e == null)
-                    e = new ChangeEvent(this);
-                ((ChangeListener)listeners[i+1]).stateChanged(e);
-            }
-        }
-    }
-
-    private static void remapLibraryNames(List beans, Map map) {
-        for (int i=0, n=beans.size(); i < n; i++) {
-            BeanInstaller.ItemInfo ii = (BeanInstaller.ItemInfo) beans.get(i);
-            ii.source = (String) map.get(ii.source);
-        }
-    }
-
-    // -------
 
     static class BeanSelector extends JPanel {
 
@@ -278,7 +241,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
                 PaletteUtils.getBundleString("ACSD_SelectBeansDialog")); // NOI18N
         }
 
-        void setBeans(List markedBeans, List allBeans) {
+        void setBeans(List<BeanInstaller.ItemInfo> markedBeans, List<BeanInstaller.ItemInfo> allBeans) {
             if (markedBeans == null) {
                 radio1.setEnabled(false);
             }
@@ -293,21 +256,15 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
             }
         }
 
-        /** @param list of BeanInstaller.ItemInfo  */
-        void setDisplayedBeans(final List beans) {
+        void setDisplayedBeans(final List<BeanInstaller.ItemInfo> beans) {
             list.setModel(new AbstractListModel() {
                 public int getSize() { return beans.size(); }
                 public Object getElementAt(int i) { return beans.get(i); }
             });
         }
 
-        /** @return list of BeanInstaller.ItemInfo */
-        List getSelectedBeans() {
-            Object[] sel = list.getSelectedValues();
-            List al = new ArrayList(sel.length);
-            for (int i = 0; i < sel.length; i++)
-                al.add(sel[i]);
-            return al;
+        List<BeanInstaller.ItemInfo> getSelectedBeans() {
+            return NbCollections.checkedListByCopy(Arrays.asList(list.getSelectedValues()), BeanInstaller.ItemInfo.class, true);
         }
 
         @Override
@@ -363,7 +320,7 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
     class Listener implements ListSelectionListener, ActionListener {
 
         public void valueChanged(ListSelectionEvent e) {
-            fireStateChanged();
+            cs.fireChange();
         }
 
         public void actionPerformed(ActionEvent ev) {
@@ -374,10 +331,6 @@ class ChooseBeansWizardPanel implements WizardDescriptor.Panel {
                 if (allBeans == null) { // not read yet
                     // PENDING wait cursor
                     allBeans = BeanInstaller.findJavaBeans(currentFiles);
-                    if (libraryNameMap != null) { // need to change root file names to library names
-                        remapLibraryNames(allBeans, libraryNameMap);
-                        libraryNameMap = null;
-                    }
                     Collections.sort(allBeans);
                 }
                 beanSelector.setDisplayedBeans(allBeans);

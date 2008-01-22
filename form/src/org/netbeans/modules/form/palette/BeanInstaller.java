@@ -48,7 +48,9 @@ import java.lang.ref.WeakReference;
 import java.util.jar.*;
 import java.util.*;
 import java.io.*;
+import java.lang.ref.Reference;
 import java.lang.reflect.Modifier;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +71,7 @@ import org.openide.filesystems.*;
 import org.openide.loaders.DataObject;
 
 import org.netbeans.modules.form.project.*;
+import org.openide.util.Exceptions;
 
 /**
  * This class provides methods for installing new items to Palete.
@@ -78,7 +81,7 @@ import org.netbeans.modules.form.project.*;
 
 public final class BeanInstaller {
 
-    private static WeakReference wizardRef;
+    private static Reference<AddToPaletteWizard> wizardRef;
 
     private BeanInstaller() {
     }
@@ -87,11 +90,10 @@ public final class BeanInstaller {
 
     /** Installs beans from given source type. Lets the user choose the source,
      * the beans, and the target category in a wizard. */
-    public static void installBeans(String sourceType) {
+    public static void installBeans(Class<? extends ClassSource.Entry> sourceType) {
         AddToPaletteWizard wizard = getAddWizard();
         if (wizard.show(sourceType))
-            createPaletteItems(sourceType,
-                               wizard.getSelectedBeans(),
+            createPaletteItems(wizard.getSelectedBeans(),
                                wizard.getSelectedCategory());
     }
 
@@ -194,47 +196,61 @@ public final class BeanInstaller {
 
     /** Finds available JavaBeans in given JAR files. Looks for beans
      * specified in the JAR manifest only.
-     * @return list of ItemInfo */
-    static List<ItemInfo> findJavaBeansInJar(File[] jarFiles) {
+     */
+    static List<BeanInstaller.ItemInfo> findJavaBeansInJar(List<? extends ClassSource.Entry> entries) {
         Map<String,ItemInfo> beans = null;
 
-        for (int i=0; i < jarFiles.length; i++) {
-            Manifest manifest;
-            try {
-                manifest = new JarFile(jarFiles[i]).getManifest();
-            }
-            catch (java.io.IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-                continue;
-            }
-            if (manifest == null)
-                continue;
-
-            String jarPath = jarFiles[i].getAbsolutePath();
-            Map entries = manifest.getEntries();
-            Iterator it = entries.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry entry = (Map.Entry)it.next();
-                String key = (String)entry.getKey();
-                if (!key.endsWith(".class")) // NOI18N
+        for (ClassSource.Entry entry : entries) {
+            for (URL root : entry.getClasspath()) {
+                URL jarU = FileUtil.getArchiveFile(root);
+                if (jarU == null) {
                     continue;
-
-                String value = ((Attributes)entry.getValue()).getValue("Java-Bean"); // NOI18N
-                if (!"True".equalsIgnoreCase(value)) // NOI18N
+                }
+                // Handle e.g. nbinst protocol.
+                FileObject jarFO = URLMapper.findFileObject(jarU);
+                if (jarFO == null) {
                     continue;
-
-                String classname =  key.substring(0, key.length()-6) // cut off ".class"
-                                    .replace('\\', '/').replace('/', '.');
-                if (classname.startsWith(".")) // NOI18N
-                    classname = classname.substring(1);
-
-                ItemInfo ii = new ItemInfo();
-                ii.classname = classname;
-                ii.source = jarPath;
-
-                if (beans == null)
-                    beans = new HashMap<String,ItemInfo>(100);
-                beans.put(ii.classname, ii);
+                }
+                File jarF = FileUtil.toFile(jarFO);
+                if (jarF == null) {
+                    continue;
+                }
+                Manifest mf;
+                try {
+                    JarFile jf = new JarFile(jarF);
+                    try {
+                        mf = jf.getManifest();
+                    } finally {
+                        jf.close();
+                    }
+                } catch (IOException x) {
+                    Exceptions.printStackTrace(x);
+                    continue;
+                }
+                if (mf == null) {
+                    continue;
+                }
+                for (Map.Entry<String,Attributes> section : mf.getEntries().entrySet()) {
+                    if (!section.getKey().endsWith(".class")) { // NOI18N
+                        continue;
+                    }
+                    String value = section.getValue().getValue("Java-Bean"); // NOI18N
+                    if (!"True".equalsIgnoreCase(value)) { // NOI18N
+                        continue;
+                    }
+                    String classname = section.getKey().substring(0, section.getKey().length() - 6) // cut off ".class"
+                            .replace('\\', '/').replace('/', '.');
+                    if (classname.startsWith(".")) { // NOI18N
+                        classname = classname.substring(1);
+                    }
+                    ItemInfo ii = new ItemInfo();
+                    ii.classname = classname;
+                    ii.entry = entry;
+                    if (beans == null) {
+                        beans = new HashMap<String,ItemInfo>(100);
+                    }
+                    beans.put(ii.classname, ii);
+                }
             }
         }
 
@@ -244,18 +260,16 @@ public final class BeanInstaller {
     /** Collects all classes under given roots that could be used as JavaBeans.
      * This method is supposed to search in JAR files or folders containing
      * built classes.
-     * @return list of ItemInfo */
-    static List<ItemInfo> findJavaBeans(File[] roots) {
+     */
+    static List<ItemInfo> findJavaBeans(List<? extends ClassSource.Entry> entries) {
         Map<String,ItemInfo> beans = new HashMap<String,ItemInfo>(100);
 
-        for (int i=0; i < roots.length; i++) {
-            FileObject foRoot = FileUtil.toFileObject(roots[i]);
-            if (foRoot != null) {
-                if (FileUtil.isArchiveFile(foRoot))
-                    foRoot = FileUtil.getArchiveRoot(foRoot);
-                if (foRoot != null && foRoot.isFolder()) {
-                    scanFolderForBeans(foRoot, beans, roots[i].getAbsolutePath());                                            
-                }                    
+        for (ClassSource.Entry entry : entries) {
+            for (URL root : entry.getClasspath()) {
+                FileObject foRoot = URLMapper.findFileObject(root);
+                if (foRoot != null) {
+                    scanFolderForBeans(foRoot, beans, entry);
+                }
             }
         }
 
@@ -266,8 +280,7 @@ public final class BeanInstaller {
     // private methods
 
     /** Installs given beans (described by ItemInfo in array). */
-    private static void createPaletteItems(final String sourceType,
-                                           final ItemInfo[] beans,
+    private static void createPaletteItems(final ItemInfo[] beans,
                                            String category)
     {
         if (beans.length == 0)
@@ -282,14 +295,12 @@ public final class BeanInstaller {
             Repository.getDefault().getDefaultFileSystem().runAtomicAction(
             new FileSystem.AtomicAction () {
                 public void run() {
-                    String[] cpTypes = new String[] { sourceType };
                     for (int i=0; i < beans.length; i++)
                         try {
                             PaletteItemDataObject.createFile(
                                 categoryFolder,
                                 new ClassSource(beans[i].classname,
-                                                cpTypes,
-                                                new String[] { beans[i].source} ));
+                                                beans[i].entry));
                             // TODO check the class if it can be loaded?
                         }
                         catch (java.io.IOException ex) {
@@ -303,13 +314,13 @@ public final class BeanInstaller {
 
     /** Recursive method scanning folders for classes (class files) that could
      * be JavaBeans. */
-    private static void scanFolderForBeans(FileObject folder, final Map<String,ItemInfo> beans, final String root) {
+    private static void scanFolderForBeans(FileObject folder, final Map<String,ItemInfo> beans, final ClassSource.Entry root) {
         JavaClassHandler handler = new JavaClassHandler() {
             public void handle(String className, String problem) {
                 if (problem == null) {
                     ItemInfo ii = new ItemInfo();
                     ii.classname = className;
-                    ii.source = root;
+                    ii.entry = root;
                     beans.put(ii.classname, ii);
                 }
             }
@@ -467,7 +478,7 @@ public final class BeanInstaller {
     private static AddToPaletteWizard getAddWizard() {
         AddToPaletteWizard wizard = null;
         if (wizardRef != null)
-            wizard = (AddToPaletteWizard) wizardRef.get();
+            wizard = wizardRef.get();
         if (wizard == null) {
             wizard = new AddToPaletteWizard();
             wizardRef = new WeakReference<AddToPaletteWizard>(wizard);
@@ -479,7 +490,7 @@ public final class BeanInstaller {
 
     static class ItemInfo implements Comparable<ItemInfo> {
         String classname;
-        String source; // full file path or library name
+        ClassSource.Entry entry;
 
         public int compareTo(ItemInfo ii) {
             int i;

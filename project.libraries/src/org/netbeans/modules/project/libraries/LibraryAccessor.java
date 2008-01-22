@@ -41,14 +41,18 @@
 
 package org.netbeans.modules.project.libraries;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryProvider;
+import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.openide.util.Exceptions;
 
-/**
- *
- * @author Tomas Zezula
- */
 public abstract class LibraryAccessor {
     
     public static LibraryAccessor DEFAULT;
@@ -63,5 +67,47 @@ public abstract class LibraryAccessor {
     }
     
     public abstract Library createLibrary (LibraryImplementation libraryImplementation);
-    
+
+    // RADIKAL GENERIC HAX!
+
+    /**
+     * Type-safe accessor for {@link ArealLibraryProvider#remove}.
+     * @throws ClassCastException if the runtime types do not match
+     */
+    public static void remove(ArealLibraryProvider alp, LibraryImplementation lib) throws IOException {
+        remove0((ArealLibraryProvider<?,?>) alp, lib);
+    }
+    private static <L extends LibraryImplementation> void remove0(ArealLibraryProvider<?,L> alp, LibraryImplementation lib) throws IOException {
+        alp.remove(alp.libraryType().cast(lib));
+    }
+
+    /**
+     * Type-safe accessor for {@link ArealLibraryProvider#getOpenAreas}.
+     */
+    public static Set<? extends LibraryStorageArea> getOpenAreas(ArealLibraryProvider alp) {
+        return ((ArealLibraryProvider<?,?>) alp).getOpenAreas();
+    }
+
+    /**
+     * Type-safe accessor for {@link ArealLibraryProvider#createLibrary}.
+     * @throws ClassCastException if the runtime types do not match
+     */
+    public static LibraryImplementation createLibrary(ArealLibraryProvider alp, String type, String name, LibraryStorageArea area, Map<String,List<URL>> contents) throws IOException {
+        return createLibrary0(((ArealLibraryProvider<?,?>) alp), type, name, area, contents);
+    }
+    private static <A extends LibraryStorageArea> LibraryImplementation createLibrary0(ArealLibraryProvider<A,?> alp, String type, String name, LibraryStorageArea area, Map<String,List<URL>> contents) throws IOException {
+        return alp.createLibrary(type, name, alp.areaType().cast(area), contents);
+    }
+
+    /**
+     * Type-safe accessor for {@link ArealLibraryProvider#getLibraries}.
+     * @throws ClassCastException if the runtime types do not match
+     */
+    public static LibraryProvider getLibraries(ArealLibraryProvider alp, LibraryStorageArea area) {
+        return getLibraries0((ArealLibraryProvider<?,?>) alp, area);
+    }
+    private static <A extends LibraryStorageArea> LibraryProvider getLibraries0(ArealLibraryProvider<A,?> alp, LibraryStorageArea area) {
+        return alp.getLibraries(alp.areaType().cast(area));
+    }
+
 }

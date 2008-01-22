@@ -75,7 +75,7 @@ public class CreateProjectTest extends JellyTestCase {
         String mainClass = "MyMain" + projName; // NOI18N
         File projectDir = new File(getWorkDir(), projName);
         projectDir.mkdir();
-        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null);
+        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null);
         assertNotNull(Utilities.openProject(projectDir));
     }
     
@@ -89,7 +89,7 @@ public class CreateProjectTest extends JellyTestCase {
         String mainClass = "MyMain" + projName; // NOI18N
         File projectDir = new File(getWorkDir(), projName);
         projectDir.mkdir();
-        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null);
+        J2SEProjectGenerator.createProject(projectDir, projName, mainClass, null, null);
         Utilities.openProject(projectDir);
         assertNotNull(Utilities.closeProject(projName));
     }
@@ -129,7 +129,7 @@ public class CreateProjectTest extends JellyTestCase {
         test2.mkdirs();
         testFolders[0] = test1;
         testFolders[1] = test2;
-        J2SEProjectGenerator.createProject(projectDir,prjName, sourceFolders, testFolders, null);
+        J2SEProjectGenerator.createProject(projectDir,prjName, sourceFolders, testFolders, null, null);
         return projectDir;
     }
     public void testCloseProject_API_2() throws Exception {
@@ -162,7 +162,7 @@ public class CreateProjectTest extends JellyTestCase {
         testFolders[0] = test1;
         testFolders[1] = test2;
         
-        J2SEProjectGenerator.createProject(projectDir, prjName, sourceFolders, testFolders, null);
+        J2SEProjectGenerator.createProject(projectDir, prjName, sourceFolders, testFolders, null, null);
         Utilities.openProject(projectDir);
         assertTrue(Utilities.closeProject(prjName));
 

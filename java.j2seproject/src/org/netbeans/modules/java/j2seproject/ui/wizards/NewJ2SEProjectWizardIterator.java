@@ -143,12 +143,17 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         }
         String name = (String)wiz.getProperty("name");        //NOI18N
         String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
+        String librariesDefinition = (String)wiz.getProperty(PanelOptionsVisual.SHARED_LIBRARIES);
+        if (!librariesDefinition.endsWith(File.separator)) {
+            librariesDefinition += File.separatorChar;
+        }
+        librariesDefinition += J2SEProjectProperties.DEFAULT_LIBRARIES_FILENAME;
         handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         switch (type) {
         case EXT:
             File[] sourceFolders = (File[])wiz.getProperty("sourceRoot");        //NOI18N
             File[] testFolders = (File[])wiz.getProperty("testRoot");            //NOI18N
-            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE );
+            AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition);
             EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String includes = (String) wiz.getProperty(J2SEProjectProperties.INCLUDES);
             if (includes == null) {
@@ -170,7 +175,7 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             }
             break;
         default:
-            h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null);
+            h = J2SEProjectGenerator.createProject(dirF, name, mainClass, type == WizardType.APP ? MANIFEST_FILE : null, librariesDefinition);
             handle.progress (2);
             if (mainClass != null && mainClass.length () > 0) {
                 try {

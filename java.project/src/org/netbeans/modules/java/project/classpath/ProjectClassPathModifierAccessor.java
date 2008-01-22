@@ -44,7 +44,6 @@ package org.netbeans.modules.java.project.classpath;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;

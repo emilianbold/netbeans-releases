@@ -45,7 +45,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -76,11 +75,9 @@ public final class Library {
 
     private List<PropertyChangeListener> listeners;
 
-    /**
-     * Creates new library instance
-     *
-     */
-    private Library (LibraryImplementation impl) {
+    private final LibraryManager manager;
+
+    Library(LibraryImplementation impl, LibraryManager manager) {
         this.impl = impl;
         this.impl.addPropertyChangeListener (new PropertyChangeListener () {
             public void propertyChange(PropertyChangeEvent evt) {
@@ -88,7 +85,17 @@ public final class Library {
                 Library.this.fireChange (propName,evt.getOldValue(),evt.getNewValue());
             }
         });
+        this.manager = manager;
     } // end create
+
+    /**
+     * Gets the associated library manager.
+     * @return the manager (may be the "default" global manager, or a local manager)
+     * @since org.netbeans.modules.project.libraries/1 1.15
+     */
+    public LibraryManager getManager() {
+        return manager;
+    }
 
     /**
      * Access typed but raw library data.
@@ -169,11 +176,6 @@ public final class Library {
         return impl.hashCode();
     }
     
-    @Override
-    public String toString () {
-        return this.getName();
-    }
-
     /**
      * Adds PropertyChangeListener
      * @param listener
@@ -235,11 +237,16 @@ public final class Library {
             return key;
         }
     }
+
+    @Override
+    public String toString() {
+        return "Library[" + getName() + "]"; // NOI18N
+    }
     
     static {
         LibraryAccessor.DEFAULT = new LibraryAccessor () {
             public Library createLibrary (LibraryImplementation impl) {
-                return new Library (impl);
+                return new Library(impl, LibraryManager.getDefault());
             }
         };
     }

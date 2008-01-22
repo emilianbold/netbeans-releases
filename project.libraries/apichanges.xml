@@ -103,6 +103,49 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+
+    <change id="project-libraries">
+        <api name="general"/>
+        <summary>Support for project libraries</summary>
+        <version major="1" minor="17"/>
+        <date day="22" month="1" year="2008"/>
+        <author login="jglick"/>
+        <compatibility addition="yes" deprecation="yes">
+            <p>
+                <code>LibraryManager.addLibrary</code> will not work with areas,
+                so it was deprecated in favor of the new <code>createLibrary</code>.
+            </p>
+            <p>
+                Code which obtained a <code>Library</code> of arbitrary origin,
+                and then assumed it could refer to that library henceforth by name only,
+                will not work with project libraries.
+                The simplest persistent identifier for a new-style library is pair of name
+                and URL of manager (null for the default manager).
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                There is a new API and SPI for project libraries
+                (or, more generally, libraries with specific storage locations).
+                <code>LibraryChooser</code>, <code>ArealLibraryProvider</code>,
+                and <code>LibraryStorageArea</code> are new, as are methods
+                <code>Library.getManager</code>,
+                <code>LibraryManager.getDisplayName</code>,
+                <code>LibraryManager.getLocation</code>,
+                <code>LibraryManager.createLibrary</code>,
+                <code>LibraryManager.forLocation</code>, and
+                <code>LibraryManager.getOpenManagers</code>.
+                (<code>LibraryProvider</code> was also generified.)
+            </p>
+        </description>
+        <class package="org.netbeans.api.project.libraries" name="LibraryManager"/>
+        <class package="org.netbeans.api.project.libraries" name="Library"/>
+        <class package="org.netbeans.api.project.libraries" name="LibraryChooser"/>
+        <class package="org.netbeans.spi.project.libraries" name="LibraryProvider"/>
+        <class package="org.netbeans.spi.project.libraries" name="ArealLibraryProvider"/>
+        <class package="org.netbeans.spi.project.libraries" name="LibraryStorageArea"/>
+        <issue number="44035"/>
+    </change>
     
     <change id="Customizer-can-be-null">
             <api name="general"/>

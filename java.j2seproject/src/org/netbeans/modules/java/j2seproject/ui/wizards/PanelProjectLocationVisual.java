@@ -64,6 +64,7 @@ import org.openide.util.Utilities;
 public class PanelProjectLocationVisual extends SettingsPanel implements DocumentListener {
     
     public static final String PROP_PROJECT_NAME = "projectName";      //NOI18N
+    public static final String PROP_PROJECT_LOCATION = "projectLocation";      //NOI18N
     
     private PanelConfigureProject panel;
     private NewJ2SEProjectWizardIterator.WizardType type;
@@ -340,6 +341,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
+        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
+            firePropertyChange (PROP_PROJECT_LOCATION,null,this.projectLocationTextField.getText());
+        }
     }
     
     public void insertUpdate( DocumentEvent e ) {
@@ -347,12 +351,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
         }
+        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
+            firePropertyChange (PROP_PROJECT_LOCATION,null,this.projectLocationTextField.getText());
+        }
     }
     
     public void removeUpdate( DocumentEvent e ) {
         updateTexts( e );
         if (this.projectNameTextField.getDocument() == e.getDocument()) {
             firePropertyChange (PROP_PROJECT_NAME,null,this.projectNameTextField.getText());
+        }
+        if (this.projectLocationTextField.getDocument() == e.getDocument()) {
+            firePropertyChange (PROP_PROJECT_LOCATION,null,this.projectLocationTextField.getText());
         }
     }
     

@@ -47,6 +47,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.util.WeakListeners;
 
@@ -54,7 +55,7 @@ import org.openide.util.WeakListeners;
  * Standard impl of {@link SharabilityQueryImplementation}.
  * @author Jesse Glick
  */
-final class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyChangeListener {
+final class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyChangeListener, AntProjectListener {
 
     private final AntProjectHelper h;
     private final PropertyEvaluator eval;
@@ -72,12 +73,13 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, Prop
         this.excludes = excludes;
         computeFiles();
         eval.addPropertyChangeListener(WeakListeners.propertyChange(this, eval));
+        h.addAntProjectListener(this);
     }
     
     /** Compute the absolute paths which are and are not sharable. */
     private void computeFiles() {
-        String[] _includePaths = computeFrom(includes);
-        String[] _excludePaths = computeFrom(excludes);
+        String[] _includePaths = computeFrom(includes, false);
+        String[] _excludePaths = computeFrom(excludes, true);
         synchronized (this) {
             includePaths = _includePaths;
             excludePaths = _excludePaths;
@@ -85,7 +87,7 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, Prop
     }
     
     /** Compute a list of absolute paths based on some abstract names. */
-    private String[] computeFrom(String[] list) {
+    private String[] computeFrom(String[] list, boolean excludeProjectLibraryPrivate) {
         List<String> result = new ArrayList<String>(list.length);
         for (String s : list) {
             String val = eval.evaluate(s);
@@ -93,6 +95,9 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, Prop
                 File f = h.resolveFile(val);
                 result.add(f.getAbsolutePath());
             }
+        }
+        if (excludeProjectLibraryPrivate) {
+            result.addAll(ProjectLibraryProvider.getUnsharablePathsWithinProject(h));
         }
         // XXX should remove overlaps somehow
         return result.toArray(new String[result.size()]);
@@ -132,5 +137,11 @@ final class SharabilityQueryImpl implements SharabilityQueryImplementation, Prop
     public void propertyChange(PropertyChangeEvent evt) {
         computeFiles();
     }
+
+    public void configurationXmlChanged(AntProjectEvent ev) {
+        computeFiles();
+    }
+
+    public void propertiesChanged(AntProjectEvent ev) {}
     
 }

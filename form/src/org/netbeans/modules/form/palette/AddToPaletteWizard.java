@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.form.palette;
 
-import java.io.File;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.event.ChangeListener;
 
 import org.openide.*;
@@ -63,13 +63,10 @@ class AddToPaletteWizard extends WizardDescriptor {
 
     ATPWizardIterator wizardIterator;
 
-    private File[] selectedFiles;
+    private List<? extends ClassSource.Entry> selectedFiles;
     private BeanInstaller.ItemInfo[] selectedBeans;
     private String selectedCategory;
-    private String sourceType;
-
-    Map libraryNameMap; // map from root file (JAR) names to libraries they belong to
-                        // created by ChooseLibraryWizardPanel.storeSettings
+    private Class<? extends ClassSource.Entry> sourceType;
 
     private java.awt.Dialog dialog;
 
@@ -80,7 +77,6 @@ class AddToPaletteWizard extends WizardDescriptor {
     }
 
     private AddToPaletteWizard(ATPWizardIterator iterator) {
-        super(iterator);
         wizardIterator = iterator;
 
         putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
@@ -91,14 +87,14 @@ class AddToPaletteWizard extends WizardDescriptor {
         setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
     }
 
-    public boolean show(String sourceType) {
+    public boolean show(Class<? extends ClassSource.Entry> sourceType) {
         String firstStep_key;
         this.sourceType = sourceType;
-        if (ClassSource.JAR_SOURCE.equals(sourceType))
+        if (sourceType == ClassSource.JarEntry.class)
             firstStep_key = "CTL_SelectJAR_Step"; // NOI18N
-        else if (ClassSource.LIBRARY_SOURCE.equals(sourceType))
+        else if (sourceType == ClassSource.LibraryEntry.class)
             firstStep_key = "CTL_SelectLibrary_Step"; // NOI18N
-        else if (ClassSource.PROJECT_SOURCE.equals(sourceType))
+        else if (sourceType == ClassSource.ProjectEntry.class)
             firstStep_key = "CTL_SelectProject_Step"; // NOI18N
         else
             throw new IllegalArgumentException();
@@ -108,8 +104,8 @@ class AddToPaletteWizard extends WizardDescriptor {
                                    PaletteUtils.getBundleString("CTL_SelectBeans_Step"), // NOI18N
                                    PaletteUtils.getBundleString("CTL_SelectCategory_Step") }); // NOI18N
 
-        libraryNameMap = null;
         wizardIterator.setSourceType(sourceType);
+        setPanelsAndSettings(wizardIterator, this);
         updateState();
 
         if (dialog == null)
@@ -129,13 +125,13 @@ class AddToPaletteWizard extends WizardDescriptor {
         }
     }
 
-    void setJARFiles(File[] files) {
+    void setJARFiles(List<? extends ClassSource.Entry> files) {
         selectedFiles = files;
     }
 
     /** @return the JAR files representing the selected source in the first
      * step of the wizard (i.e. a JAR file directly, library, or project) */
-    File[] getJARFiles() {
+    List<? extends ClassSource.Entry> getJARFiles() {
         return selectedFiles;
     }
 
@@ -155,30 +151,31 @@ class AddToPaletteWizard extends WizardDescriptor {
         return selectedCategory;
     }
     
-    String getSourceType() {
+    Class<? extends ClassSource.Entry> getSourceType() {
         return sourceType;
     }
 
     // -------
 
     /** Wizard iterator implementation for Add to Palette wizard */
-    static class ATPWizardIterator implements WizardDescriptor.Iterator {
+    static class ATPWizardIterator implements WizardDescriptor.Iterator<AddToPaletteWizard> {
 
-        WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[getPanelsCount()];
+        List<WizardDescriptor.Panel<AddToPaletteWizard>> panels = new ArrayList<WizardDescriptor.Panel<AddToPaletteWizard>>();
         int stage;
 
-        void setSourceType(String sourceType) {
-            if (ClassSource.JAR_SOURCE.equals(sourceType))
-                panels[0] = new ChooseJARWizardPanel();
-            else if (ClassSource.LIBRARY_SOURCE.equals(sourceType))
-                panels[0] = new ChooseLibraryWizardPanel();
-            else if (ClassSource.PROJECT_SOURCE.equals(sourceType))
-                panels[0] = new ChooseProjectWizardPanel();
+        void setSourceType(Class<? extends ClassSource.Entry> sourceType) {
+            panels.clear();
+            if (sourceType == ClassSource.JarEntry.class)
+                panels.add(new ChooseJARWizardPanel());
+            else if (sourceType == ClassSource.LibraryEntry.class)
+                panels.add(new ChooseLibraryWizardPanel());
+            else if (sourceType == ClassSource.ProjectEntry.class)
+                panels.add(new ChooseProjectWizardPanel());
             else
                 throw new IllegalArgumentException();
 
-            panels[1] = new ChooseBeansWizardPanel();
-            panels[2] = new ChooseCategoryWizardPanel();
+            panels.add(new ChooseBeansWizardPanel());
+            panels.add(new ChooseCategoryWizardPanel());
 
             stage = 1;
         }
@@ -190,8 +187,8 @@ class AddToPaletteWizard extends WizardDescriptor {
         // ------
         // WizardDescriptor.Iterator implementation
 
-        public WizardDescriptor.Panel current() {
-            return panels[stage-1];
+        public WizardDescriptor.Panel<AddToPaletteWizard> current() {
+            return panels.get(stage - 1);
         }
 
         public boolean hasNext() {

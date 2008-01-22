@@ -48,6 +48,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -56,10 +58,12 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.UpdateHelper;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -84,6 +88,8 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
     private final PropertyEvaluator eval;    
     private final ClassPathSupport cs;    
     
+    private static final Logger LOG = Logger.getLogger(J2SEProjectClassPathModifier.class.getName());
+    
     /** Creates a new instance of J2SEProjectClassPathModifier */
     public J2SEProjectClassPathModifier(final J2SEProject project, final UpdateHelper helper, final PropertyEvaluator eval, final ReferenceHelper refHelper) {
         assert project != null;
@@ -94,15 +100,13 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
         this.helper = helper;
         this.eval = eval;
         this.refHelper = refHelper;        
-        this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
+        this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), helper,
                                         J2SEProjectProperties.WELL_KNOWN_PATHS, 
-                                        J2SEProjectProperties.LIBRARY_PREFIX, 
-                                        J2SEProjectProperties.LIBRARY_SUFFIX, 
                                         J2SEProjectProperties.ANT_ARTIFACT_PREFIX );
     }
     
     protected SourceGroup[] getExtensibleSourceGroups() {
-        Sources s = (Sources) this.project.getLookup().lookup(Sources.class);
+        Sources s = project.getLookup().lookup(Sources.class);
         assert s != null;
         return s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
@@ -114,15 +118,15 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
         };
     }
 
-    protected boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    protected boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException {
         return handleRoots (classPathRoots, getClassPathProperty(sourceGroup, type), REMOVE);
     }
 
-    protected boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {        
+    protected boolean addRoots (final URL[] classPathRoots, final SourceGroup sourceGroup, final String type) throws IOException {        
         return handleRoots (classPathRoots, getClassPathProperty(sourceGroup, type), ADD);
     }
     
-    boolean handleRoots (final URL[] classPathRoots, final String classPathProperty, final int operation) throws IOException, UnsupportedOperationException {
+    boolean handleRoots (final URL[] classPathRoots, final String classPathProperty, final int operation) throws IOException {
         assert classPathRoots != null : "The classPathRoots cannot be null";      //NOI18N        
         assert classPathProperty != null;
         try {
@@ -140,7 +144,12 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 if (toAdd == null) {
                                     toAdd = classPathRoots[i];
                                 }
-                                File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
+                                final File f;
+                                if (LibrariesSupport.isAbsoluteURL(toAdd)) {
+                                    f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
+                                } else {
+                                    f = LibrariesSupport.convertURLToFile(toAdd);
+                                }
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }
@@ -187,15 +196,15 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
         }
     }
 
-    protected boolean removeAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    protected boolean removeAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException {
         return handleAntArtifacts (artifacts, artifactElements, getClassPathProperty(sourceGroup, type), REMOVE);
     }
 
-    protected boolean addAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    protected boolean addAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final SourceGroup sourceGroup, final String type) throws IOException {
         return handleAntArtifacts (artifacts, artifactElements, getClassPathProperty(sourceGroup, type), ADD);
     }
     
-    boolean handleAntArtifacts (final AntArtifact[] artifacts, final URI[] artifactElements, final String classPathProperty, final int operation) throws IOException, UnsupportedOperationException {
+    boolean handleAntArtifacts (final AntArtifact[] artifacts, final URI[] artifactElements, final String classPathProperty, final int operation) throws IOException {
         assert artifacts != null : "Artifacts cannot be null";    //NOI18N
         assert artifactElements != null : "ArtifactElements cannot be null";  //NOI18N
         assert artifacts.length == artifactElements.length : "Each artifact has to have corresponding artifactElement"; //NOI18N
@@ -245,15 +254,15 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
     }
     
     
-    protected boolean removeLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    protected boolean removeLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException {
         return handleLibraries (libraries, getClassPathProperty(sourceGroup, type), REMOVE);
     }
 
-    protected boolean addLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
+    protected boolean addLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type) throws IOException {
         return handleLibraries (libraries, getClassPathProperty(sourceGroup, type), ADD);
     }
     
-    boolean handleLibraries (final Library[] libraries, final String classPathProperty, final int operation) throws IOException, UnsupportedOperationException {
+    boolean handleLibraries (final Library[] libraries, final String classPathProperty, final int operation) throws IOException {
         assert libraries != null : "Libraries cannot be null";  //NOI18N
         assert classPathProperty != null;
         try {
@@ -266,7 +275,25 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                             List<ClassPathSupport.Item> changed = new ArrayList<ClassPathSupport.Item>(libraries.length);
                             for (int i=0; i< libraries.length; i++) {
                                 assert libraries[i] != null;
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( libraries[i], null );
+                                Library lib = libraries[i];
+                                if (project.getAntProjectHelper().isSharableProject()) {
+                                    if (lib.getManager().getLocation() == null) {
+                                        LOG.log(Level.INFO, "Client is adding global library ["+lib+
+                                                "] to sharable project.", new Exception());
+                                        // For backward compatibility just copy the library to shared one.
+                                        Library l = refHelper.getProjectLibraryManager().getLibrary(lib.getName());
+                                        if (l != null) {
+                                            lib = l;
+                                        } else {
+                                            lib = refHelper.copyLibrary(lib);
+                                        }
+                                    } else if (!lib.getManager().getLocation().equals(refHelper.getProjectLibraryManager().getLocation())) {
+                                        throw new UnsupportedOperationException("Adding library '"+lib.getName()+ // NOI18N
+                                            "' from '"+lib.getManager().getLocation()+"' to project '"+project.getProjectDirectory()+ // NOI18N
+                                            "' is not supported because project libraries are defined in '"+refHelper.getProjectLibraryManager().getLocation()+"'"); // NOI18N
+                                    }
+                                }
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( lib, null );
                                 if (operation == ADD && !resources.contains(item)) {
                                     resources.add (item);                                
                                     changed.add(item);
@@ -280,13 +307,6 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 String itemRefs[] = cs.encodeToStrings( resources.iterator() );                                
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                                 props.setProperty(classPathProperty, itemRefs);                                
-                                if (operation == ADD) {
-                                    for (ClassPathSupport.Item item : changed) {
-                                        String prop = cs.getLibraryReference(item);
-                                        prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
-                                        ClassPathSupport.relativizeLibraryClassPath(props, helper.getAntProjectHelper(), prop);
-                                    }
-                                }
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                                 ProjectManager.getDefault().saveProject(project);
                                 return true;
@@ -300,7 +320,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
         }
     }
     
-    private String getClassPathProperty (final SourceGroup sg, final String type) throws UnsupportedOperationException {
+    private String getClassPathProperty (final SourceGroup sg, final String type) {
         assert sg != null : "SourceGroup cannot be null";  //NOI18N
         assert type != null : "Type cannot be null";  //NOI18N
         final String classPathProperty = project.getClassPathProvider().getPropertyName (sg, type);

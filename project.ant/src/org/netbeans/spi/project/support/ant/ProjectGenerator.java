@@ -41,12 +41,14 @@
 
 package org.netbeans.spi.project.support.ant;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Iterator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.project.ant.AntBasedProjectFactorySingleton;
+import org.netbeans.modules.project.ant.ProjectLibraryProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -90,10 +92,24 @@ public class ProjectGenerator {
      *                                  new project on disk is recognized by some other factory
      */
     public static AntProjectHelper createProject(final FileObject directory, final String type) throws IOException, IllegalArgumentException {
-        return createProject0(directory, type, null);
+        return createProject0(directory, type, null, null);
     }
     
-    private static AntProjectHelper createProject0(final FileObject directory, final String type, final String name) throws IOException, IllegalArgumentException {
+    /**
+     * See {@link #createProject(FileObject, String)} for more datails. This 
+     * method in addition allows to setup shared libraries location
+     * @param directory the main project directory to create it in
+     *                  (see {@link AntProjectHelper#getProjectDirectory})
+     * @param type a unique project type identifier (see {@link AntBasedProjectType#getType})
+     * @param librariesDefinition relative or absolute OS path; can be null
+     */
+    public static AntProjectHelper createProject(final FileObject directory, final String type, 
+            final String librariesDefinition) throws IOException, IllegalArgumentException {
+        return createProject0(directory, type, null, librariesDefinition);
+    }
+    
+    private static AntProjectHelper createProject0(final FileObject directory, final String type, 
+            final String name, final String librariesDefinition) throws IOException, IllegalArgumentException {
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<AntProjectHelper>() {
                 public AntProjectHelper run() throws IOException {
@@ -116,6 +132,18 @@ public class ProjectGenerator {
                     }
                     el = doc.createElementNS(AntProjectHelper.PROJECT_NS, "configuration"); // NOI18N
                     doc.getDocumentElement().appendChild(el);
+                    if (librariesDefinition != null) {
+                        el.appendChild(ProjectLibraryProvider.createLibrariesElement(doc, librariesDefinition));
+                        // create libraries property file if it does not exist:
+                        File f = new File(librariesDefinition);
+                        if (!f.isAbsolute()) {
+                            f = new File(FileUtil.toFile(directory), librariesDefinition);
+                        }
+                        f = FileUtil.normalizeFile(f);
+                        if (!f.exists()) {
+                            FileUtil.createData(f);
+                        }
+                    }
                     FileLock lock = projectXml.lock();
                     try {
                         OutputStream os = projectXml.getOutputStream(lock);

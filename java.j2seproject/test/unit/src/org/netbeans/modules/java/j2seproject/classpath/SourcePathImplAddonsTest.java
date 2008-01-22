@@ -76,7 +76,7 @@ public class SourcePathImplAddonsTest extends NbTestCase{
         scratch = TestUtil.makeScratchDir(this);
         projdir = scratch.createFolder("proj001");
         J2SEProjectGenerator.setDefaultSourceLevel(new SpecificationVersion ("1.4"));   //NOI18N
-        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj001",null,null); //NOI18N
+        helper = J2SEProjectGenerator.createProject(FileUtil.toFile(projdir),"proj001",null,null,null); //NOI18N
         J2SEProjectGenerator.setDefaultSourceLevel(null);
         pm = ProjectManager.getDefault();
         pp = pm.findProject(projdir).getLookup().lookup(J2SEProject.class);

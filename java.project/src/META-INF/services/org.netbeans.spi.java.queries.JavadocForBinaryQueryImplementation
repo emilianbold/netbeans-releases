@@ -1,2 +1,4 @@
 org.netbeans.modules.java.project.JavadocForBinaryQueryImpl
 #position=100
+org.netbeans.modules.java.project.ExtraJavadocForBinaryQueryImplementation
+#position=9999

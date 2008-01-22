@@ -51,6 +51,7 @@ import java.beans.PropertyChangeEvent;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.WeakListeners;
+
 /**
  *
  * @author  tom
@@ -59,12 +60,11 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
 
     private final LibraryImplementation original;
     private final LibrariesModel model;
-    private Map<String,List<URL>> newContents;
+    Map<String,List<URL>> newContents;
     private String newName;
     private String newDescription;
     private PropertyChangeSupport support;
 
-    /** Creates a new instance of ProxyLibraryImplementation */
     public ProxyLibraryImplementation (LibraryImplementation original, LibrariesModel model) {
         assert original != null && model != null;
         this.original = original;
@@ -167,8 +167,8 @@ public class ProxyLibraryImplementation implements LibraryImplementation, Proper
             return false;
     }
 
-    public final String toString() {
-        return "Proxy for: " + this.original.toString();    //NOI18N
+    public @Override String toString() {
+        return "Proxy[" + original + "]"; // NOI18N
     }
 
 }

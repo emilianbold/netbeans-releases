@@ -1252,7 +1252,7 @@ public class MetaComponentCreator {
     // --------
     
     Class prepareClass(final ClassSource classSource) {
-        if (classSource.getCPRootCount() == 0) { // Just some optimization
+        if (!classSource.hasEntries()) { // Just some optimization
             return prepareClass0(classSource);
         } else {
             try {
@@ -1283,7 +1283,9 @@ public class MetaComponentCreator {
         Class loadedClass = null;
         try {
             if (!ClassPathUtils.checkUserClass(className, formFile)) {
-                ClassPathUtils.updateProject(formFile, classSource);
+                if (ClassPathUtils.updateProject(formFile, classSource) == null) {
+                    return null;
+                }
                 if (FormLAF.inLAFBlock()) {
                     // Force update to new class loader
                     FormLAF.setUseDesignerDefaults(null);
