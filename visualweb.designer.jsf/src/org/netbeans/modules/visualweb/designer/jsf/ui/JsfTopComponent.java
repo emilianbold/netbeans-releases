@@ -1022,7 +1022,14 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 ////        }
 //        designer.paneRequestFocus();
         if (jsfForm.isValid()) {
-            designerActivated();
+            // XXX #125593 See also #componentShowing, because of the also this moved later.
+            // XXX This causes to fire events from insync, which work only when the model is in sync.
+            // XXX It should be fixed in insync, but at this momemnt it is not quickly possible.
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    designerActivated();
+                }
+            });
         }
     }
     
