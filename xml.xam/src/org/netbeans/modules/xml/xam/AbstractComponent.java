@@ -73,10 +73,12 @@ public abstract class AbstractComponent<C extends Component<C>> implements Compo
     protected abstract void populateChildren(List<C> children);
     
     public final void removePropertyChangeListener(java.beans.PropertyChangeListener pcl) {
+        if(model == null) return;
         model.removePropertyChangeListener(pcl);
     }
     
     public final void addPropertyChangeListener(java.beans.PropertyChangeListener pcl) {
+        if(model == null) return;
         model.addPropertyChangeListener(new DelegateListener(pcl));
     }
     
