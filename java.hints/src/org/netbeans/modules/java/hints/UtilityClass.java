@@ -203,7 +203,7 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
     }
 
     public String getId() {
-        return getClass().getName();
+        return getClass().getName() + (clazz ? "_1" : "_2");
     }
 
     public String getDisplayName() {
