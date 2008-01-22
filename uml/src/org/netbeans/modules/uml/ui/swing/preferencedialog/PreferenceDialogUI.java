@@ -1034,7 +1034,7 @@ public class PreferenceDialogUI extends JCenterDialog
 				else if (pos2 > -1)
 				{
 					Font curFont = buildCurrentFont(pEle);
-					Font font = FontChooser.selectFont(curFont, this);
+					Font font = FontChooser.selectFont(curFont);
 					if (font != null)
 					{
 						//
