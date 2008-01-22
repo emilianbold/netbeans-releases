@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -144,7 +144,7 @@ public class MainWithProjects implements Main.MainWithProjectsInterface, Propert
         String name = "XTestProject";
         String mainClass = null;
         try {
-            J2SEProjectGenerator.createProject(dir, name, mainClass, null);
+            J2SEProjectGenerator.createProject(dir, name, mainClass, null, null);
             openProject(dir);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
