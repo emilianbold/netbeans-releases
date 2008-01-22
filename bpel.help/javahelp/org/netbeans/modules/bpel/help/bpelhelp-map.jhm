@@ -102,4 +102,5 @@
 	<mapID target="orch_debug_monitor" url="debug/monitor_debugger.html"/>
 	<mapID target="org.netbeans.modules.bpel.core.wizard.NewBpelFilePanel" url="properties/bpel_process_wizard.html"/>
 	<mapID target="orch_design_find_usage" url="design/finding_usages.html"/>
+	<mapID target="orch_trial" url="basics/create_project_test.html"/>
 </map>
