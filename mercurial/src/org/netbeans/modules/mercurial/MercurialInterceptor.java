@@ -227,9 +227,14 @@ public class MercurialInterceptor extends VCSInterceptor {
     }
 
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
-        Mercurial hg = Mercurial.getInstance();
+        final Mercurial hg = Mercurial.getInstance();
         final File root = hg.getTopmostManagedParent(srcFile);
+        if (root == null) return;
 
+        RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
+
+        Runnable moveImpl = new Runnable() {
+            public void run() {
         try {
             int status = hg.getFileStatusCache().getStatus(srcFile).getStatus();
             if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
@@ -242,10 +247,12 @@ public class MercurialInterceptor extends VCSInterceptor {
                 HgCommand.doRename(root, srcFile, dstFile);
             }
         } catch (HgException e) {
-            IOException ex = new IOException("Mercurial failed to rename " + srcFile.getAbsolutePath() + " to: " + dstFile.getAbsolutePath()); // NOI18N
-            ex.initCause(e);
-            throw ex;
+                    Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1} {2}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
         }
+    }
+        };
+
+        rp.post(moveImpl).waitFinished();
     }
 
     public void afterMove(final File from, final File to) {
@@ -294,7 +301,20 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private void fileCreatedImpl(final File file) {
         if (file.isDirectory()) return;
+        Mercurial hg = Mercurial.getInstance();        
+        final File root = hg.getTopmostManagedParent(file);
+        if (root == null) return;
+        
+        RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
+
+        HgProgressSupport supportCreate = new HgProgressSupport() {
+            public void perform() {
         cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+    }
+        };
+    
+        supportCreate.start(rp, root.getAbsolutePath(), 
+                org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Create_Progress")); // NOI18N
     }
     
     public void afterChange(final File file) {
@@ -305,8 +325,21 @@ public class MercurialInterceptor extends VCSInterceptor {
         });
     }
 
-    private void fileChangedImpl(File file) {
+    private void fileChangedImpl(final File file) {
         if (file.isDirectory()) return;
-        cache.refreshForce(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+        Mercurial hg = Mercurial.getInstance();        
+        final File root = hg.getTopmostManagedParent(file);
+        if (root == null) return;
+        
+        RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
+
+        HgProgressSupport supportCreate = new HgProgressSupport() {
+            public void perform() {
+                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
    }
+        };
+
+        supportCreate.start(rp, root.getAbsolutePath(), 
+                org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Change_Progress")); // NOI18N
+}
 }
