@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.openide.util.Exceptions;
 
 
 /**
