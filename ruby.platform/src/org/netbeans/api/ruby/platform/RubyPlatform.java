@@ -426,7 +426,7 @@ public final class RubyPlatform {
     }
 
     public String getLabel() {
-        return info.getLabel();
+        return info.getLabel(isDefault());
     }
 
     public boolean isDefault() {
@@ -749,8 +749,9 @@ public final class RubyPlatform {
             return info;
         }
         
-        public String getLabel() {
-            return kind + " (" + (isJRuby() ? jversion : version) + ')'; // NOI18N
+        public String getLabel(final boolean isDefault) {
+            return (isDefault ? NbBundle.getMessage(RubyPlatform.class, "RubyPlatformManager.CTL_BundledJRubyLabel") : kind)
+                    + " (" + (isJRuby() ? jversion : version) + ')'; // NOI18N
         }
         
         public String getLongDescription() {

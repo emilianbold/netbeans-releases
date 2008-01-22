@@ -58,7 +58,6 @@ public class RubyPlatformTest extends RubyTestBase {
         assertTrue("is default", jruby.isDefault());
         assertEquals("right version", "1.8.6", jruby.getVersion());
 //        assertEquals("right label", NbBundle.getMessage(RubyPlatformManager.class, "CTL_BundledJRubyLabel"), jruby.getLabel());
-        assertEquals("right label", "JRuby (1.1RC1)", jruby.getLabel());
         assertEquals("right ruby home", TestUtil.getXTestJRubyHome(), jruby.getHome());
         assertEquals("right ruby lib", new File(TestUtil.getXTestJRubyHome(), "lib/ruby/1.8").getAbsolutePath(), jruby.getLibDir());
     }
@@ -97,6 +96,13 @@ public class RubyPlatformTest extends RubyTestBase {
         assertEquals("right long description", "JRuby 1.8.6 (2008-01-12 patchlevel 5512) [java]", jruby.getInfo().getLongDescription());
         RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
         assertEquals("right long description without patchlevel", "Ruby 0.1 (2000-01-01) [abcd]", ruby.getInfo().getLongDescription());
+    }
+    
+    public void testLabel() throws Exception {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        assertEquals("right label for build-in JRuby", "Built-in JRuby (1.1RC1)", jruby.getLabel());
+        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
+        assertEquals("right label for Ruby", "Ruby (0.1)", ruby.getLabel());
     }
 
     private String touch(String path, String dir) throws IOException {
