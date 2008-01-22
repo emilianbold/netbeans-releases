@@ -518,7 +518,9 @@ public class ExecutionService {
     /** Just helper method for logging. */
     public static void logProcess(final ProcessBuilder pb) {
         if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.fine("Running (basedir: " + pb.directory().getAbsolutePath() + "): \"" + getProcessAsString(pb.command()) + '"');
+            File dir = pb.directory();
+            String basedir = dir == null ? "" : "(basedir: " + dir.getAbsolutePath() + ") ";
+            LOGGER.fine("Running: " + basedir + '"' + getProcessAsString(pb.command()) + '"');
             LOGGER.fine("Environment: " + pb.environment());
         }
     }
