@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,7 +60,6 @@ import org.netbeans.modules.autoupdate.services.Trampoline;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
-import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Attr;
@@ -336,7 +335,6 @@ public abstract class SimpleItem {
     public static class Localization extends SimpleItem {
         public static final String CODE_NAME_BASE = "codenamebase";
         public static final String DISTRIBUTION = "distribution";
-        public static final String LICENSE = "license";
         public static final String DOWNLOAD_SIZE = "downloadsize";
         public static final String NEEDS_RESTART = "needsrestart";
         public static final String MODULE_AUTHOR = "moduleauthor";
@@ -437,21 +435,21 @@ public abstract class SimpleItem {
             NodeList innerList = declaratingNode.getChildNodes ();
             /* XXX: due to #111578 was commented out:
             assert innerList != null && innerList.getLength() == 1 :
-                "Lincese " + getAttribute (declaratingNode, LICENSE_ID) + " should contain only once data.";
+                "License " + getAttribute (declaratingNode, LICENSE_ID) + " should contain only once data.";
             */
             if (innerList == null) {
                 Logger.getLogger (SimpleItem.class.getName ()).log (Level.WARNING,
-                        "Lincese " + getAttribute (declaratingNode, LICENSE_ID) +
+                        "License " + getAttribute (declaratingNode, LICENSE_ID) +
                         " doesn't contain any data.");
             }
             if (innerList.getLength() != 1) {
                 Logger.getLogger (SimpleItem.class.getName ()).log (Level.WARNING,
-                        "Lincese " + getAttribute (declaratingNode, LICENSE_ID) +
+                        "License " + getAttribute (declaratingNode, LICENSE_ID) +
                         " contains more(" + innerList.getLength () + "x) instances of license content. " +
                         "Reopen the issue 111578.");
             }
 
-            /* for more text in Lincese:
+            /* for more text in License:
              for (int j = 0; j < innerList.getLength (); j++ ) {
                 short type = innerList.item( j ).getNodeType();
                 if (type == Node.CDATA_SECTION_NODE )  {
