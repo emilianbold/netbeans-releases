@@ -161,7 +161,7 @@ public class ProjectSupport {
         String mainClass = null;
         try {
             File projectDir = new File(projectParentDir, name);
-            J2SEProjectGenerator.createProject(projectDir, name, mainClass, null);
+            J2SEProjectGenerator.createProject(projectDir, name, mainClass, null, null);
             return openProject(projectDir);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
