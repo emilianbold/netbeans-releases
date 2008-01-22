@@ -336,6 +336,10 @@ public class DetectorTest extends TestBase {
 	performTest("MultiFields");
     }
     
+    public void testUnusedParameters() throws Exception {
+	performTest("UnusedParameters");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {

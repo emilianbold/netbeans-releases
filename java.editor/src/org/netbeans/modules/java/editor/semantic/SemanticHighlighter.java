@@ -842,7 +842,7 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             
             Element el = info.getTrees().getElement(getCurrentPath());
             
-            if (el != null && el.getModifiers().contains(Modifier.ABSTRACT)) {
+            if (el != null && (el.getModifiers().contains(Modifier.ABSTRACT) || el.getModifiers().contains(Modifier.NATIVE) || !el.getModifiers().contains(Modifier.PRIVATE))) {
                 paramsUseTypes = EnumSet.of(UseTypes.WRITE, UseTypes.READ);
             } else {
                 paramsUseTypes = EnumSet.of(UseTypes.WRITE);
