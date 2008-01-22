@@ -43,23 +43,18 @@
 package org.netbeans.modules.uml.ui.support.drawingproperties;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
-import java.awt.Frame;
 import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionListener;
+import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -68,31 +63,16 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-
-import org.netbeans.modules.uml.ui.swing.commondialogs.JCenterDialog;
-
-import java.awt.event.ActionEvent;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
-
-/*
- * Created on Mar 7, 2005
- *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
 
 /**
  * @author swadebeshp
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
- */
-public class FontChooser extends JCenterDialog implements ItemListener{
-	protected static JPanel mainPanel = null;
+  */
+public class FontChooser extends JPanel implements ItemListener{
 	protected static JPanel UIPanel = null;
 	protected static JPanel stylePanel = null;
-	protected static JPanel buttonPanel = null;
 	protected static JPanel optionPanel = null;
 	protected static JPanel samplePanel = null;
 	protected static JList m_NameList = null;
@@ -122,18 +102,14 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 	
 	protected void init()
 	{
-		getContentPane().setLayout(new GridBagLayout());
+		setLayout(new GridBagLayout());
 		
 		//All panel lists of the frame.
-		mainPanel = new JPanel();
-		mainPanel.setLayout(new GridBagLayout());
 		UIPanel = new JPanel();
 		UIPanel.setLayout(new GridBagLayout());
 		stylePanel = new JPanel();
 		stylePanel.setLayout(new GridBagLayout());
-		buttonPanel = new JPanel();
-		buttonPanel.setLayout(new BorderLayout());
-	
+
 		//Components of the UIPanel
                 String fontText = DrawingPropertyResource.getString("IDS_FONT");
 		fontLabel = new JLabel(DrawingPropertyResource.determineText(fontText));
@@ -145,6 +121,7 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 		gridBagConstraints.weighty=0.1;
 		gridBagConstraints.gridx=0;
 		gridBagConstraints.gridy=0;
+                gridBagConstraints.insets = new Insets (0, 0, 5, 0);
 		UIPanel.add(fontLabel,gridBagConstraints);
 		
 		m_selectedFontName = new JLabel();
@@ -173,6 +150,7 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 		gridBagConstraints.weighty=0.1;
 		gridBagConstraints.gridx=0;
 		gridBagConstraints.gridy=1;
+                gridBagConstraints.insets = new Insets (0, 0, 5, 0);
 		UIPanel.add(m_selectedFontName,gridBagConstraints);
 		
 		fontScrollPane = new JScrollPane(m_NameList);
@@ -183,6 +161,7 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 		gridBagConstraints.weighty=0.8;
 		gridBagConstraints.gridx=0;
 		gridBagConstraints.gridy=2;
+                gridBagConstraints.insets = new Insets (0, 0, 5, 0);
 		UIPanel.add(fontScrollPane,gridBagConstraints);
 		
                 String fontSizeText = DrawingPropertyResource.getString("IDS_SIZE");
@@ -194,6 +173,7 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 		gridBagConstraints.weighty=0.1;
 		gridBagConstraints.gridx=1;
 		gridBagConstraints.gridy=0;
+                gridBagConstraints.insets = new Insets (0, 5, 5, 0);
 		UIPanel.add(fontSizeLabel,gridBagConstraints);
 		
 		m_selectedFontSize = new JLabel();
@@ -231,34 +211,44 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 				}
 			}
 		});
-		
+		gridBagConstraints= new GridBagConstraints();
+		gridBagConstraints.fill=GridBagConstraints.BOTH;
+		gridBagConstraints.weightx=0.3;
+		gridBagConstraints.weighty=0.1;
+		gridBagConstraints.gridx=1;
+		gridBagConstraints.gridy=1;
+                gridBagConstraints.insets = new Insets (0, 5, 5, 0);
+		UIPanel.add(m_selectedFontSize,gridBagConstraints);
+                
 		fontSizePane = new JScrollPane(m_SizeList);
-		
 		gridBagConstraints= new GridBagConstraints();
 		gridBagConstraints.fill=GridBagConstraints.BOTH;
 		gridBagConstraints.weightx=0.3;
 		gridBagConstraints.weighty=0.9;
 		gridBagConstraints.gridx=1;
 		gridBagConstraints.gridy=2;
+                gridBagConstraints.insets = new Insets (0, 5, 5, 0);
 		UIPanel.add(fontSizePane,gridBagConstraints);
 		// End of UIPanel.
 		
 		
-		// UIPane ----------> Main Frame
+		// UIPane ----------> this panel
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+		gridBagConstraints.insets = new java.awt.Insets(0, 7, 0, 7);
 		gridBagConstraints.weightx = 1;
-		gridBagConstraints.weighty = 0.3;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		getContentPane().add(UIPanel, gridBagConstraints);
+		gridBagConstraints.weighty = 0.7;
+		gridBagConstraints.anchor = GridBagConstraints.CENTER;
+                gridBagConstraints.insets = new Insets (5, 10, 5, 10);
+		add(UIPanel, gridBagConstraints);
 		//End of UIPanel
 		
 		// Setting for the StylePanel
 		optionPanel = new JPanel();
-		
+		optionPanel.setLayout(new GridBagLayout());
+                
 		// Setting of Optional Panel
 		m_boldCheck = new JCheckBox(DrawingPropertyResource.determineText(DrawingPropertyResource.getString("IDS_BOLD")));
 		DrawingPropertyResource.setMnemonic(m_boldCheck, DrawingPropertyResource.getString("IDS_BOLD"));
@@ -268,9 +258,11 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 		gridBagConstraints= new GridBagConstraints();
 		gridBagConstraints.fill=GridBagConstraints.BOTH;
 		gridBagConstraints.weightx=1;
-		gridBagConstraints.weighty=0.5;
+		//gridBagConstraints.weighty= 0.5;
 		gridBagConstraints.gridx=0;
 		gridBagConstraints.gridy=0;
+                gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+                gridBagConstraints.insets = new Insets (0, 5, 0, 0);
 		optionPanel.add(m_boldCheck,gridBagConstraints);
 		
 		m_italicCheck = new JCheckBox(DrawingPropertyResource.determineText(DrawingPropertyResource.getString("IDS_ITALIC")));
@@ -281,9 +273,11 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 		gridBagConstraints= new GridBagConstraints();
 		gridBagConstraints.fill=GridBagConstraints.BOTH;
 		gridBagConstraints.weightx=1;
-		gridBagConstraints.weighty=0.5;
+		//gridBagConstraints.weighty=0.5;
 		gridBagConstraints.gridx=0;
 		gridBagConstraints.gridy=1;
+                gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
+                gridBagConstraints.insets = new Insets (0, 5, 0, 0);
 		optionPanel.add(m_italicCheck,gridBagConstraints);
 		optionPanel.setBorder(new TitledBorder(DrawingPropertyResource.getString("IDS_STYLES")));
 		//End of Option Panel.
@@ -292,8 +286,8 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 0.2;
-//		gridBagConstraints.weighty = 0.2;
+		gridBagConstraints.weightx = 0.3;
+		gridBagConstraints.weighty = 1;
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
 		stylePanel.add(optionPanel,gridBagConstraints);
 		
@@ -303,86 +297,30 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 		m_sampleField = new JLabel();
 		m_sampleField.setText(m_sampleStr);
 		samplePanel.add(m_sampleField);
-		samplePanel.setSize(50, 50);
 		
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 0.8;
-//		gridBagConstraints.weighty = 0.8;
+		gridBagConstraints.weightx = 0.7;
+		gridBagConstraints.weighty = 1;
 		gridBagConstraints.anchor = GridBagConstraints.WEST;
+                gridBagConstraints.insets = new Insets (0, 5, 0, 0);
 		stylePanel.add(samplePanel,gridBagConstraints);
 		
 		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 1;
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 5);
+		gridBagConstraints.insets = new Insets(5, 10, 0, 10);
 		gridBagConstraints.weightx = 1;
-		gridBagConstraints.weighty = 0.2;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		getContentPane().add(stylePanel, gridBagConstraints);
+		gridBagConstraints.weighty = 0.3;
+		gridBagConstraints.anchor = GridBagConstraints.CENTER;
+		add(stylePanel, gridBagConstraints);
 		//End of Style Panel
-		
-		// Setting for the Button Panel
-                String okName = DrawingPropertyResource.getString("IDS_OK");
-		m_ok = new JButton(okName);
-                m_ok.getAccessibleContext().setAccessibleDescription(okName);
-                getRootPane().setDefaultButton(m_ok);
-                
-                String cancelName = DrawingPropertyResource.getString("IDS_CANCEL");
-		m_cancel = new JButton(cancelName);
-                m_cancel.getAccessibleContext().setAccessibleDescription(cancelName);
-                
-		Box paneButton = Box.createHorizontalBox();
-		paneButton.add(Box.createHorizontalGlue());
-		paneButton.add(m_ok);
-		
-		m_ok.addActionListener
-		(
-			new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					okPressed(e);
-				}
-			}
-		);
-		
-		paneButton.add(Box.createHorizontalStrut(5));
-		paneButton.add(Box.createHorizontalGlue());
-		paneButton.add(m_cancel);
-		
-		m_cancel.addActionListener
-		(
-			new ActionListener()
-			{
-				public void actionPerformed(ActionEvent e)
-				{
-					cancelPressed(e);
-				}
-			}
-		);
-		
-		buttonPanel.add(paneButton,BorderLayout.EAST);
-		
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 7);
-		gridBagConstraints.weightx = 1;
-		gridBagConstraints.weighty = 0.1;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		getContentPane().add(buttonPanel, gridBagConstraints);
-		//End of Button Panel.
-		
-		// Frame setting.
-		
-		setTitle(DrawingPropertyResource.getString("IDS_DIALOGTITLE"));
+
                 getAccessibleContext().setAccessibleDescription(DrawingPropertyResource.getString("ADDS_DIALOGTITLE"));
-		setSize(400,300);
+		this.setPreferredSize(new Dimension(500,350));
 	}
 	public FontChooser()
 	{
@@ -416,17 +354,6 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 		m_font = new Font(m_fontName, style, m_size);
 		m_sampleField.setFont(m_font);
 	}
-	
-	protected void cancelPressed(ActionEvent e)
-	{
-		m_font = null;
-		dispose();
-	}
-	
-	protected void okPressed(ActionEvent e)
-	{
-		dispose();
-	}
 
 	public void itemStateChanged(ItemEvent e)
 	{
@@ -455,32 +382,10 @@ public class FontChooser extends JCenterDialog implements ItemListener{
 	
 	public static Font selectFont()
 	{
-//		Font font = null;
-//		FontChooser pFontChooser = new FontChooser();
-//		pFontChooser.setModal(true);
-////		pFontChooser.show();
-//                pFontChooser.setVisible(true);
-//		font = pFontChooser.m_font;
-//		return font;
-            Frame mainWindow = WindowManager.getDefault().getMainWindow();
-            return selectFont(null, mainWindow);
+                return selectFont(null);
 	}
 	
 	public static Font selectFont(Font defaultFont)
-	{
-//		Font font = null;
-//		FontChooser pFontChooser = new FontChooser(defaultFont);
-//		pFontChooser.m_font = defaultFont;
-//		FontChooser.setDefaultFontValues(defaultFont);
-//		pFontChooser.setModal(true);
-////		pFontChooser.show();
-//                pFontChooser.setVisible(true);
-//		font = pFontChooser.m_font;
-//		return font;
-            Frame mainWindow = WindowManager.getDefault().getMainWindow();
-            return selectFont(defaultFont, mainWindow);
-	}
-	public static Font selectFont(Font defaultFont, Component parent)
 	{
 		Font font = null;
                 
@@ -496,14 +401,13 @@ public class FontChooser extends JCenterDialog implements ItemListener{
                     pFontChooser = new FontChooser();
                 }
                 
-                pFontChooser.setModal(true);
-		if (parent != null)
-		{
-			pFontChooser.center(parent);
-		}
-//		pFontChooser.show();
-                pFontChooser.setVisible(true);
-		font = pFontChooser.m_font;
+                DialogDescriptor dd = new DialogDescriptor(pFontChooser, 
+                        DrawingPropertyResource.getString("IDS_DIALOGTITLE"));
+                DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+                if (dd.getValue() == DialogDescriptor.OK_OPTION) 
+                {
+                    font = pFontChooser.m_font;
+                }
 		return font;
 	}
 	
