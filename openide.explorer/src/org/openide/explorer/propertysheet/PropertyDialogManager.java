@@ -419,7 +419,8 @@ final class PropertyDialogManager implements VetoableChangeListener, ActionListe
      */
     private void cancelValue() {
         try {
-            editor.setValue(oldValue);
+            if( env != null && env.isEditable() )
+                editor.setValue(oldValue);
         } catch( Exception e ) {
             // Ignored, there can be number of exceptions
             // when asking for old values...
