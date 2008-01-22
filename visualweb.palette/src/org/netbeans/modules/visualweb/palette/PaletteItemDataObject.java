@@ -67,6 +67,9 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.io.*;
 import java.beans.*;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.datatransfer.ExTransferable;
@@ -108,7 +111,9 @@ public class PaletteItemDataObject extends MultiDataObject {
     // classpath resource types: "jar", "library", "project" (defined in ClassSource)
 
     private static final Node.PropertySet[] NO_PROPERTIES = new Node.PropertySet[0];
-
+    private static final Logger UI_LOG =
+        Logger.getLogger("org.netbeans.ui.visualweb.palette"); //NOI18N
+    
     private boolean fileLoaded; // at least tried to load
 
 //    private PaletteItem paletteItem;
@@ -451,6 +456,14 @@ public class PaletteItemDataObject extends MultiDataObject {
             Transferable t = super.drag();            
             addPaletteFlavor(t);
             
+            LogRecord rec = new LogRecord(Level.CONFIG, 
+                    "COMPONENT_NAME"); //NOI18N
+            rec.setParameters(new Object[]{ getDisplayName(), componentClassName});
+  	           rec.setResourceBundle(NbBundle.getBundle(ItemNode.class));
+  	           rec.setResourceBundleName(ItemNode.class.getPackage().getName() + ".Bundle");
+  	           rec.setLoggerName(UI_LOG.getName());
+  	    UI_LOG.log(rec);
+
             // XXX NB#82645, when the issue is fixed, remove this.
             hackExplorerDnD(this, t);
             
