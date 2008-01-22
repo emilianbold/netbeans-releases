@@ -275,23 +275,6 @@ public final class GemManager {
         // TODO - use gemVersions map instead!
         initGemList();
 
-        // extra logging for #125084
-        if (gemName != null && LOGGER.isLoggable(Level.FINE)){
-            LOGGER.fine("Getting version for: " + gemName);
-            if (gemFiles == null){
-                LOGGER.fine("gemFiles is null");
-            } else {
-                LOGGER.fine("Found " + gemFiles.size() + " gems.");
-                for (String key : gemFiles.keySet()){
-                    Map<String, File> value = gemFiles.get(key);
-                    LOGGER.fine(key + " has "+ (value == null ? "null" : "" + value.size()) + " version(s):");
-                    for (String version : value.keySet()){
-                        LOGGER.fine(version + " at " + value.get(version));
-                    }
-                }
-            }
-        }
-        
         if (gemFiles == null) {
             return null;
         }
@@ -299,15 +282,35 @@ public final class GemManager {
         Map<String, File> highestVersion = gemFiles.get(gemName);
 
         if ((highestVersion == null) || (highestVersion.size() == 0)) {
-            LOGGER.fine("No version for " + gemName);
             return null;
         }
 
-        String result = highestVersion.keySet().iterator().next();
-        LOGGER.fine("Returning version " + result + " for " + gemName);
-        return result;
+        return highestVersion.keySet().iterator().next();
     }
 
+    /**
+     * Logs the installed gems using the given logging level.
+     */ 
+    private void logGems(Level level) {
+        if (!LOGGER.isLoggable(level)) {
+            return;
+        }
+        
+        if (gemFiles == null) {
+            LOGGER.log(level, "No gems found, gemFiles is null");
+            return;
+        }
+        
+        LOGGER.log(level, "Found " + gemFiles.size() + " gems.");
+        for (String key : gemFiles.keySet()) {
+            Map<String, File> value = gemFiles.get(key);
+            LOGGER.log(level, key + " has " + (value == null ? "null" : "" + value.size()) + " version(s):");
+            for (String version : value.keySet()) {
+                LOGGER.log(level, version + " at " + value.get(version));
+            }
+        }
+    }
+    
     private void initGemList() {
         if (gemFiles == null) {
             // Initialize lazily
@@ -325,6 +328,7 @@ public final class GemManager {
             } else {
                 LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
             }
+            logGems(Level.FINEST);
         }
     }
 
