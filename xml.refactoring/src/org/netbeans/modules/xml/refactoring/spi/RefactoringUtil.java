@@ -143,7 +143,9 @@ public class RefactoringUtil {
     }
      
     public static ErrorItem precheckTarget(Model model, boolean autosave) {
-        //Model model = request.getTargetModel();
+        //Fix for NPE 125763         
+        if(model == null)
+            return null;
         if (model.getState() != Model.State.VALID) {
             String msg = NbBundle.getMessage(RefactoringUtil.class, "MSG_ModelSourceNotWelformed");
             return new ErrorItem(model, msg);

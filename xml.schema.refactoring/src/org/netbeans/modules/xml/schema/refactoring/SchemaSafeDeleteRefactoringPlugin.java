@@ -139,6 +139,9 @@ public class SchemaSafeDeleteRefactoringPlugin extends SchemaRefactoringPlugin {
             return null;
      
         Model model = obj.getModel();
+        //Fix for NPE 125763
+        if(model == null)
+            return null;
         ErrorItem error = RefactoringUtil.precheckTarget(model, true);
         if (error != null ){
            return new Problem(isFatal(error), error.getMessage());
@@ -221,10 +224,14 @@ public class SchemaSafeDeleteRefactoringPlugin extends SchemaRefactoringPlugin {
         //add a faux refactoring element to represent the target/object being refactored
         //this element is to be added to the bag only as it will not participate in actual refactoring
         Model mod = SharedUtils.getModel(obj);
-        FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
-        if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
-           refactoringElements.add(delete, new FauxRefactoringElement(obj, NbBundle.getMessage(SchemaSafeDeleteRefactoringPlugin.class, "LBL_Delete")));
-       }
+        //Fix for NPE 125763
+        if(mod != null) {
+            FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
+            if ( XSD_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
+                refactoringElements.add(delete, new FauxRefactoringElement(obj, NbBundle.getMessage(SchemaSafeDeleteRefactoringPlugin.class, "LBL_Delete")));
+            }
+        }
+        
         if(allErrors.size() > 0) {
             Problem problem = processErrors(allErrors, ui, inner);
             fireProgressListenerStop();
