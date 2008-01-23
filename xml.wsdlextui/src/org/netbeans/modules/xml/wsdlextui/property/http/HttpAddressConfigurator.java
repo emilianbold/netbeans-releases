@@ -122,9 +122,9 @@ public class HttpAddressConfigurator extends ExtensibilityElementConfigurator {
             
             //URL url = new URL("http", "localhost", 18181, path);
             Port port = (Port) element.getParent();
-            return "http://localhost:18182/" +  prj.getProjectDirectory().getName() + "/" + fo.getName() + "/" + port.getName();
+            return "http://localhost:${HttpDefaultPort}/" +  prj.getProjectDirectory().getName() + "/" + fo.getName() + "/" + port.getName();
         }
-        return "http://localhost:18182/service";
+        return "http://localhost:${HttpDefaultPort}/service";
     }
 
     @Override

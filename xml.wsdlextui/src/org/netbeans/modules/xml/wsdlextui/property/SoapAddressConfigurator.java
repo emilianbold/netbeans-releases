@@ -115,10 +115,10 @@ public class SoapAddressConfigurator extends ExtensibilityElementConfigurator {
             Project prj = FileOwnerQuery.getOwner(fo);
             if (prj != null) { 
                 Port port = (Port) element.getParent();
-                return "http://localhost:18181/" +  prj.getProjectDirectory().getName() + "/" + fo.getName() + "/" + port.getName();
+                return "http://localhost:${HttpDefaultPort}/" +  prj.getProjectDirectory().getName() + "/" + fo.getName() + "/" + port.getName();
             }
         }
-        return "http://localhost:18181/service";
+        return "http://localhost:${HttpDefaultPort}/service";
     }
 
     @Override

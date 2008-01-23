@@ -46,7 +46,7 @@
 
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
-                <extensionAttr name="location" required="true" defaultValue="http://localhost:18181/service"/>
+                <extensionAttr name="location" required="true" defaultValue="http://localhost:${HttpDefaultPort}/service"/>
             </extensionElement>
         </wsdlElement>
     </template>
@@ -82,7 +82,7 @@
 
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
-                <extensionAttr name="location"  defaultValue="http://localhost:18181/service"/>
+                <extensionAttr name="location"  defaultValue="http://localhost:${HttpDefaultPort}/service"/>
             </extensionElement>
         </wsdlElement>
     </template>
@@ -125,7 +125,7 @@
 
         <wsdlElement name="ServicePort">
             <extensionElement name="address" >
-                <extensionAttr name="location"  defaultValue="http://localhost:18181/service"/>
+                <extensionAttr name="location"  defaultValue="http://localhost:${HttpDefaultPort}/service"/>
             </extensionElement>
         </wsdlElement>
     </template>

@@ -67,7 +67,7 @@ public class SoapBindingPostProcessor {
     
     private String mWsdlTargetNamespace;
     
-    private static final String SOAP_LOCATION_PPREFIX = "http://localhost:18181/";
+    private static final String SOAP_LOCATION_PPREFIX = "http://localhost:${HttpDefaultPort}/";
     
     /** Creates a new instance of SoapBindingPostProcessor */
     public SoapBindingPostProcessor() {
