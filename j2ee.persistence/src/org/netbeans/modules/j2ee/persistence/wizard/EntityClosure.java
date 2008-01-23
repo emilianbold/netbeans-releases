@@ -77,15 +77,16 @@ import org.openide.util.Exceptions;
  */
 public class EntityClosure {
     
+    // XXX this class needs a complete rewrite: the computing of the available 
+    // entity classes and of the referenced classes need to be moved away.
+    
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     private Set<String> availableEntities = new HashSet<String>();
     private Set<String> wantedEntities = new HashSet<String>();
     private Set<String> selectedEntities = new HashSet<String>();
     private Set<String> referencedEntities = new HashSet<String>();
-    private HashMap<String, String> name2entity = new HashMap<String, String>();
     
-    private EntityClassScope entityClassScope;
     private boolean closureEnabled = true;
     private Project project;
     
