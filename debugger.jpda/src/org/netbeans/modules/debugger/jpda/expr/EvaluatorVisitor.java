@@ -149,6 +149,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -1550,6 +1551,16 @@ import org.openide.util.NbBundle;
     @Override
     public Mirror visitMemberSelect(MemberSelectTree arg0, EvaluationContext evaluationContext) {
         TreePath currentPath = getCurrentPath();
+        Element elm = null;
+        if (currentPath != null) {
+            // We have the path and resolved elements
+            TreePath memberSelectPath = TreePath.getPath(currentPath, arg0);
+            if (memberSelectPath == null) memberSelectPath = currentPath;
+            elm = evaluationContext.getTrees().getElement(memberSelectPath);
+            if (elm instanceof TypeElement && ((TypeElement) elm).asType() instanceof ErrorType) {
+                currentPath = null; // Elements not resolved correctly
+            }
+        }
         if (currentPath == null) {
             Mirror expression = arg0.getExpression().accept(this, evaluationContext);
             String name = arg0.getIdentifier().toString();
@@ -1599,9 +1610,6 @@ import org.openide.util.NbBundle;
             return classes.get(0);
         }
         // We have the path and resolved elements
-        TreePath memberSelectPath = TreePath.getPath(currentPath, arg0);
-        if (memberSelectPath == null) memberSelectPath = currentPath;
-        Element elm = evaluationContext.getTrees().getElement(memberSelectPath);
         switch(elm.getKind()) {
             case ENUM_CONSTANT:
                 VariableElement ve = (VariableElement) elm;
@@ -2328,7 +2336,7 @@ import org.openide.util.NbBundle;
         }
     }
 
-    private static PrimitiveValue unbox(ObjectReference val, PrimitiveType type,
+    public static PrimitiveValue unbox(ObjectReference val, PrimitiveType type,
                                         ThreadReference thread) throws InvalidTypeException,
                                                                        ClassNotLoadedException,
                                                                        IncompatibleThreadStateException,
@@ -2344,7 +2352,7 @@ import org.openide.util.NbBundle;
         throw new RuntimeException("Invalid type while unboxing: " + type.signature());    // never happens
     }
     
-    private static ObjectReference box(PrimitiveValue v, ReferenceType type,
+    public static ObjectReference box(PrimitiveValue v, ReferenceType type,
                                        ThreadReference thread) throws InvalidTypeException,
                                                                       ClassNotLoadedException,
                                                                       IncompatibleThreadStateException,
