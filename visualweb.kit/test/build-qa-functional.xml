@@ -128,6 +128,21 @@ made subject to such option by the copyright holder.
              </classpath>
         </executeTests>
         <loadproperties srcFile="${xtest.data.dir}/DeploymentTargets.properties"/>
+        <condition property="all.servers.present">
+            <and>
+                <available file="${deployment.target.path.GlassFish V2}/bin/${asadmin.script}"/>
+                <available file="${deployment.target.path.JBoss Application Server}/bin/${shutdown.script}"/>
+                <available file="${deployment.target.path.Tomcat 5.0}/bin/${shutdown.script}"/>
+                <available file="${deployment.target.path.Tomcat 5.5}/bin/${shutdown.script}"/>
+                <available file="${deployment.target.path.Tomcat 6.0}/bin/${shutdown.script}"/>
+                <available file="${deployment.target.path.BEA WebLogic Server}/samples/domains/wl_server/bin/${wl-stop.script}"/>
+            </and>
+        </condition>
+        <echo message="all.servers.present=${all.servers.present}"/>
+        <antcall target="stop-servers"/>
+    </target>
+
+    <target name="stop-servers" if="all.servers.present">
         <echo message="Stopping GlassFish V2"/>
         <exec dir="${deployment.target.path.GlassFish V2}/bin" executable="${deployment.target.path.GlassFish V2}/bin/${asadmin.script}">
             <arg line="stop-domain domain1"/>
