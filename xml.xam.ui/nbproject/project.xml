@@ -176,7 +176,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.iep.editor</friend>
                 <friend>org.netbeans.modules.workflow.editor</friend>
                 <friend>org.netbeans.modules.worklist.editor</friend>
-                <friend>org.netbeans.modules.soa.mappercore</friend>
                 <friend>org.netbeans.modules.xml.schema</friend>
                 <friend>org.netbeans.modules.xml.schema.abe</friend>
                 <friend>org.netbeans.modules.xml.schema.refactoring</friend>

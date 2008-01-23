@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.BorderLayout;
@@ -392,7 +391,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
                     categoryPane.populateToolbar(mToolbar);
                 }
                 // vlv: search
-                SearchManager manager = SearchManager.Access.getDefault();
+                SearchManager manager = SearchManager.get.Default();
 
                 if (manager != null) {
                   mToolbar.addSeparator();

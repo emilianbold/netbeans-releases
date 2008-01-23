@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.schema.multiview;
 
 import java.awt.BorderLayout;
@@ -481,7 +480,7 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
                         categoryPane.populateToolbar(toolbar);
                     }
                     // vlv: search
-                    SearchManager manager = SearchManager.Access.getDefault();
+                    SearchManager manager = SearchManager.get.Default();
 
                     if (manager != null) {
                       toolbar.addSeparator();

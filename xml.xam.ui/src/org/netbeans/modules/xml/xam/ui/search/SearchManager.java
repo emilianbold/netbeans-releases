@@ -40,11 +40,7 @@
  */
 package org.netbeans.modules.xml.xam.ui.search;
 
-import java.awt.Component;
 import javax.swing.Action;
-import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
 import org.openide.util.Lookup;
 
 /**
@@ -54,32 +50,14 @@ import org.openide.util.Lookup;
 public interface SearchManager {
 
   /**
-   * Returns search for given source and parent.
-   * @param source where search will be perfromed
-   * @param parent is component where ui will be placed
-   * @param advanced if true, ui is advanced
-   * @return search
-   */
-  Component createSearch(Object source, JComponent parent);
-
-  /**
-   * Retuens navigation panel for tree, scroll pane and component.
-   * @param tree given tree
-   * @param scroll given scroll pane
-   * @param component given component
-   * @return navigation panel for tree, scroll pane and component
-   */
-  JComponent createNavigation(JTree tree, JScrollPane scroll, JComponent component);
-
-  /**
    * Returns Search action.
    * @return Search action
    */
   Action getSearchAction();
 
   // -----------
-  class Access {
-    public static SearchManager getDefault() {
+  class get {
+    public static SearchManager Default() {
       return (SearchManager) Lookup.getDefault().lookup(SearchManager.class);
     }
   }
