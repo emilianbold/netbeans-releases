@@ -149,7 +149,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
     }
 
     private void refreshRevisions() {
-        java.util.List<String> targetRevsList = HgCommand.getAllRevisionsForFile(repository, revertFiles); 
+        java.util.List<String> targetRevsList = HgCommand.getRevisionsForFile(repository, revertFiles, HG_REVERT_TARGET_LIMIT); 
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 
@@ -160,7 +160,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         }else{
             size = targetRevsList.size();
             int i = 0 ;
-            while( i < size && i < HG_REVERT_TARGET_LIMIT){
+            while(i < size){
                 targetRevsSet.add(targetRevsList.get(i));
                 i++;
             }

@@ -122,7 +122,8 @@ public class HgCommand {
     private static final String HG_REMOVE_FLAG_FORCE_CMD = "--force"; // NOI18N
     
     private static final String HG_LOG_CMD = "log"; // NOI18N
-    private static final String HG_LOG_LIMIT_CMD = "-l 1"; // NOI18N
+    private static final String HG_LOG_LIMIT_ONE_CMD = "-l 1"; // NOI18N
+    private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
     private static final String HG_LOG_TEMPLATE_SHORT_CMD = "--template={rev}\\n{desc|firstline}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
     private static final String HG_LOG_TEMPLATE_LONG_CMD = "--template={rev}\\n{desc}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
     private static final String HG_CSET_TEMPLATE_CMD = "--template={rev}:{node|short}\\n"; // NOI18N
@@ -608,7 +609,7 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_LOG_CMD);
-        command.add(HG_LOG_LIMIT_CMD);
+        command.add(HG_LOG_LIMIT_ONE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
 
@@ -1197,15 +1198,20 @@ public class HgCommand {
      *
      * @param File repository of the mercurial repository's root directory
      * @param files to query revisions for
+     * @param Int limit on nunmber of revisions (-1 for no limit)
      * @return List<String> list of the revisions of the file - {<rev>:<short cset hash>}
      *         or null if no commits made yet.
      */
-    public static List<String> getAllRevisionsForFile(File repository, File[] files) {
+    public static List<String> getRevisionsForFile(File repository, File[] files, int limit) {
         if (repository == null) return null;
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
         command.add(HG_LOG_CMD);
+        if (limit >= 0) {
+                command.add(HG_LOG_LIMIT_CMD);
+                command.add(Integer.toString(limit));
+        }
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(HG_CSET_TARGET_TEMPLATE_CMD);
@@ -1225,15 +1231,15 @@ public class HgCommand {
     }
 
     /**
-     * Get all the revisions for a repository
+     * Get the revisions for a repository
      *
      * @param File repository of the mercurial repository's root directory
      * @return List<String> list of the revisions of the repository - {<rev>:<short cset hash>}
      *         or null if no commits made yet.
      */
-    public static List<String> getAllRevisions(File repository) {
+    public static List<String> getRevisions(File repository, int limit) {
         if (repository == null) return null;
-        return getAllRevisionsForFile(repository, null);
+        return getRevisionsForFile(repository, null, limit);
     }
     
     /**
@@ -1470,7 +1476,7 @@ public class HgCommand {
 
         command.add(getHgCommand());
         command.add(HG_LOG_CMD);
-        command.add(HG_LOG_LIMIT_CMD);
+        command.add(HG_LOG_LIMIT_ONE_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         command.add(template);

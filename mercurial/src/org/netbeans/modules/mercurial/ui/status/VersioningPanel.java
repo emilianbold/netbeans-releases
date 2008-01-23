@@ -139,7 +139,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
     public void refreshUpdateTargets(File repository) {
         if( repository == null) return;
         
-        java.util.List<String> targetRevsList = HgCommand.getAllRevisions(repository);
+        java.util.List<String> targetRevsList = HgCommand.getRevisions(repository, HG_UPDATE_TARGET_LIMIT);
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
         
         int size;
@@ -149,7 +149,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }else{
             size = targetRevsList.size();
             int i = 0 ;
-            while( i < size && i < HG_UPDATE_TARGET_LIMIT){
+            while(i < size){
                 targetRevsSet.add(targetRevsList.get(i));
                 i++;
             }

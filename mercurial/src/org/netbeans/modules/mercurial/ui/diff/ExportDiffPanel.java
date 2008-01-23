@@ -83,7 +83,9 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
 
     public String getSelectedRevision() {
         String revStr = (String) revisionsComboBox.getSelectedItem();
-        revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+        if (revStr != null) {
+            revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
+        }
         return revStr;
     }
 
@@ -176,7 +178,7 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     }
 
     private void refreshRevisions() {
-        java.util.List<String> targetRevsList = HgCommand.getAllRevisions(repository); 
+        java.util.List<String> targetRevsList = HgCommand.getRevisions(repository, HG_REVISION_TARGET_LIMIT); 
 
         Set<String>  targetRevsSet = new LinkedHashSet<String>();
 
@@ -187,7 +189,7 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
         }else{
             size = targetRevsList.size();
             int i = 0 ;
-            while( i < size && i < HG_REVISION_TARGET_LIMIT){
+            while(i < size){
                 targetRevsSet.add(targetRevsList.get(i));
                 i++;
             }
@@ -217,15 +219,6 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
-        //fileChooser.addChoosableFileFilter(new FileFilter() {
-        //    public boolean accept(File f) {
-        //        return f.isDirectory();
-        //    }
-        //    public String getDescription() {
-        //        return NbBundle.getMessage(ExportDiffPanel.class, "Folders");// NOI18N
-        //    }
-        //});
-        //fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fileChooser.showDialog(this, NbBundle.getMessage(ExportDiffPanel.class, "OK_Button"));                                            // NO I18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {
