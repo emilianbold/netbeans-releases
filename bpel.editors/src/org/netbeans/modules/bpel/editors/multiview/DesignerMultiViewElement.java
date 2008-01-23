@@ -127,11 +127,12 @@ import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.netbeans.modules.print.api.PrintManager;
-import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 import org.netbeans.modules.xml.xam.ui.multiview.ActivatedNodesMediator;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
 import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
+import org.netbeans.modules.bpel.search.api.SearchManager;
+import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
 import org.netbeans.modules.bpel.documentation.DocumentationCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -426,7 +427,7 @@ public class DesignerMultiViewElement extends TopComponent
             toolbar.add(PrintManager.getDefault().getPrintPreviewAction());
 
             // vlv: search
-            SearchManager manager = SearchManager.Access.getDefault();
+            SearchManager manager = SearchManagerAccess.getManager();
 
             if (manager != null) {
               toolbar.addSeparator();
@@ -542,7 +543,7 @@ public class DesignerMultiViewElement extends TopComponent
         add(myDesignView.getRightStripe(), BorderLayout.EAST);
 
         // vlv: find
-        SearchManager manager = SearchManager.Access.getDefault();
+        SearchManager manager = SearchManagerAccess.getManager();
         
         if (manager != null) {
           Component search = manager.createSearch(new DiagramImpl(getDesignView()), getDesignView());

@@ -212,7 +212,11 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.bpel.editors</friend>
+                <package>org.netbeans.modules.bpel.search.api</package>
+                <package>org.netbeans.modules.bpel.search.spi</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>
