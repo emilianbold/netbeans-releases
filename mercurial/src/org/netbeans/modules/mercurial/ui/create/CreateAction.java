@@ -59,6 +59,7 @@ import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -218,7 +219,7 @@ public class CreateAction extends AbstractAction {
                         start = Calendar.getInstance(); cache.addToCache(repositoryFiles.keySet());
                         end = Calendar.getInstance();
                         Mercurial.LOG.log(Level.FINE, "addUnknownsToCache took {0} millisecs", end.getTimeInMillis() - start.getTimeInMillis()); // NOI18N
-                        if (repositoryFiles.keySet().size() < 20) {
+                        if (repositoryFiles.keySet().size() < HgUtils.MAX_LINES_TO_PRINT) {
                             for(File f: repositoryFiles.keySet()){
                                 HgUtils.outputMercurialTab("\t" + f.getAbsolutePath()); // NOI18N
                             }

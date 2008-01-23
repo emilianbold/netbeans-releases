@@ -109,7 +109,7 @@ public class HgUtils {
     
     private static final String FILENAME_HGIGNORE = ".hgignore"; // NOI18N
 
-    private static final int MAX_LINES_TO_PRINT = 500;
+    public static final int MAX_LINES_TO_PRINT = 500;
 
     private static final String MSG_TOO_MANY_LINES = "The number of output lines is greater than 500; see message log for complete output";
 
