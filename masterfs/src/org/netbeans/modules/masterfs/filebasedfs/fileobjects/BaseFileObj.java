@@ -371,7 +371,7 @@ public abstract class BaseFileObj extends FileObject {
                 retVal = getLocalFileSystem().getRoot();
             } else {
                 retVal = localFileSystem.getFactory().get(file);
-                retVal = (retVal == null) ? localFileSystem.getFactory().findFileObject(file,localFileSystem, true) : retVal;
+                retVal = (retVal == null) ? localFileSystem.getFactory().findFileObject(file,localFileSystem, FileObjectFactory.Caller.GetParent) : retVal;
             }
         } /*else {
         retVal = getLocalFileSystem().getRoot();

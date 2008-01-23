@@ -51,6 +51,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.RootObj;
 import org.openide.util.Exceptions;
@@ -134,7 +135,7 @@ public final class FileBasedURLMapper extends URLMapper {
         }
         final FileBasedFileSystem instance = FileBasedFileSystem.getInstance(file);
         if (instance != null) {
-            retVal = instance.getFactory().findFileObject(file, instance, true);
+            retVal = instance.getFactory().findFileObject(file, instance, FileObjectFactory.Caller.ToFileObject);
         }
 
         return new FileObject[]{retVal};

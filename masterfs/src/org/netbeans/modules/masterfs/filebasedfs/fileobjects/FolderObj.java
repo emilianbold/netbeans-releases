@@ -95,14 +95,14 @@ public final class FolderObj extends BaseFileObj {
         }
         File file = new File(getFileName().getFile(), relativePath);
         FileBasedFileSystem lfs = getLocalFileSystem();
-        return lfs.getFactory().findFileObject(file, lfs, false);
+        return lfs.getFactory().findFileObject(file, lfs, FileObjectFactory.Caller.GetFileObject);
     }
     
 
     public final FileObject getFileObject(final String name, final String ext) {
         File file = BaseFileObj.getFile(getFileName().getFile(), name, ext);
         FileBasedFileSystem lfs = getLocalFileSystem();
-        return lfs.getFactory().findFileObject(file, lfs, false);
+        return lfs.getFactory().findFileObject(file, lfs, FileObjectFactory.Caller.GetFileObject);
     }
 
   
@@ -128,7 +128,7 @@ public final class FolderObj extends BaseFileObj {
             fInfo.setFileNaming(fileName);
             fInfo.setValueForFlag(FileInfo.FLAG_exists, true);
             
-            final FileObject fo = lfs.getFactory().findFileObject(fInfo, lfs,false, false);
+            final FileObject fo = lfs.getFactory().findFileObject(fInfo, lfs, FileObjectFactory.Caller.GetChildern, false);
             if (fo != null) {
                 results.add(fo);
             }
@@ -326,7 +326,7 @@ public final class FolderObj extends BaseFileObj {
             final FileName child = (FileName) entry.getKey();
             final Integer operationId = (Integer) entry.getValue();
 
-            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? (BaseFileObj) localFileSystem.getFactory().findFileObject(new FileInfo(child.getFile()), localFileSystem, false) : factory.get(child.getFile());
+            BaseFileObj newChild = (operationId == ChildrenCache.ADDED_CHILD) ? (BaseFileObj) localFileSystem.getFactory().findFileObject(new FileInfo(child.getFile()), localFileSystem, FileObjectFactory.Caller.Others) : factory.get(child.getFile());
             newChild = (BaseFileObj) ((newChild != null) ? newChild : getFileObject(child.getName()));
             if (operationId == ChildrenCache.ADDED_CHILD && newChild != null) {
 

@@ -80,6 +80,7 @@ public final class FileBasedFileSystem extends FileSystem {
     private transient final FileObjectFactory factory;
     transient private final StatusImpl status = new StatusImpl();
     public static boolean WARNINGS = true;
+    public static boolean PERF_PRINTING = false;
     
 
     //only for tests purposes
@@ -107,7 +108,7 @@ public final class FileBasedFileSystem extends FileSystem {
     
     public static final FileObject getFileObject(final File file) {
         FileBasedFileSystem fs = getInstance(file);
-        return (fs != null) ? fs.findFileObject(file) : null;
+        return (fs != null) ? fs.findFileObject(file,FileObjectFactory.Caller.GetFileObject) : null;
     }
     
 
@@ -136,11 +137,20 @@ public final class FileBasedFileSystem extends FileSystem {
     }
 
     public final FileObject findFileObject(final File f) {
-        return findFileObject(new FileInfo (f));
+        return findFileObject(new FileInfo (f), FileObjectFactory.Caller.Others);
+    }
+
+    public final FileObject findFileObject(final FileInfo fInfo) {
+        return findFileObject(fInfo, FileObjectFactory.Caller.Others);
     }
     
-    public final FileObject findFileObject(final FileInfo fInfo) {
-        final FileObject retVal = (getFactory().findFileObject(fInfo, this, false));
+    
+    public final FileObject findFileObject(final File f, FileObjectFactory.Caller caller) {
+        return findFileObject(new FileInfo (f), caller);
+    }
+    
+    public final FileObject findFileObject(final FileInfo fInfo, FileObjectFactory.Caller caller) {
+        final FileObject retVal = (getFactory().findFileObject(fInfo, this, caller));
         return (retVal != null && retVal.isValid()) ? retVal : null;
     }
 

@@ -221,8 +221,8 @@ public class StatFilesTest extends NbTestCase {
         FileObject fobj = getFileObject(testFile);
         monitor.reset();        
         FileObject parent = fobj.getParent();        
-        assertEquals(1, monitor.getResults().statResult(StatFiles.ALL));
-        assertEquals(1, monitor.getResults().statResult(StatFiles.READ));
+        assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
+        assertEquals(0, monitor.getResults().statResult(StatFiles.READ));
         monitor.reset();        
         parent = fobj.getParent();        
         assertEquals(0, monitor.getResults().statResult(StatFiles.ALL));
