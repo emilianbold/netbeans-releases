@@ -54,6 +54,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.SyntaxSupport;
@@ -101,10 +102,13 @@ public class CsmCompletionProvider implements CompletionProvider {
     public CompletionTask createTask(int queryType, JTextComponent component) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
         final int dot = component.getCaret().getDot();
+        // disable code templates for smart mode of completion
+        //CsmCodeTemplateFilter.enableAbbreviations(((queryType & COMPLETION_ALL_QUERY_TYPE) == COMPLETION_ALL_QUERY_TYPE));
+        
         // do not work together with include completion
         if (sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot)) {
             if ((queryType & COMPLETION_QUERY_TYPE) == COMPLETION_QUERY_TYPE) {
-                return new AsyncCompletionTask(new Query(dot), component);
+                return new AsyncCompletionTask(new Query(dot, queryType), component);
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
                 return new AsyncCompletionTask(new DocQuery(null), component);
             } else if (queryType == TOOLTIP_QUERY_TYPE) {                
@@ -136,9 +140,11 @@ public class CsmCompletionProvider implements CompletionProvider {
         
         private boolean caseSensitive = false;
         
-        Query(int caretOffset) {
+        private boolean localContext;
+        Query(int caretOffset,int queryType) {
             this.creationCaretOffset = caretOffset;
             this.queryAnchorOffset = -1;
+            this.localContext = ((queryType & COMPLETION_ALL_QUERY_TYPE) != COMPLETION_ALL_QUERY_TYPE);
         }
         
         @Override
@@ -149,7 +155,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             caseSensitive = kitClass != null ? getCaseSensitive(kitClass) : false;
             if (creationCaretOffset > 0 && caretOffset >= creationCaretOffset) {
                 try {
-                    if (isJavaIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset)))
+                    if (isCppIdentifierPart(doc.getText(creationCaretOffset, caretOffset - creationCaretOffset)))
                         return;
                 } catch (BadLocationException e) {
                 }
@@ -166,15 +172,24 @@ public class CsmCompletionProvider implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             boolean hide = (caretOffset > creationCaretOffset) && (filterPrefix == null);
             if (!hide) {
-                // TODO: scanning-in-progress
-    //            if (JavaMetamodel.getManager().isScanInProgress())
-    //                resultSet.setWaitText(NbBundle.getMessage(CsmCompletionProvider.class, "scanning-in-progress")); //NOI18N
                 SyntaxSupport syntSupp = Utilities.getSyntaxSupport(component);
                 if (syntSupp != null){
                     CsmSyntaxSupport sup = (CsmSyntaxSupport)syntSupp.get(CsmSyntaxSupport.class);
-                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery();
+                    NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, localContext);
                     NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
+                    if (res != null && res.getData().isEmpty() && localContext) {
+                        // switch to global context
+                        localContext = false;
+                        if (res.isSimpleVariableExpression()) {
+                            // try once more for non dereferenced expressions
+                            query = (NbCsmCompletionQuery) getCompletionQuery(null, localContext);
+                            res = (NbCsmCompletionQuery.CsmCompletionResult)query.query(component, caretOffset, sup);
+                        }
+                    }
                     if (res != null) {
+                        if (localContext) {
+                            localContext = res.isSimpleVariableExpression();
+                        }
                         queryAnchorOffset = res.getSubstituteOffset();
                         Collection items = res.getData();
                         resultSet.estimateItems(items.size(), -1);
@@ -182,6 +197,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                         //resultSet.setTitle(res.getTitle());
                         resultSet.setAnchorOffset(queryAnchorOffset);
                         resultSet.addAllItems(items);
+                        resultSet.setHasAdditionalItems(localContext);
                         queryResult = res;
                     }
                 }
@@ -204,7 +220,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             if (queryAnchorOffset > -1 && caretOffset > queryAnchorOffset) {
                 try {
                     filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                    if (!isJavaIdentifierPart(filterPrefix)) {
+                    if (!isCppIdentifierPart(filterPrefix)) {
                         filterPrefix = null;
                     }
                 } catch (BadLocationException e) {
@@ -227,9 +243,9 @@ public class CsmCompletionProvider implements CompletionProvider {
 	    resultSet.finish();
         }
 
-        private boolean isJavaIdentifierPart(String text) {
+        private boolean isCppIdentifierPart(String text) {
             for (int i = 0; i < text.length(); i++) {
-                if (!(Character.isJavaIdentifierPart(text.charAt(i))) ) {
+                if (!(CndLexerUtilities.isCppIdentifierPart(text.charAt(i))) ) {
                     return false;
                 }
             }
@@ -512,5 +528,6 @@ public class CsmCompletionProvider implements CompletionProvider {
             resultSet.finish();
         }
     }
+
 }
 
