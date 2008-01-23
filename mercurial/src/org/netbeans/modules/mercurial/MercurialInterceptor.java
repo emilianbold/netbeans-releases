@@ -156,12 +156,11 @@ public class MercurialInterceptor extends VCSInterceptor {
                 file.delete();
                 if (root == null) return;
                 for (File dir : dirsToDelete) {
-                    File tmpFile = file;
-                    do {
-                        if (tmpFile.getParentFile().equals(dir)) return;
+                    File tmpFile = file.getParentFile();
+                    while (tmpFile != null) {
+                        if (tmpFile.equals(dir)) return;
                         tmpFile = tmpFile.getParentFile();
                     }
-                    while (tmpFile != null);
                 }
                 HgProgressSupport support = new HgProgressSupport() {
                     public void perform() {
@@ -235,21 +234,21 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         Runnable moveImpl = new Runnable() {
             public void run() {
-        try {
-            int status = hg.getFileStatusCache().getStatus(srcFile).getStatus();
-            if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                srcFile.renameTo(dstFile);
-            } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
-                srcFile.renameTo(dstFile);
-                HgCommand.doRemove(root, srcFile);
-                HgCommand.doAdd(root, dstFile);
-            } else {
-                HgCommand.doRename(root, srcFile, dstFile);
+                try {
+                    int status = hg.getFileStatusCache().getStatus(srcFile).getStatus();
+                    if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
+                        srcFile.renameTo(dstFile);
+                    } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
+                        srcFile.renameTo(dstFile);
+                        HgCommand.doRemove(root, srcFile);
+                        HgCommand.doAdd(root, dstFile);
+                    } else {
+                        HgCommand.doRename(root, srcFile, dstFile);
+                    }
+                } catch (HgException e) {
+                    Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
+                }
             }
-        } catch (HgException e) {
-                    Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1} {2}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
-        }
-    }
         };
 
         rp.post(moveImpl).waitFinished();
@@ -309,10 +308,10 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         HgProgressSupport supportCreate = new HgProgressSupport() {
             public void perform() {
-        cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-    }
+                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            }
         };
-    
+
         supportCreate.start(rp, root.getAbsolutePath(), 
                 org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Create_Progress")); // NOI18N
     }
@@ -336,10 +335,10 @@ public class MercurialInterceptor extends VCSInterceptor {
         HgProgressSupport supportCreate = new HgProgressSupport() {
             public void perform() {
                 cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
-   }
+            }
         };
 
         supportCreate.start(rp, root.getAbsolutePath(), 
                 org.openide.util.NbBundle.getMessage(MercurialInterceptor.class, "MSG_Change_Progress")); // NOI18N
-}
+   }
 }
