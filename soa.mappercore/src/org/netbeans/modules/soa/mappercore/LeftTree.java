@@ -58,10 +58,8 @@ import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
-import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 
 /**
- *
  * @author anjeleevich
  */
 public class LeftTree extends JTree implements
@@ -83,9 +81,7 @@ public class LeftTree extends JTree implements
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scrollPane.getVerticalScrollBar().addAdjustmentListener(this);
-
-        // vlv: navigation
-        scrollPaneWrapper = SearchManager.Access.getDefault().createNavigation(this, scrollPane, new ScrollPaneWrapper(scrollPane));
+        scrollPaneWrapper = new ScrollPaneWrapper(scrollPane);
         
         addTreeExpansionListener(this);
         setCellRenderer(new DefaultLeftTreeCellRenderer(mapper));
