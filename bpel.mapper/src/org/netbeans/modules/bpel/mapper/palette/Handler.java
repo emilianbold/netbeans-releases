@@ -134,7 +134,7 @@ class Handler implements ItemHandler {
     @Override
     public boolean canAddGraphSubset() {
       DurationDialog dialog = new DurationDialog();
-      dialog.showAndWait();
+      dialog.setVisible(true);
       Object duration = dialog.getDuration();
 
       if (duration != null) {

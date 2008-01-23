@@ -40,24 +40,36 @@
  */
 package org.netbeans.modules.bpel.editors.api.utils;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.List;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.openide.util.Utilities;
 
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
@@ -65,7 +77,68 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.11.27
  */
-public final class DurationDialog extends Dialog {
+public final class DurationDialog extends JDialog {
+
+  public DurationDialog() {
+    super((Frame) null, i18n(DurationDialog.class, "LBL_Duration"), true); // NOI18N
+    setLayout(new BorderLayout());
+    add(getResizable(createPanel()), BorderLayout.CENTER);
+    add(createButtonPanel(), BorderLayout.SOUTH);
+
+    String cancel = "cancel"; // NOI18N
+    KeyStroke key = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+    getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(key, cancel);
+
+    Action action = new AbstractAction() {
+      public void actionPerformed(ActionEvent event) {
+        dispose();
+      }
+    };
+    getRootPane().getActionMap().put(cancel, action);
+    
+    pack();
+    
+    Rectangle r = Utilities.getUsableScreenBounds();
+    int maxW = (r.width * 9) / 10;
+    int maxH = (r.height * 9) / 10;
+    Dimension d = getPreferredSize();
+    d.width = Math.min(d.width, maxW);
+    d.height = Math.min(d.height, maxH);
+    setBounds(Utilities.findCenterBounds(d));
+  }
+
+  private JPanel createButtonPanel() {
+    JPanel panel = new JPanel();
+    panel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+    JButton button;
+
+    button = createButton("OK"); // NOI18N
+    getRootPane().setDefaultButton(button);
+    button.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        if (check()) {
+          dispose();
+        }
+      }
+    });
+    panel.add(button);
+
+    button = createButton("Cancel"); // NOI18N
+    button.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent event) {
+        dispose();
+      }
+    });
+    panel.add(button);
+
+    return panel;
+  }
+
+  private JButton createButton(String text) {
+    JButton button = new JButton(text);
+    button.getAccessibleContext().setAccessibleName(text);
+    return button;
+  }
 
   private JPanel createPanel() {
     JPanel panel = new JPanel(new GridBagLayout());
@@ -90,7 +163,7 @@ public final class DurationDialog extends Dialog {
     c.fill = GridBagConstraints.NONE;
     c.insets = new Insets(10, 10, 0, 0);
     c.anchor = GridBagConstraints.EAST;
-    JLabel label = createLabel(i18n(key));
+    JLabel label = createLabel(i18n(DurationDialog.class, key));
     panel.add(label, c);
 
     c.weightx = 1.0;
@@ -109,65 +182,39 @@ public final class DurationDialog extends Dialog {
     return myDuration;
   }
 
-  @Override
-  protected DialogDescriptor createDescriptor() {
-    myDescriptor = new DialogDescriptor(
-      getResizable(createPanel()),
-      i18n("LBL_Duration"), // NOI18N
-      true, // modal
-      new Object [] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
-      DialogDescriptor.OK_OPTION,
-      DialogDescriptor.DEFAULT_ALIGN,
-      null,
-      new ActionListener() {
-        public void actionPerformed(ActionEvent event) {
-          if (DialogDescriptor.OK_OPTION == event.getSource()) {
-            if (check()) {
-              myDescriptor.setClosingOptions(
-                new Object [] { DialogDescriptor.OK_OPTION,
-                  DialogDescriptor.CANCEL_OPTION });
-            }
-            else {
-              myDescriptor.setClosingOptions(
-                new Object [] { DialogDescriptor.CANCEL_OPTION });
-            }
-          }
-        }
-      }
-    );
-    return myDescriptor;
-  }
-
   private boolean check() {
-    if (myDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-      int year = getInt(myYear.getText());
-      int month = getInt(myMonth.getText());
-      int day = getInt(myDay.getText());
-      int hour = getInt(myHour.getText());
-      int minute = getInt(myMinute.getText());
-      int second = getInt(mySecond.getText());
+    int year = getInt(myYear.getText());
+    int month = getInt(myMonth.getText());
+    int day = getInt(myDay.getText());
+    int hour = getInt(myHour.getText());
+    int minute = getInt(myMinute.getText());
+    int second = getInt(mySecond.getText());
 
-      if (
-        check(year, "ERR_invalid_year", myYear.getText()) && // NOI18N
-        check(month, "ERR_invalid_month", myMonth.getText()) && // NOI18N
-        check(day, "ERR_invalid_day", myDay.getText()) && // NOI18N
-        check(hour, "ERR_invalid_hour", myHour.getText()) && // NOI18N
-        check(minute, "ERR_invalid_minute", myMinute.getText()) && // NOI18N
-        check(second, "ERR_invalid_second", mySecond.getText())) // NOI18N
-      {
-        myDuration = TimeEventUtil.getContent(true, year, month, day, hour, minute, second);
-        return true;
-      }
+    if (
+      check(year, "ERR_invalid_year", myYear) && // NOI18N
+      check(month, "ERR_invalid_month", myMonth) && // NOI18N
+      check(day, "ERR_invalid_day", myDay) && // NOI18N
+      check(hour, "ERR_invalid_hour", myHour) && // NOI18N
+      check(minute, "ERR_invalid_minute", myMinute) && // NOI18N
+      check(second, "ERR_invalid_second", mySecond)) // NOI18N
+    {
+      myDuration = TimeEventUtil.getContent(true, year, month, day, hour, minute, second);
+      return true;
     }
-    myDuration = null;
-    return false;
+    else {
+      myDuration = null;
+      return false;
+    }
   }
 
-  private boolean check(int value, String key, String str) {
+  private boolean check(int value, String key, JTextField field) {
     if (value >= 0) {
       return true;
     }
-    printError(i18n(key, str));
+    printError(i18n(DurationDialog.class, key, field.getText()));
+    field.requestFocus();
+    field.selectAll();
+
     return false;
   }
 
@@ -178,7 +225,6 @@ public final class DurationDialog extends Dialog {
   private JTextField myMinute;
   private JTextField mySecond;
   private String myDuration;
-  private DialogDescriptor myDescriptor;
 
   private static final int TEXT_WIDTH = 60;
   private static final String DEFAULT_VALUE = "0"; // NOI18N
