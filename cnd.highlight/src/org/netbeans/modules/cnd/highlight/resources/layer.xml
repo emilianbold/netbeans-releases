@@ -45,6 +45,13 @@ Contributor(s):
         <folder name="text">
             <folder name="x-c++">
                 <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance" />
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="navigation-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
                  <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
@@ -64,6 +71,13 @@ Contributor(s):
             </folder>
             <folder name="x-c">
                 <file name="org-netbeans-modules-cnd-highlight-CppHighlightsLayerFactory.instance" />
+                <folder name="Keybindings">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="navigation-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                        </folder>
+                    </folder>
+                </folder>
                  <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
