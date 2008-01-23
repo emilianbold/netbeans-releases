@@ -48,7 +48,7 @@ Contributor(s):
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="navigation-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="highlighting-keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
                 </folder>
@@ -74,7 +74,7 @@ Contributor(s):
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="navigation-keybindings.xml" url="DefaultKeyBindings.xml"/>
+                            <file name="highlighting-keybindings.xml" url="DefaultKeyBindings.xml"/>
                         </folder>
                     </folder>
                 </folder>
