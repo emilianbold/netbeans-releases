@@ -82,6 +82,7 @@
     </target>
 
     <target name="build-xtest">
+        <ant dir="${home}/xtest" target="clean"/>
         <ant dir="${home}/xtest" target="netbeans"/>
     </target>
 
