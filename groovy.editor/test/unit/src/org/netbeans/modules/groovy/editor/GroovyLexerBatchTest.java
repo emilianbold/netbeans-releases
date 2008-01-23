@@ -656,7 +656,7 @@ public class GroovyLexerBatchTest extends NbTestCase {
             cntr++;
         }
         tm = System.currentTimeMillis() - tm;
-        assertTrue("Timeout tm = " + tm + "msec", tm < 3000); // Should be fast
+        assertTrue("Timeout tm = " + tm + "msec", tm < 6000); // Should be fast
     }
     
     TokenSequence<?> seqForText(String text){
