@@ -348,11 +348,11 @@ public class GspModel {
         public String toString() {
             StringBuilder sb = new StringBuilder();
             sb.append("CodeBlockData[");
-            sb.append("\n  RHTML(" + sourceStart+","+sourceEnd+")");
+            sb.append("\n  GSP(" + sourceStart+","+sourceEnd+")");
             //sb.append("=\"");
             //sb.append(rhtmlCode.substring(sourceStart, sourceEnd));
             //sb.append("\"");
-            sb.append(",\n  RUBY(" + generatedStart + "," + generatedEnd + ")");
+            sb.append(",\n  GROOVY(" + generatedStart + "," + generatedEnd + ")");
             //sb.append("=\"");
             //sb.append(rubyCode.substring(generatedStart,generatedEnd));
             //sb.append("\"");
