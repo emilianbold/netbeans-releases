@@ -663,7 +663,7 @@ public class ServerProperties {
      *
      * @return a vector with the local instances
      */
-    
+    // FIXME use List here
     public static Vector getServerInstances(String serverRoot){
         // initialize the resulting vector
         Vector result = new Vector();
@@ -682,18 +682,20 @@ public class ServerProperties {
             
             // for each cell get all the required information and add to the
             // resulting vector
-            for (int j = 0; j < files.length; j++){
-                String nextCellPath = file.getAbsolutePath() + File.separator +
-                        files[j];
-                String address = "localhost";                          // NOI18N
-                String port = ServerProperties.getCellPort(nextCellPath);
-                String adminPort = ServerProperties.getCellAdminPort(nextCellPath);
-                String httpPort = ServerProperties.getCellAdminPort(nextCellPath);
-                String serverName = ServerProperties.getServerName(nextCellPath);
-                String configXmlPath = ServerProperties.getConfigXmlPath(nextCellPath);
-                String defaultHostPort = ServerProperties.getCellDefaultHostPort(nextCellPath);
-                result.add(new Instance(serverName, address, port, domains[i],
-                        configXmlPath, adminPort,httpPort,defaultHostPort));
+            if (files != null) {
+                for (int j = 0; j < files.length; j++){
+                    String nextCellPath = file.getAbsolutePath() + File.separator +
+                            files[j];
+                    String address = "localhost";                          // NOI18N
+                    String port = ServerProperties.getCellPort(nextCellPath);
+                    String adminPort = ServerProperties.getCellAdminPort(nextCellPath);
+                    String httpPort = ServerProperties.getCellAdminPort(nextCellPath);
+                    String serverName = ServerProperties.getServerName(nextCellPath);
+                    String configXmlPath = ServerProperties.getConfigXmlPath(nextCellPath);
+                    String defaultHostPort = ServerProperties.getCellDefaultHostPort(nextCellPath);
+                    result.add(new Instance(serverName, address, port, domains[i],
+                            configXmlPath, adminPort,httpPort,defaultHostPort));
+                }
             }
         }
         
