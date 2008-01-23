@@ -46,6 +46,8 @@ import java.io.*;
 import java.lang.ref.SoftReference;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -97,19 +99,19 @@ public class FileBufferFile extends AbstractFileBuffer {
         if (length > Integer.MAX_VALUE) {
             new IllegalArgumentException("File is too large: " + file.getAbsolutePath()).printStackTrace(System.err); // NOI18N
         }
-        byte[] bytes = new byte[(int)length];
-        InputStream is = new BufferedInputStream(new FileInputStream(file), TraceFlags.BUF_SIZE);
+        byte[] readBytes = new byte[(int)length];
+        InputStream is = getInputStream();
         try {
             int offset = 0;
             int numRead = 0;
-            while (offset < bytes.length && (numRead = is.read(bytes, offset, bytes.length-offset)) >= 0) {
+            while (offset < readBytes.length && (numRead = is.read(readBytes, offset, readBytes.length-offset)) >= 0) {
                 offset += numRead;
             }
         } finally {
             is.close();
         }
-        convertLSToLF(bytes);
-        return bytes;
+        convertLSToLF(readBytes);
+        return readBytes;
     }
     
     private static int convertLSToLF(byte[] bytes) {
@@ -151,7 +153,15 @@ public class FileBufferFile extends AbstractFileBuffer {
     }
     
     public InputStream getInputStream() throws IOException {
-        return new BufferedInputStream(new FileInputStream(getFile()), TraceFlags.BUF_SIZE);
+        File file = getFile();
+        FileObject fo = FileUtil.toFileObject(file);
+        InputStream is;
+        if (fo != null) {
+            is = fo.getInputStream();
+        } else {
+            is = new FileInputStream(file);
+        }
+        return new BufferedInputStream(is, TraceFlags.BUF_SIZE);
     }
     
     public int getLength() {
@@ -169,6 +179,7 @@ public class FileBufferFile extends AbstractFileBuffer {
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }
