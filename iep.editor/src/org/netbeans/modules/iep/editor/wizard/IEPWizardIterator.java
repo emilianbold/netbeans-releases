@@ -180,7 +180,10 @@ public final class IEPWizardIterator implements WizardDescriptor.InstantiatingIt
             while(it.hasNext()) {
                 PlaceholderSchemaAttribute attr = it.next();
                 SchemaAttribute sa = factory.createSchemaAttribute(model);
-                sa.setAttributeName(attr.getAttributeName());
+                String attrName = attr.getAttributeName();
+                sa.setName(attrName);
+            	sa.setTitle(attrName);
+                sa.setAttributeName(attrName);
                 sa.setAttributeType(attr.getAttributeType());
                 sa.setAttributeSize(attr.getAttributeSize());
                 sa.setAttributeScale(attr.getAttributeScale());

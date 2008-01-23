@@ -111,7 +111,7 @@ public class IEPWizardPanel3 implements WizardDescriptor.Panel {
                 nameToTypeList.add(nameToType);
             }
             
-            component.clearAttributes();
+            //component.clearAttributes();
             component.addDefaultIEPAttributes(nameToTypeList);
         }
     }
