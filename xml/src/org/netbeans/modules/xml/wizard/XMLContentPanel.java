@@ -209,9 +209,10 @@ public class XMLContentPanel extends AbstractPanel {
        contentAttr.setDepthPreferrence(((SpinnerNumberModel)depthSpinner.getModel()).getNumber().intValue());
        
        model.setXMLContentAttributes(contentAttr);
-       
-       Object root = rootElementComboBox.getSelectedItem();
-       model.setRoot(root == null ? null : root.toString());
+       if(visible) {
+           Object root = rootElementComboBox.getSelectedItem();
+           model.setRoot(root == null ? null : root.toString());
+       }
     }
 
     @Override
