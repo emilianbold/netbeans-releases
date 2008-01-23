@@ -32,11 +32,8 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     
     private Project mProject;
     
-    public IEPWizardPanel2(WizardDescriptor descriptor) {
-        this.mDescriptor = descriptor;
-        
-        FileObject dir = Templates.getTargetFolder( this.mDescriptor );
-        this.mProject = FileOwnerQuery.getOwner(dir);
+    public IEPWizardPanel2(Project project) {
+        this.mProject = project;
     }
     
     // Get the visual component for the panel. In this template, the component
@@ -98,7 +95,7 @@ public class IEPWizardPanel2 implements WizardDescriptor.Panel {
     // WizardDescriptor.getProperty & putProperty to store information entered
     // by the user.
     public void readSettings(Object settings) {
-        
+        this.mDescriptor = (WizardDescriptor) settings;
     }
 
     public void storeSettings(Object settings) {

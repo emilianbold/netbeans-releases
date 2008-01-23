@@ -55,6 +55,7 @@ import org.netbeans.modules.iep.editor.designer.actions.CopyAction;
 import org.netbeans.modules.iep.editor.designer.actions.CutAction;
 import org.netbeans.modules.iep.editor.designer.actions.DeleteAction;
 import org.netbeans.modules.iep.editor.designer.actions.IEPComponentTransferable;
+import org.netbeans.modules.iep.editor.designer.actions.IEPTemplateAction;
 import org.netbeans.modules.iep.editor.designer.actions.PasteAction;
 import org.netbeans.modules.iep.editor.designer.nodes.PlanNode;
 import org.netbeans.modules.iep.editor.model.ModelObjectFactory;
@@ -338,6 +339,7 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
         // vlv: print
         getCanvas().putClientProperty(java.awt.print.Printable.class, "");
         
+        mPopupMenu.add(new IEPTemplateAction(this.mModel.getModelSource().getLookup().lookup(PlanDataObject.class)));
     }
     
     // handle DELETE, HOME, and arrow keys as well as the page up/down keys
@@ -475,6 +477,14 @@ public class PlanCanvas extends JGoView implements JGoViewListener, GuiConstants
         
         
         return super.doMouseUp(modifiers, dc, vc);
+    }
+    
+    @Override
+    protected void onMouseReleased(MouseEvent evt) {
+    	if(evt.isPopupTrigger()) {
+    		mPopupMenu.show(this, evt.getX(), evt.getY());
+    	}
+    	super.onMouseReleased(evt);
     }
     
     @Override
