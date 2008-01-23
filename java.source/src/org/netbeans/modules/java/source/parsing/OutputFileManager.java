@@ -99,7 +99,7 @@ public class OutputFileManager extends CachingFileManager {
                 //Deleted project
                 throw new InvalidSourcePath ();
             }
-            if (index < 0 && !(new File (sibling.toUri()).exists())) {
+            if (index < 0 && sibling != null && !(new File (sibling.toUri()).exists())) {
                 //Deleted project
                 throw new InvalidSourcePath ();
             }
