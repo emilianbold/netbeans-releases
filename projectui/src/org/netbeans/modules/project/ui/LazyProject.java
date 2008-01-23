@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
@@ -81,7 +82,12 @@ final class LazyProject implements Project, ProjectInformation, SearchInfo, Logi
     }
 
     public FileObject getProjectDirectory() {
-        return URLMapper.findFileObject(url);
+        FileObject fo = URLMapper.findFileObject(url);
+        if (fo == null) {
+            OpenProjectList.LOGGER.warning("Project dir with " + url + " not found!");
+            fo = FileUtil.createMemoryFileSystem().getRoot();
+        }
+        return fo;
     }
 
     public Lookup getLookup() {
