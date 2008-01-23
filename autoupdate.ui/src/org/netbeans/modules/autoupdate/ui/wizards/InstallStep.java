@@ -556,7 +556,7 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
         final NotifyDescriptor nd = new NotifyDescriptor.Confirmation (
                                             getBundle ("RestartConfirmation_Message"),
                                             getBundle ("RestartConfirmation_Title"),
-                                            NotifyDescriptor.OK_CANCEL_OPTION);
+                                            NotifyDescriptor.YES_NO_OPTION);
         final Runnable confirmOnClick = new Runnable () {
             public void run () {
                 BalloonManager.dismiss ();
