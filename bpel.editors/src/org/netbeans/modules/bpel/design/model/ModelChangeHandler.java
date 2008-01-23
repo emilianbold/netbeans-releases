@@ -213,7 +213,7 @@ public class ModelChangeHandler implements ChangeEventListener {
                                 view.diagramChanged();
 
                                 //notify the decoration model to update
-                                view.getDecorationManager().updateAllComponents();
+                                view.getDecorationManager().decorationChanged();
 
                                 //                        if (patternToShow != null){
 //                            view.getSelectionModel().setSelectedPattern(patternToShow);

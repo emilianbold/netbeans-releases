@@ -42,59 +42,56 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
  * @version 2007.08.13
  */
 public final class LoggingDecorator extends DecorationProvider
-  implements DecorationProviderFactory, DiagramSelectionListener
-{
-  public LoggingDecorator() {}
+        implements DecorationProviderFactory, DiagramSelectionListener {
 
-  public DecorationProvider createInstance(DesignView view) {
-    return new LoggingDecorator(view);
-  }
+    public LoggingDecorator() {
+    }
 
-  private LoggingDecorator(DesignView view) {
-    super(view);
-    getDesignView().getSelectionModel().addSelectionListener(this);
-  }
+    public DecorationProvider createInstance(DesignView view) {
+        return new LoggingDecorator(view);
+    }
 
-  @Override
-  public Decoration getDecoration(BpelEntity entity)
-  {
-    if (getTrace(entity) == null) {
+    private LoggingDecorator(DesignView view) {
+        super(view);
+        getDesignView().getSelectionModel().addSelectionListener(this);
+    }
+
+    @Override
+    public Decoration getDecoration(BpelEntity entity) {
+        if (getTrace(entity) == null) {
+            return null;
+        }
+        LoggingButton button = new LoggingButton((ExtensibleElements) entity);
+        ComponentsDescriptor descriptor = new ComponentsDescriptor();
+        descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
+        return new Decoration(new Descriptor[]{descriptor});
+    }
+
+    public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
+        if (newSelection instanceof ExtensibleElements) {
+            mySelectedElement = (ExtensibleElements) newSelection;
+
+        } else {
+            mySelectedElement = null;
+        }
+        fireDecorationChanged();
+    }
+
+    @Override
+    public void release() {
+        mySelectedElement = null;
+        getDesignView().getSelectionModel().removeSelectionListener(this);
+    }
+
+    private Trace getTrace(BpelEntity entity) {
+        if (entity instanceof ExtensibleElements) {
+            ExtensibleElements myElement = (ExtensibleElements) entity;
+            List<Trace> traceElements = myElement.getChildren(Trace.class);
+            if (traceElements != null && traceElements.size() > 0) {
+                return traceElements.get(0);
+            }
+        }
         return null;
     }
-    LoggingButton button = new LoggingButton((ExtensibleElements) entity);
-    ComponentsDescriptor descriptor = new ComponentsDescriptor();
-    descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
-    return new Decoration(new Descriptor[] { descriptor });
-  }
-  
-  public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
-    if (newSelection instanceof ExtensibleElements) {
-      mySelectedElement = (ExtensibleElements) newSelection;
-      fireDecorationChanged(newSelection);
-    }
-    else {
-      mySelectedElement = null;
-    }
-    fireDecorationChanged(oldSelection);
-  }
-
-  @Override
-  public void release()
-  {
-    mySelectedElement = null;
-    getDesignView().getSelectionModel().removeSelectionListener(this);
-  }
-  
-  private Trace getTrace(BpelEntity entity) {
-      if (entity instanceof ExtensibleElements) {
-          ExtensibleElements myElement = (ExtensibleElements)entity;
-          List<Trace> traceElements = myElement.getChildren(Trace.class);
-          if (traceElements != null && traceElements.size() > 0) {
-              return traceElements.get(0);
-          }
-      }
-      return null;
-  }
-
-  private ExtensibleElements mySelectedElement;
+    private ExtensibleElements mySelectedElement;
 }

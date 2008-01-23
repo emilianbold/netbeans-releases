@@ -284,7 +284,7 @@ public class DiagramModel {
         if (somethingWasExpanded) {
             view.reloadModel();
             view.diagramChanged();
-            view.getDecorationManager().decorationChanged(null);
+            view.getDecorationManager().decorationChanged();
             view.getValidationDecorationProvider().updateDecorations();
         }
     }
@@ -297,7 +297,7 @@ public class DiagramModel {
         if (expandRecursively(root)) {
             view.reloadModel();
             view.diagramChanged();
-            view.getDecorationManager().decorationChanged(null);
+            view.getDecorationManager().decorationChanged();
             view.getValidationDecorationProvider().updateDecorations();
         }
     }
@@ -336,7 +336,7 @@ public class DiagramModel {
 
         view.reloadModel();
         view.diagramChanged();
-        view.getDecorationManager().decorationChanged(null);
+        view.getDecorationManager().decorationChanged();
         view.getValidationDecorationProvider().updateDecorations();
     }
 
