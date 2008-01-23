@@ -188,15 +188,6 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
                     </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.ruby</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.ruby.platform</code-name-base>
-                        <compile-dependency/>
-                        <test/>
-                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <friend-packages>

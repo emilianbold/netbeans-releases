@@ -108,7 +108,7 @@ public class AstUtilities {
             } else {
                 // Must be testsuite execution
                 try {
-                    Class c = Class.forName("org.netbeans.modules.ruby.RubyTestBase");
+                    Class c = Class.forName("org.netbeans.modules.groovy.editor.test.GroovyTestBase");
                     if (c != null) {
                         @SuppressWarnings("unchecked")
                         java.lang.reflect.Method m = c.getMethod("getDocumentFor", new Class[] { FileObject.class });

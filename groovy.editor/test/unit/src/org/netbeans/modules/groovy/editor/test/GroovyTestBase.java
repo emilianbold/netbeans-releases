@@ -85,12 +85,6 @@ public class GroovyTestBase extends NbTestCase {
         return fo;
     }
 
-    public TestCompilationInfo getInfo(String file) throws IOException {
-        FileObject fileObject = getTestFile(file);
-
-        return getInfo(fileObject);
-    }
-
     public TestCompilationInfo getInfo(FileObject fileObject) throws IOException {
         String text = readFile(fileObject);
         if (text == null) {
@@ -103,6 +97,10 @@ public class GroovyTestBase extends NbTestCase {
         return info;
     }
     
+    public static BaseDocument getDocumentFor(FileObject fo) {
+        return createDocument(read(fo));
+    }
+
     protected BaseDocument getDocument(String s) {
         return createDocument(s);
     }

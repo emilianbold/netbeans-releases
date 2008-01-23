@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
     <property name="xtest.enable.assertions" value="true"/>
 
     <!-- Name of tested module -->
-    <property name="xtest.module" value="ruby/editing"/>
+    <property name="xtest.module" value="groovy/editor"/>
 
     <import file="../../../nbbuild/templates/xtest.xml"/>
 
