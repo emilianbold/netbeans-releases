@@ -90,8 +90,8 @@ public final class StringUtils {
      * @see java.lang.String#trim()
      * @see #delimitedListToStringArray
      */
-    public static String[] tokenizeToStringArray(String str, String delimiters) {
-        return tokenizeToStringArray(str, delimiters, true, true);
+    public static List<String> tokenize(String str, String delimiters) {
+        return tokenize(str, delimiters, true, true);
     }
 
     /**
@@ -113,7 +113,7 @@ public final class StringUtils {
      * @see java.lang.String#trim()
      * @see #delimitedListToStringArray
      */
-    public static String[] tokenizeToStringArray(
+    public static List<String> tokenize(
             String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
 
         if (str == null) {
@@ -130,20 +130,6 @@ public final class StringUtils {
                 tokens.add(token);
             }
         }
-        return toStringArray(tokens);
-    }
-
-    /**
-     * Copy the given Collection into a String array.
-     * The Collection must contain String elements only.
-     * @param collection the Collection to copy
-     * @return the String array (<code>null</code> if the passed-in
-     * Collection was <code>null</code>)
-     */
-    public static String[] toStringArray(Collection<String> collection) {
-        if (collection == null) {
-            return null;
-        }
-        return collection.toArray(new String[collection.size()]);
+        return tokens;
     }
 }

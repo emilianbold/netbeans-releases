@@ -39,35 +39,36 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.spring.beans.model.impl;
 
 import java.util.List;
+import org.netbeans.modules.spring.api.beans.model.SpringBean;
 
 /**
- * Describes a single bean definition.
  *
  * @author Andrei Badea
  */
-public interface SpringBean {
+public class ConfigFileSpringBean implements SpringBean {
 
-    /**
-     * Returns the id of this bean.
-     *
-     * @return the id or null.
-     */
-    String getId();
+    private final String id;
+    private final List<String> names;
+    private final String className;
 
-    /**
-     * Returns the other names of this bean.
-     *
-     * @return the names; never null.
-     */
-    List<String> getNames();
+    public ConfigFileSpringBean(String id, List<String> names, String className) {
+        this.id = id;
+        this.names = names;
+        this.className = className;
+    }
 
-    /**
-     * Returns the implementation class of this bean.
-     *
-     * @return the implementation class or null.
-     */
-    String getClassName();
+    public String getId() {
+        return id;
+    }
+
+    public List<String> getNames() {
+        return names;
+    }
+
+    public String getClassName() {
+        return className;
+    }
 }

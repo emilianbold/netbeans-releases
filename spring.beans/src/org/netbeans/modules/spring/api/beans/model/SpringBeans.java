@@ -53,6 +53,8 @@ import java.util.List;
  */
 public interface SpringBeans {
 
+    // XXX aliases.
+
     /**
      * Finds a bean by its id.
      *

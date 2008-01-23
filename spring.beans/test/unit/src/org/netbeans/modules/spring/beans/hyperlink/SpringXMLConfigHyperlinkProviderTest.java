@@ -38,11 +38,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.spring.beans.hyperlink;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.spring.beans.SpringXMLConfigDataLoader;
+import org.netbeans.modules.spring.beans.TestUtils;
 import org.openide.text.CloneableEditorSupport;
 
 /**
@@ -63,7 +65,7 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
     }
 
     public void testBeanHyperlinks() throws Exception {
-        String config = createXMLConfigText("<bean id='propertyConfigurer' " +
+        String config = TestUtils.createXMLConfigText("<bean id='propertyConfigurer' " +
                 "class='org.dummy.config.PropertyConfigurer' " +
                 "parent='dummyBean' " +
                 "depends-on='initialBean' " +
@@ -82,7 +84,7 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
     }
 
     public void testImportHyperlink() throws Exception {
-        String config = createXMLConfigText("<import resource='/WEB-INF/applicationContext.xml'/>");
+        String config = TestUtils.createXMLConfigText("<import resource='/WEB-INF/applicationContext.xml'/>");
         BaseDocument testDoc = createSpringXMLConfigDocument(config);
         assertHyperlink(testDoc, "/WEB-INF/applicationContext.xml");
     }
@@ -127,7 +129,7 @@ public class SpringXMLConfigHyperlinkProviderTest extends NbTestCase {
     }
 
     public void testPropertyHyperlinks() throws Exception {
-        String config = createXMLConfigText("<bean id='petStore' " +
+        String config = TestUtils.createXMLConfigText("<bean id='petStore' " +
                 "class='org.springframework.PetStoreImpl'>" +
                 "<property name='accountDao' ref='accountBean'>" +
                 "</bean>");

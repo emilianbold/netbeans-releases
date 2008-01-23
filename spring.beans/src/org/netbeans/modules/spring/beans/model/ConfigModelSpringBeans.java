@@ -39,35 +39,43 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.spring.beans.model;
 
+import java.io.File;
 import java.util.List;
+import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 
 /**
- * Describes a single bean definition.
+ * The {@link SpringBeans} implementation for multiple config files.
  *
  * @author Andrei Badea
  */
-public interface SpringBean {
+public class ConfigModelSpringBeans implements SpringBeans {
 
-    /**
-     * Returns the id of this bean.
-     *
-     * @return the id or null.
-     */
-    String getId();
+    private final SpringConfigModelController.Access modelAccess;
 
-    /**
-     * Returns the other names of this bean.
-     *
-     * @return the names; never null.
-     */
-    List<String> getNames();
+    public ConfigModelSpringBeans(SpringConfigModelController.Access modelAccess) {
+        this.modelAccess = modelAccess;
+    }
 
-    /**
-     * Returns the implementation class of this bean.
-     *
-     * @return the implementation class or null.
-     */
-    String getClassName();
+    public SpringBean findBean(String beanName) {
+        assert modelAccess.isValid() : "The SpringBeans instance has escaped the Action.run() method";
+        for (SpringBeanSource beanSource : modelAccess.getBeanSources()) {
+            SpringBean bean = beanSource.findBean(beanName);
+            if (bean != null) {
+                return bean;
+            }
+        }
+        return null;
+    }
+
+    public List<SpringBean> getBeans(File file) {
+        assert modelAccess.isValid() : "The SpringBeans instance has escaped the Action.run() method";
+        SpringBeanSource beanSource = modelAccess.getBeanSource(file);
+        if (beanSource != null) {
+            beanSource.getBeans();
+        }
+        return null;
+    }
 }

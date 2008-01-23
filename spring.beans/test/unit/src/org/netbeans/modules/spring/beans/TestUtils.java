@@ -39,35 +39,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.spring.beans;
 
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Describes a single bean definition.
  *
  * @author Andrei Badea
  */
-public interface SpringBean {
+public class TestUtils {
 
-    /**
-     * Returns the id of this bean.
-     *
-     * @return the id or null.
-     */
-    String getId();
+    private TestUtils() {}
 
-    /**
-     * Returns the other names of this bean.
-     *
-     * @return the names; never null.
-     */
-    List<String> getNames();
+    public static String createXMLConfigText(String snippet) {
+        return "<?xml version='1.0' encoding='UTF-8'?>" +
+                "<beans xmlns='http://www.springframework.org/schema/beans' " +
+                "       xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
+                "       xmlns:p='http://www.springframework.org/schema/p' " +
+                "       xsi:schemaLocation='http://www.springframework.org/schema/beans " +
+                "       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd'>" +
+                snippet +
+                "</beans>";
+    }
 
-    /**
-     * Returns the implementation class of this bean.
-     *
-     * @return the implementation class or null.
-     */
-    String getClassName();
+    public static void copyStringToFile(String string, File path) throws IOException {
+        InputStream inputStream = new ByteArrayInputStream(string.getBytes());
+        try {
+            copyStreamToFile(inputStream, path);
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    private static void copyStreamToFile(InputStream inputStream, File path) throws IOException {
+        FileOutputStream outputStream = new FileOutputStream(path, false);
+        try {
+            FileUtil.copy(inputStream, outputStream);
+        } finally {
+            outputStream.close();
+        }
+    }
 }

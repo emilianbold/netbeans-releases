@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.beans.editor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
@@ -72,9 +73,9 @@ public class BeansReferenceableElementsLocator implements
                 if (SpringXMLConfigEditorUtils.hasAttribute(node, "name")) { // NOI18N
                     String aliasesString = SpringXMLConfigEditorUtils.getAttribute(node,
                             "name"); // NOI18N
-                    String[] nameArr = StringUtils.tokenizeToStringArray(
+                    List<String> nameList = StringUtils.tokenize(
                             aliasesString, BEAN_NAME_DELIMITERS);
-                    for (String name : nameArr) {
+                    for (String name : nameList) {
                         nodes.put(name, node);
                     }
                 }

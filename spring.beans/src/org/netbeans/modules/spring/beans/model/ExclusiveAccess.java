@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.beans.model;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantLock;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -54,7 +55,7 @@ import org.openide.util.RequestProcessor.Task;
 public final class ExclusiveAccess {
 
     private final static ExclusiveAccess INSTANCE = new ExclusiveAccess();
-    private final static int DELAY = 100;
+    private final static int DELAY = 400;
 
     private final RequestProcessor rp = new RequestProcessor("Spring config file accessor", 1, false); // NOI18N
     private final ReentrantLock lock = new ReentrantLock();
@@ -80,10 +81,10 @@ public final class ExclusiveAccess {
      *
      * @param  run the task.
      */
-    public void runPriorityTask(Runnable run) {
+    public <V> V runPriorityTask(Callable<V> task) throws Exception {
         lock.lock();
         try {
-            run.run();
+            return task.call();
         } finally {
             lock.unlock();
         }

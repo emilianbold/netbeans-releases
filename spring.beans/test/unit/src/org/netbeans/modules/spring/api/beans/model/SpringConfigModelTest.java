@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.api.beans.model;
 
+import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
@@ -55,7 +56,7 @@ public class SpringConfigModelTest extends NbTestCase {
         super(testName);
     }
 
-    public void testRunReadAction() {
+    public void testRunReadAction() throws Exception {
         ConfigFileGroup fileGroup = new ConfigFileGroup();
         SpringConfigModel model = new SpringConfigModel(fileGroup);
         final boolean[] actionRun = { false };
@@ -65,5 +66,20 @@ public class SpringConfigModelTest extends NbTestCase {
             }
         });
         assertTrue(actionRun[0]);
+    }
+
+    public void testExceptionPropagation() throws IOException {
+        ConfigFileGroup fileGroup = new ConfigFileGroup();
+        SpringConfigModel model = new SpringConfigModel(fileGroup);
+        try {
+            model.runReadAction(new Action<SpringBeans>() {
+                public void run(SpringBeans parameter) {
+                    throw new RuntimeException();
+                }
+            });
+            fail();
+        } catch (RuntimeException e) {
+            // OK.
+        }
     }
 }

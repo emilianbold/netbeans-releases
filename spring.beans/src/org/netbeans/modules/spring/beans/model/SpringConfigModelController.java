@@ -42,13 +42,13 @@
 package org.netbeans.modules.spring.beans.model;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -64,6 +64,9 @@ import org.netbeans.modules.spring.util.fcs.FileChangeSupportListener;
  * @author Andrei Badea
  */
 public class SpringConfigModelController {
+
+    // XXX probably make lazy. First runReadAccess() will be slower, but
+    // at least we won't be eating up unnecessary memory.
 
     private final ConfigFileGroup configFileGroup;
     private final Map<File, SpringConfigFileModelController> file2Controller = Collections.synchronizedMap(new HashMap<File, SpringConfigFileModelController>());
@@ -103,18 +106,34 @@ public class SpringConfigModelController {
      *
      * @param  action the action to run.
      */
-    public void runReadAction(final Action<SpringBeans> action) {
-        ExclusiveAccess.getInstance().runPriorityTask(new Runnable() {
-            public void run() {
+    public void runReadAction(Action<SpringBeans> action) throws IOException {
+        try {
+            runReadAction0(action);
+        } catch (Exception e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException)e;
+            } else if (e instanceof IOException) {
+                throw (IOException)e;
+            } else {
+                IOException ioe = new IOException(e.getMessage());
+                throw (IOException)ioe.initCause(e);
+            }
+        }
+    }
+
+    private void runReadAction0(final Action<SpringBeans> action) throws Exception {
+        ExclusiveAccess.getInstance().runPriorityTask(new Callable<Void>() {
+            public Void call() throws IOException {
                 // Handle reentrant access.
                 boolean firstEntry = (currentAccess == null);
                 if (firstEntry) {
                     currentAccess = new Access();
                 }
-                action.run(new SpringConfigModelBeansImpl(currentAccess));
+                action.run(new ConfigModelSpringBeans(currentAccess));
                 if (firstEntry) {
                     currentAccess = null;
                 }
+                return null;
             }
         });
     }
@@ -136,30 +155,34 @@ public class SpringConfigModelController {
      */
     public final class Access {
 
-        private final Set<SpringConfigFileModelController> upToDateFileModels = new HashSet<SpringConfigFileModelController>();
+        public Access() throws IOException {
+            ensureUpToDate();
+        }
+
+        private void ensureUpToDate() throws IOException {
+            synchronized (file2Controller) {
+                for (SpringConfigFileModelController controller : file2Controller.values()) {
+                    controller.makeUpToDate();
+                }
+            }
+        }
 
         public SpringBeanSource getBeanSource(File file) {
             SpringConfigFileModelController fileModelController = file2Controller.get(file);
             if (fileModelController != null) {
-                ensureUpToDate(fileModelController);
+                return fileModelController.getBeanSource();
             }
-            return fileModelController.getBeanSource();
+            return null;
         }
 
         public List<SpringBeanSource> getBeanSources() {
             List<SpringBeanSource> result = new ArrayList<SpringBeanSource>();
-            for (SpringConfigFileModelController fileModelController : file2Controller.values()) {
-                ensureUpToDate(fileModelController);
-                result.add(fileModelController.getBeanSource());
+            synchronized (file2Controller) {
+                for (SpringConfigFileModelController fileModelController : file2Controller.values()) {
+                    result.add(fileModelController.getBeanSource());
+                }
             }
             return result;
-        }
-
-        private void ensureUpToDate(SpringConfigFileModelController fileModelController) {
-            if (!upToDateFileModels.contains(fileModelController)) {
-                fileModelController.makeUpToDate();
-                upToDateFileModels.add(fileModelController);
-            }
         }
 
         public boolean isValid() {

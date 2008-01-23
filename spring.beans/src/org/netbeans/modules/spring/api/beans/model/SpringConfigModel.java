@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.api.beans.model;
 
+import java.io.IOException;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
@@ -70,7 +71,7 @@ public final class SpringConfigModel {
      *
      * @param action
      */
-    public void runReadAction(final Action<SpringBeans> action) {
+    public void runReadAction(final Action<SpringBeans> action) throws IOException {
         controller.runReadAction(action);
     }
 }

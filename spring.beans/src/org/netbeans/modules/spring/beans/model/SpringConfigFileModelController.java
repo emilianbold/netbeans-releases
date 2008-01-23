@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.spring.beans.model;
 
-import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSourceImpl;
+import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.File;
+import java.io.IOException;
+import org.openide.util.Exceptions;
 
 /**
  * Handles the lifecycle of a single config file. Can be notified of external changes
@@ -54,7 +56,7 @@ import java.io.File;
 public class SpringConfigFileModelController {
 
     private final File configFile;
-    private final ConfigFileSpringBeanSourceImpl beanSource = new ConfigFileSpringBeanSourceImpl();
+    private final ConfigFileSpringBeanSource beanSource = new ConfigFileSpringBeanSource();
     private Updater updater;
 
     public SpringConfigFileModelController(File file) {
@@ -67,7 +69,7 @@ public class SpringConfigFileModelController {
      * it is parsed now. This method needs to be called under exclusive
      * access.
      */
-    public void makeUpToDate() {
+    public void makeUpToDate() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         synchronized (this) {
             if (updater == null) {
@@ -102,7 +104,7 @@ public class SpringConfigFileModelController {
         }
     }
 
-    private void parse() {
+    private void parse() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         beanSource.parse(configFile);
     }
@@ -122,7 +124,11 @@ public class SpringConfigFileModelController {
                 // we will update again later.
                 updater = null;
             }
-            parse();
+            try {
+                parse();
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
     }
 }
