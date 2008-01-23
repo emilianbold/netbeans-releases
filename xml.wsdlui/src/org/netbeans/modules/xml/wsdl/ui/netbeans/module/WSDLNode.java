@@ -102,7 +102,7 @@ public class WSDLNode extends DataNode implements ModelProvider {
                 }
             } catch (CannotRefactorException cre) {
                // AnalysisUtilities.showFileRenameRefactoringUI(model);
-                SharedUtils.showFileRenameRefactoringUI(model);
+                SharedUtils.showFileRenameRefactoringUI(model, name);
             } finally {
                 model.endTransaction();
             }
