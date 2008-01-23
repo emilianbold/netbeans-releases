@@ -262,28 +262,11 @@ public class PluginsOperator extends JDialogOperator {
             Util.wait(1000);
             new QueueTool().waitEmpty();
             
-            JRadioButtonOperator rbtLicenseAgreements = new JRadioButtonOperator(
+            JCheckBoxOperator cbLicenseAgreements = new JCheckBoxOperator(
                 installerDialog, RADIO_BUTTON_LICENSE_AGREEMENT_ACCEPT_TEXT);
+            cbLicenseAgreements.changeSelection(true);
             Util.wait(500);
             new QueueTool().waitEmpty();
-
-            rbtLicenseAgreements.setSelected(true);
-            Util.wait(500);
-            new QueueTool().waitEmpty();
-
-            System.err.println();
-            System.err.println("Method [setSelected()] has been invoked for the radio button [" + 
-                RADIO_BUTTON_LICENSE_AGREEMENT_ACCEPT_TEXT + "]");
-            System.err.println();
-            
-            rbtLicenseAgreements.doClick();
-            Util.wait(500);
-            new QueueTool().waitEmpty();
-
-            System.err.println();
-            System.err.println("Method [doClick()] has been invoked for the radio button [" + 
-                RADIO_BUTTON_LICENSE_AGREEMENT_ACCEPT_TEXT + "]");
-            System.err.println();
 
             Util.wait(500);
             new QueueTool().waitEmpty();
