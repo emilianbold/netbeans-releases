@@ -99,6 +99,10 @@ public class OutputFileManager extends CachingFileManager {
                 //Deleted project
                 throw new InvalidSourcePath ();
             }
+            if (index < 0 && !(new File (sibling.toUri()).exists())) {
+                //Deleted project
+                throw new InvalidSourcePath ();
+            }
             assert index >= 0 : "class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: "  + this.cp;
             assert index < this.cp.entries().size() : "index "+ index +" class: " + className +" sibling: " + sibling +" srcRoots: " + this.scp + " cacheRoots: " + this.cp;
             File activeRoot = new File (URI.create(this.cp.entries().get(index).getURL().toExternalForm()));

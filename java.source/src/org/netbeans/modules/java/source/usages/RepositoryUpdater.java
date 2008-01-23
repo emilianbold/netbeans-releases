@@ -2929,6 +2929,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 dirtyFiles.add (uri);
             }
             final String sourceName = fileManager.inferBinaryName(StandardLocation.SOURCE_PATH, source);
+            if (sourceName == null && !(new File (source.toUri()).exists())) {
+                return;
+            }       
             assert sourceName != null : "Cannot infer file: " + uri.toString();     //NOI18N
             final StringBuilder classNameBuilder = new StringBuilder ();
             ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
