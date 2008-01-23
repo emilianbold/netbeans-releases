@@ -104,6 +104,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         final int dot = component.getCaret().getDot();
         // disable code templates for smart mode of completion
         //CsmCodeTemplateFilter.enableAbbreviations(((queryType & COMPLETION_ALL_QUERY_TYPE) == COMPLETION_ALL_QUERY_TYPE));
+        CsmResultItem.setEnableInstantSubstitution(((queryType & COMPLETION_ALL_QUERY_TYPE) == COMPLETION_ALL_QUERY_TYPE));
         
         // do not work together with include completion
         if (sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot)) {
@@ -161,7 +162,30 @@ public class CsmCompletionProvider implements CompletionProvider {
                 }
             }
             Completion.get().hideCompletion();
-        }        
+        }
+        
+        private static final int MAX_ITEMS_TO_DISPLAY = 10;
+
+        private static final CompletionItem lastItem = new NbCsmResultItem.NbStringResultItem("Type next char...", Integer.MAX_VALUE);
+
+        private void addItems(CompletionResultSet resultSet, Collection<CompletionItem> items) {
+            boolean limit = !localContext && queryResult.isSimpleVariableExpression() && (items.size() > MAX_ITEMS_TO_DISPLAY);
+            if (!limit) {
+                resultSet.estimateItems(items.size(), -1);
+                resultSet.addAllItems(items);
+            } else {
+                resultSet.estimateItems(MAX_ITEMS_TO_DISPLAY + 1, -1);
+                int count = 0;
+                for (CompletionItem item : items) {
+                    resultSet.addItem(item);
+                    if (++count > MAX_ITEMS_TO_DISPLAY) {
+                        break;
+                    }
+                }
+                // need fake item
+                resultSet.addItem(lastItem);
+            }
+        }
         
         private boolean getCaseSensitive(Class kitClass) {
             return SettingsUtil.getBoolean(kitClass,
@@ -196,7 +220,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                         // no more title in NB 6 in completion window
                         //resultSet.setTitle(res.getTitle());
                         resultSet.setAnchorOffset(queryAnchorOffset);
-                        resultSet.addAllItems(items);
+                        addItems(resultSet, items);
                         resultSet.setHasAdditionalItems(localContext);
                         queryResult = res;
                     }
@@ -237,8 +261,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                 //resultSet.setTitle(getFilteredTitle(queryResult.getTitle(), filterPrefix));
                 resultSet.setAnchorOffset(queryAnchorOffset);
                 Collection items = getFilteredData(queryResult.getData(), filterPrefix);
-                resultSet.estimateItems(items.size(), -1);
-                resultSet.addAllItems(items);
+                addItems(resultSet, items);
             }
 	    resultSet.finish();
         }
