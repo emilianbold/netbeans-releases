@@ -211,7 +211,7 @@ final class Importer {
         }
         // create basic NB project
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
-                nbProjectDir, eclProject.getName(), srcFiles, testDirs, null);
+                nbProjectDir, eclProject.getName(), srcFiles, testDirs, null, null);
         // get NB project
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
                 findProject(FileUtil.toFileObject(
