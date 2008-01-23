@@ -566,7 +566,12 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
                 return;
             }
             
-            hiddenComp = panel.getComponent(0);
+            // XXX #125804 We need to get a component containing the designer,
+            // and it is wrong to assume it is the first one, it is the last one.
+            int componentCount = panel.getComponentCount();
+            if (componentCount > 0) {
+                hiddenComp = panel.getComponent(componentCount - 1);
+            }
             panel.removeAll();
 
 //            if (webform.getModel().isBusted()) {
