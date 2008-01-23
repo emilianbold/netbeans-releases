@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Vector;
 import java.util.WeakHashMap;
 import javax.swing.JButton;
@@ -58,10 +59,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -214,6 +217,16 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             String command = e.getActionCommand();
             
             if (command.equals(COMMAND_OK) || command.equals(COMMAND_APPLY)) {
+                int previousVersion = projectDescriptor.getVersion();
+                int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
+                if (previousVersion < currentVersion) {                                           
+                    String txt = getString("UPGRADE_TXT");
+                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
+                    if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                        return;
+                    }
+                }
+                
 		//projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
 		projectDescriptor.assign(clonedProjectdescriptor);
 		projectDescriptor.setModified();
@@ -233,5 +246,15 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 		makeCustomizer.refresh();
 	    }
         }        
+    }
+    
+    
+    /** Look up i18n strings here */
+    private static ResourceBundle bundle;
+    private static String getString(String s) {
+        if (bundle == null) {
+            bundle = NbBundle.getBundle(MakeCustomizerProvider.class);
+        }
+        return bundle.getString(s);
     }
 }

@@ -95,11 +95,11 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  * V29:
  *   added FORTRANCOMPILERTOOL_ELEMENT
  */
-abstract class CommonConfigurationXMLCodec
+public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    protected final static int CURRENT_VERSION = 39;
+    public final static int CURRENT_VERSION = 39;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
