@@ -749,17 +749,35 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
             if ((schemaComponent instanceof Element) && 
                 ((childSchemaTypeComponentList == null) || (childSchemaTypeComponentList.isEmpty())) &&
-                isComplexType((Element) schemaComponent)) {
+                isElementComplexType(schemaComponent)) {
+                return;
+            }
+            if ((schemaComponent instanceof Attribute) && 
+                ((childSchemaTypeComponentList == null) || (childSchemaTypeComponentList.isEmpty())) &&
+                isAttributeUnknownType(schemaComponent)) {
                 return;
             }
             parentNode.add(schemaComponentNode);
         }
     
-        private boolean isComplexType(Element element) {
-            NamedComponentReference<? extends GlobalType> typeRef = 
-                element instanceof LocalElement ? ((LocalElement) element).getType() :
-                    ((GlobalElement) element).getType();
+        private boolean isElementComplexType(SchemaComponent schemaComponent) {
+            if (! (schemaComponent instanceof Element)) {
+                return false;
+            }
+            NamedComponentReference<? extends GlobalType> typeRef = null;
+            if (schemaComponent instanceof GlobalElement) {
+                typeRef = ((GlobalElement) schemaComponent).getType();
+            } else {
+                typeRef = ((LocalElement) schemaComponent).getType();
+            } 
             return ((typeRef != null) && (typeRef.get() instanceof ComplexType));
+        }
+        
+        private boolean isAttributeUnknownType(SchemaComponent schemaComponent) {
+            if (! (schemaComponent instanceof Attribute)) {
+                return false;
+            }
+            return (((Attribute) schemaComponent).getAttribute(BpelAttributes.TYPE) == null);
         }
         
         private void defineCorrelationMapperKeyBindings() {
@@ -790,6 +808,8 @@ public class DefineCorrelationWizard implements WizardProperties {
         @Override
         public void validate() throws WizardValidationException {
         }
+        
+        
         //====================================================================//
         private class ActionDeleteKey extends AbstractAction {
             public void actionPerformed(ActionEvent e) {
@@ -1150,6 +1170,21 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return true;
             }
         }
+    }
+    //========================================================================//
+    private class CorrelationPair {
+        private CorrelationObject source, target;
+
+        public CorrelationPair(CorrelationObject source, CorrelationObject target) {
+            this.source = source;
+            this.target = target;
+        }
+        public CorrelationObject getSource() {return source;}
+        public CorrelationObject getTarget() {return target;}
+    }
+    
+    private class CorrelationObject {
+        //BpelEntity
     }
     //========================================================================//
     public class WizardCorrelationConfigurationPanel extends WizardAbstractPanel {
