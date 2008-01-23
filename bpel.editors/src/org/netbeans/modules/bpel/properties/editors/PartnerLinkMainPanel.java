@@ -107,7 +107,6 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     
     private static final EmptyComboBoxModel emptyModel = new EmptyComboBoxModel();
     
-    /** Creates new form PartnerLinkMainPanel */
     public PartnerLinkMainPanel(CustomNodeEditor<PartnerLink> anEditor) {
         myEditor = anEditor;
         createContent();
@@ -344,7 +343,6 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                     cbxWsdlFile.setSelectedIndex(0);
                 }
             }
-            //
             // Set selection to the Parthner Link Type combo-box
             if (plType != null) {
                 cbxPartnerLinkType.setSelectedItem(plType);
