@@ -121,7 +121,7 @@ public class Util {
     renameInProperties(prjLoc, newName, defaultName);
   }
 
-  private static void renameInProperties(FileObject prjLoc, String newName, String defaultName) {
+  public static void renameInProperties(FileObject prjLoc, String newName, String defaultName) {
     FileObject propertiesFile = prjLoc.getFileObject("nbproject/project.properties");
 
     try {
