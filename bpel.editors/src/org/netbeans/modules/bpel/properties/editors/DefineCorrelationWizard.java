@@ -108,8 +108,12 @@ import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.xml.schema.model.ComplexType;
+import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
+import org.netbeans.modules.xml.schema.model.LocalComplexType;
+import org.netbeans.modules.xml.schema.model.LocalSimpleType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SimpleType;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -118,6 +122,7 @@ import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xpath.ext.schema.AbstractSchemaSearchVisitor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -754,37 +759,34 @@ public class DefineCorrelationWizard implements WizardProperties {
             NamedComponentReference<GlobalElement> partElementRef = part.getElement();
             if (partElementRef != null) {
                 GlobalElement partElement = partElementRef.get();
-                List<SchemaComponent> schemaComponentList = partElement.getChildren();
-                CorrelationMapperTreeNode partElementNode = new CorrelationMapperTreeNode(partElement, null);
-                for (SchemaComponent schemaComponent : schemaComponentList) {
-                    addSchemaComponentNode(partElementNode, schemaComponent);
-                }
-                partNode.add(partElementNode);
+                addSchemaComponentNode(partNode, partElement, new SchemaSimpleAndComplexTypeFinder());
             } else {
                 NamedComponentReference<GlobalType> partTypeRef = part.getType();
                 if (partTypeRef != null) {
                     GlobalType partType = partTypeRef.get();
-                    addSchemaComponentNode(partNode, partType);
+                    addSchemaComponentNode(partNode, partType, new SchemaSimpleAndComplexTypeFinder());
                 }
             }
             return partNode;
         }        
         
         private void addSchemaComponentNode(CorrelationMapperTreeNode parentNode, 
-            SchemaComponent schemaComponent) {
+            SchemaComponent schemaComponent, SchemaSimpleAndComplexTypeFinder schemaTypeFinder) {
             String nodeNamePattern = schemaComponent instanceof SimpleType ?
                 NbBundle.getMessage(DefineCorrelationWizard.class, 
                 "LBL_Mapper_Tree_SimpleType_Name_Pattern") : null;
             CorrelationMapperTreeNode schemaComponentNode = new CorrelationMapperTreeNode(
                 schemaComponent, nodeNamePattern);
             parentNode.add(schemaComponentNode);
-            
-            List<SchemaComponent> schemaComponentList = schemaComponent.getChildren();
-            for (SchemaComponent childSchemaComponent : schemaComponentList) {
-                addSchemaComponentNode(schemaComponentNode, childSchemaComponent);
+
+            if (! (schemaComponent instanceof SimpleType)) {
+                schemaTypeFinder.visitChildren(schemaComponent);
+                List<SchemaComponent> childSchemaTypeComponentList = schemaTypeFinder.getChildList();
+                for (SchemaComponent childSchemaTypeComponent : childSchemaTypeComponentList) {
+                    addSchemaComponentNode(schemaComponentNode, childSchemaTypeComponent, new SchemaSimpleAndComplexTypeFinder());
+                }
             }
         }
-        
     
         private void defineCorrelationMapperKeyBindings() {
             if (correlationMapper == null) return;
@@ -812,6 +814,49 @@ public class DefineCorrelationWizard implements WizardProperties {
 
         @Override
         public void validate() throws WizardValidationException {
+        }
+        //====================================================================//
+        private class SchemaSimpleAndComplexTypeFinder extends AbstractSchemaSearchVisitor {
+            private List<SchemaComponent> childList = new ArrayList<SchemaComponent>();
+
+            public List<SchemaComponent> getChildList() {
+                return childList;
+            }
+
+            @Override
+            public void visit(GlobalComplexType globalComplexType) {
+                checkComponent(globalComplexType);
+                //super.visit(globalComplexType);
+            }
+
+            @Override
+            public void visit(LocalComplexType localComplexType) {
+                checkComponent(localComplexType);
+                //super.visit(localComplexType);
+            }
+
+            @Override
+            public void visit(GlobalSimpleType globalSimpleType) {
+                checkComponent(globalSimpleType);
+            }
+
+            @Override
+            public void visit(LocalSimpleType localSimpleType) {
+                checkComponent(localSimpleType);
+            }
+            
+            @Override
+            public void visitChildren(SchemaComponent schemaComponent) {
+                super.visitChildren(schemaComponent);
+            }
+            
+            @Override
+            public void checkComponent(SchemaComponent schemaComponent) {
+                if ((schemaComponent instanceof SimpleType) ||  
+                    (schemaComponent instanceof ComplexType)) {
+                    childList.add(schemaComponent);
+                }
+            }
         }
         //====================================================================//
         private class ActionDeleteKey extends AbstractAction {
@@ -924,8 +969,11 @@ public class DefineCorrelationWizard implements WizardProperties {
                     } else if (userObj instanceof GlobalElement) {
                         userObjectName = ((GlobalElement) userObj).getName();
                         patternValues = new Object[] {userObjectName, "GlobalElement"};
-                    } else if (userObj instanceof SchemaComponent) {
-                        userObjectName = ((SchemaComponent) userObj).getAttribute(BpelAttributes.NAME);
+                    } else if (userObj instanceof SimpleType) {
+                        userObjectName = ((SimpleType) userObj).getAttribute(BpelAttributes.NAME);
+                        patternValues = new Object[] {userObjectName};
+                    } else if (userObj instanceof ComplexType) {
+                        userObjectName = ((ComplexType) userObj).getAttribute(BpelAttributes.NAME);
                         patternValues = new Object[] {userObjectName};
                     } else {
                         userObjectName = userObj.toString();
