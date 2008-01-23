@@ -71,6 +71,7 @@ class CleanComboUI extends BasicComboBoxUI {
         this.tableUI = tableUI;
     }
 
+    @Override
     protected void installDefaults() {
         LookAndFeel.installColorsAndFont(comboBox, "ComboBox.background", "ComboBox.foreground", "ComboBox.font"); //NOI18N
 
@@ -91,12 +92,14 @@ class CleanComboUI extends BasicComboBoxUI {
         installComboDefaults(comboBox);
     }
 
+    @Override
     protected ComboPopup createPopup() {
         popup = new CleanComboPopup(comboBox);
 
         return popup;
     }
 
+    @Override
     protected void installKeyboardActions() {
         super.installKeyboardActions();
 
@@ -117,11 +120,15 @@ class CleanComboUI extends BasicComboBoxUI {
         }
     }
 
+    @Override
     protected JButton createArrowButton() {
         Icon i = UIManager.getIcon("ComboBox.icon"); //NOI18N
 
         if (i == null) {
-            i = new MetalComboBoxIcon();
+            if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) )
+                i = new AquaComboIcon();
+            else
+                i = new MetalComboBoxIcon();
         }
 
         button = new JButton(i);
@@ -133,6 +140,7 @@ class CleanComboUI extends BasicComboBoxUI {
         return button;
     }
 
+    @Override
     protected Insets getInsets() {
         java.awt.Insets i = super.getInsets();
         i.right += 2;
@@ -140,6 +148,7 @@ class CleanComboUI extends BasicComboBoxUI {
         return i;
     }
 
+    @Override
     public void paint(Graphics g, JComponent c) {
         super.paint(g, c);
 
@@ -164,6 +173,7 @@ class CleanComboUI extends BasicComboBoxUI {
      *  and removeEditor() will be called anyway;  other focus lost events
      *  will be events in which removeEditor() will be called because the
      *  editor's action has been performed.  */
+    @Override
     protected FocusListener createFocusListener() {
         return super.createFocusListener();
 
@@ -245,6 +255,7 @@ class CleanComboUI extends BasicComboBoxUI {
          */
     }
 
+    @Override
     public void paintCurrentValue(Graphics g, Rectangle bounds, boolean hasFocus) {
         ListCellRenderer renderer = comboBox.getRenderer();
 
@@ -276,6 +287,7 @@ class CleanComboUI extends BasicComboBoxUI {
         );
     }
 
+    @Override
     protected Rectangle rectangleForCurrentValue() {
         Rectangle r = super.rectangleForCurrentValue();
 
@@ -289,6 +301,7 @@ class CleanComboUI extends BasicComboBoxUI {
         return r;
     }
 
+    @Override
     protected ComboBoxEditor createEditor() {
         return new CleanComboBoxEditor();
     }
@@ -321,26 +334,13 @@ class CleanComboUI extends BasicComboBoxUI {
         }
     }
 
-    private class CleanComboLayout extends ComboBoxLayoutManager {
-        public void layoutContainer(Container parent) {
-            super.layoutContainer(parent);
-
-            if (editor != null) {
-                java.awt.Rectangle r = rectangleForCurrentValue();
-                r.x = 0;
-                r.y = 0;
-                r.height = comboBox.getHeight();
-                editor.setBounds(r);
-            }
-        }
-    }
-
     private static class CleanComboPopup extends BasicComboPopup {
         public CleanComboPopup(JComboBox box) {
             super(box);
             installComboDefaults(this);
         }
 
+        @Override
         protected Rectangle computePopupBounds(int px, int py, int pw, int ph) {
             Dimension d = list.getPreferredSize();
             Rectangle r = Utilities.getUsableScreenBounds();
@@ -377,5 +377,33 @@ class CleanComboUI extends BasicComboBoxUI {
 
             //            editor.setBorder (BorderFactory.createEmptyBorder());
         }
+    }
+    
+    private static class AquaComboIcon implements Icon {
+
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            x = (c.getWidth() - getIconWidth())/2;
+            y = (c.getHeight() - getIconHeight())/2;
+            g.setColor( UIManager.getColor("Button.Foreground") );
+            
+            g.drawLine(x+3, y, x+3, y);
+            g.drawLine(x+2, y+1, x+2+2, y+1);
+            g.drawLine(x+1, y+2, x+1+4, y+2);
+            g.drawLine(x, y+3, x+6, y+3);
+
+            g.drawLine(x, y+7, x+6, y+7);
+            g.drawLine(x+1, y+8, x+1+4, y+8);
+            g.drawLine(x+2, y+9, x+2+2, y+9);
+            g.drawLine(x+3, y+10, x+3, y+10);
+        }
+
+        public int getIconWidth() {
+            return 7;
+        }
+
+        public int getIconHeight() {
+            return 11;
+        }
+        
     }
 }
