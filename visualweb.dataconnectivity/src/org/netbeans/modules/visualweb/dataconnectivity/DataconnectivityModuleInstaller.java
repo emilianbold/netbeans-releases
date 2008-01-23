@@ -97,11 +97,7 @@ public class DataconnectivityModuleInstaller extends ModuleInstall {
             bisp = new ArrayList(bisp);
             bisp.add(this.DATACONNECTIVITY_BEANINFO_PATH);
             Introspector.setBeanInfoSearchPath((String[])bisp.toArray(new String[0]));
-        }                        
-       
-        //!JK temporary place to set InitialContextFactoryBuilder because the context is being
-        //!JK polluted by jars being loaded by deployment
-        DesignTimeInitialContextFactory.setInitialContextFactoryBuilder();
+        }                                      
         
         // database registration for sample databases and legacy projects
         init();

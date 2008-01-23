@@ -86,6 +86,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.project.ui.OpenProjects;
 
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.naming.DesignTimeInitialContextFactory;
 import org.w3c.dom.Element;
 
 
@@ -326,6 +327,12 @@ public class ProjectDataSourceTracker{
         
         public void changeFileDataSources(Model model, boolean wasRemoved ) {
             logInfo("** received project DS name change event:" ) ; // NOI18N
+            
+            // Set a system property to enable creating an InitialContextFactory
+            if (System.getProperty("DESIGNTIME_INITIAL_CONTEXT_FACTORY") == null) { // NOI18N
+                DesignTimeInitialContextFactory.setInitialContextFactoryBuilder();
+            }
+            
             FacesModel fModel ;
             if (model instanceof FacesModel) {
                 fModel = (FacesModel)model ;

@@ -52,9 +52,7 @@ import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject
  *
  * @author John Kline
  */
-//public class DesignTimeInitialContextFactory implements InitialContextFactory, ProjectChangeListener{
 public class DesignTimeInitialContextFactory implements InitialContextFactory {
-    private static DesignTimeContext prjContext = null;
     
     public static void setInitialContextFactoryBuilder() {
         try {
@@ -65,6 +63,9 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
                 }
             }
             );
+            
+            // Set a system property since only one instance of DesignTimeInitialContextFactory  is to be created
+            System.setProperty("DESIGNTIME_INITIAL_CONTEXT_FACTORY", "true"); // NOI18N
         } catch (NamingException e) {
         }
     }
