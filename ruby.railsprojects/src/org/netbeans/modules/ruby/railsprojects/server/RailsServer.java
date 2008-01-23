@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
@@ -102,6 +103,11 @@ public final class RailsServer {
     /** Set of currently active - in use; ports. */
     private static final Set<Integer> IN_USE_PORTS = new HashSet<Integer>();;
 
+    /**
+     * The timeout in seconds for waiting a server to start.
+     */
+    private static final int SERVER_STARTUP_TIMEOUT = 120; 
+    
     private ServerStatus status = ServerStatus.NOT_STARTED;
     private ServerType serverType;
     
@@ -319,8 +325,10 @@ public final class RailsServer {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    // Try connecting repeatedly, up to 60 seconds, then bail
-                    for (int i = 0; i < 60; i++) {
+                    // Try connecting repeatedly, up to time specified 
+                    // by SERVER_STARTUP_TIMEOUT, then bail
+                    int i = 0;
+                    for (; i <= SERVER_STARTUP_TIMEOUT; i++) {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException ie) {
@@ -329,6 +337,7 @@ public final class RailsServer {
 
                         synchronized (RailsServer.this) {
                             if (status == ServerStatus.RUNNING) {
+                                LOGGER.fine("Server " + serverType + " started in " + i + " seconds.");
                                 RailsServer.showURL(relativeUrl, port);
                                 return;
                             }
@@ -341,6 +350,9 @@ public final class RailsServer {
                         }
                     }
 
+                    LOGGER.fine("Could not start " + serverType + " in " + i +
+                            " seconds, current server status is " + status);
+                    
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RailsServer.class,
                                 "NoServerFound", "http://localhost:" + port + "/" + relativeUrl));
                 } finally {
@@ -419,6 +431,11 @@ public final class RailsServer {
 
         @Override
         public ActionText processLine(String outputLine) {
+            
+            if (LOGGER.isLoggable(Level.FINEST)){
+                LOGGER.log(Level.FINEST, "Processing output line: " + outputLine);
+            }
+
             String line = outputLine;
             
             // This is ugly, but my attempts to use URLConnection on the URL repeatedly
@@ -430,6 +447,7 @@ public final class RailsServer {
                     status = ServerStatus.RUNNING;
                 }
             } else if (isAddressInUseMsg(outputLine)) {
+                LOGGER.fine("Detected port conflict: " + outputLine);
                 portConflict = true;
             }
 
