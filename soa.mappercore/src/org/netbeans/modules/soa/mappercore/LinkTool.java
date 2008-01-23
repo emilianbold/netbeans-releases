@@ -674,7 +674,7 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
     
-    private void setSource(SourcePin sourcePin, JComponent c, Point p) {
+    public void setSource(SourcePin sourcePin, JComponent c, Point p) {
         this.sourcePin = sourcePin;
         this.sourceComponent = c;
         this.x1 = p.x;
@@ -682,7 +682,7 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
     
-    private void setTarget(TreePath targetPath, TargetPin targetPin, 
+    public void setTarget(TreePath targetPath, TargetPin targetPin, 
             JComponent c, Point p) 
     {
         this.targetPin = targetPin;
@@ -748,9 +748,16 @@ public class LinkTool extends MapperPropertyAccess {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
             
-            Link.paintLine(g2, MapperStyle.LINK_COLOR_SELECTED_NODE, null, 
-                    sourcePoint, targetPoint, step,
-                    visibleRect.x, visibleRect.x + visibleRect.width);
+            if (!Utils.equal(sourcePoint, targetPoint)) {
+                Link.paintLine(g2, MapperStyle.LINK_COLOR_SELECTED_NODE, null,
+                        sourcePoint, targetPoint, step,
+                        visibleRect.x, visibleRect.x + visibleRect.width);
+            } else {
+                if (targetPin == null) {paintTargetDecoration = false;}
+                if (sourcePin == null) {paintSourceDecoration = false;}
+            }
+            
+            
             
             if (paintSourceDecoration) {
                 Link.paintSourceDecoration(g2, sourcePoint, null, step);
