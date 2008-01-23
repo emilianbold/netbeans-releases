@@ -370,6 +370,20 @@ public final class UI {
     button.setPreferredSize(IMAGE_BUTTON_SIZE);
   }
 
+  public static JComponent getResizable(JPanel panel) {
+    JPanel p = new JPanel(new GridBagLayout());
+    GridBagConstraints c = new GridBagConstraints();
+
+    c.weightx = 1.0;
+    c.weighty = 1.0;
+    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, 0, MEDIUM_INSET);
+    c.anchor = GridBagConstraints.NORTHWEST;
+    c.fill = GridBagConstraints.HORIZONTAL;
+    p.add(panel, c);
+
+    return p;
+  }
+
   public static void out() {
     if (ENABLED) {
       System.out.println();
@@ -475,20 +489,6 @@ public final class UI {
 
     protected final String i18n(String key, String param) {
       return UI.i18n(getClass(), key, param);
-    }
-
-    protected final JComponent getResizable(JPanel panel) {
-      JPanel p = new JPanel(new GridBagLayout());
-      GridBagConstraints c = new GridBagConstraints();
-
-      c.weightx = 1.0;
-      c.weighty = 1.0;
-      c.insets = new Insets(TINY_INSET, MEDIUM_INSET, 0, MEDIUM_INSET);
-      c.anchor = GridBagConstraints.NORTHWEST;
-      c.fill = GridBagConstraints.HORIZONTAL;
-      p.add(panel, c);
-
-      return p;
     }
 
     private void setCorner() {
