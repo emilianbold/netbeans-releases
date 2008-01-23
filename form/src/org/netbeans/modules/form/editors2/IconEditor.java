@@ -91,6 +91,8 @@ public class IconEditor extends ResourceWrapperEditor implements NamedPropertyEd
             String resName = (nbIcon != null && nbIcon.getType() == org.netbeans.modules.form.editors.IconEditor.TYPE_CLASSPATH)
                     ? nbIcon.getName() : null;
             resourcePanel.setValue(nbIcon, stringValue, resName);
+        } else {
+            resourcePanel.setValue(null, "${null}", null); // NOI18N
         }
     }
 
