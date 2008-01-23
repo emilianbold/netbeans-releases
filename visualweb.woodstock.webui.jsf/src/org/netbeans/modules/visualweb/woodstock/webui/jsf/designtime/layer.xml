@@ -42,6 +42,13 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="woodstock-components.xml" url="/org/netbeans/modules/visualweb/woodstock/webui/jsf/designtime/libraries/woodstock-components.xml"/>
+            <file name="woodstock-theme-default.xml" url="/org/netbeans/modules/visualweb/woodstock/webui/jsf/designtime/libraries/woodstock-theme-default.xml"/>
+        </folder>
+    </folder>
+    
     <folder name="CreatorDesignerPalette5">
         <!--<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.visualweb.woodstock.webui.jsf.designtime.resources.Bundle"/>-->
         
