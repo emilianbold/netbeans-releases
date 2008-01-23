@@ -791,8 +791,7 @@ public class DefineCorrelationWizard implements WizardProperties {
         @Override
         public boolean isValid() {
             boolean isOK = false;
-            // allows moving to the next panel if the right tree 
-            // in mapper contains at least 1 link
+            // switch to the next panel or close the wizard if the correlation mapper contains at least 1 link
             Map<TreePath, Graph> mapTreePathGraphs = ((CorrelationMapperModel) correlationMapper.getModel()).getMapTreePathGraphs();
             for (Graph graph : mapTreePathGraphs.values()) {
                 isOK = graph.hasIngoingLinks();
@@ -807,9 +806,35 @@ public class DefineCorrelationWizard implements WizardProperties {
 
         @Override
         public void validate() throws WizardValidationException {
+            String leftSchemaComponentName = "UniqueID",
+                   rightSchemaComponentName = "UniqueID";
+            
+            String errMsg = MessageFormat.format(NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
+                "LBL_ErrMsg_Different_Schema_Component_Types"),
+                new Object[] {leftSchemaComponentName, rightSchemaComponentName});
+            //wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, errMsg);                              
+            throw new WizardValidationException(wizardPanel, errMsg, errMsg);
+                
+        
+/********??????
+    <bpws:property name="ItineraryRefId" type="xs:string" /> 
+    
+    <bpws:propertyAlias 
+        propertyName="tres:ItineraryRefId"
+        messageType="tres:ItineraryIn"
+        part="itinerary">
+        <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>    
+    </bpws:propertyAlias>
+ 
+     <correlationSets>
+        <correlationSet name="ItineraryCorrelator" properties="tres:ItineraryRefId"/>
+    </correlationSets>
+            <correlations>
+                <correlation set="ItineraryCorrelator" initiate="yes"/>
+            </correlations>
+
+**********?????????*/
         }
-        
-        
         //====================================================================//
         private class ActionDeleteKey extends AbstractAction {
             public void actionPerformed(ActionEvent e) {
@@ -1173,18 +1198,49 @@ public class DefineCorrelationWizard implements WizardProperties {
     }
     //========================================================================//
     private class CorrelationPair {
-        private CorrelationObject source, target;
+        private CorrelationDataHolder source, target;
 
-        public CorrelationPair(CorrelationObject source, CorrelationObject target) {
+        public CorrelationPair(CorrelationDataHolder source, CorrelationDataHolder target) {
             this.source = source;
             this.target = target;
         }
-        public CorrelationObject getSource() {return source;}
-        public CorrelationObject getTarget() {return target;}
+        public CorrelationDataHolder getSource() {return source;}
+        public CorrelationDataHolder getTarget() {return target;}
     }
     
-    private class CorrelationObject {
-        //BpelEntity
+    private class CorrelationDataHolder {
+        private Message message;
+        private Part part;
+        private List<SchemaComponent> schemaComponentList = new ArrayList<SchemaComponent>();
+
+        public CorrelationDataHolder(Message message, Part part) {
+            this(message, part, null);
+        }
+        
+        public CorrelationDataHolder(Message message, Part part, List<SchemaComponent> schemaComponentList) {
+            this.message = message;
+            this.part = part;
+            setSchemaComponentList(schemaComponentList);
+        }
+
+        public Message getMessage() {return message;}
+        public void setMessage(Message message) {this.message = message;}
+        public Part getPart() {return part;}
+        public void setPart(Part part) {this.part = part;}
+
+        public List<? extends SchemaComponent> getSchemaComponentList() {return schemaComponentList;}
+        public void setSchemaComponentList(List<SchemaComponent> schemaComponentList) {
+            if (schemaComponentList != null) {
+                this.schemaComponentList = schemaComponentList;
+            }
+        }
+
+        public void addSchemaComponent(SchemaComponent schemaComponent) {
+            if ((schemaComponent != null) && 
+                (! schemaComponentList.contains(schemaComponent))) {
+                schemaComponentList.add(schemaComponent);
+            }
+        }
     }
     //========================================================================//
     public class WizardCorrelationConfigurationPanel extends WizardAbstractPanel {
