@@ -250,7 +250,7 @@ public final class RailsServer {
      */
     static String getStartedMessagePattern(ServerType serverType) {
         switch (serverType) {
-            case MONGREL: return "\\*\\* Mongrel.+available at.+"; // NOI18N
+            case MONGREL: return ".*Mongrel.+available at.+"; // NOI18N
             //case LIGHTTPD: return "=> Rails application starting on ";
             case WEBRICK: 
             default:
