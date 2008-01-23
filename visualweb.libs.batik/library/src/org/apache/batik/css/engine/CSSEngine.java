@@ -52,6 +52,9 @@ package org.apache.batik.css.engine;
 
 import java.io.IOException;
 import java.io.StringReader;
+// <nb>
+import java.lang.ref.WeakReference;
+// </nb>
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -292,7 +295,11 @@ public abstract class CSSEngine {
     /**
      * The DOM nodes which contains StyleSheets.
      */
-    protected List styleSheetNodes;
+// <nb> #125149 Memory leak, the style sheet nodes need to be held weakly.
+//    protected List styleSheetNodes;
+// ===
+    protected List<WeakReference<CSSStyleSheetNode>> styleSheetNodes;
+// </nb>
 
     /**
      * The style attribute namespace URI.
@@ -863,12 +870,24 @@ public abstract class CSSEngine {
 // </rave>
 
             // Apply the document style-sheets to the result.
-            List snodes = getStyleSheetNodes();
+// <nb
+//            List snodes = getStyleSheetNodes();
+// ===
+            List<WeakReference<CSSStyleSheetNode>> snodes = getStyleSheetNodes();
+// </nb>
             int slen = snodes.size();
             if (slen > 0) {
                 List rules = new ArrayList();
                 for (int i = 0; i < slen; i++) {
-                    CSSStyleSheetNode ssn = (CSSStyleSheetNode)snodes.get(i);
+// <nb>
+//                    CSSStyleSheetNode ssn = (CSSStyleSheetNode)snodes.get(i);
+// ===
+                    WeakReference<CSSStyleSheetNode> ssnWRef = snodes.get(i);
+                    CSSStyleSheetNode ssn = ssnWRef == null ? null : ssnWRef.get();
+                    if (ssn == null) {
+                        continue;
+                    }
+// </nb>
                     StyleSheet ss = ssn.getCSSStyleSheet();
                     if (ss != null &&
                         (!ss.isAlternate() ||
@@ -1132,11 +1151,23 @@ public abstract class CSSEngine {
         }
 
         // Apply the document style-sheets to the result.
-        List snodes = getStyleSheetNodes();
+// <nb>
+//        List snodes = getStyleSheetNodes();
+// ===
+        List<WeakReference<CSSStyleSheetNode>> snodes = getStyleSheetNodes();
+// </nb>
         int slen = snodes.size();
         if (slen > 0) {
             for (int i = 0; i < slen; i++) {
-                CSSStyleSheetNode ssn = (CSSStyleSheetNode)snodes.get(i);
+// <nb>
+//                CSSStyleSheetNode ssn = (CSSStyleSheetNode)snodes.get(i);
+// ===
+                WeakReference<CSSStyleSheetNode> ssnWRef = snodes.get(i);
+                CSSStyleSheetNode ssn = ssnWRef == null ? null : ssnWRef.get();
+                if (ssn == null) {
+                    continue;
+                }
+// </nb>
                 StyleSheet ss = ssn.getCSSStyleSheet();
                 if (ss != null &&
                     (!ss.isAlternate() ||
@@ -1234,11 +1265,23 @@ public abstract class CSSEngine {
         }
 
         // Apply the document style-sheets to the result.
-        List snodes = getStyleSheetNodes();
+// <nb>
+//        List snodes = getStyleSheetNodes();
+// ===
+        List<WeakReference<CSSStyleSheetNode>> snodes = getStyleSheetNodes();
+// </nb>
         int slen = snodes.size();
         if (slen > 0) {
             for (int i = 0; i < slen; i++) {
-                CSSStyleSheetNode ssn = (CSSStyleSheetNode)snodes.get(i);
+// <nb>
+//                CSSStyleSheetNode ssn = (CSSStyleSheetNode)snodes.get(i);
+// ===
+                WeakReference<CSSStyleSheetNode> ssnWRef = snodes.get(i);
+                CSSStyleSheetNode ssn = ssnWRef == null ? null : ssnWRef.get();
+                if (ssn == null) {
+                    continue;
+                }
+// </nb>
                 StyleSheet ss = ssn.getCSSStyleSheet();
                 if (ss != null &&
                     (!ss.isAlternate() ||
@@ -1658,9 +1701,17 @@ public abstract class CSSEngine {
      * Returns the document CSSStyleSheetNodes in a list. This list is
      * updated as the document is modified.
      */
-    public List getStyleSheetNodes() {
+// <nb>
+//    public List getStyleSheetNodes() {
+// ===
+    public List<WeakReference<CSSStyleSheetNode>> getStyleSheetNodes() {
+// </nb>
         if (styleSheetNodes == null) {
-            styleSheetNodes = new ArrayList();
+// <nb>
+//            styleSheetNodes = new ArrayList();
+// ===
+            styleSheetNodes = new ArrayList<WeakReference<CSSStyleSheetNode>>();
+// </nb>
 // <rave>
             if (document == null) {
                 return styleSheetNodes;
@@ -1675,7 +1726,12 @@ public abstract class CSSEngine {
             int len = styleSheetNodes.size();
             for (int i = 0; i < len; i++) {
                 CSSStyleSheetNode ssn;
-                ssn = (CSSStyleSheetNode)styleSheetNodes.get(i);
+// <nb>
+//                ssn = (CSSStyleSheetNode)styleSheetNodes.get(i);
+// ===
+                WeakReference<CSSStyleSheetNode> ssnWRef = styleSheetNodes.get(i);
+                ssn = ssnWRef == null ? null : ssnWRef.get();
+// </nb
                 StyleSheet ss = ssn.getCSSStyleSheet();
                 if (ss != null) {
                     findSelectorAttributes(selectorAttributes, ss);
@@ -1708,7 +1764,11 @@ public abstract class CSSEngine {
      */
     protected void findStyleSheetNodes(Node n) {
         if (n instanceof CSSStyleSheetNode) {
-            styleSheetNodes.add(n);
+// <nb>
+//            styleSheetNodes.add(n);
+// ===
+            styleSheetNodes.add(new WeakReference<CSSStyleSheetNode>((CSSStyleSheetNode)n));
+// </nb>
         }
         for (Node nd = n.getFirstChild();
              nd != null;
