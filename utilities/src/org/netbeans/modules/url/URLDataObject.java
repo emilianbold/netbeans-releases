@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,6 +51,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.InstanceCookie;
 import org.openide.cookies.OpenCookie;
@@ -62,7 +63,9 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.NotifyDescriptor;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /** Data object that represents one bookmark, one .url file containing url.
@@ -78,8 +81,10 @@ public class URLDataObject extends MultiDataObject
     
     /** Generated serial version UID. */
     static final long serialVersionUID = 6829522922370124627L;
-
     
+    /** */
+    private Lookup lookup;
+
     /**
      * Constructs a new URL data object.
      *
@@ -91,6 +96,18 @@ public class URLDataObject extends MultiDataObject
             throws DataObjectExistsException {
         super(file, loader);
         getCookieSet().add(this);
+    }
+    
+    @Override
+    public Lookup getLookup() {
+        if (lookup == null) {
+            FileEncodingQueryImplementation encodingImpl
+                    = ((URLDataLoader) getLoader()).getEncoding();
+            lookup = (encodingImpl != null)
+                     ? Lookups.fixed(this, encodingImpl)
+                     : Lookups.singleton(this);
+        }
+        return lookup;
     }
     
     /*

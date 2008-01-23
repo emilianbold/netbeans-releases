@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,7 @@
 package org.netbeans.modules.url;
 
 import java.io.IOException;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
@@ -60,6 +61,9 @@ public class URLDataLoader extends UniFileLoader {
     static final long serialVersionUID =-7407252842873642582L;
     /** MIME-type of URL files */
     private static final String URL_MIME_TYPE = "text/url";             //NOI18N
+    /** */
+    private static final String PROP_ENCODING_QUERY_IMPL
+                                = "org.netbeans.modules.url.encoding";  //NOI18N
     
     
     /** Creates a new URLDataLoader without the extension. */
@@ -67,6 +71,17 @@ public class URLDataLoader extends UniFileLoader {
         super("org.netbeans.modules.url.URLDataObject");                //NOI18N
     }
 
+    /**
+     * Returns an instance of {@code FileEncodingQueryImplementation}
+     * representing encoding to be used by {@code URLDataObject}s.
+     * 
+     * @return  an instance of {@code FileEncodingQueryImplementation},
+     *          or {@code null} if encoding UTF-8 is not supported
+     */
+    FileEncodingQueryImplementation getEncoding() {
+        return (FileEncodingQueryImplementation)
+               getProperty(PROP_ENCODING_QUERY_IMPL);
+    }
     
     /**
      * Initializes this loader. This method is called only once the first time
@@ -80,6 +95,13 @@ public class URLDataLoader extends UniFileLoader {
         ext.addMimeType(URL_MIME_TYPE);
         ext.addMimeType("text/x-url");                                  //NOI18N
         setExtensions(ext);
+
+        try {
+            putProperty(PROP_ENCODING_QUERY_IMPL, new EncodingQueryImpl());
+        } catch (IllegalArgumentException ex) {
+            assert false;   //this should not happen
+            /* UTF-8 is not supported - use the project's default encoding */
+        }
     }
 
     /** */
