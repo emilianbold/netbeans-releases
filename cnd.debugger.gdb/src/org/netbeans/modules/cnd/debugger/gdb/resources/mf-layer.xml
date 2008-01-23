@@ -122,11 +122,10 @@ made subject to such option by the copyright holder.
     <!-- Main menu -->
     <folder name="Menu">
         <folder name="RunProject">
-            <attr name="SeparatorRun.instance/org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ConnectAction.instance"/>
+                <attr name="position" intvalue="600"/>
             </file>
-            <attr name="org-netbeans-modules-debugger-ui-actions-ConnectAction.shadow/org-netbeans-modules-debugger-ui-actions-KillAction.shadow" boolvalue="true" />
             <file name="org-netbeans-modules-debugger-ui-actions-KillAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance"/>
                 <attr name="position" intvalue="700"/>
