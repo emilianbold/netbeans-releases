@@ -770,9 +770,7 @@ public abstract class BpelNode<T>
     public String getHtmlDisplayName() {
         synchronized (NAME_LOCK) {
             if (cachedHtmlDisplayName == null) {
-                String htmlDispName = getImplHtmlDisplayName();
-                cachedHtmlDisplayName = org.netbeans.modules.bpel.editors.api.
-                        utils.Util.getCorrectedHtmlRenderedString(htmlDispName);
+                cachedHtmlDisplayName = getImplHtmlDisplayName();
             }
         }
         
@@ -783,7 +781,8 @@ public abstract class BpelNode<T>
         String htmlDisplayName = getName();
         htmlDisplayName = htmlDisplayName != null && htmlDisplayName.length() > 0 ?
             htmlDisplayName : getNodeType().getDisplayName();
-        return htmlDisplayName;
+        
+        return org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(htmlDisplayName);
     }
     
     protected String getImplShortDescription() {

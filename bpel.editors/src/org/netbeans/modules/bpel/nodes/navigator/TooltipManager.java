@@ -177,8 +177,12 @@ public interface TooltipManager {
         if (stringFrom == null && stringTo == null) {
             return "";
         } else {
-            stringFrom = stringFrom == null ? BpelNode.EMPTY_STRING : stringFrom;
-            stringTo = stringTo == null ? BpelNode.EMPTY_STRING : stringTo;
+            stringFrom = stringFrom == null 
+                    ? BpelNode.EMPTY_STRING 
+                    : org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(stringFrom);
+            stringTo = stringTo == null 
+                    ? BpelNode.EMPTY_STRING 
+                    : org.netbeans.modules.bpel.editors.api.utils.Util.getCorrectedHtmlRenderedString(stringTo);
         }
         
         
