@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    
-     <folder name="Navigator">
+     
+    <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">
                 <folder name="x-asm">
@@ -92,111 +92,75 @@
     
     
     
-    <folder name="Loaders">        
-        <folder name="text">            
-            <folder name="x-asm">                
-                <folder name="Actions">                    
-                    <file name="org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance">                        
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+    <folder name="Loaders">
+        <folder name="text">
+            <folder name="x-asm">
+                <folder name="Actions">
+                    <file name="org-openide-actions-OpenAction.instance">
+                        <attr name="position" intvalue="100"/>
                     </file>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance/org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow" boolvalue="false"/>
-                    
-                    <file name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow">                        
-                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.instance"/>                        
+                    <file name="sep-1_1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="140"/>
                     </file>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow/org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance" boolvalue="false"/>
-                    
-                    <file name="org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance">                        
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    <file name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Build/org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.instance"/>
+                        <attr name="position" intvalue="150"/>
                     </file>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance/org-openide-actions-OpenAction.instance" boolvalue="false"/>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow/org-openide-actions-OpenAction.instance" boolvalue="false"/>
-                    
-                    <file name="org-openide-actions-OpenAction.instance"/>
-                    
-                    <attr name="org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    
-                    <file name="org-openide-actions-FileSystemAction.instance"/>
-                    
-                    <attr name="org-openide-actions-FileSystemAction.instance/sep-1.instance" boolvalue="true"/>
-                    
-                    <file name="sep-1.instance">                        
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    <file name="sep-1_2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="160"/>
                     </file>
-                    
-                    <attr name="sep-1.instance/org-openide-actions-CutAction.instance" boolvalue="true"/>
-                    
-                    <file name="org-openide-actions-CutAction.instance"/>
-                    
-                    <attr name="org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance" boolvalue="true"/>
-                    
-                    <file name="org-openide-actions-CopyAction.instance"/>
-                    
-                    <attr name="org-openide-actions-CopyAction.instance/sep-2.instance" boolvalue="true"/>
-                    
-                    <file name="sep-2.instance">                        
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    <file name="org-openide-actions-FileSystemAction.instance">
+                        <attr name="position" intvalue="200"/>
                     </file>
-                    
-                    <attr name="sep-2.instance/org-openide-actions-DeleteAction.instance" boolvalue="true"/>
-                    
-                    <file name="org-openide-actions-DeleteAction.instance"/>
-                    
-                    <attr name="org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance" boolvalue="true"/>
-                    
-                    <file name="org-openide-actions-RenameAction.instance"/>
-                    
-                    <attr name="org-openide-actions-RenameAction.instance/sep-3.instance" boolvalue="true"/>
-                    
-                    <file name="sep-3.instance">                        
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    <file name="sep-1.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
-                    
-                    <attr name="sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance" boolvalue="true"/>
-                    
-                    <file name="org-openide-actions-SaveAsTemplateAction.instance"/>
-                    
-                    <attr name="org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance" boolvalue="true"/>
-                    
-                    <file name="sep-4.instance">                        
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>                        
+                    <file name="org-openide-actions-CutAction.instance">
+                        <attr name="position" intvalue="400"/>
                     </file>
-                    
-                    <attr name="sep-4.instance/org-openide-actions-ToolsAction.instance" boolvalue="true"/>
-                    
-                    <file name="org-openide-actions-ToolsAction.instance"/>
-                    
-                    <attr name="org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance" boolvalue="true"/>
-                    
-                    <file name="org-openide-actions-PropertiesAction.instance"/>
-                    
-                    <attr name="org-openide-actions-OpenAction.instance/org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance" boolvalue="true"/>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance/org-openide-actions-OpenAction.instance" boolvalue="false"/>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorAfter.instance/org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow" boolvalue="true"/>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-AsmCompileAction.shadow/org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance" boolvalue="true"/>
-                    
-                    <attr name="org-netbeans-modules-asm-core-dataobjects-separatorBefore.instance/org-openide-actions-FileSystemAction.instance" boolvalue="true"/>
-                    
-                </folder>                
-            </folder>            
-        </folder>       
+                    <file name="org-openide-actions-CopyAction.instance">
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="600"/>
+                    </file>
+                    <file name="org-openide-actions-DeleteAction.instance">
+                        <attr name="position" intvalue="700"/>
+                    </file>
+                    <file name="org-openide-actions-RenameAction.instance">
+                        <attr name="position" intvalue="800"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="900"/>
+                    </file>
+                    <file name="org-openide-actions-SaveAsTemplateAction.instance">
+                        <attr name="position" intvalue="1000"/>
+                    </file>
+                    <file name="sep-4.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1100"/>
+                    </file>
+                    <file name="org-openide-actions-ToolsAction.instance">
+                        <attr name="position" intvalue="1200"/>
+                    </file>
+                    <file name="org-openide-actions-PropertiesAction.instance">
+                        <attr name="position" intvalue="1300"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
     </folder>
     
     <folder name="Services">        
         <folder name="MIMEResolver">
             <file name="AsmResolver.xml" url="AsmResolver.xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>
+                <attr name="position" intvalue="458"/>
             </file>
         </folder>
     </folder> 
@@ -205,7 +169,8 @@
         <folder name="Other">            
             <file name="AsmTemplate.s" url="AsmTemplate.s">                
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>                
-                <attr name="template" boolvalue="true"/>                
+                <attr name="template" boolvalue="true"/>
+                <attr name="position" intvalue="221"/>
             </file>            
         </folder>             
     </folder>    
@@ -216,7 +181,9 @@
         </folder>
         <folder name="Modes">         
              <folder name="navigator">                
-                <file name="NavigatorTopComponent.wstcref" url="NavigatorTopComponentWstcref.xml"/>                
+                <file name="NavigatorTopComponent.wstcref" url="NavigatorTopComponentWstcref.xml">                
+                    <attr name="position" intvalue="360"/>
+                </file>
             </folder> 
         </folder>
     </folder>
