@@ -90,6 +90,8 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
     
     public void generateXML(String rootElement) {        
         //TO DO better exception handling
+        if(rootElement == null || schemaFileName == null || schemaFileName.equals("") || rootElement.equals(""))
+                return;
         this.rootElement = rootElement;
         File f = new File(schemaFileName);
         f = FileUtil.normalizeFile(f);

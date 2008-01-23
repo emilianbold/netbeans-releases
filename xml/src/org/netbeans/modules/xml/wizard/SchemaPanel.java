@@ -744,6 +744,17 @@ private void primarySchemaCheckBoxActionPerformed(java.awt.event.ActionEvent evt
             if(schema == null)
                 return;
             primarySchema = schema.getValue(); 
+            File file = FileUtil.toFile(primarySchema);
+            String uri = file.getPath();
+             if (uri != null) {
+               try {
+                    // escape the non-ASCII characters
+                    uri = new URI(uri).toASCIIString();
+                } catch (URISyntaxException e) {
+                  // the specified uri is not valid, it is too late to fix it now
+                }
+             }
+            model.setPrimarySchema(uri);
             rootComboBox.setEnabled(true);
             rootElementLabel.setEnabled(true);
             SchemaParser.SchemaInfo info = Util.getRootElements(primarySchema);
