@@ -2696,7 +2696,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
 
         if (jsfForm.isModelInSync()) {
-            if (designer.getPageBox() == null) {
+            // XXX #125601 Also one need to check for fragments,
+            // those are not getting updated correctly (bad architecture of model changes).
+            if (jsfForm.isFragment()
+            || jsfForm.hasCachedExternalFrames()
+            || designer.getPageBox() == null) {
                 resetDesigner();
             }
             refreshDesignerPaneAsNeeded();
