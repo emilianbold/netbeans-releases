@@ -697,7 +697,13 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             }
                             final Trees trees = controller.getTrees();
                             final SourcePositions sp = trees.getSourcePositions();
-                            final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);;
+                            final Collection<? extends Element> illegalForwardRefs = Utilities.getForwardReferences(treePath, caretOffset, sp, trees);
+                            final HashSet<Name> illegalForwardRefNames = new  HashSet<Name>();
+                            for (Element element : illegalForwardRefs) {
+                                if (element.getKind() == ElementKind.LOCAL_VARIABLE || element.getKind() == ElementKind.EXCEPTION_PARAMETER ||
+                                        element.getKind() == ElementKind.PARAMETER)
+                                    illegalForwardRefNames.add(element.getSimpleName());
+                            }
                             final ExecutableElement method = scope.getEnclosingMethod();
                             ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                                 public boolean accept(Element e, TypeMirror t) {
@@ -706,7 +712,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                                     case EXCEPTION_PARAMETER:
                                     case PARAMETER:
                                         return (method == e.getEnclosingElement() || e.getModifiers().contains(Modifier.FINAL)) &&
-                                                !illegalForwardRefs.contains(e);
+                                                !illegalForwardRefNames.contains(e.getSimpleName());
                                     case FIELD:
                                         if (e.getSimpleName().contentEquals("this")) //NOI18N
                                             return !isStatic;
