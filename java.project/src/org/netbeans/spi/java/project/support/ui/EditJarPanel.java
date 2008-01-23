@@ -71,25 +71,25 @@ class EditJarPanel extends javax.swing.JPanel {
         this();
         this.item = item;
         this.helper = helper;
-        txtJar.setText(item.jarFile.getPath());
-        if (item.sourceFile != null) {
-            txtSource.setText(item.sourceFile.getPath());
+        txtJar.setText(item.getJarFile().getPath());
+        if (item.getSourceFile() != null) {
+            txtSource.setText(item.getSourceFile().getPath());
         }
-        if (item.javadocFile != null) {
-            txtJavadoc.setText(item.javadocFile.getPath());
+        if (item.getJavadocFile() != null) {
+            txtJavadoc.setText(item.getJavadocFile().getPath());
         }
     }
 
     EditJarSupport.Item assignValues() {
         if (txtSource.getText() != null && txtSource.getText().trim().length() > 0) {
-            item.sourceFile = new File(txtSource.getText().trim());
+            item.setSourceFile(new File(txtSource.getText().trim()));
         } else {
-            item.sourceFile = null;
+            item.setSourceFile(null);
         }
         if (txtJavadoc.getText() != null && txtJavadoc.getText().trim().length() > 0) {
-            item.javadocFile = new File(txtJavadoc.getText().trim());
+            item.setJavadocFile(new File(txtJavadoc.getText().trim()));
         } else {
-            item.javadocFile = null;
+            item.setJavadocFile(null);
         }
         return item;
     }
@@ -191,7 +191,7 @@ class EditJarPanel extends javax.swing.JPanel {
         chooser.setFileFilter(new SimpleFileFilter(
                 "Javadoc Entry (folder, ZIP or JAR file)", 
                 new String[]{"ZIP", "JAR"}));   // NOI18N 
-        File curDir = helper.resolveFile(item.jarFile.getPath());
+        File curDir = helper.resolveFile(item.getJarFile().getPath());
         chooser.setCurrentDirectory(curDir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)); // Sow the chooser
 
@@ -220,7 +220,7 @@ class EditJarPanel extends javax.swing.JPanel {
         chooser.setFileFilter(new SimpleFileFilter(
                 "Source Entry (folder, ZIP or JAR file)", 
                 new String[]{"ZIP", "JAR"}));   // NOI18N 
-        File curDir = helper.resolveFile(item.jarFile.getPath());
+        File curDir = helper.resolveFile(item.getJarFile().getPath());
         chooser.setCurrentDirectory(curDir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this)); // Sow the chooser
 
