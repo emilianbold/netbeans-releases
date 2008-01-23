@@ -48,6 +48,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
@@ -77,6 +78,7 @@ import org.openide.util.Utilities;
 public class GoToPanel extends javax.swing.JPanel {
             
     private static Icon WAIT_ICON = new ImageIcon( Utilities.loadImage("org/netbeans/modules/jumpto/file/resources/wait.gif") ); // NOI18N
+    private static Icon WARN_ICON = new ImageIcon( Utilities.loadImage("org/netbeans/modules/jumpto/resources/warning.png") ); // NOI18N
         
     private static final int BRIGHTER_COLOR_COMPONENT = 10;
     private ContentProvider contentProvider;
@@ -171,6 +173,17 @@ public class GoToPanel extends javax.swing.JPanel {
     public TypeDescriptor getSelectedType() {
         return selectedType;
     }
+
+    void setWarning(String warningMessage) {
+        if (warningMessage != null) {
+            jLabelWarning.setIcon(WARN_ICON);
+            jLabelWarning.setBorder(BorderFactory.createEmptyBorder(3, 1, 1, 1));
+        } else {
+            jLabelWarning.setIcon(null);
+            jLabelWarning.setBorder(null);
+        }
+        jLabelWarning.setText(warningMessage);
+    }
             
     /** This method is called from within the constructor to
      * initialize the form.
@@ -188,6 +201,7 @@ public class GoToPanel extends javax.swing.JPanel {
         listPanel = new javax.swing.JPanel();
         matchesScrollPane1 = new javax.swing.JScrollPane();
         matchesList = new javax.swing.JList();
+        jLabelWarning = new javax.swing.JLabel();
         caseSensitive = new javax.swing.JCheckBox();
         jLabelLocation = new javax.swing.JLabel();
         jTextFieldLocation = new javax.swing.JTextField();
@@ -213,14 +227,14 @@ public class GoToPanel extends javax.swing.JPanel {
             }
         });
         nameField.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                nameFieldKeyTyped(evt);
+            }
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 nameFieldKeyPressed(evt);
             }
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 nameFieldKeyReleased(evt);
-            }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                nameFieldKeyTyped(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -255,6 +269,10 @@ public class GoToPanel extends javax.swing.JPanel {
 
         listPanel.add(matchesScrollPane1, java.awt.BorderLayout.CENTER);
 
+        jLabelWarning.setBorder(null);
+        jLabelWarning.setFocusable(false);
+        listPanel.add(jLabelWarning, java.awt.BorderLayout.PAGE_END);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -264,7 +282,6 @@ public class GoToPanel extends javax.swing.JPanel {
         add(listPanel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(caseSensitive, org.openide.util.NbBundle.getMessage(GoToPanel.class, "TXT_GoToType_CaseSensitive")); // NOI18N
-        caseSensitive.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -325,6 +342,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabelList;
     private javax.swing.JLabel jLabelLocation;
     private javax.swing.JLabel jLabelText;
+    private javax.swing.JLabel jLabelWarning;
     private javax.swing.JTextField jTextFieldLocation;
     private javax.swing.JPanel listPanel;
     private javax.swing.JList matchesList;

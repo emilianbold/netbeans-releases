@@ -76,6 +76,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * @author Petr Hrebejk
@@ -167,6 +168,10 @@ public class JavaTypeProvider implements TypeProvider {
         long cp, gss, gsb, sfb, gtn, add, sort;
         cp = gss = gsb = sfb = gtn = add = sort = 0;
 
+        if (RepositoryUpdater.getDefault().isScanInProgress()) {
+            String message = NbBundle.getMessage(JavaTypeProvider.class, "LBL_ScanInProgress_warning");
+            res.setMessage(message);
+        }
         if (cache == null) {
             Set<CacheItem> sources = null;
 

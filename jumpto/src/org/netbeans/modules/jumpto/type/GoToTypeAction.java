@@ -426,7 +426,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
                 Collections.sort(items, new TypeComparator());
-
+                panel.setWarning(message[0]);
                 //sort += System.currentTimeMillis() - time;
                 //LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
                 return items;
