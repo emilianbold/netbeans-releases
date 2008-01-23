@@ -125,7 +125,7 @@ public final class NewFlatfileDatabaseWizardAction extends CallableSystemAction 
             location = ETLEditorSupport.PRJ_PATH + "\\nbproject\\private\\databases";
         } else {
             location = getDefaultWorkingFolder();
-        }
+        }       
         MashupTableWizardIterator.IS_PROJECT_CALL = false;
         boolean status = false;
         String url = DEFAULT_FLATFILE_JDBC_URL_PREFIX + name + ":" + location + "\\" + name;

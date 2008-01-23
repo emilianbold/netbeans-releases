@@ -67,6 +67,7 @@ public class EtlproProjectGenerator {
     
     private static transient final Logger mLogger = LogUtil.getLogger(EtlproProjectGenerator.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+    public static String PRJ_LOCATION_DIR = "";
 
     private EtlproProjectGenerator() {
     }
@@ -82,6 +83,7 @@ public class EtlproProjectGenerator {
         dir.mkdirs();
         // XXX clumsy way to refresh, but otherwise it doesn't work for new folders
         File rootF = dir;
+        PRJ_LOCATION_DIR = rootF.getPath();
         while (rootF.getParentFile() != null) {
             rootF = rootF.getParentFile();
         }
@@ -100,10 +102,10 @@ public class EtlproProjectGenerator {
         fo.createFolder(DEFAULT_SRC_FOLDER); // NOI18N
         data = fo.createFolder(DEFAULT_DATA_DIR); // NOI18N      
 
-        databases = new File(rootF.getPath() + fo.getPath() + "\\" + DEFAULT_NBPROJECT_DIR + "\\" + "private" + "\\" + DEFAULT_DATABASES_DIR);
+        databases = new File(PRJ_LOCATION_DIR + "\\" + DEFAULT_NBPROJECT_DIR + "\\" + "private" + "\\" + DEFAULT_DATABASES_DIR);
         dbObj = FileUtil.createFolder(databases);
         //dbObj.lock();  
-        MashupTableWizardIterator.setProjectInfo(name,fo.getPath(), true);
+        MashupTableWizardIterator.setProjectInfo(name,PRJ_LOCATION_DIR, true);
         
 
         String dbName = databases.getPath();
