@@ -297,7 +297,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
         refHelper = new ReferenceHelper(helper, aux, eval);
         buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        this.updateHelper = new UpdateHelper (this, this.helper, refHelper, this.aux, UpdateHelper.createDefaultNotifier());
+        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, UpdateHelper.createDefaultNotifier());
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         webModule = new ProjectWebModule (this, updateHelper, cpProvider);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
@@ -884,8 +884,11 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
                 if (!item.isBroken() || item.getType() != ClassPathSupport.Item.TYPE_LIBRARY) {
                     continue;
                 }
-                String libraryName = ClassPathSupport.getLibraryNameFromReference(item.getReference());
-                assert libraryName != null : "Not a library reference: "+item.getReference();
+                String libraryName = item.getReference();
+                if (libraryName.startsWith(WebProjectProperties.LIBRARY_PREFIX)) {
+                    // remove the "${libs." prefix and ".classpath}" suffix
+                    libraryName = libraryName.substring(WebProjectProperties.LIBRARY_PREFIX.length(), libraryName.lastIndexOf('.'));
+                }
                 LOGGER.log(Level.FINE, "Broken reference to library: " + libraryName);
                 if (filters == null) {
                     // initializing the filters lazily because usually they will not be needed anyway

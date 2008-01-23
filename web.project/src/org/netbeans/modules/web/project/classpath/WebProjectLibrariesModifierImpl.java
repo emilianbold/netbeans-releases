@@ -81,7 +81,11 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
         assert refHelper != null;
         this.project = project;
         this.helper = helper;
-        this.cs = new ClassPathSupport(eval, refHelper, helper.getAntProjectHelper());
+        this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
+                                        WebProjectProperties.WELL_KNOWN_PATHS, 
+                                        WebProjectProperties.LIBRARY_PREFIX, 
+                                        WebProjectProperties.LIBRARY_SUFFIX, 
+                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );
     }
     
     public boolean addPackageLibraries(final Library[] libraries, final String path) throws IOException {

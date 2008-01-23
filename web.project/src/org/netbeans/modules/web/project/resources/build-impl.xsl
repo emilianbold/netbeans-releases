@@ -57,8 +57,6 @@ introduced by support for multiple source roots. -jglick
                 xmlns:webproject2="http://www.netbeans.org/ns/web-project/2"
                 xmlns:webproject3="http://www.netbeans.org/ns/web-project/3"
                 xmlns:projdeps="http://www.netbeans.org/ns/ant-project-references/1"
-                xmlns:libs="http://www.netbeans.org/ns/ant-project-libraries/1"
-                exclude-result-prefixes="xalan p projdeps libs">
                 xmlns:projdeps2="http://www.netbeans.org/ns/ant-project-references/2"
                 exclude-result-prefixes="xalan p projdeps projdeps2">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
@@ -110,33 +108,8 @@ introduced by support for multiple source roots. -jglick
                 <property file="nbproject/private/private.properties"/>
             </target>
             
-            <xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">
-                <target name="-init-libraries" depends="-pre-init,-init-private">
-                    <xsl:for-each select="/p:project/p:configuration/libs:libraries/libs:definitions">
-                        <property name="libraries.{position()}.path" location="{.}"/>
-                        <dirname property="libraries.{position()}.dir.nativedirsep" file="${{libraries.{position()}.path}}"/>
-                        <!-- Do not want \ on Windows, since it would act as an escape char: -->
-                        <pathconvert property="libraries.{position()}.dir" dirsep="/">
-                            <path path="${{libraries.{position()}.dir.nativedirsep}}"/>
-                        </pathconvert>
-                        <basename property="libraries.{position()}.basename" file="${{libraries.{position()}.path}}" suffix=".properties"/>
-                        <touch file="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties"/> <!-- has to exist, yuck -->
-                        <loadproperties srcfile="${{libraries.{position()}.dir}}/${{libraries.{position()}.basename}}-private.properties">
-                            <filterchain>
-                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
-                            </filterchain>
-                        </loadproperties>
-                        <loadproperties srcfile="${{libraries.{position()}.path}}">
-                            <filterchain>
-                                <replacestring from="$${{base}}" to="${{libraries.{position()}.dir}}"/>
-                            </filterchain>
-                        </loadproperties>
-                    </xsl:for-each>
-                </target>
-            </xsl:if>
-
             <target name="-init-user">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if></xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private</xsl:attribute>
                 <property file="${{user.properties.file}}"/>
                 <xsl:comment> The two properties below are usually overridden </xsl:comment>
                 <xsl:comment> by the active platform. Just a fallback. </xsl:comment>
@@ -145,17 +118,17 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-init-project">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user</xsl:attribute>
                 <property file="nbproject/project.properties"/>
             </target>
             
             <target name="-do-ear-init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
                 <xsl:attribute name="if">dist.ear.dir</xsl:attribute>
             </target>
             
             <target name="-do-init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property,-do-ear-init</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-init-macrodef-property,-do-ear-init</xsl:attribute>
                 <xsl:if test="/p:project/p:configuration/webproject3:data/webproject3:explicit-platform">
                     <webproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
                     <webproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
@@ -283,7 +256,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="-init-check">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init</xsl:attribute>
                 <!-- XXX XSLT 2.0 would make it possible to use a for-each here -->
                 <!-- Note that if the properties were defined in project.xml that would be easy -->
                 <!-- But required props should be defined by the AntBasedProjectType, not stored in each project -->
@@ -600,7 +573,7 @@ introduced by support for multiple source roots. -jglick
             </target>
             
             <target name="init">
-                <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-copy-ear-war</xsl:attribute>
+                <xsl:attribute name="depends">-pre-init,-init-private,-init-user,-init-project,-do-init,-post-init,-init-check,-init-macrodef-property,-init-macrodef-javac,-init-macrodef-junit,-init-macrodef-java,-init-macrodef-nbjpda,-init-macrodef-debug,-init-macrodef-copy-ear-war</xsl:attribute>
             </target>
             
             <xsl:comment>

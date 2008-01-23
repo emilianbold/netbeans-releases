@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.project.ui;
 
+import java.awt.Dialog;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
@@ -56,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -65,11 +67,11 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.web.project.ui.customizer.WebClassPathUi;
-import org.openide.ErrorManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -89,6 +91,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -99,10 +102,11 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.web.project.UpdateHelper;
-import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.modules.web.project.ui.customizer.LibrariesChooser;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 
@@ -172,7 +176,7 @@ final class LibrariesNode extends AbstractNode {
         return new AddProjectAction (p, classPathId, webModuleElementName);
     }
 
-    public static Action createAddLibraryAction (WebProject p, String classPathId, String webModuleElementName) {
+    public static Action createAddLibraryAction (Project p, String classPathId, String webModuleElementName) {
         return new AddLibraryAction (p, classPathId, webModuleElementName);
     }
 
@@ -207,7 +211,7 @@ final class LibrariesNode extends AbstractNode {
     }
 
     //Static inner classes
-    private static class LibrariesChildren extends Children.Keys<Key> implements PropertyChangeListener {
+    private static class LibrariesChildren extends Children.Keys implements PropertyChangeListener {
 
         
         /**
@@ -237,7 +241,7 @@ final class LibrariesNode extends AbstractNode {
         private final String classPathProperty;
         private final String platformProperty;
         private final String j2eePlatformProperty;
-        private final Set<String> classPathIgnoreRef;
+        private final Set classPathIgnoreRef;
         private final String webModuleElementName;
 
         //XXX: Workaround: classpath is used only to listen on non existent files.
@@ -252,7 +256,7 @@ final class LibrariesNode extends AbstractNode {
             this.helper = helper;
             this.refHelper = refHelper;
             this.classPathProperty = classPathProperty;
-            this.classPathIgnoreRef = new HashSet<String>(Arrays.asList(classPathIgnoreRef));
+            this.classPathIgnoreRef = new HashSet(Arrays.asList(classPathIgnoreRef));
             this.platformProperty = platformProperty;
             this.j2eePlatformProperty = j2eePlatformProperty;
             this.webModuleElementName = webModuleElementName;
@@ -287,11 +291,13 @@ final class LibrariesNode extends AbstractNode {
                     fsListener = null;
                 }
             }
-            setKeys(Collections.<Key>emptySet());
+            this.setKeys(Collections.EMPTY_SET);
         }
 
-        protected Node[] createNodes(Key key) {
+        protected Node[] createNodes(Object obj) {
             Node[] result = null;
+            if (obj instanceof Key) {
+                Key key = (Key) obj;
                 switch (key.getType()) {
                     case Key.TYPE_PLATFORM:
                         result = new Node[] {PlatformNode.create(eval, platformProperty)};
@@ -309,6 +315,7 @@ final class LibrariesNode extends AbstractNode {
                             helper, eval, refHelper, key.getClassPathId(), key.getEntryId(), webModuleElementName)};
                         break;
                 }
+            }
             if (result == null) {
                 assert false : "Unknown key type";  //NOI18N
                 result = new Node[0];
@@ -316,12 +323,12 @@ final class LibrariesNode extends AbstractNode {
             return result;
         }
         
-        private List<Key> getKeys() {
+        private List getKeys () {
             EditableProperties projectSharedProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             EditableProperties projectPrivateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
             EditableProperties privateProps = PropertyUtils.getGlobalProperties();
-            List<URL> rootsList = new ArrayList<URL>();
-            List<Key> result = getKeys(projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList);
+            List/*<URL>*/ rootsList = new ArrayList ();
+            List result = getKeys (projectSharedProps, projectPrivateProps, privateProps, classPathProperty, rootsList);
             if (platformProperty!=null) {
                 result.add (new Key());
             }
@@ -330,7 +337,7 @@ final class LibrariesNode extends AbstractNode {
             }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
             // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
-            ClassPath cp = ClassPathSupport.createClassPath(rootsList.toArray(new URL[rootsList.size()]));
+            ClassPath cp = ClassPathSupport.createClassPath ((URL[])rootsList.toArray(new URL[rootsList.size()]));
             cp.addPropertyChangeListener (this);
             cp.getRoots();
             synchronized (this) {
@@ -339,9 +346,9 @@ final class LibrariesNode extends AbstractNode {
             return result;
         }
 
-        private List<Key> getKeys (EditableProperties projectSharedProps, EditableProperties projectPrivateProps,
-                              EditableProperties privateProps, String currentClassPath, List<URL> rootsList) {
-            List<Key> result = new ArrayList<Key>();
+        private List getKeys (EditableProperties projectSharedProps, EditableProperties projectPrivateProps,
+                              EditableProperties privateProps, String currentClassPath, List/*<URL>*/ rootsList) {
+            List result = new ArrayList ();
             String raw = projectSharedProps.getProperty (currentClassPath);
             if (raw == null) {
                 raw = projectPrivateProps.getProperty(currentClassPath);
@@ -352,7 +359,9 @@ final class LibrariesNode extends AbstractNode {
             if (raw == null) {
                 return result;
             }
-            for (String prop : PropertyUtils.tokenizePath(raw)) {
+            List pe = new ArrayList(Arrays.asList(PropertyUtils.tokenizePath( raw )));
+            while (pe.size()>0){
+                String prop = (String) pe.remove(0);
                 String propName = WebProjectProperties.getAntPropertyName (prop);
                 if (classPathIgnoreRef.contains(propName)) {
                     continue;
@@ -360,10 +369,12 @@ final class LibrariesNode extends AbstractNode {
                 else if (prop.startsWith( LIBRARY_PREFIX )) {
                     //Library reference
                     String eval = prop.substring( LIBRARY_PREFIX.length(), prop.lastIndexOf('.') ); //NOI18N
-                    Library lib = refHelper.findLibrary(eval);
+                    Library lib = LibraryManager.getDefault().getLibrary (eval);
                     if (lib != null) {
+                        List/*<URL>*/ roots = lib.getContent("classpath");  //NOI18N
                         Icon libIcon = new ImageIcon (Utilities.loadImage(LIBRARIES_ICON));
-                        for (URL rootUrl : lib.getContent("classpath")) { // NOI18N
+                        for (Iterator it = roots.iterator(); it.hasNext();) {
+                            URL rootUrl = (URL) it.next();
                             rootsList.add (rootUrl);
                             FileObject root = URLMapper.findFileObject (rootUrl);
                             if (root != null) {
@@ -425,7 +436,7 @@ final class LibrariesNode extends AbstractNode {
             return result;
         }
 
-        private static SourceGroup createFileSourceGroup(File file, List<URL> rootsList) {
+        private static SourceGroup createFileSourceGroup (File file, List/*<URL>*/ rootsList) {
             Icon icon;
             Icon openedIcon;
             String displayName;
@@ -577,7 +588,7 @@ final class LibrariesNode extends AbstractNode {
         }
 
         private void addArtifacts (ArtifactItem[] artifactItems) {
-            WebProjectClassPathExtender cpExtender = project.getLookup().lookup(WebProjectClassPathExtender.class);
+            WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
             if (cpExtender != null) {
                 try {
                     cpExtender.addAntArtifacts(classPathId, artifactItems, webModuleElementName);
@@ -593,11 +604,11 @@ final class LibrariesNode extends AbstractNode {
 
     private static class AddLibraryAction extends AbstractAction {
 
-        private final WebProject project;
+        private final Project project;
         private final String classPathId;
         private final String webModuleElementName;
 
-        public AddLibraryAction (WebProject project, String classPathId, String webModuleElementName) {
+        public AddLibraryAction (Project project, String classPathId, String webModuleElementName) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddLibrary_Action" ) );
             this.project = project;
             this.classPathId = classPathId;
@@ -605,14 +616,28 @@ final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            Library[] libs = WebClassPathUi.showLibraryChooser(project);
-            if (libs != null) {
-                addLibraries(libs);
+            Object[] options = new Object[] {
+                new JButton (NbBundle.getMessage (LibrariesNode.class,"LBL_AddLibrary")),
+                DialogDescriptor.CANCEL_OPTION
+            };
+            ((JButton)options[0]).setEnabled(false);
+            ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WebClassPathUi.class,"AD_AddLibrary"));
+                        
+            WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
+            String j2eeVersion = wm.getJ2eePlatformVersion();
+            LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
+            DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( LibrariesNode.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
+                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
+            Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
+            dlg.setVisible(true);
+            if (desc.getValue() == options[0]) {
+                addLibraries (panel.getSelectedLibraries());
             }
+            dlg.dispose();
         }
 
         private void addLibraries (Library[] libraries) {
-            WebProjectClassPathExtender cpExtender = project.getLookup().lookup(WebProjectClassPathExtender.class);
+            WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
             if (cpExtender != null) {
                 try {
                     cpExtender.addLibraries(classPathId, libraries, webModuleElementName);
@@ -663,9 +688,9 @@ final class LibrariesNode extends AbstractNode {
         }
 
         private void addJarFiles (File[] files, FileFilter fileFilter) {
-            WebProjectClassPathExtender cpExtender = project.getLookup().lookup(WebProjectClassPathExtender.class);
+            WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
             if (cpExtender != null) {
-                List<FileObject> fileObjects = new LinkedList<FileObject>();
+                List fileObjects = new LinkedList();
                 for (int i = 0; i < files.length; i++) {
                     if (fileFilter.accept(files[i])) {
                         File normalizedFile = FileUtil.normalizeFile(files[i]);

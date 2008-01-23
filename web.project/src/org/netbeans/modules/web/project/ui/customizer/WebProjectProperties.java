@@ -191,6 +191,20 @@ public class WebProjectProperties {
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     
+    // Well known paths
+    public static final String[] WELL_KNOWN_PATHS = new String[] {            
+            "${" + JAVAC_CLASSPATH + "}", //NOI18N
+            "${" + JAVAC_TEST_CLASSPATH  + "}", //NOI18N
+            "${" + RUN_TEST_CLASSPATH  + "}", //NOI18N
+            "${" + BUILD_CLASSES_DIR  + "}", //NOI18N
+            "${" + BUILD_TEST_CLASSES_DIR  + "}", //NOI18N
+    };
+    
+    // Prefixes and suffixes of classpath
+    public static final String LIBRARY_PREFIX = "${libs."; // NOI18N
+    public static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
+    public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
+
     public ClassPathSupport cs;
 
     //list of frameworks to add to the application
@@ -287,7 +301,7 @@ public class WebProjectProperties {
         this.evaluator = evaluator;
         this.refHelper = refHelper;
         
-        this.cs = new ClassPathSupport(evaluator, refHelper, updateHelper.getAntProjectHelper());
+        this.cs = new ClassPathSupport( evaluator, refHelper, updateHelper.getAntProjectHelper(), WELL_KNOWN_PATHS, LIBRARY_PREFIX, LIBRARY_SUFFIX, ANT_ARTIFACT_PREFIX);
                 
         privateGroup = new StoreGroup();
         projectGroup = new StoreGroup();

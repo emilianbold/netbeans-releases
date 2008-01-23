@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -73,6 +74,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
+
 /**
  * Proxy for the AntProjectHelper which defers the update of the project metadata
  * to explicit user action. Currently it is hard coded for update from
@@ -86,7 +88,6 @@ public class UpdateHelper {
 
     private final Project project;
     private final AntProjectHelper helper;
-    private final ReferenceHelper refHelper;
     private final AuxiliaryConfiguration cfg;
     private final Notifier notifier;
     private boolean alreadyAskedInWriteAccess;
@@ -106,11 +107,10 @@ public class UpdateHelper {
      * @param cfg AuxiliaryConfiguration
      * @param notifier used to ask user about project update
      */
-    UpdateHelper(Project project, AntProjectHelper helper, ReferenceHelper refHelper, AuxiliaryConfiguration cfg, Notifier notifier) {
-        assert project != null && helper != null && refHelper != null && cfg != null && notifier != null;
+    UpdateHelper (Project project, AntProjectHelper helper, AuxiliaryConfiguration cfg, Notifier notifier) {
+        assert project != null && helper != null && cfg != null && notifier != null;
         this.project = project;
         this.helper = helper;
-        this.refHelper = refHelper;
         this.cfg = cfg;
         this.notifier = notifier;
     }
@@ -122,8 +122,8 @@ public class UpdateHelper {
      */
     public EditableProperties getProperties (final String path) {
         //Properties are the same in both webproject/1 and webproject/2
-        return ProjectManager.mutex().readAccess(new Mutex.Action<EditableProperties>(){
-            public EditableProperties run() {
+        return (EditableProperties) ProjectManager.mutex().readAccess(new Mutex.Action (){
+            public Object run() {
                 if (!isCurrent() && AntProjectHelper.PROJECT_PROPERTIES_PATH.equals(path)) { //Only project properties were changed
                     return getUpdatedProjectProperties ();
                 }
@@ -168,8 +168,8 @@ public class UpdateHelper {
      * @return the configuration data that is available
      */
     public Element getPrimaryConfigurationData (final boolean shared) {
-        return ProjectManager.mutex().readAccess(new Mutex.Action<Element>(){
-            public Element run() {
+        return (Element) ProjectManager.mutex().readAccess(new Mutex.Action (){
+            public Object run() {
                 if (!shared || isCurrent()) { //Only shared props should cause update
                     return helper.getPrimaryConfigurationData(shared);
                 }
@@ -316,11 +316,15 @@ public class UpdateHelper {
         if(props != null) {
             //remove jsp20 and servlet24 libraries
             ReferenceHelper refHelper = new ReferenceHelper(helper, cfg, helper.getStandardPropertyEvaluator());
-            ClassPathSupport cs = new ClassPathSupport(helper.getStandardPropertyEvaluator(), refHelper, helper);
-            Iterator<ClassPathSupport.Item> items = cs.itemsIterator(props.get(WebProjectProperties.JAVAC_CLASSPATH), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
-            List<ClassPathSupport.Item> cpItems = new ArrayList<ClassPathSupport.Item>();
+            ClassPathSupport cs = new ClassPathSupport( helper.getStandardPropertyEvaluator(), refHelper, helper, 
+                                        WebProjectProperties.WELL_KNOWN_PATHS, 
+                                        WebProjectProperties.LIBRARY_PREFIX, 
+                                        WebProjectProperties.LIBRARY_SUFFIX, 
+                                        WebProjectProperties.ANT_ARTIFACT_PREFIX );        
+            Iterator items = cs.itemsIterator((String)props.get( WebProjectProperties.JAVAC_CLASSPATH ), ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
+            ArrayList cpItems = new ArrayList();
             while(items.hasNext()) {
-                ClassPathSupport.Item cpti = items.next();
+                ClassPathSupport.Item cpti = (ClassPathSupport.Item)items.next();
                 String propertyName = cpti.getReference();
                 if(propertyName != null) {
                     String libname = propertyName.substring("${libs.".length());
@@ -402,10 +406,12 @@ public class UpdateHelper {
 //                            warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : Item.PATH_IN_WAR_NONE);
                             if (webFileText.startsWith ("lib.")) {
                                 String libName = webFileText.substring(6, webFileText.indexOf(".classpath")); //NOI18N
-                                List<FileObject> files = new ArrayList<FileObject>();
-                                List<FileObject> dirs = new ArrayList<FileObject>();
-                                for (URL rootUrl : refHelper.findLibrary(libName).getContent("classpath")) { // NOI18N
-                                    FileObject root = org.openide.filesystems.URLMapper.findFileObject (rootUrl);
+                                List/*<URL>*/ roots = LibraryManager.getDefault().getLibrary(libName).getContent("classpath"); //NOI18N
+                                ArrayList files = new ArrayList ();
+                                ArrayList dirs = new ArrayList ();
+                                for (Iterator it = roots.iterator(); it.hasNext();) {
+                                    URL rootUrl = (URL) it.next();
+                                    FileObject root = URLMapper.findFileObject (rootUrl);
                                     if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
                                         root = FileUtil.getArchiveFile (root);
                                     }
