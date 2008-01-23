@@ -2051,7 +2051,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
     <target name="generate-bundles">
 	<property name="welcome.type" value="NWP.welcome.page.type"/>
         <antcall target="generate-netbeans-bundles"/>
-        <antcall target="generate-jdk-bundles"/>
+        <!--<antcall target="generate-jdk-bundles"/>-->
         <!--<antcall target="generate-javatoolsbundle-bundles"/>-->
     </target>
 
@@ -2064,7 +2064,7 @@ LANGUAGE_WEBPAGE_NAMES.push("${language.webpage.name}");
         <antcall target="build-runtimes"/>
 	<!--<antcall target="build-wtk"/>-->
         <!--<antcall target="build-javaeesdk"/>-->
-        <antcall target="build-jdk"/>
+        <!--<antcall target="build-jdk"/>-->
 
         <!--<antcall target="export-temp-registry"/>-->
         
