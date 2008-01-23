@@ -168,12 +168,10 @@ made subject to such option by the copyright holder.
         <folder name="Libraries">
             <file name="jsf12-support.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsf12-support.xml"/>
             <file name="webui.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/webui.xml"/>
-            <file name="woodstock-components.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/woodstock-components.xml"/>
             <file name="exceptionhandler-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/exceptionhandler-runtime.xml"/>
             <file name="theme-default.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default.xml"/>
             <file name="theme-default-green.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-green.xml"/>
             <file name="theme-default-gray.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/theme-default-gray.xml"/>
-            <file name="woodstock-theme-default.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/woodstock-theme-default.xml"/>
             <!-- Deprecated libraries below for backward compatible -->
             <file name="jsfsupport-designtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsfsupport-designtime.xml"/>
             <file name="jsfsupport-runtime.xml" url="/org/netbeans/modules/visualweb/project/jsf/libraries/jsfsupport-runtime.xml"/>
