@@ -362,16 +362,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         return this.kind;
     }
     
-    public List<CsmMember> getMembers() {
-        List<CsmMember> out;
+    public Collection<CsmMember> getMembers() {
+        Collection<CsmMember> out;
         synchronized (members) {
             out = UIDCsmConverter.UIDsToDeclarations(members);
         }
         return out;
     }
 
-    public List<CsmFriend> getFriends() {
-        List<CsmFriend> out;
+    public Collection<CsmFriend> getFriends() {
+        Collection<CsmFriend> out;
         synchronized (friends) {
             out = UIDCsmConverter.UIDsToDeclarations(friends);
         }
@@ -411,8 +411,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         return leftBracketPos;
     }
 
-    public List<CsmScopeElement> getScopeElements() {
-        return (List)getMembers();
+    public Collection<CsmScopeElement> getScopeElements() {
+        return (Collection)getMembers();
     }
     
     @Override
@@ -423,7 +423,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }    
     
     private void _clearMembers() {
-        List<CsmMember> members2dispose = getMembers();
+        Collection<CsmMember> members2dispose = getMembers();
         Utils.disposeAll(members2dispose);
         synchronized (members) {
             RepositoryUtils.remove(this.members);
@@ -431,7 +431,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     }    
 
     private void _clearFriends() {
-        List<CsmFriend> friends2dispose = getFriends();
+        Collection<CsmFriend> friends2dispose = getFriends();
         Utils.disposeAll(friends2dispose);
         synchronized (friends) {
             RepositoryUtils.remove(this.friends);

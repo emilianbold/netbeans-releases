@@ -118,7 +118,7 @@ public class IfStatementImpl extends StatementBase implements CsmIfStatement {
         }
     }
 
-    public List<CsmScopeElement> getScopeElements() {
+    public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getThen(), getElse());
     }
     

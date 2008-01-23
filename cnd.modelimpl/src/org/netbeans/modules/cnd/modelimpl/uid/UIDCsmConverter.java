@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.uid;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -121,43 +120,44 @@ public class UIDCsmConverter {
         return uid == null ? null : uid.getObject();
     }
     
-    public static <T extends CsmNamespace> List<T> UIDsToNamespaces(Collection<CsmUID<T>> uids) {
-        List<T> out = UIDsToList(uids, false);
+    public static <T extends CsmNamespace> Collection<T> UIDsToNamespaces(Collection<CsmUID<T>> uids) {
+        Collection<T> out = UIDsToList(uids, false);
         return out;
     }
     
-    public static <T extends CsmDeclaration> List<T> UIDsToDeclarations(Collection<CsmUID<T>> uids) {
-        List<T> out = UIDsToList(uids, false);
+    public static <T extends CsmDeclaration> Collection<T> UIDsToDeclarations(Collection<CsmUID<T>> uids) {
+        Collection<T> out = UIDsToList(uids, false);
         return out;
     }
     
-    public static <T extends CsmDeclaration> List<T> UIDsToDeclarationsUnsafe(Collection<CsmUID<T>> uids) {
-        List<T> out = UIDsToList(uids, true);
+    public static <T extends CsmDeclaration> Collection<T> UIDsToDeclarationsUnsafe(Collection<CsmUID<T>> uids) {
+        Collection<T> out = UIDsToList(uids, true);
         return out;
     }
     
-    public static <T extends CsmMacro> List<T> UIDsToMacros(Collection<CsmUID<T>> uids) {
-        List<T> out = UIDsToList(uids, false);
+    public static <T extends CsmMacro> Collection<T> UIDsToMacros(Collection<CsmUID<T>> uids) {
+        Collection<T> out = UIDsToList(uids, false);
         return out;
     }
     
-    public static <T extends CsmInclude> List<T> UIDsToIncludes(Collection<CsmUID<T>> uids) {
-        List<T> out = UIDsToList(uids, false);
+    public static <T extends CsmInclude> Collection<T> UIDsToIncludes(Collection<CsmUID<T>> uids) {
+        Collection<T> out = UIDsToList(uids, false);
         return out;
     }
     
-    private static <T extends CsmIdentifiable> List<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
+    private static <T extends CsmIdentifiable> Collection<T> UIDsToList(Collection<CsmUID<T>> uids, boolean allowNullsAndSkip) {
         allowNullsAndSkip |= TraceFlags.SAFE_UID_ACCESS;
-        List<T> out = new ArrayList<T>(uids.size());
-        for (CsmUID<T> uid : uids) {
-            assert uid != null;
-            T decl = UIDCsmConverter.UIDtoIdentifiable(uid);
-            if (!allowNullsAndSkip || decl != null) {
-                assert decl != null : "no object for UID " + uid;
-                out.add(decl);
-            }
-        }
-        return out;
+        return new LazyCsmCollection<T>(new ArrayList<CsmUID<T>>(uids), allowNullsAndSkip);
+//        List<T> out = new ArrayList<T>(uids.size());
+//        for (CsmUID<T> uid : uids) {
+//            assert uid != null;
+//            T decl = UIDCsmConverter.UIDtoIdentifiable(uid);
+//            if (!allowNullsAndSkip || decl != null) {
+//                assert decl != null : "no object for UID " + uid;
+//                out.add(decl);
+//            }
+//        }
+//        return out;
     }
     
     public static <T extends CsmIdentifiable> T UIDtoIdentifiable(CsmUID<T> uid) {

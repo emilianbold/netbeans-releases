@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -49,7 +50,6 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 
@@ -110,7 +110,7 @@ public class CsmOffsetResolver {
                 return retType;
             }
             // check if offset in parameters
-            List<CsmParameter> params = fun.getParameters();
+            Collection<CsmParameter> params = fun.getParameters();
             CsmParameter param = CsmOffsetUtilities.findObject(params, context, offset);
             if (param != null) {
                 CsmType type = param.getType();
@@ -139,7 +139,7 @@ public class CsmOffsetResolver {
         } else if (CsmKindUtilities.isClass(lastObj)) {
             // check if in inheritance part
             CsmClass clazz = (CsmClass)lastObj;
-            List<CsmInheritance> inherits = clazz.getBaseClasses();
+            Collection<CsmInheritance> inherits = clazz.getBaseClasses();
             CsmInheritance inh = CsmOffsetUtilities.findObject(inherits, context, offset);
             if (inh != null) {
                 last = inh;

@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.container;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
@@ -118,7 +117,7 @@ public class FriendTestCase extends TraceModelTestBase {
         assertNotNull("Project must be valid", project); // NOI18N
         CsmClass clsB = (CsmClass)project.findClassifier("B"); // NOI18N
         assertNotNull("Class B not found", clsB); // NOI18N
-        List<CsmFriend> friends = clsB.getFriends();
+        Collection<CsmFriend> friends = clsB.getFriends();
         assertTrue("Should be 5 friends in class B", friends.size()==5); // NOI18N
         CsmFriendClass friendA2 = null;
         CsmFriendFunction friendMoo2 = null;

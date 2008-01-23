@@ -48,6 +48,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 
@@ -113,8 +114,8 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     }
     
     @Override
-    public List<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = super.getScopeElements();
+    public Collection<CsmScopeElement> getScopeElements() {
+        Collection<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }

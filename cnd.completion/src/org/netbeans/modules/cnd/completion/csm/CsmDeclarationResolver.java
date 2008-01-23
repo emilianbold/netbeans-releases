@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -53,7 +54,6 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 
@@ -94,7 +94,7 @@ public class CsmDeclarationResolver {
     
     public static CsmDeclaration findTopFileDeclaration(CsmFile file, int offset) {
         assert (file != null) : "can't be null file in findTopFileDeclaration";
-        List/*<CsmDeclaration>*/ decls = file.getDeclarations();
+        Collection/*<CsmDeclaration>*/ decls = file.getDeclarations();
         for (Iterator it = decls.iterator(); it.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
             assert (decl != null) : "can't be null declaration";
@@ -156,7 +156,7 @@ public class CsmDeclarationResolver {
             it = ((CsmNamespaceDefinition) outDecl).getDeclarations().iterator();
         } else if (CsmKindUtilities.isClass(outDecl)) {
             CsmClass cl  = (CsmClass)outDecl;
-            List list = cl.getMembers();
+            Collection list = cl.getMembers();
             if (cl.getFriends().size() > 0) {
                 // combine friends with members for search
                 list.addAll(cl.getFriends());

@@ -51,9 +51,9 @@ import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
-import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -106,7 +106,7 @@ public class CsmSortUtilities {
 	return false;
     }   
     
-    public static List<CsmNamedElement> filterList(List<? extends CsmDeclaration> list, CharSequence strPrefix, boolean match, boolean caseSensitive) {
+    public static List<CsmNamedElement> filterList(Collection<? extends CsmDeclaration> list, CharSequence strPrefix, boolean match, boolean caseSensitive) {
 	List<CsmNamedElement> res = new ArrayList<CsmNamedElement>();
 	Iterator it = list.iterator();
 	while (it.hasNext()) {

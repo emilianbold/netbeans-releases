@@ -445,7 +445,7 @@ public class CsmTracer {
 	return name;
     }
     
-    public void dumpParameters(List/*<CsmParameter>*/ parameters) {
+    public void dumpParameters(Collection/*<CsmParameter>*/ parameters) {
 	print("PARAMETERS:"); // NOI18N
 	if( parameters != null && parameters.size() > 0 ) {
 	    indent();
@@ -648,7 +648,7 @@ public class CsmTracer {
     
     public void dumpModel(CsmFile file, String title) {
 	print(title);
-	List<CsmInclude> includes = file.getIncludes();
+	Collection<CsmInclude> includes = file.getIncludes();
 	print("Includes:"); // NOI18N
 	if (includes.size() > 0) {
 	    for( Iterator<CsmInclude> iter = includes.iterator(); iter.hasNext(); ) {
@@ -658,7 +658,7 @@ public class CsmTracer {
 	} else {
 	    indent();print("<no includes>");unindent(); // NOI18N
 	}
-	List macros = file.getMacros();
+	Collection macros = file.getMacros();
 	print("Macros:"); // NOI18N
 	if (macros.size() > 0) {
 	    for( Iterator iter = macros.iterator(); iter.hasNext(); ) {
@@ -668,7 +668,7 @@ public class CsmTracer {
 	} else {
 	    indent();print("<no macros>");unindent(); // NOI18N
 	}
-	List/*CsmDeclaration*/ objects = file.getDeclarations();
+	Collection/*CsmDeclaration*/ objects = file.getDeclarations();
 	for( Iterator iter = objects.iterator(); iter.hasNext(); ) {
 	    dumpModel((CsmDeclaration) iter.next());
 	}
@@ -861,7 +861,7 @@ public class CsmTracer {
 	unindent();
 	print("MEMBERS:"); // NOI18N
 	indent();
-	List/*<CsmMember>*/ members = cls.getMembers();
+	Collection/*<CsmMember>*/ members = cls.getMembers();
 	for( Iterator iter = members.iterator(); iter.hasNext(); ) {
 	    CsmMember member = (CsmMember) iter.next();
 	    if( CsmKindUtilities.isClass(member) ) {
@@ -892,7 +892,7 @@ public class CsmTracer {
 	    }
 	}
 	unindent();
-	List/*<CsmMember>*/ friends = cls.getFriends();
+	Collection/*<CsmMember>*/ friends = cls.getFriends();
         if (!friends.isEmpty()) {
             print("FRIENDS:"); // NOI18N
             indent();

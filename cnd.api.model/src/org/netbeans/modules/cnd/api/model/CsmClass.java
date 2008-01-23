@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Represents class, struct, enum and union
@@ -78,12 +78,12 @@ public interface CsmClass extends CsmCompoundClassifier<CsmClass> {
      *
      * TODO: collection of WHAT?
      */
-    List<CsmMember> getMembers();
+    Collection<CsmMember> getMembers();
     
-    List<CsmFriend> getFriends();
+    Collection<CsmFriend> getFriends();
 
     /** Returns the list of base classes */
-    List<CsmInheritance> getBaseClasses();
+    Collection<CsmInheritance> getBaseClasses();
     
     /** 
      * Returns true if this class is template, otherwise false.

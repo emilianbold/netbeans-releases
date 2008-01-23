@@ -97,8 +97,8 @@ public class TryCatchStatementImpl extends StatementBase implements CsmTryCatchS
         }
     }
 
-    public List<CsmScopeElement> getScopeElements() {
-	List<CsmScopeElement> elements = new ArrayList<CsmScopeElement>();
+    public Collection<CsmScopeElement> getScopeElements() {
+	Collection<CsmScopeElement> elements = new ArrayList<CsmScopeElement>();
 	elements.add(tryStatement);
 	elements.addAll(handlers);
 	return elements;

@@ -41,11 +41,11 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
-import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
@@ -102,7 +102,7 @@ public class CsmOffsetUtilities {
     }
     
     // list is ordered by offsettable elements
-    public static <T extends CsmObject> T findObject(List<T> list, CsmContext context, int offset) {
+    public static <T extends CsmObject> T findObject(Collection<T> list, CsmContext context, int offset) {
         assert (list != null) : "expect not null list";
         for (Iterator<T> it = list.iterator(); it.hasNext();) {
             T obj = it.next();
@@ -127,9 +127,9 @@ public class CsmOffsetUtilities {
                 return false;
             }
             // check if offset is before parameters
-            List<CsmParameter> params = fun.getParameters();
+            Collection<CsmParameter> params = fun.getParameters();
             if (params.size() > 0) {
-                CsmParameter firstParam = params.get(0);
+                CsmParameter firstParam = params.iterator().next();
                 if (CsmOffsetUtilities.isBeforeObject(firstParam, offset)) {
                     return false;
                 }

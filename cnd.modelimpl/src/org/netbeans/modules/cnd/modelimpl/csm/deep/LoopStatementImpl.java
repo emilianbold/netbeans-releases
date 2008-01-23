@@ -107,7 +107,7 @@ public class LoopStatementImpl extends StatementBase implements CsmLoopStatement
         }
     }
 
-    public List<CsmScopeElement> getScopeElements() {
+    public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getBody());
     }
     

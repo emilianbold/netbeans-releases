@@ -41,10 +41,10 @@
 
 package org.netbeans.modules.cnd.navigation.services;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Action;
@@ -119,10 +119,9 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
         }
         back = new HashSet<CsmClass>();
         map.put(cls, back);
-        List list = cls.getBaseClasses();
+        Collection<CsmInheritance> list = cls.getBaseClasses();
         if (list != null && list.size() >0){
-            for(int i = 0; i < list.size(); i++){
-                CsmInheritance inh = (CsmInheritance)list.get(i);
+            for(CsmInheritance inh : list){
                 CsmClass c = inh.getCsmClass();
                 if (c != null) {
                     back.add(c);
@@ -152,10 +151,9 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
     }
 
     private void buildSubHierarchy(final Map<CsmClass, Set<CsmClass>> map, final CsmClass cls) {
-        List list = cls.getBaseClasses();
+        Collection<CsmInheritance> list = cls.getBaseClasses();
         if (list != null && list.size() >0){
-            for(int i = 0; i < list.size(); i++){
-                CsmInheritance inh = (CsmInheritance)list.get(i);
+            for(CsmInheritance inh : list){
                 CsmClass c = inh.getCsmClass();
                 if (c != null) {
                     Set<CsmClass> back = map.get(c);

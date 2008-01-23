@@ -173,8 +173,8 @@ public final class LazyCompoundStatementImpl extends StatementBase implements Cs
         }
     }
 
-    public List<CsmScopeElement> getScopeElements() {
-        return (List)getStatements();
+    public Collection<CsmScopeElement> getScopeElements() {
+        return (Collection)getStatements();
     }
 
     private AST resolveLazyCompoundStatement(TokenStream tokenStream) {

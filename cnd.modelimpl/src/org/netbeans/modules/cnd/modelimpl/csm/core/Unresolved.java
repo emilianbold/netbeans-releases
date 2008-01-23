@@ -45,6 +45,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import java.util.Collections;
@@ -89,11 +90,11 @@ public final class Unresolved implements Disposable {
         public boolean isTemplate() {
             return false;
         }
-        public List<CsmScopeElement> getScopeElements() {
+        public Collection<CsmScopeElement> getScopeElements() {
             return Collections.<CsmScopeElement>emptyList();
         }
         
-        public List<CsmMember> getMembers() {
+        public Collection<CsmMember> getMembers() {
             return Collections.<CsmMember>emptyList();
         }
 

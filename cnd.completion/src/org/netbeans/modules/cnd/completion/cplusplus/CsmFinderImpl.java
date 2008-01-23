@@ -663,7 +663,7 @@ public class CsmFinderImpl implements CsmFinder, SettingsChangeListener {
         ArrayList outers = new ArrayList();
         outers.add(jc);
         while (jc != null) {
-            List/*<CsmClass>*/ baseCls = jc.getBaseClasses();
+            Collection/*<CsmClass>*/ baseCls = jc.getBaseClasses();
             if (baseCls != null) {
                 // [PENDING] check for deprecated classes ...
                 // if (showDeprecated || !JCUtilities.isDeprecated(cls)) 

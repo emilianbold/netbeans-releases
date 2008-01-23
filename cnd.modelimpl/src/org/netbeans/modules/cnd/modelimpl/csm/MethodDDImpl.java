@@ -87,8 +87,8 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
     }
     
     @Override
-    public List<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = super.getScopeElements();
+    public Collection<CsmScopeElement> getScopeElements() {
+        Collection<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }

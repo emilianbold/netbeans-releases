@@ -93,7 +93,7 @@ public class SwitchStatementImpl extends StatementBase implements CsmSwitchState
         return body;
     }
 
-    public List<CsmScopeElement> getScopeElements() {
+    public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getCondition(), getBody());
     }
     

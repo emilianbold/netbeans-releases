@@ -183,10 +183,9 @@ public class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
             }
             back = new HashSet<CsmClass>();
             map.put(cls, back);
-            List list = cls.getBaseClasses();
+            Collection<CsmInheritance> list = cls.getBaseClasses();
             if (list != null && list.size() >0){
-                for(int i = 0; i < list.size(); i++){
-                    CsmInheritance inh = (CsmInheritance)list.get(i);
+                for(CsmInheritance inh : list){
                     CsmClass c = inh.getCsmClass();
                     if (c != null) {
                         back.add(c);
@@ -216,10 +215,9 @@ public class TypeHierarchyResolverImpl extends CsmTypeHierarchyResolver {
         }
 
         private void buildSubHierarchy(final Map<CsmClass, Set<CsmClass>> map, final CsmClass cls) {
-            List list = cls.getBaseClasses();
+            Collection<CsmInheritance> list = cls.getBaseClasses();
             if (list != null && list.size() >0){
-                for(int i = 0; i < list.size(); i++){
-                    CsmInheritance inh = (CsmInheritance)list.get(i);
+                for(CsmInheritance inh : list){
                     CsmClass c = inh.getCsmClass();
                     if (c != null) {
                         Set<CsmClass> back = map.get(c);

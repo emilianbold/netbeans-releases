@@ -45,6 +45,7 @@ import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -73,10 +74,11 @@ public class EmptyCompoundStatementImpl extends StatementBase implements CsmComp
         return Kind.COMPOUND;
     }
     
-    public List<CsmScopeElement> getScopeElements() {
+    public Collection<CsmScopeElement> getScopeElements() {
         return Collections.<CsmScopeElement>emptyList();
     }
     
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }

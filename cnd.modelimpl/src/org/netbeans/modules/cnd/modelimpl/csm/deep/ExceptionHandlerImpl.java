@@ -50,7 +50,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -65,13 +64,14 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
         super(ast, file, scope);
     }
     
+    @Override
     public CsmStatement.Kind getKind() {
         return CsmStatement.Kind.CATCH;
     }
     
     public boolean isCatchAll() {
-	CsmParameter parameter = getParameter();
-        return parameter == null || parameter.isVarArgs();
+	CsmParameter aParameter = getParameter();
+        return aParameter == null || aParameter.isVarArgs();
     }
     
     public CsmParameter getParameter() {
@@ -97,7 +97,7 @@ public class ExceptionHandlerImpl extends CompoundStatementImpl implements CsmEx
     }
    
     @Override
-    public List<CsmScopeElement> getScopeElements() {
+    public Collection<CsmScopeElement> getScopeElements() {
         return DeepUtil.merge(getParameter(), getStatements());
     }
     

@@ -47,7 +47,6 @@ import antlr.collections.AST;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -322,7 +321,7 @@ public class AstRenderer {
         return false;
     }
 
-    private boolean findVariable(CharSequence name, List<CsmOffsetableDeclaration> declarations, int offset) {
+    private boolean findVariable(CharSequence name, Collection<CsmOffsetableDeclaration> declarations, int offset) {
         for( CsmOffsetableDeclaration decl : declarations ) {
             if( decl.getStartOffset() >= offset ) {
                 break;

@@ -396,7 +396,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             _clearIncludes();
             _clearMacros();
         }
-        List<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
+        Collection<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
         Utils.disposeAll(arr);          
         RepositoryUtils.remove(uids);
     }
@@ -749,8 +749,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return CharSequenceKey.create(fileBuffer.getFile().getName());
     }
 
-    public List<CsmInclude> getIncludes() {
-        List<CsmInclude> out;
+    public Collection<CsmInclude> getIncludes() {
+        Collection<CsmInclude> out;
         try {
             includesLock.readLock().lock();
             out = UIDCsmConverter.UIDsToIncludes(includes);
@@ -760,11 +760,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
-    public List<CsmOffsetableDeclaration> getDeclarations() {
+    public Collection<CsmOffsetableDeclaration> getDeclarations() {
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
             fixFakeRegistrations();
         }
-        List<CsmOffsetableDeclaration> decls;
+        Collection<CsmOffsetableDeclaration> decls;
         try {
             declarationsLock.readLock().lock();
             Collection<CsmUID<CsmOffsetableDeclaration>> uids = declarations.values();
@@ -786,8 +786,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
     }
     
-    public List<CsmMacro> getMacros() {
-       List<CsmMacro> out;
+    public Collection<CsmMacro> getMacros() {
+       Collection<CsmMacro> out;
        try {
             macrosLock.readLock().lock();
             out = UIDCsmConverter.UIDsToMacros(macros);
@@ -861,7 +861,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	return fileBuffer.getFile();
     }
 
-    public List<CsmScopeElement> getScopeElements() {
+    public Collection<CsmScopeElement> getScopeElements() {
         List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         //TODO: add static functions
         for( Iterator iter = getDeclarations().iterator(); iter.hasNext(); ) {

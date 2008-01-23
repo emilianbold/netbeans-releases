@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  *
@@ -49,6 +49,6 @@ import java.util.List;
  */
 public interface CsmEnum extends CsmCompoundClassifier<CsmEnum> {
 
-    List<CsmEnumerator> getEnumerators();
+    Collection<CsmEnumerator> getEnumerators();
 
 }

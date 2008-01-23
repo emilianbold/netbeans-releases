@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Represents a scope
@@ -49,6 +49,6 @@ import java.util.List;
  */
 public interface CsmScope extends CsmObject {
 
-        List<CsmScopeElement> getScopeElements();
+        Collection<CsmScopeElement> getScopeElements();
 
 }

@@ -143,7 +143,7 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
         }
     }
 
-    public List<CsmScopeElement> getScopeElements() {
+    public Collection<CsmScopeElement> getScopeElements() {
         //return DeepUtil.merge(getInitStatement(), getCondition(), getBody());
         List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         CsmStatement stmt = getInitStatement();

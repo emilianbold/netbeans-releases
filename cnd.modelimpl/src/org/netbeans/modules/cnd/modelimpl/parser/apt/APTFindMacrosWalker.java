@@ -46,6 +46,7 @@ import antlr.TokenStream;
 import antlr.TokenStreamException;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -213,7 +214,8 @@ public class APTFindMacrosWalker extends APTDefinesCollectorWalker {
             if (ref == null && mi != null) {
                 CsmFile target = getTargetFile();
                 if (target != null) {
-                    List<CsmMacro> macros = target.getMacros();
+                    Collection<CsmMacro> macrosCollection = target.getMacros();
+                    List<CsmMacro> macros = new ArrayList<CsmMacro>(macrosCollection);
                     for (int i = macros.size() - 1; i >= 0; i--) {
                         CsmMacro macro = macros.get(i);
                         if (mi.offset == macro.getStartOffset()) {

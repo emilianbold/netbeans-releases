@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Represent namespace declaration
@@ -50,7 +50,7 @@ import java.util.List;
 public interface CsmNamespaceDefinition extends CsmQualifiedNamedElement, CsmOffsetableDeclaration<CsmNamespaceDefinition> {
 
     /** Gets elements declared within this namesapce declaration */
-    List<CsmOffsetableDeclaration> getDeclarations();
+    Collection<CsmOffsetableDeclaration> getDeclarations();
 
     /** Gets correspondent namespace */
     CsmNamespace getNamespace();

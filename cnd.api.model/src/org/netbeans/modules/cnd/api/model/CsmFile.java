@@ -40,7 +40,7 @@
  */
 
 package org.netbeans.modules.cnd.api.model;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Represents a source file
@@ -61,13 +61,13 @@ public interface CsmFile extends CsmNamedElement, CsmScope, CsmValidable, CsmIde
     CharSequence getText(int start, int end);
 
     /** Sorted (by start offset) list of #include directives in the file */
-    List<CsmInclude> getIncludes();
+    Collection<CsmInclude> getIncludes();
     
     /** Sorted (by start offset) list of declarations in the file */
-    List<CsmOffsetableDeclaration> getDeclarations();
+    Collection<CsmOffsetableDeclaration> getDeclarations();
     
     /** Sorted (by start offset) list of #define directives in the file */
-    List<CsmMacro> getMacros();
+    Collection<CsmMacro> getMacros();
     
     /** 
      * Returns true if the file has been already parsed

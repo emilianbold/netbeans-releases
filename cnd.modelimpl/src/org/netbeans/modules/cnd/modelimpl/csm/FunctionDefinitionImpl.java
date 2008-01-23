@@ -152,8 +152,8 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     }
 
     @Override
-    public List<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = super.getScopeElements();
+    public Collection<CsmScopeElement> getScopeElements() {
+        Collection<CsmScopeElement> l = super.getScopeElements();
         l.add(getBody());
         return l;
     }

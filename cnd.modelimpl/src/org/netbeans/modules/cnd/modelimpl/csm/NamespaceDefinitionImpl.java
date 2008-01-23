@@ -91,8 +91,8 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         return CsmDeclaration.Kind.NAMESPACE_DEFINITION;
     }
             
-    public List<CsmOffsetableDeclaration> getDeclarations() {
-        List<CsmOffsetableDeclaration> decls;
+    public Collection<CsmOffsetableDeclaration> getDeclarations() {
+        Collection<CsmOffsetableDeclaration> decls;
         synchronized (declarations) {
             decls = UIDCsmConverter.UIDsToDeclarations(declarations);
         }
@@ -143,7 +143,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         super.dispose();
         onDispose();
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
-        List<CsmOffsetableDeclaration> decls;
+        Collection<CsmOffsetableDeclaration> decls;
         List<CsmUID<CsmOffsetableDeclaration>> uids;
         synchronized (declarations) {
             decls = getDeclarations();

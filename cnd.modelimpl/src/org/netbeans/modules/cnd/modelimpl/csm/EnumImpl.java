@@ -126,8 +126,8 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
         }
     }
     
-    public List<CsmEnumerator> getEnumerators() {
-        List<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
+    public Collection<CsmEnumerator> getEnumerators() {
+        Collection<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
         return out;
     }
     
@@ -136,8 +136,8 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
         enumerators.add(uid);
     }
     
-    public List<CsmScopeElement> getScopeElements() {
-        return (List)getEnumerators();
+    public Collection<CsmScopeElement> getScopeElements() {
+        return (Collection)getEnumerators();
     }
     
     public CsmDeclaration.Kind getKind() {
@@ -151,7 +151,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum>  implements CsmEnum, CsmMem
     }
     
     private void _clearEnumerators() {
-        List<CsmEnumerator> enumers = getEnumerators();
+        Collection<CsmEnumerator> enumers = getEnumerators();
         Utils.disposeAll(enumers);
         RepositoryUtils.remove(enumerators);
     }

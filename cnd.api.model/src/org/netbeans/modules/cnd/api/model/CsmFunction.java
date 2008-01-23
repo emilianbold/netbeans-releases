@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.api.model;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  *
@@ -68,7 +68,7 @@ public interface CsmFunction<T> extends CsmOffsetableDeclaration<T>, CsmScope {
 
     CsmType getReturnType();
     
-    List<CsmParameter>  getParameters();
+    Collection<CsmParameter>  getParameters();
 
     /** 
      * Gets this function signature string representation.

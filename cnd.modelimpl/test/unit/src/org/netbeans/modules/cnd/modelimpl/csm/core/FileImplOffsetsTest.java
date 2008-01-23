@@ -43,7 +43,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModelTestBase;
@@ -72,7 +72,7 @@ public class FileImplOffsetsTest extends TraceModelTestBase {
     }
     
     private void checkFileOffsetsConverting(final FileImpl file) {
-        List<CsmOffsetableDeclaration> decls = file.getDeclarations();
+        Collection<CsmOffsetableDeclaration> decls = file.getDeclarations();
         for (CsmOffsetableDeclaration csmOffsetableDeclaration : decls) {
             checkOffsetConverting(file, csmOffsetableDeclaration.getStartPosition());
             checkOffsetConverting(file, csmOffsetableDeclaration.getEndPosition());

@@ -474,7 +474,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return AstRenderer.isVoidParameter(ast);
     }
     
-    public List<CsmParameter>  getParameters() {
+    public Collection<CsmParameter>  getParameters() {
         return _getParameters();
     }
     
@@ -551,10 +551,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }
     
     /**
-     * isConst was originslly in MethodImpl;
+     * isConst was originally in MethodImpl;
      * but this methods needs internally in FunctionDefinitionImpl
-     * to create proper sugnature.
-     * Thereform it's moved here as a protected method.
+     * to create proper signature.
+     * Therefor it's moved here as a protected method.
      */
     protected boolean isConst() {
         return _const;
@@ -569,11 +569,11 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return scope;
     }
     
-    private List _getParameters() {
+    private Collection _getParameters() {
         if (this.parameters == null) {
             return Collections.EMPTY_LIST;
         } else {
-            List<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
+            Collection<CsmParameter> out = UIDCsmConverter.UIDsToDeclarations(parameters);
             return out;
         }
     }
@@ -611,8 +611,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
-    public List<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
+    public Collection<CsmScopeElement> getScopeElements() {
+        Collection<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
         l.addAll(getParameters());
         return l;
     }

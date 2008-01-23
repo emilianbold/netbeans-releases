@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.model.CsmInheritance;
 import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -348,7 +349,7 @@ public final class CsmInheritanceUtilities {
             return false;
         }
         // quick escapement if child doesn't have base classes
-        List base = child.getBaseClasses();
+        Collection base = child.getBaseClasses();
         if (base == null || base.size() == 0) {
             return false;
         }
@@ -384,7 +385,7 @@ public final class CsmInheritanceUtilities {
 
     private static CsmInheritance findDirectInheritance(CsmClass child, CsmClass parent) {
         assert (parent != null);
-        List base = child.getBaseClasses();
+        Collection base = child.getBaseClasses();
         if (base != null && base.size() > 0) {
             for (Iterator it = base.iterator(); it.hasNext();) {
                 CsmInheritance curInh = (CsmInheritance) it.next();

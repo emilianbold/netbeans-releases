@@ -195,12 +195,12 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
     
     public Collection<CsmNamespace> getNestedNamespaces() {
-        List<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList(nestedMap.values()));
+        Collection<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList(nestedMap.values()));
         return out;
     }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
-        List<CsmOffsetableDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values()));
+        Collection<CsmOffsetableDeclaration> decls = UIDCsmConverter.UIDsToDeclarations(new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values()));
         return decls;
     }
     
@@ -352,7 +352,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         } finally {
             nsDefinitionsLock.readLock().unlock();
         }
-        List<CsmNamespaceDefinition> defs = UIDCsmConverter.UIDsToDeclarations(uids);
+        Collection<CsmNamespaceDefinition> defs = UIDCsmConverter.UIDsToDeclarations(uids);
         return defs;
     }
     
@@ -411,7 +411,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         return sb.toString();
     }
     
-    public List<CsmScopeElement> getScopeElements() {
+    public Collection<CsmScopeElement> getScopeElements() {
         return (List) getDeclarations();
     }
     

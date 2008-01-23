@@ -85,10 +85,11 @@ public class CompoundStatementImpl extends StatementBase implements CsmCompoundS
         }
     }
 
-    public List<CsmScopeElement> getScopeElements() {
+    public Collection<CsmScopeElement> getScopeElements() {
         return (List)getStatements();
     }
 
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
     }    
