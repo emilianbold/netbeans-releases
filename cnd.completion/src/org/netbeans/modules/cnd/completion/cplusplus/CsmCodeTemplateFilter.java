@@ -54,6 +54,11 @@ import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
  * @author Vladimir Voskresensky
  */
 public class CsmCodeTemplateFilter implements CodeTemplateFilter {
+    private static boolean enabled = true;
+    
+    static void enableAbbreviations(boolean enabled) {
+        CsmCodeTemplateFilter.enabled = enabled;
+    }
     
     private int startOffset;
     private int endOffset;
@@ -66,7 +71,7 @@ public class CsmCodeTemplateFilter implements CodeTemplateFilter {
     }
 
     public synchronized boolean accept(CodeTemplate template) {
-        return startOffset == endOffset && isTemplateContext(template);
+        return enabled && (startOffset == endOffset) && isTemplateContext(template);
     }
 
     private CppTokenId getID(JTextComponent component, int offset) {
