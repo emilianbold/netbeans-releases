@@ -238,7 +238,7 @@ public class CloneAction extends AbstractAction {
                 }
             }
         };
-        support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress")); // NOI18N
+        support.start(rp, source, org.openide.util.NbBundle.getMessage(CloneAction.class, "LBL_Clone_Progress", source)); // NOI18N
     }
 
     public boolean isEnabled() {
