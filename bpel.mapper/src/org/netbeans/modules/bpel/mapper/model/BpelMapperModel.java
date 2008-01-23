@@ -39,6 +39,7 @@ import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
 import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentDescriptor;
 import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentGroup;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
@@ -385,7 +386,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     }
 
     private boolean doCopy(TreePath treePath, GraphSubset graphSubset, int x, int y) {
-        if (!isConnectable(treePath)) {
+        if ( !isConnectable(treePath)) {
             return false;
         }
         if (myHandler != null) {
@@ -399,13 +400,15 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             return false;
         }
         Graph graph = graphRequired(treePath);
-
-        for (int i = graphSubset.getVertexCount() - 1; i >= 0; i--) {
+        int nextX = x;
+                        
+        for (int i=0; i < graphSubset.getVertexCount(); i++) {
             Vertex vertex = graphSubset.getVertex(i);
-            vertex.setLocation(x, y);
+            vertex.setLocation(nextX, y);
             graph.addVertex(vertex);
+            nextX = vertex.getX() + vertex.getWidth() + 3;
         }
-        for (int i = 0; i < graphSubset.getLinkCount(); i++) {
+        for (int i=0; i < graphSubset.getLinkCount(); i++) {
             Link link = graphSubset.getLink(i);
             graph.addLink(link);
         }
@@ -555,5 +558,4 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     public boolean canEditInplace(VertexItem vItem) {
         return vItem.getIngoingLink() == null;
     }
-    
 }
