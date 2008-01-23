@@ -537,15 +537,24 @@ class MapperNode implements GraphListener {
         
         return (x1 <= x2) ? new XRange(x1, x2 - x1) : null;
     }
-
     
     boolean isVisibleGraph() {
         if (graph == null) return false;
         if (graph.isEmpty()) return false;
+        if (!isVisible()) return false;
         return isGraphExpanded();
     }
     
-
+    boolean isVisible() {
+        return isVisible(this);
+    }
+  //////////////////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  
+    private boolean isVisible(MapperNode node) {
+        if (node == getMapper().getRoot()) return true;
+        if (node.getParent().isCollapsed()) return false;
+        return isVisible(node.getParent());
+    }
+    
     int getGraphHeight() {
         int step = mapper.getStepSize();
         int size = step - 1;

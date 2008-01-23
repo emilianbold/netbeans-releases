@@ -605,7 +605,9 @@ public class RightTree extends MapperPanel implements
                 if (Math.abs(cy - y) <= 8) {
                     Graph graph = node.getGraph();
                     if (graph != null) {
-                        node.setGraphCollapsed(!node.isGraphCollapsed());
+                        getMapper().setExpandedGraphState(node.getTreePath(), 
+                                !node.isGraphExpanded());
+                        getLinkTool().dragDone();
                         select = false;
                     }
                 }

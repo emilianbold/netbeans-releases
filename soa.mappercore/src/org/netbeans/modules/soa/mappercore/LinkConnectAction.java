@@ -44,6 +44,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
 import javax.swing.KeyStroke;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.event.MapperSelectionEvent;
 import org.netbeans.modules.soa.mappercore.event.MapperSelectionListener;
@@ -58,13 +60,16 @@ import org.netbeans.modules.soa.mappercore.utils.Utils;
  * @author alex
  */
 public class LinkConnectAction extends MapperKeyboardAction implements 
-        MapperSelectionListener
+        MapperSelectionListener, TreeExpansionListener
 {
     private Canvas canvas;
     private LinkTool linkTool;
+    private TreePath treePath;
     
     public LinkConnectAction(Canvas canvas) {
         this.canvas = canvas;
+        treePath = null;
+        canvas.getMapper().addRightTreeExpansionListener(this);
         canvas.getSelectionModel().addSelectionListener(this);
     }
     
@@ -87,8 +92,10 @@ public class LinkConnectAction extends MapperKeyboardAction implements
         if (linkTool == null) {return;}
         
         SelectionModel selectionModel = canvas.getSelectionModel();
-        TreePath treePath = selectionModel.getSelectedPath();
+        treePath = selectionModel.getSelectedPath();
         if (treePath == null) return;
+        
+        canvas.getMapper().getNode(treePath, true);
         
         SourcePin source = linkTool.getSourcePin();
         TargetPin target = linkTool.getTargetPin();
@@ -131,7 +138,7 @@ public class LinkConnectAction extends MapperKeyboardAction implements
         if (linkTool == null || !linkTool.isActive()) { return;}
         
         SelectionModel selectionModel = canvas.getSelectionModel();
-        TreePath treePath = selectionModel.getSelectedPath();
+        if (selectionModel.getSelectedPath() != treePath) {linkTool.dragDone();}
         if (treePath == null) return;
         
         SourcePin source = linkTool.getSourcePin();
@@ -176,6 +183,25 @@ public class LinkConnectAction extends MapperKeyboardAction implements
                 p = Utils.toScrollPane(canvas, p, null);
                 linkTool.setSource(null, canvas, p);
             }
+        }
+    }
+
+    public void treeExpanded(TreeExpansionEvent event) {
+        if (linkTool == null || treePath == null) {return;}
+        
+        MapperNode node = canvas.getMapper().getNode(treePath, true);
+        if (!node.isVisibleGraph()) {
+            this.treePath = null;
+            linkTool.dragDone();
+        }
+    }
+
+    public void treeCollapsed(TreeExpansionEvent event) {
+        if (linkTool == null || treePath == null) {return;}
+        MapperNode node = canvas.getMapper().getNode(treePath, true);
+        if (!node.isVisibleGraph()) {
+            this.treePath = null;
+            linkTool.dragDone();
         }
     }
 }

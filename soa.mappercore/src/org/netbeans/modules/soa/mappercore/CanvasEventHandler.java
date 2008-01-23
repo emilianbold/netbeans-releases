@@ -188,6 +188,7 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
                         searchResult.getGraphItem() == null) {
                     mapper.setExpandedGraphState(node.getTreePath(), false);
                 }
+                getLinkTool().dragDone();
             }
         }
     }
