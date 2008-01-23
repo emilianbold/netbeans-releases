@@ -1245,6 +1245,34 @@ member_declaration
 		function_definition
 		{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
 	|  
+		// Member without a type (I guess it can only be a function declaration
+		// or definition)
+		((LITERAL_static)? function_declarator[false] (EOF|SEMICOLON))=>
+		{beginFieldDeclaration();
+                if( reportOddWarnings ) {
+                    printf("member_declaration[%d]: Warning Function declaration found without typename\n", LT(1).getLine());
+                }
+		if (statementTrace>=1) 
+			printf("member_declaration_11a[%d]: Function declaration\n",
+				LT(1).getLine());
+		}
+		(LITERAL_static)? function_declarator[false] (EOF!|SEMICOLON) //{end_of_stmt();}
+		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
+	|
+		// Member without a type (I guess it can only be a function definition)
+		((LITERAL_static)? function_declarator[true] LCURLY)=>
+		{
+                    if( reportOddWarnings ) {
+                        printf("member_function[%d]: Warning Function definition found without typename\n", LT(1).getLine());
+                    }
+		    if (statementTrace>=1) {
+			printf("member_declaration_11b[%d]: Function definition\n",
+				LT(1).getLine());
+		    }
+		}
+		(LITERAL_static)? function_declarator[true] compound_statement //{endFunctionDefinition();}
+		{ #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration); }
+	|  
 		// User-defined type cast
 		((literal_inline)? conversion_function_decl_or_def)=>
 		{if (statementTrace>=1) 
@@ -1277,33 +1305,6 @@ member_declaration
                 // now member typedefs are placed under CSM_FIELD, so we do this here as well
                 // TODO: separate imaginery AST nodes for typedefs and fields
 		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
-	|  
-		// Member without a type (I guess it can only be a function declaration
-		// or definition)
-		(function_declarator[false] (EOF|SEMICOLON))=>
-		{beginFieldDeclaration();
-                if( reportOddWarnings ) {
-                    printf("member_declaration[%d]: Warning Function declaration found without typename\n", LT(1).getLine());
-                }
-		if (statementTrace>=1) 
-			printf("member_declaration_11a[%d]: Function declaration\n",
-				LT(1).getLine());
-		}
-		function_declarator[false] (EOF!|SEMICOLON) //{end_of_stmt();}
-		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
-	|
-		// Member without a type (I guess it can only be a function definition)
-		{
-                    if( reportOddWarnings ) {
-                        printf("member_function[%d]: Warning Function definition found without typename\n", LT(1).getLine());
-                    }
-		    if (statementTrace>=1) {
-			printf("member_declaration_11b[%d]: Function definition\n",
-				LT(1).getLine());
-		    }
-		}
-		function_declarator[true] compound_statement //{endFunctionDefinition();}
-		{ #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); }
 	|  
 		{isCPlusPlus()}? ((LITERAL_export)? LITERAL_template) => member_declaration_template
 	|  
