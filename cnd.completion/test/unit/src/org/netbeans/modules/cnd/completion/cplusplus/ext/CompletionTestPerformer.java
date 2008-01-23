@@ -174,7 +174,8 @@ public class CompletionTestPerformer {
             } finally {
                 doc.atomicUnlock();
             }
-            saveDocument((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty));
+            String text = doc.getText(0, doc.getLength());
+            saveDocument((DataObject) doc.getProperty(BaseDocument.StreamDescriptionProperty),text);
             offset += textToInsert.length() + offsetAfterInsertion;
         }
         if (editor != null) {
@@ -243,13 +244,28 @@ public class CompletionTestPerformer {
         return test;
     }
     
-    private static void saveDocument(DataObject file) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
-        SaveCookie sc = file.getCookie(SaveCookie.class);
+    private static void saveDocument(DataObject dob,String docText) throws IOException { //!!!WARNING: if this exception is thrown, the test may be locked (the file in editor may be modified, but not saved. problems with IDE finishing are supposed in this case).
+        SaveCookie sc = dob.getCookie(SaveCookie.class);
         if (sc != null) {
             sc.save();
         }
-        CsmFile csmFile = CsmUtilities.getCsmFile(file, false);
-        assert csmFile != null : "Must be csmFile for data object " + file;
+        FileObject fo = dob.getPrimaryFile();
+        if (fo != null) {
+            InputStream is = fo.getInputStream();
+            int ch;
+            StringBuilder fileText = new StringBuilder();
+            while ((ch = is.read()) != -1) {
+                fileText.append((char)ch);
+            }
+            is.close();
+            String text = fileText.toString();
+            if (!text.equals(docText) && false) {
+                System.err.println("file after cookie saving " + fo.getPath() + "\ntext:\n" + fileText);
+                System.err.println("document after cookie saving " + fo.getPath() + "\ntext:\n" + docText);
+            }
+        }
+        CsmFile csmFile = CsmUtilities.getCsmFile(dob, false);
+        assert csmFile != null : "Must be csmFile for data object " + dob;
         CsmProject prj = csmFile.getProject();
         assert prj != null : "Must be project for csm file " + csmFile;
         prj.waitParse();
