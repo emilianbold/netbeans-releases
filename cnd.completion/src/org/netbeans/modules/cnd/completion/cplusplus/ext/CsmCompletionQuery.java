@@ -231,6 +231,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             CsmOffsetableDeclaration context = sup.getDefinition(offset);
             Context ctx = new Context(component, sup, openingSource, offset, getFinder(), resolver, context, sort);
             ctx.resolveExp(exp);
+            if (ctx.result != null) {
+                ctx.result.setSimpleVariableExpression(isSimpleVariableExpression(exp));
+            }
             if (TRACE_COMPLETION) {
                 CompletionItem[] array =  ctx.result == null ? new CompletionItem[0] : (CompletionItem[])ctx.result.getData().toArray(new CompletionItem[ctx.result.getData().size()]);
                 //Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
@@ -1836,8 +1839,31 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return true;
              
         }
+        
+        private boolean simpleVariableExpression;
+        private void setSimpleVariableExpression(boolean simple) {
+            this.simpleVariableExpression = simple;
+        }
+        public boolean isSimpleVariableExpression() {
+            return simpleVariableExpression;
+        }
     }
 
+        
+    private static boolean isSimpleVariableExpression(CsmCompletionExpression exp) {
+        switch (exp.getExpID()) {
+            case CsmCompletionExpression.DOT_OPEN: // Dot expression with the dot at the end
+            case CsmCompletionExpression.ARROW_OPEN: // Arrow expression with the arrow at the end
+            case CsmCompletionExpression.DOT: // Dot expression
+            case CsmCompletionExpression.ARROW: // Arrow expression
+            case CsmCompletionExpression.SCOPE_OPEN: // Scope expression with the arrow at the end
+            case CsmCompletionExpression.SCOPE: // Scope expression
+            case CsmCompletionExpression.NEW: // 'new' keyword
+            return false;
+        }
+        return true;
+    }
+        
     //========================== Items Factory ===============================
 
     protected void setCsmItemFactory(CsmItemFactory itemFactory){
