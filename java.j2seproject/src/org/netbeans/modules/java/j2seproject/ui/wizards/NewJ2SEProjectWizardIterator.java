@@ -144,10 +144,12 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
         String name = (String)wiz.getProperty("name");        //NOI18N
         String mainClass = (String)wiz.getProperty("mainClass");        //NOI18N
         String librariesDefinition = (String)wiz.getProperty(PanelOptionsVisual.SHARED_LIBRARIES);
-        if (librariesDefinition != null && !librariesDefinition.endsWith(File.separator)) {
-            librariesDefinition += File.separatorChar;
+        if (librariesDefinition != null) {
+            if (!librariesDefinition.endsWith(File.separator)) {
+                librariesDefinition += File.separatorChar;
+            }
+            librariesDefinition += J2SEProjectProperties.DEFAULT_LIBRARIES_FILENAME;
         }
-        librariesDefinition += J2SEProjectProperties.DEFAULT_LIBRARIES_FILENAME;
         handle.progress (NbBundle.getMessage (NewJ2SEProjectWizardIterator.class, "LBL_NewJ2SEProjectWizardIterator_WizardProgress_CreatingProject"), 1);
         switch (type) {
         case EXT:
