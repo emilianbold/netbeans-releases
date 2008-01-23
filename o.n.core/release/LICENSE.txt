@@ -11,8 +11,8 @@ makes use of additional libraries made available for use and
 distribution by other parties, including open-source projects.
 
 LICENSE #2: The GNU General Public License (GPL), Version 2
-with the Classpath exception governs your use of: JavaHelp 2.0,
-and NetBeans Platform software. NetBeans Platform software also
+with the Classpath exception governs your use of: 
+NetBeans Platform software. NetBeans Platform software also
 makes use of additional libraries made available for use and
 distribution by other parties, including open-source projects.
 
