@@ -108,18 +108,18 @@ public class ImportDiffAction extends AbstractAction {
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
-        fileChooser.showDialog(null, NbBundle.getMessage(ImportDiffAction.class,
-"OK_Button"));                                            // NO I18N
-        final File patchFile = fileChooser.getSelectedFile();
+        if (fileChooser.showDialog(null, NbBundle.getMessage(ImportDiffAction.class, "OK_Button")) == JFileChooser.APPROVE_OPTION) { // NO I18N
+            final File patchFile = fileChooser.getSelectedFile();
 
-        if (patchFile != null) {
-            RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
-            HgProgressSupport support = new HgProgressSupport() {
-                public void perform() {
-                    performImport(root, patchFile);
-                }
-            };
-            support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ImportDiffAction.class, "LBL_ImportDiff_Progress")); // NOI18N
+            if (patchFile != null) {
+                RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
+                HgProgressSupport support = new HgProgressSupport() {
+                    public void perform() {
+                        performImport(root, patchFile);
+                    }
+                };
+                support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(ImportDiffAction.class, "LBL_ImportDiff_Progress")); // NOI18N
+            }
         }
     }
 
