@@ -46,8 +46,6 @@ import java.awt.Container;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -107,13 +105,12 @@ import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
+import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.ComplexType;
-import org.netbeans.modules.xml.schema.model.GlobalComplexType;
+import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.schema.model.LocalComplexType;
-import org.netbeans.modules.xml.schema.model.LocalSimpleType;
+import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SimpleType;
 import org.netbeans.modules.xml.wsdl.model.Message;
@@ -122,7 +119,7 @@ import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.xml.xpath.ext.schema.AbstractSchemaSearchVisitor;
+import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -142,8 +139,8 @@ public class DefineCorrelationWizard implements WizardProperties {
     private static final Dimension PANEL_DIMENSION_VALUE = new Dimension(600, 450);
     private static final String[] WIZARD_STEP_NAMES = new String[] {
         NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Wizard_Step_Select_Messaging_Activity"),
-        NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Wizard_Step_Define_Correlation"),
-        NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Wizard_Step_Correlation_Configuration")
+        NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Wizard_Step_Define_Correlation")
+        //NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Wizard_Step_Correlation_Configuration")
     };
 
     private static Graph TMP_FAKE_GRAPH;
@@ -151,6 +148,10 @@ public class DefineCorrelationWizard implements WizardProperties {
     private static final String 
         IMAGE_FOLDER_NAME = "org/netbeans/modules/bpel/editors/api/nodes/images/", // NOI18N
         IMAGE_FILE_EXT = ".png", // NOI18N
+        
+        SIMPLE_TYPE_NAME_PATTERN = NbBundle.getMessage(DefineCorrelationWizard.class, 
+                                   "LBL_Mapper_Tree_SimpleType_Name_Pattern"),
+
         JBUTTON_TEXT_NEXT = "Next", // NOI18N
         JBUTTON_TEXT_FINISH = "Finish"; // NOI18N
 
@@ -200,7 +201,7 @@ public class DefineCorrelationWizard implements WizardProperties {
         List<Panel> panelList = new ArrayList<Panel>(WIZARD_STEP_NAMES.length);
         panelList.add(new WizardSelectMessagingActivityPanel());
         panelList.add(new WizardDefineCorrelationPanel());
-        panelList.add(new WizardCorrelationConfigurationPanel());
+        //panelList.add(new WizardCorrelationConfigurationPanel());
         for (int i = 0; i < panelList.size(); ++i) {
             ((WizardAbstractPanel) panelList.get(i)).setPanelNameIndex(
                 WIZARD_STEP_NAMES[i], i);
@@ -238,11 +239,11 @@ public class DefineCorrelationWizard implements WizardProperties {
         mapIcons.put(OnMessage.class, new ImageIcon(Utilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_ELEMENT" + IMAGE_FILE_EXT; // NOI18N
-        mapIcons.put(GlobalElement.class, new ImageIcon(Utilities.loadImage(iconFileName)));
+        mapIcons.put(Element.class, new ImageIcon(Utilities.loadImage(iconFileName)));
     
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_COMPLEX_TYPE" + IMAGE_FILE_EXT; // NOI18N
         mapIcons.put(ComplexType.class, new ImageIcon(Utilities.loadImage(iconFileName)));
-    
+        
         iconFileName = IMAGE_FOLDER_NAME + "GLOBAL_SIMPLE_TYPE" + IMAGE_FILE_EXT; // NOI18N
         mapIcons.put(SimpleType.class, new ImageIcon(Utilities.loadImage(iconFileName)));
          
@@ -463,7 +464,6 @@ public class DefineCorrelationWizard implements WizardProperties {
     public abstract class WizardAbstractPanel implements WizardDescriptor.ValidatingPanel {
         protected JPanel wizardPanel = createWizardPanel();
         protected ChangeSupport changeSupport = new ChangeSupport(this);
-        protected GridBagConstraints gbc = new GridBagConstraints();
         protected int insetX = 5, insetY = 5;
         
         protected JPanel createWizardPanel() {
@@ -498,16 +498,6 @@ public class DefineCorrelationWizard implements WizardProperties {
 
         public boolean isValid() {
             return true;
-        }
-        
-        protected void initializeGridBagConstraints() {
-            gbc.gridx = 0; gbc.gridy = 0;
-            gbc.gridwidth = 1; gbc.gridheight = 1;
-            gbc.ipadx = 0; gbc.ipady = 0;
-            gbc.fill = GridBagConstraints.NONE;
-            gbc.anchor = GridBagConstraints.NORTHWEST;
-            gbc.insets = new Insets(insetY, insetX, insetY, insetX);
-            gbc.weightx = 1.0; gbc.weighty = 1.0;
         }
     }
     //========================================================================//
@@ -726,68 +716,52 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
         }
 
-/***************??????????        
         private CorrelationMapperTreeNode handlePart(Part part) {
             CorrelationMapperTreeNode partNode = new CorrelationMapperTreeNode(part, null);
             NamedComponentReference<GlobalElement> partElementRef = part.getElement();
             if (partElementRef != null) {
                 GlobalElement partElement = partElementRef.get();
-                partNode.add(new CorrelationMapperTreeNode(partElement, null));
-                
-                List<SchemaComponent> schemaComponentList = partElement.getChildren();
+                addSchemaComponentNode(partNode, partElement, new FindAllChildrenSchemaVisitor(true, true));                    
             } else {
                 NamedComponentReference<GlobalType> partTypeRef = part.getType();
                 if (partTypeRef != null) {
                     GlobalType partType = partTypeRef.get();
-                    if (partType instanceof GlobalSimpleType) {
-                        addGlobalSimpleTypeNode(partNode, (GlobalSimpleType) partType);
-                    }
-                }
-            }
-            return partNode;
-        }        
-        
-        private void addGlobalSimpleTypeNode(CorrelationMapperTreeNode parentNode, 
-            GlobalSimpleType globalSimpleType) {
-            String nodeNamePattern = NbBundle.getMessage(DefineCorrelationWizard.class, 
-                "LBL_Mapper_Tree_GlobalSimpleType_Name_Pattern");
-            parentNode.add(new CorrelationMapperTreeNode(globalSimpleType, nodeNamePattern));
-        }
-***********????????????*/
-        private CorrelationMapperTreeNode handlePart(Part part) {
-            CorrelationMapperTreeNode partNode = new CorrelationMapperTreeNode(part, null);
-            NamedComponentReference<GlobalElement> partElementRef = part.getElement();
-            if (partElementRef != null) {
-                GlobalElement partElement = partElementRef.get();
-                addSchemaComponentNode(partNode, partElement, new SchemaSimpleAndComplexTypeFinder());
-            } else {
-                NamedComponentReference<GlobalType> partTypeRef = part.getType();
-                if (partTypeRef != null) {
-                    GlobalType partType = partTypeRef.get();
-                    addSchemaComponentNode(partNode, partType, new SchemaSimpleAndComplexTypeFinder());
+                    addSchemaComponentNode(partNode, partType, new FindAllChildrenSchemaVisitor(true, true)); 
                 }
             }
             return partNode;
         }        
         
         private void addSchemaComponentNode(CorrelationMapperTreeNode parentNode, 
-            SchemaComponent schemaComponent, SchemaSimpleAndComplexTypeFinder schemaTypeFinder) {
+            SchemaComponent schemaComponent, FindAllChildrenSchemaVisitor schemaTypeFinder) {
             String nodeNamePattern = schemaComponent instanceof SimpleType ?
-                NbBundle.getMessage(DefineCorrelationWizard.class, 
-                "LBL_Mapper_Tree_SimpleType_Name_Pattern") : null;
+                SIMPLE_TYPE_NAME_PATTERN : null;
             CorrelationMapperTreeNode schemaComponentNode = new CorrelationMapperTreeNode(
                 schemaComponent, nodeNamePattern);
-            parentNode.add(schemaComponentNode);
 
+            List<SchemaComponent> childSchemaTypeComponentList = null;
             if (! (schemaComponent instanceof SimpleType)) {
-                schemaTypeFinder.visitChildren(schemaComponent);
-                List<SchemaComponent> childSchemaTypeComponentList = schemaTypeFinder.getChildList();
+                schemaTypeFinder.lookForSubcomponents(schemaComponent);
+                childSchemaTypeComponentList = schemaTypeFinder.getFound();
                 for (SchemaComponent childSchemaTypeComponent : childSchemaTypeComponentList) {
-                    addSchemaComponentNode(schemaComponentNode, childSchemaTypeComponent, new SchemaSimpleAndComplexTypeFinder());
+                    addSchemaComponentNode(schemaComponentNode, childSchemaTypeComponent, new FindAllChildrenSchemaVisitor(true, true));
                 }
             }
+            if ((schemaComponent instanceof Element) && 
+                ((childSchemaTypeComponentList == null) || (childSchemaTypeComponentList.isEmpty())) &&
+                isComplexType((Element) schemaComponent)) {
+                return;
+            }
+            parentNode.add(schemaComponentNode);
         }
     
+        private boolean isComplexType(Element element) {
+            NamedComponentReference<? extends GlobalType> typeRef = 
+                element instanceof LocalElement ? ((LocalElement) element).getType() :
+                    ((GlobalElement) element).getType();
+            return ((typeRef != null) && (typeRef.get() instanceof ComplexType));
+        }
+        
         private void defineCorrelationMapperKeyBindings() {
             if (correlationMapper == null) return;
             InputMap inputMap = correlationMapper.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -808,55 +782,13 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
             wizardDescriptor.putProperty(PROPERTY_ERROR_MESSAGE, isOK ? null :
                 NbBundle.getMessage(WizardDefineCorrelationPanel.class, "LBL_ErrMsg_No_Links_For_Correlation"));                              
-            if (buttonNext != null) buttonNext.setEnabled(isOK);
+            //if (buttonNext != null) buttonNext.setEnabled(isOK);
+            if (buttonFinish != null) buttonFinish.setEnabled(isOK);
             return isOK;
         }
 
         @Override
         public void validate() throws WizardValidationException {
-        }
-        //====================================================================//
-        private class SchemaSimpleAndComplexTypeFinder extends AbstractSchemaSearchVisitor {
-            private List<SchemaComponent> childList = new ArrayList<SchemaComponent>();
-
-            public List<SchemaComponent> getChildList() {
-                return childList;
-            }
-
-            @Override
-            public void visit(GlobalComplexType globalComplexType) {
-                checkComponent(globalComplexType);
-                //super.visit(globalComplexType);
-            }
-
-            @Override
-            public void visit(LocalComplexType localComplexType) {
-                checkComponent(localComplexType);
-                //super.visit(localComplexType);
-            }
-
-            @Override
-            public void visit(GlobalSimpleType globalSimpleType) {
-                checkComponent(globalSimpleType);
-            }
-
-            @Override
-            public void visit(LocalSimpleType localSimpleType) {
-                checkComponent(localSimpleType);
-            }
-            
-            @Override
-            public void visitChildren(SchemaComponent schemaComponent) {
-                super.visitChildren(schemaComponent);
-            }
-            
-            @Override
-            public void checkComponent(SchemaComponent schemaComponent) {
-                if ((schemaComponent instanceof SimpleType) ||  
-                    (schemaComponent instanceof ComplexType)) {
-                    childList.add(schemaComponent);
-                }
-            }
         }
         //====================================================================//
         private class ActionDeleteKey extends AbstractAction {
@@ -962,19 +894,22 @@ public class DefineCorrelationWizard implements WizardProperties {
                         }
                     } else if (userObj instanceof Message) {
                         userObjectName = ((Message) userObj).getName();
-                        patternValues = new Object[] {userObjectName, "Message"};
                     } else if (userObj instanceof Part) {
                         userObjectName = ((Part) userObj).getName();
-                        patternValues = new Object[] {userObjectName, "Part"};
-                    } else if (userObj instanceof GlobalElement) {
-                        userObjectName = ((GlobalElement) userObj).getName();
-                        patternValues = new Object[] {userObjectName, "GlobalElement"};
+                    } else if ((userObj instanceof Element) || (userObj instanceof Attribute)) {
+                        userObjectName = userObj.toString();
+                        if (getChildCount() == 0) { // simple type
+                            String typeName = ((SchemaComponent) userObj).getAttribute(BpelAttributes.TYPE);
+                            if (typeName != null) {
+                                userObjectName += " " + MessageFormat.format(SIMPLE_TYPE_NAME_PATTERN, 
+                                    new Object[] {typeName});
+                            }
+                        }
                     } else if (userObj instanceof SimpleType) {
                         userObjectName = ((SimpleType) userObj).getAttribute(BpelAttributes.NAME);
                         patternValues = new Object[] {userObjectName};
                     } else if (userObj instanceof ComplexType) {
                         userObjectName = ((ComplexType) userObj).getAttribute(BpelAttributes.NAME);
-                        patternValues = new Object[] {userObjectName};
                     } else {
                         userObjectName = userObj.toString();
                     }
@@ -994,7 +929,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                 } else {
                     if (userObj instanceof Message) userObjClass = Message.class;
                     if (userObj instanceof Part) userObjClass = Part.class;
-                    if (userObj instanceof GlobalElement) userObjClass = GlobalElement.class;
+                    if (userObj instanceof Element) userObjClass = Element.class;
+                    if (userObj instanceof Attribute) userObjClass = SimpleType.class;
                     if (userObj instanceof SimpleType) userObjClass = SimpleType.class;
                     if (userObj instanceof ComplexType) userObjClass = ComplexType.class;
                 }
@@ -1229,8 +1165,7 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
 
         @Override
-        public void validate() throws WizardValidationException {
-        }
+        public void validate() throws WizardValidationException {}
     }
 }
 
