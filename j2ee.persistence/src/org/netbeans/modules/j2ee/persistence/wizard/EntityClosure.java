@@ -251,6 +251,10 @@ public class EntityClosure {
     }
     
     private Set<String> getReferencedEntities(final String entityClass) throws IOException {
+        
+        if (readHelper.getState() != State.FINISHED) {
+            return Collections.emptySet();
+        }
 
         JavaSource source = model.runReadAction(new MetadataModelAction<EntityMappingsMetadata, JavaSource>() {
             public JavaSource run(EntityMappingsMetadata metadata) throws Exception {
