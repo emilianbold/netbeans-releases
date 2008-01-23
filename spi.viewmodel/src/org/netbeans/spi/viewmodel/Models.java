@@ -2837,6 +2837,14 @@ public final class Models {
             if (nodeModel instanceof DelegatingNodeModel) {
                 NodeModel[] subModels = ((DelegatingNodeModel) nodeModel).getModels();
                 if (subModels.length == 0) {
+                    if (TreeModel.ROOT.equals(node)) {
+                        ColumnModel[] columns = getColumns();
+                        for (ColumnModel cm : columns) {
+                            if (cm.getType() == null) {
+                                return cm.getDisplayName();
+                            }
+                        }
+                    }
                     return ""; // Nothing when there are no models
                 }
             }
@@ -2852,6 +2860,19 @@ public final class Models {
          */
         public String getShortDescription (Object node) 
         throws UnknownTypeException {
+            if (nodeModel instanceof DelegatingNodeModel) {
+                NodeModel[] subModels = ((DelegatingNodeModel) nodeModel).getModels();
+                if (subModels.length == 0) {
+                    if (TreeModel.ROOT.equals(node)) {
+                        ColumnModel[] columns = getColumns();
+                        for (ColumnModel cm : columns) {
+                            if (cm.getType() == null) {
+                                return cm.getShortDescription();
+                            }
+                        }
+                    }
+                }
+            }
             return nodeModel.getShortDescription (node);
         }
 
