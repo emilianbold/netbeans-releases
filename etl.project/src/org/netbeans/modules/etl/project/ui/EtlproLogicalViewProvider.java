@@ -51,6 +51,7 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.etl.project.EtlproProject;
+import org.netbeans.modules.etl.project.EtlproProjectGenerator;
 import org.netbeans.modules.mashup.db.wizard.FlatfileDBViewerAction;
 import org.netbeans.modules.mashup.db.wizard.NewFlatfileDatabaseWizardAction;
 import org.netbeans.modules.mashup.db.wizard.NewFlatfileTableAction;
@@ -198,8 +199,8 @@ public class EtlproLogicalViewProvider implements LogicalViewProvider {
             if (context) {
                 return super.getActions(true);
             } else {
-                EtlproProject pro = (EtlproProject) project;
-                MashupTableWizardIterator.setProjectInfo(pro.getName(),pro.getProjectDirectory().getPath(), true);
+                EtlproProject pro = (EtlproProject) project;                
+                MashupTableWizardIterator.setProjectInfo(pro.getName(),EtlproProjectGenerator.PRJ_LOCATION_DIR, true);
                 return getAdditionalActions();
             }
         }
