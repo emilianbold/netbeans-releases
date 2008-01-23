@@ -104,8 +104,7 @@ public class FlowlinkTool implements DnDTool {
             startY = e.getCenterY();
         }
         
-        getDesignView().getDecorationManager().decorationChanged(
-                btn.getPattern().getOMReference());
+        getDesignView().getDecorationManager().decorationChanged();
     }
     
     
@@ -207,7 +206,7 @@ public class FlowlinkTool implements DnDTool {
         if (button != null) {
             BpelEntity be = button.getPattern().getOMReference();
             if (be !=  null) {
-                getDesignView().getDecorationManager().decorationChanged(be);
+                getDesignView().getDecorationManager().decorationChanged();
             }
         }
         
