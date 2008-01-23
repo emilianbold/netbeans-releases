@@ -155,7 +155,9 @@ implements ServerRegistry.PluginListener, InstanceListener {
             } else {
                 childNode = instance.getServer().getNodeProvider().createInstanceNode(instance);
             }
-            instance.refresh(); // detect the server instance status
+            // XXX this is commented out because of the UISupoort calling this
+            // method - it should be fixed in UISupport as it is quite ugly
+            //instance.refresh(); // detect the server instance status
             return new Node[] { childNode };
         }
         

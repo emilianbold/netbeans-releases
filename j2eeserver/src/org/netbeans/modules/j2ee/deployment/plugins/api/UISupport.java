@@ -153,6 +153,7 @@ public final class UISupport {
             return io;
         }
         
+        // FIXME remove the usage of the node
         // look up the node that belongs to the given server instance
         Node node = ServerRegistryNode.getServerRegistryNode().getChildren().findChild(si.getUrl());
         
