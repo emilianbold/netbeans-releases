@@ -1425,18 +1425,31 @@ public class WebForm implements Designer {
 //    public void nodeChanged(Node rendered, Node parent, boolean wasMove) {
     public void changeNode(Node rendered, Node parent, Element[] changedElements) {
         PageBox pageBox = getPane().getPaneUI().getPageBox();
+        if (pageBox == null) {
+            // XXX #125713 Potential NPE.
+            return;
+        }
         pageBox.changed(rendered, parent, changedElements);
     }
 
 //    public void nodeRemoved(Node previouslyRendered, Node parent) {
     public void removeNode(Node previouslyRendered, Node parent) {
         PageBox pageBox = getPane().getPaneUI().getPageBox();
+        if (pageBox == null) {
+            // XXX #125713 Potential NPE.
+            return;
+        }
         pageBox.removed(previouslyRendered, parent);
     }
     
 //    public void nodeInserted(Node rendered, Node parent) {
     public void insertNode(Node rendered, Node parent) {
-        getPane().getPaneUI().getPageBox().inserted(rendered, parent);
+        PageBox pageBox = getPane().getPaneUI().getPageBox();
+        if (pageBox == null) {
+            // XXX #125713 Potential NPE.
+            return;
+        }
+        pageBox.inserted(rendered, parent);
     }
     
 //    public void updateGridMode() {
