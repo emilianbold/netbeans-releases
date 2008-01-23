@@ -169,10 +169,12 @@ public class PredicateUpdater extends AbstractBpelModelUpdater {
             List<TreePath> dependentGraphs = mModel.getDependentGraphs(mPred);
             for (TreePath graphPath : dependentGraphs) {
                 mModel.removeIngoingLinks(graphPath, mTreePath);
-                mModel.fireGraphChanged(graphPath);
             }
+            //
+            // Modify BPEL model for all changed graphs in one transaction.
+            mModel.fireGraphsChanged(dependentGraphs);
         } else {
-            mModel.removeGraph(mTreePath);
+            mModel.removeNestedGraphs(mTreePath);
         }
         //
         // Remove node from the tree

@@ -23,10 +23,12 @@ import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
@@ -39,7 +41,6 @@ import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
-import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
 import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentDescriptor;
 import org.netbeans.modules.xml.xpath.ext.metadata.ArgumentGroup;
 import org.netbeans.modules.xml.xpath.ext.metadata.XPathType;
@@ -135,24 +136,60 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         boolean modified = false;
         if (graph != null) {
             //
-            List<Vertex> vertexList = graph.getVerteces();
-            for (Vertex vertex : vertexList) {
-                graph.removeVertex(vertex);
-                modified = true;
-            }
-            //
-            List<Link> linksList = graph.getLinks();
-            for (Link link : linksList) {
-                graph.removeLink(link);
-                modified = true;
-            }
+            modified = emptyGraph(graph);
             //
             if (modified) {
                 fireGraphChanged(treePath);
             }
             //
-            mPathGraphMap.remove(treePath);
+            // It's not necessary to remove the graph itself. 
+            // It has to be removed by the BPEL updater a bit later.
+            // mPathGraphMap.remove(treePath);
         }
+    }
+
+    /**
+     * Remove all graphs are located in a tree branch.
+     * @param rootTreePath the root of the tree branch.
+     */
+    public void removeNestedGraphs(TreePath rootTreePath) {
+        Map<TreePath, Graph> nestedGraphs = getGraphsInside(rootTreePath);
+        Set<TreePath> graphPathesToDelete = nestedGraphs.keySet();
+        //
+        boolean modified = false;
+        for (TreePath graphTPath : graphPathesToDelete) {
+            Graph graph = mPathGraphMap.get(graphTPath);
+            if (graph != null) {
+                //
+                modified = emptyGraph(graph);
+                //
+                // It's not necessary to remove the graph itself. 
+                // It has to be removed by the BPEL updater a bit later.
+                // mPathGraphMap.remove(graphTPath);
+            }
+        }
+        //
+        if (modified) {
+            // Modify BPEL model for all changed graphs in one transaction.
+            fireGraphsChanged(graphPathesToDelete);
+        }
+    }
+    
+    private boolean emptyGraph(Graph graph) {
+        boolean modified = false;
+        List<Vertex> vertexList = graph.getVerteces();
+        for (Vertex vertex : vertexList) {
+            graph.removeVertex(vertex);
+            modified = true;
+        }
+        //
+        List<Link> linksList = graph.getLinks();
+        for (Link link : linksList) {
+            graph.removeLink(link);
+            modified = true;
+        }
+        //
+        return modified;
     }
     
     /**
@@ -179,9 +216,16 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         for (TreePath tPath : mPathGraphMap.keySet()) {
             if (root.isDescendant(tPath)) {
                 Graph graph = mPathGraphMap.get(tPath);
+                assert graph != null;
                 result.put(tPath, graph);
             }
         }
+        //
+        Graph rootGraph = mPathGraphMap.get(root);
+        if (rootGraph != null) {
+            result.put(root, rootGraph);
+        }
+        //
         return result;
     }
     
@@ -453,7 +497,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         }
     }
 
-    public void fireGraphsChanged(List<TreePath> treePathList) {
+    public void fireGraphsChanged(Collection<TreePath> treePathList) {
         if (mChangeProcessor != null) {
             mChangeProcessor.processChanges(treePathList);
         }
@@ -538,8 +582,14 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     }
  
     /**
-     * Remove links which go from the leftNodePath (left tree)
-     * @param treePath
+     * Remove links which go from the leftNodePath (left tree), which is 
+     * going to be deleted. It is necessary because the links has to be 
+     * started somewhere. If a link is connected to a node in the left tree, 
+     * then it has to be deleted if the node is deleted. 
+     * @param graphPath - specified the tree path (right tree) of the graph, 
+     * from which the link is going to be deleted.
+     * @param leftNodePath - specified the tree path (left tree) of the node,
+     * which is going to be deleted. 
      */
     public void removeIngoingLinks(TreePath graphPath, TreePath leftNodePath) {
         //
@@ -548,8 +598,13 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         for (Link link : ingoingLinks) {
             SourcePin sourcePin = link.getSource();
             assert sourcePin instanceof TreeSourcePin;
-            TreePath path = ((TreeSourcePin)sourcePin).getTreePath();
-            if (path == null || path.equals(leftNodePath)) {
+            TreePath tPath = ((TreeSourcePin)sourcePin).getTreePath();
+            //
+            // The link can be connected not directly to the node, which 
+            // is going to be deleted, but to its descendant node. 
+            // If a node is deleted, then all branch of its children 
+            // is also deleted. 
+            if (tPath != null || leftNodePath.isDescendant(tPath)) {
                 graph.removeLink(link);
             }
         }
