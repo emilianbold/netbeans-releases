@@ -94,6 +94,8 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 public abstract class CsmResultItem
         implements CompletionQuery.ResultItem, CompletionQuery.ResultItemAssociatedObject, CompletionItem {
 
+    private static boolean enableInstantSubstitution = true;
+    
     protected int selectionStartOffset = -1;
     protected int selectionEndOffset = -1;
 
@@ -262,13 +264,21 @@ public abstract class CsmResultItem
     public CompletionTask createToolTipTask() {
         return null;
     }
-
+    
+    public static void setEnableInstantSubstitution(boolean enable) {
+        CsmResultItem.enableInstantSubstitution = enable;
+    }
+    
     public boolean instantSubstitution(JTextComponent c) {
-        Completion completion = Completion.get();
-        completion.hideCompletion();
-        completion.hideDocumentation();
-        defaultAction(c);
-        return true;
+        if (CsmResultItem.enableInstantSubstitution) {
+            Completion completion = Completion.get();
+            completion.hideCompletion();
+            completion.hideDocumentation();
+            defaultAction(c);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void defaultAction(JTextComponent component) {
