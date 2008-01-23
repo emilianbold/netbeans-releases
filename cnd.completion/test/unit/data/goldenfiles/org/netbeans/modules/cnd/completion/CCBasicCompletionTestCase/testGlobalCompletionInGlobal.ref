@@ -2,6 +2,5 @@ A
 B
 C
 globInt int
-str char*
 globFoo() void
 main(int argc, char** argv) int
