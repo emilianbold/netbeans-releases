@@ -332,23 +332,33 @@ public class LifecycleListener
 
     /**
      * <p>Respond to a session scope attribute being replaced.
-     * If the old value was an {@link AbstractSessionBean}, call
-     * its <code>destroy()</code> method.  If the new value is an
+     * Provided that the old and new values are not the same object,
+     * if the old value was an {@link AbstractSessionBean}, call
+     * its <code>destroy()</code> method; if the new value is an
      * {@link AbstractSessionBean}, call its <code>init()</code>
-     * method.</p>
+     * method. No-op if the old and new values are the same object.</p>
      *
      * @param event Event to be processed
      */
     public void attributeReplaced(HttpSessionBindingEvent event) {
+        
+        //125789: we might be replacing the session attribute with itself
+        //in order to assure propagation in a clustered environment.
+        //in such a case, do not call init and destroy on the object
+        Object oldValue = event.getValue();;
+        Object newValue = event.getSession().getAttribute(event.getName());
+        if (oldValue == newValue) {
+            return;
+        }
 
         // If the old value is an AbstractSessionBean, notify it
-        Object value = event.getValue();
+        Object value = oldValue;
         if ((value != null) && (value instanceof AbstractSessionBean)) {
             ((AbstractSessionBean) value).destroy();
         }
 
         // If the new value is an AbstractSessionBean, notify it
-        value = event.getSession().getAttribute(event.getName());
+        value = newValue;
         if ((value != null) && (value instanceof AbstractSessionBean)) {
             ((AbstractSessionBean) value).init();
         }
