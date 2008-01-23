@@ -151,7 +151,7 @@ public class ValidationDecorationProvider extends DecorationProvider
                 
                 
                 //notify DM to update all elements
-                fireDecorationChanged(null);
+                fireDecorationChanged();
             }
         });
         

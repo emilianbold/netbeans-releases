@@ -63,8 +63,8 @@ public abstract class DecorationProvider {
      * @entity may be null to inform DecorationManager that it
      * needs to update state for ALL elements in a tree.
      **/
-    protected final void fireDecorationChanged(BpelEntity entity){
-         view.getDecorationManager().decorationChanged(entity);
+    protected final void fireDecorationChanged(){
+         view.getDecorationManager().decorationChanged();
     }
     
     /**

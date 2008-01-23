@@ -106,16 +106,16 @@ public class LinkToolDecorationProvider extends DecorationProvider implements
             cd.add(button, linkToolPositioner);
             linkBtnDecoration = new Decoration( new Descriptor[]{cd});
             
-            fireDecorationChanged(newSelection);
+          
         } else {
             linkBtnDecoration = null;
         }
         
         
         
-        if (oldSelection != null) {
-            fireDecorationChanged(oldSelection);
-        }
+       
+        fireDecorationChanged();
+        
         
         
         
@@ -140,7 +140,7 @@ public class LinkToolDecorationProvider extends DecorationProvider implements
                 FBounds bounds = pattern.getFirstElement().getBounds();
                 
                 DiagramView view = pattern.getView();
-                Point p = view.convertPointToParent(
+                Point p = view.convertDiagramToScreen(
                         new FPoint(bounds.getX(), bounds.getCenterY()));
                 
                 

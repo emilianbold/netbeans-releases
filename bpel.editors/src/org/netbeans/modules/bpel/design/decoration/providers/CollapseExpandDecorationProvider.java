@@ -190,7 +190,7 @@ public class CollapseExpandDecorationProvider extends DecorationProvider
             
             Dimension size = component.getPreferredSize();
             DiagramView view = pattern.getView();
-            Point center = view.convertPointToParent(
+            Point center = view.convertDiagramToScreen( 
                     new FPoint(ve.getCenterX(), ve.getY() + ve.getHeight()));
             
             component.setBounds(center.x - size.width / 2, 
@@ -238,12 +238,8 @@ public class CollapseExpandDecorationProvider extends DecorationProvider
         
         public void actionPerformed(ActionEvent event) {
             pattern.getModel().setCollapsed(pattern.getOMReference(), true);
-            
-            for (BpelEntity entity : findCollapsedBpelEntitesInside(
-                    pattern.getOMReference(), null))
-            {
-                fireDecorationChanged(entity);
-            }
+            fireDecorationChanged();
+           
         }
     }
     
@@ -272,11 +268,8 @@ public class CollapseExpandDecorationProvider extends DecorationProvider
         public void actionPerformed(ActionEvent event) {
             pattern.getModel().setCollapsed(pattern.getOMReference(), false);
 
-            for (BpelEntity entity : findCollapsedBpelEntitesInside(
-                    pattern.getOMReference(), null))
-            {
-                fireDecorationChanged(entity);
-            }
+
+            fireDecorationChanged();
         }
     }
     

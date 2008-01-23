@@ -34,35 +34,30 @@ import org.netbeans.modules.bpel.model.api.support.UniqueId;
  * @author aa160298
  */
 public class SelectionDecorationProvider extends DecorationProvider implements DiagramSelectionListener {
-    
-    public SelectionDecorationProvider() {}
-    
+
+    public SelectionDecorationProvider() {
+    }
+
     public SelectionDecorationProvider(DesignView designView) {
         super(designView);
         designView.getSelectionModel().addSelectionListener(this);
     }
-    
+
     public Decoration getDecoration(BpelEntity entity) {
         UniqueId entityID = entity.getUID();
         UniqueId selectedEntityID = getDesignView().getSelectionModel().getSelectedID();
-        
-        if (entityID!= null && entityID.equals(selectedEntityID)) {
-            return new Decoration(new Descriptor[]{STROKE_DESCRIPTOR, 
-                    StripeDescriptor.createSelection() });
+
+        if (entityID != null && entityID.equals(selectedEntityID)) {
+            return new Decoration(new Descriptor[]{STROKE_DESCRIPTOR,
+                StripeDescriptor.createSelection()
+            });
         }
         return null;
     }
-    
+
     public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
-        if (newSelection != null) {
-            fireDecorationChanged(newSelection);
-        } 
-        
-        if (oldSelection != null) {
-            fireDecorationChanged(oldSelection);
-        }
+        fireDecorationChanged();
     }
-    
-    private ArrayList<UniqueId> linkedEntities = new ArrayList<UniqueId>();
+   
     private static final Descriptor STROKE_DESCRIPTOR = new StrokeDescriptor(new Color(0x5D985C), 2);
 }

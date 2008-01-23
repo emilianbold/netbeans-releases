@@ -157,7 +157,7 @@ public class ComponentsDescriptor implements Descriptor, Iterable<Component> {
             FPoint topRight = getPatternBounds(pattern).getTopLeft();
             DiagramView view = pattern.getView();
             
-            Point p = view.convertPointToParent(topRight);
+            Point p = view.convertDiagramToScreen(topRight);
             
             
             int x = p.x;
@@ -188,7 +188,7 @@ public class ComponentsDescriptor implements Descriptor, Iterable<Component> {
             
             DiagramView view = pattern.getView();
             
-            Point p = view.convertPointToParent(topRight);
+            Point p = view.convertDiagramToScreen(topRight);
             
             int x = p.x;
             int y = p.y - VSPACING;
@@ -219,7 +219,7 @@ public class ComponentsDescriptor implements Descriptor, Iterable<Component> {
             
             DiagramView view = pattern.getView();
             
-            Point p = view.convertPointToParent(topLeft);
+            Point p = view.convertDiagramToScreen(topLeft);
             
             int x = p.x - HSPACING;
             int y = p.y;
@@ -258,7 +258,7 @@ public class ComponentsDescriptor implements Descriptor, Iterable<Component> {
             
              DiagramView view = pattern.getView();
             
-            Point center = view.convertPointToParent(new FPoint(element.getCenterX(), element.getY()));
+            Point center = view.convertDiagramToScreen(new FPoint(element.getCenterX(), element.getY()));
             
             
             int width = 0;
@@ -294,7 +294,7 @@ public class ComponentsDescriptor implements Descriptor, Iterable<Component> {
             
             DiagramView view = pattern.getView();
             
-            Point p = view.convertPointToParent(topRight);
+            Point p = view.convertDiagramToScreen(topRight);
             
             int x = p.x + HSPACING;
             int y = p.y;
@@ -325,7 +325,7 @@ public class ComponentsDescriptor implements Descriptor, Iterable<Component> {
             
             DiagramView view = pattern.getView();
             
-            Point p = view.convertPointToParent(bottomRight);
+            Point p = view.convertDiagramToScreen(bottomRight);
             
             int x = p.x;
             int y = p.y + SPACING;

@@ -106,7 +106,7 @@ public class DebuggerDecorationProvider extends DecorationProvider
                     }
                     
                     final DiagramView view = pattern.getView();
-                    final Point center = view.convertPointToParent(
+                    final Point center = view.convertDiagramToScreen(
                             new FPoint(c.getEndPoint().x, bounds.y));
                     final Dimension dim = component.getPreferredSize();
                     
@@ -143,7 +143,7 @@ public class DebuggerDecorationProvider extends DecorationProvider
                 if (getDesignView().getBPELModel().getState() == 
                         Model.State.VALID){
                     
-                    fireDecorationChanged(null);
+                    fireDecorationChanged();
                 }
             }
         });
@@ -220,7 +220,7 @@ public class DebuggerDecorationProvider extends DecorationProvider
                 
                 if (event.getName().equals(BpelModel.STATE) &&
                         event.getNewValue().equals(Model.State.VALID)) {
-                    fireDecorationChanged(null);
+                    fireDecorationChanged();
                 }
             }
         });
@@ -261,7 +261,7 @@ public class DebuggerDecorationProvider extends DecorationProvider
         final Runnable runnable = new Runnable() {
             public void run() {
                 if (model.getState().equals(BpelModel.State.VALID)) {
-                    fireDecorationChanged(null);
+                    fireDecorationChanged();
                 }
             }
         };

@@ -125,14 +125,7 @@ public class ToolbarDecorationProvider extends DecorationProvider implements
     
     
     public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
-        if (newSelection != null) {
-            fireDecorationChanged(newSelection);
-            
-        } 
-        
-        if (oldSelection != null) {
-            fireDecorationChanged(oldSelection);
-        }
+            fireDecorationChanged();
     }
     
     
