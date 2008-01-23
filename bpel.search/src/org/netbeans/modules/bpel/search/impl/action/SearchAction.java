@@ -61,11 +61,10 @@ import org.netbeans.modules.xml.schema.ui.basic.SchemaTreeView;
 import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
-import org.netbeans.modules.xml.xam.ui.search.SearchManager;
 import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
-import org.netbeans.modules.bpel.search.impl.core.Manager;
 import org.netbeans.modules.bpel.search.impl.ui.Search;
 import org.netbeans.modules.bpel.search.impl.util.Util;
 import static org.netbeans.modules.soa.ui.util.UI.*;
@@ -103,8 +102,7 @@ public final class SearchAction extends IconAction {
     list.add(cookie);
     list.add(view);
 
-    ((Manager) SearchManager.Access.getDefault()).
-      createSearch(list, getTargets(model), null, true);
+    SearchManagerAccess.getManager().createSearch(list, getTargets(model), null, true);
   }
 
   private ShowCookie getShowCookie(Node node) {

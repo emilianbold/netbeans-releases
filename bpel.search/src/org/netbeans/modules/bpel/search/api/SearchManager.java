@@ -38,83 +38,55 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.search.impl.core;
+package org.netbeans.modules.bpel.search.api;
 
 import java.awt.Component;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 
-import org.netbeans.modules.bpel.search.api.SearchManager;
-import org.netbeans.modules.bpel.search.api.SearchTarget;
-import org.netbeans.modules.bpel.search.spi.SearchEngine;
-
-import org.netbeans.modules.bpel.search.impl.action.SearchAction;
-import org.netbeans.modules.bpel.search.impl.ui.Find;
-import org.netbeans.modules.bpel.search.impl.ui.Search;
-import org.netbeans.modules.bpel.search.impl.util.Util;
-
 /**
  * @author Vladimir Yaroslavskiy
- * @version 2006.11.15
+ * @version 2007.12.14
  */
-public final class Manager implements SearchManager {
-
-  public Manager() {
-    myEngines = Util.getInstances(SearchEngine.class);
-    mySearch = new Search();
-  }
-
-  public Component createSearch(Object source, JComponent parent) {
-    return createSearch(source, null, parent, false);
-  }
-
-  public Component createSearch(
+public interface SearchManager
+  extends org.netbeans.modules.xml.xam.ui.search.SearchManager
+{
+  /**
+   * Returns search for given source and parent.
+   * @param source where search will be perfromed
+   * @param targets is the list of target
+   * @param parent is component where ui will be placed
+   * @param advanced if true, ui is advanced
+   * @return search
+   */
+  Component createSearch(
     Object source,
     SearchTarget [] targets,
-    JComponent parent,
-    boolean advanced)
-  {
-    List<SearchEngine> engines = getEngines(source);
-//out("Set engines: " + engines);
-    
-    if (engines.isEmpty()) {
-      return null;
-    }
-    if (advanced) {
-      return mySearch.getUIComponent(engines, source, targets);
-    }
-    else {
-      return new Find(engines, source, parent);
-    }
-  }
+    JComponent parent, boolean advanced);
 
-  private List<SearchEngine> getEngines(Object source) {
-    List<SearchEngine> engines = new ArrayList<SearchEngine>();
+  /**
+   * Returns search for given source and parent.
+   * @param source where search will be perfromed
+   * @param parent is component where ui will be placed
+   * @param advanced if true, ui is advanced
+   * @return search
+   */
+  Component createSearch(Object source, JComponent parent);
 
-    for (SearchEngine engine : myEngines) {
-      if (engine.accepts(source)) {
-        engines.add(engine);
-      }
-    }
-    return engines;
-  }
+  /**
+   * Retuens navigation panel for tree, scroll pane and component.
+   * @param tree given tree
+   * @param scroll given scroll pane
+   * @param component given component
+   * @return navigation panel for tree, scroll pane and component
+   */
+  JComponent createNavigation(JTree tree, JScrollPane scroll, JComponent component);
 
-  public JComponent createNavigation(
-    JTree tree,
-    JScrollPane scrollPane,
-    JComponent component)
-  {
-    return new Navigation(tree, scrollPane, component);
-  }
-
-  public Action getSearchAction() {
-    return SearchAction.DEFAULT;
-  }
-
-  private Search mySearch;
-  private List<SearchEngine> myEngines;
+  /**
+   * Returns Search action.
+   * @return Search action
+   */
+  Action getSearchAction();
 }
