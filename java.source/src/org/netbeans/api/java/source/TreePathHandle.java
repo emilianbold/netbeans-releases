@@ -42,6 +42,7 @@
 package org.netbeans.api.java.source;                                                                                                                                                                                          
                                                                                                                                                                                                                                
 import com.sun.source.tree.Tree;                                                                                                                                                                                               
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;                                                                                                                                                                                           
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;                                                                                                                                                                                        
@@ -49,6 +50,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;                                                                                                                                                                                                    
 import javax.lang.model.element.Element;                                                                                                                                                                                       
@@ -58,6 +60,7 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.Index;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;                                                                                                                                                                                     
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;                                                                                                                                                                                         
@@ -103,20 +106,23 @@ import org.openide.util.Exceptions;
  * @author Jan Becicka                                                                                                                                                                                                         
  */                                                                                                                                                                                                                            
 public final class TreePathHandle {                                                                                                                                                                                            
-                                                                                                                                                                                                                               
-    private PositionRef position;                                                                                                                                                                                              
-    private KindPath kindPath;                                                                                                                                                                                                 
-    private FileObject file;                                                                                                                                                                                                   
-    private ElementHandle enclosingElement;                                                                                                                                                                                    
-    private boolean enclElIsCorrespondingEl;
-    private Tree.Kind kind;
-                                                                                                                                                                                                                               
+
+    private final Delegate delegate;
+    
+    private TreePathHandle(Delegate d) {
+        if (d == null) {
+            throw new IllegalArgumentException();
+        }
+        
+        this.delegate = d;
+    }
+    
     /**                                                                                                                                                                                                                        
      * getter for FileObject from give TreePathHandle                                                                                                                                                                          
      * @return FileObject for which was this handle created                                                                                                                                                                    
      */                                                                                                                                                                                                                        
-    public FileObject getFileObject() {                                                                                                                                                                                        
-        return file;                                                                                                                                                                                                           
+    public FileObject getFileObject() {
+        return this.delegate.getFileObject();
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
@@ -128,67 +134,25 @@ public final class TreePathHandle {
      * represented by the compilationInfo.
      */                                                                                                                                                                                                                        
     public TreePath resolve (final CompilationInfo compilationInfo) throws IllegalArgumentException {
-        assert compilationInfo != null;
-        if (!compilationInfo.getFileObject().equals(getFileObject())) {
-            throw new IllegalArgumentException ("TreePathHandle ["+FileUtil.getFileDisplayName(getFileObject())+"] was not created from " + FileUtil.getFileDisplayName(compilationInfo.getFileObject()));
-        }                                                                                                                                                                                                                      
-        Element element = enclosingElement.resolve(compilationInfo);                                                                                                                                                           
-        TreePath tp = null;                                                                                                                                                                                                    
-        if (element != null) {                                                                                                                                                                                                 
-            TreePath startPath = compilationInfo.getTrees().getPath(element);                                                                                                                                                  
-            if (startPath == null) {                                                                                                                                                                                           
-                Logger.getLogger(TreePathHandle.class.getName()).fine("compilationInfo.getTrees().getPath(element) returned null for element %s " + element + "(" +file.getPath() +")");    //NOI18N
-            } else {                                                                                                                                                                                                           
-                tp = compilationInfo.getTreeUtilities().pathFor(startPath, position.getOffset()+1);
-            }                                                                                                                                                                                                                  
-        }                                                                                                                                                                                                                      
-        if (tp!=null && new KindPath(tp).equals(kindPath))                                                                                                                                                                                 
-            return tp;                                                                                                                                                                                                         
-        tp = compilationInfo.getTreeUtilities().pathFor(position.getOffset()+1);
-        while (tp!=null) {
-            if (new KindPath(tp).equals(kindPath)) {
-                return tp;
-            }
-            tp = tp.getParentPath();
-        }
-        return null;
+        return this.delegate.resolve(compilationInfo);
     }
 
+    @Override
     public boolean equals(Object obj) {
-        try {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }   
-            final TreePathHandle other = (TreePathHandle) obj;
-            if (this.position==null && other.position==null) {
-                assert this.enclElIsCorrespondingEl;
-                assert other.enclElIsCorrespondingEl;
-                return this.enclosingElement.equals(other.enclosingElement);
-            }
-            if (this.position.getPosition().getOffset() != this.position.getPosition().getOffset()) {
-                return false;
-            }
-            if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
-                return false;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        if (obj == null && !(obj instanceof TreePathHandle)) {
             return false;
         }
-        return true;
+        
+        if (delegate.getClass() != ((TreePathHandle) obj).delegate.getClass()) {
+            return false;
+        }
+        
+        return delegate.equals(((TreePathHandle) obj).delegate);
     }
 
+    @Override
     public int hashCode() {
-        if (this.position==null) {
-            return 553 + enclosingElement.hashCode();
-        }
-        int hash = 7;
-        hash = 79 * hash + this.position.getOffset();
-        hash = 79 * hash + (this.file != null ? this.file.hashCode() : 0);
-        return hash;
+        return delegate.hashCode();
     }
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
@@ -197,44 +161,8 @@ public final class TreePathHandle {
      * @return resolved subclass of {@link Element} or null if the elment does not exist on                                                                                                                                    
      * the classpath/sourcepath of {@link javax.tools.CompilationTask}.                                                                                                                                                        
      */                                                                                                                                                                                                                        
-    public Element resolveElement(final CompilationInfo info) {                                                                                                                                                                
-        TreePath tp = null;                                                                                                                                                                                                    
-        IllegalStateException ise = null;
-        try {
-            if ((this.file!=null && info.getFileObject()!=null) && info.getFileObject().equals(this.file) && this.position!=null) {
-                tp = this.resolve(info);
-            }
-        } catch (IllegalStateException i) {
-            ise=i;
-        }
-        if (tp==null) {                                                                                                                                                                                                        
-            if (enclElIsCorrespondingEl) {
-                Element e = enclosingElement.resolve(info);
-                if (e==null) {
-                    Logger.getLogger(TreePathHandle.class.getName()).severe("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
-                }
-                return e;                                                                                                                                                                         
-            } else {
-                if (ise==null)
-                    return null;
-                throw ise;                                                                                                                                                                                                   
-            }                                                                                                                                                                                                                  
-        }                                                                                                                                                                                                                      
-        Element el = info.getTrees().getElement(tp);
-        if (el==null) {
-            Logger.getLogger(TreePathHandle.class.toString()).fine("info.getTrees().getElement(tp) returned null for " + tp);
-            if (enclElIsCorrespondingEl) {
-                Element e = enclosingElement.resolve(info);
-                if (e==null) {
-                    Logger.getLogger(TreePathHandle.class.getName()).fine("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
-                }
-                return e;                                                                                                                                                                         
-            } else {
-                return null;
-            }
-        } else {
-            return el;
-        }
+    public Element resolveElement(final CompilationInfo info) {
+        return this.delegate.resolveElement(info);
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
     /**                                                                                                                                                                                                                        
@@ -244,32 +172,10 @@ public final class TreePathHandle {
      *                                                                                                                                                                                                                         
      * @return {@link Tree.Kind}                                                                                                                                                                                               
      */                                                                                                                                                                                                                        
-    public Tree.Kind getKind() {                                                                                                                                                                                               
-        return kind;                                                                                                                                                             
+    public Tree.Kind getKind() {
+        return this.delegate.getKind();
     }                                                                                                                                                                                                                          
                                                                                                                                                                                                                                
-    private TreePathHandle(PositionRef position, KindPath kindPath, FileObject file, ElementHandle element, boolean enclElIsCorrespondingEl) {                                                                                 
-        this.kindPath = kindPath;                                                                                                                                                                                              
-        this.position = position;                                                                                                                                                                                              
-        this.file = file;                                                                                                                                                                                                      
-        this.enclosingElement = element;                                                                                                                                                                                       
-        this.enclElIsCorrespondingEl = enclElIsCorrespondingEl;
-        if (kindPath!=null)
-            this.kind = kindPath.kindPath.get(0);
-        else {
-            if (enclElIsCorrespondingEl) {
-                ElementKind k = element.getKind();
-                if (k.isClass() || k.isInterface()) {
-                    kind = Tree.Kind.CLASS;
-                } else if (k.isField()) {
-                    kind = Tree.Kind.VARIABLE;
-                } else if (k==ElementKind.METHOD || k==ElementKind.CONSTRUCTOR) {
-                    kind = Tree.Kind.METHOD;
-                }
-            }
-        } 
-    }
-    
     /**                                                                                                                                                                                                                        
      * Factory method for creating {@link TreePathHandle}.                                                                                                                                                                     
      *                                                                                                                                                                                                                         
@@ -277,29 +183,29 @@ public final class TreePathHandle {
      * @param info 
      * @return a new {@link TreePathHandle}                                                                                                                                                                                    
      * @throws java.lang.IllegalArgumentException if arguments are not supported
-     */                                                                                                                                                                                                                        
-    public static TreePathHandle create (final TreePath treePath, CompilationInfo info) throws IllegalArgumentException {                                                                                                      
+     */
+    public static TreePathHandle create(final TreePath treePath, CompilationInfo info) throws IllegalArgumentException {
         FileObject file;
         try {
             file = URLMapper.findFileObject(treePath.getCompilationUnit().getSourceFile().toUri().toURL());
         } catch (MalformedURLException e) {
             throw (RuntimeException) new RuntimeException().initCause(e);
         }
-        int position = ((JCTree) treePath.getLeaf()).pos;               
-        PositionRef pos = createPositionRef(file, position, Bias.Forward);                                                                                                                                           
-        TreePath current = treePath;                                                                                                                                                                                           
-        Element element;                                                                                                                                                                                                       
-        boolean enclElIsCorrespondingEl = true;                                                                                                                                                                                
-        do {                                                                                                                                                                                                                   
-            element = info.getTrees().getElement(current);                                                                                                                                                                     
-            current = current.getParentPath();                                                                                                                                                                                 
-            if (element!=null && !isSupported(element)) {                                                                                                                                                                      
-                enclElIsCorrespondingEl=false;                                                                                                                                                                                 
-            }                                                                                                                                                                                                                  
-        } while ((element == null || !isSupported(element)) && current !=null);                                                                                                                                                
-        return new TreePathHandle(pos, new KindPath(treePath), file,ElementHandle.create(element), enclElIsCorrespondingEl);                                                                                   
-    }          
-    
+        int position = ((JCTree) treePath.getLeaf()).pos;
+        PositionRef pos = createPositionRef(file, position, Bias.Forward);
+        TreePath current = treePath;
+        Element element;
+        boolean enclElIsCorrespondingEl = true;
+        do {
+            element = info.getTrees().getElement(current);
+            current = current.getParentPath();
+            if (element != null && !isSupported(element)) {
+                enclElIsCorrespondingEl = false;
+            }
+        } while ((element == null || !isSupported(element)) && current != null);
+        return new TreePathHandle(new TreeDelegate(pos, new TreeDelegate.KindPath(treePath), file, ElementHandle.create(element), enclElIsCorrespondingEl));
+    }
+
     /**                                                                                                                                                                                                                        
      * Factory method for creating {@link TreePathHandle}.                                                                                                                                                                     
      *                                                                                                                                                                                                                         
@@ -307,76 +213,48 @@ public final class TreePathHandle {
      * @param info 
      * @return a new {@link TreePathHandle}                                                                                                                                                                                    
      * @throws java.lang.IllegalArgumentException if arguments are not supported
-     */                                                                                                                                                                                                                        
+     */
     public static TreePathHandle create(Element element, CompilationInfo info) throws IllegalArgumentException {
-        try {
-            TreePath treePath = info.getTrees().getPath(element);
-            if (treePath != null) {
-                return create(treePath, info);
-            }
-            //source does not exist
-            ElementHandle eh = ElementHandle.create(element);
-
-            Symbol.ClassSymbol clsSym;
-            if (element instanceof Symbol.ClassSymbol) {
-              clsSym = (Symbol.ClassSymbol) element;
-            } else {
-              clsSym = (Symbol.ClassSymbol) SourceUtils.getEnclosingTypeElement(element);
-            }
-            FileObject file = null;
-            if (clsSym!=null && clsSym.classfile!=null) {
-                FileObject fo = URLMapper.findFileObject(clsSym.classfile.toUri().toURL());
-                file = fo;
-                if (fo.getNameExt().endsWith("sig")) {
-                    //NOI18N
-                    //conversion sig -> class
-                    String pkgName = FileObjects.convertPackage2Folder(clsSym.getEnclosingElement().getQualifiedName().toString());
-                    StringTokenizer tk = new StringTokenizer(pkgName, "/"); //NOI18N
-                    for (int i = 0; fo != null && i <= tk.countTokens(); i++) {
-                        fo = fo.getParent();
-                    }
-                    if (fo != null) {
-                        URL url = fo.getURL();
-                        URL sourceRoot = Index.getSourceRootForClassFolder(url);
-                        if (sourceRoot!=null) {
-                            FileObject root = URLMapper.findFileObject(sourceRoot);
-                            String resourceName = FileUtil.getRelativePath(fo, URLMapper.findFileObject(clsSym.classfile.toUri().toURL()));
-                            file = root.getFileObject(resourceName.replace(".sig", ".class")); //NOI18N
-                        } else {
-                            Logger.getLogger(TreePathHandle.class.getName()).fine("Index.getSourceRootForClassFolder(url) returned null for url=" + url);//NOI18N
-                        }
-                    }
-                }
-            }
-            return new TreePathHandle(null, null, file, eh, true);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+        URL u = null;
+        String qualName = null;
+        Symbol.ClassSymbol clsSym;
+        if (element instanceof Symbol.ClassSymbol) {
+            clsSym = (Symbol.ClassSymbol) element;
+        } else {
+            clsSym = (Symbol.ClassSymbol) SourceUtils.getEnclosingTypeElement(element);
         }
-        throw new IllegalArgumentException("Cannot create TreePathHandle for " + element + ". Cannot find java nor class file."); //NOI18N
-    }
-    
-    private static boolean isSupported(Element el) {                                                                                                                                                                           
-        switch (el.getKind()) {                                                                                                                                                                                                
-            case PACKAGE:                                                                                                                                                                                                      
-            case CLASS:                                                                                                                                                                                                        
-            case INTERFACE:                                                                                                                                                                                                    
-            case ENUM:                                                                                                                                                                                                         
-            case METHOD:                                                                                                                                                                                                       
-            case CONSTRUCTOR:                                                                                                                                                                                                  
-            case INSTANCE_INIT:                                                                                                                                                                                                
-            case STATIC_INIT:                                                                                                                                                                                                  
-            case FIELD:
-            case ANNOTATION_TYPE:    
-            case ENUM_CONSTANT: return true;                                                                                                                                                                                   
-            default: return false;                                                                                                                                                                                             
-        }                                                                                                                                                                                                                      
+        if (clsSym != null && clsSym.classfile != null) {
+            try {
+                u = clsSym.classfile.toUri().toURL();
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            
+            qualName = clsSym.getEnclosingElement().getQualifiedName().toString();
+        }
+            
+        return new TreePathHandle(new ElementDelegate(ElementHandle.create(element), u, qualName, info.getClasspathInfo()));
     }
 
-    @Override
-    public String toString() {
-        return "TreePathHandle[kind:" + kind + ", enclosingElement:" + enclosingElement + "]";
+    private static boolean isSupported(Element el) {
+        switch (el.getKind()) {
+            case PACKAGE:
+            case CLASS:
+            case INTERFACE:
+            case ENUM:
+            case METHOD:
+            case CONSTRUCTOR:
+            case INSTANCE_INIT:
+            case STATIC_INIT:
+            case FIELD:
+            case ANNOTATION_TYPE:
+            case ENUM_CONSTANT:
+                return true;
+            default:
+                return false;
+        }
     }
-                                                                                                                                                                                                                               
+
     private static PositionRef createPositionRef(FileObject file, int position, Position.Bias bias) {
         try {
             CloneableEditorSupport ces;
@@ -391,32 +269,343 @@ public final class TreePathHandle {
             }
             @SuppressWarnings("deprecation")
             EditorSupport es = dob.getCookie(EditorSupport.class);
-            if (es!=null)
+            if (es != null) {
                 return es.createPositionRef(position, bias);
+            }
         } catch (DataObjectNotFoundException ex) {
             ex.printStackTrace();
         }
-        throw new IllegalStateException("Cannot create PositionRef for file " + file.getPath() +". CloneableEditorSupport not found");                                                                                                                                                                                                           
-    }                                                                                                                                                                                                                          
-                                                                                                                                                                                                                               
-    private static class KindPath {                                                                                                                                                                                            
-        private ArrayList<Tree.Kind> kindPath = new ArrayList();                                                                                                                                                               
-                                                                                                                                                                                                                               
-        private KindPath(TreePath treePath) {                                                                                                                                                                                  
-            while (treePath!=null) {                                                                                                                                                                                           
-                kindPath.add(treePath.getLeaf().getKind());                                                                                                                                                                    
-                treePath = treePath.getParentPath();                                                                                                                                                                           
-            }                                                                                                                                                                                                                  
-        }                                                                                                                                                                                                                      
-                                                                                                                                                                                                                               
-        public int hashCode() {                                                                                                                                                                                                
-            return kindPath.hashCode();                                                                                                                                                                                        
-        }                                                                                                                                                                                                                      
-                                                                                                                                                                                                                               
-        public boolean equals(Object object) {                                                                                                                                                                                 
-            if (object instanceof KindPath)                                                                                                                                                                                    
-                return kindPath.equals(((KindPath)object).kindPath);                                                                                                                                                           
-            return false;                                                                                                                                                                                                      
-        }                                                                                                                                                                                                                      
-    }                                                                                                                                                                                                                          
+        throw new IllegalStateException("Cannot create PositionRef for file " + file.getPath() + ". CloneableEditorSupport not found");
+    }
+    
+    @Override
+    public String toString() {
+        return "TreePathHandle[kind:" + getKind();// + ", enclosingElement:" + enclosingElement + "]";
+    }
+
+    static interface Delegate {
+        public FileObject getFileObject();
+
+        public TreePath resolve(final CompilationInfo compilationInfo) throws IllegalArgumentException;
+
+        public boolean equalsHandle(Delegate obj);
+
+        public int hashCode();
+
+        public Element resolveElement(final CompilationInfo info);
+
+        public Tree.Kind getKind();
+    }
+
+    private static final class TreeDelegate implements Delegate {
+        
+        private PositionRef position;
+
+        private KindPath kindPath;
+
+        private FileObject file;
+
+        private ElementHandle enclosingElement;
+
+        private boolean enclElIsCorrespondingEl;
+
+        private Tree.Kind kind;
+
+        private TreeDelegate(PositionRef position, KindPath kindPath, FileObject file, ElementHandle element, boolean enclElIsCorrespondingEl) {
+            this.kindPath = kindPath;
+            this.position = position;
+            this.file = file;
+            this.enclosingElement = element;
+            this.enclElIsCorrespondingEl = enclElIsCorrespondingEl;
+            if (kindPath != null) {
+                this.kind = kindPath.kindPath.get(0);
+            } else {
+                if (enclElIsCorrespondingEl) {
+                    ElementKind k = element.getKind();
+                    if (k.isClass() || k.isInterface()) {
+                        kind = Tree.Kind.CLASS;
+                    } else if (k.isField()) {
+                        kind = Tree.Kind.VARIABLE;
+                    } else if (k == ElementKind.METHOD || k == ElementKind.CONSTRUCTOR) {
+                        kind = Tree.Kind.METHOD;
+                    }
+                }
+            }
+        }
+
+        /**                                                                                                                                                                                                                        
+         * getter for FileObject from give TreePathHandle                                                                                                                                                                          
+         * @return FileObject for which was this handle created                                                                                                                                                                    
+         */
+        public FileObject getFileObject() {
+            return file;
+        }
+
+        /**                                                                                                                                                                                                                        
+         * Resolves an {@link TreePath} from the {@link TreePathHandle}.                                                                                                                                                           
+         * @param compilationInfo representing the {@link javax.tools.CompilationTask}                                                                                                                                             
+         * @return resolved subclass of {@link Element} or null if the elment does not exist on                                                                                                                                    
+         * the classpath/sourcepath of {@link javax.tools.CompilationTask}.
+         * @throws {@link IllegalArgumentException} when this {@link TreePathHandle} is not created for a source
+         * represented by the compilationInfo.
+         */
+        public TreePath resolve(final CompilationInfo compilationInfo) throws IllegalArgumentException {
+            assert compilationInfo != null;
+            if (!compilationInfo.getFileObject().equals(getFileObject())) {
+                throw new IllegalArgumentException("TreePathHandle [" + FileUtil.getFileDisplayName(getFileObject()) + "] was not created from " + FileUtil.getFileDisplayName(compilationInfo.getFileObject()));
+            }
+            Element element = enclosingElement.resolve(compilationInfo);
+            TreePath tp = null;
+            if (element != null) {
+                TreePath startPath = compilationInfo.getTrees().getPath(element);
+                if (startPath == null) {
+                    Logger.getLogger(TreePathHandle.class.getName()).fine("compilationInfo.getTrees().getPath(element) returned null for element %s " + element + "(" + file.getPath() + ")");    //NOI18N
+                } else {
+                    tp = compilationInfo.getTreeUtilities().pathFor(startPath, position.getOffset() + 1);
+                }
+            }
+            if (tp != null && new KindPath(tp).equals(kindPath)) {
+                return tp;
+            }
+            tp = compilationInfo.getTreeUtilities().pathFor(position.getOffset() + 1);
+            while (tp != null) {
+                if (new KindPath(tp).equals(kindPath)) {
+                    return tp;
+                }
+                tp = tp.getParentPath();
+            }
+            return null;
+        }
+
+        public boolean equalsHandle(Delegate obj) {
+            TreeDelegate other = (TreeDelegate) obj;
+            
+            try {
+                if (this.position == null && other.position == null) {
+                    assert this.enclElIsCorrespondingEl;
+                    assert other.enclElIsCorrespondingEl;
+                    return this.enclosingElement.equals(other.enclosingElement);
+                }
+                if (this.position.getPosition().getOffset() != this.position.getPosition().getOffset()) {
+                    return false;
+                }
+                if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+                    return false;
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            if (this.position == null) {
+                return 553 + enclosingElement.hashCode();
+            }
+            int hash = 7;
+            hash = 79 * hash + this.position.getOffset();
+            hash = 79 * hash + (this.file != null ? this.file.hashCode() : 0);
+            return hash;
+        }
+
+        /**                                                                                                                                                                                                                        
+         * Resolves an {@link Element} from the {@link TreePathHandle}.                                                                                                                                                            
+         * @param compilationInfo representing the {@link javax.tools.CompilationTask}                                                                                                                                             
+         * @return resolved subclass of {@link Element} or null if the elment does not exist on                                                                                                                                    
+         * the classpath/sourcepath of {@link javax.tools.CompilationTask}.                                                                                                                                                        
+         */
+        public Element resolveElement(final CompilationInfo info) {
+            TreePath tp = null;
+            IllegalStateException ise = null;
+            try {
+                if ((this.file != null && info.getFileObject() != null) && info.getFileObject().equals(this.file) && this.position != null) {
+                    tp = this.resolve(info);
+                }
+            } catch (IllegalStateException i) {
+                ise = i;
+            }
+            if (tp == null) {
+                if (enclElIsCorrespondingEl) {
+                    Element e = enclosingElement.resolve(info);
+                    if (e == null) {
+                        Logger.getLogger(TreePathHandle.class.getName()).severe("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
+                    }
+                    return e;
+                } else {
+                    if (ise == null) {
+                        return null;
+                    }
+                    throw ise;
+                }
+            }
+            Element el = info.getTrees().getElement(tp);
+            if (el == null) {
+                Logger.getLogger(TreePathHandle.class.toString()).fine("info.getTrees().getElement(tp) returned null for " + tp);
+                if (enclElIsCorrespondingEl) {
+                    Element e = enclosingElement.resolve(info);
+                    if (e == null) {
+                        Logger.getLogger(TreePathHandle.class.getName()).fine("Cannot resolve" + enclosingElement + " in " + info.getClasspathInfo());    //NOI18N
+                    }
+                    return e;
+                } else {
+                    return null;
+                }
+            } else {
+                return el;
+            }
+        }
+
+        /**                                                                                                                                                                                                                        
+         * Returns the {@link Tree.Kind} of this TreePathHandle,                                                                                                                                                                   
+         * it returns the kind of the {@link Tree} from which the handle                                                                                                                                           
+         * was created.                                                                                                                                                                                                            
+         *                                                                                                                                                                                                                         
+         * @return {@link Tree.Kind}                                                                                                                                                                                               
+         */
+        public Tree.Kind getKind() {
+            return kind;
+        }
+
+        @Override
+        public String toString() {
+            return "TreePathHandle[kind:" + kind + ", enclosingElement:" + enclosingElement + "]";
+        }
+
+        static class KindPath {
+            private ArrayList<Tree.Kind> kindPath = new ArrayList();
+
+            KindPath(TreePath treePath) {
+                while (treePath != null) {
+                    kindPath.add(treePath.getLeaf().getKind());
+                    treePath = treePath.getParentPath();
+                }
+            }
+
+            public int hashCode() {
+                return kindPath.hashCode();
+            }
+
+            public boolean equals(Object object) {
+                if (object instanceof KindPath) {
+                    return kindPath.equals(((KindPath) object).kindPath);
+                }
+                return false;
+            }
+        }
+
+    }
+    
+    private static final class ElementDelegate implements Delegate {
+
+        private ElementHandle<? extends Element> el;
+        private URL source;
+        private String qualName;
+        private ClasspathInfo cpInfo;
+
+        public ElementDelegate(ElementHandle<? extends Element> el, URL source, String qualName, ClasspathInfo cpInfo) {
+            this.el = el;
+            this.source = source;
+            this.qualName = qualName;
+            this.cpInfo = cpInfo;
+        }
+
+        public FileObject getFileObject() {
+            //source does not exist
+            FileObject file = SourceUtils.getFile(el, cpInfo);
+
+            if (file == null && source != null) {
+                FileObject fo = URLMapper.findFileObject(source);
+                file = fo;
+                if (fo.getNameExt().endsWith("sig")) {
+                    //NOI18N
+                    //conversion sig -> class
+                    String pkgName = FileObjects.convertPackage2Folder(qualName);
+                    StringTokenizer tk = new StringTokenizer(pkgName, "/"); //NOI18N
+                    for (int i = 0; fo != null && i <= tk.countTokens(); i++) {
+                        fo = fo.getParent();
+                    }
+                    if (fo != null) {
+                        try {
+                            URL url = fo.getURL();
+                            URL sourceRoot = Index.getSourceRootForClassFolder(url);
+                            if (sourceRoot != null) {
+                                FileObject root = URLMapper.findFileObject(sourceRoot);
+                                String resourceName = FileUtil.getRelativePath(fo, URLMapper.findFileObject(source));
+                                file = root.getFileObject(resourceName.replace(".sig", ".class")); //NOI18N
+                            } else {
+                                Logger.getLogger(TreePathHandle.class.getName()).fine("Index.getSourceRootForClassFolder(url) returned null for url=" + url); //NOI18N
+                            }
+                        } catch (FileStateInvalidException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+            
+            return file;
+        }
+
+        public TreePath resolve(CompilationInfo compilationInfo) throws IllegalArgumentException {
+            Element e = resolveElement(compilationInfo);
+            
+            if (e == null) {
+                return null;
+            }
+            return compilationInfo.getTrees().getPath(e);
+        }
+
+        public Element resolveElement(CompilationInfo info) {
+            return el.resolve(info);
+        }
+
+        public Kind getKind() {
+            switch (el.getKind()) {
+                case PACKAGE:
+                    return Kind.COMPILATION_UNIT;
+                    
+                case ENUM:
+                case CLASS:
+                case ANNOTATION_TYPE:
+                case INTERFACE:
+                    return Kind.CLASS;
+                    
+                case ENUM_CONSTANT:
+                case FIELD:
+                case PARAMETER:
+                case LOCAL_VARIABLE:
+                case EXCEPTION_PARAMETER:
+                    return Kind.VARIABLE;
+                    
+                case METHOD:
+                case CONSTRUCTOR:
+                    return Kind.METHOD;
+                    
+                case STATIC_INIT:
+                case INSTANCE_INIT:
+                    return Kind.BLOCK;
+                    
+                case TYPE_PARAMETER:
+                    return Kind.TYPE_PARAMETER;
+                    
+                case OTHER:
+                default:
+                    return Kind.OTHER;
+            }
+        }
+
+        public boolean equalsHandle(Delegate obj) {
+            ElementDelegate other = (ElementDelegate) obj;
+            
+            return el.signatureEquals(other.el) && cpInfo.equals(other.cpInfo);
+        }
+
+        @Override
+        public int hashCode() {
+            return Arrays.hashCode(el.getSignature());
+        }
+        
+    }
+    
 }                                                                                                                                                                                                                              
