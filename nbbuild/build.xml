@@ -2077,8 +2077,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>      
 
   <target name="commit-validation-vw" description="Run the Visual Web sanity tests">
-      <ant dir="../visualweb/ravebuild" target="build-test-tools" inheritall="true"/>
-      <ant dir="../visualweb/ravebuild" target="commit-validation" inheritall="false"/> 
+      <ant dir="../visualweb/kit/test" target="build-test-tools" inheritall="true"/>
+      <ant dir="../visualweb/kit/test" target="commit-validation" inheritall="false"/> 
   </target>
 
   <target name="sigtests-init" depends="bootstrap">
