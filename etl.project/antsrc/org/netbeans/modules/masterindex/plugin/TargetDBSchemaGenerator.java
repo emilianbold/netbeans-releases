@@ -82,13 +82,13 @@ public class TargetDBSchemaGenerator {
     private Connection conn = null;
     //eview data model type vs. db data type
     private String[][] datatypes = {
-        {"string", "VARCHAR"},
-        {"int", "INTEGER"},
-        {"char", "CHAR"},
-        {"boolean", "BOOLEAN"},
-        {"date", "DATE"},
-        {"blob", "BLOB"},
-        {"float", "FLOAT"}};
+            {"string", "VARCHAR"},
+            {"int", "INTEGER"},
+            {"char", "CHAR"},
+            {"boolean", "BOOLEAN"},
+            {"date", "DATE"},
+            {"blob", "BLOB"},
+            {"float", "FLOAT"}};
     /**
      * logger
      */
@@ -109,7 +109,7 @@ public class TargetDBSchemaGenerator {
     }
 
     public void createTargetDB(String dbname) {
-        //
+    //
     }
 
     public void createTargetDB(String dbdir, String dbname) {
@@ -163,6 +163,16 @@ public class TargetDBSchemaGenerator {
         String defaultCol = modeltablename.substring(modeltablename.lastIndexOf(".") + 1) + "Id";
         if (!colmap.containsKey(defaultCol)) {
             columns.append(defaultCol + " " + getDataTypeMapping(PluginDTConstants.datatype) + "(" + PluginDTConstants.datasize + "), ");
+        }
+
+        //Add Reference column to Child Tables for the Parent Table Id Column
+        if (!lookup.getRootName().equals(nonQualifiedTableName)) {
+            //Table Being added is a child table
+            String fk_col = lookup.getRootName() + "Id";
+            if (!colmap.containsKey(fk_col)) {
+                //Check if see if colum is already generated using object.xml
+                columns.append(fk_col + " " + getDataTypeMapping(PluginDTConstants.datatype) + "(" + PluginDTConstants.datasize + "), ");
+            }
         }
 
         columns.append(createPrimaryKeyConstraint(defaultCol));
