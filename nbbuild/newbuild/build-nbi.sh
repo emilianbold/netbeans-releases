@@ -18,8 +18,10 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
        echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't remove old bits"
        exit $ERROR_CODE;
    fi
+   ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip
    scp -q -v $DIST/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
    if [ 1 -eq $ML_BUILD ] ; then
+        ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip-ml
 	scp -q -v $DIST/ml/zip/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip-ml
    fi
    ERROR_CODE=$?
