@@ -41,8 +41,10 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.models;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JToolTip;
+import javax.swing.SwingUtilities;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -117,23 +119,14 @@ public class VariablesTableModel implements TableModel, Constants {
                     columnID.equals(WATCH_TYPE_COLUMN_ID)) {
                 return true;
             } else if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
-                String t = var.getType();
-                int count = 20;
-                
-                // this can get called while var is waiting for its type to be returned
-                while (t == null && count-- > 0) {
-                    try {
-                        Thread.sleep(100);
-                        t = var.getType();
-                    } catch (InterruptedException ex) {
-                        return true;
-                    }
-                }
+                String t = var.waitForType();
                 if (t == null) {
-                    log.fine("VTM.isReadOnly: Timeout getting type of variable");
+                    if (log.isLoggable(Level.FINE) && debugger.getState().equals(GdbDebugger.STATE_STOPPED) &&
+                            !SwingUtilities.isEventDispatchThread()) {
+                        log.fine("VTM.isReadOnly: null type for " + var.getName() + " (state is " + debugger.getState() + ")"); // NOI18N
+                    }
                     return false; // timed out getting type
-                }
-                if (GdbUtils.isPointer(t)) {
+                } else if (GdbUtils.isPointer(t)) {
                     return false;
                 } else if (t.length() == 0 && var.getValue() != null && var.getValue().equals("...")) { // NOI18N
                     return true;

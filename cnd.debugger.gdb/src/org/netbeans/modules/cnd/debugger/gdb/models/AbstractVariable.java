@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -133,6 +134,31 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return type;
     }
     
+    /**
+     * Similar to getType() except this method will wait for the type to be supplied in
+     * an alternate thread.
+     * 
+     * @return declared type of this local
+     */
+    public String waitForType() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            int count = 20;
+
+            // this can get called while var is waiting for its type to be returned
+            while (type == null && count-- > 0 && debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                if (log.isLoggable(Level.FINE) && count == 19) {
+                    log.fine("AV.waitForType: Waiting on type for " + name);
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    return null;
+                }
+            }
+        }
+        return type;
+    }
+    
     public void setType(String type) {
         this.type = type;
     }
@@ -163,7 +189,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
      */
     public void setValue(String value) {
         String msg = null;
-        String rt = getTypeInfo().getResolvedType();
+        String rt = getTypeInfo().getResolvedType(this);
         int pos;
         
         if (getDebugger() != null) {
@@ -302,7 +328,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @returns A valid value (valid in the sense gdb should accept it) or null
      */
     private String setValueEnum(String value) {
-        String rt = getTypeInfo().getResolvedType();
+        String rt = getTypeInfo().getResolvedType(this);
         int pos1 = rt.indexOf('{');
         int pos2 = rt.indexOf('}');
         if (pos1 > 0 && pos2 > 0) {
@@ -359,7 +385,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
      * @return true if the field should have a turner and false if it shouldn't
      */
     private boolean mightHaveFields() {
-        String rt = getTypeInfo().getResolvedType();
+        String rt = getTypeInfo().getResolvedType(this);
         if (GdbUtils.isArray(rt) && !isCharString(rt)) {
             return true;
         } else if (isValidPointerAddress()) {
@@ -502,13 +528,12 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     private void createChildren() {
-        String resolvedType = getTypeInfo().getResolvedType();
+        String resolvedType = getTypeInfo().getResolvedType(this);
         Map<String, Object> map;
         String t;
         String v;
         
-        if (GdbUtils.isPointer(resolvedType) && !isCharString(resolvedType) &&
-                        isCast(value) && !GdbUtils.isMultiPointer(resolvedType)) {
+        if (GdbUtils.isPointer(resolvedType) && !isCharString(resolvedType) && !GdbUtils.isMultiPointer(resolvedType)) {
             if (value.endsWith(" 0") || value.endsWith(" 0x0")) { // NOI18N
                 t = null;
                 v = null;
@@ -527,20 +552,29 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 createChildrenForMultiPointer(t);
             } else {
                 map = getTypeInfo().getMap();
-                if (!map.isEmpty()) {
-                    String val = v.substring(1, v.length() - 1);
-                    int start = 0;
-                    int end = GdbUtils.findNextComma(val, 0);
-                    while (end != -1) {
-                        String vfrag = val.substring(start, end).trim();
-                        addField(completeFieldDefinition(this, map, vfrag));
-                        start = end + 1;
-                        end = GdbUtils.findNextComma(val, end + 1);
+                if (map != null) { // a null map means we never got type information
+                    if (map.isEmpty()) {
+                        // an empty map means its a pointer to a non-struct/class/union
+                        createChildrenForPointer(t, v);
+                    } else {
+                        String val = v.substring(1, v.length() - 1);
+                        int start = 0;
+                        int end = GdbUtils.findNextComma(val, 0);
+                        while (end != -1) {
+                            String vfrag = val.substring(start, end).trim();
+                            addField(completeFieldDefinition(this, map, vfrag));
+                            start = end + 1;
+                            end = GdbUtils.findNextComma(val, end + 1);
+                        }
+                        addField(completeFieldDefinition(this, map, val.substring(start).trim()));
                     }
-                    addField(completeFieldDefinition(this, map, val.substring(start).trim()));
                 }
             }
         }
+    }
+    
+    private void createChildrenForPointer(String t, String v) {
+        addField(new AbstractField(this, '*' + name, t, v));
     }
     
     private void createChildrenForMultiPointer(String t) {
@@ -569,16 +603,6 @@ public class AbstractVariable implements LocalVariable, Customizer {
         if (t != null && t.endsWith("*") && !t.endsWith("**")) { // NOI18N
             t = GdbUtils.getBaseType(t);
             if (t.equals("char") || t.equals("unsigned char")) { // NOI18N
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isCast(String info) {
-        if (info.length() > 0 && info.charAt(0) == '(') {
-            int pos = GdbUtils.findMatchingParen(info, 0);
-            if (pos != -1 && info.length() > pos + 2 && info.substring(pos + 1, pos + 4).equals(" 0x")) { // NOI18N
                 return true;
             }
         }

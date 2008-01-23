@@ -73,30 +73,35 @@ public class TypeInfo {
         }
         
         if (var.getName().equals(NbBundle.getMessage(AbstractVariable.class, "LBL_BaseClass"))) { // NOI18N
-            rawInfo = debugger.requestSymbolType(var.getType()).replace("\\n", "").trim();  // NOI18N
+            rawInfo = debugger.requestSymbolType(var.getType());
         } else {
-            rawInfo = debugger.requestSymbolType(var.getFullName(false)).replace("\\n", "").trim(); // NOI18N
+            rawInfo = debugger.requestSymbolType(var.getFullName(false));
         }
         
-        int pos1 = rawInfo.indexOf('{');
-        if (pos1 == -1) {
-            resolvedType = rawInfo;
-        } else {
-            resolvedType = rawInfo.substring(0, pos1).trim();
-            int pos2 = resolvedType.indexOf(" : "); // NOI18N
-            if (pos2 != -1) {
-                resolvedType = resolvedType.substring(0, pos2);
-        }
-            pos2 = GdbUtils.findMatchingCurly(rawInfo, pos1);
-            if (pos2 != -1) {
-                resolvedType = resolvedType + rawInfo.substring(pos2 + 1);
+        if (rawInfo != null) {
+            rawInfo = rawInfo.replace("\\n", "").trim(); // NOI18N
+            int pos1 = rawInfo.indexOf('{');
+            if (pos1 == -1) {
+                resolvedType = rawInfo;
+            } else {
+                resolvedType = rawInfo.substring(0, pos1).trim();
+                int pos2 = resolvedType.indexOf(" : "); // NOI18N
+                if (pos2 != -1) {
+                    resolvedType = resolvedType.substring(0, pos2);
             }
-        }
+                pos2 = GdbUtils.findMatchingCurly(rawInfo, pos1);
+                if (pos2 != -1) {
+                    resolvedType = resolvedType + rawInfo.substring(pos2 + 1);
+                }
+            }
             tinfo = ticache.get(resolvedType);
             if (tinfo != null) {
                 log.fine("TI.getTypeInfo[rt]: " + var.getType() + " ==> [" + resolvedType + "]"); // NOI18N
                 return tinfo;
             }
+        } else {
+            resolvedType = null;
+        }
         
         return new TypeInfo(debugger, var.getType(), resolvedType, rawInfo);
     }
@@ -106,18 +111,43 @@ public class TypeInfo {
         this.resolvedType = resolvedType;
         this.rawInfo = rawInfo;
         map = null;
-        ticache = debugger.getTypeInfoCache();
-        log.fine("TI.<Init>: " + vartype + " ==> [" + resolvedType + ", " + rawInfo + "]");
         
-        if (vartype != null) {
-            if (!vartype.equals(resolvedType)) {
-                ticache.put(resolvedType, this);
+        if (resolvedType != null) {
+            ticache = debugger.getTypeInfoCache();
+            log.fine("TI.<Init>: " + vartype + " ==> [" + resolvedType + ", " + rawInfo + "]");
+
+            if (vartype != null) {
+                if (!vartype.equals(resolvedType)) {
+                    ticache.put(resolvedType, this);
+                }
+                ticache.put(vartype, this);
             }
-            ticache.put(vartype, this);
         }
     }
     
-    public String getResolvedType() {
+    public String getResolvedType(AbstractVariable var) {
+        if (resolvedType == null) {
+            if (rawInfo == null) {
+                rawInfo = debugger.requestSymbolType(var.getFullName(false));
+            }
+            if (rawInfo != null) {
+                rawInfo = rawInfo.replace("\\n", "").trim(); // NOI18N
+                int pos1 = rawInfo.indexOf('{');
+                if (pos1 == -1) {
+                    resolvedType = rawInfo;
+                } else {
+                    resolvedType = rawInfo.substring(0, pos1).trim();
+                    int pos2 = resolvedType.indexOf(" : "); // NOI18N
+                    if (pos2 != -1) {
+                        resolvedType = resolvedType.substring(0, pos2);
+                    }
+                    pos2 = GdbUtils.findMatchingCurly(rawInfo, pos1);
+                    if (pos2 != -1) {
+                        resolvedType = resolvedType + rawInfo.substring(pos2 + 1);
+                    }
+                }
+            }
+        }
         return resolvedType;
     }
     
@@ -132,17 +162,25 @@ public class TypeInfo {
     }
     
     private Map<String, Object> getCachedMap() {
-        Map<String, Object> m = mcache.get(resolvedType);
-        if (m != null) {
-            log.fine("TI.getCachedMap: Got Map for " + resolvedType); // NOI18N
+        if (resolvedType != null) {
+            Map<String, Object> m = mcache.get(resolvedType);
+            if (m != null) {
+                log.fine("TI.getCachedMap: Got Map for " + resolvedType); // NOI18N
+            }
+            return m;
+        } else {
+            return null;
         }
-        return m;
-        }
+    }
     
     private Map<String, Object> createMap() {
-        Map<String, Object> m = createFieldMap();
-        mcache.put(resolvedType, m);
-        return m;
+        if (resolvedType != null) {
+            Map<String, Object> m = createFieldMap();
+            mcache.put(resolvedType, m);
+            return m;
+        } else {
+            return null;
+        }
     }
     
     private Map<String, Object> createFieldMap() {
@@ -164,18 +202,18 @@ public class TypeInfo {
             }
             m.put("<name>", n.startsWith("class ") ? n.substring(5).trim() : n); // NOI18N
         }
-        String rt = rawInfo;
+        String ri = rawInfo;
         if (pos1 == -1 && pos2 == -1) {
             if (GdbUtils.isPointer(rawInfo)) {
-                rt = rt.replace('*', ' ').trim();
+                ri = ri.replace('*', ' ').trim();
             }
         } else if (pos1 != -1 && pos2 != -1 && pos2 > (pos1 + 1)) {
-            fields = rt.substring(pos1 + 1, pos2);
+            fields = ri.substring(pos1 + 1, pos2);
         }
         if (fields != null) {
             m = parseFields(m, fields);
             if (m.isEmpty()) {
-                m.put("<" + rt.substring(0, pos1) + ">", "<No data fields>"); // NOI18N
+                m.put("<" + ri.substring(0, pos1) + ">", "<No data fields>"); // NOI18N
             }
         }
         return m;
