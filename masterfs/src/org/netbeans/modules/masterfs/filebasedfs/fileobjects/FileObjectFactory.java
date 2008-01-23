@@ -164,7 +164,7 @@ public final class FileObjectFactory {
         boolean warning = false;
         BaseFileObj foForFile = null;
         if (FileBasedFileSystem.WARNINGS) {
-            warning = file.exists() != ((parent != null) ? child != null : (((foForFile = get(file)) != null && foForFile.isValid()) || file.exists()));
+            warning = file.exists() != optimizedExists(file, caller, parent, child);
             warning = warning && warningOn && !WriteLockUtils.hasActiveLockFileSigns(file.getAbsolutePath());
         }
         return warning;
@@ -178,13 +178,14 @@ public final class FileObjectFactory {
                 exist = true;
                 break;
             case ToFileObject:
-                exist = child != null || (((foForFile = get(file)) != null && foForFile.isValid())) ? true : touchExists(file, caller);
+                foForFile = get(file);
+                exist = (foForFile != null && foForFile.isValid()) || (child != null && foForFile == null) ? true : touchExists(file, caller);
                 break;
             case GetChildern:                
             case Others:                                    
             case GetFileObject:
                 exist = (parent != null) ? child != null : (((foForFile = get(file)) != null && foForFile.isValid()) || touchExists(file, caller));
-                break;                
+                break;
         }
         return exist;
     }
