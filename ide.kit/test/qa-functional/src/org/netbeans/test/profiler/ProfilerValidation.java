@@ -1,0 +1,258 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ */
+package org.netbeans.test.profiler;
+
+import junit.textui.TestRunner;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
+import org.netbeans.jellytools.NewProjectWizardOperator;
+import org.netbeans.jellytools.OptionsOperator;
+import org.netbeans.jellytools.OutputTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
+import org.netbeans.jemmy.operators.JRadioButtonOperator;
+import org.netbeans.jemmy.operators.JTabbedPaneOperator;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.ide.ProjectSupport;
+
+/** Validation test of profiler.
+ *
+ * @author Alexandr Scherbatiy, Jiri Skrivanek
+ */
+public class ProfilerValidation extends JellyTestCase {
+    
+    private static final String SAMPLE_PROJECT_NAME = "AnagramGame";
+    
+    protected static final String  MENU_ITEM_PROFILE_MAIN_PROJECT   = "Profile Main Project...";
+    protected static final String  MENU_ITEM_ATTACH_PROFILE         = "Attach Profiler...";
+    protected static final String  MENU_ITEM_TAKE_SNAPSHOT          = "Take Snapshot of Collected Results";
+    protected static final String  MENU_ITEM_STOP_PROFILING_SESSION = "Stop Profiling Session";
+    
+    
+    protected static final String  LABEL_JAVA_PLATFORM = "Profiler Java Platform";
+    protected static final String  LABEL_COMMUNICATION_PORT = "Communication Port";
+    
+    
+    protected static final String  LABEL_OPEN_THREADS_VIEW = "Open Threads View";
+    protected static final String  LABEL_CPU = "CPU";
+    protected static final String  LABEL_MEMORY = "Memory";
+    
+    
+    
+    protected static final String  LABEL_OPEN_NEW_SNAPSHOT = "Open New Snapshot";
+    
+    protected static final String  LABEL_SAVE_HEAP_DUMP = "Save heap dump to";
+    protected static final String  LABEL_ENABLE_HEAP_ANALYSIS = "Enable Rule-Based Heap Analysis";
+    
+    
+    protected static final String  BUTTON_RUN = "Run";
+    protected static final String  BUTTON_RESET = "Reset";
+    
+    
+    protected static final String  TEXT_OUTPUT = "Established local connection with the tool";
+    
+    
+    /** Default constructor.
+     * @param name test case name
+     */
+    public ProfilerValidation(String name){
+        super(name);
+    }
+    
+    /** Defaine order of test cases.
+     * @return NbTestSuite instance
+     */
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new ProfilerValidation("testProfilerMenus"));
+        suite.addTest(new ProfilerValidation("testProfilerProperties"));
+        //suite.addTest(new ProfilerValidation("testCreateProject"));
+        //suite.addTest(new ProfilerValidation("testProfiler"));
+        return suite;
+    }
+    
+    /** Use for execution inside IDE */
+    public static void main(java.lang.String[] args) {
+        // run whole suite
+        TestRunner.run(suite());
+        // run only selected test case
+        //TestRunner.run(new ProfilerValidation("testProfiler"));
+    }
+
+    /** Setup before every test case. */
+    public void setUp() {
+        System.out.println("########  "+getName()+"  #######");
+    }
+
+    /** Test Profiler Menus. */
+    public void testProfilerMenus(){
+
+        new ActionNoBlock("Profile|" + MENU_ITEM_PROFILE_MAIN_PROJECT, null).isEnabled();
+        new ActionNoBlock("Profile|" + MENU_ITEM_ATTACH_PROFILE, null).isEnabled();
+        new ActionNoBlock("Profile|" + MENU_ITEM_TAKE_SNAPSHOT, null).isEnabled();
+        new ActionNoBlock("Profile|" + MENU_ITEM_STOP_PROFILING_SESSION, null).isEnabled();
+        
+    }
+    
+    /** Test Profiler Properties. */
+    public void testProfilerProperties(){
+        new ActionNoBlock("Tools|Options", null).perform();
+        
+        OptionsOperator options = new OptionsOperator();
+        options.selectCategory("Miscellaneous");        
+        
+        JTabbedPaneOperator tabbedPane = new JTabbedPaneOperator(options);
+        tabbedPane.selectPage("Profiler");
+                
+        JLabelOperator javaPlatform = new JLabelOperator(options, LABEL_JAVA_PLATFORM);
+        
+        JLabelOperator communicationPort = new JLabelOperator(options, LABEL_COMMUNICATION_PORT);
+        
+        JLabelOperator openThreads = new JLabelOperator(options, LABEL_OPEN_THREADS_VIEW);
+        JCheckBoxOperator cpu    = new JCheckBoxOperator(options, LABEL_CPU);
+        JCheckBoxOperator memory = new JCheckBoxOperator(options, LABEL_MEMORY);
+        
+        
+        JComboBoxOperator openNewSnapshot= new JComboBoxOperator(options, LABEL_OPEN_NEW_SNAPSHOT);
+        
+        
+        
+        JCheckBoxOperator enableHeapAnalisys = new JCheckBoxOperator(options, LABEL_ENABLE_HEAP_ANALYSIS);
+        
+        JButtonOperator reset = new JButtonOperator(options, BUTTON_RESET);
+        
+        new JButtonOperator(options, "OK").push();
+        
+    }    
+    
+    /** Create project to be tested. */
+    public void testCreateProject() {
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        npwo.selectCategory("Samples|Java");
+        npwo.selectProject("Anagram Game");
+        npwo.next();
+        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
+        npnlso.txtProjectLocation().setText(System.getProperty("netbeans.user")); // NOI18N
+        npnlso.btFinish().pushNoBlock();
+        npnlso.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 120000);
+        npnlso.waitClosed();
+        // Opening Projects
+        String openingProjectsTitle = Bundle.getString("org.netbeans.modules.project.ui.Bundle", "LBL_Opening_Projects_Progress");
+        waitProgressDialog(openingProjectsTitle, 120000);
+        // wait project appear in projects view
+        ProjectRootNode projectNode = new ProjectsTabOperator().getProjectRootNode(SAMPLE_PROJECT_NAME);
+        // wait classpath scanning finished
+        ProjectSupport.waitScanFinished();
+        projectNode.buildProject();
+        MainWindowOperator.getDefault().waitStatusText("Finished Building");
+        
+    }
+    
+    /** Test profiler
+     * - run profiler calibration Profile|Advanced Commands|Run Profiler Calibration
+     * - wait for calibration results and confirm information dialog
+     * - call Profile|Profile Main Project
+     * - confirm changes in project when profiled for the first time
+     * - click Run in Profile AnagramGame dialog
+     * - wait for Profiler view
+     * - wait until text "Established local connection with the tool" appears in output window
+     * - wait until "Profile|Take Snapshot of Collected Results" is enabled
+     * - call Profile|Take Snapshot of Collected Results
+     * - maximaze results view
+     * - save collected results
+     * - call "Profile|Stop Profiling Session"
+     */
+    public void testProfiler() throws Exception {
+        new ActionNoBlock("Profile|Advanced Commands|Run Profiler Calibration", null).perform();
+        new NbDialogOperator("Select Java Platform to calibrate").ok();
+        // increase timeout for calibration
+        JemmyProperties.setCurrentTimeout("DialogWaiter.WaitDialogTimeout", 120000); // NOI18N
+        new NbDialogOperator("Information").ok();
+        new ActionNoBlock("Profile|Profile Main Project", null).perform();
+        new NbDialogOperator("Question").ok();
+        NbDialogOperator profileOper = new NbDialogOperator("Profile "+SAMPLE_PROJECT_NAME);
+        new JButtonOperator(profileOper, "Run").push();
+        profileOper.waitClosed();
+        waitProgressDialog("Progress", 5000);
+        new TopComponentOperator("Profiler");        
+        new OutputTabOperator(SAMPLE_PROJECT_NAME).waitText("Established local connection with the tool");
+        Action takeSnapshotAction = new Action("Profile|Take Snapshot of Collected Results", null);
+        new Waiter(new Waitable() {
+            public Object actionProduced(Object takeSnapshotAction) {
+                return ((Action)takeSnapshotAction).isEnabled() ? Boolean.TRUE : null;
+            }
+            public String getDescription() {
+                return("Wait menu item enabled."); // NOI18N
+            }
+        }).waitAction(takeSnapshotAction);
+        takeSnapshotAction.perform();
+        TopComponentOperator collectedResults = new TopComponentOperator("CPU");
+        //collectedResults.maximize();
+        collectedResults.saveDocument();
+        new Action("Profile|Stop Profiling Session", null).perform();
+    }
+    
+    
+    public void waitProgressDialog(String title, int milliseconds){
+        try {
+            // wait at most 120 second until progress dialog dismiss
+            NbDialogOperator openingOper = new NbDialogOperator(title);
+            openingOper.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", milliseconds);
+            openingOper.waitClosed();
+        } catch (TimeoutExpiredException e) {
+            // ignore when progress dialog was closed before we started to wait for it
+        }        
+    }
+}
