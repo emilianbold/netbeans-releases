@@ -150,6 +150,8 @@ class LogFormatter extends XMLFormatter{
                     fileName = fileName.substring(0, index);
                 }
                 fileName = fileName.replace("jar:", "");// NOI18N
+                fileName = fileName.replace("file:", "");// NOI18N
+                fileName = fileName.replace("nbjcl:", "");// NOI18N
                 if (javaHome.length() > 0){
                     fileName = fileName.replace(javaHome, "${java.home}");// NOI18N
                 }
