@@ -145,9 +145,12 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         if (descriptor.getPwd() != null) {
             debugDesc.setBaseDirectory(descriptor.getPwd());
         }
+        Map<String, String> env = new  HashMap<String, String>();
+        GemManager.adjustEnvironment(platform, env);
         if (jrubySet) {
-            debugDesc.setEnvironment(getJRubyEnvironment(descriptor));
+            env.putAll(getJRubyEnvironment(descriptor));
         }
+        debugDesc.setEnvironment(env);
         RubyDebuggerProxy proxy;
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
         Util.finest("Using timeout: " + timeout + 's'); // NOI18N

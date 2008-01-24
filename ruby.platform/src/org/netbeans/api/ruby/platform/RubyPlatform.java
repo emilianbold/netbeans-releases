@@ -44,6 +44,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -488,8 +489,15 @@ public final class RubyPlatform {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
             }
             if (exec == null && hasRubyGemsInstalled()) {
-                String libGemBinDir = getGemManager().getGemHome() + File.separator + "bin"; // NOI18N
-                exec = RubyPlatform.findExecutable(libGemBinDir, toFind);
+                List<String> repos = gemManager.getRepositories();
+                repos.add(0, gemManager.getGemHome()); // XXX is not a GEM_HOME always part of GEM_PATH?
+                for (String repo : repos) {
+                    String libGemBinDir = repo + File.separator + "bin"; // NOI18N
+                    exec = RubyPlatform.findExecutable(libGemBinDir, toFind);
+                    if (exec != null) {
+                        break;
+                    }
+                }
             }
             canonical ^= true;
         } while (!canonical && exec == null);
@@ -779,6 +787,10 @@ public final class RubyPlatform {
             return gemHome;
         }
 
+        public void setGemPath(String gemPath) {
+            this.gemPath = gemPath;
+        }
+        
         public String getGemPath() {
             return gemPath;
         }
@@ -810,6 +822,6 @@ public final class RubyPlatform {
         public String getVersion() {
             return version;
         }
-        
+
     }
 }

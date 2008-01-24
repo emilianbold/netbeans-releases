@@ -52,11 +52,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
 import org.netbeans.modules.ruby.platform.Util;
 import org.openide.DialogDisplayer;
@@ -172,6 +174,7 @@ public final class GemManager {
         return null;
     }
     
+    /** Returns main Gem repository path. */
     public String getGemHome() {
         return platform.getInfo().getGemHome();
     }
@@ -202,6 +205,40 @@ public final class GemManager {
         return gemHomeUrl;
     }
 
+    /** Returns paths to all Gem repositories. */
+    public List<String> getRepositories() {
+        List<String> repos = new ArrayList<String>();
+        StringTokenizer st = new StringTokenizer(platform.getInfo().getGemPath(), File.pathSeparator);
+        while (st.hasMoreTokens()) {
+            repos.add(st.nextToken());
+        }
+        return repos;
+    }
+    
+    public void addRepository(final String path) {
+        List<String> gemPath = getRepositories();
+        gemPath.add(path);
+        storeRepositories(gemPath);
+    }
+
+    public void removeRepository(final String path) {
+        List<String> gemPath = getRepositories();
+        gemPath.remove(path);
+        storeRepositories(gemPath);
+    }
+
+    private void storeRepositories(final List<String> gemPath) {
+        StringBuilder pathSB = new StringBuilder();
+        for (String token : gemPath) {
+            if (pathSB.length() != 0) {
+                pathSB.append(File.pathSeparator);
+            }
+            pathSB.append(token);
+        }
+        platform.getInfo().setGemPath(pathSB.toString());
+        resetLocal();
+    }
+    
     /** Return > 0 if version1 is greater than version 2, 0 if equal and -1 otherwise */
     public static int compareGemVersions(String version1, String version2) {
         if (version1.equals(version2)) {
@@ -313,23 +350,24 @@ public final class GemManager {
     private void initGemList() {
         if (gemFiles == null) {
             // Initialize lazily
-            String gemDir = getGemHome();
-            if (gemDir == null) {
-                return;
-            }
-            File specDir = new File(gemDir, SPECIFICATIONS);
-
-            if (specDir.exists()) {
-                LOGGER.finest("Initializing \"" + gemDir + "\" repository");
-                // Add each of */lib/
-                File[] gems = specDir.listFiles();
-                if (gems != null){
-                    gems = chooseGems(gems);
+            assert platform.hasRubyGemsInstalled() : "asking for gems only when RubyGems are installed";
+            List<String> repos = getRepositories();
+            repos.add(0, getGemHome()); // XXX is not a GEM_HOME always part of GEM_PATH
+            gemFiles = new HashMap<String, Map<String, File>>();
+            for (String gemDir : repos) {
+                File specDir = new File(gemDir, SPECIFICATIONS);
+                if (specDir.exists()) {
+                    LOGGER.finest("Initializing \"" + gemDir + "\" repository");
+                    // Add each of */lib/
+                    File[] gems = specDir.listFiles();
+                    if (gems != null) {
+                        gems = chooseGems(gems, gemFiles);
+                    }
+                } else {
+                    LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
                 }
-            } else {
-                LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
+                logGems(Level.FINEST);
             }
-            logGems(Level.FINEST);
         }
     }
 
@@ -337,11 +375,10 @@ public final class GemManager {
      * Given a list of files that may represent gems, choose the most recent
      * version of each.
      */
-    private File[] chooseGems(File[] gems) {
-        
+    private static File[] chooseGems(final  File[] gems, final Map<String, Map<String, File>> gemFiles) {
         GemFilesParser gemFilesParser = new GemFilesParser(gems);
         gemFilesParser.chooseGems();
-        gemFiles = gemFilesParser.getGemMap();
+        gemFiles.putAll(gemFilesParser.getGemMap());
         return gemFilesParser.getFiles();
     }
 
@@ -934,4 +971,17 @@ public final class GemManager {
         return gemHomeF.isDirectory() && new File(gemHomeF, "gems").isDirectory()
                 && new File(gemHomeF, "specifications").isDirectory();
     }
+
+    public static void adjustEnvironment(final RubyPlatform platform, final Map<String, String> env) {
+        String gemHome = adjustGemPath(platform.getGemManager().getGemHome());
+        String gemPath = adjustGemPath(platform.getInfo().getGemPath());
+        env.put("GEM_HOME", gemHome); // NOI18N
+        env.put("GEM_PATH", gemPath); // NOI18N
+    }
+
+    private static String adjustGemPath(final String origPath) {
+        // it's needed on Windows, otherwise gem tool fails
+        return Utilities.isWindows() ? origPath.replace('\\', '/') : origPath;
+    }
+
 }

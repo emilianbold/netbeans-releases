@@ -1026,29 +1026,35 @@ public final class GemPanel extends JPanel implements Runnable {
     }//GEN-LAST:event_manageButtonActionPerformed
 
     private void browseGemHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseGemHomeActionPerformed
-        boolean changed = browseGemHome(this, getSelectedPlatform());
+        boolean changed = chooseAndSetGemHome(this, getSelectedPlatform());
         if (changed) {
             updateAsynchronously();
         }
     }//GEN-LAST:event_browseGemHomeActionPerformed
 
-    public static boolean browseGemHome(final Component parent, final RubyPlatform platform) {
-        if (platform == null) {
-            return false;
-        }
-        assert platform.hasRubyGemsInstalled() : "has RubyGems installed";
+    public static File chooseGemRepository(final Component parent) {
         JFileChooser chooser = new JFileChooser();
         //        chooser.setAcceptAllFileFilterUsed(false);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int ret = chooser.showOpenDialog(parent);
         if (ret == JFileChooser.APPROVE_OPTION) {
             File gemHomeF = FileUtil.normalizeFile(chooser.getSelectedFile());
-            if (!GemManager.isValidGemHome(gemHomeF)) {
-                Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath());
-                return false;
+            if (GemManager.isValidGemHome(gemHomeF)) {
+                return gemHomeF;
             }
-            // XXX perform some sanity check whether it is valid Gem Repository
             // XXX if not a valid repo, offer to create/initialize it there
+            Util.notifyLocalized(GemPanel.class, "GemPanel.invalid.gemHome", gemHomeF.getAbsolutePath());
+        }
+        return null;
+    }
+    
+    public static boolean chooseAndSetGemHome(final Component parent, final RubyPlatform platform) {
+        if (platform == null) {
+            return false;
+        }
+        assert platform.hasRubyGemsInstalled() : "has RubyGems installed";
+        File gemHomeF = chooseGemRepository(parent);
+        if (gemHomeF != null) {
             platform.setGemHome(gemHomeF);
             platform.getGemManager().reset();
             return true;

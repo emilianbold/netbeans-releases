@@ -103,4 +103,26 @@ public class GemManagerTest extends RubyTestBase {
         assertTrue("valid", GemManager.isValidGemHome(
                 new File(platform.getInfo().getGemHome())));
     }
+    
+    public void testGetRepositories() throws Exception {
+        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        List<String> paths = gemManager.getRepositories();
+        assertEquals("one path element", 1, paths.size());
+        assertEquals("same as Gem Home", gemManager.getGemHome(), paths.get(0));
+        assertEquals("same as Gem Home", gemManager.getGemHome(), platform.getInfo().getGemPath());
+    }
+    
+    public void testAddRemoveRepository() throws Exception {
+        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        String dummyRepo = getWorkDirPath() + "/a";
+        gemManager.addRepository(dummyRepo);
+        assertEquals("two repositories", 2, gemManager.getRepositories().size());
+        assertTrue("two repositories in info's gempath", platform.getInfo().getGemPath().indexOf(File.pathSeparatorChar) != -1);
+        gemManager.removeRepository(dummyRepo);
+        assertEquals("one repositories", 1, gemManager.getRepositories().size());
+        assertTrue("one repositories in info's gempath", platform.getInfo().getGemPath().indexOf(File.pathSeparatorChar) == -1);
+    }
+    
 }
