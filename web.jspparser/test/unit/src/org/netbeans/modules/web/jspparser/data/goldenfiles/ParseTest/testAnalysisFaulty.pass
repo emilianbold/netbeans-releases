@@ -6,9 +6,10 @@
         javax.servlet.http.*
         javax.servlet.jsp.*
       dependants:
+        /WEB-INF/META-INF/c.tld
       taglibsMap:
         tag library: /WEB-INF/META-INF/c.tld
-            tlibversion : null
+            tlibversion : 1.0
             jspversion  : 1.2
             shortname   : c
             urn         : http://java.sun.com/jstl/core
@@ -72,7 +73,7 @@
                   class    : org.apache.jsp.tag.web.othertag_tag
                   attribs  : [separator]
         tag library: http://java.sun.com/jsp/jstl/fmt
-            tlibversion : null
+            tlibversion : 1.1
             jspversion  : 2.0
             shortname   : fmt
             urn         : http://java.sun.com/jsp/jstl/fmt
@@ -146,5 +147,5 @@
 no XML view
 
  ---- ERRORS
-ERROR in /faulty.jsp at [10, 0] /faulty.jsp [10;0] PWC6142: No tag "setLocaale" defined in tag library imported with prefix "fmt"
+ERROR in /faulty.jsp at [10, 0] No tag "setLocaale" defined in tag library imported with prefix "fmt"
 

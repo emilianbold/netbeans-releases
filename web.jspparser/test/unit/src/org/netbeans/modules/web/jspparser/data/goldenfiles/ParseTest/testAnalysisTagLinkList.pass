@@ -123,5 +123,5 @@ Node [/WEB-INF/tags/linklist.tag(14,13), TemplateText]
 
 
  ---- ERRORS
-ERROR in /WEB-INF/tags/linklist.tag at [5, 26] /WEB-INF/tags/linklist.tag [5;26] PWC6236: According to TLD or attribute directive in tag file, attribute bundle does not accept any expressions
+ERROR in /WEB-INF/tags/linklist.tag at [5, 26] According to TLD or attribute directive in tag file, attribute bundle does not accept any expressions
 
