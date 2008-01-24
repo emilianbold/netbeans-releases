@@ -44,7 +44,10 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.print.Printable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -82,10 +85,10 @@ public final class PrintPreviewAction extends IconAction {
   }
 
   public void actionPerformed(ActionEvent event) {
-    PrintProvider provider = getPrintProvider();
+    List<PrintProvider> providers = getPrintProviders();
 
-    if (provider != null) {
-      Preview.getDefault().print(provider, true);
+    if (providers != null) {
+      Preview.getDefault().print(providers, true);
     }
     else {
       PrintCookie cookie = getPrintCookie();
@@ -96,18 +99,13 @@ public final class PrintPreviewAction extends IconAction {
     }
   }
 
-  private PrintProvider getPrintProvider() {
+  private List<PrintProvider> getPrintProviders() {
 //out();
-    PrintProvider provider;
-    Node node = getActiveNode();
+    List<PrintProvider> providers = getPrintProviders(getNodes());
 
-    if (node != null) {
-      provider = (PrintProvider) node.getLookup().lookup(PrintProvider.class);
-
-      if (provider != null) {
+    if (providers != null) {
 //out("NODE PROVIDER: " + provider);
-        return provider;
-      }
+      return providers;
     }
     TopComponent top = getActivateTopComponent();
 
@@ -115,11 +113,11 @@ public final class PrintPreviewAction extends IconAction {
       return null;
     }
 //out(" TOP: " + top.getDisplayName() + " " + top.getName() + " " + top.getClass().getName());
-    provider = (PrintProvider) top.getLookup().lookup(PrintProvider.class);
+    PrintProvider provider = (PrintProvider) top.getLookup().lookup(PrintProvider.class);
 
     if (provider != null) {
 //out("TOP PROVIDER: " + provider);
-      return provider;
+      return Collections.singletonList(provider);
     }
     DataObject data = (DataObject) top.getLookup().lookup(DataObject.class);
 //out("DATA: " + data);
@@ -129,20 +127,14 @@ public final class PrintPreviewAction extends IconAction {
 
       if (provider != null) {
 //out("DATA PROVIDER: " + provider);
-        return provider;
+        return Collections.singletonList(provider);
       }
     }
     provider = getComponentProvider(top, data);
 
     if (provider != null) {
 //out("COMPONENT PROVIDER: " + provider);
-      return provider;
-    }
-    provider = getEditorProvider(top, data);
-
-    if (provider != null) {
-//out("EDITOR PROVIDER: " + provider);
-      return provider;
+      return Collections.singletonList(provider);
     }
     return null;
   }
@@ -184,25 +176,6 @@ public final class PrintPreviewAction extends IconAction {
     return new ComponentProvider(component, name, date);
   }
 
-  private Date getDate(DataObject data) {
-    return data.getPrimaryFile().lastModified();
-  }
-
-  private PrintProvider getEditorProvider(TopComponent top, DataObject data) {
-    if (data == null) {
-      return null;
-    }
-    EditorCookie editor = (EditorCookie) data.getCookie(EditorCookie.class);
-
-    if (editor == null) {
-      return null;
-    }
-    if (editor.getDocument() == null) {
-      return null;
-    }
-    return new TextProvider(editor, getDate(data));
-  }
-
   private JComponent getComponent(Container container, String indent) {
     if (
       container.isShowing() &&
@@ -226,8 +199,86 @@ public final class PrintPreviewAction extends IconAction {
     return null;
   }
 
+  private List<PrintProvider> getPrintProviders(List<Node> nodes) {
+//out();
+    if (nodes == null) {
+//out("NODES NULL");
+      return null;
+    }
+    List<PrintProvider> providers = new ArrayList<PrintProvider>();
+    PrintProvider provider;
+
+    for (Node node : nodes) {
+//out("  see: " + node);
+      provider = (PrintProvider) node.getLookup().lookup(PrintProvider.class);
+//out("     : " + provider);
+
+      if (provider != null) {
+        providers.add(provider);
+        continue;
+      }
+      provider = getEditorProvider(node);
+
+      if (provider != null) {
+        providers.add(provider);
+      }
+    }
+    if (providers.size() == 0) {
+//out("result null");
+      return null;
+    }
+//out("result: " + providers);
+    return providers;
+  }
+
+  private PrintProvider getEditorProvider(Node node) {
+    DataObject data = getDataObject(node);
+
+    if (data == null) {
+      return null;
+    }
+    EditorCookie editor = (EditorCookie) data.getCookie(EditorCookie.class);
+
+    if (editor == null) {
+      return null;
+    }
+    if (editor.getDocument() == null) {
+      return null;
+    }
+    return new TextProvider(editor, getDate(data));
+  }
+
+  private List<Node> getNodes() {
+//out();
+    Node [] selected = getSelectedNodes();
+
+    if (selected == null) {
+      return null;
+    }
+    List<Node> nodes = new ArrayList<Node>();
+    travel(selected, nodes);
+
+//    for (Node node : nodes) {
+//out("see: " + node.getName());
+//    }
+    return nodes;
+  }
+
+  private void travel(Node [] children, List<Node> nodes) {
+    for (Node child : children) {
+      if ( !nodes.contains(child)) {
+        nodes.add(child);
+      }
+      travel(child.getChildren().getNodes(true), nodes);
+    }
+  }
+
+  private Date getDate(DataObject data) {
+    return data.getPrimaryFile().lastModified();
+  }
+
   private PrintCookie getPrintCookie() {
-    Node node = getActiveNode();
+    Node node = getSelectedNode();
 
     if (node == null) {
       return null;
@@ -241,8 +292,8 @@ public final class PrintPreviewAction extends IconAction {
     if (super.isEnabled()) {
       return true;
     }
-//out("IS ENABLED: " + (getPrintProvider() != null || getPrintCookie() != null));
-    return getPrintProvider() != null || getPrintCookie() != null;
+//out("IS ENABLED: " + (getPrintProviders() != null || getPrintCookie() != null));
+    return getPrintProviders() != null || getPrintCookie() != null;
   }
 
   public static final Action DEFAULT;
