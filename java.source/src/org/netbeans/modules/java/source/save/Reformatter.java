@@ -774,11 +774,11 @@ public class Reformatter implements ReformatTask {
             Tree parent = path.getLeaf();
             path = path.getParentPath();
             Tree grandParent = path.getLeaf();
-            boolean isForVariable = parent.getKind() == Tree.Kind.VARIABLE &&
-                    (grandParent.getKind() == Tree.Kind.FOR_LOOP || grandParent.getKind() == Tree.Kind.ENHANCED_FOR_LOOP);
+            boolean isStandalone = parent.getKind() != Tree.Kind.VARIABLE ||
+                    grandParent.getKind() == Tree.Kind.CLASS || grandParent.getKind() == Tree.Kind.BLOCK;
             while (tokens.offset() < endPos) {
                 if (afterAnnotation) {
-                    if (isForVariable) {
+                    if (!isStandalone) {
                         spaces(1, true);
                     } else {
                         switch (cs.wrapAnnotations()) {
@@ -814,7 +814,7 @@ public class Reformatter implements ReformatTask {
                         lastBlankLines = lbl;
                         lastBlankLinesTokenIndex = lblti;
                         lastBlankLinesDiff = lbld;
-                        if (isForVariable) {
+                        if (!isStandalone) {
                             scan(annotations.next(), p);
                         } else {
                             wrapTree(cs.wrapAnnotations(), 0, annotations.next());
