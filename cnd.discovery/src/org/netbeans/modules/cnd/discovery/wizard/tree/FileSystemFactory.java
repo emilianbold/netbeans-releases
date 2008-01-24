@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.discovery.api.ProjectUtil;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
@@ -130,7 +131,7 @@ public class FileSystemFactory {
     }
 
     public static Set<String> createExtensionSet(){
-        if (CASE_INSENSITIVE) {
+        if (IpeUtils.isSystemCaseInsensitive()) {
             return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         } else {
             return new TreeSet<String>();
@@ -156,8 +157,4 @@ public class FileSystemFactory {
             suffixes.add(ex);
         }
     }
-    
-    private static final boolean CASE_INSENSITIVE =
-        (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
-
 }

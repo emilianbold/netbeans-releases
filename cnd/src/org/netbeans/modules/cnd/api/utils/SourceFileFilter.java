@@ -45,12 +45,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import org.openide.loaders.ExtensionList;
-import org.openide.util.Utilities;
 
 public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilter {
-
-    private static final boolean CASE_INSENSITIVE =
-        (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
 
     public SourceFileFilter() {
         super();
@@ -90,7 +86,7 @@ public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilte
                     
     private boolean amongSuffixes(String suffix, String[] suffixes) {
 	for (int i = 0; i < suffixes.length; i++) {
-            if (CASE_INSENSITIVE) {
+            if (IpeUtils.isSystemCaseInsensitive()) {
                 if (suffixes[i].equalsIgnoreCase(suffix))
                     return true;
             } else {
@@ -103,7 +99,7 @@ public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilte
     
     protected String[] getSuffixList(ExtensionList elist) {
         Enumeration<String> en = elist.extensions();
-        ArrayList<String> list = new ArrayList();
+        ArrayList<String> list = new ArrayList<String>();
         
         while (en.hasMoreElements()) {
             list.add(en.nextElement());

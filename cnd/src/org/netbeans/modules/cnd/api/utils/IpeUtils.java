@@ -59,6 +59,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Utilities;
 
 /**
  * Miscellaneous utility classes useful for the Ipe module
@@ -827,6 +828,13 @@ public class IpeUtils {
             }
         }
         return newName;
+    }
+    
+    private static final boolean CASE_INSENSITIVE =
+        (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
+
+    public static boolean isSystemCaseInsensitive() {
+        return CASE_INSENSITIVE;
     }
 }
 
