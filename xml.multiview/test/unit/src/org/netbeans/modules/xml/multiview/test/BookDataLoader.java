@@ -55,7 +55,7 @@ import org.openide.loaders.*;
 public class BookDataLoader extends UniFileLoader {
     
     public BookDataLoader() {
-        super(BookDataLoader.class.getName());
+        super(BookDataObject.class.getName());
     }
     protected void initialize() {
         super.initialize();
