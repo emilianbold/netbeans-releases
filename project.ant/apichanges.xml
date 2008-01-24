@@ -135,8 +135,8 @@ is the proper place.
                     referred to from Ant-based projects.
                 </p>
             </description>
-            <class package="org.netbeans.spi.project.ant" name="AntProjectHelper"/>
-            <class package="org.netbeans.spi.project.ant" name="ReferenceHelper"/>
+            <class package="org.netbeans.spi.project.support.ant" name="AntProjectHelper"/>
+            <class package="org.netbeans.spi.project.support.ant" name="ReferenceHelper"/>
             <class package="org.netbeans.spi.project.support.ant" name="ProjectGenerator"/>
             <class package="org.netbeans.api.project.ant" name="FileChooser"/>
             <issue number="44035"/>
