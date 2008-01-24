@@ -137,9 +137,9 @@ public abstract class InternalProjectTypePluginWizardIterator implements WizardD
         File dirF = (File) wiz.getProperty(WizardProperties.PROJECT_DIR);
         String name = (String) wiz.getProperty(WizardProperties.NAME);
         String j2eeLevel = (String) wiz.getProperty(WizardProperties.J2EE_LEVEL);
-        
+
         createProject(dirF, name, j2eeLevel);
-        mProjectFileObject = FileUtil.toFileObject(dirF);
+        mProjectFileObject = FileUtil.toFileObject(dirF.getAbsoluteFile());
         
         resultSet.add(mProjectFileObject);
         
