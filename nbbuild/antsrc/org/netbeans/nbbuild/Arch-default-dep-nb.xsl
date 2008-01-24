@@ -77,11 +77,13 @@ made subject to such option by the copyright holder.
                     </xsl:otherwise>
                 </xsl:choose>
             </xsl:attribute>
+            <!-- Removed, since there is no guarantee Javadoc for that module is published:
             <xsl:attribute name="url">
                 <xsl:text>@</xsl:text>
                 <xsl:value-of select="translate(code-name-base/text(),'.','-')"/>
                 <xsl:text>@/overview-summary.html</xsl:text>
             </xsl:attribute>
+            -->
 
             <xsl:if test="compile-dependency">
                 The module is needed for compilation. 
@@ -115,9 +117,12 @@ made subject to such option by the copyright holder.
                 <xsl:apply-templates select="code-name-base/text()"/>
             </xsl:otherwise>
         </xsl:choose>
-        <xsl:text>' url='@</xsl:text>
-        <xsl:value-of select="translate(code-name-base/text(),'.','-')"/>
-        <xsl:text>@/overview-summary.html' &gt;</xsl:text>
+        <xsl:text>'&gt;</xsl:text>
+        <!-- Removed, since there is no guarantee Javadoc for that module is published:
+             url='@</xsl:text>
+             <xsl:value-of select="translate(code-name-base/text(),'.','-')"/>
+             <xsl:text>@/overview-summary.html'
+        -->
         <xsl:if test="compile-dependency">
             The module is needed for compilation. 
         </xsl:if>
