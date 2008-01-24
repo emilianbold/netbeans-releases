@@ -43,8 +43,10 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -69,6 +71,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     
     private Watch watch;
     private WatchesTreeModel model;
+    private static Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N
     
     /** Creates a new instance of GdbWatchVariable */
     public GdbWatchVariable(WatchesTreeModel model, Watch watch) {
@@ -82,9 +85,9 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         tinfo = null;
         derefValue = null;
         
-//        if (getDebugger() != null) {
-//            getDebugger().addPropertyChangeListener(this);
-//        }
+        if (getDebugger() != null) {
+            getDebugger().addPropertyChangeListener(this);
+        }
         watch.addPropertyChangeListener(this);
     }
     
@@ -97,18 +100,29 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         getDebugger().removePropertyChangeListener(this);
     }
     
-    public void propertyChange(PropertyChangeEvent ev) {
+    public void propertyChange(final PropertyChangeEvent ev) {
         log.fine("GWV.propertyChange: Property change for " + ev.getPropertyName()); // NOI18N
-        if (Thread.currentThread().getName().equals("GdbReaderRP")) { // NOI18N
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    type = getDebugger().requestWhatis(watch.getExpression());
-                    value = getDebugger().requestValue(watch.getExpression());
-                }
-            });
+        
+        String pname = ev.getPropertyName();
+        if ((pname.equals(GdbDebugger.PROP_STATE) && ev.getNewValue().equals(GdbDebugger.STATE_STOPPED)) ||
+                pname.equals(GdbDebugger.PROP_CURRENT_THREAD) ||
+                pname.equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
+                pname.equals(Watch.PROP_EXPRESSION)) {
+            if (Thread.currentThread().getName().equals("GdbReaderRP")) { // NOI18N
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        type = getDebugger().requestWhatis(watch.getExpression());
+                        value = getDebugger().requestValue(watch.getExpression());
+                        model.fireTableValueChanged(ev.getSource(), null);
+                    }
+                });
+            } else {
+                type = getDebugger().requestWhatis(watch.getExpression());
+                value = getDebugger().requestValue(watch.getExpression());
+                model.fireTableValueChanged(ev.getSource(), null);
+            }
         } else {
-            type = getDebugger().requestWhatis(watch.getExpression());
-            value = getDebugger().requestValue(watch.getExpression());
+            log.fine("GWV.propertyChange: Ignoring " + pname);
         }
     }
     
@@ -121,37 +135,31 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
      */
     @Override
     public String getName() {
-//        if (watch != null) {
-            return watch.getExpression();
-//        } else {
-//            return super.getName(); // this happens during initialization when name is s
-//        }
-        }
+        return watch.getExpression();
+    }
     
     @Override
     public String getType() {
-        if (type == null) {
+        if (type == null || type.length() == 0) {
             type = getDebugger().requestSymbolType(watch.getExpression());
-    }
+        }
+        log.fine("GWV.getType: [" + (type == null ? "<Null>" : type) + "]");
         return type;
     }
     
     @Override
     public String getValue() {
-        if (value == null) {
+        if (value == null || value.length() == 0) {
             value = getDebugger().requestValue(watch.getExpression());
         }
+        log.fine("GWV.getValue: [" + (value == null ? "<Null>" : value) + "]");
         return value;
     }
     
     @Override
     public void setValue(String value) {
-//        if (value == null) {
-//            this.value = "";
-//        } else {
-            this.value = value;
-//        }
-        }
+        this.value = value;
+    }
     
     public void setValueAt(String value) {
         super.setValue(value);

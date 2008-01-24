@@ -110,9 +110,13 @@ public class CommandBuffer {
                 }
                 if (state == STATE_WAITING) {
                     state = STATE_COMMAND_TIMEDOUT;
-                    log.fine("CB.postAndWait: Timeout");
+                    log.fine("CB.postAndWait[" + token + "]: Timeout");
                 } else {
-                    state = STATE_OK;
+                    if (err != null) {
+                        state = STATE_ERROR;
+                    } else {
+                        state = STATE_OK;
+                    }
                     log.fine("CB.postAndWait[" + token + "]: Waited " + (tend - tstart) + " milliseconds"); // NOI18N
                 }
                 return toString();

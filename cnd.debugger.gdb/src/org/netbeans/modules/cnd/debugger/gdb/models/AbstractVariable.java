@@ -79,7 +79,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
     protected String derefValue;
     protected Field[] fields;
     protected TypeInfo tinfo;
-    protected static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     private Set<PropertyChangeListener> listeners = new HashSet<PropertyChangeListener>();
     
