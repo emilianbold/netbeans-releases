@@ -116,7 +116,7 @@ made subject to such option by the copyright holder.
                 <folder name="Popup">
                     <file name="org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.shadow">
                         <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-j2ee-persistence-action-PersistenceActionGroup.instance"/>
-                        <attr name="position" intvalue="1160"/>
+                        <attr name="position" intvalue="9550"/>
                     </file>
                     </folder>
             </folder>
