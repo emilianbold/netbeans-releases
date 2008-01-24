@@ -112,7 +112,13 @@ public class OccurrencesFinderTest extends RubyTestBase {
         return sb.toString();
     }
 
-    private void checkOccurrences(String relFilePath, String caretLine) throws Exception {
+    /** Test the occurrences to make sure they equal the golden file.
+     * If the symmetric parameter is set, this test will also ensure that asking for
+     * occurrences on ANY of the matches produced by the original caret position will
+     * produce the exact same map. This is obviously not appropriate for things like
+     * occurrences on the exit points.
+     */
+    private void checkOccurrences(String relFilePath, String caretLine, boolean symmetric) throws Exception {
         CompilationInfo info = getInfo(relFilePath);
 
         String text = info.getText();
@@ -133,77 +139,90 @@ public class OccurrencesFinderTest extends RubyTestBase {
         String annotatedSource = annotate((BaseDocument)info.getDocument(), occurrences, caretOffset);
 
         assertDescriptionMatches(relFilePath, annotatedSource, true, ".occurrences");
+        
+        if (symmetric) {
+            // Extra check: Ensure that occurrences are symmetric: Placing the caret on ANY of the occurrences
+            // should produce the same set!!
+            for (OffsetRange range : occurrences.keySet()) {
+                finder.setCaretPosition(range.getStart()+range.getLength()/2);
+                finder.run(info);
+                Map<OffsetRange, ColoringAttributes> alternates = finder.getOccurrences();
+                assertEquals("Marks differ between caret positions", occurrences, alternates);
+            }
+        }
     }
 
     public void testApeParams() throws Exception {
         String caretLine = "  def initialize(ar^gs)";
-        checkOccurrences("testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine, true);
     }
 
     public void testApeMethodDef() throws Exception {
         String caretLine = "def te^st_entry_posts(entry_collection)";
-        checkOccurrences("testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine, false);
     }
 
     public void testApeMethodRef() throws Exception {
-        String caretLine = "test_entry_pos^ts";
-        checkOccurrences("testfiles/ape.rb", caretLine);
+        String caretLine = "test_entry_p^osts entry_coll";
+        // Not symmetric because when going from the call to the method definition,
+        // the occurrences listed will be all the exit points
+        checkOccurrences("testfiles/ape.rb", caretLine, false);
     }
 
     public void testApeSymbol() throws Exception {
         String caretLine = "@@debugging = args[:de^bug]";
-        checkOccurrences("testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine, true);
     }
 
     public void testApeClassVar() throws Exception {
         String caretLine = "@@deb^ugging = args[:debug]";
-        checkOccurrences("testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine, true);
     }
 
     public void testApeInstanceVar() throws Exception {
         String caretLine = "@st^eps[-1] << message";
-        checkOccurrences("testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine, true);
     }
 
     public void testApeExitPoints() throws Exception {
         String caretLine = "d^ef might_fail(uri, requested_e_coll = nil, requested_m_coll = nil)";
-        checkOccurrences("testfiles/ape.rb", caretLine);
+        checkOccurrences("testfiles/ape.rb", caretLine, false);
     }
 
     public void testUnusedExitPoints() throws Exception {
         String caretLine = "d^ef foo(unusedparam, unusedparam2, usedparam)";
-        checkOccurrences("testfiles/unused.rb", caretLine);
+        checkOccurrences("testfiles/unused.rb", caretLine, false);
     }
 
     public void testUnusedParams() throws Exception {
         String caretLine = "def foo(un^usedparam, unusedparam2, usedparam)";
-        checkOccurrences("testfiles/unused.rb", caretLine);
+        checkOccurrences("testfiles/unused.rb", caretLine, true);
     }
 
     public void testUnusedParams2() throws Exception {
         String caretLine = "def foo(unusedparam, unusedparam2, us^edparam)";
-        checkOccurrences("testfiles/unused.rb", caretLine);
+        checkOccurrences("testfiles/unused.rb", caretLine, true);
     }
 
     public void testUnusedParams3() throws Exception {
         String caretLine = "x.each { |unusedblockvar1, usedbl^ockvar2|";
-        checkOccurrences("testfiles/unused.rb", caretLine);
+        checkOccurrences("testfiles/unused.rb", caretLine, true);
     }
 
     public void testYieldNode() throws Exception {
         String caretLine = "def exit_t^est";
-        checkOccurrences("testfiles/yieldnode.rb", caretLine);
+        checkOccurrences("testfiles/yieldnode.rb", caretLine, false);
     }
 
     public void testNestedBlocks() throws Exception {
-        checkOccurrences("testfiles/nestedblocks.rb", "[4,5,6].each { |ou^ter|");
+        checkOccurrences("testfiles/nestedblocks.rb", "[4,5,6].each { |ou^ter|", true);
     }
 
     public void testNestedBlocks2() throws Exception {
-        checkOccurrences("testfiles/nestedblocks2.rb", "arg.each_pair do |fo^o, val|");
+        checkOccurrences("testfiles/nestedblocks2.rb", "arg.each_pair do |fo^o, val|", true);
     }
 
     public void testParellelBlocks() throws Exception {
-        checkOccurrences("testfiles/parallelblocks.rb", "foo.each { |i^| puts i } #1");
+        checkOccurrences("testfiles/parallelblocks.rb", "foo.each { |i^| puts i } #1", true);
     }
 }
