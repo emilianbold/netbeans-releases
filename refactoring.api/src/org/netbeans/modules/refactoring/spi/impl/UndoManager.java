@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.refactoring.spi.impl;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +60,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.refactoring.spi.BackupFacility;
 import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.ProgressListener;
@@ -76,7 +81,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Becicka
  */
-public class UndoManager extends FileChangeAdapter implements DocumentListener, ChangeListener/*, GlobalPathRegistryListener */{
+public class UndoManager extends FileChangeAdapter implements DocumentListener, ChangeListener, PropertyChangeListener /*, GlobalPathRegistryListener */{
     
     /** stack of undo items */
     private LinkedList<LinkedList<UndoItem>> undoList;
@@ -110,6 +115,7 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
     private ProgressListener progress;
     
     private static UndoManager instance;
+    private HashSet<Project> projects;
 
 
     public static UndoManager getDefault() {
@@ -123,6 +129,7 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
         undoList = new LinkedList();
         redoList = new LinkedList();
         descriptionMap = new IdentityHashMap();
+        projects = new HashSet();
     }
     
     private UndoManager(ProgressListener progress) {
@@ -333,7 +340,11 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
                                 documentToCES.put(d, ces);
                                 Object o = d.getProperty(Document.StreamDescriptionProperty);
                                 if (o instanceof DataObject) {
-                                    fileObjectToCES.put(((DataObject)o).getPrimaryFile(), ces);
+                                    FileObject file = ((DataObject)o).getPrimaryFile();
+                                    fileObjectToCES.put(file, ces);
+                                    Project p = FileOwnerQuery.getOwner(file);
+                                    if (p!= null) 
+                                        projects.add(p);
                                 }
                             }
                         }
@@ -418,11 +429,13 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
         for (Document doc:documentToCES.keySet()) {
             doc.addDocumentListener(this);
         }
+        OpenProjects.getDefault().addPropertyChangeListener(this);
         listenersRegistered = true;
     }
     
     private void unregisterListeners() {
         if (!listenersRegistered) return;
+        OpenProjects.getDefault().removePropertyChangeListener(this);
         Util.removeFileSystemsListener(this);
         //TODO: 
         //GlobalPathRegistry.getDefault().removeGlobalPathRegistryListener(this);
@@ -476,6 +489,7 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
             allCES.clear();
             documentToCES.clear();
             fileObjectToCES.clear();
+            projects.clear();
         }
     }        
     
@@ -584,6 +598,15 @@ public class UndoManager extends FileChangeAdapter implements DocumentListener, 
         
         public void redo() {
             change.doRefactoring(false);
+        }
+    }
+
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            HashSet<Project> p = new HashSet(projects);
+            p.removeAll(Arrays.asList((Project[])evt.getNewValue()));
+            if (!p.isEmpty())
+                invalidate(null);
         }
     }
 }
