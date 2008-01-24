@@ -57,60 +57,61 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @version 2007.08.13
  */
 public final class DocumentationDecorator extends DecorationProvider
-        implements DecorationProviderFactory, DiagramSelectionListener {
+  implements DecorationProviderFactory, DiagramSelectionListener {
 
-    public DocumentationDecorator() {
-    }
+  public DocumentationDecorator() {}
 
-    public DecorationProvider createInstance(DesignView view) {
-        return new DocumentationDecorator(view);
-    }
+  public DecorationProvider createInstance(DesignView view) {
+    return new DocumentationDecorator(view);
+  }
 
-    private DocumentationDecorator(DesignView view) {
-        super(view);
-        getDesignView().getSelectionModel().addSelectionListener(this);
-    }
+  private DocumentationDecorator(DesignView view) {
+    super(view);
+    getDesignView().getSelectionModel().addSelectionListener(this);
+  }
 
-    @Override
-    public Decoration getDecoration(BpelEntity entity) {
-        String documentation = getDocumentation(entity);
+  @Override
+  public Decoration getDecoration(BpelEntity entity) {
+    String documentation = getDocumentation(entity);
 //out();
 //out("entity: " + entity);
 //out(" docum: " + documentation);
 
-        if (entity != mySelectedElement && documentation == null) {
-            return null;
-        }
-        DocumentationButton button =
-                new DocumentationButton((ExtensibleElements) entity, documentation);
-
-        ComponentsDescriptor descriptor = new ComponentsDescriptor();
-        descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
-
-        return new Decoration(new Descriptor[]{descriptor});
+    if (entity != mySelectedElement && documentation == null) {
+      return null;
     }
+    DocumentationButton button =
+      new DocumentationButton((ExtensibleElements) entity, documentation);
 
-    public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
+    ComponentsDescriptor descriptor = new ComponentsDescriptor();
+    descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
+
+    return new Decoration(new Descriptor[]{descriptor});
+  }
+
+  public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
 //out("selection changed");
-        if (newSelection instanceof ExtensibleElements) {
-            mySelectedElement = (ExtensibleElements) newSelection;
-        } else {
-            mySelectedElement = null;
-        }
-        fireDecorationChanged();
+    if (newSelection instanceof ExtensibleElements) {
+      mySelectedElement = (ExtensibleElements) newSelection;
     }
+    else {
+      mySelectedElement = null;
+    }
+    fireDecorationChanged();
+  }
 
-    @Override
-    public void release() {
-        mySelectedElement = null;
-        getDesignView().getSelectionModel().removeSelectionListener(this);
-    }
+  @Override
+  public void release() {
+    mySelectedElement = null;
+    getDesignView().getSelectionModel().removeSelectionListener(this);
+  }
 
-    private String getDocumentation(BpelEntity entity) {
-        if (!(entity instanceof ExtensibleElements)) {
-            return null;
-        }
-        return ((ExtensibleElements) entity).getDocumentation();
+  private String getDocumentation(BpelEntity entity) {
+    if ( !(entity instanceof ExtensibleElements)) {
+      return null;
     }
-    private ExtensibleElements mySelectedElement;
+    return ((ExtensibleElements) entity).getDocumentation();
+  }
+
+  private ExtensibleElements mySelectedElement;
 }

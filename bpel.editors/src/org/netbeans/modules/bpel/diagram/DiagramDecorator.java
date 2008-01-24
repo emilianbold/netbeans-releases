@@ -36,96 +36,93 @@ import org.netbeans.modules.bpel.design.decoration.GlowDescriptor;
  * @version 2006.12.06
  */
 public final class DiagramDecorator extends DecorationProvider
-        implements DecorationProviderFactory {
+  implements DecorationProviderFactory {
 
-    public DecorationProvider createInstance(DesignView view) {
-        return new DiagramDecorator(view);
+  public DiagramDecorator() {}
+
+  public DecorationProvider createInstance(DesignView view) {
+    return new DiagramDecorator(view);
+  }
+
+  private DiagramDecorator(DesignView view) {
+    super(view);
+    myHighlightedEntities = new ArrayList<BpelEntity>();
+  }
+
+  @Override
+  public Decoration getDecoration(BpelEntity component) {
+    if ( !myIsClearSelection && mySelectedEntity == component) {
+      return GREEN_DECORATION; // glow
     }
-
-    public DiagramDecorator() {
+    if ( !myIsClearHighlighting && myHighlightedEntities.contains(component)) {
+      return YELLOW_DECORATION; // highlight
     }
+    return null;
+  }
 
-    private DiagramDecorator(DesignView view) {
-        super(view);
-        myHighlightedEntities = new ArrayList<BpelEntity>();
+  @Override
+  public void release() {
+    mySelectedEntity = null;
+    myHighlightedEntities = null;
+  }
+
+  void select(Component component) {
+    if ( !(component instanceof BpelEntity)) {
+      return;
     }
+    BpelEntity entity = (BpelEntity) component;
 
-    @Override
-    public Decoration getDecoration(BpelEntity component) {
-        if (!myIsClearSelection && mySelectedEntity == component) {
-            return GREEN_DECORATION; // glow
-        }
-        if (!myIsClearHighlighting && myHighlightedEntities.contains(component)) {
-            return YELLOW_DECORATION; // highlight
-        }
-        return null;
+    if (mySelectedEntity != null) {
+      myIsClearSelection = true;
     }
+    myIsClearSelection = false;
+    mySelectedEntity = entity;
+    fireDecorationChanged();
+  }
 
-    @Override
-    public void release() {
-        mySelectedEntity = null;
-        myHighlightedEntities = null;
+  void clearHighlighting() {
+    myIsClearHighlighting = true;
+    myIsClearSelection = true;
+
+    fireDecorationChanged();
+    
+    myHighlightedEntities = new ArrayList<BpelEntity>();
+    myIsClearHighlighting = false;
+    myIsClearSelection = false;
+  }
+
+  void highlight(Component component, boolean highlighted) {
+    if ( !(component instanceof BpelEntity)) {
+      return;
     }
+    BpelEntity entity = (BpelEntity) component;
 
-    void select(Component component) {
-        if (!(component instanceof BpelEntity)) {
-            return;
-        }
-        BpelEntity entity = (BpelEntity) component;
-
-        if (mySelectedEntity != null) {
-            myIsClearSelection = true;
-
-        }
-        myIsClearSelection = false;
-        mySelectedEntity = entity;
-        fireDecorationChanged();
+    if (highlighted) {
+      myHighlightedEntities.add(entity);
     }
-
-    void clearHighlighting() {
-        myIsClearHighlighting = true;
-        myIsClearSelection = true;
-
-
-        fireDecorationChanged();
-
-        myHighlightedEntities = new ArrayList<BpelEntity>();
-
-        myIsClearHighlighting = false;
-        myIsClearSelection = false;
+    else {
+      myHighlightedEntities.remove(entity);
     }
+    myIsClearSelection = !highlighted;
+    fireDecorationChanged();
+  }
 
-    void highlight(Component component, boolean highlighted) {
-        if (!(component instanceof BpelEntity)) {
-            return;
-        }
-        BpelEntity entity = (BpelEntity) component;
+  static DiagramDecorator getDecorator(DesignView view) {
+    List<DecorationProvider> providers = view.getDecorationManager().getProviders();
 
-        if (highlighted) {
-            myHighlightedEntities.add(entity);
-        } else {
-            myHighlightedEntities.remove(entity);
-        }
-        myIsClearSelection = !highlighted;
-        fireDecorationChanged();
+    for (DecorationProvider provider : providers) {
+      if (provider instanceof DiagramDecorator) {
+        return (DiagramDecorator) provider;
+      }
     }
-
-    static DiagramDecorator getDecorator(DesignView view) {
-        List<DecorationProvider> providers = view.getDecorationManager().getProviders();
-
-        for (DecorationProvider provider : providers) {
-            if (provider instanceof DiagramDecorator) {
-                return (DiagramDecorator) provider;
-            }
-        }
-        return null;
-    }
-    private boolean myIsClearSelection;
-    private boolean myIsClearHighlighting;
-    private BpelEntity mySelectedEntity;
-    private List<BpelEntity> myHighlightedEntities;
-    private static final Decoration GREEN_DECORATION =
-            new Decoration(new GlowDescriptor(new Color(56, 216, 120), 20));
-    private static final Decoration YELLOW_DECORATION =
-            new Decoration(new GlowDescriptor(new Color(255, 255, 0), 20));
+    return null;
+  }
+  private boolean myIsClearSelection;
+  private boolean myIsClearHighlighting;
+  private BpelEntity mySelectedEntity;
+  private List<BpelEntity> myHighlightedEntities;
+  private static final Decoration GREEN_DECORATION =
+    new Decoration(new GlowDescriptor(new Color(56, 216, 120), 20));
+  private static final Decoration YELLOW_DECORATION =
+    new Decoration(new GlowDescriptor(new Color(255, 255, 0), 20));
 }
