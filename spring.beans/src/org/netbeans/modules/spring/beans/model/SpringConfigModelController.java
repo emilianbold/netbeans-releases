@@ -146,7 +146,8 @@ public class SpringConfigModelController {
     }
 
     private void notifyFileDeleted(File file) {
-        throw new UnsupportedOperationException("Not supported yet");
+        // XXX probably in order to support repeatable read, we should not remove
+        // the controller under exclusive access
     }
 
     /**

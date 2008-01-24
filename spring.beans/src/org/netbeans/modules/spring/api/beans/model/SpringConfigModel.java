@@ -44,7 +44,9 @@ package org.netbeans.modules.spring.api.beans.model;
 import java.io.IOException;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.netbeans.modules.spring.api.beans.SpringContext;
 import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
+import org.openide.filesystems.FileObject;
 
 /**
  * Encapsulates a model of Spring configuration files.
@@ -55,7 +57,21 @@ public final class SpringConfigModel {
 
     private final SpringConfigModelController controller;
 
-    // XXX should not be public
+    /**
+     * Returns a Spring configuration model for the given file.
+     *
+     * @param  file a file; never null.
+     * @return a Spring configuration model or null
+     */
+    public static SpringConfigModel forFileObject(FileObject file) {
+        SpringContext context = SpringContext.getSpringContext(file);
+        if (context != null) {
+            return context.getConfigModel(file);
+        }
+        return null;
+    }
+
+    // XXX should not be public.
     public SpringConfigModel(ConfigFileGroup configFileGroup) {
         controller = SpringConfigModelController.create(configFileGroup);
     }

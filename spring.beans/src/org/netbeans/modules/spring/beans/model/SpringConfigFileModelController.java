@@ -58,6 +58,7 @@ public class SpringConfigFileModelController {
     private final File configFile;
     private final ConfigFileSpringBeanSource beanSource = new ConfigFileSpringBeanSource();
     private Updater updater;
+    private volatile boolean parsedAtLeastOnce = false;
 
     public SpringConfigFileModelController(File file) {
         this.configFile = file;
@@ -72,7 +73,7 @@ public class SpringConfigFileModelController {
     public void makeUpToDate() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         synchronized (this) {
-            if (updater == null) {
+            if (updater == null && parsedAtLeastOnce) {
                 // Already up to date.
                 return;
             }
@@ -106,6 +107,9 @@ public class SpringConfigFileModelController {
 
     private void parse() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
+        if (!parsedAtLeastOnce) {
+            parsedAtLeastOnce = true;
+        }
         beanSource.parse(configFile);
     }
 

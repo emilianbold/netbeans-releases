@@ -39,39 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.api.beans;
+package org.netbeans.modules.spring.beans;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.io.IOException;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * Encapsulates a group of Spring config files.
  *
  * @author Andrei Badea
  */
-public final class ConfigFileGroup {
+public class ConfigFileTestCase extends NbTestCase {
 
-    private final Set<File> configFiles = new TreeSet<File>();
+    protected File configFile;
 
-    // XXX constructor should not be public.
-    public ConfigFileGroup() {
+    public ConfigFileTestCase(String testName) {
+        super(testName);
     }
 
-    // XXX remove this constructor in final implementation.
-    public ConfigFileGroup(File file) {
-        configFiles.add(file);
-    }
-
-    /**
-     * Returns the set of beans configuration files in this group.
-     *
-     * @return the set of beans configuration files; never null.
-     */
-    public synchronized Set<File> getConfigFiles() {
-        Set<File> result = new HashSet<File>(configFiles.size());
-        result.addAll(configFiles);
-        return result;
+    @Override
+    protected void setUp() throws IOException {
+        clearWorkDir();
+        configFile = new File(getWorkDir(), "applicationContext.xml");
     }
 }

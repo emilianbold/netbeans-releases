@@ -41,32 +41,21 @@
 
 package org.netbeans.modules.spring.beans.model.impl;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.TestUtils;
 
 /**
  *
  * @author Andrei Badea
  */
-public class ConfigFileSpringBeanSourceTest extends NbTestCase {
-
-    private File configFile;
+public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
 
     public ConfigFileSpringBeanSourceTest(String testName) {
         super(testName);
     }
-
-    @Override
-    protected void setUp() throws IOException {
-        clearWorkDir();
-        configFile = new File(getWorkDir(), "applicationContext.xml");
-    }
-
     public void testParse() throws Exception {
         String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' class='org.example.Foo'/>");
         TestUtils.copyStringToFile(contents, configFile);

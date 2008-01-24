@@ -74,7 +74,7 @@ public class ConfigModelSpringBeans implements SpringBeans {
         assert modelAccess.isValid() : "The SpringBeans instance has escaped the Action.run() method";
         SpringBeanSource beanSource = modelAccess.getBeanSource(file);
         if (beanSource != null) {
-            beanSource.getBeans();
+            return beanSource.getBeans();
         }
         return null;
     }
