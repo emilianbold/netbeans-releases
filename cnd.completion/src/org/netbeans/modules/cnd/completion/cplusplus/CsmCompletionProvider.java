@@ -104,7 +104,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         final int dot = component.getCaret().getDot();
         // disable code templates for smart mode of completion
         //CsmCodeTemplateFilter.enableAbbreviations(((queryType & COMPLETION_ALL_QUERY_TYPE) == COMPLETION_ALL_QUERY_TYPE));
-        CsmResultItem.setEnableInstantSubstitution(((queryType & COMPLETION_ALL_QUERY_TYPE) == COMPLETION_ALL_QUERY_TYPE));
+        CsmResultItem.setEnableInstantSubstitution(true);
         
         // do not work together with include completion
         if (sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot)) {
@@ -171,6 +171,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         private void addItems(CompletionResultSet resultSet, Collection<CompletionItem> items) {
             boolean limit = !localContext && queryResult.isSimpleVariableExpression() && (items.size() > MAX_ITEMS_TO_DISPLAY);
             if (!limit) {
+                CsmResultItem.setEnableInstantSubstitution(!localContext);
                 resultSet.estimateItems(items.size(), -1);
                 resultSet.addAllItems(items);
             } else {
@@ -220,9 +221,9 @@ public class CsmCompletionProvider implements CompletionProvider {
                         // no more title in NB 6 in completion window
                         //resultSet.setTitle(res.getTitle());
                         resultSet.setAnchorOffset(queryAnchorOffset);
-                        addItems(resultSet, items);
                         resultSet.setHasAdditionalItems(localContext);
                         queryResult = res;
+                        addItems(resultSet, items);
                     }
                 }
             } else {
