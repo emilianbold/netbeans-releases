@@ -46,7 +46,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.gsf.CompletionProposal;
-import org.netbeans.modules.languages.php.lang.SpecialKeywords;
+import org.netbeans.modules.languages.php.lang.Operators;
 import org.netbeans.modules.php.editor.TokenUtils;
 import org.netbeans.modules.php.model.ClassBody;
 import org.netbeans.modules.php.model.ClassConst;
@@ -56,6 +56,7 @@ import org.netbeans.modules.php.model.ConstDeclaration;
 import org.netbeans.modules.php.model.Constant;
 import org.netbeans.modules.php.model.FunctionDeclaration;
 import org.netbeans.modules.php.model.FunctionDefinition;
+import org.netbeans.modules.php.model.ObjectDefinition;
 import org.netbeans.modules.php.model.PhpModel;
 import org.netbeans.modules.php.model.SourceElement;
 
@@ -73,11 +74,11 @@ import org.netbeans.modules.php.model.SourceElement;
 public class ScopeResolutionOperatorContext extends ASTBasedProvider 
         implements CompletionResultProvider {
 
-    private Constant constant;
     private ClassDefinition referencedClass;
     private int insertOffset;
     
-    private static final String SCOPE_RESOLUTION_OPERATOR = "::";
+    private static final String SCOPE_RESOLUTION_OPERATOR = 
+            Operators.SCOPE_RESOLUTION.value();
 
     private static final Set<ExpectedToken> PREV_TOKENS = new HashSet<ExpectedToken>();
     static {
@@ -88,7 +89,7 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
     /**
      * Returns <code>true</code> iif the specified <code>context</code>
      * is applicable for completing the Scope Resolution Operator (::),
-     * i.e. caret is located immediately after this operator.
+     * i.e. caret is located after this operator.
      *  
      * E.g. see PHP Manual / Example 19.12. :: from outside the class definition
      * <p><code> 
@@ -107,20 +108,18 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
      */
     public boolean isApplicable(CodeCompletionContext context) {
         assert context != null;
-        myContext = context;
-        if(!isScopeResolutionOperatorContext()) {
-            return false;
+        myContext = context; // caching context!
+        SourceElement e = myContext.getSourceElement();       
+        if(e instanceof Constant) {
+            if(!isScopeResolutionExpression(e)) {
+                return false;
+            }
+            // i.e. constant expr like this: SomeClass::x
+            referencedClass = getReferencedClass((Constant)e);
+        } else if(isApplicableIncompleteExpression()) {
+            referencedClass = getReferencedClass(context);
         }
-        SourceElement e = myContext.getSourceElement();
-        if(!(e instanceof Constant)) {
-          return false;
-        }
-        constant = (Constant)e;
-        ClassMemberReference<SourceElement> classReference = constant.getClassConstant();
-        if(classReference == null) {
-          return false;
-        }
-        referencedClass = findClassDefinition(getModel(), classReference);
+        // This provider is applicble iif it possible to find referencedClass.
         if(referencedClass == null) {
             return false;
         }
@@ -130,76 +129,126 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
     @SuppressWarnings("unchecked")
     public List<CompletionProposal> getProposals(CodeCompletionContext context) {
         if (context != myContext) {
-           throw new IllegalStateException("The isApplicable method MUST BE called before.");
+            throw new IllegalStateException("The isApplicable method MUST BE called before.");
         }
+        String prefix = context.getPrefix();
         insertOffset = calcInsertOffset();
         List<CompletionProposal> list = new LinkedList<CompletionProposal>();
-        
-        if(isFromInsideClassDefinition()) {
-           // Example 19.13. :: from inside the class definition
-            // TODO Process special keywords self and parent that are used to access
-            // members or methods from inside the class definition when :: is used 
-            // from inside the class definition.
-            // This also applies to Constructors and Destructors, Overloading, 
-            // and Magic method definitions. 
 
-        }
-        else { // i.e. From Outside Class Definition
-           // Example 19.12. :: from outside the class definition
-           // <ClassName>::<PublicStaticClassMemberOrConstant>
-            
-            ClassBody cb = referencedClass.getBody();
-            
-            // constants
-            List<ConstDeclaration> cdList = cb.
-                    getChildren(ConstDeclaration.class);
-            for(ConstDeclaration cDecl: cdList) {
-                for(ClassConst cc: cDecl.getDeclaredConstants()) {
-                    String name = cc.getName();
-    //                if (isMatchedConstant(decl.getName(), prefix)) 
-    //                {
-                        list.add(new VariableItem(name, insertOffset, 
-                                            VariableItem.VarTypes.ATTRIBUTE,
-                                            myContext.getFormatter(), false));
+        // Example 19.13. :: from inside the class definition
+        // This also applies to Constructors and Destructors, Overloading, 
+        // and Magic method definitions. 
 
-    //                }
+        // Example 19.12. :: from outside the class definition
+        // <ClassName>::<PublicStaticClassMemberOrConstant>
+
+        ClassBody cb = referencedClass.getBody();
+
+        // constants
+        List<ConstDeclaration> cdList = cb.getChildren(ConstDeclaration.class);
+        for (ConstDeclaration cDecl : cdList) {
+            for (ClassConst cc : cDecl.getDeclaredConstants()) {
+                String name = cc.getName();
+                if (SCOPE_RESOLUTION_OPERATOR.equals(prefix) ||
+                        startsWith(name, prefix)) {
+                    list.add(new VariableItem(name, insertOffset,
+                            VariableItem.VarTypes.CONSTANT,
+                            myContext.getFormatter(), false));
+
                 }
             }
-            // public static methods
-            List<FunctionDefinition> fdList = cb.getChildren(FunctionDefinition.class);
-            for(FunctionDefinition fd: fdList) {
-                // TODO select public static only
-                FunctionDeclaration decl = fd.getDeclaration();
-//                if (isMatchedFunction(decl.getName(), prefix)) 
-//                {
-                    list.add(new UserDefinedMethodItem(decl, 
-                             insertOffset, myContext.getFormatter() ));
-//                }
-            }
-            
         }
+        
+        // public static methods
+        // It seems ClassFunctionDeclaration should be used instead.
+        // In this case, modifiers can be shown in the proposal list.
+        List<FunctionDefinition> fdList = cb.getChildren(FunctionDefinition.class);
+        for (FunctionDefinition fd : fdList) {
+            // TODO ??? select public static only
+            FunctionDeclaration decl = fd.getDeclaration();
+            String name = decl.getName();
+            if (isApplicableIncompleteExpression() || startsWith(name, prefix)) {
+                list.add(new UserDefinedMethodItem(decl,
+                        insertOffset, myContext.getFormatter()));
+            }
+        }
+
         return list;
     }
-    
-    private static ClassDefinition findClassDefinition(PhpModel model, ClassMemberReference<SourceElement> reference) {
-        assert model != null;
-        assert reference != null;
-        String className = reference.getObjectName();
-        if(className == null) {
-            return null;
+   
+    /**
+     * 
+     * @return <code>true</code> if a constant value is not specified after
+     * scope resolution operator.
+     */
+    private boolean isApplicableIncompleteExpression() {
+        String prefix = myContext.getPrefix();
+        if(prefix != null && prefix.endsWith(SCOPE_RESOLUTION_OPERATOR)) {
+            return true;
         }
-        if(SpecialKeywords.SELF.value().equals(className)) {
-            // TODO: find nearest outer class
-            return null;
-        }
-        else if(SpecialKeywords.PARENT.value().equals(className)) {
-            // TODO: find superclass for the nearest outer class
-            return null;
-        }
-        return findClassDefinition(model, className);
+        return false;
     }
     
-    private static ClassDefinition findClassDefinition(PhpModel model, String className) {       
+    private static ClassDefinition getReferencedClass(CodeCompletionContext context) {
+        // Context description:
+        // SomeClassIdentifier::
+        // i.e. Identifier of the member is not presented.
+        // In this case the PHP Model don't interpret the expression as
+        // the scope resolution expression.
+        String referencedClassName = getReferencedClassName(context);
+        PhpModel model = context.getSourceElement().getModel();
+        return findClassDefinition(model, referencedClassName);
+    }
+
+    private static String getReferencedClassName(CodeCompletionContext context) {
+        // TODO implement me!
+        SourceElement e = context.getSourceElement();
+        String text = e.getText();
+        int opIndex = text.lastIndexOf(SCOPE_RESOLUTION_OPERATOR);
+        String className = null;
+        if(opIndex > -1) {
+          className = text.substring(0, opIndex);
+        }
+        return className;
+    }
+
+    private boolean isScopeResolutionExpression(SourceElement e) {
+        String text = e.getText();
+        if (text != null &&
+                text.contains(Operators.SCOPE_RESOLUTION.value())) {
+            return true;
+        }
+        return false;
+    }
+    
+    private static boolean startsWith(String name, String prefix) {
+        if(name == null || prefix == null) {
+            return false;
+        }
+        return name.toLowerCase().startsWith(prefix.toLowerCase());
+    }
+    
+    // TODO: move to PHPModelUtil
+    private static ClassDefinition getReferencedClass(Constant c) {
+        ClassMemberReference<SourceElement> classReference = c.getClassConstant();
+        if(classReference == null) {
+          return null;
+        }
+        return findClassDefinition(c.getModel(), classReference);
+    }
+
+    private static ClassDefinition findClassDefinition(PhpModel model, 
+                                ClassMemberReference<SourceElement> reference) {
+        assert model != null;
+        assert reference != null;
+        ObjectDefinition od = reference.getObject();
+        if(od instanceof ClassDefinition) {
+            return (ClassDefinition)od;
+        }
+        return null;
+    }
+    
+    private static ClassDefinition findClassDefinition(PhpModel model, String className) {
         List<ClassDefinition> cdList = model.getStatements(ClassDefinition.class);
         for (ClassDefinition cd : cdList) {
             if (cd.getName().equals(className)) {
@@ -211,40 +260,11 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
 
     
     private int calcInsertOffset() {
-        if(SCOPE_RESOLUTION_OPERATOR.equals(myContext.getPrefix())) {
+        String prefix = myContext.getPrefix();
+        if(prefix == null || SCOPE_RESOLUTION_OPERATOR.equals(prefix)) {
             return myContext.getCaretOffset();
         }
         return myContext.getCaretOffset() - myContext.getPrefix().length();
     }
-    
-    private boolean isScopeResolutionOperatorContext() {
-        if(SCOPE_RESOLUTION_OPERATOR.equals(myContext.getPrefix())) {
-            return true;
-        }
         
-// TODO: the following use case doesn't work, because:
-// java.lang.AssertionError
-// at org.netbeans.modules.php.model.impl.ClassReferenceImpl.initIds(ClassReferenceImpl.java:141)
-// at org.netbeans.modules.php.model.impl.ClassReferenceImpl.getObjectName(ClassReferenceImpl.java:98)
-// at org.netbeans.modules.php.editor.completion.ScopeResolutionOperatorContext.getProposals(ScopeResolutionOperatorContext.java:146)
-// when Class1::f|
-//
-//        if(isMatchedCL1(ANY_TOKEN, PREV_TOKENS)) {
-//            return true;
-//        }
-        return false;
-    }
-    
-    private boolean isFromInsideClassDefinition() {
-        SourceElement e = constant;
-        while(e!=null) {
-            if(e == referencedClass) {
-                return true;
-            }
-            e = e.getParent();
-        }
-        return false;
-    }
-
-    
 }

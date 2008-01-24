@@ -51,17 +51,14 @@ import org.netbeans.api.gsf.CompletionProposal;
 import org.netbeans.api.gsf.HtmlFormatter;
 import org.netbeans.modules.languages.php.lang.PseudoVariables;
 import org.netbeans.modules.php.editor.completion.VariableItem.VarTypes;
-import org.netbeans.modules.php.model.Block;
 import org.netbeans.modules.php.model.ClassBody;
 import org.netbeans.modules.php.model.ClassDefinition;
 import org.netbeans.modules.php.model.ClassFunctionDefinition;
 import org.netbeans.modules.php.model.Expression;
-import org.netbeans.modules.php.model.FunctionDefinition;
 import org.netbeans.modules.php.model.GlobalStatement;
 import org.netbeans.modules.php.model.InitializedDeclaration;
 import org.netbeans.modules.php.model.Literal;
 import org.netbeans.modules.php.model.SourceElement;
-import org.netbeans.modules.php.model.Statement;
 import org.netbeans.modules.php.model.StaticStatement;
 import org.netbeans.modules.php.model.Variable;
 import org.netbeans.modules.php.model.VariableAppearance;
@@ -71,7 +68,7 @@ import org.openide.util.Lookup;
 
 /**
  * @author ads
- *
+ * @author Victor G. Vasilyev
  */
 public class VariableProvider implements CompletionResultProvider {
 

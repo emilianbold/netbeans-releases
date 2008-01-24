@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.php.editor.completion;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -66,7 +65,6 @@ import org.netbeans.modules.php.model.Statement;
 import org.netbeans.modules.php.model.SwitchStatement;
 import org.netbeans.modules.php.model.WhileStatement;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -92,6 +90,11 @@ public class ExpressionContext implements CompletionResultProvider
             return false;
         }
         if(isNewIncompletedStatement(e)) {
+            return false;
+        }
+        ScopeResolutionOperatorContext provider = 
+                new ScopeResolutionOperatorContext();
+        if(provider.isApplicable(context)) {
             return false;
         }
         return true;

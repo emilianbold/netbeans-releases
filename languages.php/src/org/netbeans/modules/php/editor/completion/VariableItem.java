@@ -57,11 +57,16 @@ class VariableItem extends CompletionItem {
     
     enum VarTypes {
         PSEUDO("Pseudo-variable"), // NOI18N  a pseudo-variable $this
-        GLOBAL("Global"),             // NOI18N  variable that declared with global keyword
-        STATIC("Static"),             // NOI18N  variable that declared with static keyword
-        LOCAL("Local"),               // NOI18N  local variable with scope ( inside file, method )
-        ATTRIBUTE("Attribute"),                // NOI18N  static attribute in class f.e. Clazz::$attr 
-        PREDEFINED("Superglobal");         // NOI18N  one of predefined variables ( $_POST, ... )
+        GLOBAL("Global"), // NOI18N  variable that declared with global keyword
+        STATIC("Static"), // NOI18N  variable that declared with static keyword
+        LOCAL("Local"), // NOI18N  local variable with scope ( inside file, method )
+        ATTRIBUTE("Attribute"), // NOI18N  static attribute in class f.e. Clazz::$attr
+        /**
+         * Class Constant.
+         * @see {@link http://www.php.net/manual/en/language.oop5.constants.php}
+         */
+        CONSTANT("Constant"), // NOI18N 
+        PREDEFINED("Superglobal"); // NOI18N  one of predefined variables ( $_POST, ... )
         
         VarTypes(String type){
             myType = type;
