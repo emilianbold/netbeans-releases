@@ -126,6 +126,11 @@ public class GoToSupport {
                 return null;
             
             JavaSource js = JavaSource.forFileObject(fo);
+            
+            if (js == null) { //#123488
+                return null;
+            }
+            
             final String[] result = new String[1];
             
             js.runUserActionTask(new Task<CompilationController>() {
