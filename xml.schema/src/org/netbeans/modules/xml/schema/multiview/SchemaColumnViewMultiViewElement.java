@@ -480,7 +480,7 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
                         categoryPane.populateToolbar(toolbar);
                     }
                     // vlv: search
-                    SearchManager manager = SearchManager.get.Default();
+                    SearchManager manager = SearchManager.getDefault();
 
                     if (manager != null) {
                       toolbar.addSeparator();

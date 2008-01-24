@@ -47,18 +47,15 @@ import org.openide.util.Lookup;
  * @author Vladimir Yaroslavskiy
  * @version 2007.12.14
  */
-public interface SearchManager {
+public abstract class SearchManager {
 
   /**
    * Returns Search action.
    * @return Search action
    */
-  Action getSearchAction();
+  public abstract Action getSearchAction();
 
-  // -----------
-  class get {
-    public static SearchManager Default() {
-      return (SearchManager) Lookup.getDefault().lookup(SearchManager.class);
-    }
+  public static SearchManager getDefault() {
+    return (SearchManager) Lookup.getDefault().lookup(SearchManager.class);
   }
 }
