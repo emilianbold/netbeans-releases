@@ -1399,32 +1399,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="build/antclasses"/>
   </target>
 
-    <target name="-define-cvsfileset" depends="bootstrap">
-        <typedef name="cvsfileset" classname="org.netbeans.nbbuild.CvsFileSet" classpath="nbantext.jar"/>
-        <!-- To make sure CvsFileSet$Mode.class is also loaded before nbantext.jar is deleted: -->
-        <cvsfileset dir="dummy" mode="controlled"/>
-    </target>
-    <target name="cvs-clean" depends="-define-cvsfileset,real-clean" description="Clean out most remaining non-CVS-controlled files.">
-        <fail message="Only applies to CVS-controlled working directories.">
-            <condition>
-                <not>
-                    <available file="CVS" type="dir"/>
-                </not>
-            </condition>
-        </fail>
-        <cvsfileset id="uncontrolled" dir=".." mode="uncontrolled">
-            <exclude name="**/user.build.properties"/>
-            <exclude name="nbbuild/misc/build-site-local.sh"/>
-            <!-- Do not use **/nbproject/private/ as this will match some test/{results,work} dirs: -->
-            <exclude name="*/nbproject/private/"/>
-            <exclude name="*/*/nbproject/private/"/>
-            <exclude name="*/*/*/nbproject/private/"/>
-        </cvsfileset>
-        <delete includeemptydirs="true" verbose="true">
-            <fileset refid="uncontrolled"/>
-        </delete>
-    </target>
-  
   <target name="ant-clean">
     <delete file="nbantext.jar"/>
   </target>
@@ -1631,75 +1605,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
     <resolvelist name="modules.for.selected.list" list="${nb.clusters.list}"/>
     <echo message="modules=${modules.for.selected.list}"/>
-  </target>
-
-  <target name="print-cvs-modules" depends="init-module-list" description="Prints list of CVS (top-level) modules required to build in selected moduleconfig.">
-      <taskdef name="resolvelist" classname="org.netbeans.nbbuild.ResolveList" classpath="nbantext.jar"/>
-      <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
-      <resolvelist name="modules.for.checkout.list" list="${nb.clusters.list}"/>
-      <printcvsmodules modules="${modules.for.checkout.list}" cvsmodulesproperty="cvsmodules"/>
-  </target>
-
-  <target name="checkout-cluster" depends="init-module-list" description="Checking out all CVS modules required for '-Dcluster.name=nb.visual.web' cluster, it goes through the modules list and perform the checkout command module per module, the number of retries could be controlled by '-Dcvs.retry=2' property, defalt value is 2">
-      <fail unless="${cluster.name}" message="You need to specify 'cluster.name' attribute"/>
-      <taskdef name="nbcvs" classname="org.netbeans.nbbuild.NBCvs" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-      <taskdef name="printcvsmodules" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
-      <resolve name="cluster.modules" value="${cluster.name}"/>
-      <printcvsmodules modules="${cluster.modules}" cvsmodulesproperty="cvsmodules"/>
-      <!-- The following mess is an attempt to guess the correct CVSROOT and branch from the current checkout. -->
-      <loadfile srcfile="CVS/Root" property="cvsroot" failonerror="false">
-          <filterchain>
-              <striplinebreaks/>
-          </filterchain>
-      </loadfile>
-      <property name="cvsroot" value=":pserver:anoncvs@cvs.netbeans.org:/cvs"/>
-      <loadfile srcfile="CVS/Tag" property="cvstag" failonerror="false">
-          <filterchain> 
-              <tokenfilter delimoutput="">
-                  <containsregex pattern="^T(.+)" replace="\1"/>
-              </tokenfilter>
-          </filterchain>
-      </loadfile>
-      <property name="cvstag" value=""/>
-      <loadfile srcfile="CVS/Tag" property="cvsdate" failonerror="false">
-          <filterchain> 
-              <tokenfilter delimoutput="">
-                  <containsregex pattern="^D(.+)" replace="\1"/>
-              </tokenfilter>
-          </filterchain>
-      </loadfile>
-      <property name="cvs.retry" value="2"/>
-      <property name="cvsdate" value=""/>
-      <nbcvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} core jemmy jellytools xtest" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true" retry="${cvs.retry}"/>
-  </target>
-  
-  <target name="checkout" depends="init-module-list,print-cvs-modules" description="Check out all CVS modules which are needed to build (and test) the selected moduleconfig. It goes through the modules list and perform the checkout command module per module, the number of retries could be controlled by '-Dcvs.retry=2' property, defalt value is 2">
-      <taskdef name="nbcvs" classname="org.netbeans.nbbuild.NBCvs" classpath="${nb_all}/nbbuild/nbantext.jar"/>
-      <!-- The following mess is an attempt to guess the correct CVSROOT and branch from the current checkout. -->
-      <loadfile srcfile="CVS/Root" property="cvsroot" failonerror="false">
-          <filterchain>
-              <striplinebreaks/>
-          </filterchain>
-      </loadfile>
-      <property name="cvsroot" value=":pserver:anoncvs@cvs.netbeans.org:/cvs"/>
-      <loadfile srcfile="CVS/Tag" property="cvstag" failonerror="false">
-          <filterchain> 
-              <tokenfilter delimoutput="">
-                  <containsregex pattern="^T(.+)" replace="\1"/>
-              </tokenfilter>
-          </filterchain>
-      </loadfile>
-      <property name="cvstag" value=""/>
-      <loadfile srcfile="CVS/Tag" property="cvsdate" failonerror="false">
-          <filterchain> 
-              <tokenfilter delimoutput="">
-                  <containsregex pattern="^D(.+)" replace="\1"/>
-              </tokenfilter>
-          </filterchain>
-      </loadfile>
-      <property name="cvsdate" value=""/>
-      <property name="cvs.retry" value="2"/>
-      <nbcvs command="checkout -P" compressionlevel="6" cvsroot="${cvsroot}" dest=".." package="${cvsmodules} jemmy jellytools testtools xtest junit/external" tag="${cvstag}" date="${cvsdate}" quiet="true" failonerror="true" retry="${cvs.retry}"/>
   </target>
 
   <target name="check-commit-validation">
