@@ -57,7 +57,7 @@ public final class ExclusiveAccess {
     private final static ExclusiveAccess INSTANCE = new ExclusiveAccess();
     private final static int DELAY = 400;
 
-    private final RequestProcessor rp = new RequestProcessor("Spring config file accessor", 1, false); // NOI18N
+    private final RequestProcessor rp = new RequestProcessor("Spring config file access thread", 1, false); // NOI18N
     private final ReentrantLock lock = new ReentrantLock();
 
     public static ExclusiveAccess getInstance() {
