@@ -65,6 +65,7 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="900"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="java-forms"/>
+                <attr name="nonEditableTemplate" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.form.j2ee.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/QueryListResult.png"/>
                 <attr name="SystemFileSystem.icon32" urlvalue="nbresloc:/org/netbeans/modules/form/j2ee/resources/QueryListResult32.png"/>

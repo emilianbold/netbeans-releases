@@ -54,6 +54,7 @@ import java.io.Serializable;
 import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -250,6 +251,12 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
     
     private void openInAWT() {
         if (!formDataObject.isValid()) {
+            return;
+        }
+        if (Boolean.TRUE.equals(formDataObject.getPrimaryFile().getAttribute("nonEditableTemplate"))) { // NOI18N
+            String pattern = FormUtils.getBundleString("MSG_NonEditableTemplate"); // NOI18N
+            String message = MessageFormat.format(pattern, new Object[] {formDataObject.getNodeDelegate().getName()});
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
             return;
         }
         elementToOpen = JAVA_ELEMENT_INDEX;

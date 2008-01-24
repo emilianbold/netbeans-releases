@@ -674,6 +674,7 @@ public class FormEditor {
                     fes.saveSourceOnly();
                 }
                 formDataObject.getPrimaryFile().setAttribute("justCreatedByNewWizard", null); // NOI18N
+                formDataObject.getPrimaryFile().setAttribute("nonEditableTemplate", null); // NOI18N
             }
             catch (Exception ex) { // no problem should happen for just created form
                 ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
