@@ -96,9 +96,13 @@ public final class ModuleList {
     static int jarsOpened;
     
     public static final String DEST_DIR_IN_NETBEANS_ORG = "nbbuild" + File.separatorChar + "netbeans"; // NOI18N
-    /** Synch with org.netbeans.nbbuild.ModuleListParser.DEPTH_NB_ALL */
-    public static final int DEPTH_NB_ALL = 3;
     
+    /** Synch with org.netbeans.nbbuild.ModuleListParser.FOREST: */
+    private static final String[] FOREST = {
+        /*root*/null,
+        "contrib",
+    };
+
     /**
      * Cache of source-derived lists, by source root.
      */
@@ -343,6 +347,7 @@ public final class ModuleList {
         }
     }
     
+    /** Only useful for pre-Hg layout. */
     public static final Set<String> EXCLUDED_DIR_NAMES = new HashSet<String>();
     static {
         EXCLUDED_DIR_NAMES.add("CVS"); // NOI18N
@@ -919,7 +924,8 @@ public final class ModuleList {
      */
     public static boolean isNetBeansOrg(File dir) {
         return new File(dir, "nbbuild").isDirectory() && // NOI18N
-                new File(dir, "openide").isDirectory(); // NOI18N
+                // Check for both pre- and post-Hg layouts.
+                (new File(dir, "core").isDirectory() || new File(dir, "openide.util").isDirectory()); // NOI18N
     }
     
     /**
@@ -927,12 +933,30 @@ public final class ModuleList {
      */
     public static File findNetBeansOrg(File basedir) {
         File f = basedir;
-        for (int i = 0; i < DEPTH_NB_ALL; i++) {
+        // Check for post-Hg layout:
+        File repo = f.getParentFile();
+        if (repo != null) {
+            for (String tree : FOREST) {
+                File mainrepo;
+                if (tree == null) {
+                    mainrepo = repo;
+                } else if (repo.getName().equals(tree)) {
+                    mainrepo = repo.getParentFile();
+                } else {
+                    continue;
+                }
+                if (new File(mainrepo, "nbbuild").isDirectory() && new File(mainrepo, "openide.util").isDirectory()) { // NOI18N
+                    return mainrepo;
+                }
+            }
+        }
+        // Check for pre-Hg layout:
+        for (int i = 0; i < 3; i++) {
             f = f.getParentFile();
             if (f == null) {
                 return null;
             }
-            if (isNetBeansOrg(f)) {
+            if (new File(f, "nbbuild").isDirectory() && new File(f, "core").isDirectory()) { // NOI18N
                 return f;
             }
         }
@@ -1031,7 +1055,15 @@ public final class ModuleList {
             lazyNetBeansOrgList = false;
             File nbdestdir = new File(home, DEST_DIR_IN_NETBEANS_ORG);
             Map<String,ModuleEntry> _entries = new HashMap<String,ModuleEntry>(entries); // #68513: possible race condition
-            doScanNetBeansOrgSources(_entries, home, DEPTH_NB_ALL, home, nbdestdir, null, false);
+            if (new File(home, "openide.util").isDirectory()) { // NOI18N
+                // Post-Hg layout.
+                for (String tree : FOREST) {
+                    doScanNetBeansOrgSources(_entries, tree == null ? home : new File(home, tree), 1, home, nbdestdir, tree, false);
+                }
+            } else {
+                // Pre-Hg layout.
+                doScanNetBeansOrgSources(_entries, home, 3, home, nbdestdir, null, false);
+            }
             entries = _entries;
         }
     }
