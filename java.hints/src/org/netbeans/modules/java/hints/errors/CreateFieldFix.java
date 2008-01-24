@@ -69,12 +69,12 @@ public final class CreateFieldFix implements Fix {
     private String name;
     private String inFQN;
     
-    public CreateFieldFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror proposedType) {
+    public CreateFieldFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror proposedType, FileObject targetFile) {
         this.name = name;
         this.inFQN = target.getQualifiedName().toString();
         this.cpInfo = info.getClasspathInfo();
         this.modifiers = modifiers;
-        this.targetFile = SourceUtils.getFile(target, cpInfo);
+        this.targetFile = targetFile;
         this.target = ElementHandle.create(target);
         if (proposedType.getKind() == TypeKind.NULL) {
             proposedType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N

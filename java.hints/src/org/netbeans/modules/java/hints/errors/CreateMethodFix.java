@@ -85,12 +85,12 @@ public final class CreateMethodFix implements Fix {
     private String inFQN;
     private String methodDisplayName;
     
-    public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<? extends TypeMirror> argumentTypes, List<String> argumentNames) {
+    public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, FileObject targetFile) {
         this.name = name;
         this.inFQN = target.getQualifiedName().toString();
         this.cpInfo = info.getClasspathInfo();
         this.modifiers = modifiers;
-        this.targetFile = SourceUtils.getFile(target, cpInfo);
+        this.targetFile = targetFile;
         this.target = ElementHandle.create(target);
         if (returnType != null && returnType.getKind() == TypeKind.NULL) {
             returnType = info.getElements().getTypeElement("java.lang.Object").asType(); // NOI18N

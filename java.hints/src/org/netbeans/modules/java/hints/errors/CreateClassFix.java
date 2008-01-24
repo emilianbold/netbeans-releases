@@ -301,13 +301,13 @@ public abstract class CreateClassFix implements Fix {
         private String name;
         private String inFQN;
         
-        public CreateInnerClassFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, TypeMirror superType, ElementKind kind, int numTypeParameters) {
+        public CreateInnerClassFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, TypeMirror superType, ElementKind kind, int numTypeParameters, FileObject targetFile) {
             super(info, modifiers, argumentTypes, argumentNames, superType, kind, numTypeParameters);
             this.name = name;
             this.target = ElementHandle.create(target);
             this.inFQN = target.getQualifiedName().toString();
             this.cpInfo = info.getClasspathInfo();
-            this.targetFile = SourceUtils.getFile(target, cpInfo);
+            this.targetFile = targetFile;
         }
             
         public String getText() {

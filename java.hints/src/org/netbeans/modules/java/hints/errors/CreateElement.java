@@ -354,11 +354,21 @@ public final class CreateElement implements ErrorRule<Void> {
         if (fixTypes.contains(ElementKind.FIELD) && isTargetWritable(target, info)) { //IZ 111048 -- don't offer anything if target file isn't writable
             Element enclosingElement = e.getEnclosingElement();
 	    if(enclosingElement != null && enclosingElement.getKind() == ElementKind.ANNOTATION_TYPE) {
-		result.add(new CreateMethodFix(info, simpleName, modifiers, target, type, types, Collections.<String>emptyList()));
+                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
+                
+                if (targetFile != null) {
+                    result.add(new CreateMethodFix(info, simpleName, modifiers, target, type, types, Collections.<String>emptyList(), targetFile));
+                }
+                
 		return result;
 	    }	
-	    else
-		result.add(new CreateFieldFix(info, simpleName, modifiers, target, type));
+	    else {
+                FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
+                
+                if (targetFile != null) {
+                    result.add(new CreateFieldFix(info, simpleName, modifiers, target, type, targetFile));
+                }
+            }
         }
 
         if (!wasMemberSelect && (fixTypes.contains(ElementKind.LOCAL_VARIABLE) || types.contains(ElementKind.PARAMETER))) {
@@ -393,11 +403,16 @@ public final class CreateElement implements ErrorRule<Void> {
             return Collections.<Fix>emptyList();
         }
 	
-	//IZ 111048 -- don't offer anything if target file isn't writable
+       	//IZ 111048 -- don't offer anything if target file isn't writable
 	if(!isTargetWritable(target, info))
 	    return Collections.<Fix>emptyList();
         
-        return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, formalArguments.getA(), formalArguments.getB()));
+        FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
+
+        if (targetFile == null)
+            return Collections.<Fix>emptyList();
+        
+        return Collections.<Fix>singletonList(new CreateMethodFix(info, simpleName, modifiers, target, returnType, formalArguments.getA(), formalArguments.getB(), targetFile));
     }
     
     private static Pair<List<? extends TypeMirror>, List<String>> resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments) {
@@ -472,7 +487,12 @@ public final class CreateElement implements ErrorRule<Void> {
 	if (!isTargetWritable(target, info))
 	    return Collections.<Fix>emptyList();
         
-        return Collections.<Fix>singletonList(new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.getA(), formalArguments.getB(), superType, kind, numTypeParameters));
+        FileObject targetFile = SourceUtils.getFile(target, info.getClasspathInfo());
+        
+        if (targetFile == null)
+            return Collections.<Fix>emptyList();
+        
+        return Collections.<Fix>singletonList(new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.getA(), formalArguments.getB(), superType, kind, numTypeParameters, targetFile));
     }
     
     private static ElementKind getClassType(Set<ElementKind> types) {
@@ -544,7 +564,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
     
     
-    private static EnumSet<Modifier> getAccessModifiers(CompilationInfo info, TypeElement source, TypeElement target) {
+    static EnumSet<Modifier> getAccessModifiers(CompilationInfo info, TypeElement source, TypeElement target) {
         if (target.getKind().isInterface()) {
             return EnumSet.of(Modifier.PUBLIC);
         }
