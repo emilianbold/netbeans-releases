@@ -124,9 +124,9 @@ TEMP_FILE=${WORK_DIR}/temp.sh.tmp
 
 ################################################################################
 # define the log file location and create the directory for logs
-LOGS_DIR=${DIRNAME}/logs
-LOG_FILE=logs/${BUILD_NUMBER}.log
-[ ! -d ${LOGS_DIR} ] && mkdir -p ${LOGS_DIR}
+#LOGS_DIR=${DIRNAME}/logs
+#LOG_FILE=logs/${BUILD_NUMBER}.log
+#[ ! -d ${LOGS_DIR} ] && mkdir -p ${LOGS_DIR}
 
 ################################################################################
 # define the environment for running ant
