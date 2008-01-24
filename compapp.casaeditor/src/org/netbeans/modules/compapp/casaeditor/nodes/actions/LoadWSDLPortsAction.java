@@ -69,6 +69,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Map;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Check WSDL files within a SU and list available ports for loading
@@ -123,8 +124,10 @@ public class LoadWSDLPortsAction extends NodeAction {
         ModelSource ms = model.getModelSource();
         Lookup lookup = ms.getLookup();
         CatalogModel catalogModel = lookup.lookup(CatalogModel.class);
-        String casaPath = lookup.lookup(FileObject.class).getPath();
-        File suRoot = new File(casaPath + "/../../jbiServiceUnits/" + suName); // NOI18N
+        FileObject casaFO = lookup.lookup(FileObject.class);
+        File srcDir = FileUtil.toFile(casaFO).getParentFile().getParentFile();
+        File suRoot = new File(srcDir.getAbsolutePath() + File.separator + 
+                "jbiServiceUnits" + File.separator + suName); // NOI18N
         List<File> fs = new ArrayList<File>();
         List<Port> portList = new ArrayList<Port>();
         Map<Port, File> fileMap = new HashMap<Port, File>();
