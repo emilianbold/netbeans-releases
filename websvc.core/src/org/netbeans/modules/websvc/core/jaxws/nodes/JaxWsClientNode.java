@@ -113,7 +113,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
     }
     
     private JaxWsClientNode(JaxWsModel jaxWsModel, Client client, FileObject srcRoot, InstanceContent content) {
-        super(new JaxWsClientChildren(client),new AbstractLookup(content));
+        super(new JaxWsClientChildren(client, srcRoot),new AbstractLookup(content));
         this.jaxWsModel=jaxWsModel;
         this.client=client;
         this.srcRoot=srcRoot;
@@ -454,7 +454,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
         return wsdlFileObject;
     }
     
-    JAXWSClientSupport getJAXWSClientSupport() {
+    private JAXWSClientSupport getJAXWSClientSupport() {
         return JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
     }
     

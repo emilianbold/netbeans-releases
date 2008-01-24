@@ -77,15 +77,19 @@ import org.openide.util.NbBundle;
 public class JaxWsClientChildren extends Children.Keys<WsdlService> {
     Client client;
     WsdlModel wsdlModel;
+    FileObject srcRoot;
     
-    public JaxWsClientChildren(Client client) {
+    public JaxWsClientChildren(Client client, FileObject srcRoot) {
         this.client=client;
+        this.srcRoot = srcRoot;
     }
     
     @Override
     protected void addNotify() {
         final WsdlModeler wsdlModeler = ((JaxWsClientNode)getNode()).getWsdlModeler();
         if (wsdlModeler!=null) {
+            JAXWSClientSupport clientSupport = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
+            if (clientSupport != null) wsdlModeler.setCatalog(clientSupport.getCatalog());
             wsdlModel = wsdlModeler.getWsdlModel();
             if (wsdlModel==null) {
                 wsdlModeler.generateWsdlModel(new WsdlModelListener() {
@@ -129,7 +133,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
     void refreshKeys(boolean downloadWsdl, String newWsdlUrl) {
         super.addNotify();
         // copy to local wsdl first
-        JAXWSClientSupport support = getJAXWSClientSupport();
+        JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
         final JaxWsClientNode clientNode = (JaxWsClientNode)getNode();
         if (downloadWsdl) {
             try {
@@ -260,10 +264,6 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
                 if (clientArtifactsFolder!=null) clientArtifactsFolder.refresh();
             }
         }
-    }
-    
-    private JAXWSClientSupport getJAXWSClientSupport() {
-        return ((JaxWsClientNode)getNode()).getJAXWSClientSupport();
     }
     
     WsdlModel getWsdlModel() {
