@@ -383,6 +383,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     protected abstract List<? extends Tree> generateInitMembers(WorkingCopy workingCopy);
 
     /**
+     * Generates missing set-up and tear-down methods in the given test class.
+     * 
+     * @param  tstClass  test class in which the methods should be generated
+     * @return  a class tree with the missing methods added;
+     *          or the passed class tree if no method was missing
      */
     protected abstract ClassTree generateMissingInitMembers(
                                                 ClassTree tstClass,
@@ -390,6 +395,16 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                                 WorkingCopy workingCopy);
     
     /**
+     * Generates missing set-up and tear-down methods and adds them to the list
+     * of class members.
+     * 
+     * @param  tstMembers  current list of test class members
+     *                     - generated members will be added to it
+     * @param  clsMap  index of the test class contents
+     *                 - it will be updated if some members are added
+     *                 to the list
+     * @return  {@code true} if the list of members was modified,
+     *          {@code false} otherwise
      */
     protected abstract boolean generateMissingInitMembers(
                                                  List<Tree> tstMembers,
@@ -399,6 +414,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     /**
      * Finds position for the first init method.
      * 
+     * @param  clsMap  index of the test class contents
      * @return  index where the first init method should be put,
      *          or {@code -1} if the method should be put to the end
      *          of the class
