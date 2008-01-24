@@ -39,9 +39,14 @@
 
 package org.netbeans;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.logging.Level;
 import junit.framework.TestCase;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 
 /**
@@ -77,6 +82,8 @@ public class StampsTest extends NbTestCase {
         createModule("org.netbeans.modules.logmanagement", userdir, 10000L);
         
         Stamps.main("reset");
+        
+        Thread.sleep(100);
     }
 
     @Override
@@ -115,6 +122,71 @@ public class StampsTest extends NbTestCase {
         
     }
 
+    public void testWriteToCache() throws Exception {
+        Stamps s = Stamps.getModulesJARs();
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+
+        class Up implements Stamps.Updater {
+
+            public void flushCaches(DataOutputStream os) throws IOException {
+                os.writeInt(1);
+                os.writeInt(2);
+                os.writeShort(2);
+            }
+            
+        }
+        Up updater = new Up();
+        
+        s.scheduleSave(updater, "mycache.dat", false);
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+        
+        s.flush(true);
+        
+        ByteBuffer bb;
+        InputStream is;
+        assertNotNull(bb = s.asByteBuffer("mycache.dat"));
+        assertNotNull(is = s.asStream("mycache.dat"));
+        
+        assertEquals("10 bytes", 10, bb.remaining());
+        assertEquals("10 bytes stream", 10, is.available());
+        is.close();
+        bb.clear();
+    }
+    
+    public void testWriteToCacheWithError() {
+        Stamps s = Stamps.getModulesJARs();
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+
+        class Up implements Stamps.Updater {
+
+            public void flushCaches(DataOutputStream os) throws IOException {
+                throw new IOException("Not supported yet.");
+            }
+            
+        }
+        Up updater = new Up();
+        
+        s.scheduleSave(updater, "mycache.dat", false);
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+        
+        CharSequence log = Log.enable("org.netbeans", Level.WARNING);
+        s.flush(true);
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+        
+        if (log.length() < 10) {
+            fail("There should be a warning written to log:\n" + log);
+        }
+    }
     
     
     

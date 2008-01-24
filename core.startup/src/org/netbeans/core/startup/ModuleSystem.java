@@ -62,6 +62,7 @@ import org.netbeans.DuplicateException;
 import org.netbeans.Events;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.Stamps;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -291,7 +292,7 @@ public final class ModuleSystem {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        list.writeCache();
+        Stamps.getModulesJARs().flush(true);
         return res;
     }
     

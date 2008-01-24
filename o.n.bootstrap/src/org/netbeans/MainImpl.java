@@ -281,9 +281,7 @@ final class MainImpl extends Object {
             String user = System.getProperty ("netbeans.user"); // NOI18N
             try {
                 if (user != null) {
-                    File cacheFile = new File(new File(new File(new File(user), "var"), "cache"), "all-resources.dat");
-                    long timeStamp = Stamps.moduleJARs();
-                    JarClassLoader.initializeCache(cacheFile, timeStamp);
+                    JarClassLoader.initializeCache();
                     
                     build_cp (new File (user), toAdd, new HashSet<File> ());
         

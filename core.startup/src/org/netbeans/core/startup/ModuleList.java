@@ -48,6 +48,7 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.CharArrayWriter;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -113,7 +114,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * Methods must be called from within appropriate mutex access.
  * @author Jesse Glick
  */
-final class ModuleList {
+final class ModuleList implements Stamps.Updater {
     
     /** The DTD for a module status. */
     public static final String PUBLIC_ID = "-//NetBeans//DTD Module Status 1.0//EN"; // NOI18N
@@ -940,23 +941,19 @@ final class ModuleList {
     }
 
     private Map<String,Map<String,Object>> readCache() throws IOException {
-        File cache = new File(new File(new File(System.getProperty("netbeans.user"), "var"), "cache"), "all-modules.xml");
-        
-        long timeStamp = cache.lastModified();
-        if (timeStamp == 0L || timeStamp <= Stamps.moduleJARs()) {
-            LOG.fine("Skipping cache: " + cache + " lastModified: " + timeStamp + " stamp: " + Stamps.moduleJARs()); // NOI18N
+        InputStream is = Stamps.getModulesJARs().asStream("all-modules.dat"); // NOI18N
+        if (is == null) {
+            // schedule write for later
+            writeCache();
             return null;
         }
-        LOG.log(Level.FINEST, "Reading cache {0}", cache);
-        
-        int len = (int)cache.length();
-        InputStream is = new BufferedInputStream(new FileInputStream(cache), len);
+        LOG.log(Level.FINEST, "Reading cache all-modules.dat");
         
         Map<String,Map<String,Object>> ret = new HashMap<String, Map<String, Object>>(1333);
         while (is.available() > 0) {
             Map<String, Object> prop = readStatus(is, false);
             if (prop == null) {
-                LOG.log(Level.CONFIG, "Cache is invalid {0}", cache);
+                LOG.log(Level.CONFIG, "Cache is invalid all-modules.dat");
                 return null;
             }
             String cnb = (String)prop.get("name"); // NOI18N
@@ -966,24 +963,18 @@ final class ModuleList {
 
             return ret;
         }
-    
+
     final void writeCache() {
-        File f = new File(new File(new File(System.getProperty("netbeans.user"), "var"), "cache"), "all-modules.xml");
-        f.getParentFile().mkdirs();
-        try {
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(f));
-
-            for (Module m : mgr.getModules()) {
-                if (m.isFixed()) {
-                    continue;
-                }
-                Map<String, Object> prop = computeProperties(m);
-                writeStatus(prop, os);
+        Stamps.getModulesJARs().scheduleSave(this, "all-modules.dat", false);
+    }
+    
+    public void flushCaches(DataOutputStream os) throws IOException {
+        for (Module m : mgr.getModules()) {
+            if (m.isFixed()) {
+                continue;
             }
-
-            os.close();
-        } catch (IOException ex) {
-            f.delete();
+            Map<String, Object> prop = computeProperties(m);
+            writeStatus(prop, os);
         }
     }
     

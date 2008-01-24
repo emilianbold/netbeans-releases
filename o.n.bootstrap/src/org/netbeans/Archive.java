@@ -41,16 +41,10 @@
 
 package org.netbeans;
 
-import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -83,11 +77,9 @@ import org.netbeans.JarClassLoader.JarSource;
  *
  * @author nenik
  */
-class Archive {
+class Archive implements Stamps.Updater {
     // increment on format change
     private static final long magic = 6836742066851800321l;
-    
-    private File archiveFile;
     
     private volatile boolean saved;
     private final boolean prepopulated;
@@ -111,20 +103,12 @@ class Archive {
         prepopulated = false;
     }
     
-    /** Creates a new instance of Archive */
-    public Archive(File file, long timestamp) {//throws Exception {
-        archiveFile = file;
-        
-        int len = (int)file.length();
+    /** Creates a new instance of Archive that reads data from given cache
+     */
+    Archive(Stamps cache) {
+        ByteBuffer master = cache.asByteBuffer("all-resources.dat");
         try {
-            ByteBuffer master = ByteBuffer.allocateDirect(len);
-            FileChannel fc = new FileInputStream(file).getChannel();
-            int red = fc.read(master);
-            if (red != len) throw new InternalError(); // XXX
-
-            fc.close();
-            master.flip();
-            parse(master, timestamp);
+            parse(master, cache.lastModified());
         } catch (Exception e) {
             sources.clear();
             entries.clear();
@@ -134,7 +118,7 @@ class Archive {
         active = true;
         gathering = true;
     }
-    
+
     /**
      * Sweep through the master buffer and remember all the entries
      */
@@ -222,22 +206,19 @@ class Archive {
         entries = null;
     }
     
-    public void save(File f) throws IOException {
-        save(f, prepopulated);
+    public void save(Stamps cache) throws IOException {
+        if (saved) {
+            return;
+        }
+        saved = true;
+        cache.scheduleSave(this, "all-resources.dat", prepopulated);
     }
-    
-    private void save(File f, boolean append) throws IOException {
-        if (saved) return;
 
+    public void flushCaches(DataOutputStream dos) throws IOException {
         assert !gathering;
         assert !active;
-        assert !append || f.equals(archiveFile);
-        
-        saved = true;
-        OutputStream os = new FileOutputStream (f, append); //append new entries only
-        DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(os, 1024 * 1024));
-        
-        if (!append) { // write header
+       
+        if (!prepopulated) { // write header
             dos.writeLong(magic);
             dos.writeLong(System.currentTimeMillis());
         }

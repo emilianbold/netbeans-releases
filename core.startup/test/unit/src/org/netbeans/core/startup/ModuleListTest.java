@@ -55,6 +55,7 @@ import org.openide.modules.*;
 import java.io.*;
 import java.net.URI;
 import java.util.logging.Level;
+import org.netbeans.Stamps;
 import org.openide.filesystems.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -195,7 +196,9 @@ public class ModuleListTest extends SetupHid {
     }
     
     private void assertCache() throws Exception {
-        File f = new File(new File(new File(System.getProperty("netbeans.user"), "var"), "cache"), "all-modules.xml");
+        Stamps.getModulesJARs().flush(true);
+        
+        File f = new File(new File(new File(System.getProperty("netbeans.user"), "var"), "cache"), "all-modules.dat");
         assertTrue("Cache exists", f.exists());
 
         LocalFileSystem lfs = new LocalFileSystem();

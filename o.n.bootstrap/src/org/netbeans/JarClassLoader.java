@@ -85,13 +85,12 @@ import java.util.zip.ZipEntry;
  * @author  Petr Nejedly
  */
 public class JarClassLoader extends ProxyClassLoader {
+    private static Stamps cache;
+    static Archive archive = new Archive(); 
 
-    private static File cacheFile;
-    static Archive archive = new Archive(); // defaults to an empty archive
-
-    static void initializeCache(File cacheF, long timeStamp) {
-        cacheFile = cacheF;
-        archive = new Archive(cacheF, timeStamp);
+    static void initializeCache() {
+        cache = Stamps.getModulesJARs();
+        archive = new Archive(cache);
     }
     
     /**
@@ -103,7 +102,10 @@ public class JarClassLoader extends ProxyClassLoader {
      */
     public static void flushArchive() {
         archive.stopGathering();
-        archive.stopServing();        
+        archive.stopServing();
+        if (cache != null) {
+            cache.flush(false);
+        }
     }
     
     /**
@@ -114,9 +116,9 @@ public class JarClassLoader extends ProxyClassLoader {
     public static void saveArchive() {
         archive.stopGathering();
         archive.stopServing();
-        if (cacheFile != null) {
+        if (cache != null) {
             try {
-                archive.save(cacheFile);
+                archive.save(cache);
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
             }
@@ -752,7 +754,12 @@ public class JarClassLoader extends ProxyClassLoader {
                 afterBangSlash = canonizer.canonizeString(afterBangSlash);
                 file = toBangSlash + afterBangSlash;
             }
-            setURL(url, RES_PROTO, "", -1, file, ref);	
+            setURLOK(url, file, ref);	
+        }
+        
+        @SuppressWarnings("deprecation")
+        private void setURLOK(URL url, String file, String ref) {
+            super.setURL(url, RES_PROTO, "", -1, file, ref);	
         }
 
         private String parseAbsoluteSpec(String spec) {
