@@ -80,7 +80,7 @@ public class Namespace extends NamedElement implements INamespace{
 	 */
 	public boolean addOwnedElement(INamedElement elem) {
       boolean retVal = false;
-      
+
 		IElementChangeDispatchHelper helper = new ElementChangeDispatchHelper();
 		INamespace curSpace = elem.getNamespace();
 		
@@ -137,6 +137,11 @@ public class Namespace extends NamedElement implements INamespace{
 					}
 					addElement(elem);
 					helper.dispatchElementAddedToNamespace(this, elem);
+                                        
+                                        if (elem instanceof NamedElement) 
+                                        {
+                                            ((NamedElement)elem).moveAssociatedElements(this);
+                                        }
 				}
             
             retVal = true;

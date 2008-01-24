@@ -2908,12 +2908,8 @@ public class Classifier extends Namespace implements IClassifier,
 		return retStereo;
 	}
 
-        /**
-         * overrides NamedElement.setNamespace() 
-         * to move Associations as well
-         */
-	public void setNamespace(INamespace space) {
-            super.setNamespace(space);
+
+	public void moveAssociatedElements(INamespace space) {
             if (space == null) {
                 return;
             }
@@ -2925,6 +2921,7 @@ public class Classifier extends Namespace implements IClassifier,
             }
             ETList<IAssociationEnd> ends = getAssociationEnds();
             ETList<IAssociation> assocs = new ETArrayList<IAssociation>();
+            System.out.println("Classifier.setNamespace ends =  "+ends);
             if (ends != null)
             {
                 for (IAssociationEnd end : ends)
