@@ -1,0 +1,10 @@
+
+package stateful.ejbs.local;
+
+
+/**
+ * This is the business interface for LSS enterprise bean.
+ */
+public interface LSSLocalBusiness {
+    
+}

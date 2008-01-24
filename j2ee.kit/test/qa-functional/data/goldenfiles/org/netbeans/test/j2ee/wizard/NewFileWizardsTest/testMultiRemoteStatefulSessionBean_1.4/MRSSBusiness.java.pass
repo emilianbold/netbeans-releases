@@ -1,0 +1,10 @@
+
+package multi.stateful.ejbs.remote;
+
+
+/**
+ * This is the business interface for MRSS enterprise bean.
+ */
+public interface MRSSRemoteBusiness {
+    
+}

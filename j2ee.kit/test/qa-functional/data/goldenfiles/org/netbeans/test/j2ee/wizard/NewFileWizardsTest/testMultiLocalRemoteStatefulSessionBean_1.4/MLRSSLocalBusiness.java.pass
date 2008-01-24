@@ -1,0 +1,10 @@
+
+package multi.stateful.ejbs;
+
+
+/**
+ * This is the business interface for MLRSS enterprise bean.
+ */
+public interface MLRSSLocalBusiness {
+    
+}

@@ -1,0 +1,20 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package ejbs.entity.bean.remote;
+
+import java.rmi.RemoteException;
+import javax.ejb.EJBHome;
+import javax.ejb.FinderException;
+
+/**
+ *
+ * @author js103526
+ */
+public interface RemoteBeanEntityRemoteHome extends EJBHome {
+
+    ejbs.entity.bean.remote.RemoteBeanEntityRemote findByPrimaryKey(java.lang.Long key)  throws FinderException, RemoteException;
+    
+}

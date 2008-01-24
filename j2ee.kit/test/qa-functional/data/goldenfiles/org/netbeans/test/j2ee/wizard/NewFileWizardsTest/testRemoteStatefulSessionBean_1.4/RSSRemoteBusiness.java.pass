@@ -1,0 +1,10 @@
+
+package stateful.ejbs.remote;
+
+
+/**
+ * This is the business interface for RSS enterprise bean.
+ */
+public interface RSSRemoteBusiness {
+    
+}

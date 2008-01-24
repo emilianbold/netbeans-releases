@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar version="2.1" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd">
+  <enterprise-beans>
+        <entity>
+            <display-name>LocalBeanEntityEB</display-name>
+            <ejb-name>LocalBeanEntityBean</ejb-name>
+            <local-home>ejbs.entity.bean.local.LocalBeanEntityLocalHome</local-home>
+            <local>ejbs.entity.bean.local.LocalBeanEntityLocal</local>
+            <ejb-class>ejbs.entity.bean.local.LocalBeanEntityBean</ejb-class>
+            <persistence-type>Bean</persistence-type>
+            <prim-key-class>java.lang.Long</prim-key-class>
+            <reentrant>false</reentrant>
+        </entity>
+        </enterprise-beans>
+    <assembly-descriptor>
+        <container-transaction>
+            <method>
+                <ejb-name>LocalBeanEntityBean</ejb-name>
+                <method-name>*</method-name>
+            </method>
+            <trans-attribute>Required</trans-attribute>
+        </container-transaction>
+        </assembly-descriptor>
+    </ejb-jar>

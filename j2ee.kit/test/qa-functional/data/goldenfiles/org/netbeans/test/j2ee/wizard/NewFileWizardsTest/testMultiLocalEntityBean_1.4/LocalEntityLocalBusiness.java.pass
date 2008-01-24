@@ -1,0 +1,11 @@
+
+package multi.ejbs.entity.local;
+
+
+/**
+ * This is the business interface for LocalEntity enterprise bean.
+ */
+public interface LocalEntityLocalBusiness {
+    Long getKey();
+    
+}

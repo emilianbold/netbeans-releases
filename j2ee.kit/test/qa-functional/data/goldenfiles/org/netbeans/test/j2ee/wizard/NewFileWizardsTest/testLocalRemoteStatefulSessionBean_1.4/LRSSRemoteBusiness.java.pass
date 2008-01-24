@@ -1,0 +1,10 @@
+
+package stateful.ejbs;
+
+
+/**
+ * This is the business interface for LRSS enterprise bean.
+ */
+public interface LRSSRemoteBusiness {
+    
+}

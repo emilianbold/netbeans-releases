@@ -1,0 +1,10 @@
+
+package ejbs.entity.bean;
+
+
+/**
+ * This is the business interface for LRBE enterprise bean.
+ */
+public interface LRBELocalBusiness {
+    
+}

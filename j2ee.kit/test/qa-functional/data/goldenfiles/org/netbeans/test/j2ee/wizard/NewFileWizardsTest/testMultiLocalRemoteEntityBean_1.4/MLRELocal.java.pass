@@ -1,0 +1,18 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package multi.ejbs.entity;
+
+import javax.ejb.EJBLocalObject;
+
+/**
+ *
+ * @author js103526
+ */
+public interface MLRELocal extends EJBLocalObject {
+
+    java.lang.Long getPk();
+
+}

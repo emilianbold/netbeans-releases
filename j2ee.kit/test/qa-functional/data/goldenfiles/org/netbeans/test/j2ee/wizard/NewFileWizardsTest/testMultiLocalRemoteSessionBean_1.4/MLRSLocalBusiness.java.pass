@@ -1,0 +1,10 @@
+
+package multi.ejbs;
+
+
+/**
+ * This is the business interface for MLRS enterprise bean.
+ */
+public interface MLRSLocalBusiness {
+    
+}

@@ -1,0 +1,10 @@
+
+package multi.stateful.ejbs.local;
+
+
+/**
+ * This is the business interface for MLSS enterprise bean.
+ */
+public interface MLSSLocalBusiness {
+    
+}

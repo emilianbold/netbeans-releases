@@ -1,0 +1,19 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package ejbs;
+
+import javax.ejb.CreateException;
+import javax.ejb.EJBLocalHome;
+
+/**
+ *
+ * @author js103526
+ */
+public interface LRSLocalHome extends EJBLocalHome {
+    
+    ejbs.LRSLocal create()  throws CreateException;
+
+}

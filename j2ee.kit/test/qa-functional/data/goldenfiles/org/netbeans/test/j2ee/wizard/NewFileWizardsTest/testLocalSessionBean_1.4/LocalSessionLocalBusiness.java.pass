@@ -1,0 +1,10 @@
+
+package ejbs.local;
+
+
+/**
+ * This is the business interface for LocalSession enterprise bean.
+ */
+public interface LocalSessionLocalBusiness {
+    
+}
