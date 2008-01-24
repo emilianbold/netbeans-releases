@@ -303,7 +303,7 @@ public final class CppSwitchAction extends BaseAction {
                 // separate FileObjects for name.h and name.H although they are names
                 // of the same file. So FileUtil.findBrother can't be used for now.
                 
-                String ne = fo.getName() + '.' + ext;
+                String ne = fo.getName() + '.' + ext[i];
                 for (int j = 0; j < childs.length; j++) {
                     FileObject fileObject = childs[j];
                     if ( IpeUtils.areFilenamesEqual( fileObject.getNameExt(), ne )) {
