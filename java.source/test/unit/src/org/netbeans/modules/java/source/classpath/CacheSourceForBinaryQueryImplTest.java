@@ -41,32 +41,20 @@
 
 package org.netbeans.modules.java.source.classpath;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Date;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import junit.framework.*;
 import java.io.File;
-import java.net.URI;
 import java.net.URL;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -97,6 +85,10 @@ public class CacheSourceForBinaryQueryImplTest extends NbTestCase {
         ClassPath bootPath = ClassPathSupport.createClassPath(new URL[0]);
         ClassPath compilePath = ClassPathSupport.createClassPath(new URL[0]);
         ClassPath srcPath = ClassPathSupport.createClassPath(srcRoots);
+        GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
+        gpr.register(ClassPath.SOURCE, new ClassPath[]{srcPath});
+        gpr.register(ClassPath.BOOT, new ClassPath[] {bootPath});
+        gpr.register(ClassPath.COMPILE, new ClassPath[] {compilePath});
         this.cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
         this.sfbq = new CacheSourceForBinaryQueryImpl ();
     }

@@ -43,8 +43,10 @@ package org.netbeans.modules.java.source.classpath;
 
 import java.net.URL;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.java.source.usages.Index;
+import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -77,9 +79,7 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
                     }
                 }
             }
-            if (result == null) {
-                result = new R (sourceURL);
-            }
+            result = new R (sourceURL, result);
         }        
         return result;
     }
@@ -87,10 +87,12 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
     private static class R implements SourceForBinaryQuery.Result {
         
         private final FileObject sourceRoot;
+        private final SourceForBinaryQuery.Result delegate;
         
-        public R (final URL sourceRootURL) {
+        public R (final URL sourceRootURL, final SourceForBinaryQuery.Result delegate) {
             assert sourceRootURL != null;
             this.sourceRoot = URLMapper.findFileObject(sourceRootURL);
+            this.delegate = delegate;
         }
 
         public void removeChangeListener(ChangeListener l) {
@@ -102,12 +104,32 @@ public class CacheSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         }
 
         public FileObject[] getRoots() {
-            if (this.sourceRoot == null) {
-                return new FileObject[0];
+            FileObject[] result;
+            //Is here SFBQ.Result for root?
+            if (delegate != null) {                
+                //Yes - either [root*] or [] - nothing or unknown
+                result = this.delegate.getRoots();
+                if (result.length == 0) {
+                    //nothing or unkown
+                    if (this.sourceRoot != null && GlobalPathRegistry.getDefault().getSourceRoots().contains(this.sourceRoot)) {
+                        //nothing
+                        result = new FileObject[] {this.sourceRoot};
+                    }                
+                    else {
+                        //unknown
+                        result = new FileObject[0];
+                    }
+                }
+            }else {            
+                //No - unknown file - treat it like a source root
+                if (this.sourceRoot == null) {
+                    result = new FileObject[0];
+                }
+                else {
+                    result = new FileObject[] {this.sourceRoot};
+                }
             }
-            else {
-                return new FileObject[] {this.sourceRoot};
-            }
+            return result;
         }                
     }            
 }
