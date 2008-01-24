@@ -27,7 +27,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -112,10 +112,7 @@ made subject to such option by the copyright holder.
             <property name="no.deps" value="true"/>
             <property name="java.version.excludes" location="${basedir}/../../../jemmy/util/${ant.java.version}.excludes"/>
         </ant>    
-        <ant dir="." target="${commit.validation.target}">
-            <property name="jdkhome" value="${env.JAVA_HOME}"/>
-            <!--property name="netbeans.dest.dir" location="../../nbbuild/netbeans"/-->
-        </ant>
+        <ant dir="." target="${commit.validation.target}"/>
         <delete dir="../../../nbbuild/netbeans/extra"/> <!-- #114661 -->
     </target>
 
