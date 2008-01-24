@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -98,6 +98,7 @@ import static javax.lang.model.element.Modifier.STATIC;
 import static org.netbeans.modules.junit.TestCreator.ACCESS_MODIFIERS;
 
 /**
+ * A base class for generators of JUnit test classes and test methods.
  *
  * @author  Marian Petras
  */
@@ -277,6 +278,18 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
     
     /**
+     * Creates or updates a test class for a given source class.
+     * 
+     * @param  srcTopClass  source class for which a test class should be
+     *                      created or updated
+     * @param  tstTopClasses  list of top-level classes that are present
+     *                        in the test source code
+     * @param  testClassName  desired name of the test class corresponding
+     *                        to the given source class; if a test class of the
+     *                        given name is not found, it is created
+     * @param  compUnitPath  tree-path to the compilation unit of the test
+     *                       source file
+     * @param  workingCopy  working copy of the test file's structure
      */
     private void createOrUpdateTestClass(TypeElement srcTopClass,
                                          List<ClassTree> tstTopClasses,
@@ -289,15 +302,16 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         final String testClassSimpleName = TestUtil.getSimpleName(testClassName);
 
+        /* Check whether the corresponding test class already exists: */
         ClassTree tstTopClass = null;
         for (ClassTree tstClass : tstTopClasses) {
             if (tstClass.getSimpleName().contentEquals(testClassSimpleName)) {
-                tstTopClass = tstClass;
+                tstTopClass = tstClass;     //yes, it exists
                 break;
             }
         }
         
-        if (tstTopClass != null) {
+        if (tstTopClass != null) {      //if the test class already exists
             TreePath tstTopClassTreePath = new TreePath(compUnitPath,
                                                         tstTopClass);
 
@@ -320,7 +334,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 workingCopy.rewrite(origTstTopClass,
                                     tstTopClass);
             }
-        } else {
+        } else {                        //it does not exist - it must be created
             if (srcHasTestableMethods) {
                 tstTopClass = generateNewTestClass(workingCopy,
                                                    testClassSimpleName,
@@ -334,6 +348,13 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
 
     /**
+     * Generates a new test class for the given source class.
+     * 
+     * @param  name  name of the class to be created
+     * @param  srcClass  source class for which the test class should be created
+     * @param  srcMethods  methods inside the source class for which
+     *                     corresponding test methods should be created
+     * @return  generated test class
      */
     private ClassTree generateNewTestClass(WorkingCopy workingCopy,
                                            String name,
@@ -343,9 +364,14 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                                            srcMethods,
                                                            workingCopy);
         return composeNewTestClass(workingCopy, name, testMethods);
-        }
+    }
 
     /**
+     * Generates a new test class containing the given list of test methods.
+     * 
+     * @param  name  desired name of the test class
+     * @param  members  desired content of the test class
+     * @return  generated test class
      */
     protected abstract ClassTree composeNewTestClass(
                                         WorkingCopy workingCopy,
@@ -470,6 +496,10 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                                 WorkingCopy workingCopy);
     
     /**
+     * Generates test methods for the given source methods.
+     * 
+     * @param  srcClass  source class containing the source methods
+     * @param  srcMethods  source methods the test methods should be created for
      */
     private List<MethodTree> generateTestMethods(
                                        TypeElement srcClass,
@@ -492,6 +522,17 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
 
     /**
+     * Generates a test methods for the given source method.
+     * 
+     * @param  srcClass  source class - parent of the source method
+     * @param  srcMethod  source method for which the test method should be
+     *                    created
+     * @param  useNoArgConstrutor  whether a no-argument constructor should be
+     *                             used in the default test method body;
+     *                             it should not be {@code true} unless
+     *                             the source class contains an accessible
+     *                             no-argument constructor
+     * @return  the generated test method
      */
     protected MethodTree generateTestMethod(TypeElement srcClass,
                                           ExecutableElement srcMethod,
@@ -886,6 +927,15 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     // </editor-fold>
 
     /**
+     * Generates a default body of a test method.
+     * 
+     * @param  srcClass  class - parent of the tested source method
+     * @param  srcMethod  source method which should be tested by the test
+     * @param  useNoArgConstrutor  whether a no-argument constructor should be
+     *                             used in the body;
+     *                             it should not be {@code true} unless
+     *                             the source class contains an accessible
+     *                             no-argument constructor
      */
     protected BlockTree generateTestMethodBody(TypeElement srcClass,
                                                ExecutableElement srcMethod,
