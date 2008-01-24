@@ -90,6 +90,9 @@ public class ClientViewChildren extends FilterNode.Children {
     private void updateKeys(){
         List<Node> children = new ArrayList<Node>();
         try {
+            //we need to set the keys as empty children and 
+            //then as right children for refresh to work
+            this.setKeys(children);
             FileObject[] wsdls = wsdlFolder.getChildren();
             for(int i = 0; i < wsdls.length; i++){
                 Node n = DataObject.find(wsdls[i]).getNodeDelegate();
