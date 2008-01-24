@@ -102,7 +102,7 @@ public final class SearchAction extends IconAction {
     list.add(cookie);
     list.add(view);
 
-    SearchManager.getDefault().createSearch(list, getTargets(model), null, true);
+    SearchManager.getDefault().createSearch(list, getTargets(model));
   }
 
   private ShowCookie getShowCookie(Node node) {

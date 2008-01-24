@@ -45,8 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
 
 import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
@@ -68,28 +66,26 @@ public final class Manager extends SearchManager {
     mySearch = new Search();
   }
 
-  public Component createSearch(Object source, JComponent parent) {
-    return createSearch(source, null, parent, false);
-  }
-
-  public Component createSearch(
-    Object source,
-    SearchTarget [] targets,
-    JComponent parent,
-    boolean advanced)
-  {
+  public Component createSearch(Object source, SearchTarget [] targets) {
     List<SearchEngine> engines = getEngines(source);
-//out("Set engines: " + engines);
     
     if (engines.isEmpty()) {
       return null;
     }
-    if (advanced) {
-      return mySearch.getUIComponent(engines, source, targets);
+    return mySearch.getUIComponent(engines, source, targets);
+  }
+
+  public Component createFind(Object source, JComponent parent) {
+    List<SearchEngine> engines = getEngines(source);
+    
+    if (engines.isEmpty()) {
+      return null;
     }
-    else {
-      return new Find(engines, source, parent);
-    }
+    return new Find(engines, source, parent);
+  }
+
+  public Action getSearchAction() {
+    return SearchAction.DEFAULT;
   }
 
   private List<SearchEngine> getEngines(Object source) {
@@ -100,19 +96,8 @@ public final class Manager extends SearchManager {
         engines.add(engine);
       }
     }
+//out("Set engines: " + engines);
     return engines;
-  }
-
-  public JComponent createNavigation(
-    JTree tree,
-    JScrollPane scrollPane,
-    JComponent component)
-  {
-    return new Navigation(tree, scrollPane, component);
-  }
-
-  public Action getSearchAction() {
-    return SearchAction.DEFAULT;
   }
 
   private Search mySearch;

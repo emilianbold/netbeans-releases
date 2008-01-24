@@ -43,8 +43,6 @@ package org.netbeans.modules.bpel.search.api;
 import java.awt.Component;
 import javax.swing.Action;
 import javax.swing.JComponent;
-import javax.swing.JScrollPane;
-import javax.swing.JTree;
 import org.openide.util.Lookup;
 
 /**
@@ -58,32 +56,17 @@ public abstract class SearchManager
    * Returns search for given source and parent.
    * @param source where search will be perfromed
    * @param targets is the list of target
-   * @param parent is component where ui will be placed
-   * @param advanced if true, ui is advanced
    * @return search
    */
-  public abstract Component createSearch(
-    Object source,
-    SearchTarget [] targets,
-    JComponent parent, boolean advanced);
+  public abstract Component createSearch(Object source, SearchTarget [] targets);
 
   /**
-   * Returns search for given source and parent.
-   * @param source where search will be perfromed
+   * Returns find for given source and parent.
+   * @param source where find will be perfromed
    * @param parent is component where ui will be placed
-   * @param advanced if true, ui is advanced
-   * @return search
+   * @return find
    */
-  public abstract Component createSearch(Object source, JComponent parent);
-
-  /**
-   * Retuens navigation panel for tree, scroll pane and component.
-   * @param tree given tree
-   * @param scroll given scroll pane
-   * @param component given component
-   * @return navigation panel for tree, scroll pane and component
-   */
-  public abstract JComponent createNavigation(JTree tree, JScrollPane scroll, JComponent component);
+  public abstract Component createFind(Object source, JComponent parent);
 
   /**
    * Returns Search action.

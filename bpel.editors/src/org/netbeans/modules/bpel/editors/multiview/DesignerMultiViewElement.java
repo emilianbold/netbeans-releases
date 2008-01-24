@@ -545,7 +545,7 @@ public class DesignerMultiViewElement extends TopComponent
         SearchManager manager = SearchManager.getDefault();
         
         if (manager != null) {
-          Component search = manager.createSearch(new DiagramImpl(getDesignView()), getDesignView());
+          Component search = manager.createFind(new DiagramImpl(getDesignView()), getDesignView());
           search.setVisible(false);
           add(search, BorderLayout.SOUTH);
         }
