@@ -56,6 +56,7 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
+import org.openide.util.Exceptions;
 
 /**
  * Lexer based on old coyote groovy lexer.

@@ -154,7 +154,7 @@ public class TestCompilationInfo extends CompilationInfo {
             GroovyParser.Context context = new GroovyParser.Context(file, listener, text, caretOffset);
             GroovyParser parser = new GroovyParser();
             setPositionManager(parser.getPositionManager());
-            ParserResult pr = parser.parseBuffer(context);
+            ParserResult pr = parser.parseBuffer(context, GroovyParser.Sanitize.NONE);
             r = result = pr;
         }
         

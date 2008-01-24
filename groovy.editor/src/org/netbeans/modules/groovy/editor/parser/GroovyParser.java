@@ -48,13 +48,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.CompileUnit;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.control.messages.Message;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
@@ -62,11 +65,13 @@ import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.ElementHandle;
 import org.netbeans.api.gsf.OccurrencesFinder;
+import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParseEvent;
 import org.netbeans.api.gsf.ParseListener;
 import org.netbeans.api.gsf.Parser;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.api.gsf.ParserResult.AstTreeNode;
 import org.netbeans.api.gsf.PositionManager;
 import org.netbeans.api.gsf.SemanticAnalyzer;
 import org.netbeans.api.gsf.Severity;
@@ -74,6 +79,7 @@ import org.netbeans.api.gsf.SourceFileReader;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.groovy.editor.AstNodeAdapter;
 import org.netbeans.modules.groovy.editor.AstUtilities;
+import org.netbeans.modules.groovy.editor.GroovyUtils;
 import org.netbeans.modules.groovy.editor.elements.AstElement;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 import org.netbeans.modules.groovy.editor.elements.CommentElement;
@@ -83,6 +89,7 @@ import org.netbeans.spi.gsf.DefaultError;
 import org.netbeans.spi.gsf.DefaultPosition;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -106,7 +113,7 @@ public class GroovyParser implements Parser {
                 String source = asString(buffer);
                 int caretOffset = reader.getCaretOffset(file);
                 Context context = new Context(file, listener, source, caretOffset);
-                result = parseBuffer(context);
+                result = parseBuffer(context, Sanitize.NONE);
             } catch (IOException ioe) {
                 listener.exception(ioe);
             }
@@ -118,6 +125,263 @@ public class GroovyParser implements Parser {
 
     public PositionManager getPositionManager() {
         return positions;
+    }
+
+    protected GroovyParserResult createParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast) {
+        return new GroovyParserResult(file, rootElement, ast);
+    }
+    
+    private boolean sanitizeSource(Context context, Sanitize sanitizing) {
+
+        if (sanitizing == Sanitize.MISSING_END) {
+            context.sanitizedSource = context.source + "}";
+            int start = context.source.length();
+            context.sanitizedRange = new OffsetRange(start, start+1);
+            context.sanitizedContents = "";
+            return true;
+        }
+
+        int offset = context.caretOffset;
+
+        // Let caretOffset represent the offset of the portion of the buffer we'll be operating on
+        if ((sanitizing == Sanitize.ERROR_DOT) || (sanitizing == Sanitize.ERROR_LINE)) {
+            offset = context.errorOffset;
+        }
+
+        // Don't attempt cleaning up the source if we don't have the buffer position we need
+        if (offset == -1) {
+            return false;
+        }
+
+        // The user might be editing around the given caretOffset.
+        // See if it looks modified
+        // Insert an end statement? Insert a } marker?
+        String doc = context.source;
+        if (offset > doc.length()) {
+            return false;
+        }
+
+        if (sanitizing == Sanitize.BLOCK_START) {
+            try {
+                int start = GroovyUtils.getRowFirstNonWhite(doc, offset);
+                if (start != -1 && 
+                        start+2 < doc.length() &&
+                        doc.regionMatches(start, "if", 0, 2)) {
+                    // TODO - check lexer
+                    char c = 0;
+                    if (start+2 < doc.length()) {
+                        c = doc.charAt(start+2);
+                    }
+                    if (!Character.isLetter(c)) {
+                        int removeStart = start;
+                        int removeEnd = removeStart+2;
+                        StringBuilder sb = new StringBuilder(doc.length());
+                        sb.append(doc.substring(0, removeStart));
+                        for (int i = removeStart; i < removeEnd; i++) {
+                            sb.append(' ');
+                        }
+                        if (removeEnd < doc.length()) {
+                            sb.append(doc.substring(removeEnd, doc.length()));
+                        }
+                        assert sb.length() == doc.length();
+                        context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
+                        context.sanitizedSource = sb.toString();
+                        context.sanitizedContents = doc.substring(removeStart, removeEnd);
+                        return true;
+                    }
+                }
+                
+                return false;
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+                return false;
+            }
+        }
+        
+        try {
+            // Sometimes the offset shows up on the next line
+            if (GroovyUtils.isRowEmpty(doc, offset) || GroovyUtils.isRowWhite(doc, offset)) {
+                offset = GroovyUtils.getRowStart(doc, offset)-1;
+                if (offset < 0) {
+                    offset = 0;
+                }
+            }
+
+            if (!(GroovyUtils.isRowEmpty(doc, offset) || GroovyUtils.isRowWhite(doc, offset))) {
+                if ((sanitizing == Sanitize.EDITED_LINE) || (sanitizing == Sanitize.ERROR_LINE)) {
+                    // See if I should try to remove the current line, since it has text on it.
+                    int lineEnd = GroovyUtils.getRowLastNonWhite(doc, offset);
+
+                    if (lineEnd != -1) {
+                        StringBuilder sb = new StringBuilder(doc.length());
+                        int lineStart = GroovyUtils.getRowStart(doc, offset);
+                        int rest = lineStart + 2;
+
+                        sb.append(doc.substring(0, lineStart));
+                        sb.append("//");
+
+                        if (rest < doc.length()) {
+                            sb.append(doc.substring(rest, doc.length()));
+                        }
+                        assert sb.length() == doc.length();
+
+                        context.sanitizedRange = new OffsetRange(lineStart, lineEnd);
+                        context.sanitizedSource = sb.toString();
+                        context.sanitizedContents = doc.substring(lineStart, lineEnd);
+                        return true;
+                    }
+                } else {
+                    assert sanitizing == Sanitize.ERROR_DOT || sanitizing == Sanitize.EDITED_DOT;
+                    // Try nuking dots/colons from this line
+                    // See if I should try to remove the current line, since it has text on it.
+                    int lineStart = GroovyUtils.getRowStart(doc, offset);
+                    int lineEnd = offset-1;
+                    while (lineEnd >= lineStart && lineEnd < doc.length()) {
+                        if (!Character.isWhitespace(doc.charAt(lineEnd))) {
+                            break;
+                        }
+                        lineEnd--;
+                    }
+                    if (lineEnd > lineStart) {
+                        StringBuilder sb = new StringBuilder(doc.length());
+                        String line = doc.substring(lineStart, lineEnd + 1);
+                        int removeChars = 0;
+                        int removeEnd = lineEnd+1;
+
+                        if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
+                            removeChars = 1;
+                        } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
+                            removeChars = 1;
+                        } else if (line.endsWith(",:")) { // NOI18N
+                            removeChars = 2;
+                        } else if (line.endsWith(", :")) { // NOI18N
+                            removeChars = 3;
+                        } else if (line.endsWith(", ")) { // NOI18N
+                            removeChars = 2;
+                        } else if (line.endsWith("=> :")) { // NOI18N
+                            removeChars = 4;
+                        } else if (line.endsWith("=>:")) { // NOI18N
+                            removeChars = 3;
+                        } else if (line.endsWith("=>")) { // NOI18N
+                            removeChars = 2;
+                        } else if (line.endsWith("::")) { // NOI18N
+                            removeChars = 2;
+                        } else if (line.endsWith(":")) { // NOI18N
+                            removeChars = 1;
+                        } else if (line.endsWith("@@")) { // NOI18N
+                            removeChars = 2;
+                        } else if (line.endsWith("@")) { // NOI18N
+                            removeChars = 1;
+                        } else if (line.endsWith(",)")) { // NOI18N
+                            // Handle lone comma in parameter list - e.g.
+                            // type "foo(a," -> you end up with "foo(a,|)" which doesn't parse - but
+                            // the line ends with ")", not "," !
+                            // Just remove the comma
+                            removeChars = 1;
+                            removeEnd--;
+                        } else if (line.endsWith(", )")) { // NOI18N
+                            // Just remove the comma
+                            removeChars = 1;
+                            removeEnd -= 2;
+                        }
+                        
+                        if (removeChars == 0) {
+                            return false;
+                        }
+
+                        int removeStart = removeEnd-removeChars;
+
+                        sb.append(doc.substring(0, removeStart));
+
+                        for (int i = 0; i < removeChars; i++) {
+                            sb.append(' ');
+                        }
+
+                        if (removeEnd < doc.length()) {
+                            sb.append(doc.substring(removeEnd, doc.length()));
+                        }
+                        assert sb.length() == doc.length();
+
+                        context.sanitizedRange = new OffsetRange(removeStart, removeEnd);
+                        context.sanitizedSource = sb.toString();
+                        context.sanitizedContents = doc.substring(removeStart, removeEnd);
+                        return true;
+                    }
+                }
+            }
+        } catch (BadLocationException ble) {
+            Exceptions.printStackTrace(ble);
+        }
+
+        return false;
+    }
+    
+    @SuppressWarnings("fallthrough")
+    private GroovyParserResult sanitize(final Context context,
+        final Sanitize sanitizing) {
+
+        switch (sanitizing) {
+        case NEVER:
+            return createParseResult(context.file, null, null);
+
+        case NONE:
+
+            // We've currently tried with no sanitization: try first level
+            // of sanitization - removing dots/colons at the edited offset.
+            // First try removing the dots or double colons around the failing position
+            if (context.caretOffset != -1) {
+                return parseBuffer(context, Sanitize.EDITED_DOT);
+            }
+
+        // Fall through to try the next trick
+        case EDITED_DOT:
+
+            // We've tried editing the caret location - now try editing the error location
+            // (Don't bother doing this if errorOffset==caretOffset since that would try the same
+            // source as EDITED_DOT which has no better chance of succeeding...)
+            if (context.errorOffset != -1 && context.errorOffset != context.caretOffset) {
+                return parseBuffer(context, Sanitize.ERROR_DOT);
+            }
+
+        // Fall through to try the next trick
+        case ERROR_DOT:
+
+            // We've tried removing dots - now try removing the whole line at the error position
+            if (context.caretOffset != -1) {
+                return parseBuffer(context, Sanitize.BLOCK_START);
+            }
+            
+        // Fall through to try the next trick
+        case BLOCK_START:
+            
+            // We've tried removing dots - now try removing the whole line at the error position
+            if (context.errorOffset != -1) {
+                return parseBuffer(context, Sanitize.ERROR_LINE);
+            }
+
+        // Fall through to try the next trick
+        case ERROR_LINE:
+
+            // Messing with the error line didn't work - we could try "around" the error line
+            // but I'm not attempting that now.
+            // Finally try removing the whole line around the user editing position
+            // (which could be far from where the error is showing up - but if you're typing
+            // say a new "def" statement in a class, this will show up as an error on a mismatched
+            // "end" statement rather than here
+            if (context.caretOffset != -1) {
+                return parseBuffer(context, Sanitize.EDITED_LINE);
+            }
+
+        // Fall through to try the next trick
+        case EDITED_LINE:
+            return parseBuffer(context, Sanitize.MISSING_END);
+            
+        // Fall through for default handling
+        case MISSING_END:
+        default:
+            // We're out of tricks - just return the failed parse result
+            return createParseResult(context.file, null, null);
+        }
     }
 
     public SemanticAnalyzer getSemanticAnalysisTask() {
@@ -206,8 +470,28 @@ public class GroovyParser implements Parser {
     }
 
     @SuppressWarnings("unchecked")
-    public GroovyParserResult parseBuffer(final Context context) {
+    public GroovyParserResult parseBuffer(final Context context, final Sanitize sanitizing) {
+        boolean sanitizedSource = false;
+        String source = context.source;
+        if (!((sanitizing == Sanitize.NONE) || (sanitizing == Sanitize.NEVER))) {
+            boolean ok = sanitizeSource(context, sanitizing);
 
+            if (ok) {
+                assert context.sanitizedSource != null;
+                sanitizedSource = true;
+                source = context.sanitizedSource;
+            } else {
+                // Try next trick
+                return sanitize(context, sanitizing);
+            }
+        }
+        
+        final boolean ignoreErrors = sanitizedSource;
+
+        if (sanitizing == Sanitize.NONE) {
+            context.errorOffset = -1;
+        }
+        
         String fileName = "";
         if ((context.file != null) && (context.file.getFileObject() != null)) {
             fileName = context.file.getFileObject().getNameExt();
@@ -223,12 +507,36 @@ public class GroovyParser implements Parser {
         ClassLoader parentLoader = cp == null ? null : cp.getClassLoader(true);
         GroovyClassLoader classLoader = new GroovyClassLoader(parentLoader, configuration);
         CompilationUnit compilationUnit = new CompilationUnit(configuration, null, classLoader);
-        InputStream inputStream = new ByteArrayInputStream(context.source.getBytes());
+        InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         compilationUnit.addSource(fileName, inputStream);
 
         try {
             compilationUnit.compile(Phases.SEMANTIC_ANALYSIS); // which phase should be used?
         } catch (Throwable e) {
+            int offset = -1;
+            String errorMessage = e.getMessage();
+            String localizedMessage = e.getLocalizedMessage();
+            
+            Message message = compilationUnit.getErrorCollector().getLastError();
+            if (message instanceof SyntaxErrorMessage) {
+                SyntaxException se = ((SyntaxErrorMessage)message).getCause();
+                offset = AstUtilities.getOffset(source, se.getStartLine(), se.getStartColumn());
+                errorMessage = se.getMessage();
+                localizedMessage = se.getLocalizedMessage();
+            }
+            
+            // XXX should this be >, and = length?
+            if (offset >= source.length()) {
+                offset = source.length() - 1;
+
+                if (offset < 0) {
+                    offset = 0;
+                }
+            }
+
+            if (!ignoreErrors) {
+                notifyError(context, null, Severity.ERROR, errorMessage, localizedMessage, offset, sanitizing);
+            }
         }
 
         CompileUnit compileUnit = compilationUnit.getAST();
@@ -243,15 +551,18 @@ public class GroovyParser implements Parser {
             }
         }
 
-        handleErrorCollector(compilationUnit.getErrorCollector(), context, module);
+        handleErrorCollector(compilationUnit.getErrorCollector(), context, module, ignoreErrors, sanitizing);
         
         if (module != null) {
+            context.sanitized = sanitizing;
             AstRootElement astRootElement = new AstRootElement(context.file.getFileObject(), module);
-            AstNodeAdapter ast = new AstNodeAdapter(null, module, context.source);
-            GroovyParserResult r = new GroovyParserResult(context.file, astRootElement, ast);
+            AstNodeAdapter ast = new AstNodeAdapter(null, module, source);
+            GroovyParserResult r = createParseResult(context.file, astRootElement, ast);
+            r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             return r;
+        } else {
+            return sanitize(context, sanitizing);
         }
-        return new GroovyParserResult(context.file, null, null);
     }
 
     private static String asString(CharSequence sequence) {
@@ -266,12 +577,13 @@ public class GroovyParser implements Parser {
         return new GroovyPositionManager();
     }
 
-    private static void notifyError(Context context, String key, Severity severity, String description, String details, int offset) {
-        notifyError(context, key, severity, description, details, offset, offset);
+    private static void notifyError(Context context, String key, Severity severity, String description, String details, 
+            int offset, Sanitize sanitizing) {
+        notifyError(context, key, severity, description, details, offset, offset, sanitizing);
     }
 
-    private static void notifyError(Context context, String key,
-        Severity severity, String description, String details, int startOffset, int endOffset) {
+    private static void notifyError(Context context, String key, Severity severity, String description, String details, 
+            int startOffset, int endOffset, Sanitize sanitizing) {
         // Initialize keys for errors needing it
         if (key == null) {
             key = description;
@@ -283,10 +595,14 @@ public class GroovyParser implements Parser {
         context.listener.error(error);
 
         context.errorOffset = startOffset;
+
+        if (sanitizing == Sanitize.NONE) {
+            context.errorOffset = startOffset;
+        }
     }
 
-    private static void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode) {
-        if (errorCollector != null) {
+    private static void handleErrorCollector(ErrorCollector errorCollector, Context context, ModuleNode moduleNode, boolean ignoreErrors, Sanitize sanitizing) {
+        if (!ignoreErrors && errorCollector != null) {
             List errors = errorCollector.getErrors();
             if (errors != null) {
                 for (Object object : errors) {
@@ -297,13 +613,13 @@ public class GroovyParser implements Parser {
                         if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
                             int startOffset = AstUtilities.getOffset(context.source, ex.getStartLine(), ex.getStartColumn());
                             int endOffset = AstUtilities.getOffset(context.source, ex.getLine(), ex.getEndColumn());
-                            notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset);
+                            notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
                         }
                     } else if (object instanceof SimpleMessage) {
                         String message = ((SimpleMessage)object).getMessage();
-                        notifyError(context, null, Severity.ERROR, message, null, -1);
+                        notifyError(context, null, Severity.ERROR, message, null, -1, sanitizing);
                     } else {
-                        notifyError(context, null, Severity.ERROR, "Error", null, -1);
+                        notifyError(context, null, Severity.ERROR, "Error", null, -1, sanitizing);
                     }
                 }
             }
@@ -372,13 +688,40 @@ public class GroovyParser implements Parser {
         }
     }
 
+    /** Attempts to sanitize the input buffer */
+    public static enum Sanitize {
+        /** Only parse the current file accurately, don't try heuristics */
+        NEVER, 
+        /** Perform no sanitization */
+        NONE, 
+        /** Try to remove the trailing . or :: at the caret line */
+        EDITED_DOT, 
+        /** Try to remove the trailing . or :: at the error position, or the prior
+         * line, or the caret line */
+        ERROR_DOT, 
+        /** Try to remove the initial "if" or "unless" on the block
+         * in case it's not terminated
+         */
+        BLOCK_START,
+        /** Try to cut out the error line */
+        ERROR_LINE, 
+        /** Try to cut out the current edited line, if known */
+        EDITED_LINE,
+        /** Attempt to add an "end" to the end of the buffer to make it compile */
+        MISSING_END,
+    }
+
     /** Parsing context */
     public static final class Context {
         private final ParserFile file;
         private final ParseListener listener;
         private int errorOffset;
         private String source;
+        private String sanitizedSource;
+        private OffsetRange sanitizedRange = OffsetRange.NONE;
+        private String sanitizedContents;
         private int caretOffset;
+        private Sanitize sanitized = Sanitize.NONE;
         
         public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset) {
             this.file = parserFile;
@@ -391,6 +734,18 @@ public class GroovyParser implements Parser {
         @Override
         public String toString() {
             return "GroovyParser.Context(" + file.toString() + ")"; // NOI18N
+        }
+        
+        public OffsetRange getSanitizedRange() {
+            return sanitizedRange;
+        }
+
+        public Sanitize getSanitized() {
+            return sanitized;
+        }
+        
+        public String getSanitizedSource() {
+            return sanitizedSource;
         }
         
         public int getErrorOffset() {

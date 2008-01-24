@@ -127,11 +127,13 @@ public class GroovyParserTest extends GroovyTestBase {
     public void test2() throws IOException {
         copyStringToFileObject(testFO,
                 "class Hello {\n" +
+                "\tdef name = 'aaa'\n" +
+                "\tprintln name\n" +
                 "\tstatic void main(args) {\n" +
                 "\t\tprintln 'Hello, world'\n" +
                 "\t}\n" +
                 "}");
         checkParseTree(testFO, "void ^main", "MethodNode");
     }
-    
+
 }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.groovy.editor.parser;
 
 import org.netbeans.api.gsf.Element;
+import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
@@ -54,6 +55,9 @@ public class GroovyParserResult extends ParserResult {
 
     private AstRootElement rootElement;
     private AstTreeNode ast;
+    private OffsetRange sanitizedRange = OffsetRange.NONE;
+    private String sanitizedContents;
+    private GroovyParser.Sanitize sanitized;
 
     public GroovyParserResult(ParserFile parserFile, AstRootElement rootElement, AstTreeNode ast) {
         super(parserFile);
@@ -70,5 +74,32 @@ public class GroovyParserResult extends ParserResult {
     public AstTreeNode getAst() {
         return ast;
     }
+
+    /**
+     * Return whether the source code for the parse result was "cleaned"
+     * or "sanitized" (modified to reduce chance of parser errors) or not.
+     * This method returns OffsetRange.NONE if the source was not sanitized,
+     * otherwise returns the actual sanitized range.
+     */
+    public OffsetRange getSanitizedRange() {
+        return sanitizedRange;
+    }
+    
+    public String getSanitizedContents() {
+        return sanitizedContents;
+    }
+
+    /**
+     * Set the range of source that was sanitized, if any.
+     */
+    void setSanitized(GroovyParser.Sanitize sanitized, OffsetRange sanitizedRange, String sanitizedContents) {
+        this.sanitized = sanitized;
+        this.sanitizedRange = sanitizedRange;
+        this.sanitizedContents = sanitizedContents;
+    }
+
+    public GroovyParser.Sanitize getSanitized() {
+        return sanitized;
+    }    
 
 }
