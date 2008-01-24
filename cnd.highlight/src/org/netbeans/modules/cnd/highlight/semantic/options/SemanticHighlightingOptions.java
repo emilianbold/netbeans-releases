@@ -72,7 +72,7 @@ public class SemanticHighlightingOptions {
     // 6.1 options
     
     public static boolean getEnableMarkOccurences() {
-        return getOption(ENABLE_MARK_OCCURENCES, false);
+        return getOption(ENABLE_MARK_OCCURENCES, true);
     }
 
     public static void setEnableMarkOccurences(boolean value) {
