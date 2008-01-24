@@ -188,12 +188,19 @@ public class JAXBWizBindingCfgPanel implements WizardDescriptor.Panel,
                     setError(sb.toString());
                     return valid;                    
                 }
-                
+                               
                 File file = null;
-                if (schFl.startsWith(".") || schFl.startsWith("..")){ //NOI18N
-                    file = new File(this.projDir, schFl); // relative path
-                } else {
+                if (schFl.startsWith("\\") || schFl.startsWith("/") || (schFl.indexOf(":") == 1)){ //NOI18N
                     file = new File(schFl); // abs path
+                } else {
+                    // starts with . or .. or any alpha numeric character 
+                    file = new File(this.projDir, schFl); // relative path                    
+                }
+                
+                if (schFl.startsWith(".") || schFl.startsWith("..")){ 
+
+                } else {
+                    
                 }
 
                 if (!file.exists()){
