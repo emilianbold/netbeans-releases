@@ -143,7 +143,7 @@ public class BoxFactory {
 
         case 'j':
 
-            if (tag == HtmlTag.JSPINCLUDE) {
+            if (tag == HtmlTag.JSPINCLUDE || tag == HtmlTag.JSPINCLUDEX) {
                 return JspIncludeBox.getJspIncludeBox(context, webform, element, boxType, tag,
                     inline);
             }

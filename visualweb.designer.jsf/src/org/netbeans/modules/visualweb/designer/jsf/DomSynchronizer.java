@@ -1133,6 +1133,7 @@ FacesDndSupport.UpdateSuspender {
         String tagName = element.getTagName();
         if (HtmlTag.FSUBVIEW.name.equals(tagName)
         || HtmlTag.JSPINCLUDE.name.equals(tagName)
+        || HtmlTag.JSPINCLUDEX.name.equals(tagName)
         || HtmlTag.IFRAME.name.equals(tagName)) {
             return true;
         }

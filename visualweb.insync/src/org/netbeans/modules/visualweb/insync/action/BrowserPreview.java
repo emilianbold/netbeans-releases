@@ -297,7 +297,7 @@ public class BrowserPreview {
                 } else if (HtmlTag.BASE.name.equals(tagName)) {
                     // We've put a <base> tag into the head already
                     return;
-                } else if (HtmlTag.JSPINCLUDE.name.equals(tagName)) {
+                } else if (HtmlTag.JSPINCLUDE.name.equals(tagName) || HtmlTag.JSPINCLUDEX.name.equals(tagName)) {
 //                    CssBox includeBox = CssBox.getBox(element);
 //
 //                    if ((includeBox != null) && includeBox instanceof JspIncludeBox) {

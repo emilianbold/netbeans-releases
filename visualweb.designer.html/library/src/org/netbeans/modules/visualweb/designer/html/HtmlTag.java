@@ -323,6 +323,9 @@ final public class HtmlTag {
         new HtmlTag("jsp:expression", false, true, false); // NOI18N
     public static final HtmlTag JSPINCLUDE = 
         new HtmlTag("jsp:directive.include", true, false, false); // NOI18N
+    // XXX #94248 Weblogic problem, supporting also this version of fragments.
+    public static final HtmlTag JSPINCLUDEX = 
+        new HtmlTag("jsp:include", true, false, false); // NOI18N
     public static final HtmlTag JSPSCRIPTLET = 
         new HtmlTag("jsp:scriptlet", false, true, false); // NOI18N
     public static final HtmlTag FSUBVIEW = 
@@ -425,7 +428,7 @@ final public class HtmlTag {
         BIG, BLOCKQUOTE, BODY, BR, BUTTON, CAPTION, CENTER, CITE, CODE, COL, 
         COLGROUP, DD, DEL, DFN, DIR, DIV, DL, DT, EM, FSUBVIEW, FIELDSET, FONT,
         FORM, FRAME, FRAMESET, H1, H2, H3, H4, H5, H6, HEAD, HR, HTML, 
-        I, IFRAME, IMG, INPUT, INS, ISINDEX, JSPDECLARATION, JSPINCLUDE,
+        I, IFRAME, IMG, INPUT, INS, ISINDEX, JSPDECLARATION, JSPINCLUDE, JSPINCLUDEX,
         JSPEXPRESSION, JSPSCRIPTLET, KBD, LABEL, LI, LINK, MAP, MENU, 
         META, NOBR, NOFRAMES, NOSCRIPT, OBJECT, OL, OPTION, P, PARAM,
         PRE, Q, S, SAMP, SCRIPT, SELECT, SMALL, SPAN, STRIKE, STRONG, 

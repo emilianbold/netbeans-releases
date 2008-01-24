@@ -55,6 +55,8 @@ import org.netbeans.modules.visualweb.designer.html.HtmlTag;
 
 
 /**
+ * XXX This shouldn't be in the desinger, there shouldn't be any notion of fragments here.
+ * 
  * JspIncludeBox represents a &lt;% include file="url" %&gt; tag in the jsp markup. It will force
  * the contents to be displayed in a block box.
  *
@@ -156,9 +158,15 @@ public class JspIncludeBox extends ExternalDocumentBox {
     }
 
     private static String getFile(Element element, WebForm webform) {
-        // See http://java.sun.com/products/jsp/syntax/1.2/syntaxref129.html
-        // TODO: make attribute in HtmlAttribute
-        String src = element.getAttribute("file"); // NOI18N
+        String src;
+        // XXX #94248 Hack for jsp:include, get page attribute.
+        if (HtmlTag.JSPINCLUDEX.name.equals(element.getTagName())) {
+            src = element.getAttribute("page"); // NOI18N
+        } else { // Falling for the rest.
+            // See http://java.sun.com/products/jsp/syntax/1.2/syntaxref129.html
+            // TODO: make attribute in HtmlAttribute
+            src = element.getAttribute("file"); // NOI18N
+        }
 
         if ((src == null) || (src.length() == 0)) {
             return null;
