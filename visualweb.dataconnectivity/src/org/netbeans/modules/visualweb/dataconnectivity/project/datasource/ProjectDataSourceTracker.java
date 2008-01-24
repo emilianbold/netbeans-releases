@@ -105,9 +105,14 @@ public class ProjectDataSourceTracker{
     
     static private final String HC_ELEMENT_NAME = "hardcoded-datasource-names" ; // NOI18N
     static private final String HC_ELEMENT_NAMESPACE = "http://creator.sun.com/project/datasources" ; // NOI18N
-    static private final boolean HC_ELEMENT_SHARED = true ;
-    
+    static private final boolean HC_ELEMENT_SHARED = true ;    
     static private final String HC_ATTRIBUTE_NAME = "value" ; // NOI18N
+    
+    /*
+     * flag for controlling the initialization of an instance of DesignTimeInitialContext
+     */
+    static public boolean isInitialContextInitialized = false;
+    
     /**
      * list of DSTracker objects, one for each project
      */
@@ -127,7 +132,7 @@ public class ProjectDataSourceTracker{
         //    and closings.
         ModelSet.addModelSetsListener(insyncDataSourceListener) ;
         OpenProjects.getDefault().addPropertyChangeListener(openProjectsListener);
-    }
+    }        
     
     private static ProjectDataSourceTracker thisOne = new ProjectDataSourceTracker() ;
     public static ProjectDataSourceTracker getInstance() {
@@ -328,8 +333,8 @@ public class ProjectDataSourceTracker{
         public void changeFileDataSources(Model model, boolean wasRemoved ) {
             logInfo("** received project DS name change event:" ) ; // NOI18N
             
-            // Set a system property to enable creating an InitialContextFactory
-            if (System.getProperty("DESIGNTIME_INITIAL_CONTEXT_FACTORY") == null) { // NOI18N
+            // Create one instance of InitialContext if needed
+            if (!isInitialContextInitialized) { // NOI18N
                 DesignTimeInitialContextFactory.setInitialContextFactoryBuilder();
             }
             

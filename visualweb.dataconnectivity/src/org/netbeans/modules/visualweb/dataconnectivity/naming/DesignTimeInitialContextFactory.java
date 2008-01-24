@@ -46,6 +46,7 @@ import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.dataconnectivity.datasource.CurrentProject;
+import org.netbeans.modules.visualweb.dataconnectivity.project.datasource.ProjectDataSourceTracker;
 
 /**
  * The factory that creates Creator's InitialContext
@@ -64,8 +65,8 @@ public class DesignTimeInitialContextFactory implements InitialContextFactory {
             }
             );
             
-            // Set a system property since only one instance of DesignTimeInitialContextFactory  is to be created
-            System.setProperty("DESIGNTIME_INITIAL_CONTEXT_FACTORY", "true"); // NOI18N
+            // Set a flag so that only one instance of DesignTimeInitialContextFactory is created
+            ProjectDataSourceTracker.isInitialContextInitialized = true; 
         } catch (NamingException e) {
         }
     }
