@@ -252,7 +252,7 @@ public final class FileObjectFactory {
                     exist = touchExists(file, realExists);
                     if (exist && parent != null && parent.isValid()) {
                         parent.refresh();
-                        assert checkCacheState(false, file, true);
+                        assert checkCacheState(exist, file, true);//review first parameter
                     }                    
                     break;
             }
