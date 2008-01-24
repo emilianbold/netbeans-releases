@@ -132,7 +132,6 @@ import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.reportgenerator.api.CustomizeReportAction;
 import org.netbeans.modules.reportgenerator.api.GenerateReportAction;
 import org.netbeans.modules.bpel.search.api.SearchManager;
-import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
 import org.netbeans.modules.bpel.documentation.DocumentationCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -427,7 +426,7 @@ public class DesignerMultiViewElement extends TopComponent
             toolbar.add(PrintManager.getDefault().getPrintPreviewAction());
 
             // vlv: search
-            SearchManager manager = SearchManagerAccess.getManager();
+            SearchManager manager = SearchManager.getDefault();
 
             if (manager != null) {
               toolbar.addSeparator();
@@ -543,7 +542,7 @@ public class DesignerMultiViewElement extends TopComponent
         add(myDesignView.getRightStripe(), BorderLayout.EAST);
 
         // vlv: find
-        SearchManager manager = SearchManagerAccess.getManager();
+        SearchManager manager = SearchManager.getDefault();
         
         if (manager != null) {
           Component search = manager.createSearch(new DiagramImpl(getDesignView()), getDesignView());

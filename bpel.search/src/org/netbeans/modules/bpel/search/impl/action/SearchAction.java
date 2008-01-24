@@ -63,7 +63,7 @@ import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 
 import org.netbeans.modules.bpel.core.helper.api.CoreUtil;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.search.api.SearchManagerAccess;
+import org.netbeans.modules.bpel.search.api.SearchManager;
 import org.netbeans.modules.bpel.search.api.SearchTarget;
 import org.netbeans.modules.bpel.search.impl.ui.Search;
 import org.netbeans.modules.bpel.search.impl.util.Util;
@@ -102,7 +102,7 @@ public final class SearchAction extends IconAction {
     list.add(cookie);
     list.add(view);
 
-    SearchManagerAccess.getManager().createSearch(list, getTargets(model), null, true);
+    SearchManager.getDefault().createSearch(list, getTargets(model), null, true);
   }
 
   private ShowCookie getShowCookie(Node node) {

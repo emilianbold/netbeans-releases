@@ -45,12 +45,13 @@ import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import org.openide.util.Lookup;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.12.14
  */
-public interface SearchManager
+public abstract class SearchManager
   extends org.netbeans.modules.xml.xam.ui.search.SearchManager
 {
   /**
@@ -61,7 +62,7 @@ public interface SearchManager
    * @param advanced if true, ui is advanced
    * @return search
    */
-  Component createSearch(
+  public abstract Component createSearch(
     Object source,
     SearchTarget [] targets,
     JComponent parent, boolean advanced);
@@ -73,7 +74,7 @@ public interface SearchManager
    * @param advanced if true, ui is advanced
    * @return search
    */
-  Component createSearch(Object source, JComponent parent);
+  public abstract Component createSearch(Object source, JComponent parent);
 
   /**
    * Retuens navigation panel for tree, scroll pane and component.
@@ -82,11 +83,15 @@ public interface SearchManager
    * @param component given component
    * @return navigation panel for tree, scroll pane and component
    */
-  JComponent createNavigation(JTree tree, JScrollPane scroll, JComponent component);
+  public abstract JComponent createNavigation(JTree tree, JScrollPane scroll, JComponent component);
 
   /**
    * Returns Search action.
    * @return Search action
    */
-  Action getSearchAction();
+  public abstract Action getSearchAction();
+
+  public static SearchManager getDefault() {
+    return (SearchManager) Lookup.getDefault().lookup(SearchManager.class);
+  }
 }

@@ -61,7 +61,7 @@ import org.netbeans.modules.bpel.search.impl.util.Util;
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.15
  */
-public final class Manager implements SearchManager {
+public final class Manager extends SearchManager {
 
   public Manager() {
     myEngines = Util.getInstances(SearchEngine.class);
