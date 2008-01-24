@@ -2064,6 +2064,7 @@ public class FileObjectTestHid extends TestBaseHid {
         
         registerDefaultListener(fold);
         
+        int hash = fo1.hashCode();
         try {
             fo1.setAttribute(attrName,value);
             fsAssert("attributes should be saved " + fo1.getAttribute(attrName),value.equals((String)fo1.getAttribute(attrName)) );            
@@ -2080,6 +2081,7 @@ public class FileObjectTestHid extends TestBaseHid {
         fsAssert ("",fold.getFileObject(fo1.getName(),fo1.getExt()) != null);
         fsAssert ("",fo1.getName().equals(fo2.getExt()) && fo1.getExt().equals(fo2.getName()));        
         this.fileRenamedAssert("File was actually renamed.",1);
+        assertEquals("Hashcode needs to stay", hash, fo1.hashCode());
     }
     
 
