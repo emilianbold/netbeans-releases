@@ -43,7 +43,7 @@ package org.netbeans.modules.spring.beans.hyperlink;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.spring.beans.SpringXMLConfigDataLoader;
+import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.TestUtils;
 import org.openide.text.CloneableEditorSupport;
 

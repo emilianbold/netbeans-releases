@@ -57,7 +57,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.beans.SpringXMLConfigDataLoader;
+import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.model.SpringBeanSource;
 import org.netbeans.modules.spring.beans.utils.StringUtils;

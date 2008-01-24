@@ -4,6 +4,6 @@ OpenIDE-Module-Layer: org/netbeans/modules/spring/beans/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/spring/beans/resources/Bundle.properties
 OpenIDE-Module-Implementation-Version: 1
 
-Name: org/netbeans/modules/spring/beans/SpringXMLConfigDataLoader.class
+Name: org/netbeans/modules/spring/beans/loader/SpringXMLConfigDataLoader.class
 Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
 OpenIDE-Module-Class: Loader
