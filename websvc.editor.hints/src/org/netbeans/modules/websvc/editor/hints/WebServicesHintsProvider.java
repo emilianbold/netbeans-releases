@@ -167,22 +167,25 @@ public class WebServicesHintsProvider {
         if (service != null && service.getLocalWsdlFile()!=null) {
             JAXWSSupport jaxwsSupport = JAXWSSupport.getJAXWSSupport(file);
             if(jaxwsSupport!=null) {
-                FileObject wsdlFo = jaxwsSupport.getLocalWsdlFolderForService(service.getName(), false).getFileObject(service.getLocalWsdlFile());
-                WSDLModel tmpModel = WSDLModelFactory.getDefault().getModel(
-                        Utilities.getModelSource(wsdlFo, true));
-                if(tmpModel!=wsdlModel) {
-                    if(wsdlModel!=null) {
-                        if(changeListener!=null) {
-                            wsdlModel.removeComponentListener(changeListener);
-                            changeListener = null;
+                FileObject wsdlFolder = jaxwsSupport.getLocalWsdlFolderForService(service.getName(), false);
+                if(wsdlFolder!=null) {
+                    FileObject wsdlFo = wsdlFolder.getFileObject(service.getLocalWsdlFile());
+                    WSDLModel tmpModel = WSDLModelFactory.getDefault().getModel(
+                            Utilities.getModelSource(wsdlFo, true));
+                    if(tmpModel!=wsdlModel) {
+                        if(wsdlModel!=null) {
+                            if(changeListener!=null) {
+                                wsdlModel.removeComponentListener(changeListener);
+                                changeListener = null;
+                            }
                         }
-                    }
-                    wsdlModel = tmpModel;
-                    if(wsdlModel!=null) {
-                        if(changeListener==null) 
-                            changeListener = WeakListeners.create(ComponentListener.class,
-                                    new WsdlModelListener(file), wsdlModel);
-                        wsdlModel.addComponentListener(changeListener);
+                        wsdlModel = tmpModel;
+                        if(wsdlModel!=null) {
+                            if(changeListener==null) 
+                                changeListener = WeakListeners.create(ComponentListener.class,
+                                        new WsdlModelListener(file), wsdlModel);
+                            wsdlModel.addComponentListener(changeListener);
+                        }
                     }
                 }
             }
