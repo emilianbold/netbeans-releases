@@ -39,48 +39,29 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.model.impl;
+package org.netbeans.modules.spring.api.beans.model;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.spring.api.beans.model.Location;
-import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.beans.TestUtils;
 
 /**
+ * Encapsulates the location of a bean definition, that is, a file and
+ * an offset in that file.
  *
  * @author Andrei Badea
  */
-public class ConfigFileSpringBeanSourceTest extends NbTestCase {
+public interface Location {
 
-    private File configFile;
+    /**
+     * Returns the file corresponding to this location.
+     *
+     * @return the file; never null.
+     */
+    File getFile();
 
-    public ConfigFileSpringBeanSourceTest(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws IOException {
-        clearWorkDir();
-        configFile = new File(getWorkDir(), "applicationContext.xml");
-    }
-
-    public void testParse() throws Exception {
-        String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' class='org.example.Foo'/>");
-        TestUtils.copyStringToFile(contents, configFile);
-        ConfigFileSpringBeanSource source = new ConfigFileSpringBeanSource();
-        source.parse(configFile);
-        List<SpringBean> beans = source.getBeans();
-        assertEquals(1, beans.size());
-        SpringBean bean = beans.get(0);
-        assertSame(bean, source.findBean("foo"));
-        assertSame(bean, source.findBean("bar"));
-        assertSame(bean, source.findBean("baz"));
-        int offset = contents.indexOf("<bean ");
-        Location location = bean.getLocation();
-        assertEquals(offset, location.getOffset());
-        assertEquals(configFile, location.getFile());
-    }
+    /**
+     * Returns the offset corresponding to this location.
+     *
+     * @return the offset or -1 if the offset is not known.
+     */
+    int getOffset();
 }

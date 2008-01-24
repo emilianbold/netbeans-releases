@@ -42,45 +42,27 @@
 package org.netbeans.modules.spring.beans.model.impl;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.spring.api.beans.model.Location;
-import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.beans.TestUtils;
 
 /**
  *
  * @author Andrei Badea
  */
-public class ConfigFileSpringBeanSourceTest extends NbTestCase {
+public class ConfigFileLocation implements Location {
 
-    private File configFile;
+    private final File file;
+    private final int offset;
 
-    public ConfigFileSpringBeanSourceTest(String testName) {
-        super(testName);
+    public ConfigFileLocation(File file, int offset) {
+        this.file = file;
+        this.offset = offset;
     }
 
-    @Override
-    protected void setUp() throws IOException {
-        clearWorkDir();
-        configFile = new File(getWorkDir(), "applicationContext.xml");
+    public File getFile() {
+        return file;
     }
 
-    public void testParse() throws Exception {
-        String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' class='org.example.Foo'/>");
-        TestUtils.copyStringToFile(contents, configFile);
-        ConfigFileSpringBeanSource source = new ConfigFileSpringBeanSource();
-        source.parse(configFile);
-        List<SpringBean> beans = source.getBeans();
-        assertEquals(1, beans.size());
-        SpringBean bean = beans.get(0);
-        assertSame(bean, source.findBean("foo"));
-        assertSame(bean, source.findBean("bar"));
-        assertSame(bean, source.findBean("baz"));
-        int offset = contents.indexOf("<bean ");
-        Location location = bean.getLocation();
-        assertEquals(offset, location.getOffset());
-        assertEquals(configFile, location.getFile());
+    public int getOffset() {
+        return offset;
     }
 }

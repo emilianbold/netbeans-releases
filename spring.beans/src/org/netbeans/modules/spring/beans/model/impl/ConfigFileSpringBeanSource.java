@@ -55,11 +55,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.beans.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.model.SpringBeanSource;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
+import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.text.CloneableEditorSupport;
@@ -116,7 +118,7 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         } catch (BadLocationException e) {
             // Should not happen.
         }
-        parse(doc);
+        parse(file, doc);
     }
 
     /**
@@ -125,8 +127,8 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
      *
      * @param  document the document to parse.
      */
-    public void parse(Document document) {
-        document.render(new DocumentParser(document));
+    public void parse(File file, Document document) {
+        document.render(new DocumentParser(file, document));
     }
 
     public List<SpringBean> getBeans() {
@@ -142,9 +144,11 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
      */
     private final class DocumentParser implements Runnable {
 
+        private final File file;
         private final Document document;
 
-        public DocumentParser(Document document) {
+        public DocumentParser(File file, Document document) {
+            this.file = file;
             this.document = document;
         }
 
@@ -167,7 +171,9 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             String id = SpringXMLConfigEditorUtils.getAttribute(node, "id"); // NOI18N
             String nameAttr = SpringXMLConfigEditorUtils.getAttribute(node, "name"); // NOI18N
             List<String> names = (nameAttr != null) ? Collections.unmodifiableList(StringUtils.tokenize(nameAttr, BEAN_NAME_DELIMITERS)) : Collections.<String>emptyList();
-            ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz);
+            Tag tag = (Tag)node;
+            Location location = new ConfigFileLocation(file, tag.getElementOffset());
+            ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, location);
             if (id != null) {
                 addBeanName(id, bean);
             }

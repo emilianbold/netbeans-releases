@@ -70,4 +70,11 @@ public interface SpringBean {
      * @return the implementation class or null.
      */
     String getClassName();
+
+    /**
+     * Returns the location of this bean.
+     *
+     * @return the location or null.
+     */
+    Location getLocation();
 }

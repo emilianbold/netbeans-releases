@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.beans.model.impl;
 
 import java.util.List;
+import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 
 /**
@@ -53,11 +54,13 @@ public class ConfigFileSpringBean implements SpringBean {
     private final String id;
     private final List<String> names;
     private final String className;
+    private final Location location;
 
-    public ConfigFileSpringBean(String id, List<String> names, String className) {
+    public ConfigFileSpringBean(String id, List<String> names, String className, Location location) {
         this.id = id;
         this.names = names;
         this.className = className;
+        this.location = location;
     }
 
     public String getId() {
@@ -70,5 +73,9 @@ public class ConfigFileSpringBean implements SpringBean {
 
     public String getClassName() {
         return className;
+    }
+
+    public Location getLocation() {
+        return location;
     }
 }
