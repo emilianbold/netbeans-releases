@@ -89,13 +89,17 @@ public class SemanticUtils {
             } else {
                 HighlightsSequence hs = bag.getHighlights(0, position);
                 if (hs.moveNext()) {
-                    int last;
-                    // if there is only one hl we would just go to it's start, nothing criminal
+                    int current = hs.getStartOffset(), last;
                     do {
-                        last = hs.getStartOffset();
+                        last = current;
+                        current = hs.getStartOffset();
                     } while (hs.moveNext());
 
-                    panes[0].setCaretPosition(hs.getEndOffset() < position ? hs.getStartOffset() : last);
+                    if (hs.getEndOffset() < position) {
+                        panes[0].setCaretPosition(hs.getStartOffset());
+                    } else if (last != current) {
+                        panes[0].setCaretPosition(last);
+                    } // else there in nothing to jump on
                 }
             }
         }
