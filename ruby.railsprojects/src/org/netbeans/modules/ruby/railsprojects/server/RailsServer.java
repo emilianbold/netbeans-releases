@@ -55,6 +55,8 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.api.progress.ProgressHandle;
@@ -248,13 +250,13 @@ public final class RailsServer {
      * @param serverType
      * @return the pattern for the server started message of the given <code>serverType</code>.
      */
-    static String getStartedMessagePattern(ServerType serverType) {
+    static Pattern getStartedMessagePattern(ServerType serverType) {
         switch (serverType) {
-            case MONGREL: return ".*Mongrel.+available at.+"; // NOI18N
+            case MONGREL: return Pattern.compile("\\bMongrel.+available at.+", Pattern.DOTALL); // NOI18N
             //case LIGHTTPD: return "=> Rails application starting on ";
             case WEBRICK: 
             default:
-                return "=> Rails application started on.+"; // NOI18N
+                return Pattern.compile("\\bRails application started on.+", Pattern.DOTALL); // NOI18N
         }
         
     }
@@ -423,10 +425,10 @@ public final class RailsServer {
     
     private class RailsServerRecognizer extends OutputRecognizer {
 
-        private final String startedMessagePattern;
+        private final Pattern pattern;
         
-        RailsServerRecognizer(String startedMessagePattern) {
-            this.startedMessagePattern = startedMessagePattern;
+        RailsServerRecognizer(Pattern pattern) {
+            this.pattern = pattern;
         }
 
         @Override
@@ -441,7 +443,8 @@ public final class RailsServer {
             // This is ugly, but my attempts to use URLConnection on the URL repeatedly
             // and check for connection.getResponseCode()==HttpURLConnection.HTTP_OK didn't
             // work - try that again later
-            if (outputLine.matches(startedMessagePattern)) {
+            Matcher matcher = pattern.matcher(outputLine);
+            if (matcher.find()) {
                 synchronized (RailsServer.this) {
                     LOGGER.fine("Identified " + serverType + " as running");
                     status = ServerStatus.RUNNING;
