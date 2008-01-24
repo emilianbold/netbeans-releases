@@ -149,6 +149,10 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
     static EqualsHashCodeGenerator createEqualsHashCodeGenerator(CompilationController cc, Element el) throws IOException {
         if (el.getKind() != ElementKind.CLASS)
             return null;
+        //#125114: ignore anonymous innerclasses:
+        if (el.getSimpleName() == null || el.getSimpleName().length() == 0) {
+            return null;
+        }
         TypeElement typeElement = (TypeElement)el;
         
         ExecutableElement[] equalsHashCode = overridesHashCodeAndEquals(cc, typeElement, null);

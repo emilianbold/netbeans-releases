@@ -36,6 +36,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
@@ -177,6 +178,37 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
         
         js.runUserActionTask(t, false);
         t.post();
+    }
+    
+    public void test125114() throws Exception {
+        FileObject java = FileUtil.createData(fo, "X.java");
+        final String what1 = "class X {" +
+            "  private int x;" +
+            "  private int y;" +
+            "  public void test() {" +
+            "    new Object() {" +
+            "       private int i;";
+        
+        String what2 = 
+            "    }" +
+            "  }" +
+            "}";
+        String what = what1 + what2;
+        GeneratorUtilsTest.writeIntoFile(java, what);
+        
+        JavaSource js = JavaSource.forFileObject(java);
+        assertNotNull("Created", js);
+        
+        class TaskImpl implements Task<CompilationController> {
+            public void run(CompilationController cc) throws Exception {
+                cc.toPhase(JavaSource.Phase.RESOLVED);
+                Element el = cc.getTrees().getElement(cc.getTreeUtilities().pathFor(what1.length()));
+                assertNull(EqualsHashCodeGenerator.createEqualsHashCodeGenerator(cc, el));
+            }
+        }
+        TaskImpl t = new TaskImpl();
+        
+        js.runUserActionTask(t, false);
     }
     
     private static final class DD extends DialogDisplayer {
