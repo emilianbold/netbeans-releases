@@ -134,23 +134,20 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
     }
     
     public static List<CppFoldRecord> parse(String name, Reader source) {
-        List<CppFoldRecord> folds = new ArrayList<CppFoldRecord>();
         try {
             TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, source);
             APTFoldingParser parser = getParser(name, lexer);
             parser.translation_unit();
-
-            folds.addAll(parser.getFolders());
- 
+            return new ArrayList<CppFoldRecord>(parser.getFolders());
         } catch(Exception e) {
             if (reportErrors) {
                 System.err.println("exception: "+e); // NOI18N
                 e.printStackTrace();
             }
         }
-        return folds;
-        
+        return null;
     }
+    
     private final static boolean reportErrors = Boolean.getBoolean("folding.parser.report.errors"); // NOI18N
     public void reportError(RecognitionException e) {
         if (reportErrors) {
@@ -430,7 +427,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                 matchNot(EOF);
                 if (matchError) {
                     break;
-                };
+                }
             } else {
                 break;
             }
@@ -453,11 +450,11 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                         balanceTemplateParams();
                         if (matchError) {
                             break loop;
-                        };
+                        }
                         match(GREATERTHAN);
                         if (matchError) {
                             break loop;
-                        };
+                        }
                     }
                     break;
                 default:
@@ -474,7 +471,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             eatDeclPrefix();
             if (matchError) {
                 break main_loop;
-            };                
+            }       
             boolean ns = false;
             // Local LA Cache for 2 element(s):
             int LA1 = LA(1);
@@ -575,7 +572,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             match(LCURLY);
             if (matchError) {
                 break main_loop;
-            };
+            }
             
             // declarations loop
             do {
@@ -588,7 +585,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                     declaration();
                     if (matchError) {
                         break main_loop;
-                    };
+                    }
                 } else {
                     break;
                 }     
@@ -598,7 +595,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             match(RCURLY);
             if (matchError) {
                 break main_loop;
-            };
+            }
             
             createFolder(folderKind, begin, end);
             

@@ -81,7 +81,7 @@ public class CppFile {
     public static final int NAMESPACE_FOLD = 10;
 
     /** parsing state information */
-    private long state;
+    private int state;
 
     /** the file being parsed */
     //private String filename;
@@ -133,44 +133,50 @@ public class CppFile {
         //this.doc = doc;
         
         try {
-            startParsing(Integer.getInteger("CppFoldFlags", 0).intValue(), doc); // NOI18N
-            state = FOLD_PARSING_COMPLETE;
+            if (startParsing(Integer.getInteger("CppFoldFlags", 0).intValue(), doc)) { // NOI18N
+                state = FOLD_PARSING_COMPLETE;
+            }
         } catch (NoSuchMethodError er) {
             log.log(Level.FINE, "CppFile.startParsing: NoSuchMethodError: " + er.getMessage());
         } catch (UnsatisfiedLinkError ule) {
             log.log(Level.FINE, "CppFile.startParsing: UnsatisfiedLinkError: " + ule.getMessage());
         } finally {
-            if (state == PARSING_STARTED) {
+            if (state != FOLD_PARSING_COMPLETE) {
                 state = PARSING_FAILED;
-            } else {
-                state = PARSING_COMPLETED;
             }
-//            System.out.println("CppFile.startParsing: Finished " + curCount);            
+//          System.out.println("CppFile.startParsing: Finished " + curCount);            
         }
     }
+    
+    public boolean isParsingFailed() {
+        return state == PARSING_FAILED;
+    }
         
-    public void startParsing(int flags, Document doc) {
+    private boolean startParsing(int flags, Document doc) {
         FoldingParser p = (FoldingParser)Lookup.getDefault().lookup(FoldingParser.class);
         if (p != null) {
 //            classFoldRecords.clear();
             blockFoldRecords.clear();
             initialCommentFoldRecord = null;
             includesFoldRecords.clear();
-            List/**/ folds = null;
+            List<CppFoldRecord> folds = null;
             try {
                 String name = (String) doc.getProperty(Document.TitleProperty);
                 folds = p.parse(name, new StringReader(doc.getText(0, doc.getLength())));
+                if (folds == null) {
+                    return false;
+                }
             } catch (BadLocationException ex) {
                 assert true;
                 ex.printStackTrace();
-                return;
+                return false;
             }
             
-            for (int i = 0; i < folds.size(); i++) {
-                CppFoldRecord fold = (CppFoldRecord) folds.get(i);
+            for (CppFoldRecord fold : folds) {
                 addNewFold((StyledDocument)doc, fold);  
             }
         }
+        return true;
     }
     
     public void waitScanFinished(int type) {
