@@ -154,7 +154,7 @@ public class FileBufferFile extends AbstractFileBuffer {
     
     public InputStream getInputStream() throws IOException {
         File file = getFile();
-        FileObject fo = FileUtil.toFileObject(file);
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         InputStream is;
         if (fo != null) {
             is = fo.getInputStream();
