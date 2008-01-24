@@ -420,7 +420,6 @@ public class InstallSupportImpl {
     public void doRestart (Restarter restarter, ProgressHandle progress/*or null*/) throws OperationException {
         synchronized(this) {
             assert currentStep != STEP.FINISHED;
-            if (currentStep == STEP.CANCEL) return;
             currentStep = STEP.RESTART;
         }        
         Utilities.deleteAllDoLater ();
