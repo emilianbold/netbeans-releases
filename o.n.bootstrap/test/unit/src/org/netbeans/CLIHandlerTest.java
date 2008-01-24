@@ -65,7 +65,7 @@ public class CLIHandlerTest extends NbTestCase {
     }
     
     public static junit.framework.Test suite() {
-        //return new CLIHandlerTest("testFileExistsHasPortButNotTheKey");
+        //return new CLIHandlerTest("testCLIHandlersCanChangeLocationOfLockFile");
         return new NbTestSuite(CLIHandlerTest.class);
     }
     
@@ -368,7 +368,7 @@ public class CLIHandlerTest extends NbTestCase {
         UserDir ud = new UserDir();
         
         CLIHandler.Status res = cliInitialize(new String[0], ud, nullInput, nullOutput, nullOutput, null);
-        
+        assertNotNull("res: ", res);
         assertEquals("Our command line handler is called once", 1, ud.cnt);
         assertEquals("Lock file is created in dir", dir, res.getLockFile().getParentFile());
         
