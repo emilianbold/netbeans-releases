@@ -77,7 +77,7 @@ public final class QuickFixAction extends IconAction {
   }
 
   public void actionPerformed(ActionEvent event) {
-    Node node = getActiveNode();
+    Node node = getSelectedNode();
     BpelModel model = getBpelModel(node);
     List<ResultItem> items = getResultItems(model);
 

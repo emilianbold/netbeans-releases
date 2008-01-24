@@ -280,7 +280,16 @@ public final class UI {
     return new ImageIcon(clazz.getResource("image/"+ name +".gif")); // NOI18N
   }
 
-  public static Node getActiveNode() {
+  public static Node getSelectedNode() {
+    Node [] nodes = getSelectedNodes();
+
+    if (nodes == null) {
+      return null;
+    }
+    return nodes [0];
+  }
+
+  public static Node [] getSelectedNodes() {
 //out();
     TopComponent top = getActivateTopComponent();
 //out("top: " + top);
@@ -293,7 +302,7 @@ public final class UI {
     if (nodes == null || nodes.length == 0) {
       return null;
     }
-    return nodes [0];
+    return nodes;
   }
 
   public static TopComponent getActivateTopComponent() {
