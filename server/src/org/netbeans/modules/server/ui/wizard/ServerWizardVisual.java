@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.server.ui.wizard;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -378,7 +379,7 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
         }
     }
 
-    private static class WizardPriority implements Comparator<WizardAdapter> {
+    private static class WizardPriority implements Comparator<WizardAdapter>, Serializable {
 
         private static final List<Pattern> PRIORITY_LIST = new ArrayList<Pattern>(4);
 

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.server.ui.node;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -148,7 +149,7 @@ public final class RootNode extends AbstractNode {
 
     }
 
-    private static class InstanceComparator implements Comparator<ServerInstance> {
+    private static class InstanceComparator implements Comparator<ServerInstance>, Serializable {
 
         public int compare(ServerInstance o1, ServerInstance o2) {
             return o1.getDisplayName().compareTo(o2.getDisplayName());

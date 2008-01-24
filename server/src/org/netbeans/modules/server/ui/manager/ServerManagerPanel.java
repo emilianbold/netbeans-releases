@@ -52,6 +52,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -546,7 +547,7 @@ public class ServerManagerPanel extends javax.swing.JPanel implements PropertyCh
         }
     }
 
-    private static class InstanceComparator implements Comparator<ServerInstance> {
+    private static class InstanceComparator implements Comparator<ServerInstance>, Serializable {
 
         public int compare(ServerInstance o1, ServerInstance o2) {
             return o1.getDisplayName().compareTo(o2.getDisplayName());

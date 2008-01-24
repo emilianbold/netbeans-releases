@@ -46,7 +46,7 @@
  * <p>
  * The simple example for processing the stream:
  * <p>
- * <code>
+ * <pre>
  *     InputStream&nbsp;is&nbsp;=&nbsp;...;<br>
  *     Charset&nbsp;charset&nbsp;=&nbsp;...;<br>
  *     LineProcessor&nbsp;myProcessor&nbsp;=&nbsp;...;<br>
@@ -56,9 +56,9 @@
  *     manager.start();<br>
  *     ...<br>
  *     manager.stop();<br>
- * </code>
+ * </pre>
  *
- * @see ReaderManager
+ * @see org.netbeans.api.server.output.ReaderManager
  */
 package org.netbeans.api.server.output;
 
