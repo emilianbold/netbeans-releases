@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.modules.php.model.ClassDefinition;
 import org.netbeans.modules.php.model.ObjectDefinition;
 import org.netbeans.modules.php.model.PhpModel;
+import org.netbeans.modules.php.model.Reference;
 import org.netbeans.modules.php.model.SourceElement;
 import org.netbeans.modules.php.model.refs.ReferenceResolver;
 
@@ -56,6 +57,9 @@ import org.netbeans.modules.php.model.refs.ReferenceResolver;
  *
  */
 public class ClassReferenceResolver implements ReferenceResolver {
+    
+    private static final String SELF_KEYWORD = "self";
+    private static final String PARENT_KEYWORD = "parent";
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.php.model.refs.ReferenceResolver#isApplicable(java.lang.Class)
@@ -73,9 +77,32 @@ public class ClassReferenceResolver implements ReferenceResolver {
         if (!clazz.isAssignableFrom(ClassDefinition.class)) {
             return Collections.emptyList();
         }
+        List<T> result = new LinkedList<T>();
+        if(SELF_KEYWORD.equals(identifier)) {
+            ClassDefinition cd = getEnclosingClassDefinition(source);
+            if(cd != null) {
+                result.add(clazz.cast(cd));
+            }
+            return result;
+        }
+        if (PARENT_KEYWORD.equals(identifier)) {
+            ClassDefinition ecd = getEnclosingClassDefinition(source);
+            if (ecd != null) {
+                Reference<ClassDefinition> parentRef = ecd.getSuperClass();
+                if(parentRef == null) {
+                    // i.e. the "extends" clouse is not specified
+                    return result; // i.e. empty list.
+                }
+                ClassDefinition cd = parentRef.get();
+                if (cd != null) {
+                    result.add(clazz.cast(cd));
+                }
+                result.add(clazz.cast(cd));
+            }
+            return result;
+        }
         List<PhpModel> models = ModelResolver.ResolverUtility
                 .getIncludedModels(source);
-        List<T> result = new LinkedList<T>();
         for (PhpModel model : models) {
             List<T> classes;
             model.readLock();
@@ -88,6 +115,17 @@ public class ClassReferenceResolver implements ReferenceResolver {
             result.addAll(classes);
         }
         return result;
+    }
+    
+    private ClassDefinition getEnclosingClassDefinition(SourceElement source) {
+        SourceElement e = source.getParent();
+        while (e != null) {
+            if (e instanceof ClassDefinition) {
+                return (ClassDefinition) e;
+            }
+            e = e.getParent();
+        }
+        return null; // fault.        
     }
     
     private <T extends SourceElement> List<T> getClasses( 
