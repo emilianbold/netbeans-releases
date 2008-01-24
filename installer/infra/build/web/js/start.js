@@ -226,7 +226,7 @@ function omniture_download_link() {
         s_prop19   = platform_id;
         s_prop20   = lang_id;
         s_prop21   = BUILD_DISPLAY_VERSION;
-        s_linkTrackVars   = "events,products,eVar3,eVar8,prop19,prop20";
+        s_linkTrackVars   = "events,products,eVar3,eVar8,prop19,prop20,prop21";
         s_linkTrackEvents = "event7";
         s_lnk=s_co(anchorElement);
         s_gs(s_account); 
