@@ -259,7 +259,9 @@
 
         <set property="nb.bundle.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
-        
+
+        <set property="jdk.bundle.files.suffix"
+             value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
         <get
             src="${glassfish.builds.host}/java/re/glassfish/9.1_01/promoted/fcs/latest/bundles/"
             dest="${temp.file}"/>
@@ -1774,7 +1776,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <mkdir dir="${output.dir}/bundles/jdk"/>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${nb.bundle.files.prefix}-javase-windows.exe">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${jdk.bundle.files.suffix}-windows${nb.build.suffix}.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.14.3"/>
@@ -1784,7 +1786,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${nb.bundle.files.prefix}-javase-linux.sh">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${jdk.bundle.files.suffix}-linux${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.14.3"/>
@@ -1794,7 +1796,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${nb.bundle.files.prefix}-javase-solaris-x86.sh">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${jdk.bundle.files.suffix}-solaris-x86${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.14.3"/>
@@ -1804,7 +1806,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${nb.bundle.files.prefix}-javase-solaris-sparc.sh">
+                       target="${output.dir}/bundles/jdk/jdk-1_5_0_14-${jdk.bundle.files.suffix}-solaris-sparc${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.5.0.14.3"/>
@@ -1816,7 +1818,7 @@ jarsigner.storepass=${jarsigner.storepass}
         <!-- JavaSE + JDK6 bundles -->
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="windows" 
-                       target="${output.dir}/bundles/jdk/jdk6-u4-${nb.bundle.files.prefix}-javase-windows.exe">
+                       target="${output.dir}/bundles/jdk/jdk-6u4-${jdk.bundle.files.suffix}-windows${nb.build.suffix}.exe">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.4.10"/>
@@ -1826,7 +1828,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="linux" 
-                       target="${output.dir}/bundles/jdk/jdk6-u4-${nb.bundle.files.prefix}-javase-linux.sh">
+                       target="${output.dir}/bundles/jdk/jdk-6u4-${jdk.bundle.files.suffix}-linux${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.4.10"/>
@@ -1836,7 +1838,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-x86" 
-                       target="${output.dir}/bundles/jdk/jdk6-u4-${nb.bundle.files.prefix}-javase-solaris-x86.sh">
+                       target="${output.dir}/bundles/jdk/jdk-6u4-${jdk.bundle.files.suffix}-solaris-x86${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.4.10"/>
@@ -1846,7 +1848,7 @@ jarsigner.storepass=${jarsigner.storepass}
         </create-bundle>
         <create-bundle root="${output.dir}/registry-temp" 
                        platform="solaris-sparc" 
-                       target="${output.dir}/bundles/jdk/jdk6-u4-${nb.bundle.files.prefix}-javase-solaris-sparc.sh">
+                       target="${output.dir}/bundles/jdk/jdk-6u4-${jdk.bundle.files.suffix}-solaris-sparc${nb.build.suffix}.sh">
             <component uid="nb-base" version="${nb.full.version}"/>
             <component uid="nb-javase" version="${nb.full.version}"/>
 	    <component uid="jdk" version="1.6.0.4.10"/>
