@@ -1,5 +1,5 @@
 package test;
-
+import java.beans.*; import static java.lang.Math.min; import static java.lang.Math.max; import static java.lang.System.*; import java.lang.reflect.*;
 import java.io.FileOutputStream;
 import java.io.File;
 import java.io.Serializable;
@@ -28,6 +28,9 @@ public class UnusedImports<E, F> extends JTable implements Serializable {
     public static void main(String[] args) throws BadLocationException {
         Set<Iterator> l;
         Collections.<Date>emptyList();
+        
+        Constructor c;
+        max(1, 2);
     }
     
 }
