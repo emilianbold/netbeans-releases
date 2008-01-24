@@ -50,15 +50,7 @@
 # More things can be configured in ../user.build.properties; see ../build.properties for details.
 #
 # sources=/space/src/nb_all
-# a full NB source checkout (cvs co standard ide xtest jemmy jellytools)
-#
-# update=yes
-# if set to "yes", do a CVS update after cleaning and before building
-# (default "no").
-#
-# verifyupdate=yes
-# If yes (default), cvs update output is checked for unknown files and conflicts, and
-# the build is stopped if any are found.
+# a full NB source checkout
 #
 # nbjdk=/opt/java/j2se/1.5.0_14
 # JDK 1.5.0_14 installation directory. (Full JDK, not just JRE.)
@@ -82,7 +74,7 @@
 # YOU MUST DO A CLEAN BUILD BEFORE COMMITTING TO THE TRUNK
 #
 # dobuild=no
-# if set to "no", do not do a build, just run CVS and/or tests
+# if set to "no", do not do a build, just run tests
 # default is "yes", do a build (incl. sanity check and commit verification)
 # YOU MUST DO A CLEAN BUILD BEFORE COMMITTING TO THE TRUNK
 #
@@ -129,16 +121,6 @@ fi
 if [ -z "$sources" ]
 then
     sources=$(cd $(dirname $0)/../..; pwd)
-fi
-
-if [ -z "$update" ]
-then
-    update=no
-fi
-
-if [ -z "$verifyupdate" ]
-then
-    verifyupdate=yes
 fi
 
 if [ -z "$nbjdk" ]
@@ -219,7 +201,6 @@ export JAVA_HOME=$nbjdk
 export PATH=$nbjdk/bin:$PATH
 export CLASSPATH=
 
-CVSLOG="/tmp/cvs-update.log.$$"
 origdisplay=$DISPLAY
 origxauthority=$XAUTHORITY
 if [ $spawndisplay = yes -a $spawndisplaytype \!= vncserver ]
@@ -263,7 +244,7 @@ then
         vncviewerpid=$!
         trapcmd_vnc="kill $vncviewerpid > /dev/null 2>&1;"
     fi
-    trap "$trapcmd_vnc $trapcmd; rm -f $CVSLOG" EXIT
+    trap "$trapcmd_vnc $trapcmd" EXIT
     xmessage -timeout 3 "$message"
     status=$?
     if [ $status != 0 ]
@@ -275,7 +256,7 @@ elif [ $spawndisplay = yes -a $spawndisplaytype = vncserver ]
 then
     display=:69
     vncserver $display -desktop 'NetBeans test display' -geometry 1024x768 -depth 16
-    trap "vncserver -kill $display; rm -f $CVSLOG" EXIT
+    trap "vncserver -kill $display" EXIT
     vncviewer -passwd ~/.vnc/passwd $display &
     export DISPLAY=$display
     $spawnwm &
@@ -286,8 +267,6 @@ then
         echo "Sample X client failed with status $status!" 1>&2
         exit 2
     fi
-else
-    trap "rm -f $CVSLOG" EXIT
 fi
 
 antcmd="nice $ant -emacs"
@@ -295,40 +274,7 @@ antcmd="nice $ant -emacs"
 if [ $doclean = yes ]
 then
     echo "----------CLEANING SOURCES----------" 1>&2
-    if [ -d $sources/nbbuild/CVS ]
-    then
-        cleantarget=cvs-clean
-    else
-        cleantarget=real-clean
-    fi
-    $antcmd -f $sources/nbbuild/build.xml $cleantarget
-fi
-
-if [ $update = yes ]
-then
-    echo "----------UPDATING SOURCES----------" 1>&2
-    (cd $sources; cvs -q update |tee $CVSLOG)
-    # XXX how to check exit status of cvs? (do not care much about status of tee!)
-
-    if [ `grep -c '^[MAR] ' $CVSLOG` -ne 0 ]
-    then
-        echo 1>&2
-        echo "Your modifications in summary:" 1>&2
-        grep '^[MAR] ' $CVSLOG 1>&2
-    fi
-
-    if [ $verifyupdate = yes ]
-        then
-        # verify that CVS has all the source files in its repository, 
-        # and that there aren't any conflicts
-        if [ `grep -c '^[C?] ' $CVSLOG` -ne 0 ]
-        then
-            echo 1>&2
-            echo "CVS update had problems:" 1>&2
-            grep '^[C?] ' $CVSLOG 1>&2
-            exit 1
-        fi
-    fi
+    $antcmd -f $sources/nbbuild/build.xml hg-clean
 fi
 
 if [ $dobuild = yes ]
