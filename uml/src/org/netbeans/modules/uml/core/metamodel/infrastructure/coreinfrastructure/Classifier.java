@@ -2921,7 +2921,6 @@ public class Classifier extends Namespace implements IClassifier,
             }
             ETList<IAssociationEnd> ends = getAssociationEnds();
             ETList<IAssociation> assocs = new ETArrayList<IAssociation>();
-            System.out.println("Classifier.setNamespace ends =  "+ends);
             if (ends != null)
             {
                 for (IAssociationEnd end : ends)
