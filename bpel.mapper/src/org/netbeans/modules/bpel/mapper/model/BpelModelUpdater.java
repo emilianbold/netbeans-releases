@@ -133,7 +133,7 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
             if (copyOwner != null) {
                 copyOwner.remove(copy);
             }
-            getMapperModel().removeGraph(rightTreePath); // Remove empty graph !!!
+            getMapperModel().deleteGraph(rightTreePath); // Remove empty graph !!!
             return; // NOTHING TO DO FURTHER
         }
         //

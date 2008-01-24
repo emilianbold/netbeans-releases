@@ -131,20 +131,22 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         mRightTreeModel.fireTreeChanged(this, treePath);
     }
 
-    public void removeGraph(TreePath treePath) {
+    /**
+     * Delete graph from mapper model. 
+     * The method doesn't do any checks and doesn't send any notifications.
+     * It simply delete the graph from the cache.
+     * 
+     * This method is intended to be called as part of update processing 
+     * is initiated by a change in mapper. 
+     * If you need to remove a graph, you better use emptyGraph method 
+     * and it will be deleted automatically. 
+     * 
+     * @param treePath
+     */
+    public void deleteGraph(TreePath treePath) {
         Graph graph = mPathGraphMap.get(treePath);
-        boolean modified = false;
         if (graph != null) {
-            //
-            modified = emptyGraph(graph);
-            //
-            if (modified) {
-                fireGraphChanged(treePath);
-            }
-            //
-            // It's not necessary to remove the graph itself. 
-            // It has to be removed by the BPEL updater a bit later.
-            // mPathGraphMap.remove(treePath);
+            mPathGraphMap.remove(treePath);
         }
     }
 
@@ -236,7 +238,12 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     public boolean canConnect(TreePath treePath, SourcePin source, 
             TargetPin target, TreePath oldTreePath, Link oldLink) 
     {
-        if (oldLink != null) return false;
+        if (oldTreePath != null && !oldTreePath.equals(treePath)) {
+            // Reconnect
+            // link to another graph is not allowed for a while
+            return false;
+        }
+        
         if (target instanceof Graph) {
             if (!mRightTreeModel.isConnectable(treePath)) {
                 return false;
@@ -380,8 +387,13 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             }
         }
         //
-        Link newLink = new Link(source, target);
-        resultGraph.addLink(newLink);
+        if (oldLink == null) {
+            Link newLink = new Link(source, target);
+            resultGraph.addLink(newLink);
+        } else {
+            oldLink.setSource(source);
+            oldLink.setTarget(target);
+        }
         //
         fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
