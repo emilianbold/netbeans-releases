@@ -69,3 +69,5 @@ BUNDLE_LONG_NAMES[2] = "Java&nbsp;SE";
 BUNDLE_LONG_NAMES[3] = "Ruby";
 BUNDLE_LONG_NAMES[4] = "C/C++";
 BUNDLE_LONG_NAMES[5] = "All";
+
+BUILD_DISPLAY_VERSION = "{build.display.version}";

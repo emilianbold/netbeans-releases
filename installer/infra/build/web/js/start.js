@@ -43,6 +43,7 @@ var platform_id="";
 var url = "";
 var filename = "";	    
 var string = "";
+var parent_folder = "";
 
 function initialize() {
 	    string = "" + window.location;	    
@@ -56,6 +57,8 @@ function initialize() {
             var monthly_sep  = "monthly=";
             var weekly_sep   = "weekly=";
             var contact_sep  = "contact=";
+            var start_page_string = (string.indexOf("?")==-1) ? string : string.substring(0, string.indexOf("?"));            
+            parent_folder  = start_page_string.substring(0, start_page_string.lastIndexOf("/") + 1);
 
 	    if(query!="" && query != string && query.indexOf(sep)!=-1)  {
 	            url      = query.substring(0, query.indexOf(sep));	                
@@ -151,7 +154,7 @@ function redirect() {
 }
 
 function write_download_header() {
-	document.write('<p>');
+	document.write('<p id="download_link_p">');
 	document.write(AUTOMATIC_DOWNLOAD_MESSAGE.replace('{0}',url));
 	document.write('</p>');
 }
@@ -209,4 +212,23 @@ function write_download_info() {
 		document.write(NOFILE_MESSAGE);
 	}
 	document.write('</p>');
+}
+
+function omniture_download_link() {
+    var anchorElement = document.getElementById("download_link_p").getElementsByTagName("a")[0];//there is only one anchor in that paragraph
+    if(s_siteid) { // this variable is defined only if s_code_remote.js was downloaded
+        s_linkType = "d";
+        s_linkName = s_siteid + option_id;
+        s_events   = "event7";
+        s_products = "Downloaded Products;NetBeans IDE";
+        s_eVar3    = "netbeans";
+        s_eVar8    = option_id;
+        s_prop19   = platform_id;
+        s_prop20   = lang_id;
+        s_prop21   = BUILD_DISPLAY_VERSION;
+        s_linkTrackVars   = "events,products,eVar3,eVar8,prop19,prop20";
+        s_linkTrackEvents = "event7";
+        s_lnk=s_co(anchorElement);
+        s_gs(s_account); 
+    }
 }
