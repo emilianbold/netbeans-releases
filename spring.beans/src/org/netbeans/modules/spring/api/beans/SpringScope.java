@@ -44,7 +44,10 @@ package org.netbeans.modules.spring.api.beans;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -95,7 +98,15 @@ public final class SpringScope {
      */
     public static SpringScope getSpringScope(FileObject fo) {
         Parameters.notNull("fo", fo);
-        throw new UnsupportedOperationException("Not supported yet");
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (project == null) {
+            return null;
+        }
+        ProjectSpringScopeProvider provider = project.getLookup().lookup(ProjectSpringScopeProvider.class);
+        if (provider == null) {
+            return null;
+        }
+        return provider.getSpringScope();
     }
 
     private SpringScope() {
