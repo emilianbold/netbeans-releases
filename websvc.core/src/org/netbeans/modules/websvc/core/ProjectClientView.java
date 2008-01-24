@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.websvc.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientView;
@@ -56,15 +57,18 @@ public class ProjectClientView {
     private static final Lookup.Result<ProjectClientViewProvider> clientViewProviders =
         Lookup.getDefault().lookup(new Lookup.Template<ProjectClientViewProvider>(ProjectClientViewProvider.class));
     
-    public static Node createClientView(Project project) {
+    public static Node[] createClientView(Project project) {
+        ArrayList<Node> views = new ArrayList<Node>();
         Collection<? extends ProjectClientViewProvider> instances = clientViewProviders.allInstances();
         for (ProjectClientViewProvider impl: instances) {
             Node view = impl.createClientView(project);
             if (view != null) {
-                return view;
+                // Its better to return views from all impls
+                // To accomodate projects with mixed jaxrpc and jaxws clients.
+                views.add(view);
             }
         }
-        return null;
+        return views.toArray(new Node[views.size()]);
     }
     
 }

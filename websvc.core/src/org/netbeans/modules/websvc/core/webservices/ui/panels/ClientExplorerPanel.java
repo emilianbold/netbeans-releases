@@ -152,17 +152,20 @@ public class ClientExplorerPanel extends JPanel implements ExplorerManager.Provi
                 LogicalViewProvider logicalProvider = (LogicalViewProvider)projects[i].getLookup().lookup(LogicalViewProvider.class);
                 if (logicalProvider!=null) {
                     Node rootNode = logicalProvider.createLogicalView();
-                    Node servicesNode = ProjectClientView.createClientView(projects[i]);
-                    if (servicesNode!=null) {
+                    Node[] servicesNodes = ProjectClientView.createClientView(projects[i]);
+                    if (servicesNodes!=null && servicesNodes.length>0) {
                         Children children = new Children.Array();
-                        Node[] nodes= servicesNode.getChildren().getNodes();
-                        if (nodes!=null && nodes.length>0) {
-                            //jaxWsServices=true;
-                            Node[] filterNodes = new Node[nodes.length];
-                            for (int j=0;j<nodes.length;j++) filterNodes[j] = new FilterNode(nodes[j]);
-                            children.add(filterNodes);
-                            projectNodeList.add(new ProjectNode(children, rootNode));
+                        for(Node servicesNode:servicesNodes) {
+                            Node[] nodes= servicesNode.getChildren().getNodes();
+                            if (nodes!=null && nodes.length>0) {
+                                //jaxWsServices=true;
+                                Node[] filterNodes = new Node[nodes.length];
+                                for (int j=0;j<nodes.length;j++) filterNodes[j] = new FilterNode(nodes[j]);
+                                children.add(filterNodes);
+                            }
                         }
+                        if(children.getNodesCount()>0) 
+                            projectNodeList.add(new ProjectNode(children, rootNode));
                     }
                 }
             }
