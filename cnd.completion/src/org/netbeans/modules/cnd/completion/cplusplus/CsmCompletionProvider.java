@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmSyntaxSupport;
 import org.netbeans.modules.cnd.completion.csm.CompletionUtilities;
 import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
+import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.MethodParamsTipPaintComponent;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
@@ -164,9 +165,18 @@ public class CsmCompletionProvider implements CompletionProvider {
             Completion.get().hideCompletion();
         }
         
-        private static final int MAX_ITEMS_TO_DISPLAY = 10;
-
-        private static final CompletionItem lastItem = new NbCsmResultItem.NbStringResultItem("Type next char...", Integer.MAX_VALUE);
+        private static final int MAX_ITEMS_TO_DISPLAY;
+        static {
+            int val = 256;
+            if (System.getProperty("cnd.completion.items") != null) {
+                try {
+                    val = Integer.parseInt(System.getProperty("cnd.completion.items"));
+                } catch (NumberFormatException numberFormatException) {
+                    val = 256;
+                }
+            }
+            MAX_ITEMS_TO_DISPLAY = val;
+        }
 
         private void addItems(CompletionResultSet resultSet, Collection<CompletionItem> items) {
             boolean limit = !localContext && queryResult.isSimpleVariableExpression() && (items.size() > MAX_ITEMS_TO_DISPLAY);
@@ -217,7 +227,6 @@ public class CsmCompletionProvider implements CompletionProvider {
                         }
                         queryAnchorOffset = res.getSubstituteOffset();
                         Collection items = res.getData();
-                        resultSet.estimateItems(items.size(), -1);
                         // no more title in NB 6 in completion window
                         //resultSet.setTitle(res.getTitle());
                         resultSet.setAnchorOffset(queryAnchorOffset);
@@ -553,5 +562,32 @@ public class CsmCompletionProvider implements CompletionProvider {
         }
     }
 
+    private static final CompletionItem lastItem = new LastResultItem();
+    
+    private final static class LastResultItem extends CsmResultItem {
+
+        private final String str;
+        private final static CsmPaintComponent.StringPaintComponent stringComponent = new CsmPaintComponent.StringPaintComponent();
+
+        public LastResultItem() {
+            super(null, Integer.MAX_VALUE);
+            this.str = NbBundle.getBundle(CsmCompletionProvider.class).getString("last-item-text"); // NOI18N
+        }
+        
+        public java.awt.Component getPaintComponent(boolean isSelected) {
+            stringComponent.setString(str);
+            return stringComponent;
+        }
+        
+        @Override
+        public void defaultAction(JTextComponent component) {
+            // do nothing
+        }
+
+        @Override
+        public String getItemText() {
+            return str;
+        }   
+    }      
 }
 
