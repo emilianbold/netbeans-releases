@@ -558,7 +558,6 @@ public class RubyPlatformCustomizer extends JPanel {
         if (ret == JFileChooser.APPROVE_OPTION) {
             File intepreter = FileUtil.normalizeFile(chooser.getSelectedFile());
             Util.getPreferences().put(LAST_PLATFORM_DIRECTORY, intepreter.getParentFile().getAbsolutePath());
-            // XXX store last used directory into the settings
             RubyPlatform platform = getPlafListModel().addPlatform(intepreter);
             if (platform == null) {
                 Util.notifyLocalized(RubyPlatformCustomizer.class,
@@ -619,6 +618,7 @@ public class RubyPlatformCustomizer extends JPanel {
             gemPathList.setSelectedIndex(0);
         }
         gemPathList.requestFocus();
+        refreshPlatform();
 }//GEN-LAST:event_removeGemPathActionPerformed
 
     private void refreshDebugger() {
