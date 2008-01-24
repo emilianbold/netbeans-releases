@@ -128,6 +128,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <folder name="FoldManager">
+                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
                     <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="Popup">
@@ -222,6 +223,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <folder name="FoldManager">
+                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
                     <file name="org-netbeans-modules-cnd-editor-CppFoldManager$Factory.instance"/>
                 </folder>
                 <folder name="Popup">
