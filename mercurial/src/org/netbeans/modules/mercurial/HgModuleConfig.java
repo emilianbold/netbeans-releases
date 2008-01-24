@@ -68,6 +68,8 @@ public class HgModuleConfig {
     public static final String PROP_RUN_VERSION             = "runVersion";                                 // NOI18N
     public static final String KEY_EXECUTABLE_BINARY        = "hgExecBinary";                              // NOI18N
     public static final String KEY_EXPORT_FILENAME          = "hgExportFilename";                          // NOI18N
+    public static final String KEY_EXPORT_FOLDER            = "hgExportFolder";                          // NOI18N
+    public static final String KEY_IMPORT_FOLDER            = "hgImportFolder";                          // NOI18N
     public static final String KEY_ANNOTATION_FORMAT        = "annotationFormat";                           // NOI18N
     public static final String SAVE_PASSWORD                = "savePassword";                               // NOI18N
     public static final String KEY_BACKUP_ON_REVERTMODS = "backupOnRevert";                               // NOI18N
@@ -83,7 +85,7 @@ public class HgModuleConfig {
     
     public static final String TEXT_ANNOTATIONS_FORMAT_DEFAULT = "{DEFAULT}";                               // NOI18N           
 
-    private static final String DEFAULT_EXPORT_FILENAME = "/tmp/%b_%r_%h";                                  // NOI18N
+    private static final String DEFAULT_EXPORT_FILENAME = "%b_%r_%h";                                  // NOI18N
     private static final HgModuleConfig INSTANCE = new HgModuleConfig();    
     
     private static String userName;
@@ -149,6 +151,22 @@ public class HgModuleConfig {
     
     public void setExecutableBinaryPath(String path) {
         getPreferences().put(KEY_EXECUTABLE_BINARY, path);
+    }
+
+    public String getExportFolder() {
+        return (String) getPreferences().get(KEY_EXPORT_FOLDER, System.getProperty("user.home")); // NOI18N
+    }
+    
+    public void setExportFolder(String path) {
+        getPreferences().put(KEY_EXPORT_FOLDER, path);
+    }
+
+    public String getImportFolder() {
+        return (String) getPreferences().get(KEY_IMPORT_FOLDER, System.getProperty("user.home")); // NOI18N
+    }
+    
+    public void setImportFolder(String path) {
+        getPreferences().put(KEY_IMPORT_FOLDER, path);
     }
 
     public String getExportFilename() {

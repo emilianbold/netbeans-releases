@@ -50,6 +50,7 @@ import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -102,6 +103,8 @@ public class ExportDiffAction extends AbstractAction {
         }
         final String revStr = ed.getSelectionRevision();
         final String outputFileName = ed.getOutputFileName();
+        File outputFile = new File(outputFileName);
+        HgModuleConfig.getDefault().setExportFolder(outputFile.getParent());
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {

@@ -50,6 +50,7 @@ import java.util.List;
 import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgCommand;
@@ -108,9 +109,12 @@ public class ImportDiffAction extends AbstractAction {
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
+       fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getImportFolder()));
+
         if (fileChooser.showDialog(null, NbBundle.getMessage(ImportDiffAction.class, "OK_Button")) == JFileChooser.APPROVE_OPTION) { // NO I18N
             final File patchFile = fileChooser.getSelectedFile();
 
+            HgModuleConfig.getDefault().setImportFolder(patchFile.getParent());
             if (patchFile != null) {
                 RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
                 HgProgressSupport support = new HgProgressSupport() {

@@ -174,7 +174,10 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
     }
 
     private void getDefaultOutputFile() {
-        outputFileTextField.setText(HgModuleConfig.getDefault().getExportFilename());
+        String folderName = HgModuleConfig.getDefault().getExportFolder();
+        String fileName = HgModuleConfig.getDefault().getExportFilename();
+        File file = new File(folderName, fileName);
+        outputFileTextField.setText(file.getAbsolutePath());
     }
 
     private void refreshRevisions() {
@@ -219,6 +222,7 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
             fileChooser.removeChoosableFileFilter(fileFilter);
 
         }
+        fileChooser.setCurrentDirectory(new File(HgModuleConfig.getDefault().getExportFolder()));
         fileChooser.showDialog(this, NbBundle.getMessage(ExportDiffPanel.class, "OK_Button"));                                            // NO I18N
         File f = fileChooser.getSelectedFile();
         if (f != null) {
