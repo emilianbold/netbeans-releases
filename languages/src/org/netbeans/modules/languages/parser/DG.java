@@ -105,7 +105,10 @@ public class DG<N,E,K,V> {
     
     void addNode (N node) {
         assert (node != null);
-        if (idToNode.containsKey (node)) throw new IllegalArgumentException ();
+        if (idToNode.containsKey (node)) {
+            //throw new IllegalArgumentException ();
+            return;
+        }
         Node<N,E,K,V> n = new Node<N,E,K,V> ();
         idToNode.put (node, n);
         nodeToId.put (n, node);
