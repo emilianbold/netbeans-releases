@@ -44,7 +44,7 @@ package org.netbeans.modules.spring.api.beans.model;
 import java.io.IOException;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
-import org.netbeans.modules.spring.api.beans.SpringContext;
+import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
 import org.openide.filesystems.FileObject;
 
@@ -64,7 +64,7 @@ public final class SpringConfigModel {
      * @return a Spring configuration model or null
      */
     public static SpringConfigModel forFileObject(FileObject file) {
-        SpringContext context = SpringContext.getSpringContext(file);
+        SpringScope context = SpringScope.getSpringContext(file);
         if (context != null) {
             return context.getConfigModel(file);
         }
