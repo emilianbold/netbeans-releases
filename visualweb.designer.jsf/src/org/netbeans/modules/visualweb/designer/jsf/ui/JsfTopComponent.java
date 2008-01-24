@@ -50,6 +50,9 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.SystemColor;
 import java.awt.datatransfer.Transferable;
@@ -81,7 +84,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
-import javax.swing.OverlayLayout;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
@@ -266,7 +268,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         initDesignerPreferences();
         
         panel.setOpaque(false);
-        panel.setLayout(new OverlayLayout(panel));
+        panel.setLayout(new GridBagLayout());
         setLayout(new BorderLayout());
         add(panel, BorderLayout.CENTER);
     }
@@ -356,13 +358,11 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     private void initLoadingComponent() {
         panel.removeAll();
 //        setLayout(new BorderLayout());
-        panel.add(createLoadingComponent());
+        panel.add(createLoadingComponent(), getDefaultGridBagConstraints());
     }
     
     private JComponent createLoadingComponent() {
         JLabel loadingComponent = new JLabel(NbBundle.getMessage(JsfTopComponent.class, "LBL_LoadingModel"), JLabel.CENTER);
-        loadingComponent.setAlignmentX(0.5f);
-        loadingComponent.setMaximumSize(getMaximumSize());
         loadingComponent.setForeground(SystemColor.textInactiveText);
         loadingComponent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         return loadingComponent;
@@ -370,8 +370,6 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
     
     private JComponent createReloadingComponent() {
         JLabel reloadingComponent = new JLabel(NbBundle.getMessage(JsfTopComponent.class, "LBL_ReloadingModel"), JLabel.CENTER);
-        reloadingComponent.setAlignmentX(0.5f);
-        reloadingComponent.setMaximumSize(getMaximumSize());
         reloadingComponent.setOpaque(true);
         Color backgroundColor = SystemColor.control;
         reloadingComponent.setBackground(
@@ -584,7 +582,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 //            JComponent errorPanel = webform.getErrorPanel();
             JComponent errorPanel = jsfForm.getErrorPanel(new ErrorPanelCallbackImpl(this));
             
-            panel.add(errorPanel, BorderLayout.CENTER);
+            panel.add(errorPanel, getDefaultGridBagConstraints());
         } else {
             assert panel.getComponentCount() >= 1;
             panel.removeAll();
@@ -592,7 +590,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
             // Add old contents back: could be design scroll pane, or could
             // be split pane showing scrollpane and tray.
-            panel.add(hiddenComp, BorderLayout.CENTER);
+            panel.add(hiddenComp, getDefaultGridBagConstraints());
 
             // Ensure that the exposed component has dimensions, otherwise
             // it won't receive any paint requests (and I drive layout from
@@ -1121,7 +1119,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
 
         JViewport vp = scrollPane.getViewport();
         vp.add(html);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(scrollPane, getDefaultGridBagConstraints());
 //        html.updateViewport();
         designer.updatePaneViewPort();
     }
@@ -2707,7 +2705,7 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         } else {
             final JComponent reloadingComponent = createReloadingComponent();
             // Needs to be first (to be on top in overlay).
-            panel.add(reloadingComponent, 0);
+            panel.add(reloadingComponent, getDefaultGridBagConstraints(), 0);
             EventQueue.invokeLater(new Runnable() {
                 public void run() {
                     try {
@@ -2861,4 +2859,15 @@ public class JsfTopComponent extends AbstractJsfTopComponent /*SelectionTopComp*
         }
         
     } // DesignerNavigatorLooupPanelPolicy
+    
+    private static GridBagConstraints getDefaultGridBagConstraints() {
+        return new GridBagConstraints(
+                0, 0, // cell
+                1, 1, // size of cell
+                1.0d, 1.0d, // weight
+                GridBagConstraints.CENTER, // position
+                GridBagConstraints.BOTH, // span
+                new Insets(0, 0, 0, 0),
+                0, 0); // padding
+    }
 }
