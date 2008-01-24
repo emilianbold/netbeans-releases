@@ -105,10 +105,7 @@ public final class FileObjectFactory {
     }
     public static enum Caller {
         ToFileObject,GetFileObject,GetChildern,GetParent, Others
-    }
-    private static int[] compatibleExistsCalls = new int[Caller.values().length];
-    private static int[] optimizedExistsCalls = new int[compatibleExistsCalls.length];    
-    
+    }    
     public FileObject findFileObject(final File file, FileBasedFileSystem lfs, Caller caller) {
         return findFileObject(new FileInfo(file), lfs, caller);
     }
@@ -135,99 +132,143 @@ public final class FileObjectFactory {
                 mutexPrivileged.exitReadAccess();
             }
         }
-        assert printWarning(file, caller, parent, child, warningOn);
-        incrementFor(caller, compatibleExistsCalls);
-        boolean exists = optimizedExists(file, caller, parent, child);
-        
-        printCalls(caller);
-        if (parent != null) {
-            if (child != null) {
-                if (exists) {
-                    retVal = getOrCreate(new FileInfo(file, 1));
+        return issueIfExist(file, caller, parent, child);        
+    }
+
+    private boolean checkCacheState(boolean exist, File file) {        
+        return checkCacheState(exist, file, false);
+    }
+
+    private boolean checkCacheState(boolean exist, File file, boolean afterRecovering) {        
+        if (FileBasedFileSystem.WARNINGS) {
+            boolean notsame = exist != file.exists();
+            if (notsame) {
+                if (afterRecovering) {
+                    printWarning(file, Status.RecoverFail);
                 } else {
-                    parent.refresh(true);
+                    printWarning(file, Status.NoRecover);
                 }
             } else {
-                if (exists) {
-                    parent.refresh(true);
-                    retVal = getOrCreate(new FileInfo(file, 1));
-                } 
-            }
-        } else {
-            retVal = exists ? getOrCreate(new FileInfo(file, 1)) : null;
-        }
-                
-        return retVal;        
-    }
-
-    private boolean isWarning(File file, Caller caller, FileObject parent, FileNaming child, boolean warningOn) {
-        boolean warning = false;
-        BaseFileObj foForFile = null;
-        if (FileBasedFileSystem.WARNINGS) {
-            warning = file.exists() != optimizedExists(file, caller, parent, child);
-            warning = warning && warningOn && !WriteLockUtils.hasActiveLockFileSigns(file.getAbsolutePath());
-        }
-        return warning;
-    }
-    
-    private boolean optimizedExists(File file, Caller caller, FileObject parent, FileNaming child) {
-        boolean exist = false;
-        FileObject foForFile = null;
-        switch(caller) {
-            case GetParent:
-                exist = true;
-                break;
-            case ToFileObject:
-                foForFile = get(file);
-                exist = (foForFile != null && foForFile.isValid()) || (child != null && foForFile == null) ? true : touchExists(file, caller);
-                break;
-            case GetChildern:                
-            case Others:                                    
-            case GetFileObject:
-                exist = (parent != null) ? child != null : (((foForFile = get(file)) != null && foForFile.isValid()) || touchExists(file, caller));
-                break;
-        }
-        return exist;
-    }
-
-    
-    private static boolean touchExists(File f, Caller caller) {
-        incrementFor(caller, optimizedExistsCalls);
-        return f.exists();
-    }
-    
-    private static int incrementFor(Caller caller, int[] where) {        
-        return where[indexFor(caller)] += 1;        
-    }
-    
-    private void printCalls(Caller caller) {
-        if (FileBasedFileSystem.PERF_PRINTING) {
-            boolean print = false;
-            assert print = true;
-            if (print) {
-                if ((compatibleExistsCalls[indexFor(caller)] % 1000) == 0) {
-                    int totalRC = 0;
-                    int totalNO = 0;
-                    Caller[] callers = Caller.values();
-                    for (int i = 0; i < callers.length; i++) {
-                        FileObjectFactory.Caller caller2 = callers[i];
-                        int idx = indexFor(caller2);
-                        int rC = optimizedExistsCalls[idx];
-                        int nO = compatibleExistsCalls[idx];
-                        totalRC += rC;
-                        totalNO += nO;
-                        System.out.println(caller2.name() + " comp: " + nO + "  optim: " + rC);
-                    }                
-                    System.out.println("Total: " + " comp: " + totalNO + "  optim: " + totalRC);
+                if (afterRecovering) {
+                    printWarning(file, Status.RecoverSuccess);
                 }
             }
         }
+        return true;
+    }
+
+    public static enum Status {
+        RecoverSuccess , RecoverFail, NoRecover
+    }    
+
+    private boolean printWarning(File file, Status stat) {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(bos);
+            new Exception().printStackTrace(ps);
+            ps.close();
+            String h = file.exists() ? "WARNING: externally created " : "WARNING: externally deleted "; //NOI18N
+            h += (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath(); //NOI18N
+            if (!stat.equals(Status.NoRecover)) {
+                h += " State: " + stat.toString();//NOI18N
+            }
+            h += "  - please report. (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)";//NOI18N
+            if (Utilities.isWindows()) {
+                h = h.replace('\\', '/');//NOI18N
+            }
+            Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));//NOI18N
+        return true;
     }
     
-    private static int indexFor(Caller caller) {
-        return Arrays.binarySearch(Caller.values(), caller);
-    }                        
-            
+    private FileObject issueIfExist(File file, Caller caller, FileObject parent, FileNaming child) {
+        boolean exist = false;
+        FileObject foForFile = null;
+        Integer realExists = new Integer(-1);
+
+        //use cached info as much as possible + do refresh if something is wrong
+        //exist = (parent != null) ? child != null : (((foForFile = get(file)) != null && foForFile.isValid()) || touchExists(file, realExists));
+        foForFile = get(file);
+        if (parent != null && parent.isValid()) {
+            if (child != null) {
+                if (foForFile == null) {
+                    exist = true;
+                    assert checkCacheState(exist, file);
+                } else if (foForFile.isValid()) {
+                    exist = true;
+                    assert checkCacheState(exist, file);
+                } else {
+                    //!!!!!!!!!!!!!!!!! inconsistence
+                    exist = touchExists(file, realExists);
+                    if (!exist) {
+                        parent.refresh();
+                    }
+                    assert checkCacheState(exist, file, true); 
+                }
+            } else {
+                if (foForFile == null) {
+                    exist = false;
+                    assert checkCacheState(exist, file);
+                } else if (foForFile.isValid()) {
+                    //!!!!!!!!!!!!!!!!! inconsistence
+                    exist = touchExists(file, realExists);
+                    if (!exist) {
+                        foForFile.refresh();
+                    }
+                    assert checkCacheState(exist, file, true);                     
+                } else {
+                    exist = touchExists(file, realExists);
+                    if (exist) {
+                        parent.refresh();
+                    }
+                }
+            }
+        } else {
+            if (foForFile == null) {
+                exist = touchExists(file, realExists);
+            } else if (foForFile.isValid()) {
+                if (parent == null) {
+                    exist = true;
+                    assert checkCacheState(exist, file);
+                } else {
+                    //!!!!!!!!!!!!!!!!! inconsistence
+                    exist = touchExists(file, realExists);
+                    if (!exist) {
+                        foForFile.refresh();
+                    }
+                    assert checkCacheState(exist, file, true);
+                }
+            } else {
+                exist = false;
+                assert checkCacheState(exist, file);
+            }
+        }
+        if (!exist) {
+            switch (caller) {
+                case GetParent:
+                    //guarantee issuing parent
+                    exist = true;
+                    break;
+                case ToFileObject:
+                    //guarantee issuing for existing file
+                    exist = touchExists(file, realExists);
+                    if (exist && parent != null && parent.isValid()) {
+                        parent.refresh();
+                        assert checkCacheState(false, file, true);
+                    }                    
+                    break;
+            }
+        }
+        return (exist) ? getOrCreate(new FileInfo(file, 1)) : null;        
+    }
+
+    
+    private static boolean touchExists(File f, Integer state) {
+        if (state == -1) {
+            state = f.exists() ? 1 : 0;
+        }
+        assert state != -1;
+        return (state == 1) ? true : false;
+    }
+                
     private final FileObject getOrCreate(final FileInfo fInfo) {        
         FileObject retVal = null;
         File f = fInfo.getFile();
@@ -322,23 +363,6 @@ public final class FileObjectFactory {
             }
         }
         return all2Refresh;
-    }
-
-    private boolean printWarning(File file, Caller caller, FolderObj parent, FileNaming child, boolean warningOn) {
-        if (isWarning(file, caller, parent, child, warningOn)) {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            PrintStream ps = new PrintStream(bos);
-            new Exception().printStackTrace(ps);
-            ps.close();
-            String h = file.exists() ? "WARNING: externally created " : "WARNING: externally deleted "; //NOI18N
-            h += (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath(); //NOI18N
-            h += "  - please report. (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)";
-            if (Utilities.isWindows()) {
-                h = h.replace('\\', '/');
-            }
-            Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));
-        }
-        return true;
     }
     
     private void refresh(final Set all2Refresh, File file) {

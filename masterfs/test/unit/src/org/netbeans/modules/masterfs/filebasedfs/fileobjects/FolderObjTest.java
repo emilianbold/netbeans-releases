@@ -242,9 +242,9 @@ public class FolderObjTest extends NbTestCase {
         assertNull(workDirFo.getFileObject(fold.getName()));                
         assertFalse(existsChild(workDirFo, fold.getName()));
         fold.mkdir();
-        assertNull((workDirFo.getFileSystem()).findResource(workDirFo.getPath()+"/"+fold.getName()));                
-        assertNull(workDirFo.getFileObject(fold.getName()));                        
-        assertFalse(existsChild(workDirFo, fold.getName()));        
+        assertNotNull((workDirFo.getFileSystem()).findResource(workDirFo.getPath()+"/"+fold.getName()));                
+        assertNotNull(workDirFo.getFileObject(fold.getName()));                        
+        assertTrue(existsChild(workDirFo, fold.getName()));        
         workDirFo.refresh();
         assertNotNull(workDirFo.getFileObject(fold.getName()));        
         assertTrue(existsChild(workDirFo, fold.getName()));        
@@ -255,8 +255,8 @@ public class FolderObjTest extends NbTestCase {
         assertNull(workDirFo.getFileObject(fold.getName()));                                        
         assertFalse(existsChild(workDirFo, fold.getName()));        
         fold.mkdir();
-        assertNull(workDirFo.getFileObject(fold.getName()));
-        assertFalse(existsChild(workDirFo, fold.getName()));        
+        assertNotNull(workDirFo.getFileObject(fold.getName()));
+        assertTrue(existsChild(workDirFo, fold.getName()));        
         workDirFo.getFileSystem().refresh(false);
         assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
         assertTrue(existsChild(workDirFo, fold.getName()));        
@@ -266,8 +266,8 @@ public class FolderObjTest extends NbTestCase {
         fold.mkdir();
         //assertNull(((FileBasedFileSystem)workDirFo.getFileSystem()).findFileObject(fold));                
         //assertNull(FileBasedFileSystem.getFileObject(fold));                                
-        assertNull(workDirFo.getFileObject(fold.getName()));                                        
-        assertFalse(existsChild(workDirFo, fold.getName()));        
+        assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
+        assertTrue(existsChild(workDirFo, fold.getName()));        
         workDirFo.getFileSystem().refresh(false);
         assertNotNull(workDirFo.getFileObject(fold.getName()));                                        
         assertTrue(existsChild(workDirFo, fold.getName()));        
