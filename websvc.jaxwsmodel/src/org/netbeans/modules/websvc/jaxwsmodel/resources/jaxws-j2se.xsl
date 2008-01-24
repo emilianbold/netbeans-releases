@@ -99,7 +99,7 @@ made subject to such option by the copyright holder.
                                 <binding dir="xml-resources/web-service-references/{$wsname}/bindings">
                                     <xsl:attribute name="includes">
                                         <xsl:for-each select="jaxws:binding">
-                                            <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
                                             <xsl:value-of select="normalize-space(jaxws:file-name)"/>
                                         </xsl:for-each>
                                     </xsl:attribute>
@@ -122,7 +122,7 @@ made subject to such option by the copyright holder.
                                 <binding dir="xml-resources/web-service-references/{$wsname}/bindings">
                                     <xsl:attribute name="includes">
                                         <xsl:for-each select="jaxws:binding">
-                                            <xsl:if test="position()!=1"><xsl:text>;</xsl:text></xsl:if>
+                                            <xsl:if test="position()!=1"><xsl:text>, </xsl:text></xsl:if>
                                             <xsl:value-of select="normalize-space(jaxws:file-name)"/>
                                         </xsl:for-each>
                                     </xsl:attribute>
