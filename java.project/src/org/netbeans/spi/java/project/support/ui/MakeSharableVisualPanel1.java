@@ -52,7 +52,7 @@ final class MakeSharableVisualPanel1 extends JPanel {
 
     @Override
     public String getName() {
-        return "Step #1";
+        return "Library Definitions Location";
     }
 
     boolean isValidPanel() {

@@ -44,7 +44,9 @@ package org.netbeans.modules.java.j2seproject.ui.customizer;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JPanel;
 import javax.swing.event.ListDataEvent;
@@ -59,6 +61,7 @@ import org.netbeans.modules.java.j2seproject.ui.wizards.PanelOptionsVisual;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -183,7 +186,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             return new String[]{s.substring(0, i), s.substring(i+1)};
         }
     }
-    
+
     private void switchLibrary() {
         String loc = librariesLocation.getText();
         LibraryManager man;
@@ -800,16 +803,19 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
 
     private void librariesBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesBrowseActionPerformed
         if (!isSharable) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message("TBD"));
-            
-//            boolean result = MakeSharableUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper());
-//            if (result) {
-//                isSharable = true;
-//                sharedLibrariesLabel.setEnabled(true);
-//                librariesLocation.setEnabled(true);
-//                librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
-//                Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
-//            }
+
+            List<String> libs = collectLibs(uiProperties.JAVAC_CLASSPATH_MODEL, new ArrayList<String>());
+            libs = collectLibs(uiProperties.JAVAC_TEST_CLASSPATH_MODEL, libs);
+            libs = collectLibs(uiProperties.RUN_CLASSPATH_MODEL, libs);
+            libs = collectLibs(uiProperties.RUN_TEST_CLASSPATH_MODEL, libs);
+            boolean result = false; //MakeSharableUtils.showMakeSharableWizard(uiProperties.getProject().getAntProjectHelper(), libs);
+            if (result) {
+                isSharable = true;
+                sharedLibrariesLabel.setEnabled(true);
+                librariesLocation.setEnabled(true);
+                librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
+                Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
+            }
         } else {
             File prjLoc = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
             String s[] = splitPath(librariesLocation.getText().trim());
@@ -821,6 +827,22 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
             }
         }
 }//GEN-LAST:event_librariesBrowseActionPerformed
+   
+    
+    
+    private List<String> collectLibs(DefaultListModel model, List<String> libs) {
+        for (int i = 0; i < model.size(); i++) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) model.get(i);
+            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+                libs.add(item.getLibrary().getName());
+            }
+            if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+                //TODO
+            }
+        }
+        return libs;
+    }
+    
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

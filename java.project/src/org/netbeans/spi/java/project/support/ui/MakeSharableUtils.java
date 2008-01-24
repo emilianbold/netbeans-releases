@@ -54,13 +54,17 @@ import org.openide.WizardDescriptor;
  
     static final String PROP_LOCATION = "location"; //NOI18N
     static final String PROP_ACTIONS  = "actions"; //NOI18N
+    static final String PROP_HELPER  = "helper"; //NOI18N
+    static final String PROP_LIBRARIES  = "libraries"; //NOI18N
 
-    public static boolean showMakeSharableWizard(AntProjectHelper helper) {
+    public static boolean showMakeSharableWizard(AntProjectHelper helper, List<String> libraryNames) {
         
         WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle("Your wizard dialog title here");
+        wizardDescriptor.putProperty(PROP_HELPER, helper);
+        wizardDescriptor.putProperty(PROP_LIBRARIES, libraryNames);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
