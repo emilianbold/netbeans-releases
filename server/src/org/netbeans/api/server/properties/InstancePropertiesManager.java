@@ -51,6 +51,19 @@ import org.openide.util.NbPreferences;
 /**
  * This class acts as a manager of the properties. It manages the set
  * of persisted properties grouped by the plugin identifier.
+ * <p>
+ * Typical use case:<p>
+ * <pre>
+ * // we have some instance to persist
+ * InstancePropertiesManager manager = InstancePropertiesManager.getInstance();
+ * InstanceProperties props = manager.createProperties("myspace");
+ * props.put("property", "value");
+ *
+ * // we want to retrieve all InstanceProperties from "myspace"
+ * List&lt;InstanceProperties&gt; props = manager.getInstanceProperties("myspace");
+ *
+ * </pre>
+ *
  *
  * This class is <i>ThreadSafe</i>.
  * @author Petr Hejl

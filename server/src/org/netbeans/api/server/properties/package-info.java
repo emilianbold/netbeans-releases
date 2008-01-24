@@ -37,57 +37,8 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.api.server.properties;
-
 /**
- *
- * @author Petr Hejl
+ * Support API for persistence of server instance properties.
+ * @see org.netbeans.api.server.properties.InstancePropertiesManager
  */
-public abstract class InstanceProperties {
-
-    private final String id;
-
-    public InstanceProperties(String id) {
-        this.id = id;
-    }
-
-    /**
-     * Returns unique id of these properties. It is guaranteed that this id is
-     * unique in the scope of single plugin (plugin identifier) used in manager.
-     *
-     * @return id of the properties unique in the scope of the single plugin
-     * @see InstancePropertiesManager#createProperties(String)
-     */
-    public final String getId() {
-        return id;
-    }
-
-    public abstract String getString(String key, String def);
-
-    public abstract void putString(String key, String value);
-
-    public abstract boolean getBoolean(String key, boolean def);
-
-    public abstract void putBoolean(String key, boolean value);
-
-    public abstract int getInt(String key, int def);
-
-    public abstract void putInt(String key, int value);
-
-    public abstract long getLong(String key, long def);
-
-    public abstract void putLong(String key, long value);
-
-    public abstract float getFloat(String key, float def);
-
-    public abstract void putFloat(String key, float value);
-
-    public abstract double getDouble(String key, double def);
-
-    public abstract void putDouble(String key, double value);
-
-    public abstract void removeKey(String key);
-
-    public abstract void remove();
-
-}
+package org.netbeans.api.server.properties;
