@@ -142,7 +142,8 @@ public class JavaCodegen implements ICodeGenerator
         String tempGenerationTargetDir = null;
         int counter = 0;
         ScriptEngineManager mgr = new ScriptEngineManager();
-        ScriptEngine engine = mgr.getEngineByName("freemarker");
+        HashMap<FileObject, ScriptEngine> engines = new  HashMap<FileObject, ScriptEngine>();
+
         ClassInfo.eraseRefClasses();
 
         for (IElement pElement : elements)
@@ -459,6 +460,13 @@ public class JavaCodegen implements ICodeGenerator
                             parameters.put("codegenOptions", codegenOptions); // NOI18N
 
                             FileObject templFO = fmap.templateFileObject;
+                            
+                            ScriptEngine engine = engines.get(templFO);
+                            if (engine == null) 
+                            {
+                                engine = mgr.getEngineByName("freemarker");
+                                engines.put(templFO, engine);
+                            }
 
                             engine.getContext().getBindings(
                                 ScriptContext.ENGINE_SCOPE).clear();
@@ -671,10 +679,11 @@ public class JavaCodegen implements ICodeGenerator
                             }
                         }
                     }
-
                     classifier.addSourceFileNotDuplicate(fmap.targetFilePath);
-                }                    
-                if (genToTmp) {
+                }
+                    
+                if (genToTmp) 
+                {
                     for (FileMapping fmap : fmappings)
                     {                                     
                         deleteDirs(tempGenerationTargetDir, fmap.generatedFilePath); 
@@ -782,6 +791,11 @@ public class JavaCodegen implements ICodeGenerator
         File topDir = new File(topParent);
         File cur = new File(path);
         if (! inSubdir(topDir, cur)) 
+        {
+            return;
+        }
+        File pp = topDir.getParentFile();
+        if (pp == null || pp.equals(topDir)) 
         {
             return;
         }
