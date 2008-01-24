@@ -221,7 +221,7 @@ public class TreeUtilitiesTest extends NbTestCase {
         prepareTest("Test", "package test; public class Test {private int test[];}");
         
         TreePath tp = info.getTreeUtilities().pathFor(77 - 30);
-        VariableTree ct = (VariableTree) tp.getParentPath().getLeaf();
+        VariableTree ct = (VariableTree) tp.getLeaf();
         
         int[] span = info.getTreeUtilities().findNameSpan(ct);
         
@@ -276,7 +276,7 @@ public class TreeUtilitiesTest extends NbTestCase {
         prepareTest("Test", "package test; public class Test {public Test(){}}");
         
         TreePath tp = info.getTreeUtilities().pathFor(70 - 30);
-        MethodTree ct = (MethodTree) tp.getParentPath().getLeaf();
+        MethodTree ct = (MethodTree) tp.getLeaf();
         
         int[] span = info.getTreeUtilities().findNameSpan(ct);
         
@@ -300,6 +300,8 @@ public class TreeUtilitiesTest extends NbTestCase {
         TreePath tp = info.getTreeUtilities().pathFor(50);
         
         assertEquals(Kind.VARIABLE, tp.getLeaf().getKind());
+        //#125856:
+        assertFalse(Kind.VARIABLE == tp.getParentPath().getLeaf().getKind());
     }
     
     public void testTreePath124760b() throws Exception {
@@ -308,6 +310,8 @@ public class TreeUtilitiesTest extends NbTestCase {
         TreePath tp = info.getTreeUtilities().pathFor(47);
         
         assertEquals(Kind.METHOD, tp.getLeaf().getKind());
+        //#125856:
+        assertFalse(Kind.METHOD == tp.getParentPath().getLeaf().getKind());
     }
     
 }

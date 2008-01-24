@@ -231,7 +231,7 @@ public final class TreeUtilities {
                 int[] span = findNameSpan(node);
                 
                 if (span != null && span[0] <= pos && pos < span[1]) {
-                    throw new Result(new TreePath(getCurrentPath(), node));
+                    throw new Result(getCurrentPath());
                 }
                 
                 return super.visitVariable(node, p);
@@ -242,7 +242,7 @@ public final class TreeUtilities {
                 int[] span = findNameSpan(node);
                 
                 if (span != null && span[0] <= pos && pos < span[1]) {
-                    throw new Result(new TreePath(getCurrentPath(), node));
+                    throw new Result(getCurrentPath());
                 }
                 
                 return super.visitMethod(node, p);
