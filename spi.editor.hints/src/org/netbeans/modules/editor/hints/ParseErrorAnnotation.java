@@ -99,11 +99,6 @@ public class ParseErrorAnnotation extends Annotation implements PropertyChangeLi
                     return "org-netbeans-spi-editor-hints-parser_annotation_hint_fixable";
                 else
                     return "org-netbeans-spi-editor-hints-parser_annotation_hint";
-            case TODO:
-                if (hasFixes)
-                    return "org-netbeans-spi-editor-hints-parser_annotation_todo_fixable";
-                else
-                    return "org-netbeans-spi-editor-hints-parser_annotation_todo";
             default:
                 throw new IllegalArgumentException(String.valueOf(severity));
         }

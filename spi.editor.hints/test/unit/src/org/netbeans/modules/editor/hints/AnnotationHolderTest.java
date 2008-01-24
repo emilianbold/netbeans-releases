@@ -201,12 +201,11 @@ public class AnnotationHolderTest extends NbTestCase {
     
     public void testNullSpan() throws Exception {
         ErrorDescription ed1 = ErrorDescriptionFactory.createErrorDescription(Severity.ERROR, "1", file, 3, 5);
-        ErrorDescription ed2 = ErrorDescriptionTestSupport.createErrorDescription(file, "", Severity.DISABLED, ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), null);
         ErrorDescription ed3 = ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, "2", file, 1, 7);
         
         ec.open();
         
-        AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed1, ed2, ed3));
+        AnnotationHolder.getInstance(file).setErrorDescriptions("foo", Arrays.asList(ed1, ed3));
         
         ec.close();
     }

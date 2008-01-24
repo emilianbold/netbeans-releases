@@ -170,9 +170,7 @@ public class NextErrorAction extends AbstractAction implements PropertyChangeLis
             if (ed.getSeverity() == Severity.ERROR) {
                 trueErrors.add(ed);
             } else {
-                if (ed.getSeverity() != Severity.DISABLED) {
-                    others.add(ed);
-                }
+                others.add(ed);
             }
         }
 

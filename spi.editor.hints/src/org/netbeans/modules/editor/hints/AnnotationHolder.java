@@ -113,12 +113,10 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
     
     static {
         COLORINGS = new EnumMap<Severity, AttributeSet>(Severity.class);
-        COLORINGS.put(Severity.DISABLED,  AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver()));
         COLORINGS.put(Severity.ERROR, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0x00, 0x00), EditorStyleConstants.Tooltip, new TooltipResolver()));
         COLORINGS.put(Severity.WARNING, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xC0, 0xC0, 0x00), EditorStyleConstants.Tooltip, new TooltipResolver()));
         COLORINGS.put(Severity.VERIFIER, AttributesUtilities.createImmutable(EditorStyleConstants.WaveUnderlineColor, new Color(0xFF, 0xD5, 0x55), EditorStyleConstants.Tooltip, new TooltipResolver()));
         COLORINGS.put(Severity.HINT, AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver()));
-        COLORINGS.put(Severity.TODO, AttributesUtilities.createImmutable(EditorStyleConstants.Tooltip, new TooltipResolver()));
     };
     
     private Map<ErrorDescription, List<Position>> errors2Lines;
@@ -1166,9 +1164,7 @@ public class AnnotationHolder implements ChangeListener, PropertyChangeListener,
                                 if (ed.getSeverity() == Severity.ERROR) {
                                     trueErrors.add(ed);
                                 } else {
-                                    if (ed.getSeverity() != Severity.DISABLED) {
-                                        others.add(ed);
-                                    }
+                                    others.add(ed);
                                 }
                             }
 
