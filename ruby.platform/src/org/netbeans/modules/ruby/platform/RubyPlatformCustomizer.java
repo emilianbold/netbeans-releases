@@ -95,14 +95,22 @@ public class RubyPlatformCustomizer extends JPanel {
     }
 
     public @Override void removeNotify() {
-        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-        prefs.setUseClassicDebugger(getSelectedPlatform(), classicDebuggerEngine.isSelected());
+        RubyPlatform plaf = getSelectedPlatform();
+        if (plaf != null) {
+            DebuggerPreferences prefs = DebuggerPreferences.getInstance();
+            prefs.setUseClassicDebugger(plaf, classicDebuggerEngine.isSelected());
+        }
         super.removeNotify();
     }
 
     public RubyPlatformCustomizer() {
         initComponents();
         refreshPlatformList();
+        gemPathList.addListSelectionListener(new ListSelectionListener() {
+            public void valueChanged(ListSelectionEvent e) {
+                removeGemPath.setEnabled(gemPathList.getSelectedValue() != null);
+            }
+        });
         platformsList.addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 refreshPlatform();
@@ -191,6 +199,7 @@ public class RubyPlatformCustomizer extends JPanel {
         gemHomeValue.setForeground(color);
         gemToolValue.setForeground(color);
         removeButton.setEnabled(!plaf.isDefault());
+        removeGemPath.setEnabled(gemPathList.getSelectedValue() != null);
 
         refreshDebugger();
     }
