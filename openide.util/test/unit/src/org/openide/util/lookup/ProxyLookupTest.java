@@ -531,4 +531,47 @@ implements AbstractLookupBaseHid.Impl {
         
         pl.setLookups(new L("X"), new L("Y"), new L("Z"));
     }
+    
+    public void testDuplicatedLookupArrayIndexWithSetLookupAsInIssue123679() throws Exception {
+        final ProxyLookup pl = new ProxyLookup();
+        final int[] cnt = { 0 };
+        
+        class L extends Lookup {
+            L[] set;
+            Lookup l;
+            Collection<? extends Serializable> res;
+            
+            public L(String s) {
+                l = Lookups.singleton(s);
+            }
+            
+            @Override
+            public <T> T lookup(Class<T> clazz) {
+                return l.lookup(clazz);
+            }
+
+            @Override
+            public <T> Result<T> lookup(Template<T> template) {
+                cnt[0]++;
+                if (set != null) {
+                    pl.setLookups(set);
+                    res = pl.lookupAll(Serializable.class);
+                }
+                Result<T> r = l.lookup(template);
+                return r;
+            }
+        }
+
+        L dupl = new L("A");
+        L[] now = { dupl };
+        L[] old = { new L("C") };
+        pl.setLookups(old);
+        old[0].set = now;
+        
+        Result<String> res = pl.lookupResult(String.class);
+        assertEquals("New items visible", 1, res.allItems().size());
+        
+        
+        pl.setLookups(old);
+    }
 }
