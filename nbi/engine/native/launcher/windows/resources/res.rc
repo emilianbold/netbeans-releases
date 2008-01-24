@@ -1,1 +1,10 @@
+// Uncomment the following lines to add nlw.exe manigest under Cygwin usign GCC and WINDRES
+// Seems that tools from MS Platform SDK/MS VS C++ 2005 EE (C compiler, resource compiler and manifest tool) ignore that
+// (so you can leave that uncommented for both tools at once) but I haven`t check that much.
+//
+// #define RT_MANIFEST  24
+// #define CREATEPROCESS_MANIFEST_RESOURCE_ID 1
+// CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "nlw.exe.manifest"
+
 100 ICON DISCARDABLE "icon.ico"
+
