@@ -73,6 +73,21 @@ public class ProjectWSDL {
     return getName();
   }
   
+  @Override
+  public boolean equals(Object object) {
+    if ( !(object instanceof ProjectWSDL)) {
+      return false;
+    }
+    ProjectWSDL projectWSDL = (ProjectWSDL) object;
+    return myFile.equals(projectWSDL.myFile) && myProject.equals(projectWSDL.myProject);
+  }
+
+  @Override
+  public int hashCode()
+  {
+    return myFile.hashCode() * myProject.hashCode();
+  }
+
   private String calculateRelativeName(FileObject file, Project project) {
     if (file == null) {
       return null;
