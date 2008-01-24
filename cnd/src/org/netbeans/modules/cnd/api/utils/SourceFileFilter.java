@@ -86,12 +86,8 @@ public abstract class SourceFileFilter extends javax.swing.filechooser.FileFilte
                     
     private boolean amongSuffixes(String suffix, String[] suffixes) {
 	for (int i = 0; i < suffixes.length; i++) {
-            if (IpeUtils.isSystemCaseInsensitive()) {
-                if (suffixes[i].equalsIgnoreCase(suffix))
-                    return true;
-            } else {
-                if (suffixes[i].equals(suffix))
-                    return true;
+            if (IpeUtils.areFilenamesEqual(suffixes[i], suffix)) {
+                return true;
             }
 	}
 	return false;

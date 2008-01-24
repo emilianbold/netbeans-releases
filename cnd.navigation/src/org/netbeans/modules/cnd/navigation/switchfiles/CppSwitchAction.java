@@ -54,6 +54,7 @@ import org.netbeans.editor.JumpList;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
 import org.netbeans.modules.cnd.loaders.CCDataObject;
 import org.netbeans.modules.cnd.loaders.CDataLoader;
@@ -178,7 +179,8 @@ public final class CppSwitchAction extends BaseAction {
         String name = getName(source.getAbsolutePath().toString());
         // first look at the list of includes
         for (CsmInclude h : source.getIncludes()) {
-            if (h.getIncludeFile() != null && name.equals(getName(h.getIncludeFile().getAbsolutePath().toString()))) {
+            if (h.getIncludeFile() != null 
+                    && IpeUtils.areFilenamesEqual( name, getName(h.getIncludeFile().getAbsolutePath().toString())) ) {
                 return h.getIncludeFile();
             }
         }
@@ -186,8 +188,8 @@ public final class CppSwitchAction extends BaseAction {
         String path = trimExtension(source.getAbsolutePath().toString());
         CsmFile namesake = null;
         for (CsmFile f : source.getProject().getHeaderFiles()) {
-            if (getName(f.getAbsolutePath().toString()).equals(name)) {
-                if (path.equals(trimExtension(f.getAbsolutePath().toString()))) {
+            if (IpeUtils.areFilenamesEqual( getName(f.getAbsolutePath().toString()), name)) {
+                if (IpeUtils.areFilenamesEqual( path, trimExtension(f.getAbsolutePath().toString()) )) {
                     // we got namesake in the same directory. Best hit.
                     // TODO: actually this is pretty common issue, should we
                     // make a special check for such files?
@@ -209,7 +211,7 @@ public final class CppSwitchAction extends BaseAction {
         Collection<CsmFile> includers = CsmIncludeHierarchyResolver.getDefault().getFiles(header);
 
         for (CsmFile f : includers) {
-            if (getName(f.getAbsolutePath().toString()).equals(name)) {
+            if (IpeUtils.areFilenamesEqual( getName(f.getAbsolutePath().toString()), name )) {
                 // we found source file with the same name
                 // as header and with dependency to it. Best shot.
                 return f;
@@ -218,7 +220,7 @@ public final class CppSwitchAction extends BaseAction {
 
         // look for random namesake
         for (CsmFile f : header.getProject().getSourceFiles()) {
-            if (getName(f.getAbsolutePath().toString()).equals(name)) {
+            if (IpeUtils.areFilenamesEqual( getName(f.getAbsolutePath().toString()), name )) {
                 return f;
             }
         }
@@ -304,7 +306,7 @@ public final class CppSwitchAction extends BaseAction {
                 String ne = fo.getName() + '.' + ext;
                 for (int j = 0; j < childs.length; j++) {
                     FileObject fileObject = childs[j];
-                    if (fileObject.getNameExt().equals(ne)) {
+                    if ( IpeUtils.areFilenamesEqual( fileObject.getNameExt(), ne )) {
                         return fileObject;
                     }
                 }

@@ -836,5 +836,9 @@ public class IpeUtils {
     public static boolean isSystemCaseInsensitive() {
         return CASE_INSENSITIVE;
     }
+    
+    public static boolean areFilenamesEqual(String firstFile, String secondFile) {
+        return isSystemCaseInsensitive() ? firstFile.equalsIgnoreCase(secondFile) : firstFile.equals(secondFile);
+    }
 }
 
