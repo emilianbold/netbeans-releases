@@ -129,9 +129,11 @@ public class Reformatter implements ReformatTask {
         PositionConverter converter = controller.getPositionConverter();
         if (converter != null) {
             startOffset = converter.getJavaSourcePosition(startOffset);
-            assert startOffset >= 0 : "Converted startOffset is wrong: " + startOffset;
+            if (startOffset < 0)
+                return;
             endOffset = converter.getJavaSourcePosition(endOffset);
-            assert endOffset >= 0 : "Converted endOffset is wrong: " + endOffset;
+            if (endOffset < 0)
+                return;
         }
         int embeddingOffset = -1;
         if (!"text/x-java".equals(context.mimePath())) { //NOI18N
