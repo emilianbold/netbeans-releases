@@ -1420,6 +1420,25 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
+  <target name="-hg-check-can-clean">
+    <available property="can.hg.clean" type="dir" file="../.hg"/>
+  </target>
+  <target name="-hg-clean-alternative" depends="-hg-check-can-clean" unless="can.hg.clean">
+    <antcall target="real-clean"/>
+  </target>
+  <target name="hg-clean" depends="-hg-clean-alternative" if="can.hg.clean">
+    <exec executable="hg" failonerror="yes" dir="..">
+      <arg value="--config"/>
+      <arg value="extensions.purge="/>
+      <arg value="--verbose"/>
+      <arg value="clean"/>
+      <arg value="--all"/>
+      <arg value="--exclude"/>
+      <!-- Do not use **/nbproject/private/ as this will match some test/{results,work} dirs: -->
+      <arg value="glob:{*/nbproject/private/**,*/*/nbproject/private/**,**/user.build.properties,nbbuild/misc/build-site-local.sh}"/>
+    </exec>
+  </target>
+
   <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies - takes '-Drebuild.cluster.name=nb.cluster.visualweb' as parameter">
     <delete file="netbeans/${rebuild.cluster.name}.built" failonerror="false"/>
     <fail unless="${rebuild.cluster.name}" message="You need to specify 'rebuild.cluster.name' attribute"/>
