@@ -54,4 +54,56 @@ made subject to such option by the copyright holder.
         <echo message="appserver.home=${j2ee.appserver.path}" file="${xtest.data}/freeform_projects/cmp2/appserver.properties" append="true"/>
     </target>
 
+    <!-- =================================== -->
+    <!-- Environment for serverplugins tests -->
+    <!-- =================================== -->
+
+    <target name="set-environment">
+        <!-- JBoss Environment -->
+        <condition property="jboss.server.path" value="e:\space\jboss">
+            <os family="windows"/>
+        </condition>
+        <condition property="jboss.server.path" value="/space/jboss">
+            <os family="unix"/>
+        </condition>
+        
+        <!-- Glassfish Environment -->
+        <condition property="glassfish.server.path" value="e:\space\AppServer">
+            <os family="windows"/>
+        </condition>
+        <condition property="glassfish.server.path" value="/space/AppServer">
+            <os family="unix"/>
+        </condition>
+
+        <!-- Weblogic Environment -->
+        <condition property="weblogic.server.path" value="e:\space\weblogic">
+            <os family="windows"/>
+        </condition>
+        <condition property="weblogic.server.path" value="/space/weblogic">
+            <os family="unix"/>
+        </condition>
+
+
+        <property name="xtest.ide.commandline.suffix" value="-J-Djboss.server.path=${jboss.server.path} -J-Dglassfish.server.path=${glassfish.server.path} -J-Dweblogic.server.path=${weblogic.server.path}"/>
+        <property name="test.classpath" value=""/>
+    </target>
+    
+    <target name="check-jboss" depends="set-environment">
+        <available file="${jboss.server.path}/server/default" property="jboss.present"/>
+        <fail unless="jboss.present" message="JBoss was not found in ${jboss.server.path}. Set property jboss.server.path to point to JBoss installation directory."/>
+    </target>
+    
+    <target name="check-glassfish" depends="set-environment">
+        <available file="${glassfish.server.path}/domains/domain1" property="glasfish.present"/>
+        <fail unless="glasfish.present" message="Glassfish was not found in ${glassfish.server.path}. Set property glassfish.server.path to point to Glassfish installation directory."/>
+    </target>
+
+    <target name="check-weblogic" depends="set-environment">
+        <available file="${weblogic.server.path}/samples/domains/wl_server" property="weblogic.present"/>
+        <fail unless="weblogic.present" message="Weblogic was not found in ${weblogic.server.path}. Set property weblogic.server.path to point to Weblogic installation directory."/>
+    </target>
+    
+    <target name="runidetest-serverplugins" depends="init,init-cp,check-jboss,check-glassfish">
+        <executeTests pluginname="ide"/>
+    </target>
 </project>
