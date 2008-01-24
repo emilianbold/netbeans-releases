@@ -39,56 +39,53 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.spring.api.beans;
 
-import java.io.IOException;
 import org.netbeans.modules.spring.api.Action;
-import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
-import org.netbeans.modules.spring.api.beans.SpringScope;
+import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
-import org.netbeans.modules.spring.beans.model.SpringConfigModelController;
+import org.netbeans.modules.spring.beans.TestUtils;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Encapsulates a model of Spring configuration files.
  *
  * @author Andrei Badea
  */
-public final class SpringConfigModel {
+public class SpringScopeTest extends ConfigFileTestCase {
 
-    private final SpringConfigModelController controller;
+    public SpringScopeTest(String testName) {
+        super(testName);
+    }
 
-    /**
-     * Returns a Spring configuration model for the given file.
-     *
-     * @param  file a file; never null.
-     * @return a Spring configuration model or null
-     */
-    public static SpringConfigModel forFileObject(FileObject file) {
-        SpringScope scope = SpringScope.getSpringScope(file);
-        if (scope != null) {
-            return SpringScopeAccessor.DEFAULT.getConfigModel(scope, file);
+    public void testGetConfigModel() throws Exception {
+        String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' class='org.example.Foo'/>");
+        TestUtils.copyStringToFile(contents, configFile);
+        FileObject configFO = FileUtil.toFileObject(configFile);
+        SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope();
+
+        SpringConfigModel model = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
+        final int[] beanCount = { 0 };
+        model.runReadAction(new Action<SpringBeans>() {
+            public void run(SpringBeans parameter) {
+                beanCount[0] = parameter.getBeans(configFile).size();
+            }
+        });
+        assertEquals(1, beanCount[0]);
+        assertEquals(1, scope.file2AdHocModel.size());
+
+        SpringConfigModel anotherModel = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
+        assertSame(model, anotherModel);
+
+        FileLock lock = configFO.lock();
+        try {
+            configFO.rename(lock, "tmp", "xml");
+        } finally {
+            lock.releaseLock();
         }
-        return null;
-    }
-
-    // XXX should not be public.
-    public SpringConfigModel(ConfigFileGroup configFileGroup) {
-        controller = SpringConfigModelController.create(configFileGroup);
-    }
-
-    /**
-     * Provides access to the model. This method expects an {@link Action}
-     * whose run method will be passed an instance of {@link SpringBeans}.
-     *
-     * <p><strong>All clients must make sure that no objects obtained from
-     * the {@code SpringBeans} instance "escape" the {@code run()} method, in the
-     * sense that they are reachable when the {@code run()} method has
-     * finished running.</strong></p>
-     *
-     * @param action
-     */
-    public void runReadAction(final Action<SpringBeans> action) throws IOException {
-        controller.runReadAction(action);
+        assertEquals(0, scope.file2AdHocModel.size());
     }
 }

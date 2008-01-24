@@ -45,11 +45,13 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.beans.SpringScopeAccessor;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Encapsulates the environment of Spring beans configuration files. It
@@ -60,19 +62,52 @@ import org.openide.filesystems.FileUtil;
  */
 public final class SpringScope {
 
+    // This class is also responsible for creating and maintaining
+    // ad-hoc models for Spring config files (that is, models that are created
+    // for files not included in the config file group). But, in order to make
+    // clients' life easier, they can obtain models through SpringConfigModel
+    // (which calls back into this class).
+
     final Map<FileObject, SpringConfigModel> file2AdHocModel = new HashMap<FileObject, SpringConfigModel>();
     private final Listener listener = new Listener();
 
-    private final ConfigFileGroup configFileGroup;
+    private final ConfigFileGroup configFileGroup = new ConfigFileGroup();
     private SpringConfigModel configModel;
 
-    public static SpringScope getSpringContext(FileObject fo) {
-        // XXX try to find in owning project.
-        return new SpringScope();
+    static {
+        SpringScopeAccessor.DEFAULT = new SpringScopeAccessor() {
+            @Override
+            public SpringScope createSpringScope() {
+                return new SpringScope();
+            }
+            @Override
+            public SpringConfigModel getConfigModel(SpringScope scope, FileObject fo) {
+                return scope.getConfigModel(fo);
+            }
+        };
+    }
+
+    /**
+     * Finds the Spring scope that contains (or could contain) a given file.
+     *
+     * @param  fo a file; never null.
+     * @return the Spring scope or null.
+     */
+    public static SpringScope getSpringScope(FileObject fo) {
+        Parameters.notNull("fo", fo);
+        throw new UnsupportedOperationException("Not supported yet");
     }
 
     private SpringScope() {
-        configFileGroup = new ConfigFileGroup();
+    }
+
+    /**
+     * Returns the config file group for this Spring scope.
+     *
+     * @return the config file group; never null.
+     */
+    public ConfigFileGroup getConfigFileGroup() {
+        return configFileGroup;
     }
 
     /**
@@ -82,7 +117,7 @@ public final class SpringScope {
      *
      * @return the beans model; never null.
      */
-    public SpringConfigModel getConfigModel(FileObject configFO) {
+    private SpringConfigModel getConfigModel(FileObject configFO) {
         File configFile = FileUtil.toFile(configFO);
         if (configFile == null) {
             return null;
@@ -117,9 +152,9 @@ public final class SpringScope {
         adHocModel = new SpringConfigModel(adHocFileGroup);
         file2AdHocModel.put(configFO, adHocModel);
 
+        // We need to avoid the race condition between checking if the file is valid
+        // and adding the listener.
         configFO.addFileChangeListener(listener);
-        // Avoiding a race condition between adding the listener and
-        // the file being deleted.
         if (!configFO.isValid()) {
             file2AdHocModel.remove(configFO);
             configFO.removeFileChangeListener(listener);
