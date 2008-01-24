@@ -47,6 +47,9 @@ import java.util.Map;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
@@ -150,7 +153,31 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
             if (field.isStatic()){
                 highlights.put(range, ColoringAttributes.STATIC);
             }
+        } else if (node instanceof ClassNode) {
+            ClassNode classNode = (ClassNode)node;
+            
+            if(node.getLineNumber() > 0) {
+                OffsetRange range = AstUtilities.getRange(node, text);
+                
+                // FIXME: the range seems to start from 0, e.g. including the
+                // keyword "class". Possible Bug elsewhere.
+                
+                // highlights.put(range, ColoringAttributes.CLASS_DECLARATION);
+            }
+            
+        } else if (node instanceof VariableExpression) {
+            if(node.getLineNumber() > 0) {
+                VariableExpression varEx = (VariableExpression)node;
+                
+                // FIXME: can someone explain to me how to tell that this
+                // is an access to a field? 
+                // OffsetRange range = AstUtilities.getRange(node, text);
+                // highlights.put(range, ColoringAttributes.FIELD);
+            }
         } 
+        
+        
+        
 
         List<ASTNode> list = AstUtilities.children(node);
         for (ASTNode child : list) {

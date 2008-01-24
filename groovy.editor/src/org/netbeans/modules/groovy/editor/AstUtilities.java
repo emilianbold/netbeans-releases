@@ -169,6 +169,13 @@ public class AstUtilities {
             }
             FieldNode fieldNode = (FieldNode) node;
             return new OffsetRange(start, start + fieldNode.getName().length());
+        } else if (node instanceof ClassNode) {
+            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            if (start < 0) {
+                start = 0;
+            }
+            ClassNode classNode = (ClassNode) node;
+            return new OffsetRange(start, start + classNode.getName().length());
         } else if (node instanceof VariableExpression) {
             int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
