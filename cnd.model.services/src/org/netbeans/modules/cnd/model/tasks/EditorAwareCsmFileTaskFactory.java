@@ -55,24 +55,17 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class EditorAwareCsmFileTaskFactory extends CsmFileTaskFactory {
     
-    private String[] supportedMimeTypes;
-    
-    protected EditorAwareCsmFileTaskFactory() {
-        this( (String[]) null);
-    }
-    
     private ModelListenerImpl modelListener = new ModelListenerImpl();
     
-    protected EditorAwareCsmFileTaskFactory( String... supportedMimeTypes) {
+    protected EditorAwareCsmFileTaskFactory() {
         super();
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
         CsmModelAccessor.getModel().addModelListener(modelListener);
-        this.supportedMimeTypes = supportedMimeTypes != null ? supportedMimeTypes.clone() : null;
     }
     
     /**@inheritDoc*/
     public List<FileObject> getFileObjects() {
-        List<FileObject> files = OpenedEditors.filterSupportedMIMETypes(OpenedEditors.getDefault().getVisibleEditorsFiles(), supportedMimeTypes);
+        List<FileObject> files = OpenedEditors.filterSupportedFiles(OpenedEditors.getDefault().getVisibleEditorsFiles());
 
         return files;
     }

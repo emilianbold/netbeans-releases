@@ -54,90 +54,82 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
-    
+
     private static final int DEFAULT_RESCHEDULE_TIMEOUT = 300;
     private static final RequestProcessor WORKER = new RequestProcessor("CaretAwareCsmFileTaskFactory worker"); //NOI18N
-    
     private int timeout;
-    private String[] supportedMimeTypes;
-    
+
     public CaretAwareCsmFileTaskFactory() {
-        this((String[]) null);
-    }
-    
-    public CaretAwareCsmFileTaskFactory(String... supportedMimeTypes) {
         super();
         OpenedEditors.getDefault().addChangeListener(new ChangeListenerImpl());
         this.timeout = DEFAULT_RESCHEDULE_TIMEOUT;
-        this.supportedMimeTypes = supportedMimeTypes != null ? supportedMimeTypes.clone() : null;
     }
-    
+
     public List<FileObject> getFileObjects() {
-        List<FileObject> files = OpenedEditors.filterSupportedMIMETypes(OpenedEditors.getDefault().getVisibleEditorsFiles(), supportedMimeTypes);
+        List<FileObject> files = OpenedEditors.filterSupportedFiles(OpenedEditors.getDefault().getVisibleEditorsFiles());
 
         return files;
     }
-
     private Map<JTextComponent, ComponentListener> component2Listener = new HashMap<JTextComponent, ComponentListener>();
     private static Map<FileObject, Integer> file2LastPosition = new WeakHashMap<FileObject, Integer>();
-    
+
     public synchronized static int getLastPosition(FileObject file) {
         if (file == null) {
             throw new NullPointerException("Cannot pass null file!");
         }
-        
+
         Integer position = file2LastPosition.get(file);
-        
+
         if (position == null) {
             //no position set yet:
             return 0;
         }
-        
-        return position;    
+
+        return position;
     }
-    
+
     synchronized static void setLastPosition(FileObject file, int position) {
         file2LastPosition.put(file, position);
     }
-    
+
     private class ChangeListenerImpl implements ChangeListener {
-        
+
         public void stateChanged(ChangeEvent e) {
             List<JTextComponent> added = new ArrayList<JTextComponent>(OpenedEditors.getDefault().getVisibleEditors());
             List<JTextComponent> removed = new ArrayList<JTextComponent>(component2Listener.keySet());
-            
+
             added.removeAll(component2Listener.keySet());
             removed.removeAll(OpenedEditors.getDefault().getVisibleEditors());
-            
+
             for (JTextComponent c : removed) {
                 c.removeCaretListener(component2Listener.remove(c));
             }
-            
+
             for (JTextComponent c : added) {
                 ComponentListener l = new ComponentListener(c);
-                
+
                 c.addCaretListener(l);
                 component2Listener.put(c, l);
-                
+
                 setLastPosition(OpenedEditors.getFileObject(c), c.getCaretPosition());
             }
-            
+
             fileObjectsChanged();
         }
-        
     }
-    
+
     private class ComponentListener implements CaretListener {
-        
+
         private JTextComponent component;
         private final RequestProcessor.Task rescheduleTask;
-        
+
         public ComponentListener(JTextComponent component) {
             this.component = component;
             rescheduleTask = WORKER.create(new Runnable() {
+
                 public void run() {
                     FileObject file = OpenedEditors.getFileObject(ComponentListener.this.component);
-                    
+
                     if (file != null) {
                         setLastPosition(file, ComponentListener.this.component.getCaretPosition());
                         reschedule(file);
@@ -145,15 +137,14 @@ public abstract class CaretAwareCsmFileTaskFactory extends CsmFileTaskFactory {
                 }
             });
         }
-        
+
         public void caretUpdate(CaretEvent e) {
             FileObject file = OpenedEditors.getFileObject(component);
-            
+
             if (file != null) {
                 setLastPosition(file, component.getCaretPosition());
                 rescheduleTask.schedule(timeout);
             }
         }
-        
     }
 }

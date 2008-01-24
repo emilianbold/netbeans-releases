@@ -50,16 +50,12 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-//import org.netbeans.modules.cnd.MIMENames;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -74,11 +70,11 @@ class OpenedEditors implements PropertyChangeListener {
     private List<JTextComponent> visibleEditors = new ArrayList<JTextComponent>();
     private Map<JTextComponent, FileObject> visibleEditors2Files = new HashMap<JTextComponent, FileObject>();
     private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-
     private static OpenedEditors DEFAULT;
 
     private OpenedEditors() {
         EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
+
             public void propertyChange(PropertyChangeEvent evt) {
                 stateChanged();
             }
@@ -128,12 +124,14 @@ class OpenedEditors implements PropertyChangeListener {
             visibleEditors2Files.remove(c);
         }
 
+        // XXX: and how does it handle undocked windows?
         visibleEditors.clear();
 
         JTextComponent editor = EditorRegistry.lastFocusedComponent();
 
         FileObject fo = editor != null ? getFileObject(editor) : null;
-        if (editor instanceof JEditorPane && fo != null && CsmUtilities.getCsmFile(fo, false) != null) {
+
+        if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
             visibleEditors.add(editor);
         }
 
@@ -148,23 +146,23 @@ class OpenedEditors implements PropertyChangeListener {
     public synchronized void propertyChange(PropertyChangeEvent evt) {
         JTextComponent c = (JTextComponent) evt.getSource();
         FileObject originalFile = visibleEditors2Files.get(c);
-        FileObject nueFile = getFileObject(c);
+        FileObject newFile = getFileObject(c);
 
-        if (originalFile != nueFile) {
-            visibleEditors2Files.put(c, nueFile);
+        if (originalFile != newFile) {
+            visibleEditors2Files.put(c, newFile);
             fireChangeEvent();
         }
     }
 
     static FileObject getFileObject(JTextComponent pane) {
         Object source = pane.getDocument().getProperty(Document.StreamDescriptionProperty);
-        
+
         if (!(source instanceof DataObject)) {
             return null;
         }
-        
+
         DataObject file = (DataObject) source;
-        
+
         if (file != null) {
             return file.getPrimaryFile();
         }
@@ -172,107 +170,56 @@ class OpenedEditors implements PropertyChangeListener {
         return null;
     }
 
-    /**Checks if the given file is supported. See {@link #filterSupportedMIMETypes}
-     * for more details.
-     *
-     * @param file to check
-     * @param type the type to check for the {@link SupportedMimeTypes} annotation
-     * @return true if and only if the given file is supported (see {@link #filterSupportedMIMETypes})
-     * @throws NullPointerException if <code>file == null</code> or <code>type == null</code>
+    /**
+     * Checks if the given file is supported.
      */
-    public static boolean isSupported(FileObject file, String... mimeTypes) throws NullPointerException {
+    private static boolean isSupported(FileObject file) throws NullPointerException {
         Parameters.notNull("files", file);
-        
-        return !filterSupportedMIMETypes(Collections.singletonList(file), mimeTypes).isEmpty();
+
+        return !filterSupportedFiles(Collections.singletonList(file)).isEmpty();
     }
-    
-    /**Filter unsupported files from the <code>files</code> parameter. A supported file
-     * <code>f</code> is defined as follows:
-     * <ul>
-     *     <li><code>JavaSource.forFileObject(f) != null</code></li>
-     *     <li>If the <code>type</code> is annotated with the {@link SupportedMimeTypes} annotation,
-     *         the file is supported if <code>type.getAnnotation(SupportedMimeTypes.class).value()</code>
-     *         contains <code>FileUtil.getMIMEType(f)</code>.
-     *     </li>
-     *     <li>If the <code>type</code> is not annotated with the {@link SupportedMimeTypes} annotation,
-     *         the file is supported if <code>FileUtil.getMIMEType(f) == "text/x-java"</code>.
-     * </ul>
-     *
-     * @param files the list of files to filter
-     * @param type the type to check for the {@link SupportedMimeTypes} annotation
-     * @return list of files that are supported (see above).
-     * @throws NullPointerException if <code>files == null</code> or <code>type == null</code>
+    private final static List<String> mimeTypesList = Arrays.asList(new String[]{"text/x-c++", "text/x-c"}); //NOI18N
+
+    /**
+     * Filter unsupported files from the <code>files</code> parameter. 
      */
-    public static List<FileObject> filterSupportedMIMETypes(Collection<FileObject> files, String... mimeTypes) throws NullPointerException {
+    public static List<FileObject> filterSupportedFiles(Collection<FileObject> files) throws NullPointerException {
         Parameters.notNull("files", files);
-        
-        boolean            allowJavaExtension = false;
-        
-        if (mimeTypes == null) {
-            mimeTypes = new String[] {"text/x-c++", "text/x-c"}; //NOI18N
-            allowJavaExtension = true;
-        }
-        
-        List<String>       mimeTypesList = Arrays.asList(mimeTypes);
-        boolean            allowAll  = mimeTypesList.contains("*");
-        List<FileObject>   result    = new LinkedList<FileObject>();
-        
-        Logger.getLogger(OpenedEditors.class.getName()).log(Level.FINER, "mimeTypesList={0}", mimeTypesList);
-        
+
+        List<FileObject> result = new LinkedList<FileObject>();
+
         for (FileObject f : files) {
-            Logger.getLogger(OpenedEditors.class.getName()).log(Level.FINER, "analyzing={0}", f);
-            
-            if (CsmUtilities.getCsmFile(f, false) == null) {
-                continue;
-            }
-            
-            if (allowAll) {
-                result.add(f);
-                continue;
-            }
-            
-            if (allowJavaExtension && "java".equals(f.getExt())) {
-                result.add(f);
-                continue;
-            }
-            
             String fileMimeType = FileUtil.getMIMEType(f);
-            
-            Logger.getLogger(OpenedEditors.class.getName()).log(Level.FINER, "fileMimeType={0}", fileMimeType);
-            
+
             if (mimeTypesList.contains(fileMimeType)) {
                 result.add(f);
                 continue;
             }
-            
+
             String shorterMimeType = fileMimeType;
-            
+
             while (true) {
                 int slash = shorterMimeType.indexOf('/');
-                
+
                 if (slash == (-1)) {
                     break;
                 }
-                
-                int plus  = shorterMimeType.indexOf('+', slash);
-                
+
+                int plus = shorterMimeType.indexOf('+', slash);
+
                 if (plus == (-1)) {
                     break;
                 }
-                
+
                 shorterMimeType = shorterMimeType.substring(0, slash + 1) + shorterMimeType.substring(plus + 1);
-                
+
                 if (mimeTypesList.contains(shorterMimeType)) {
                     result.add(f);
                     break;
                 }
             }
         }
-        
-        Logger.getLogger(OpenedEditors.class.getName()).log(Level.FINE, "filter({0}, {1})={2}", new Object[] {files, mimeTypesList, result});
-        
+
         return result;
     }
-    
-    
 }

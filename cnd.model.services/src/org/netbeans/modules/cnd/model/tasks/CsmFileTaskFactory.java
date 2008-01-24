@@ -137,12 +137,14 @@ public abstract class CsmFileTaskFactory {
 
 
         for (Entry<CsmFile, PhaseRunner> e : toRemove.entrySet()) {
+            //System.err.println("CFTF: removing " + e.getKey().getAbsolutePath());
             if (e!=null && e.getValue()!=null ) {
                 post(e.getValue(), e.getKey(), PhaseRunner.Phase.CLEANUP, IMMEDIATELY);
             }
         }
 
         for (Entry<CsmFile, PhaseRunner> e : toAdd.entrySet()) {
+            //System.err.println("CFTF: adding " + e.getKey().getAbsolutePath());
             post(e.getValue(), e.getKey(), e.getKey().isParsed() ? PhaseRunner.Phase.PARSED : PhaseRunner.Phase.INIT, DELAY);
         }
     }
@@ -259,7 +261,7 @@ public abstract class CsmFileTaskFactory {
         }
 
         public void run() {
-            if (file.isValid() && (file.isHeaderFile() || file.isSourceFile())) {
+            if (file.isValid() /*&& (file.isHeaderFile() || file.isSourceFile())*/) {
                 run.run();
             }
         }
