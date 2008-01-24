@@ -625,6 +625,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         FileObject wscompileFO = null;
         if (sgs.length > 0) {
             classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+
             if (classPath != null) {
                 wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); //NOI18N
                 wscompileFO = classPath.findResource("com/sun/xml/rpc/tools/ant/Wscompile.class"); //NOI18N
@@ -636,7 +637,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         boolean jwsdpSupported = isJwsdpSupported(project);
         boolean jaxWsInJ2ee14Supported = isJaxWsInJ2ee14Supported(project);
         if (projectType > 0) {
-            jLabelJaxVersion.setEnabled(false);
+            //jLabelJaxVersion.setEnabled(false);
             //jComboBoxJaxVersion.setEnabled(false);
             if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) //NOI18N
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
@@ -645,30 +646,31 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                         (!jsr109Supported && jsr109OldSupported && jwsdpSupported )){
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 } else{
+                    jLabelJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
                 }
             }
         } else {
             if (Util.isSourceLevel16orHigher(project)) {
-                jLabelJaxVersion.setEnabled(false);
+                //jLabelJaxVersion.setEnabled(false);
                 //jComboBoxJaxVersion.setEnabled(false);
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             } else if (Util.getSourceLevel(project).equals("1.5")) { //NOI18N
                 if (wsimportFO != null) {
-                    jLabelJaxVersion.setEnabled(false);
+                    //jLabelJaxVersion.setEnabled(false);
                     //jComboBoxJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 } else if (wscompileFO != null) {
-                    jLabelJaxVersion.setEnabled(false);
+                    //jLabelJaxVersion.setEnabled(false);
                     //jComboBoxJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
                 } else {
-                    jLabelJaxVersion.setEnabled(true);
+                    //jLabelJaxVersion.setEnabled(true);
                     //jComboBoxJaxVersion.setEnabled(true);
                 }
             } else {
-                jLabelJaxVersion.setEnabled(false);
+                //jLabelJaxVersion.setEnabled(false);
                 //jComboBoxJaxVersion.setEnabled(false);
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
             }
