@@ -19,14 +19,38 @@
 
 package org.netbeans.modules.bpel.mapper.logging.multiview;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContextImpl;
 import org.netbeans.modules.bpel.mapper.multiview.DesignContextFactory;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Copy;
+import org.netbeans.modules.bpel.model.api.Catch;
+import org.netbeans.modules.bpel.model.api.CatchAll;
+import org.netbeans.modules.bpel.model.api.Compensate;
+import org.netbeans.modules.bpel.model.api.CompensateScope;
+import org.netbeans.modules.bpel.model.api.Empty;
+import org.netbeans.modules.bpel.model.api.Exit;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
+import org.netbeans.modules.bpel.model.api.Flow;
+import org.netbeans.modules.bpel.model.api.ForEach;
+import org.netbeans.modules.bpel.model.api.From;
+import org.netbeans.modules.bpel.model.api.If;
+import org.netbeans.modules.bpel.model.api.Invoke;
+import org.netbeans.modules.bpel.model.api.Pick;
+import org.netbeans.modules.bpel.model.api.ReThrow;
+import org.netbeans.modules.bpel.model.api.Receive;
+import org.netbeans.modules.bpel.model.api.RepeatUntil;
+import org.netbeans.modules.bpel.model.api.Reply;
+import org.netbeans.modules.bpel.model.api.Scope;
+import org.netbeans.modules.bpel.model.api.Sequence;
+import org.netbeans.modules.bpel.model.api.Throw;
+import org.netbeans.modules.bpel.model.api.Validate;
+import org.netbeans.modules.bpel.model.api.Wait;
+import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.bpel.model.ext.logging.api.Alert;
 import org.netbeans.modules.bpel.model.ext.logging.api.Log;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
@@ -108,10 +132,27 @@ public class LoggingDesignContextFactory implements DesignContextFactory {
          * @return true if selected Entity is Assign or Assign bpel descendant - Copy, From or To
          */
         public boolean accepted(BpelEntity selectedEntity) {
-            return selectedEntity instanceof ExtensibleElements 
-                    || selectedEntity instanceof Trace
-                    || selectedEntity instanceof Log
-                    || selectedEntity instanceof Alert;
+            if (selectedEntity == null) {
+                return false;
+            }
+            boolean isAccepted = false;
+            Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
+            
+            if (entityType == From.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                Class<? extends BpelEntity> parentEntityType = parent != null ? parent.getElementType() : null;
+                isAccepted = parentEntityType == Log.class || parentEntityType == Alert.class;
+            } else if (selectedEntity instanceof ExtensibleElements) {
+                isAccepted = canExtend((ExtensibleElements)selectedEntity);
+            } 
+            
+            if (!isAccepted) {
+                isAccepted = entityType == Trace.class
+                    || entityType == Log.class
+                    || entityType == Alert.class;
+            } 
+            
+            return isAccepted;
         }
 
         public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
@@ -121,15 +162,21 @@ public class LoggingDesignContextFactory implements DesignContextFactory {
             //
             BpelDesignContext context =  null;
             Class<? extends BpelEntity> entityType = selectedEntity.getElementType();
-            if (entityType == Trace.class) {
+            if (entityType == From.class) {
                 BpelEntity parent = selectedEntity.getParent();
-                if (parent != null && parent.getElementType() == Copy.class) {
+                if (parent != null) {
                     BpelEntity nextParent = parent.getParent();
-                    if (nextParent != null && 
-                            nextParent.getElementType() == Assign.class) {
+                    nextParent = nextParent != null ? nextParent.getParent() : null;
+                    if (nextParent != null) {
                         context = new BpelDesignContextImpl(nextParent, 
-                                parent, selectedEntity, node, lookup);
+                            parent, selectedEntity, node, lookup);
                     }
+                }
+            } else if (entityType == Trace.class) {
+                BpelEntity parent = selectedEntity.getParent();
+                if (parent != null && parent instanceof ExtensibleElements) {
+                    context = new BpelDesignContextImpl(parent, 
+                            null, selectedEntity, node, lookup);
                 }
             } else if (entityType == Log.class || entityType == Alert.class) {
                 BpelEntity parent = selectedEntity.getParent();
@@ -137,19 +184,48 @@ public class LoggingDesignContextFactory implements DesignContextFactory {
                     BpelEntity nextParent = parent.getParent();
                     if (nextParent instanceof ExtensibleElements) {
                         context = new BpelDesignContextImpl(nextParent, 
-                                parent, selectedEntity, node, lookup);
+                                selectedEntity, selectedEntity, node, lookup);
                     }
-                    
-                    context = new BpelDesignContextImpl(parent, 
-                            selectedEntity, selectedEntity, node, lookup);
                 }
             } else {
                 context = new BpelDesignContextImpl(selectedEntity, 
-                        selectedEntity, selectedEntity, node, lookup);
+                        null, selectedEntity, node, lookup);
             } 
             //
             return context;
         }
     }
+
+    // todo m
+    private static Set<Class<? extends ExtensibleElements>> sSupportedParents =
+            new HashSet<Class<? extends ExtensibleElements>>(Arrays.asList(
+                    Catch.class,
+                    CatchAll.class,
+                    Assign.class,
+                    Compensate.class,
+                    CompensateScope.class,
+                    Empty.class,
+                    Exit.class,
+                    Flow.class,
+                    ForEach.class,
+                    If.class,
+                    Invoke.class,
+                    Pick.class,
+                    Receive.class,
+                    RepeatUntil.class,
+                    Reply.class,
+                    ReThrow.class,
+                    Scope.class,
+                    Sequence.class,
+                    Throw.class,
+                    Validate.class,
+                    Wait.class,
+                    While.class)
+                    );
+    // todo m
+    private static boolean canExtend(ExtensibleElements extensible) {
+            return sSupportedParents.contains(extensible.getElementType());
+    }
+
     
 }
