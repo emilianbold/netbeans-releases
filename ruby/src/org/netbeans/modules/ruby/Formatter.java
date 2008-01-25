@@ -354,6 +354,21 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             Token<?extends RubyTokenId> token = getFirstToken(doc, offset);
             
             if (token == null) {
+                if (isRhtmlDocument) {
+                    // Could be the END of a Ruby section - line begins with "%>"
+                    if (lineBegin < doc.getLength()-2) {
+                        String lineBeginStr = doc.getText(lineBegin, 2);
+                        if (lineBeginStr.equals("-%") && lineBegin < doc.getLength()-3) { // NOI18N
+                            lineBeginStr = doc.getText(lineBegin, 3);
+                            if (lineBeginStr.equals("-%>")) { // NOI18N
+                                return true;
+                            }
+                        } else if (lineBeginStr.equals("%>")) { // NOI18N
+                            return true;
+                        }
+                    }
+                    
+                }
                 return false;
             }
             
@@ -451,7 +466,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
             if (endOffset > doc.getLength()) {
                 endOffset = doc.getLength();
             }
-            
+
             startOffset = Utilities.getRowStart(doc, startOffset);
             int lineStart = startOffset;//Utilities.getRowStart(doc, startOffset);
             int initialOffset = 0;
