@@ -340,6 +340,21 @@ class FilesystemHandler extends VCSInterceptor {
                 int retryCounter = 6;
                 while (true) {
                     try {
+
+                        if (!dstFile.exists()) {                                            
+                            try {
+                                ISVNStatus status = getStatus(client, dstFile);
+                                if (status != null && status.getTextStatus().equals(SVNStatusKind.DELETED)) {    
+                                    // reverting the file will set the metadata uptodate
+                                    client.revert(dstFile, false);                        
+                                    // our goal was ony to fix the metadata ->
+                                    //  -> get rid of the reverted file
+                                    dstFile.delete();                        
+                                }
+                            } catch (SVNClientException ex) {
+                                SvnClientExceptionHandler.notifyException(ex, false, false);
+                            }
+                        }                
                         
                         // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
                         // then it also can't be moved via the svn client
