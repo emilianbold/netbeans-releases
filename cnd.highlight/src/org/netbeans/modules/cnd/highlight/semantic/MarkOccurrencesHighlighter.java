@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -72,7 +73,6 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     private static AttributeSet defaultColors;
     private final static String COLORS = "cc-highlighting-mark-occurences"; // NOI18N
     private WeakReference<CsmFile> weakFile;
-    //private List<Annotation> annotations = new ArrayList<Annotation>();
 
     public static OffsetsBag getHighlightsBag(Document doc) {
         if (doc == null) {
@@ -118,23 +118,19 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     }
     
     private void clean() {
-        if (getDocument()!=null) {
-            getHighlightsBag(getDocument()).clear();
-            /*for (Annotation annotation : annotations){
-                if (annotation != null) {
-                    NbDocument.removeAnnotation((StyledDocument)getDocument(), annotation);
-                }
-            }   */         
+        Document doc = getDocument();
+        if (doc!=null) {
+            getHighlightsBag(doc).clear();
+            OccurrencesMarkProvider.get(doc).setOccurrences(Collections.<Mark>emptySet());
         }
-        //annotations.clear();
     }
 
     public MarkOccurrencesHighlighter(Document doc) {
         super(doc);
     }
 
-    
     public static final Color ES_COLOR = new Color( 175, 172, 102 ); 
+
     // Runnable
     public void run(Phase phase) {
         if (phase == Phase.PARSED || phase == Phase.INIT /*&& getCsmFile().isParsed()*/) {
@@ -156,14 +152,13 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
             obag.clear();
             for (CsmReference csmReference : out) {
                 obag.addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
-            // addAnnotation(csmReference.getStartOffset());
             }
             getHighlightsBag(doc).setHighlights(obag);
             OccurrencesMarkProvider.get(doc).setOccurrences(
                     OccurrencesMarkProvider.createMarks(doc, out, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
         } else if (phase == Phase.CLEANUP) {
-            // removeAnnotations();
-        }
+            clean();
+        } 
     }
     
     private Collection<CsmReference> getOccurences() {
@@ -184,34 +179,4 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
     protected void initFontColors(FontColorSettings fcs) {
         defaultColors = fcs.getTokenFontColors(COLORS);
     }
-
-    // annotations stuff
-    /*private void addAnnotation(int offset) {
-        Annotation ann = new OccurenceAnnotation(offset);
-        NbDocument.addAnnotation((StyledDocument)getDocument(), new OccurencePosition(offset), -1, ann);
-        annotations.add(ann);
-    }
-
-    public static class OccurencePosition implements Position {
-        private int offset;
-        public OccurencePosition(final int offset){
-            this.offset = offset;
-        }
-        public int getOffset() {
-            return offset;
-        }
-    }
-    
-    public static class OccurenceAnnotation extends Annotation {
-        private int offset;
-        public OccurenceAnnotation(int offset){
-            this.offset = offset;
-        }
-        public String getAnnotationType() {
-            return "org-netbeans-modules-cnd-highligh-semantic-markoccurences"; // NOI18N
-        }
-        public String getShortDescription() {
-            return NbBundle.getMessage(MarkOccurrencesHighlighter.class, "CppParserMarkOccurencesAnnotation");
-        }
-    }*/
 }
