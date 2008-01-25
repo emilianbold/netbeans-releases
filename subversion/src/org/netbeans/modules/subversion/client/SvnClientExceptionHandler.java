@@ -662,7 +662,7 @@ public class SvnClientExceptionHandler {
             cancelledAction();
             return;
         }                 
-        Subversion.LOG.log(Level.INFO, ex.getMessage(), ex);
+        Subversion.LOG.log(Level.WARNING, ex.getMessage(), ex);
         if( annotate ) {
             String msg = getCustomizedMessage(ex);
             if(msg == null) {
