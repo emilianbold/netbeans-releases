@@ -45,7 +45,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.Cancellable;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Node;
-import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.netbeans.api.diff.DiffView;
 import org.netbeans.api.diff.Diff;
@@ -61,6 +60,8 @@ import java.util.*;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 
 /**
  * Shows Search History results in a table with Diff pane below it.
@@ -358,7 +359,7 @@ class DiffResultsView implements AncestorListener, PropertyChangeListener, DiffS
                             parent.refreshComponents(false);
                         }
                     } catch (IOException e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                        Subversion.LOG.log(Level.INFO, null, e);
                     }
                 }
             });

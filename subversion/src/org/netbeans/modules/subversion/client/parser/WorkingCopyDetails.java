@@ -51,8 +51,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.KVFile;
-import org.openide.ErrorManager;
 
 /**
  *
@@ -130,7 +130,7 @@ public class WorkingCopyDetails {
 
             }   
         } else {
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not determine the SVN working copy version for " + file + ". Falling back on 1.3");  // NOI18N
+            Subversion.LOG.warning("Could not determine the SVN working copy version for " + file + ". Falling back on 1.3");  // NOI18N
             return new WorkingCopyDetails(file, attributes);
         }
     }

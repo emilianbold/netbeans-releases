@@ -49,7 +49,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import org.openide.ErrorManager;
+import org.netbeans.modules.subversion.Subversion;
 import org.openide.xml.XMLUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -286,7 +286,7 @@ public class EntriesCache {
             nextLine = entriesReader.readLine();
  
             if(nextLine != null && attrIndex > entryFileAttributes.length - 1) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping attribute from position " + attrIndex + " in entry file " + entryFilePath);  // NOI18N
+                Subversion.LOG.warning("Skipping attribute from position " + attrIndex + " in entry file " + entryFilePath);  // NOI18N
                 for( ; nextLine != null && !DELIMITER.equals(nextLine); nextLine = entriesReader.readLine());
             }
             

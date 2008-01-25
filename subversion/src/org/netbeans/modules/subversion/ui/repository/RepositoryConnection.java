@@ -41,9 +41,10 @@
 package org.netbeans.modules.subversion.ui.repository;
 
 import java.net.MalformedURLException;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.Scrambler;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -221,7 +222,7 @@ public class RepositoryConnection {
             url = rc.getSvnUrl();
         } catch (MalformedURLException mue) {
             // should not happen
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); 
+            Subversion.LOG.log(Level.INFO, null, mue); 
             return "";                                                          // NOI18N
         }        
         StringBuffer sb = new StringBuffer();        

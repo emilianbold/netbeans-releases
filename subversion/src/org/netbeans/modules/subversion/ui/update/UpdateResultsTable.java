@@ -45,7 +45,6 @@ import org.openide.explorer.view.NodeTableModel;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
-import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.awt.MouseUtils;
 import org.netbeans.modules.versioning.util.TableSorter;
@@ -65,6 +64,7 @@ import java.awt.Component;
 import java.io.File;
 import java.util.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.Subversion;
@@ -118,7 +118,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
                     String s2 = (String) p2.getValue();
                     return s1.compareToIgnoreCase(s2);
                 } catch (Exception e) {
-                    ErrorManager.getDefault().notify(e);
+                    Subversion.LOG.log(Level.SEVERE, null, e);
                     return 0;
                 }
             }

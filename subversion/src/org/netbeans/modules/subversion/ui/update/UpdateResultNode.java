@@ -46,10 +46,11 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.ErrorManager;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.util.lookup.Lookups;
@@ -167,7 +168,7 @@ class UpdateResultNode extends AbstractNode {
             try {
                 return getValue();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, null, e);
                 return e.getLocalizedMessage();
             }
         }

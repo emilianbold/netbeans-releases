@@ -42,7 +42,6 @@ package org.netbeans.modules.subversion.ui.history;
 
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.ErrorManager;
 import org.openide.windows.TopComponent;
 import org.openide.nodes.Node;
 import org.openide.filesystems.FileUtil;
@@ -69,6 +68,7 @@ import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -379,7 +379,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             file.delete();
             FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
+            Subversion.LOG.log(Level.SEVERE, null, e);
         }
     }
 
@@ -590,7 +590,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 resizePane(commitMessage, list.getFontMetrics(list.getFont()));
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
             } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+                Subversion.LOG.log(Level.SEVERE, null, e);
             }
             
             actionsPane.setVisible(true);
@@ -628,7 +628,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
                 resizePane(sd.getText(0, sd.getLength() - 1), list.getFontMetrics(list.getFont()));
             } catch (BadLocationException e) {
-                ErrorManager.getDefault().notify(e);
+                Subversion.LOG.log(Level.SEVERE, null, e);
             }            
         }
 

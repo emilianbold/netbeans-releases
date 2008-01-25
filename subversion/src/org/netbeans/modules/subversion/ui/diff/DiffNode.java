@@ -45,7 +45,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.lookup.Lookups;
-import org.openide.ErrorManager;
 import org.netbeans.modules.subversion.FileInformation;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -53,6 +52,7 @@ import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
 
 /**
  * Visible in the Search History Diff view.
@@ -128,7 +128,7 @@ class DiffNode extends AbstractNode {
             try {
                 return getValue().toString();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, null, e);
                 return e.getLocalizedMessage();
             }
         }

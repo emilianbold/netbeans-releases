@@ -51,8 +51,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.FileUtils;
-import org.openide.ErrorManager;
 
 /**
  * Handles the credential or property files used by Subversion.
@@ -81,7 +82,7 @@ public class KVFile {
                 parse();
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Subversion.LOG.log(Level.INFO, null, ex);
         }
     }
         
@@ -110,7 +111,7 @@ public class KVFile {
             }
             return new String(value, "UTF8");
         } catch (UnsupportedEncodingException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, ex);
+            Subversion.LOG.log(Level.SEVERE, null, ex);            
             return null;
         }              
     }
@@ -212,7 +213,7 @@ public class KVFile {
                     is.close();
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e); // should not happen
+                Subversion.LOG.log(Level.INFO, null, e); // should not happen
             }                              
         }
     }  
@@ -279,7 +280,7 @@ public class KVFile {
                 try {
                     os.close();    
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Subversion.LOG.log(Level.INFO, null, ex);
                 }                
             }            
         }        

@@ -61,9 +61,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
-import org.openide.ErrorManager;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Utilities;
@@ -466,7 +466,7 @@ public class RepositoryPathNode extends AbstractNode {
                 Object obj = getValue();               
                 return obj != null ? obj.toString() : "";
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, null, e);
                 return e.getLocalizedMessage();
             }
         }           
@@ -486,7 +486,7 @@ public class RepositoryPathNode extends AbstractNode {
                 Object obj = getValue();               
                 return obj != null ? obj.toString() : "";
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, null, e);
                 return e.getLocalizedMessage();
             }
         }

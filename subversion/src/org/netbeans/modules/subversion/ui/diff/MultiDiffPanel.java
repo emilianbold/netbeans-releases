@@ -72,8 +72,6 @@ import org.openide.nodes.Children;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.LifecycleManager;
-import org.openide.ErrorManager;
-
 import javax.swing.*;
 import java.io.*;
 import java.awt.*;
@@ -83,6 +81,7 @@ import java.util.*;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -622,7 +621,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 }
             }
         } catch (IOException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            Subversion.LOG.log(Level.INFO, null, e);
         }
     }
 
@@ -685,7 +684,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                         }
                     });
                 } catch (IOException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Subversion.LOG.log(Level.SEVERE, null, e);
                 }
             }
         }
@@ -950,7 +949,7 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
                 try {
                     return new InputStreamReader(new ByteArrayInputStream(value), "utf8");  // NOI18N
                 } catch (UnsupportedEncodingException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Subversion.LOG.log(Level.SEVERE, null, ex);
                     return new StringReader("[ERROR: " + ex.getLocalizedMessage() + "]"); // NOI18N
                 }
             }

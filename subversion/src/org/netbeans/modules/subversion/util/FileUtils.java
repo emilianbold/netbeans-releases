@@ -42,7 +42,8 @@
 package org.netbeans.modules.subversion.util;
 
 import java.io.*;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -98,7 +99,7 @@ public class FileUtils {
                     if(preserveTimestamp) target.setLastModified(files[i].lastModified());
                 }
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+                Subversion.LOG.log(Level.INFO, null, ex); // should not happen
             }
         }
     }
@@ -276,8 +277,7 @@ public class FileUtils {
             }
             checkoutFolder = FileUtil.normalizeFile(tmp);
         } catch (IOException e) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.notify(e);
+            Subversion.LOG.log(Level.SEVERE, null, e);
         }
         return checkoutFolder;
     }

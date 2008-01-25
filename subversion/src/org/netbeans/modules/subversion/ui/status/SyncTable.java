@@ -58,7 +58,6 @@ import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
-import org.openide.ErrorManager;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.Mnemonics;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
@@ -83,6 +82,7 @@ import java.awt.Color;
 import java.awt.Point;
 import java.util.*;
 import java.io.File;
+import java.util.logging.Level;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 
 /**
@@ -136,7 +136,7 @@ class SyncTable implements MouseListener, ListSelectionListener, AncestorListene
                     String s2 = (String) p2.getValue();
                     return s1.compareToIgnoreCase(s2);
                 } catch (Exception e) {
-                    ErrorManager.getDefault().notify(e);
+                    Subversion.LOG.log(Level.SEVERE, null, e);
                     return 0;
                 }
             }

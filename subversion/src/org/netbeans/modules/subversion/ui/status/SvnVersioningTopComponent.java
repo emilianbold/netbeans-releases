@@ -47,12 +47,13 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
-import org.openide.ErrorManager;
 import org.netbeans.modules.subversion.util.Context;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.io.*;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 
 /**
  * Top component of the Versioning view.
@@ -198,8 +199,7 @@ public class SvnVersioningTopComponent extends TopComponent implements Externali
         if (instance == null) {
             instance = (SvnVersioningTopComponent) WindowManager.getDefault().findTopComponent("svnversioning"); // NOI18N
             if (instance == null) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException(
-                    "Can not find Versioning component")); // NOI18N
+                Subversion.LOG.log(Level.INFO, null, new IllegalStateException("Can not find Versioning component")); // NOI18N
                 instance = new SvnVersioningTopComponent();
             }
         }

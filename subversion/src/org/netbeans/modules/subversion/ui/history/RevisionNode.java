@@ -46,7 +46,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.actions.NodeAction;
-import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.beans.PropertyEditor;
@@ -57,6 +56,8 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 
 /**
  * Visible in the Search History Diff view.
@@ -145,7 +146,7 @@ class RevisionNode extends AbstractNode {
             try {
                 return getValue().toString();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, null, e);
                 return e.getLocalizedMessage();
             }
         }

@@ -48,6 +48,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
@@ -59,10 +60,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -238,7 +239,7 @@ public class Merge extends CopyDialog implements ItemListener {
             } catch (MalformedURLException ex) {
                 // should be already checked and
                 // not happen at this place anymore
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Subversion.LOG.log(Level.INFO, null, ex);
             }
             return null;
         }
@@ -249,7 +250,7 @@ public class Merge extends CopyDialog implements ItemListener {
             } catch (MalformedURLException ex) {
                 // should be already checked and
                 // not happen at this place anymore
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Subversion.LOG.log(Level.INFO, null, ex);
             }
             return null;
         }
@@ -260,7 +261,7 @@ public class Merge extends CopyDialog implements ItemListener {
             } catch (MalformedURLException ex) {
                 // should be already checked and
                 // not happen at this place anymore
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Subversion.LOG.log(Level.INFO, null, ex);
             }
             return null;
         }
@@ -271,7 +272,7 @@ public class Merge extends CopyDialog implements ItemListener {
             } catch (MalformedURLException ex) {
                 // should be already checked and
                 // not happen at this place anymore
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Subversion.LOG.log(Level.INFO, null, ex);
             }
             return null;
         }
@@ -517,7 +518,7 @@ public class Merge extends CopyDialog implements ItemListener {
             } catch (MalformedURLException ex) {
                 // should be already checked and
                 // not happen at this place anymore
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Subversion.LOG.log(Level.INFO, null, ex);
             }
             return null;
         }
@@ -528,7 +529,7 @@ public class Merge extends CopyDialog implements ItemListener {
             } catch (MalformedURLException ex) {
                 // should be already checked and
                 // not happen at this place anymore
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Subversion.LOG.log(Level.INFO, null, ex);
             }
             return null;
         }

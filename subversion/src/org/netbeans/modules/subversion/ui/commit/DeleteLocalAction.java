@@ -48,7 +48,6 @@ import org.netbeans.modules.subversion.util.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
@@ -57,6 +56,7 @@ import org.openide.util.NbBundle;
 import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -129,9 +129,7 @@ public final class DeleteLocalAction extends ContextAction {
                     lock = fo.lock();                    
                     fo.delete(lock);       
                 } catch (IOException e) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e, NbBundle.getMessage(DeleteLocalAction.class, "MSG_Cannot_lock", file.getAbsolutePath())); // NOI18N
-                    err.notify(e);
+                    Subversion.LOG.log(Level.SEVERE, NbBundle.getMessage(DeleteLocalAction.class, "MSG_Cannot_lock", file.getAbsolutePath()), e); // NOI18N
                 } finally {
                     if (lock != null) {
                         lock.releaseLock();

@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.ui.wizards.importstep;
 import java.awt.event.FocusEvent;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -60,10 +61,8 @@ import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.checkout.CheckoutAction;
-import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
@@ -191,7 +190,7 @@ public class ImportStep extends AbstractStep implements DocumentListener, Wizard
         try {
             return repositoryPaths.getRepositoryFiles()[0]; // more files doesn't make sence
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Subversion.LOG.log(Level.INFO, null, ex);
         } 
         return null;
     }

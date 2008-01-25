@@ -45,11 +45,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.InvalidKeyException;
 import java.util.*;
+import java.util.logging.Level;
 import javax.net.ssl.SSLKeyException;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -122,7 +122,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 try {
                     SvnClientInvocationHandler.this.adapter.cancelOperation();
                 } catch (SVNClientException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Subversion.LOG.log(Level.SEVERE, null, ex);
                     return false;
                 }
                 return true;

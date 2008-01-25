@@ -57,7 +57,6 @@ import org.openide.windows.TopComponent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
@@ -70,6 +69,7 @@ import java.util.List;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.*;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.proxy.Base64Encoder;
@@ -308,9 +308,7 @@ public class ExportDiffAction extends ContextAction {
             exportedFiles = i;
             success = true;
         } catch (IOException ex) {
-            ErrorManager.getDefault().annotate(ex, NbBundle.getMessage(ExportDiffAction.class, "BK3003"));
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);   // stack trace to log
-            ErrorManager.getDefault().notify(ErrorManager.USER, ex);  // message to user
+            Subversion.LOG.log(Level.INFO, NbBundle.getMessage(ExportDiffAction.class, "BK3003"), ex);
         } finally {
             if (out != null) {
                 try {

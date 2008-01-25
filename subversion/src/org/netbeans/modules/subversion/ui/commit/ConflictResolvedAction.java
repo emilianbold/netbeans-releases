@@ -82,7 +82,6 @@ public class ConflictResolvedAction extends ContextAction {
                     client = Subversion.getInstance().getClient(ctx, this);
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
-                    //ErrorManager.getDefault().notify(ErrorManager.USER, ex);
                 }
 
                 if (client == null) {

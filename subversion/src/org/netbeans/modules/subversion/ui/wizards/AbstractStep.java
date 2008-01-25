@@ -43,7 +43,6 @@ package org.netbeans.modules.subversion.ui.wizards;
 
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 
 import javax.swing.*;
@@ -54,6 +53,8 @@ import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.awt.*;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 
 /**
  * Abstract wizard panel with <codE>valid</code>
@@ -97,7 +98,7 @@ public abstract class AbstractStep implements WizardDescriptor.ValidatingPanel {
                     panel.setPreferredSize(template.getPreferredSize());
                 }
             } catch (RuntimeException ex) {
-                ErrorManager.getDefault().notify(ex);
+                Subversion.LOG.log(Level.SEVERE, null, ex);
             } finally {
                 assert panel != null;
                 underConstruction = false;

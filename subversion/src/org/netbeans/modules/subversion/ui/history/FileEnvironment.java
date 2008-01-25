@@ -41,7 +41,6 @@
 package org.netbeans.modules.subversion.ui.history;
 
 import org.openide.text.CloneableEditorSupport;
-import org.openide.ErrorManager;
 import org.netbeans.modules.subversion.VersionsCache;
 
 import java.io.File;
@@ -49,6 +48,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.FileInputStream;
 import java.util.*;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 
 /**
  * Defines numb read-only File environment.
@@ -134,10 +135,9 @@ public abstract class FileEnvironment implements CloneableEditorSupport.Env {
                 }
                 return in;
             } catch (IOException ex) {
-                ErrorManager err = ErrorManager.getDefault();
                 IOException ioex = new IOException();
-                err.annotate(ioex, ex);
-                err.annotate(ioex, ErrorManager.USER, null, null, null, null);
+                ioex.initCause(ex);
+                Subversion.LOG.log(Level.SEVERE, null, ex);
                 throw ioex;
             }
         }

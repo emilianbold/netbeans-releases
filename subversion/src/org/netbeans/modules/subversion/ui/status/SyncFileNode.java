@@ -60,6 +60,7 @@ import org.netbeans.modules.subversion.util.SvnUtils;
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.io.File;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 
@@ -180,7 +181,7 @@ public class SyncFileNode extends AbstractNode {
             try {
                 return getValue().toString();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, null, e);
                 return e.getLocalizedMessage();
             }
         }

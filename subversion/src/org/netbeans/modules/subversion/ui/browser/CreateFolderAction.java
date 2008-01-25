@@ -45,13 +45,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.sql.Date;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPathNode.RepositoryPathEntry;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
@@ -124,7 +125,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                         // force listing of all child nodes ...
                         getExplorerManager().setSelectedNodes(new Node[] {childNodes[0]}); 
                     } catch (PropertyVetoException ex) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+                        Subversion.LOG.log(Level.INFO, null, ex); // should not happen
                     }                         
                 }
 
@@ -178,7 +179,7 @@ public class CreateFolderAction extends BrowserAction implements PropertyChangeL
                         try {
                             setSelectedNodes(new Node[] {segmentNode});
                         } catch (PropertyVetoException ex) {
-                            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+                            Subversion.LOG.log(Level.INFO, null, ex); // should not happen
                         }
                     }                            
                 }                                                            

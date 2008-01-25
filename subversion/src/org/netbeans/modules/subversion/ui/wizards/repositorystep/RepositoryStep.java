@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.subversion.RepositoryFile;
@@ -56,7 +57,6 @@ import org.netbeans.modules.subversion.client.WizardStepProgressSupport;
 import org.netbeans.modules.subversion.ui.repository.Repository;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
 import org.netbeans.modules.subversion.ui.wizards.AbstractStep;
-import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -135,7 +135,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
         try {
             return getSelectedRepositoryConnection().getSvnUrl();                
         } catch (MalformedURLException mue) {                            
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); // should not happen
+            Subversion.LOG.log(Level.INFO, null, mue); // should not happen
         }                                
         return null;
     }
@@ -239,7 +239,7 @@ public class RepositoryStep extends AbstractStep implements WizardDescriptor.Asy
                     return;
                 }
             } catch (MalformedURLException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+                Subversion.LOG.log(Level.INFO, null, ex); // should not happen
             } finally {
                 if(isCanceled()) {
                     valid(org.openide.util.NbBundle.getMessage(RepositoryStep.class, "CTL_Repository_Canceled")); // NOI18N

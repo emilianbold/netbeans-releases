@@ -45,7 +45,6 @@ import java.text.DateFormat;
 import java.util.Date;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.subversion.Diagnostics;
 import org.netbeans.modules.subversion.OutputLogger;
 import org.netbeans.modules.subversion.Subversion;
 import org.openide.util.Cancellable;
@@ -97,11 +96,11 @@ public abstract class SvnProgressSupport implements Runnable, Cancellable {
 
     protected void performIntern() {
         try {
-            Diagnostics.println("Start - " + displayName); // NOI18N
+            Subversion.LOG.fine("Start - " + displayName); // NOI18N
             if(!canceled) {
                 perform();
             }
-            Diagnostics.println("End - " + displayName); // NOI18N
+            Subversion.LOG.fine("End - " + displayName); // NOI18N
         } finally {            
             finnishProgress();
             getLogger().closeLog();

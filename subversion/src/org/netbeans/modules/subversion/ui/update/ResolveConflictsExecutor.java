@@ -45,6 +45,7 @@ import java.io.*;
 import java.util.*;
 import java.awt.*;
 import java.nio.charset.Charset;
+import java.util.logging.Level;
 import javax.swing.*;
 import org.netbeans.modules.subversion.ui.commit.ConflictResolvedAction;
 import org.netbeans.spi.diff.*;
@@ -55,6 +56,7 @@ import org.openide.filesystems.*;
 
 import org.netbeans.api.diff.*;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.*;
 
 import org.tigris.subversion.svnclientadapter.*;
@@ -105,7 +107,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                 }
             }
         } catch (IOException ioex) {
-            org.openide.ErrorManager.getDefault().notify(ioex);
+            Subversion.LOG.log(Level.SEVERE, null, ioex);;
         }
     }
     
@@ -168,7 +170,7 @@ public class ResolveConflictsExecutor extends SvnProgressSupport {
                 ((TopComponent) c).putClientProperty(ResolveConflictsExecutor.class.getName(), Boolean.TRUE);
             }
         } catch (IOException ioex) {
-            org.openide.ErrorManager.getDefault().notify(ioex);
+            Subversion.LOG.log(Level.SEVERE, null, ioex);;
         }
     }
 

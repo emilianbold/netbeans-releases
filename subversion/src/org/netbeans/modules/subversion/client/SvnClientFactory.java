@@ -43,10 +43,10 @@ package org.netbeans.modules.subversion.client;
 import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -157,21 +157,12 @@ public class SvnClientFactory {
                 } catch (Throwable t) {
                     String jhlErorrs = JhlClientAdapter.getLibraryLoadErrors();
                     // something went wrong - fallback on the commandline                                                            
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, t);                    
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, jhlErorrs);                                                            
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not setup JavaHl. Falling back on the commandline client!");                    
+                    Subversion.LOG.log(Level.WARNING, null, t);                    
+                    Subversion.LOG.warning(jhlErorrs);                                                            
+                    Subversion.LOG.log(Level.WARNING, "Could not setup JavaHl. Falling back on the commandline client!");                    
                     setupCommandline();
                 }
-            } /*else if(factoryType.equals(JavaSvnClientAdapterFactory.JAVASVN_CLIENT)) {
-                try {                    
-                    setupJavaSvn();
-                } catch (Throwable t) {                    
-                    // something went wrong - fallback on the commandline                                                            
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, t);                                        
-                    ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not setup javasvn. Falling back on the commandline client!");                    
-                    setupCommandline();
-                }
-            } */else {                
+            } else {                
                 throw new SVNClientException("Unknown factory: " + factoryType);
             } 
         } catch (SVNClientException e) {
@@ -234,7 +225,7 @@ public class SvnClientFactory {
                 return null;
             }            
         };       
-        Subversion.LOG.info("svnClientAdapter running on commandline client");        
+        Subversion.LOG.fine("svnClientAdapter running on commandline client");        
     }                 
     
     private void setupComandlineFatory() throws SVNClientException {
@@ -308,7 +299,7 @@ public class SvnClientFactory {
             try {
                return (SvnClient) proxyClass.getConstructor( new Class[] { InvocationHandler.class } ).newInstance( new Object[] { handler } );
             } catch (Exception e) {
-                org.openide.ErrorManager.getDefault().notify(e);
+                Subversion.LOG.log(Level.SEVERE, null, e);
             }
             return null;
         }   

@@ -51,7 +51,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import org.openide.filesystems.FileObject;
-import org.openide.ErrorManager;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -61,6 +60,8 @@ import java.util.Enumeration;
 import java.util.Collections;
 import java.io.IOException;
 import java.io.File;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 
 /**
  * Simpliied nb_all/projects/projectui/src/org/netbeans/modules/project/ui/ProjectUtilities.java,
@@ -158,8 +159,7 @@ final class ProjectUtilities {
                 // it happens for all apisupport projects unless
                 // checked out into directory that contains nbbuild and openide folders
                 // apisupport project is valid only if placed in defined directory structure
-                ErrorManager.getDefault().annotate(e, "SVN.PU: ignoring suspicious project folder...");  // NOI18N
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, " ignoring suspicious project folder...", e);    // NOI18N
             }
         }
         Enumeration en = scanRoot.getChildren(false);
@@ -182,7 +182,7 @@ final class ProjectUtilities {
             a.actionPerformed(ae);
             return true;
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, e);
+            Subversion.LOG.log(Level.WARNING, null, e);
             return false;
         }
     }

@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
@@ -55,12 +56,12 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -183,10 +184,8 @@ public class CheckoutCompleted implements ActionListener {
                             if (p != null) {
                                 openProject(p);
                             }
-                        } catch (IOException e1) {
-                            ErrorManager err = ErrorManager.getDefault();
-                            err.annotate(e1, NbBundle.getMessage(CheckoutAction.class, "BK1014", projectFolder));
-                            err.notify(e1);
+                        } catch (IOException e1) {                            
+                            Subversion.LOG.log(Level.SEVERE, NbBundle.getMessage(CheckoutAction.class, "BK1014", projectFolder), e1);  // NOI18N
                         }
                     }
                 }

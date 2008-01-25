@@ -48,13 +48,14 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
-import org.openide.ErrorManager;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import java.util.*;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 
 /**
  * Treetable to show results of Search History action.
@@ -119,7 +120,7 @@ class DiffTreeTable extends TreeTableView {
         try {
             em.setSelectedNodes(new Node [] { node });
         } catch (PropertyVetoException e) {
-            ErrorManager.getDefault().notify(e);
+            Subversion.LOG.log(Level.SEVERE, null, e);
         }
     }
 
@@ -130,7 +131,7 @@ class DiffTreeTable extends TreeTableView {
         try {
             em.setSelectedNodes(new Node [] { node });
         } catch (PropertyVetoException e) {
-            ErrorManager.getDefault().notify(e);
+            Subversion.LOG.log(Level.SEVERE, null, e);
         }
     }
 

@@ -48,15 +48,16 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.BrowserAction;
 import org.netbeans.modules.subversion.ui.browser.CreateFolderAction;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -189,9 +190,9 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
         try {
             return getToRepositoryFileIntern();
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+            Subversion.LOG.log(Level.INFO, null, ex); // should not happen
         } catch (NumberFormatException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+            Subversion.LOG.log(Level.INFO, null, ex); // should not happen
         }
         return null;
     }
@@ -231,9 +232,9 @@ public class CreateCopy extends CopyDialog implements DocumentListener, FocusLis
             return copyFromRepositoryPaths.getRepositoryFiles()[0];
         }
         catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+            Subversion.LOG.log(Level.INFO, null, ex); // should not happen
         } catch (NumberFormatException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+            Subversion.LOG.log(Level.INFO, null, ex); // should not happen
         }
         return null;
     }

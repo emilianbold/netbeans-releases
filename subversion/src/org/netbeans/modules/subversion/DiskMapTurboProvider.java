@@ -45,8 +45,6 @@ import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.turbo.TurboProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.ErrorManager;
-
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -118,7 +116,7 @@ class DiskMapTurboProvider implements TurboProvider {
                 } catch (EOFException e) {
                     // reached EOF, no entry for this key
                 } catch (Exception e) {
-                    ErrorManager.getDefault().notify(e);
+                    Subversion.LOG.log(Level.SEVERE, null, e);
                 } finally {
                     if (dis != null) try { dis.close(); } catch (IOException e) {}
                 }
@@ -259,8 +257,7 @@ class DiskMapTurboProvider implements TurboProvider {
                 }
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().annotate(e, "Copy: " + store.getAbsolutePath() + " to: " + storeNew.getAbsolutePath());  // NOI18N
-            ErrorManager.getDefault().notify(e);
+            Subversion.LOG.log(Level.SEVERE, "Copy: " + store.getAbsolutePath() + " to: " + storeNew.getAbsolutePath(), e);  // NOI18N
             return true;
         } finally {
             if (oos != null) try { oos.close(); } catch (IOException e) {}
@@ -270,7 +267,7 @@ class DiskMapTurboProvider implements TurboProvider {
         try {
             FileUtils.renameFile(storeNew, store);
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);            
+            Subversion.LOG.log(Level.SEVERE, null, ex);            
         }
         return true;
     }

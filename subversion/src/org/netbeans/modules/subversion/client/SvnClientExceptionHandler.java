@@ -70,7 +70,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import javax.swing.JButton;
-import org.netbeans.modules.subversion.Diagnostics;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.CertificateFile;
@@ -82,7 +81,6 @@ import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -214,7 +212,7 @@ public class SvnClientExceptionHandler {
         try {
             socket = getSSLSocket(hostString, url.getPort());
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(e);
+            Subversion.LOG.log(Level.SEVERE, null, e);
             return false;
         }
         if(socket == null) {
@@ -226,22 +224,17 @@ public class SvnClientExceptionHandler {
         try {
             serverCerts = socket.getSession().getPeerCertificates();
         } catch (SSLPeerUnverifiedException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Subversion.LOG.log(Level.SEVERE, null, ex);
             return false;
         }
         for (int i = 0; i < serverCerts.length; i++) {                        
-            Diagnostics.println("Cert[" + i + "] type - " + serverCerts[i].getType());      // NOI18N
             if(serverCerts[i] instanceof X509Certificate) {                                
                 cert = (X509Certificate) serverCerts[i];
-                Diagnostics.println("Cert[" + i + "] - notAfter " + cert.getNotAfter());    // NOI18N
-                Diagnostics.println("Cert[" + i + "] - notBefore " + cert.getNotBefore());  // NOI18N
                 try {
                     cert.checkValidity();
                 } catch (CertificateExpiredException ex) {
-                    Diagnostics.println("Cert[" + i + "] - " + ex);                    // NOI18N                    
                     continue; // try to get the next one
                 } catch (CertificateNotYetValidException ex) {
-                    Diagnostics.println("Cert[" + i + "] - " + ex);                    // NOI18N
                     continue; // try to get the next one
                 }
                 break;
@@ -269,10 +262,10 @@ public class SvnClientExceptionHandler {
             cf = new CertificateFile(cert, "https://" + hostString + ":" + url.getPort(), getFailuresMask(), temporarily); // NOI18N
             cf.store();
         } catch (CertificateEncodingException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Subversion.LOG.log(Level.SEVERE, null, ex);
             return false;
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Subversion.LOG.log(Level.SEVERE, null, ex);
             return false;
         }
             
@@ -374,7 +367,7 @@ public class SvnClientExceptionHandler {
             return kmf.getKeyManagers();
             
         } catch(Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Subversion.LOG.log(Level.SEVERE, null, ex);
             return null;
         }                                       
     }

@@ -44,6 +44,7 @@ package org.netbeans.modules.subversion.ui.update;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -53,7 +54,6 @@ import org.netbeans.modules.subversion.ui.actions.ContextAction;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -191,7 +191,7 @@ public class RevertModificationsAction extends ContextAction {
                         fo.delete();
                     }
                 } catch (IOException ex) {
-                    ErrorManager.getDefault().notify(ex);
+                    Subversion.LOG.log(Level.SEVERE, null, ex);
                 }
             }
         }

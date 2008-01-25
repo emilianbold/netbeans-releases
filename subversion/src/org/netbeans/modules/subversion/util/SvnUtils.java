@@ -56,6 +56,7 @@ import org.netbeans.modules.subversion.FileInformation;
 import java.io.*;
 import java.util.*;
 import java.text.ParseException;
+import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.subversion.SvnModuleConfig;
@@ -558,7 +559,7 @@ public class SvnUtils {
                     try {
                         sb.append(new String(bytes, "UTF8")); 
                     } catch (Exception e) {
-                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);  // oops
+                        Subversion.LOG.log(Level.INFO, null, e);  // oops
                     }                    
                     i--;                    
                 }                                             
@@ -868,7 +869,7 @@ public class SvnUtils {
             } catch (PatternSyntaxException e) {
                 // it's difference between shell and regexp
                 // or user error (set invalid property), rethrow?
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, null, e);
             }
         }
         return ret;

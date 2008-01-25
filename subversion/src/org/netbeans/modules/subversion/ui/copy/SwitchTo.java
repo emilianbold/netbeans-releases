@@ -44,14 +44,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
 import javax.swing.JTextField;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.ui.browser.Browser;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -121,7 +122,7 @@ public class SwitchTo extends CopyDialog implements PropertyChangeListener {
         } catch (MalformedURLException ex) {
             // should be already checked and 
             // not happen at this place anymore
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);            
+            Subversion.LOG.log(Level.INFO, null, ex);            
         }
         return null;
     }    

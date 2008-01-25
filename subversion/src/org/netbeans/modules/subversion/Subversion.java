@@ -116,7 +116,6 @@ public class Subversion {
     }
     
     private void init() {
-        Diagnostics.init();
         loadIniParserClassesWorkaround();
         SvnClientFactory.init();        
         
@@ -144,11 +143,11 @@ public class Subversion {
         getRequestProcessor().post(new Runnable() {
             public void run() {
                 try {
-                    Diagnostics.println("Cleaning up"); // NOI18N
+                    LOG.fine("Cleaning up cache"); // NOI18N
                     fileStatusCache.cleanUp();
                     // TODO: refresh all annotations        
                 } finally {
-                    Diagnostics.println("END Cleaning up"); // NOI18N
+                    Subversion.LOG.fine("END Cleaning up cache"); // NOI18N
                 }
             }
         }, 3000);

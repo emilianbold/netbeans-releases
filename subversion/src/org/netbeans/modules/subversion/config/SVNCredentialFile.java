@@ -43,7 +43,8 @@ package org.netbeans.modules.subversion.config;
 import java.io.File;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 
 /**
  * Handles the Subversion credential files.
@@ -79,7 +80,7 @@ public abstract class SVNCredentialFile extends KVFile {
                 fileName += hex;
             }            
         } catch (NoSuchAlgorithmException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e); // should not happen
+            Subversion.LOG.log(Level.INFO, null, e); // should not happen
         }                        
         
         return fileName;

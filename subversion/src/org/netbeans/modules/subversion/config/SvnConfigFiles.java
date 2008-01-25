@@ -48,14 +48,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.ini4j.Ini;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.util.FileUtils;
 import org.netbeans.modules.subversion.util.ProxySettings;
 import org.netbeans.modules.subversion.util.SvnUtils;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
@@ -270,7 +271,7 @@ public class SvnConfigFiles {
             file.getParentFile().mkdirs();
             ini.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Subversion.LOG.log(Level.INFO, null, ex);            
         }
     }    
 
@@ -447,7 +448,7 @@ public class SvnConfigFiles {
             file.getParentFile().mkdirs();
             systemIniFile.store(FileUtils.createOutputStream(file));
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+            Subversion.LOG.log(Level.INFO, null, ex)     ; // should not happen
         }
         return systemIniFile;
     }
@@ -474,12 +475,12 @@ public class SvnConfigFiles {
         } catch (FileNotFoundException ex) {
             // ignore
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Subversion.LOG.log(Level.INFO, null, ex)     ;
         }
 
         if(system == null) {
             system = new Ini();
-            ErrorManager.getDefault().log(ErrorManager.WARNING, "Could not load the file " + filePath + ". Falling back on svn defaults."); // NOI18N
+            Subversion.LOG.warning("Could not load the file " + filePath + ". Falling back on svn defaults."); // NOI18N
         }
         
         Ini global = null;      
@@ -488,7 +489,7 @@ public class SvnConfigFiles {
         } catch (FileNotFoundException ex) {
             // just doesn't exist - ignore
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Subversion.LOG.log(Level.INFO, null, ex)     ;
         }
          
         if(global != null) {

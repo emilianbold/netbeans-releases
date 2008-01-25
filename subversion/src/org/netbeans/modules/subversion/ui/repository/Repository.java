@@ -62,6 +62,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
@@ -70,12 +71,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -261,7 +262,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             }    
         } catch (MalformedURLException mue) {
             // should not happen
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, mue); 
+            Subversion.LOG.log(Level.INFO, null, mue); 
         }
         
     }
@@ -478,8 +479,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
                 }
                 return svnUrl[0].trim();
             } catch (InvocationTargetException e) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.notify(e);
+                Subversion.LOG.log(Level.SEVERE, null, e);
             }
             return null;            
         }
@@ -492,7 +492,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         }
         catch (InterruptedException ex) {
             // should not happen
-            ErrorManager.getDefault().notify(ex);
+            Subversion.LOG.log(Level.SEVERE, null, ex);
             return null;
         };
         

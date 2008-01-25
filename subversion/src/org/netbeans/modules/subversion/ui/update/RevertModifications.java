@@ -46,15 +46,16 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
+import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JRadioButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 
@@ -214,11 +215,11 @@ public class RevertModifications implements PropertyChangeListener {
             } catch (NumberFormatException ex) {
                 // should be already checked and
                 // not happen at this place anymore
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Subversion.LOG.log(Level.INFO, null, ex);
             } catch (MalformedURLException ex) {
                 // should be already checked and
                 // not happen at this place anymore
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                Subversion.LOG.log(Level.INFO, null, ex);
             }
             return null;
         }

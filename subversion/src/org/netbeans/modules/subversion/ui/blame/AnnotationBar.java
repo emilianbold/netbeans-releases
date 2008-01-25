@@ -61,7 +61,6 @@ import org.openide.filesystems.*;
 import org.openide.text.*;
 import org.openide.util.*;
 import org.openide.xml.*;
-import org.tigris.subversion.svnclientadapter.SVNNodeKind;
 import org.tigris.subversion.svnclientadapter.SVNUrl;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
 import javax.swing.*;
@@ -78,7 +77,6 @@ import java.io.*;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.tigris.subversion.svnclientadapter.ISVNNotifyListener;
 import org.tigris.subversion.svnclientadapter.SVNClientException;
@@ -292,9 +290,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 }
 
             } catch (IOException e) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, "Cannot compute local diff required for annotations, ignoring...");  // NOI18N
-                err.notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, "Cannot compute local diff required for annotations, ignoring...", e);
             }
         }
 
@@ -313,7 +309,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 } catch (IndexOutOfBoundsException ex) {
                     // TODO how could I get line behind document end?
                     // furtunately user does not spot it
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+                    Subversion.LOG.log(Level.INFO, null, ex);
                 }
             }
         } finally {
@@ -520,9 +516,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         try {
             line = Utilities.getLineOffset(doc, offset);
         } catch (BadLocationException ex) {
-            ErrorManager err = ErrorManager.getDefault();
-            err.annotate(ex, "Can not get line for caret at offset " + offset); // NOI18N
-            err.notify(ex);
+            Subversion.LOG.log(Level.SEVERE, "Can not get line for caret at offset " + offset, ex); // NOI18N
             clearRecentFeedback();
             return;
         }
@@ -740,9 +734,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 try {
                     escapedAuthor = XMLUtil.toElementContent(al.getAuthor());
                 } catch (CharConversionException e1) {
-                    ErrorManager err = ErrorManager.getDefault();
-                    err.annotate(e1, "CVS.AB: can not HTML escape: " + al.getAuthor());  // NOI18N
-                    err.notify(ErrorManager.INFORMATIONAL, e1);
+                    Subversion.LOG.log(Level.INFO, " can not HTML escape: " + al.getAuthor(), e1);
                 }
 
                 // always return unique string to avoid tooltip sharing on mouse move over same revisions -->
@@ -755,9 +747,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     try {
                         escaped = XMLUtil.toElementContent(al.getCommitMessage());
                     } catch (CharConversionException e1) {
-                        ErrorManager err = ErrorManager.getDefault();
-                        err.annotate(e1, "CVS.AB: can not HTML escape: " + al.getCommitMessage()); // NOI18N
-                        err.notify(ErrorManager.INFORMATIONAL, e1);
+                        Subversion.LOG.log(Level.INFO, " can not HTML escape: " + al.getCommitMessage(), e1); // NOI18N
                     }
                     if (escaped != null) {
                         String lined = escaped.replaceAll(System.getProperty("line.separator"), "<br>");  // NOI18N
@@ -801,9 +791,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                     return al;
                 }
             } catch (BadLocationException e) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.annotate(e, "CVS.AB: can not locate line annotation."); // NOI18N
-                err.notify(ErrorManager.INFORMATIONAL, e);
+                Subversion.LOG.log(Level.INFO, " can not locate line annotation.", e); // NOI18N
             }
         }
 
@@ -863,7 +851,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
                 foldHierarchy.unlock();
             }
         } catch (BadLocationException ble){
-            ErrorManager.getDefault().notify(ble);
+            Subversion.LOG.log(Level.SEVERE, null, ble);
         } finally {
             doc.readUnlock();
         }

@@ -41,7 +41,6 @@
 package org.netbeans.modules.subversion.ui.search;
 
 import javax.swing.event.ListSelectionListener;
-import org.openide.ErrorManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.FontColorSettings;
 
@@ -51,6 +50,8 @@ import java.awt.event.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.text.DateFormat;
+import java.util.logging.Level;
+import org.netbeans.modules.subversion.Subversion;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.ISVNLogMessage;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -204,7 +205,7 @@ class SvnSearchView implements ComponentListener {
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR +  defaultFormat.format(message.getDate()), null);
                     sd.insertString(sd.getLength(), "\n" + message.getMessage(), null); // NOI18N
                 } catch (BadLocationException e) {
-                    ErrorManager.getDefault().notify(e);
+                    Subversion.LOG.log(Level.SEVERE, null, e);
                 }
                 
                 if (message.getMessage() != null) {

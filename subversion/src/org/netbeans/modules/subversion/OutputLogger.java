@@ -43,7 +43,7 @@ package org.netbeans.modules.subversion;
 
 import java.io.File;
 import java.io.IOException;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -166,8 +166,7 @@ public class OutputLogger implements ISVNNotifyListener {
                 // HACK (mystic logic) workaround, otherwise it writes to nowhere 
                 log.getOut().reset();
             } catch (IOException e) {
-                ErrorManager err = ErrorManager.getDefault();
-                err.notify(e);
+                Subversion.LOG.log(Level.SEVERE, null, e);
             }
             //log.select();
         }

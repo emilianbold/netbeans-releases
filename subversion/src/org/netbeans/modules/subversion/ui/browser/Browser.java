@@ -48,6 +48,7 @@ import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.event.TreeExpansionEvent;
@@ -59,7 +60,6 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Node;
@@ -164,7 +164,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
                 rootNode.expand();        
             }
         } catch (PropertyVetoException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
+            Subversion.LOG.log(Level.INFO, null, ex);
         }                  
                 
     }       
@@ -261,7 +261,7 @@ public class Browser implements VetoableChangeListener, BrowserClient, TreeExpan
                     }                    
                 }
             } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex); // should not happen
+                Subversion.LOG.log(Level.INFO, null, ex); // should not happen
             }            
         }
     }

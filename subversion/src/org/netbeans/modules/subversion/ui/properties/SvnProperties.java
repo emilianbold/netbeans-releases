@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
@@ -71,7 +72,6 @@ import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.tigris.subversion.svnclientadapter.ISVNProperty;
@@ -208,7 +208,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
         try {
             txtValue.append(source.getCanonicalPath());
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Subversion.LOG.log(Level.SEVERE, null, ex);
         }
         fontTextArea = panel.txtAreaValue.getFont();
         panel.txtAreaValue.setFont(new Font("Monospaced", Font.ITALIC, 12));
@@ -256,7 +256,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
                                 Utils.copyStreamsCloseAll(sw, new FileReader(source));
                                 panel.txtAreaValue.setText(sw.toString());
                             } catch (IOException ex) {
-                                ErrorManager.getDefault().notify(ex);
+                                Subversion.LOG.log(Level.SEVERE, null, ex);
                             }
                         }
                     } else {
@@ -303,7 +303,6 @@ public class SvnProperties implements ActionListener, DocumentListener {
                             SvnPropertiesNode[] svnProps = new SvnPropertiesNode[isvnProps.length];
                             for (int i = 0; i < isvnProps.length; i++) {
                                 if (isvnProps[i] == null) {
-                                    //ErrorManager.getDefault().notify();
                                     return;
                                 }
                                 String name = isvnProps[i].getName();                                    
@@ -354,7 +353,7 @@ public class SvnProperties implements ActionListener, DocumentListener {
                             try {
                                 client.propertySet(root, getPropertyName(), getLoadedValueFile(), panel.cbxRecursively.isSelected());
                             } catch (IOException ex) {  
-                                ErrorManager.getDefault().notify(ex);
+                                Subversion.LOG.log(Level.SEVERE, null, ex);
                                 return;
                             }  
                         } else {

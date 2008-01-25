@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.MalformedURLException;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -56,11 +57,11 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.subversion.RepositoryFile;
+import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.SVNRevision;
@@ -197,7 +198,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
         try {
             repositoryFilesToSelect = getRepositoryFiles();
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Subversion.LOG.log(Level.SEVERE, null, ex);
             return;
         }
         
@@ -231,7 +232,7 @@ public class RepositoryPaths implements ActionListener, DocumentListener {
                 svnSearch = new SvnSearch(new RepositoryFile[] { repositoryFile }); 
             }                            
         } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ex);
+            Subversion.LOG.log(Level.SEVERE, null, ex);
             return;
         }
                                
