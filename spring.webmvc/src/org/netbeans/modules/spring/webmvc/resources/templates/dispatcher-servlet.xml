@@ -10,6 +10,11 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
     
     <bean class="org.springframework.web.servlet.mvc.support.ControllerClassNameHandlerMapping"/>
     
+    <!--
+    Most controllers will use the ControllerClassNameHandlerMapping above, but
+    for the index controller we are using ParameterizableViewController, so we must
+    define an explicit mapping for it.
+    -->
     <bean id="urlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
         <property name="mappings">
             <props>
@@ -26,10 +31,8 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
           p:prefix="/WEB-INF/jsp/"
           p:suffix=".jsp" />
     
-    <!-- 
-    for the majority of the controllers use the new ControllerClassNameHandlerMapping 
-    above, but because the class used is the ParameterizableViewController we
-    are specifying a bean name to define the mapping as /index.htm
+    <!--
+    The index controller.
     -->
     <bean name="indexController"
           class="org.springframework.web.servlet.mvc.ParameterizableViewController"
