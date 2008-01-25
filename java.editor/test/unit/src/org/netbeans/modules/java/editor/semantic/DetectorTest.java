@@ -340,6 +340,10 @@ public class DetectorTest extends TestBase {
 	performTest("UnusedParameters");
     }
     
+    public void testUsedInFor() throws Exception {
+	performTest("UsedInFor");
+    }
+    
     private void performTest(String fileName) throws Exception {
         performTest(fileName, new Performer() {
             public void compute(CompilationController parameter, Document doc, ErrorDescriptionSetter setter) {

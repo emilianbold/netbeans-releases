@@ -55,6 +55,7 @@ import com.sun.source.tree.ConditionalExpressionTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
@@ -1286,6 +1287,15 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
                 }
             }
             return super.visitTypeParameter(tree, p);
+        }
+
+        @Override
+        public Void visitForLoop(ForLoopTree node, EnumSet<UseTypes> p) {
+            if (node.getCondition() != null && node.getCondition().getKind() == Kind.IDENTIFIER) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), node.getCondition()), EnumSet.of(UseTypes.READ));
+            }
+            
+            return super.visitForLoop(node, p);
         }
         
         private void typeUsed(Element decl, TreePath expr) {
