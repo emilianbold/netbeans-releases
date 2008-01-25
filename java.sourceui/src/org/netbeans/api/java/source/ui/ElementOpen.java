@@ -64,6 +64,33 @@ public final class ElementOpen {
     }
     
     /**
+     * Opens {@link Element} corresponding to the given {@link ElementHandle}.
+     * 
+     * @param cpInfo ClasspathInfo which should be used for the search
+     * @param el     declaration to open
+     * @return true  if and only if the declaration was correctly opened,
+     *                false otherwise
+     * @since 1.5
+     */
+    public static boolean open(final ClasspathInfo cpInfo, final ElementHandle<? extends Element> el) {
+        FileObject fo = SourceUtils.getFile(el, cpInfo);
+        Object[] openInfo = fo != null ? getOpenInfo(fo, el) : null;
+        if (openInfo != null) {
+            assert openInfo[0] instanceof FileObject;
+            assert openInfo[1] instanceof Integer;
+            return doOpen((FileObject) openInfo[0], (Integer) openInfo[1]);
+        }
+
+        BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
+
+        if (beo != null) {
+            return beo.open(cpInfo, el);
+        } else {
+            return false;
+        }        
+    }
+    
+    /**
      * Opens given {@link Element}.
      * 
      * @param cpInfo ClasspathInfo which should be used for the search
@@ -72,20 +99,7 @@ public final class ElementOpen {
      *                false otherwise
      */
     public static boolean open(final ClasspathInfo cpInfo, final Element el) {
-	Object[] openInfo = getOpenInfo (cpInfo, el);
-	if (openInfo != null) {
-	    assert openInfo[0] instanceof FileObject;
-	    assert openInfo[1] instanceof Integer;
-	    return doOpen((FileObject)openInfo[0],(Integer)openInfo[1]);
-	}
-        
-        BinaryElementOpen beo = Lookup.getDefault().lookup(BinaryElementOpen.class);
-        
-        if (beo != null) {
-            return beo.open(cpInfo, ElementHandle.create(el));
-        } else {
-            return false;
-        }
+        return open(cpInfo, ElementHandle.create(el));
     }
     
     /**
@@ -120,15 +134,6 @@ public final class ElementOpen {
     
     // Private methods ---------------------------------------------------------
         
-    private static Object[] getOpenInfo (final ClasspathInfo cpInfo, final Element el) {
-        FileObject fo = SourceUtils.getFile(el, cpInfo);
-        if (fo != null) {
-            return getOpenInfo(fo, ElementHandle.create(el));
-        } else {
-            return null;
-        }
-    }
-    
     private static Object[] getOpenInfo(final FileObject fo, final ElementHandle<? extends Element> handle) {
         assert fo != null;
         

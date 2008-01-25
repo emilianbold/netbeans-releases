@@ -107,6 +107,20 @@ is the proper place.
     <changes>
 
 
+        <change id="ElementOpenForCPInfoAndHandle">
+            <api name="general"/>
+            <summary>Adding ElementOpen.open(ClasspathInfo info, ElementHandle h)</summary>
+            <version major="1" minor="15"/>
+            <date day="25" month="1" year="2008"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                 Adding ElementOpen.open(ClasspathInfo info, ElementHandle h) method.
+            </description>
+            <issue number="125320"/>
+        </change>
+        
         <change id="ScanDialog">
             <api name="general"/>
             <summary>Added support for notifying user about running background scan.</summary>
