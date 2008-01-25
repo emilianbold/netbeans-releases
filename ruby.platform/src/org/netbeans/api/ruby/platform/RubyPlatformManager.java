@@ -294,28 +294,7 @@ public final class RubyPlatformManager {
                         throw new IOException("ID " + id + " already taken"); // NOI18N
                     }
                     EditableProperties props = PropertyUtils.getGlobalProperties();
-                    String interpreterKey = PLATFORM_PREFIX + id + PLATFORM_INTEPRETER;
-                    props.setProperty(interpreterKey, interpreter.getAbsolutePath());
-                    if (!interpreter.isFile()) {
-                        throw new FileNotFoundException(interpreter.getAbsolutePath());
-                    }
-                    String idDot = id + '.';
-                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_KIND, info.getKind());
-                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION, info.getVersion());
-                    if (info.getJVersion() != null) {
-                        props.setProperty(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION, info.getJVersion());
-                    }
-                    if (info.getPatchlevel() != null){
-                        props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL, info.getPatchlevel());
-                    }
-                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE, info.getReleaseDate());
-//                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE, info.getExecutable());
-                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM, info.getPlatform());
-                    if (info.getGemHome() != null) {
-                        props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_HOME, info.getGemHome());
-                        props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_PATH, info.getGemPath());
-                        props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_VERSION, info.getGemVersion());
-                    }
+                    putPlatformProperties(id, interpreter, info, props);
                     PropertyUtils.putGlobalProperties(props);
                     return null;
                 }
@@ -336,19 +315,7 @@ public final class RubyPlatformManager {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 public Void run() throws IOException {
                     EditableProperties props = PropertyUtils.getGlobalProperties();
-                    String id = PLATFORM_PREFIX + plaf.getID();
-                    props.remove(id + PLATFORM_INTEPRETER);
-                    String idDot = id + '.';
-                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_KIND);
-                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION);
-                    props.remove(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION);
-                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL);
-                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE);
-//                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE);
-                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM);
-                    props.remove(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
-                    props.remove(PLATFORM_PREFIX + idDot + Info.GEM_PATH);
-                    props.remove(PLATFORM_PREFIX + idDot + Info.GEM_VERSION);
+                    clearProperties(plaf, props);
                     PropertyUtils.putGlobalProperties(props);
                     return null;
                 }
@@ -360,6 +327,65 @@ public final class RubyPlatformManager {
             getPlatformsInternal().remove(plaf);
         }
         LOGGER.fine("RubyPlatform removed: " + plaf);
+    }
+
+    public static void storePlatform(final RubyPlatform plaf) throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                public Void run() throws IOException {
+                    EditableProperties props = PropertyUtils.getGlobalProperties();
+                    clearProperties(plaf, props);
+                    putPlatformProperties(plaf.getID(), plaf.getInterpreterFile(), plaf.getInfo(), props);
+                    PropertyUtils.putGlobalProperties(props);
+                    return null;
+                }
+            });
+        } catch (MutexException e) {
+            throw (IOException) e.getException();
+        }
+        LOGGER.fine("RubyPlatform stored: " + plaf);
+    }
+
+    private static void clearProperties(RubyPlatform plaf, EditableProperties props) {
+        String id = PLATFORM_PREFIX + plaf.getID();
+        props.remove(id + PLATFORM_INTEPRETER);
+        String idDot = id + '.';
+        props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_KIND);
+        props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION);
+        props.remove(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION);
+        props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL);
+        props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE);
+//                    props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE);
+        props.remove(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM);
+        props.remove(PLATFORM_PREFIX + idDot + Info.GEM_HOME);
+        props.remove(PLATFORM_PREFIX + idDot + Info.GEM_PATH);
+        props.remove(PLATFORM_PREFIX + idDot + Info.GEM_VERSION);
+    }
+    
+    private static void putPlatformProperties(final String id, final File interpreter,
+            final Info info, final EditableProperties props) throws FileNotFoundException {
+        String interpreterKey = PLATFORM_PREFIX + id + PLATFORM_INTEPRETER;
+        props.setProperty(interpreterKey, interpreter.getAbsolutePath());
+        if (!interpreter.isFile()) {
+            throw new FileNotFoundException(interpreter.getAbsolutePath());
+        }
+        String idDot = id + '.';
+        props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_KIND, info.getKind());
+        props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_VERSION, info.getVersion());
+        if (info.getJVersion() != null) {
+            props.setProperty(PLATFORM_PREFIX + idDot + Info.JRUBY_VERSION, info.getJVersion());
+        }
+        if (info.getPatchlevel() != null) {
+            props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_PATCHLEVEL, info.getPatchlevel());
+        }
+        props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_RELEASE_DATE, info.getReleaseDate());
+//                    props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_EXECUTABLE, info.getExecutable());
+        props.setProperty(PLATFORM_PREFIX + idDot + Info.RUBY_PLATFORM, info.getPlatform());
+        if (info.getGemHome() != null) {
+            props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_HOME, info.getGemHome());
+            props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_PATH, info.getGemPath());
+            props.setProperty(PLATFORM_PREFIX + idDot + Info.GEM_VERSION, info.getGemVersion());
+        }
     }
 
     private static String computeID(final String label) {

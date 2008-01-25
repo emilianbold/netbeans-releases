@@ -40,6 +40,7 @@ package org.netbeans.api.ruby.platform;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.openide.filesystems.FileUtil;
 
@@ -97,4 +98,28 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         RubyPlatform plaf = RubyPlatformManager.addPlatform(new File(getWorkDir(), "invalid-ruby"));
         assertNull("invalid platform", plaf);
     }
+
+    public void testRepositoriesAreStored() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        String dummyRepo = getWorkDirPath() + "/a";
+        assertEquals("one repositories", 1, gemManager.getRepositories().size());
+        
+        // add and check
+        gemManager.addRepository(dummyRepo);
+        assertEquals("two repositories", 2, gemManager.getRepositories().size());
+        RubyPlatformManager.resetPlatforms();
+        platform = RubyPlatformManager.getDefaultPlatform();
+        gemManager = platform.getGemManager();
+        assertEquals("two repositories", 2, gemManager.getRepositories().size());
+
+        // remove and check
+        gemManager.removeRepository(dummyRepo);
+        RubyPlatformManager.resetPlatforms();
+        platform = RubyPlatformManager.getDefaultPlatform();
+        gemManager = platform.getGemManager();
+        assertEquals("two repositories", 1, RubyPlatformManager.getDefaultPlatform().getGemManager().getRepositories().size());
+        gemManager.removeRepository(dummyRepo);
+    }
+
 }

@@ -241,6 +241,11 @@ public final class GemManager {
             pathSB.append(token);
         }
         platform.getInfo().setGemPath(pathSB.toString());
+        try {
+            RubyPlatformManager.storePlatform(platform);
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+        }
         resetLocal();
     }
     
