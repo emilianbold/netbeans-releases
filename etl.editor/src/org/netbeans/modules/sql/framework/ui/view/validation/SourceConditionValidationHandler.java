@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.sql.framework.ui.view.validation;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
@@ -63,7 +66,8 @@ import org.openide.util.NbBundle;
 public class SourceConditionValidationHandler implements ValidationHandler {
 
     private IGraphView graphView;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SourceConditionValidationHandler.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Constructs a new instance of SourceConditionValidationHandler, referencing the
      * given IGraphView instance and SQLCondition.
@@ -90,10 +94,12 @@ public class SourceConditionValidationHandler implements ValidationHandler {
 
         if (SourceTable.DATA_VALIDATION_CONDITION.equals(oldCondition.getDisplayName())) {
             conditionView = ConditionBuilderUtil.getValidationConditionBuilderView(sTable, (IGraphViewContainer) graphView.getGraphViewContainer());
-            title = NbBundle.getMessage(IGraphViewContainer.class, "LBL_validation_condition");
+            String nbBundle1 = mLoc.t("PRSR001: Data Validation Condition");
+            title = Localizer.parse(nbBundle1);
             dd = new DialogDescriptor(conditionView, title, true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
         } else {
-            title = NbBundle.getMessage(IGraphViewContainer.class, "LBL_extraction_condition");
+            String nbBundle2 = mLoc.t("PRSR001: Extraction Condition");
+            title = Localizer.parse(nbBundle2);
             conditionView = ConditionBuilderUtil.getConditionBuilderView(sTable, (IGraphViewContainer) graphView.getGraphViewContainer());
             dd = new DialogDescriptor(conditionView, title, true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
         }

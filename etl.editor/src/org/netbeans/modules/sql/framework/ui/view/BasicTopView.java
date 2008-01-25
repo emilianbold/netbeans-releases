@@ -223,7 +223,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         public void actionPerformed(ActionEvent e) {
             if (NotifyDescriptor.OK_OPTION.equals(e.getSource())) {
                 if (!mView.isConditionValid()) {
-                    NotifyDescriptor confirmDlg = new NotifyDescriptor.Confirmation(NbBundle.getMessage(BasicTopView.class, "ERR_close_on_invalid_condition"), mDialog.getTitle(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
+                    String nbBundle1 = mLoc.t("PRSR001: Current condition is invalid.Are you sure you want to keep it and close this builder?");
+                    NotifyDescriptor confirmDlg = new NotifyDescriptor.Confirmation(Localizer.parse(nbBundle1), mDialog.getTitle(), NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
                     DialogDisplayer.getDefault().notify(confirmDlg);
                     if (confirmDlg.getValue() != NotifyDescriptor.YES_OPTION) {
                         return;
@@ -553,8 +554,9 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
     }
 
     private void doDataValidation(SQLBasicTableArea gNode, SourceTable table) {
+        String nbBundle2 = mLoc.t("PRSR001: Data Validation Condition");
         ConditionBuilderView cView = ConditionBuilderUtil.getValidationConditionBuilderView(table, (IGraphViewContainer) this.getGraphView().getGraphViewContainer());
-        String title = NbBundle.getMessage(BasicTopView.class, "LBL_validation_condition");
+        String title = Localizer.parse(nbBundle2);
 
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.
@@ -596,14 +598,16 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
         this.collabView = new SQLCollaborationView(viewFactory);
         // create output view
         refreshMetaView = new SQLValidationView(this.getGraphView());
-        refreshMetaView.setName(NbBundle.getMessage(BasicTopView.class, "LBL_log_title"));
+        String nbBundle1 = mLoc.t("PRSR001: Refresh Metadata Log");
+        refreshMetaView.setName(Localizer.parse(nbBundle1));
         setLayout(new BorderLayout());
         add(this.collabView, BorderLayout.CENTER);
     }
 
     private void showDataExtraction(SQLBasicTableArea gNode, SourceTable table) {
         ConditionBuilderView cView = ConditionBuilderUtil.getConditionBuilderView(table, (IGraphViewContainer) this.getGraphView().getGraphViewContainer());
-        String title = NbBundle.getMessage(BasicTopView.class, "LBL_extraction_condition");
+        String nbBundle2 = mLoc.t("PRSR001: Extraction Condition");
+        String title = Localizer.parse(nbBundle2);
 
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.
@@ -677,7 +681,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
 
     private void showTargetJoinCondition(final SQLBasicTableArea gNode, final TargetTable table) {
         ConditionBuilderView cView = ConditionBuilderUtil.getJoinConditionBuilderView(table, (IGraphViewContainer) this.getGraphView().getGraphViewContainer());
-        String title = NbBundle.getMessage(BasicTopView.class, "LBL_target_join_condition");
+        String nbBundle3 = mLoc.t("PRSR001: Target Join Condition");
+        String title = Localizer.parse(nbBundle3);
 
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.
@@ -697,7 +702,8 @@ public abstract class BasicTopView extends JPanel implements IGraphViewContainer
 
     private void showTargetFilterCondition(final SQLBasicTableArea gNode, final TargetTable table) {
         ConditionBuilderView cView = ConditionBuilderUtil.getFilterConditionBuilderView(table, (IGraphViewContainer) this.getGraphView().getGraphViewContainer());
-        String title = NbBundle.getMessage(BasicTopView.class, "LBL_target_filter_condition");
+        String nbBundle4 = mLoc.t("PRSR001: Outer Filter Condition");
+        String title = Localizer.parse(nbBundle4);
 
         // Create a Dialog that defers decision-making on whether to close the dialog to
         // an ActionListener.

@@ -67,9 +67,11 @@ import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLDBColumn;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
-import org.openide.util.NbBundle;
 
 
 /**
@@ -77,7 +79,8 @@ import org.openide.util.NbBundle;
  * @version $Revision$
  */
 public class TableColumnTreeCellEditor extends JComponent implements TreeCellEditor {
-
+ private static transient final Logger mLogger = LogUtil.getLogger(TableColumnTreeCellEditor.class.getName());
+ private static transient final Localizer mLoc = Localizer.get();
     /**
      * Class CheckBoxItemListener listens for checkbox changes.
      */
@@ -106,8 +109,10 @@ public class TableColumnTreeCellEditor extends JComponent implements TreeCellEdi
 
             if (node.getUserObject() instanceof SQLDBTable) {
                 if (!isSelected) {
-                    String message = NbBundle.getMessage(TableColumnTreeCellEditor.class, "CNF_deselct_columns");
-                    String header = NbBundle.getMessage(TableColumnTreeCellEditor.class, "HDR_confirm_deselect_all");
+                    String nbBundle1 = mLoc.t("PRSR001: All links to and from the table will be lost. Are you sure you want to deselect all table columns?");
+                    String message = Localizer.parse(nbBundle1);
+                    String nbBundle2 = mLoc.t("PRSR001: Confirm deselect all");
+                    String header = Localizer.parse(nbBundle2);
                     int response = JOptionPane.showConfirmDialog(parent, message, header, JOptionPane.YES_OPTION);
                     if (response == JOptionPane.YES_OPTION) {
                         selectTableAndColumn(isSelected);

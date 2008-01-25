@@ -40,6 +40,9 @@
  */
 package org.netbeans.modules.sql.framework.ui.view.validation;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLCondition;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
@@ -64,7 +67,8 @@ import org.openide.util.NbBundle;
 public class TargetConditionValidationHandler implements ValidationHandler {
 
     private IGraphView graphView;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(TargetConditionValidationHandler.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Constructs a new instance of TargetConditionValidationHandler, referencing the
      * given IGraphView instance and SQLCondition.
@@ -89,10 +93,12 @@ public class TargetConditionValidationHandler implements ValidationHandler {
 
         if (TargetTable.JOIN_CONDITION.equals(oldCondition.getDisplayName())) {
             conditionView = ConditionBuilderUtil.getJoinConditionBuilderView(tTable, (IGraphViewContainer) graphView.getGraphViewContainer());
-            title = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_edit_target_join_condition");
+            String nbBundle1 = mLoc.t("PRSR001: Target Join Condition...");
+            title = Localizer.parse(nbBundle1);
             dd = new DialogDescriptor(conditionView, title, true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
         } else {
-            title = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_edit_target_filter_condition");
+            String nbBundle2 = mLoc.t("PRSR001: Outer Filter Condition...");
+            title = Localizer.parse(nbBundle2);
             conditionView = ConditionBuilderUtil.getFilterConditionBuilderView(tTable, (IGraphViewContainer) graphView.getGraphViewContainer());
             dd = new DialogDescriptor(conditionView, title, true, NotifyDescriptor.OK_CANCEL_OPTION, null, null);
         }

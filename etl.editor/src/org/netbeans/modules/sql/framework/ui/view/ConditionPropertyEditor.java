@@ -279,8 +279,9 @@ public class ConditionPropertyEditor extends PropertyEditorSupport implements IP
     }
 
     private void warnForInvalidCondition() {
+        String nbBundle1 = mLoc.t("PRSR001: The condition is not valid.Make sure you correct it.");
         DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Message(NbBundle.getMessage(ConditionPropertyEditor.class, "ERR_condition_invalid"),
+                new NotifyDescriptor.Message(Localizer.parse(nbBundle1),
                 NotifyDescriptor.WARNING_MESSAGE));
     }
 }

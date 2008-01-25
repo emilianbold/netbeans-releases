@@ -91,11 +91,11 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
             }
 
             Component selComp = rightPanel.getSelectedComponent();
+            String nbBundle1 = mLoc.t("PRSR001: Failed to synchronize graph with SQL code - check if condition is valid in text mode.");
             if (selComp instanceof ConditionBuilderRightPanel) {
                 if (trySync && !ConditionBuilderView.this.synchronizeGraphView()) {
                     DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(
-                            NbBundle.getMessage(ConditionBuilderView.class, "ERR_conditionbuilder_text_to_graph_sync_failed"),
+                            new NotifyDescriptor.Message(Localizer.parse(nbBundle1),
                             NotifyDescriptor.INFORMATION_MESSAGE));
                     trySync = false;
                     rightPanel.setSelectedComponent(rightTextPanel);
@@ -107,10 +107,11 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
                 rightGraphPanel1.setModifiable(!rightTextPanel.isDirty());
                 ConditionBuilderView.this.condContainerObj.setGuiMode(SQLCondition.GUIMODE_GRAPHICAL);
             } else if (selComp instanceof ConditionBuilderExpRightPanel) {
+                String nbBundle2 = mLoc.t("PRSR001: Failed to synchronize SQL code with graphical mode - check if condition is valid in graphical mode.");
                 if (trySync && !ConditionBuilderView.this.synchronizeSQLCodeView()) {
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(
-                            NbBundle.getMessage(ConditionBuilderView.class, "ERR_conditionbuilder_graph_to_text_sync_failed"),
+                           Localizer.parse(nbBundle2),
                             NotifyDescriptor.INFORMATION_MESSAGE));
                     trySync = false;
                     rightPanel.setSelectedComponent(rightGraphPanel);
@@ -187,9 +188,10 @@ public class ConditionBuilderView extends JPanel implements EnhancedCustomProper
         // When user exit find out the currently selected mode
         // then try to synchronize other mode
         boolean result = setGuiMode();
+        String nbBundle3 = mLoc.t("PRSR001: The condition is not valid. Make sure you correct it.");
         if (showError && !result) {
             DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(NbBundle.getMessage(ConditionBuilderView.class, "ERR_conditionbuilder_invalid_condition"),
+                    new NotifyDescriptor.Message(Localizer.parse(nbBundle3),
                     NotifyDescriptor.WARNING_MESSAGE));
         }
 
