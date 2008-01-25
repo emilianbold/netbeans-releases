@@ -54,7 +54,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
-import java.nio.ByteBuffer;
 import java.security.CodeSource;
 import java.security.PermissionCollection;
 import java.security.Policy;
@@ -91,21 +90,6 @@ public class JarClassLoader extends ProxyClassLoader {
     static void initializeCache() {
         cache = Stamps.getModulesJARs();
         archive = new Archive(cache);
-    }
-    
-    /**
-     * Stops gathering class/resource loading requests and frees the
-     * resource cache from the memory. The data about additional resources
-     * needed during startup and basic info about current archive is kept
-     * in memory, though, until {@link saveArchive()} updates the archive
-     * 
-     */
-    public static void flushArchive() {
-        archive.stopGathering();
-        archive.stopServing();
-        if (cache != null) {
-            cache.flush(false);
-        }
     }
     
     /**
@@ -834,6 +818,7 @@ public class JarClassLoader extends ProxyClassLoader {
             }
         }
 
+        @Override
         public String getContentType() {
             String contentType = guessContentTypeFromName(name);
             if (contentType == null) {

@@ -44,8 +44,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
-import junit.framework.TestCase;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 
@@ -90,6 +91,10 @@ public class StampsTest extends NbTestCase {
     protected void tearDown() throws Exception {
         super.tearDown();
     }
+    
+    public void testEmpty() {
+        Stamps.getModulesJARs().waitFor(false);
+    }
 
     public void testGenerateTimeStamps() {
         long stamp = Stamps.moduleJARs();
@@ -123,7 +128,7 @@ public class StampsTest extends NbTestCase {
     }
 
     public void testWriteToCache() throws Exception {
-        Stamps s = Stamps.getModulesJARs();
+        final Stamps s = Stamps.getModulesJARs();
         
         assertNull(s.asByteBuffer("mycache.dat"));
         assertNull(s.asStream("mycache.dat"));
@@ -135,6 +140,10 @@ public class StampsTest extends NbTestCase {
                 os.writeInt(2);
                 os.writeShort(2);
             }
+
+            public void cacheReady() {
+                assertNotNull("stream can be obtained", s.asStream("mycache.dat"));
+            }
             
         }
         Up updater = new Up();
@@ -144,7 +153,7 @@ public class StampsTest extends NbTestCase {
         assertNull(s.asByteBuffer("mycache.dat"));
         assertNull(s.asStream("mycache.dat"));
         
-        s.flush(true);
+        s.waitFor(false);
         
         ByteBuffer bb;
         InputStream is;
@@ -164,9 +173,14 @@ public class StampsTest extends NbTestCase {
         assertNull(s.asStream("mycache.dat"));
 
         class Up implements Stamps.Updater {
+            boolean called;
 
             public void flushCaches(DataOutputStream os) throws IOException {
                 throw new IOException("Not supported yet.");
+            }
+
+            public void cacheReady() {
+                called = true;
             }
             
         }
@@ -178,7 +192,7 @@ public class StampsTest extends NbTestCase {
         assertNull(s.asStream("mycache.dat"));
         
         CharSequence log = Log.enable("org.netbeans", Level.WARNING);
-        s.flush(true);
+        s.waitFor(false);
         
         assertNull(s.asByteBuffer("mycache.dat"));
         assertNull(s.asStream("mycache.dat"));
@@ -186,14 +200,195 @@ public class StampsTest extends NbTestCase {
         if (log.length() < 10) {
             fail("There should be a warning written to log:\n" + log);
         }
+        
+        assertFalse("cache ready not called", updater.called);
+    }
+    
+    public void testCanHaveSubdirs() {
+        final Stamps s = Stamps.getModulesJARs();
+        
+        assertNull(s.asByteBuffer("mydir/mycache.dat"));
+
+        class Up implements Stamps.Updater {
+            boolean called;
+
+            public void flushCaches(DataOutputStream os) throws IOException {
+                os.write(1);
+            }
+
+            public void cacheReady() {
+                assertTrue("Now the cache can be accessed", s.exists("mydir/mycache.dat"));
+                called = true;
+            }
+            
+        }
+        Up updater = new Up();
+        
+        s.scheduleSave(updater, "mydir/mycache.dat", false);
+        s.waitFor(false);
+        
+        
+        File userDir = new File(System.getProperty("netbeans.user"));
+        File my = new File(new File(new File(new File(userDir, "var"), "cache"), "mydir"), "mycache.dat");
+        
+        assertTrue("file created", my.canRead());
+        assertEquals("size 1", 1, my.length());
+        
+        assertTrue("cache was ready", updater.called);
+    }
+    
+    public void testShutdownAndThenNoNotify() {
+        final Stamps s = Stamps.getModulesJARs();
+        
+        assertNull(s.asByteBuffer("mydir/mycache.dat"));
+
+        class Up implements Stamps.Updater {
+            boolean called;
+
+            public void flushCaches(DataOutputStream os) throws IOException {
+                os.write(1);
+            }
+
+            public void cacheReady() {
+                called = true;
+            }
+            
+        }
+        Up updater = new Up();
+        
+        s.scheduleSave(updater, "mydir/mycache.dat", false);
+        s.flush(10000);
+        s.shutdown();
+        
+        File userDir = new File(System.getProperty("netbeans.user"));
+        File my = new File(new File(new File(new File(userDir, "var"), "cache"), "mydir"), "mycache.dat");
+        
+        assertTrue("file created", my.canRead());
+        assertEquals("size 1", 1, my.length());
+        
+        assertFalse("cache was not called, due to shutdown", updater.called);
     }
     
     
     
     
+    public void testJustOnce() {
+        final Stamps s = Stamps.getModulesJARs();
+        
+        assertNull(s.asByteBuffer("mydir/mycache.dat"));
+
+        class Up implements Stamps.Updater {
+            int cnt;
+            
+            public void flushCaches(DataOutputStream os) throws IOException {
+                
+                assertNull("Now it is null", s.asStream("mydir/mycache.dat"));
+                
+                os.write(1);
+                cnt++;
+                if (cnt == 2) {
+                    fail("Can save just once");
+                }
+            }
+
+            public void cacheReady() {
+            }
+            
+        }
+        Up updater = new Up();
+        
+        s.scheduleSave(updater, "mydir/mycache.dat", false);
+        s.scheduleSave(updater, "mydir/mycache.dat", false);
+        
+        s.waitFor(false);
+        
+        assertEquals("only once", 1, updater.cnt);
+        
+        
+        s.scheduleSave(updater, "mydir/mycache.dat", false);
+        assertNull("Now it is null as well", s.asStream("mydir/mycache.dat"));
+        updater.cnt = 0;
+        s.waitFor(false);
+        
+        assertNotNull("Returns value again", s.asStream("mydir/mycache.dat"));
+        assertEquals("only once", 1, updater.cnt);
+        
+    }
     
-    
-    
+    public void testParael() throws InterruptedException {
+        final Stamps s = Stamps.getModulesJARs();
+        
+        assertNull(s.asMappedByteBuffer("mydir/mycache.dat"));
+
+        class Up implements Stamps.Updater, Runnable {
+            int ready;
+            int cnt;
+            Semaphore flushing = new Semaphore(0);
+            Semaphore scheduled = new Semaphore(0);
+            
+            public void flushCaches(DataOutputStream os) throws IOException {
+                int what = cnt++;
+                if (what == 0) {
+                    flushing.release();
+                    scheduled.acquireUninterruptibly();
+                }
+                for (int i = 0; i < 1024 * 1024; i++) {
+                    os.write(what);
+                }
+            }
+            
+            
+            public void run() {
+                flushing.acquireUninterruptibly();
+                s.scheduleSave(this, "mydir/mycache.dat", false);
+                scheduled.release();
+                assertFalse(s.exists("mydir/mycache.dat"));
+                s.waitFor(false);
+            }
+
+            public void cacheReady() {
+                ready++;
+            }
+        }
+        Up updater = new Up();
+        
+        s.scheduleSave(updater, "mydir/mycache.dat", false);
+        
+        Thread t = new Thread(updater, "fast flush");
+        t.start();
+        // slow flush
+        s.flush(50);
+        t.join();
+        
+        assertEquals("run twice", 2, updater.cnt);
+        assertEquals("but just once ready", 1, updater.ready);
+
+        MappedByteBuffer mmap = s.asMappedByteBuffer("mydir/mycache.dat");
+        {
+            assertEquals("1mb", 1024 * 1024, mmap.remaining());
+            int r = 0;
+            while (mmap.remaining() > 0) {
+                assertEquals("Value " + r + " OK: ", 1, mmap.get());
+                r++;
+            }
+        }
+        
+        s.scheduleSave(updater, "mydir/mycache.dat", false);
+        assertNull("Now it is null as well", s.asStream("mydir/mycache.dat"));
+        s.waitFor(false);
+
+        MappedByteBuffer mmap2 = s.asMappedByteBuffer("mydir/mycache.dat");
+        assertNotNull(mmap2);
+        
+        {
+            assertEquals("1mb", 1024 * 1024, mmap2.remaining());
+            int r = 0;
+            while (mmap2.remaining() > 0) {
+                assertEquals("Value2 " + r + " OK: ", 2, mmap2.get());
+                r++;
+            }
+        }
+    }
     
     
     private static void assertStamp(long expectedValue, File cluster, boolean global, boolean local) {

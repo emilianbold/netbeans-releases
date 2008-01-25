@@ -156,7 +156,7 @@ public final class NbRepository extends Repository {
     //
     
     private static void doExit (int value) {
-        org.netbeans.TopSecurityManager.exit(value);
+        TopLogging.exit(value);
     }
     
 }

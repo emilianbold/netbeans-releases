@@ -45,6 +45,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -52,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -73,6 +75,7 @@ import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleInstaller;
 import org.netbeans.ModuleManager;
+import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileObject;
@@ -308,8 +311,6 @@ final class NbInstaller extends ModuleInstaller {
 
         ev.log(Events.FINISH_LOAD, modules);
         
-        maybeSaveManifestCache();
-        
         if (Boolean.getBoolean("netbeans.preresolve.classes")) {
             preresolveClasses(modules);
         }
@@ -496,11 +497,19 @@ final class NbInstaller extends ModuleInstaller {
      * If a module has no declared layer, does nothing.
      */
     private void loadLayers(List<Module> modules, boolean load) {
+        if (
+            ModuleLayeredFileSystem.getUserModuleLayer().isLayersOK() &&
+            ModuleLayeredFileSystem.getInstallationModuleLayer().isLayersOK()
+        ) {
+            return;
+        }
         ev.log(load ? Events.LOAD_LAYERS : Events.UNLOAD_LAYERS, modules);
         // #23609: dependent modules should be able to override:
         modules = new ArrayList<Module>(modules);
         Collections.reverse(modules);
         Map<ModuleLayeredFileSystem,List<URL>> urls = new HashMap<ModuleLayeredFileSystem,List<URL>>(5);
+        urls.put(ModuleLayeredFileSystem.getUserModuleLayer(), new ArrayList<URL>(1000));
+        urls.put(ModuleLayeredFileSystem.getInstallationModuleLayer(), new ArrayList<URL>(1000));
         for (Module m: modules) {
             String s = layers.get(m);
             if (s != null) {
@@ -528,7 +537,7 @@ final class NbInstaller extends ModuleInstaller {
                 }
                 List<URL> theseurls = urls.get(host);
                 if (theseurls == null) {
-                    theseurls = new ArrayList<URL>(100);
+                    theseurls = new ArrayList<URL>(1000);
                     urls.put(host, theseurls);
                 }
                 boolean foundSomething = false;
@@ -1158,19 +1167,6 @@ final class NbInstaller extends ModuleInstaller {
 
     private static final Logger MANIFEST_LOG = Logger.getLogger(NbInstaller.class.getName() + ".manifestCache");
 
-    /** The actual file where the manifest cache is stored,
-     * or null if it will not be used.
-     * Binary format:
-     * Sequence of records, one per cached manifest; no particular order.
-     * Record:
-     * 1. Absolute JAR path, UTF-8.
-     * 2. Null byte.
-     * 3. Last modification time of JAR, System.currentTimeMillis format, big-endian (8-byte long).
-     * 4. The manifest body.
-     * 5. Null byte.
-     */
-    private File manifestCacheFile;
-    
     /** While true, try to use the manifest cache.
      * So (non-reloadable) JARs scanned during startup will have their manifests cached.
      * After the primary set of modules has been scanned, this will be set to false.
@@ -1178,20 +1174,11 @@ final class NbInstaller extends ModuleInstaller {
      * or there is no available cache directory.
      */
     private boolean usingManifestCache;
+    private Object MANIFEST_CACHE = new Object();
 
     {
         usingManifestCache = Boolean.valueOf(System.getProperty("netbeans.cache.manifests", "true")).booleanValue();
-        if (usingManifestCache) {
-            String userdir = System.getProperty("netbeans.user");
-            if (userdir != null) {
-                manifestCacheFile = new File(new File(new File(new File (userdir), "var"), "cache"), "all-manifests.dat"); // NOI18N
-                MANIFEST_LOG.fine("Using manifest cache in " + manifestCacheFile);
-            } else {
-                // Some special startup mode, e.g. with Plain.
-                usingManifestCache = false;
-                MANIFEST_LOG.fine("Not using any manifest cache; no user directory");
-            }
-        } else {
+        if (!usingManifestCache) {
             MANIFEST_LOG.fine("Manifest cache disabled");
         }
     }
@@ -1199,7 +1186,7 @@ final class NbInstaller extends ModuleInstaller {
     /** Cache of known JAR manifests.
      * Initially null. If the cache is read, it may be used to quickly serve JAR manifests.
      */
-    private Map<File,DateAndManifest> manifestCache = null;
+    private Map<File,DateAndManifest> manifestCache;
     private static final class DateAndManifest {
         /** modification date when last read */
         public final long date;
@@ -1210,15 +1197,6 @@ final class NbInstaller extends ModuleInstaller {
         }
     }
     
-    /** If true, at least one manifest has had to be read explicitly.
-     * This might be because the cache did not initially exist;
-     * or the JAR was not present in the cache;
-     * or the JAR was present but did not match the cache timestamp.
-     */
-    private boolean manifestCacheDirty = false;
-    
-    // XXX consider logging using Events
-    
     /** Overrides superclass method to keep a cache of module manifests,
      * so that their JARs do not have to be opened twice during startup.
      */
@@ -1226,10 +1204,14 @@ final class NbInstaller extends ModuleInstaller {
         if (!usingManifestCache) {
             return super.loadManifest(jar);
         }
-        if (manifestCache == null) {
-            manifestCache = loadManifestCache(manifestCacheFile);
+        Map<File, DateAndManifest> cache;
+        synchronized (MANIFEST_CACHE) {
+            if (manifestCache == null) {
+                manifestCache = Collections.synchronizedMap(loadManifestCache());
+            }
+            cache = manifestCache;
         }
-        DateAndManifest entry = manifestCache.get(jar);
+        DateAndManifest entry = cache.get(jar);
         if (entry != null) {
             if (entry.date == jar.lastModified()) {
                 // Cache hit.
@@ -1244,56 +1226,46 @@ final class NbInstaller extends ModuleInstaller {
         // Cache miss.
         Manifest m = super.loadManifest(jar);
         // (If that threw IOException, we leave it out of the cache.)
-        manifestCache.put(jar, new DateAndManifest(jar.lastModified(), m));
-        manifestCacheDirty = true;
+        cache.put(jar, new DateAndManifest(jar.lastModified(), m));
+        saveManifestCache();
         return m;
     }
-    
-    /** If the manifest cache had been in use, and is now dirty, write it to disk.
-     */
-    private void maybeSaveManifestCache() {
-        if (usingManifestCache && manifestCacheDirty) {
-            try {
-                saveManifestCache(manifestCache, manifestCacheFile);
-            } catch (IOException ioe) {
-                MANIFEST_LOG.log(Level.WARNING, null, ioe);
+
+    class CacheFlusher implements Stamps.Updater {
+        public void flushCaches(DataOutputStream os) throws IOException {
+            updater = new CacheFlusher();
+            
+            MANIFEST_LOG.fine("Saving manifest cache");
+            HashMap<File, DateAndManifest> m;
+            synchronized (MANIFEST_CACHE) {
+                m = new HashMap<File, DateAndManifest>(manifestCache);
             }
-            usingManifestCache = false;
-            manifestCacheDirty = false;
-            manifestCacheFile = null;
+            for (Map.Entry<File, DateAndManifest> entry : m.entrySet()) {
+                File jar = entry.getKey();
+                os.write(jar.getAbsolutePath().getBytes("UTF-8")); // NOI18N
+                os.write(0);
+                long time = entry.getValue().date;
+                for (int i = 7; i >= 0; i--) {
+                    os.write((int) ((time >> (i * 8)) & 0xFF));
+                }
+                entry.getValue().manifest.write(os);
+                os.write(0);
+            }
+            os.close();
+            MANIFEST_LOG.fine("Saving manifest cache - done");
         }
-        manifestCache = null;
+
+        public void cacheReady() {
+        }
     }
+    CacheFlusher updater = new CacheFlusher();
     
     /** Really save the cache.
      * @see #manifestCacheFile
      */
-    private void saveManifestCache(Map<File,DateAndManifest> manifestCache, File manifestCacheFile) throws IOException {
-        MANIFEST_LOG.fine("Saving manifest cache");
-        manifestCacheFile.getParentFile().mkdirs();
-        OutputStream os = new FileOutputStream(manifestCacheFile);
-        try {
-            try {
-                os = new BufferedOutputStream(os);
-                for (Map.Entry<File,DateAndManifest> entry : manifestCache.entrySet()) {
-                    File jar = entry.getKey();
-                    os.write(jar.getAbsolutePath().getBytes("UTF-8")); // NOI18N
-                    os.write(0);
-                    long time = entry.getValue().date;
-                    for (int i = 7; i >= 0; i--) {
-                        os.write((int)((time >> (i * 8)) & 0xFF));
-                    }
-                    entry.getValue().manifest.write(os);
-                    os.write(0);
-                }
-            } finally {
-                os.close();
-            }
-        } catch (IOException ioe) {
-            // Do not leave behind a bogus half-written file.
-            manifestCacheFile.delete();
-            throw ioe;
-        }
+    private void saveManifestCache() throws IOException {
+        MANIFEST_LOG.fine("Schedule saving manifest cache");
+        Stamps.getModulesJARs().scheduleSave(updater, "all-manifest.dat", false);
     }
     
     /** Load the cache if present.
@@ -1301,55 +1273,47 @@ final class NbInstaller extends ModuleInstaller {
      * just create an empty cache.
      * @see #manifestCacheFile
      */
-    private Map<File,DateAndManifest> loadManifestCache(File manifestCacheFile) {
-        if (!manifestCacheFile.canRead()) {
-            MANIFEST_LOG.fine("No manifest cache found at " + manifestCacheFile);
-            return new HashMap<File,DateAndManifest>(200);
-        }
+    private Map<File,DateAndManifest> loadManifestCache() {
         ev.log(Events.PERF_START, "NbInstaller - loadManifestCache"); // NOI18N
+        ByteBuffer bis = Stamps.getModulesJARs().asByteBuffer("all-manifest.dat");  // NOI18N
+        Map<File,DateAndManifest> m = new HashMap<File,DateAndManifest>(200);
         try {
-            InputStream is = new FileInputStream(manifestCacheFile);
-            try {
-                BufferedInputStream bis = new BufferedInputStream(is);
-                Map<File,DateAndManifest> m = new HashMap<File,DateAndManifest>(200);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream((int)manifestCacheFile.length());
-                FileUtil.copy(bis, baos);
-                byte[] data = baos.toByteArray();
-                readManifestCacheEntries(data, m);
-                return m;
-            } finally {
-                is.close();
-                ev.log(Events.PERF_END, "NbInstaller - loadManifestCache"); // NOI18N
-            }
-        } catch (IOException ioe) {
-            MANIFEST_LOG.log(Level.WARNING, "While reading: " + manifestCacheFile, ioe); // NOI18N
-            return new HashMap<File,DateAndManifest>(200);
+            readManifestCacheEntries(bis, m);
+        } catch (IOException ex) {
+            MANIFEST_LOG.log(Level.WARNING, "Cannot read cache", ex); // NOI18N
+        } finally {
+            ev.log(Events.PERF_END, "NbInstaller - loadManifestCache"); // NOI18N
         }
+        return m;
     }
     
-    private static int findNullByte(byte[] data, int start) {
-        int len = data.length;
+    private static int findNullByte(ByteBuffer data, int start) {
+        int len = data.limit();
         for (int i = start; i < len; i++) {
-            if (data[i] == 0) {
+            if (data.get(i) == 0) {
                 return i;
             }
         }
         return -1;
     }
     
-    private static void readManifestCacheEntries(byte[] data, Map<File,DateAndManifest> m) throws IOException {
+    private static void readManifestCacheEntries(ByteBuffer data, Map<File,DateAndManifest> m) throws IOException {
+        if (data == null) {
+            return;
+        }
+        
         int pos = 0;
         while (true) {
-            if (pos == data.length) {
+            if (pos == data.limit()) {
                 return;
             }
             int end = findNullByte(data, pos);
             if (end == -1) throw new IOException("Could not find next manifest JAR name from " + pos); // NOI18N
-            File jar = new File(new String(data, pos, end - pos, "UTF-8")); // NOI18N
+            File jar = new File(new String(toArray(data, pos, end - pos), "UTF-8")); // NOI18N
             long time = 0L;
-            if (end + 8 >= data.length) throw new IOException("Ran out of space for timestamp for " + jar); // NOI18N
+            if (end + 8 >= data.limit()) throw new IOException("Ran out of space for timestamp for " + jar); // NOI18N
             for (int i = 0; i < 8; i++) {
-                long b = data[end + i + 1];
+                long b = data.get(end + i + 1);
                 if (b < 0) b += 256;
                 int exponent = 7 - i;
                 long addin = b << (exponent * 8);
@@ -1361,7 +1325,7 @@ final class NbInstaller extends ModuleInstaller {
             if (end == -1) throw new IOException("Could not find manifest body for " + jar); // NOI18N
             Manifest mani;
             try {
-                mani = new Manifest(new ByteArrayInputStream(data, pos, end - pos));
+                mani = new Manifest(new ByteArrayInputStream(toArray(data, pos, end - pos)));
             } catch (IOException ioe) {
                 Exceptions.attachMessage(ioe, "While in entry for " + jar);
                 throw ioe;
@@ -1372,6 +1336,13 @@ final class NbInstaller extends ModuleInstaller {
             }
             pos = end + 1;
         }
+    }
+    
+    private static byte[] toArray(ByteBuffer bb, int pos, int len) {
+        byte[] manarr = new byte[len];
+        bb.position(pos);
+        bb.get(manarr, 0, len);
+        return manarr;
     }
     
     /** Check all module classes to make sure there are no unresolvable compile-time

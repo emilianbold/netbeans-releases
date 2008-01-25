@@ -1572,8 +1572,6 @@ public final class ModuleManager {
      * @since org.netbeans.core/1 1.11
      */
     public boolean shutDown(Runnable midHook) {
-        org.netbeans.JarClassLoader.saveArchive();
-
         assertWritable();
         Set<Module> unorderedModules = getEnabledModules();
         Map<Module,List<Module>> deps = Util.moduleDependencies(unorderedModules, modulesByName, providersOf);

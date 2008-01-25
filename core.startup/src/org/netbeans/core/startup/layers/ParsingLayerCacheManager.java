@@ -42,9 +42,9 @@
 package org.netbeans.core.startup.layers;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -76,7 +76,7 @@ import org.xml.sax.XMLReader;
  * responsible for loading from and saving to the storage format.
  * @author Jesse Glick
  */
-public abstract class ParsingLayerCacheManager extends LayerCacheManager implements ContentHandler, ErrorHandler, EntityResolver {
+abstract class ParsingLayerCacheManager extends LayerCacheManager implements ContentHandler, ErrorHandler, EntityResolver {
     
     private final static String[] ATTR_TYPES = {
         "boolvalue",
@@ -113,22 +113,15 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
 
     /** Constructor for subclasses.
      */
-    protected ParsingLayerCacheManager(File cacheDir) throws IOException {
-        super(cacheDir);
+    protected ParsingLayerCacheManager() {
     }
     
     /** Implements storage by parsing the layers and calling
      * store(FileSystem,ParsingLayerCacheManager.MemFolder).
      */
-    public final void store(FileSystem fs, List<URL> urls) throws IOException {
-        store(fs, createRoot(urls));
-    }
-    
-    /** Implements storage by parsing the layers and calling
-     * store(ParsingLayerCacheManager.MemFolder).
-     */
-    public final FileSystem store(List<URL> urls) throws IOException {
-        return store(createRoot(urls));
+    @Override
+    public final void store(FileSystem fs, List<URL> urls, OutputStream os) throws IOException {
+        store(fs, createRoot(urls), os);
     }
     
     /**
@@ -206,17 +199,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
      * Not called if the manager does not support loading;
      * otherwise must be overridden.
      */
-    protected void store(FileSystem fs, MemFolder root) throws IOException {
-        throw new NotImplementedException();
-    }
-    
-    /** Delegated storage method supplied with a merged layer parse.
-     * Not called if the manager supports loading;
-     * otherwise must be overridden.
-     */
-    protected FileSystem store(MemFolder root) throws IOException {
-        throw new NotImplementedException();
-    }
+    protected abstract void store(FileSystem fs, MemFolder root, OutputStream os) throws IOException;
     
     /** If true, file content URLs should be opened and the contents extracted,
      * if they are of an appropriate type (locally stored). If false, the original
@@ -464,6 +447,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             super (base);
         }
         
+        @Override
         public String toString() {
             return "MemFolder[" + name + "]"; // NOI18N
         }
@@ -479,6 +463,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
             super (base);
         }
         
+        @Override
         public String toString() {
             return "MemFile[" + name + "]"; // NOI18N
         }
@@ -490,6 +475,7 @@ public abstract class ParsingLayerCacheManager extends LayerCacheManager impleme
         public String name;
         public String type;
         public String data;
+        @Override
         public String toString() {
             return "MemAttr[" + name + "," + type + "," + data + "]"; // NOI18N
         }

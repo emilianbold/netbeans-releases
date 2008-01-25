@@ -39,13 +39,11 @@
 
 package org.netbeans;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,12 +51,18 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteBuffer;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,10 +79,7 @@ public final class Stamps {
     private static final Logger LOG = Logger.getLogger(Stamps.class.getName());
     private static AtomicLong moduleJARs;
     
-    static int delay = 0;
-
-    
-    private List<Store> storages;
+    private Worker worker = new Worker();
 
     private Stamps() {
     }
@@ -110,18 +111,35 @@ public final class Stamps {
         return moduleJARs();
     }
     
+    /** Checks whether a cache exists
+     * 
+     * @param cache name of the cache
+     * @return true if the cache exists and is not out of date
+     */
+    public boolean exists(String cache) {
+        return file(cache, null) != null;
+    }
+    
     /** Opens the access to cache object as a stream.
      * @param name name of the cache
      * @return stream to read from the cache or null if the cache is not valid
      */
     public InputStream asStream(String cache) {
-        ByteBuffer bb = asByteBuffer(cache, false);
+        ByteBuffer bb = asByteBuffer(cache, false, false);
         if (bb == null) {
             return null;
         }
         return new ByteArrayInputStream(bb.array());
     }
     
+    /** Getter for mmapped buffer access to the cache.
+     * @param cache the file to access
+     * @return mmapped read only buffer
+     */
+    public MappedByteBuffer asMappedByteBuffer(String cache) {
+        return (MappedByteBuffer)asByteBuffer(cache, true, true);
+    }
+        
     /** Returns the stamp for this caches. 
      * @return a date, each cache needs to be newer than this date
      */
@@ -131,15 +149,20 @@ public final class Stamps {
      * @return stream to read from the cache or null if the cache is not valid
      */
     public ByteBuffer asByteBuffer(String cache) {
-        return asByteBuffer(cache, true);
+        return asByteBuffer(cache, true, false);
     }
-    private ByteBuffer asByteBuffer(String cache, boolean direct) {
+    private File file(String cache, int[] len) {
         String ud = System.getProperty("netbeans.user"); // NOI18N
         if (ud == null) {
             return null;
         }
+        synchronized (this) {
+            if (worker.isProcessing(cache)) {
+                return null;
+            }
+        }
         
-        File cacheFile = new File(new File(new File(ud, "var"), "cache"), cache); // NOI18N
+        File cacheFile = new File(new File(new File(ud, "var"), "cache"), cache.replace('/', File.separatorChar)); // NOI18N
         long last = cacheFile.lastModified();
         if (last <= 0) {
             return null;
@@ -149,23 +172,42 @@ public final class Stamps {
             return null;
         }
 
+        long longLen = cacheFile.length();
+        if (longLen > Integer.MAX_VALUE) {
+            LOG.warning("Cache file is too big: " + longLen + " bytes for " + cacheFile); // NOI18N
+            return null;
+        }
+        if (len != null) {
+            len[0] = (int)longLen;
+        }
+        
+        return cacheFile;
+    }
+    
+    private ByteBuffer asByteBuffer(String cache, boolean direct, boolean mmap) {
+        int[] len = new int[1];
+        File cacheFile = file(cache, len);
+        if (cacheFile == null) {
+            return null;
+        }
+        
         try {
-            long longLen = cacheFile.length();
-            if (longLen > Integer.MAX_VALUE) {
-                LOG.warning("Cache file is too big: " + longLen + " bytes for " + cacheFile); // NOI18N
-                return null;
-            }
-            int len = (int)longLen;
-            ByteBuffer master = direct ? ByteBuffer.allocateDirect(len) : ByteBuffer.allocate(len);
             FileChannel fc = new FileInputStream(cacheFile).getChannel();
-            int red = fc.read(master);
-            if (red != len) {
-                LOG.warning("Read less than expected: " + red + " expected: " + len + " for " + cacheFile); // NOI18N
-                return null;
+            ByteBuffer master;
+            if (mmap) {
+                master = fc.map(FileChannel.MapMode.READ_ONLY, 0, len[0]);
+                master.order(ByteOrder.LITTLE_ENDIAN);
+            } else {
+                master = direct ? ByteBuffer.allocateDirect(len[0]) : ByteBuffer.allocate(len[0]);
+                int red = fc.read(master);
+                if (red != len[0]) {
+                    LOG.warning("Read less than expected: " + red + " expected: " + len + " for " + cacheFile); // NOI18N
+                    return null;
+                }
+                master.flip();
             }
 
             fc.close();
-            master.flip();
             
             return master;
         } catch (IOException ex) {
@@ -179,33 +221,35 @@ public final class Stamps {
      * @param file name of the file to store the cache into
      * @param append write from scratch or append?
      */
-    public synchronized void scheduleSave(Updater updater, String cache, boolean append) {
-        if (storages == null) {
-            storages = new ArrayList<Stamps.Store>();
-        }
+    public void scheduleSave(Updater updater, String cache, boolean append) {
         LOG.log(Level.FINE, "Scheduling save for {0} cache", cache);
-        storages.add(new Store(updater, cache, append));
+        synchronized (worker) {
+            worker.addStorage(new Store(updater, cache, append));
+        }
     }
     
     /** Flushes all caches.
+     * @param delay the delay to wait with starting the parsing, if zero, that also means
+     *   we want to wait for the end of parsing
      */
-    public void flush(boolean now) {
-        List<Store> work;
-        synchronized (this) {
-            work = storages;
-            storages = null;
+    public void flush(int delay) {
+        synchronized (worker) {
+            worker.start(delay);
         }
-        
-        delay = now ? 0 : 1024;
-        
-        if (work == null) {
-            return;
-        }
-        
-        for (Store store : work) {
-            store.store();
-        }
+    }
 
+    /** Waits for the worker to finish */
+    public void shutdown() {
+        waitFor(true);
+    }
+
+    final void waitFor(boolean noNotify) {
+        Worker wait;
+        synchronized (worker) {
+            flush(0);
+            wait = worker;
+        }
+        wait.waitFor(noNotify);
     }
     
     
@@ -309,12 +353,52 @@ public final class Stamps {
         }
 
     }
+    
+    private static void deleteCache(File cacheFile) throws IOException {
+        int fileCounter = 0;
+        if (cacheFile.exists()) {
+            // all of this mess is here because Windows can't delete mmaped file.
+            File tmpFile = new File(cacheFile.getParentFile(), cacheFile.getName() + "." + fileCounter++);
+            tmpFile.delete(); // delete any leftover file from previous session
+            boolean renamed = false;
+            for (int i = 0; i < 5; i++) {
+                renamed = cacheFile.renameTo(tmpFile); // try to rename it
+                if (renamed) {
+                    break;
+                }
+                LOG.fine("cannot rename (#" + i + "): " + cacheFile); // NOI18N
+                // try harder
+                System.gc();
+                System.runFinalization();
+                LOG.fine("after GC"); // NOI18N
+            }
+            if (!renamed) {
+                // still delete on exit, so next start is ok
+                cacheFile.deleteOnExit();
+                throw new IOException("Could not delete: " + cacheFile); // NOI18N
+            }
+            if (!tmpFile.delete()) {
+                tmpFile.deleteOnExit();
+            } // delete now or later
+        }
+    }
 
     /** A callback interface to flush content of some cache at a suitable
      * point in time.
      */
     public static interface Updater {
+        /** Callback method to allow storage of the cache to a stream.
+         * If an excetion is thrown, cache is invalidated.
+         * 
+         * @param os the stream to write to
+         * @throws IOException exception in case something goes wrong
+         */
         public void flushCaches(DataOutputStream os) throws IOException;
+        
+        /** Callback method to notify the caller, that
+         * caches are successfully written.
+         */
+        public void cacheReady();
     }
     
     /** Internal structure keeping info about storages.
@@ -325,6 +409,7 @@ public final class Stamps {
         final boolean append;
         
         OutputStream os;
+        AtomicInteger delay;
         int count;
         
         public Store(Updater updater, String cache, boolean append) {
@@ -333,24 +418,31 @@ public final class Stamps {
             this.append = append;
         }
         
-        public void store() {
+        public boolean store(AtomicInteger delay) {
             assert os == null;
             
             String ud = System.getProperty("netbeans.user"); // NOI18N
             if (ud == null) {
                 LOG.warning("No 'netbeans.user' property to store: " + cache); // NOI18N
-                return;
+                return false;
             }
             File cacheFile = new File(new File(new File(ud, "var"), "cache"), cache); // NOI18N
-            cacheFile.getParentFile().mkdirs();
-
             boolean delete = false;
             try {
+                LOG.log(Level.FINE, "Cleaning cache {0}", cacheFile);
+                
+                deleteCache(cacheFile);
+                cacheFile.getParentFile().mkdirs();
+
+                LOG.log(Level.FINE, "Storing cache {0}", cacheFile);
                 os = new FileOutputStream(cacheFile, append); //append new entries only
                 DataOutputStream dos = new DataOutputStream(new BufferedOutputStream(this, 1024 * 1024));
+                
+                this.delay = delay;
         
                 updater.flushCaches(dos);
                 dos.close();
+                LOG.log(Level.FINE, "Done Storing cache {0}", cacheFile);
             } catch (IOException ex) {
                 LOG.log(Level.WARNING, "Error saving cache " + cacheFile, ex); // NOI18N
                 delete = true;
@@ -368,7 +460,7 @@ public final class Stamps {
                     cacheFile.deleteOnExit();
                 }
             }
-            
+            return !delete;
         }
 
         @Override
@@ -401,14 +493,145 @@ public final class Stamps {
         
         private void count(int add) {
             count += add;
-            if (count > 1024 * 1024) {
+            if (count > 64 * 1024) {
                 try {
-                    Thread.sleep(delay);
+                    Thread.sleep(delay.get());
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
                 count = 0;
             }
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Store other = (Store) obj;
+            if (!this.updater.equals(other.updater)) {
+                return false;
+            }
+            if (!this.cache.equals(other.cache)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 19 * hash + (this.updater != null ? this.updater.hashCode() : 0);
+            hash = 19 * hash + (this.cache != null ? this.cache.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public String toString() {
+            return cache;
+        }
     } // end of Store
+    
+    private final class Worker extends Thread {
+        private final LinkedList<Store> storages;
+        private final HashSet<String> processing;
+        private AtomicInteger delay;
+        private boolean noNotify;
+        
+        public Worker() {
+            super("Flushing caches");
+            storages = new LinkedList<Stamps.Store>();
+            processing = new HashSet<String>();
+            setPriority(MIN_PRIORITY);
+        }
+        
+        public synchronized void start(int time) {
+            if (delay == null) {
+                delay = new AtomicInteger(time);
+                super.start();
+            }
+        }
+        
+        public synchronized void addStorage(Store s) {
+            processing.add(s.cache);
+            for (Iterator<Stamps.Store> it = storages.iterator(); it.hasNext();) {
+                Stamps.Store store = it.next();
+                if (store.equals(s)) {
+                    it.remove();
+                }
+            }
+            storages.add(s);
+        }
+        
+        @Override
+        public void run() {
+            int before = delay.get();
+            for (int till = before; till >= 0; till -= 500) {
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.INFO, null, ex);
+                }
+                if (before != delay.get()) {
+                    break;
+                }
+            }
+            before = 128;
+            if (before > 128) {
+                delay.compareAndSet(before, 128);
+            }
+            
+            long time = System.currentTimeMillis();
+            LOG.log(Level.FINE, "Storing caches {0}", storages);
+
+            HashSet<Store> notify = new HashSet<Stamps.Store>();
+            for (;;) {
+                Store store;
+                synchronized (this) {
+                    store = this.storages.poll();
+                    if (store == null) {
+                        // ready for new round of work
+                        worker = new Worker();
+                        break;
+                    }
+                }
+                if (store.store(delay)) {
+                    notify.add(store);
+                }
+            }
+            
+            long much = System.currentTimeMillis() - time;
+            LOG.log(Level.FINE, "Done storing caches {0}", notify);
+            LOG.log(Level.FINE, "Took {0} ms", much);
+            
+            processing.clear();
+            
+            for (Stamps.Store store : notify) {
+                if (!noNotify) {
+                    store.updater.cacheReady();
+                }
+            }
+            LOG.log(Level.FINE, "Notified ready {0}", notify);
+
+        }
+
+
+        final void waitFor(boolean noNotify) {
+            try {
+                this.noNotify = noNotify;
+                delay.set(0);
+                join();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        private boolean isProcessing(String cache) {
+            return processing.contains(cache);
+        }
+        
+    }
 }

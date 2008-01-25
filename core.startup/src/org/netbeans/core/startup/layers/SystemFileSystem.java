@@ -313,10 +313,9 @@ implements FileSystem.Status {
         }
 
         FileSystem[] arr = new FileSystem[home == null ? 2 : 3];
-        arr[0] = new ModuleLayeredFileSystem(user, true, new FileSystem[0], null);
+        arr[0] = new ModuleLayeredFileSystem(user, true, new FileSystem[0], false);
         if (home != null) {
-            File cachedir = userDir != null ? new File(new File (userDir.getParentFile(), "var"), "cache") : null; // NOI18N
-            arr[1] = new ModuleLayeredFileSystem(home, false, extras, cachedir);
+            arr[1] = new ModuleLayeredFileSystem(home, false, extras, true);
         }
         FixedFileSystem.deflt = new FixedFileSystem
             ("org.netbeans.core.projects.FixedFileSystem", "Automatic Manifest Installation"); // NOI18N
@@ -334,6 +333,7 @@ implements FileSystem.Status {
     *
     * @param fo file object that change its actual file system
     */
+    @Override
     protected void notifyMigration (FileObject fo) {
         fireFileStatusChanged (new FileStatusEvent (this, fo, false, true));
     }

@@ -345,7 +345,7 @@ final class NbEvents extends Events {
             } else {
                 int ret = JOptionPane.showOptionDialog(c, pane, msg, 0, type, null, options, options[1]);
                 if (ret == 1 || ret == -1) { // exit or close
-                    TopSecurityManager.exit(1);
+                    TopLogging.exit(1);
                 }
             }
         }

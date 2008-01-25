@@ -41,9 +41,14 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import junit.textui.TestRunner;
 import org.netbeans.junit.NbTestSuite;
@@ -54,6 +59,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.MultiFileSystem;
+import org.openide.filesystems.XMLFileSystem;
 /** Test layer cache manager.
  * @author Jesse Glick
  * @see "#20628"
@@ -77,20 +83,29 @@ implements CacheManagerTestBaseHid.ManagerFactory {
 
     protected void setUp() throws Exception {
         super.setUp();
+        
         clearWorkDir();
+        
+        System.setProperty("netbeans.user", getWorkDirPath());
     }
 
     //
     // Manager factory methods
     //
     public LayerCacheManager createManager() throws Exception {
-        return new BinaryCacheManager(getWorkDir());
+        return new BinaryCacheManager();
     }
 
     public boolean supportsTimestamps () {
         return true;
     }
     
+    static FileSystem store(LayerCacheManager m, List<URL> urls) throws IOException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        FileSystem prev = m.createEmptyFileSystem();
+        m.store(prev, urls, os);
+        return m.load(prev, ByteBuffer.wrap(os.toByteArray()).order(ByteOrder.LITTLE_ENDIAN));
+    }
     
     //
     // new test methods
@@ -98,15 +113,14 @@ implements CacheManagerTestBaseHid.ManagerFactory {
     
     public void testFastReplacement() throws Exception {
         clearWorkDir();
-        LayerCacheManager m = new BinaryCacheManager(getWorkDir());
-        assertFalse(m.cacheExists());
+        LayerCacheManager m = new BinaryCacheManager();
         // layer2.xml should override layer1.xml where necessary:
         List urls = new ArrayList(Arrays.asList(new URL[] {
             BinaryCacheManagerTest.class.getResource("data/layer2.xml"),
             BinaryCacheManagerTest.class.getResource("data/layer1.xml"),
         }));
-        FileSystem f = m.store(urls);
-        assertTrue(m.cacheExists());
+        
+        FileSystem f = store(m, urls);
         FixedFileSystem base = new FixedFileSystem("ffs", "FFS");
         base.add("baz/thongy", new FixedFileSystem.Instance(false, null, null, null, (URL)null));
         final MFS mfs = new MFS(new FileSystem[] {base, f});
@@ -119,7 +133,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         baz.addFileChangeListener(l);
         //L l2 = new L();mfs.addFileChangeListener(l2);
         urls.remove(0);
-        f = m.store(urls);
+        f = store(m, urls);
         final FileSystem[] fss = new FileSystem[] {base, f};
         mfs.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() {
@@ -135,7 +149,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
         assertEquals(0, l.fc);
         assertEquals(0, l.r);
         urls.remove(0);
-        f = m.store(urls);
+        f = store(m, urls);
         final FileSystem[] fss2 = new FileSystem[] {base, f};
         mfs.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() {

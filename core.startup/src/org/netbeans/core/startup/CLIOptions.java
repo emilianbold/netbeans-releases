@@ -267,7 +267,7 @@ public class CLIOptions extends CLIHandler {
                 }
                 System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_no_user_directory"));
                 Thread.dumpStack(); // likely to happen from misbehaving unit tests, etc.
-                TopSecurityManager.exit(1);
+                TopLogging.exit(1);
             }
 
             // #11735, #21085: avoid relative user dirs, or ../ seqs
@@ -278,7 +278,7 @@ public class CLIOptions extends CLIHandler {
                 File homeDirF = FileUtil.normalizeFile(new File(homeDir));
                 if ((userDirF.getAbsolutePath() + File.separatorChar).startsWith(homeDirF.getParentFile().getAbsolutePath() + File.separatorChar)) {
                     System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_user_directory_is_inside_home"));
-                    TopSecurityManager.exit(1);
+                    TopLogging.exit(1);
                 }
             }
 

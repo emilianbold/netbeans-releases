@@ -71,6 +71,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Stamps;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -123,18 +124,13 @@ public class BinaryFS extends FileSystem {
     }
 
     /** Creates a new instance of BinaryFS */
-    public BinaryFS(String binaryFile) throws IOException {
+    public BinaryFS(String binaryFile, ByteBuffer buff) throws IOException {
         try {
             _setSystemName("BinaryFS" + binaryFile.replace('/', '-').replace(File.separatorChar, '-')); // NOI18N
         } catch (PropertyVetoException ex) {
             throw (IOException)new IOException().initCause(ex);
         }
         this.binaryFile = binaryFile;
-        RandomAccessFile file = new RandomAccessFile(binaryFile, "r"); // NOI18N
-        long len = file.length();
-        MappedByteBuffer buff = file.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, len);
-        buff.order(ByteOrder.LITTLE_ENDIAN);
-        file.close();
 
         // verify the magic in header and expected image length
         byte[] magic = new byte[MAGIC.length];
@@ -143,7 +139,7 @@ public class BinaryFS extends FileSystem {
             throw new IOException("Bad magic header: " + new String(magic)); // NOI18N
         }
         long storedLen = buff.getInt();
-        if (len != storedLen) {
+        if (buff.limit() != storedLen) {
             throw new IOException("Corrupted image, correct length=" + storedLen); // NOI18N
         }
 

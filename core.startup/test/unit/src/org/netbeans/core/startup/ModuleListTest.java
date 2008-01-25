@@ -44,12 +44,8 @@ package org.netbeans.core.startup;
 //import junit.framework.*;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
-import org.netbeans.core.startup.ModuleHistory;
-import org.netbeans.core.startup.ModuleList;
 import org.netbeans.junit.*;
-import junit.textui.TestRunner;
 import java.util.*;
-import java.lang.reflect.Method;
 import org.openide.util.*;
 import org.openide.modules.*;
 import java.io.*;
@@ -101,6 +97,7 @@ public class ModuleListTest extends SetupHid {
     private ModuleManager mgr;
     private org.netbeans.core.startup.ModuleList list;
     private FileObject modulesfolder;
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
@@ -196,7 +193,8 @@ public class ModuleListTest extends SetupHid {
     }
     
     private void assertCache() throws Exception {
-        Stamps.getModulesJARs().flush(true);
+        Stamps.getModulesJARs().flush(0);
+        Stamps.getModulesJARs().shutdown();
         
         File f = new File(new File(new File(System.getProperty("netbeans.user"), "var"), "cache"), "all-modules.dat");
         assertTrue("Cache exists", f.exists());

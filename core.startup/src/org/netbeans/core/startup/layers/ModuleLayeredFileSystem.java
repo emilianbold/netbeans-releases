@@ -41,32 +41,29 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.io.BufferedReader;
+import java.beans.PropertyVetoException;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.lang.reflect.Constructor;
-import java.net.URI;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Stamps;
 import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.XMLFileSystem;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -108,8 +105,8 @@ implements LookupListener {
      * @param otherLayers some other layers to use, e.g. LocalFileSystem[]
      * @param cacheDir a directory in which to store a cache, or null for no caching
      */
-    ModuleLayeredFileSystem (FileSystem writableLayer, boolean userDir, FileSystem[] otherLayers, File cacheDir) throws IOException {
-        this(writableLayer, userDir, otherLayers, manager(cacheDir));
+    ModuleLayeredFileSystem (FileSystem writableLayer, boolean userDir, FileSystem[] otherLayers, boolean mgr) throws IOException {
+        this(writableLayer, userDir, otherLayers, LayerCacheManager.manager(mgr));
     }
     
     private ModuleLayeredFileSystem(FileSystem writableLayer, boolean addLookup, FileSystem[] otherLayers, LayerCacheManager mgr) throws IOException {
@@ -139,57 +136,23 @@ implements LookupListener {
         
     }
     
-    private static LayerCacheManager manager(File cacheDir) throws IOException {
-        if (cacheDir != null) {
-            if (!cacheDir.isDirectory()) {
-                if (!cacheDir.mkdirs()) {
-                    throw new IOException("Could not make dir: " + cacheDir); // NOI18N
-                }
-            }
-            String defaultManager = "org.netbeans.core.startup.layers.BinaryCacheManager"; // NOI18N
-            String managerName = System.getProperty("netbeans.cache.layers", defaultManager); // NOI18N
-            if (managerName.equals("-")) { // NOI18N
-                err.fine("Cache manager disabled");
-                return LayerCacheManager.emptyManager();
-            }
-            try {
-                Class<?> c = Class.forName(managerName);
-                Constructor ctor = c.getConstructor(File.class);
-                LayerCacheManager mgr = (LayerCacheManager)ctor.newInstance(cacheDir);
-                err.fine("Using cache manager of type " + managerName + " in " + cacheDir);
-                return mgr;
-            } catch (Exception e) {
-                throw (IOException) new IOException(e.toString()).initCause(e);
-            }
-        } else {
-            err.fine("No cache manager");
-            return LayerCacheManager.emptyManager();
-        }
-    }
-    
     private static FileSystem loadCache(LayerCacheManager mgr) throws IOException {
-        if (mgr.cacheExists()) {
-            // XXX use Events to log!
-            setStatusText(
-                NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_start_load_cache"));
-            String msg = "Loading layers from " + mgr.getCacheDirectory(); // NOI18N
-            StartLog.logStart(msg);
-            FileSystem fs;
-            try {
-                fs = mgr.createLoadedFileSystem();
-            } catch (IOException ioe) {
-                err.log(Level.WARNING, null, ioe);
-                mgr.cleanupCache();
-                cleanStamp(mgr.getCacheDirectory());
-                fs = mgr.createEmptyFileSystem();
+        String location = mgr.cacheLocation();
+        FileSystem fs = null;
+        
+        if (location != null) {
+            setStatusText(NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_start_load_cache"));
+
+            ByteBuffer bb = Stamps.getModulesJARs().asMappedByteBuffer(location);
+            if (bb != null) {
+                StartLog.logStart("Loading layers"); // NOI18N
+                fs = mgr.load(mgr.createEmptyFileSystem(), bb);
+                setStatusText(
+                    NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_load_cache"));
+                StartLog.logEnd("Loading layers"); // NOI18N
             }
-            setStatusText(
-                NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_load_cache"));
-            StartLog.logEnd(msg);
-            return fs;
-        } else {
-            return mgr.createEmptyFileSystem();
         }
+        return fs != null ? fs : mgr.createEmptyFileSystem();
     }
     
     private static FileSystem[] appendLayers(FileSystem fs1, boolean addLookup, FileSystem[] fs2s, FileSystem fs3) {
@@ -204,13 +167,6 @@ implements LookupListener {
         return l.toArray(new FileSystem[l.size()]);
     }
 
-    private static void cleanStamp(File cacheDir) throws IOException {
-        File stampFile = new File(cacheDir, LAYER_STAMP);
-        if (stampFile.exists() && ! stampFile.delete()) {
-            throw new IOException("Could not delete: " + stampFile); // NOI18N
-        }
-    }
-    
     /** Get all layers.
      * @return all filesystems making layers
      */
@@ -263,105 +219,60 @@ implements LookupListener {
         }
         
         StartLog.logStart("setURLs"); // NOI18N
-        
-        final File stampFile;
-        final Stamp stamp;
-        final File cacheDir = manager.getCacheDirectory();
-        if (cacheDir != null) {
-            stampFile = new File(cacheDir, LAYER_STAMP);
-            stamp = new Stamp(manager.getClass().getName(), urls);
-        } else {
-            stampFile = null;
-            stamp = null;
-        }
-        if (cacheDir != null && stampFile.isFile()) {
-            err.fine("Stamp of new URLs: " + stamp.getHash());
-            BufferedReader r = new BufferedReader(new InputStreamReader(new FileInputStream(stampFile), "UTF-8")); // NOI18N
-            try {
-                String line = r.readLine();
-                long hash;
-                try {
-                    hash = Long.parseLong(line);
-                } catch (NumberFormatException nfe) {
-                    throw new IOException(nfe.toString());
-                }
-                err.fine("Stamp in the cache: " + hash);
-                if (hash == stamp.getHash()) {
-                    err.fine("Cache hit!");
-                    this.urls = urls;
-                    StartLog.logEnd("setURLs"); // NOI18N
-                    return;
-                }
-            } finally {
-                r.close();
-            }
-        }
 
-        // #17656: don't hold synch lock while firing changes, it could be dangerous...
-        runAtomicAction(new AtomicAction() {
-            public void run() throws IOException {
-                synchronized (ModuleLayeredFileSystem.this) {
-                    if (cacheDir != null) {
-                        setStatusText(
-                            NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_start_rewrite_cache"));
-                        err.fine("Rewriting cache in " + cacheDir);
-                    } // else if null -> we are using emptyManager, so do not print confusing messages
-                        try {
-                            if (manager.supportsLoad()) {
-                                manager.store(cacheLayer, urls);
-                            } else {
-                                cacheLayer = manager.store(urls);
-                                setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
-                            }
-                        } catch (IOException ioe) {
-                            err.log(Level.WARNING, null, ioe);
-                            err.fine("Abandoning cache manager");
-                            manager.cleanupCache();
-                            cleanStamp(cacheDir);
-                            manager = LayerCacheManager.emptyManager();
-                            // Try again with no-op manager.
-                            try {
-                                if (manager.supportsLoad()) {
-                                    cacheLayer = manager.createEmptyFileSystem();
-                                    manager.store(cacheLayer, urls);
-                                } else {
-                                    cacheLayer = manager.store(urls);
-                                }
-                                setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
-                            } catch (IOException ioe2) {
-                                // More serious - should not happen.
-                                err.log(Level.WARNING, null, ioe2);
-                            }
-                            return;
-                        }
-                    if (stampFile != null) {
-                        // Write out new stamp too.
-                        Writer wr = new OutputStreamWriter(new FileOutputStream(stampFile), "UTF-8"); // NOI18N
-                        try {
-                            // Would be nice to write out as zero-padded hex.
-                            // Unfortunately while Long.toHexString works fine,
-                            // Long.parseLong cannot be asked to parse unsigned longs,
-                            // so fails when the high bit is set.
-                            wr.write(Long.toString(stamp.getHash()));
-                            wr.write("\nLine above is identifying hash key, do not edit!\nBelow is metadata about layer cache, for debugging purposes.\n"); // NOI18N
-                            wr.write(stamp.toString());
-                        } finally {
-                            wr.close();
-                        }
-                    }
-                    if (cacheDir != null) {
-                        setStatusText(
-                            NbBundle.getMessage(ModuleLayeredFileSystem.class, "MSG_end_rewrite_cache"));
-                        err.fine("Finished rewriting cache in " + cacheDir);
-                    }
+        class Updater implements AtomicAction, Stamps.Updater {
+            private byte[] data;
+            
+            public void flushCaches(DataOutputStream os) throws IOException {
+                os.write(data);
+            }
+            public void cacheReady() {
+                try {
+                    cacheLayer = loadCache(manager);
+                    setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
+                } catch (IOException ex) {
+                    err.log(Level.INFO, "Cannot re-read cache", ex); // NOI18N
                 }
             }
-        });
+            public void run() throws IOException {
+                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                synchronized (ModuleLayeredFileSystem.this) {
+                    try {
+                        manager.store(cacheLayer, urls, os);
+                        data = os.toByteArray();
+                        ByteBuffer bb = ByteBuffer.wrap(data);
+                        cacheLayer = manager.load(cacheLayer, bb.order(ByteOrder.LITTLE_ENDIAN));
+                    } catch (IOException ioe) {
+                        err.log(Level.WARNING, null, ioe);
+                        XMLFileSystem fallback = new XMLFileSystem();
+                        try {
+                            fallback.setXmlUrls(urls.toArray(new URL[0]));
+                        } catch (PropertyVetoException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        cacheLayer = fallback;
+                    }
+                }
+                setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
+                Stamps.getModulesJARs().scheduleSave(this, manager.cacheLocation(), false);
+            }
+
+        }
+        Updater u = new Updater();
+        runAtomicAction(u);
         
         this.urls = urls;
         firePropertyChange ("layers", null, null); // NOI18N
         
         StartLog.logEnd("setURLs"); // NOI18N
+    }
+    
+    /** Layers are OK when its cache is OK.
+     * 
+     * @return true if layers are already OK
+     */
+    public boolean isLayersOK() {
+        return Stamps.getModulesJARs().exists(manager.cacheLocation());
     }
     
     /** Adds few URLs.
@@ -389,74 +300,6 @@ implements LookupListener {
         setDelegates(appendLayers(writableLayer, addLookup, otherLayers, cacheLayer));
     }
     
-    /** Represents a hash of a bunch of jar: URLs and the associated JAR timestamps.
-     */
-    private static final class Stamp implements Comparator<URL> {
-        private final String managerName;
-        private final List<URL> urls;
-        private final long[] times;
-        private final long hash;
-        public Stamp(String name, List<URL> urls) throws IOException {
-            managerName = name;
-            this.urls = new ArrayList<URL>(urls);
-            Collections.sort(this.urls, this);
-            times = new long[this.urls.size()];
-            long x = 17L ^ managerName.hashCode();
-            Iterator it = this.urls.iterator();
-            int i = 0;
-            while (it.hasNext()) {
-                URL u = (URL)it.next();
-                String s = u.toExternalForm();
-                x += 3199876987199633L;
-                x ^= s.hashCode();
-                URL u2 = null;
-
-                int bangSlash = s.lastIndexOf("!/"); // NOI18N
-                if (bangSlash != -1) {
-                    int colon = s.indexOf(':');
-                    if (colon >= 0 && colon < bangSlash) {
-                        u2 = new URL(s.substring(colon+1, bangSlash));
-                    }
-                }
-                if (u2 == null){
-                    err.warning("Weird JAR URL: " + u);
-                    u2 = u;
-                }
-
-                File extracted = new File(URI.create(u2.toExternalForm()));
-                if (extracted != null) {
-                    // the JAR file containing the layer entry:
-                    x ^= (times[i++] = extracted.lastModified());
-                } else {
-                    // not a file: or jar:file: URL?
-                    times[i++] = 0L;
-                }
-            }
-            hash = x;
-        }
-        public long getHash() {
-            return hash;
-        }
-        public @Override String toString() {
-            StringBuilder buf = new StringBuilder();
-            buf.append(managerName);
-            buf.append('\n');
-            int i = 0;
-            for (URL url : urls) {
-                long t = times[i++];
-                if (t == 0L) {
-                    buf.append("<file not found>"); // NOI18N
-                } else {
-                    buf.append(new Date(t));
-                }
-                buf.append('\t').append(url).append('\n');
-            }
-            return buf.toString();
-        }
-        public int compare(URL o1, URL o2) {
-            return o1.toString().compareTo(o2.toString());
-        }
-    }
     private static void setStatusText (String msg) {
         org.netbeans.core.startup.Main.setStatusText(msg);
     }

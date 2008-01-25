@@ -41,16 +41,18 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
+import org.netbeans.Stamps;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.XMLFileSystem;
 
 /**
  * Partial implementation of the cache manager using BinaryFS as the layer
@@ -60,82 +62,34 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Petr Nejedly
  */
-public class BinaryCacheManager extends ParsingLayerCacheManager {
+final class BinaryCacheManager extends ParsingLayerCacheManager {
 
-    private static final String ALL_LAYERS = "all-layers.dat"; // NOI18N
-    private File cacheFile;
+    @Override
+    public FileSystem createEmptyFileSystem() throws IOException {
+        return FileUtil.createMemoryFileSystem();
+    }
     
-    /** Creates a new instance of BinaryCacheManager */
-    public BinaryCacheManager(File cacheDir) throws IOException {
-        super(cacheDir);
-        cacheFile = new File(cacheDir, ALL_LAYERS);
+    @Override
+    public FileSystem load(FileSystem previous, ByteBuffer bb) throws IOException {
+        FileSystem fs = new BinaryFS(cacheLocation(), bb);
+        return fs;
     }
 
-    public boolean cacheExists() {
-        return cacheFile.exists();
-    }
-    
-    private static int fileCounter;
-    
-    public void cleanupCache() throws IOException {
-        if (cacheFile.exists()) {
-            // all of this mess is here because Windows can't delete mmaped file.
-            File tmpFile = new File(cacheFile.getParentFile(), cacheFile.getName() + "." + fileCounter++);
-            tmpFile.delete(); // delete any leftover file from previous session
-            boolean renamed = false;
-            for (int i = 0; i < 5; i++) {
-                renamed = cacheFile.renameTo(tmpFile); // try to rename it
-                if (renamed) {
-                    break;
-                }
-                LayerCacheManager.err.fine("cannot rename (#" + i + "): " + cacheFile); // NOI18N
-                // try harder
-                System.gc();
-                System.runFinalization();
-                LayerCacheManager.err.fine("after GC"); // NOI18N
-            }
-            if (!renamed) {
-                // still delete on exit, so next start is ok
-                cacheFile.deleteOnExit();
-                throw new IOException("Could not delete: " + cacheFile); // NOI18N
-            }
-            if (!tmpFile.delete()) tmpFile.deleteOnExit(); // delete now or later
-        }
-    }
-    
-    public boolean supportsLoad() {
-        return false;
-    }
-    
-    public FileSystem createLoadedFileSystem() throws IOException {
-        if (cacheFile.exists()) {
-            LayerCacheManager.err.fine("Loading from " + cacheFile);
-            FileSystem fs = new BinaryFS(cacheFile.getAbsolutePath());
-            /* ???
-	    // pre-enumerate interesting resources
-            Enumeration en = fs.findResource("Services").getChildren(true);
-//            Enumeration en = fs.getRoot().getChildren(true);
-            while (en.hasMoreElements()) {
-                ((FileObject)en.nextElement()).getAttribute("");
-            }
-             */
-            return fs;
-        } else {
-            throw new IllegalStateException();
-        }
+    @Override
+    public String cacheLocation() {
+        return "all-layers.dat"; // NOI18N
     }
 
     protected boolean openURLs() {
         return false;
     }
 
-    protected FileSystem store(MemFolder root) throws IOException {
-        cleanupCache(); // move old file out of the way
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(cacheFile));
+    @Override
+    protected void store(FileSystem fs, final MemFolder root, OutputStream os) throws IOException {
         try {
             sizes = new HashMap<MemFileOrFolder,Integer>(1000);
             int fsSize = computeSize(root);
-            LayerCacheManager.err.fine("Writing binary layer cache of length " + (fsSize + BinaryFS.MAGIC.length) + " to " + cacheFile);
+            LayerCacheManager.err.fine("Writing binary layer cache of length " + (fsSize + BinaryFS.MAGIC.length) + " to " + cacheLocation());
             os.write(BinaryFS.MAGIC);
             BinaryWriter bw = new BinaryWriter (os, root, fsSize);
             writeFolder(bw, root);
@@ -143,10 +97,9 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
             sizes = null; // free the cache
             os.close();
         }
-        return createLoadedFileSystem();
     }
     
-    private void writeFolder(BinaryWriter bw, MemFolder folder) throws IOException {
+    void writeFolder(BinaryWriter bw, MemFolder folder) throws IOException {
         if (folder.attrs != null) {
             bw.writeInt(folder.attrs.size()); // attr count
             for (Iterator it = folder.attrs.iterator(); it.hasNext(); ) {
@@ -397,5 +350,4 @@ public class BinaryCacheManager extends ParsingLayerCacheManager {
             }
         }
     }
-
 }

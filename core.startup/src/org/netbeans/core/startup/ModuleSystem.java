@@ -292,7 +292,7 @@ public final class ModuleSystem {
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        Stamps.getModulesJARs().flush(true);
+        Stamps.getModulesJARs().shutdown();
         return res;
     }
     

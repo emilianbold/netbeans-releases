@@ -1804,5 +1804,8 @@ final class ModuleList implements Stamps.Updater {
                 ",diskProps=" + diskProps + "]"; // NOI18N
         }
     }
+
+    public void cacheReady() {
+    }
     
 }

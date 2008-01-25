@@ -50,6 +50,7 @@ import java.util.Iterator;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.netbeans.JarClassLoader;
+import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -60,6 +61,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -204,7 +206,7 @@ public final class Main extends Object {
     // Enforce JDK 1.5+ since we would not work without it.
     if (Dependency.JAVA_SPEC.compareTo(new SpecificationVersion("1.5")) < 0) { // NOI18N
         System.err.println("The IDE requires JDK 5 or higher to run."); // XXX I18N?
-        org.netbeans.TopSecurityManager.exit(1);
+        TopLogging.exit(1);
     }
 
     // In the past we derived ${jdk.home} from ${java.home} by appending
@@ -292,12 +294,12 @@ public final class Main extends Object {
 	    // -----------------------------------------------------------------------------------------------------
 	    // License check
             if (!handleLicenseCheck()) {
-                org.netbeans.TopSecurityManager.exit(0);
+                TopLogging.exit(0);
             }
 	    // -----------------------------------------------------------------------------------------------------
 	    // Upgrade
             if (!handleImportOfUserDir ()) {
-                org.netbeans.TopSecurityManager.exit(0);
+                TopLogging.exit(0);
             }
         }
     } catch (Exception e) {
@@ -343,7 +345,9 @@ public final class Main extends Object {
     StartLog.logProgress ("Splash hidden"); // NOI18N
     StartLog.logEnd ("Preparation"); // NOI18N
     
-    JarClassLoader.flushArchive();
+    org.netbeans.JarClassLoader.saveArchive();
+    // start to store all caches after 15s
+    Stamps.getModulesJARs().flush(15000);
   }
   
     /** Loads a class from available class loaders. */

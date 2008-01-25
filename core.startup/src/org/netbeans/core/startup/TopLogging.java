@@ -68,6 +68,7 @@ import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
+import org.netbeans.TopSecurityManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -90,6 +91,7 @@ public final class TopLogging {
     static {
         System.setProperty("sun.awt.exception.handler", "org.netbeans.core.startup.TopLogging$AWTHandler"); // NOI18N
     }
+
 
     /** Initializes the logging configuration. Invoked by <code>LogManager.readConfiguration</code> method.
      */
@@ -358,6 +360,10 @@ public final class TopLogging {
             NonClose nd = (NonClose)d;
             nd.doClose();
         }
+    }
+    static void exit(int exit) {
+        flush(false);
+        TopSecurityManager.exit(exit);
     }
 
     /** Non closing handler.

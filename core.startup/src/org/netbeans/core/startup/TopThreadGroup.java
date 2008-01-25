@@ -109,8 +109,7 @@ final class TopThreadGroup extends ThreadGroup implements Runnable {
         try {
             Main.start (args);
         } catch (Throwable t) {
-            // XXX is this not handled by uncaughtException?
-            Exceptions.printStackTrace(t);
+            t.printStackTrace();
             // System is probably broken, so don't just sit there with the splash screen open.
             try {
                 Thread.sleep(10000);

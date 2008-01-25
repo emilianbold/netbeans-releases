@@ -87,20 +87,12 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase {
         
         clearWorkDir();
         LayerCacheManager m = mf.createManager();
-        assertFalse(m.cacheExists());
         // layer2.xml should override layer1.xml where necessary:
         List urls = Arrays.asList(new URL[] {
             CacheManagerTestBaseHid.class.getResource("data/layer2.xml"),
             CacheManagerTestBaseHid.class.getResource("data/layer1.xml"),
         });
-        FileSystem f;
-        if (m.supportsLoad()) {
-            f = m.createEmptyFileSystem();
-            assertEquals(Collections.EMPTY_LIST, Arrays.asList(f.getRoot().getChildren()));
-            m.store(f, urls);
-        } else {
-            f = m.store(urls);
-        }
+        FileSystem f = BinaryCacheManagerTest.store(m, urls);
         // Initial run.
         checkStruct(f);
         if (mf.supportsTimestamps ()) {
@@ -109,19 +101,6 @@ public abstract class CacheManagerTestBaseHid extends NbTestCase {
             checkLastModified (f, "baz/thingy", "data/layer1.xml");
             checkLastModified (f, "foo/test1", "data/layer1.xml");
             checkLastModified (f, "bug39210/inline.txt", "data/layer1.xml");
-        }
-        if (m.cacheExists()) {
-            // Now check the persistence.
-            m = mf.createManager();
-            f = m.createLoadedFileSystem();
-            checkStruct(f);
-            if (m.supportsLoad()) {
-                // Also check load operation.
-                f = m.createEmptyFileSystem();
-                assertEquals(Collections.EMPTY_LIST, Arrays.asList(f.getRoot().getChildren()));
-                m.load(f);
-                checkStruct(f);
-            }
         }
     }
     

@@ -41,9 +41,17 @@
 
 package org.netbeans.core.startup.layers;
 
-import java.io.File;
+import java.beans.PropertyVetoException;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileSystem;
@@ -60,51 +68,18 @@ public abstract class LayerCacheManager {
      */
     static final Logger err = Logger.getLogger("org.netbeans.core.projects.cache"); // NOI18N
     
-    private final File cacheDir;
-    
-    private static LayerCacheManager emptyManager = null;
+    private static LayerCacheManager mgr = new BinaryCacheManager();
+    private static LayerCacheManager non = new NonCacheManager();
     /**
      * Get a cache manager which does nothing.
      */
-    public static LayerCacheManager emptyManager() {
-        if (emptyManager == null) {
-            emptyManager = new NonCacheManager();
-        }
-        return emptyManager;
+    public static LayerCacheManager manager(boolean real) {
+        return real ? mgr : non;
     }
     
     /** Create a cache manager (for subclass use).
      */
-    protected LayerCacheManager(File cacheDir) {
-        this.cacheDir = cacheDir;
-    }
-    
-    /** The directory to use a working area for the cache.
-     * For informational purposes only.
-     * May be null, if the manager is not really caching.
-     */
-    public final File getCacheDirectory() {
-        return cacheDir;
-    }
-    
-    /** True if the cache already seems to exist in the cache dir, false if fresh.
-     */
-    public abstract boolean cacheExists();
-    
-    /** Clean up any cache files in the cache directory.
-     * @see "#20997"
-     */
-    public abstract void cleanupCache() throws IOException;
-    
-    /**
-     * If true, this manager supports in-place loading of a cache.
-     * If false, it can only load a cache or store it.
-     * The result affects which methods are considered effectively present and
-     * abstract on this manager.
-     * @return true by default
-     */
-    public boolean supportsLoad() {
-        return true;
+    protected LayerCacheManager() {
     }
     
     /** Create an empty cache filesystem, i.e. with no initial layers.
@@ -112,26 +87,7 @@ public abstract class LayerCacheManager {
      * Should not be overridden if the manager does not support loading;
      * otherwise must be overridden.
      */
-    public FileSystem createEmptyFileSystem() throws IOException {
-        if (supportsLoad()) {
-            throw new NotImplementedException();
-        } else {
-            return new XMLFileSystem();
-        }
-    }
-    
-    /** Create a preloaded cache filesystem with some existing set of layers.
-     * Should only be called when the cache directory is prepared.
-     * The default implementation just creates an empty cache and then
-     * loads it, but subclasses may override to do this more efficiently.
-     * (Subclasses which do not support loading <b>must</b> override it.)
-     */
-    public FileSystem createLoadedFileSystem() throws IOException {
-        if (!supportsLoad()) throw new IOException("Does not support loading!"); // NOI18N
-        FileSystem fs = createEmptyFileSystem();
-        load(fs);
-        return fs;
-    }
+    public abstract FileSystem createEmptyFileSystem() throws IOException;
     
     /** Load the cache from disk.
      * Should only be called when the cache directory is prepared.
@@ -141,24 +97,7 @@ public abstract class LayerCacheManager {
      * Not called if the manager does not support loading;
      * otherwise must be overridden.
      */
-    public void load(FileSystem fs) throws IOException {
-        throw new NotImplementedException();
-    }
-    
-    /** Save a new cache to disk.
-     * Besides modifying the disk cache files, this should also
-     * change the contents of the existing filesystem.
-     * The filesystem must have been originally produced by
-     * {@link #createEmptyFileSystem} or {@link #createLoadedFileSystem}.
-     * This might be done simply by calling {@link #load}, or there
-     * might be a more efficient way.
-     * @param urls list of type URL; earlier layers can override later layers
-     * Not called if the manager does not support loading;
-     * otherwise must be overridden.
-     */
-    public void store(FileSystem fs, List<URL> urls) throws IOException {
-        throw new NotImplementedException();
-    }
+    public abstract FileSystem load(FileSystem previous, ByteBuffer bb) throws IOException;
     
     /**
      * Save a new cache to disk, load it, and return that filesystem.
@@ -167,8 +106,51 @@ public abstract class LayerCacheManager {
      * Not called if the manager supports loading;
      * otherwise must be overridden.
      */
-    public FileSystem store(List<URL> urls) throws IOException {
-        throw new NotImplementedException();
-    }
+    public abstract void store(FileSystem fs, List<URL> urls, OutputStream os) throws IOException;
     
+    /** Location of cache.
+     * 
+     * @return path to cache
+     */
+    public abstract String cacheLocation();
+    
+    private static final class NonCacheManager extends LayerCacheManager {
+        @Override
+        public FileSystem createEmptyFileSystem() throws IOException {
+            return new XMLFileSystem();
+        }
+
+        @Override
+        public FileSystem load(FileSystem previous, ByteBuffer bb) throws IOException {
+            byte[] arr = new byte[bb.limit()];
+            bb.get(arr);
+            DataInputStream is = new DataInputStream(new ByteArrayInputStream(arr));
+            List<URL> urls = new ArrayList<URL>();
+            while (is.available() > 0) {
+                String u = is.readUTF();
+                urls.add(new URL(u));
+            }
+            try {
+                XMLFileSystem fs = (XMLFileSystem)previous;
+                fs.setXmlUrls(urls.toArray(new URL[urls.size()]));
+                return fs;
+            } catch (PropertyVetoException pve) {
+                throw (IOException) new IOException(pve.toString()).initCause(pve);
+            }
+        }
+
+        @Override
+        public void store(FileSystem fs, List<URL> urls, OutputStream os) throws IOException {
+            DataOutputStream data = new DataOutputStream(os);
+            for (URL u : urls) {
+                data.writeUTF(u.toExternalForm());
+            }
+            data.close();
+        }
+
+        @Override
+        public String cacheLocation() {
+            return "all-local-layers.dat"; // NOI18N
+        }
+    } // end of NonCacheManager
 }

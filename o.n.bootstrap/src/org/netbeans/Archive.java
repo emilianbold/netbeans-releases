@@ -251,6 +251,10 @@ class Archive implements Stamps.Updater {
         sources = null;
     }
 
+    public void cacheReady() {
+        // nothing needs to be done
+    }
+
     /* Entry layout in the buffer:
      * -1    1B 0x02 type identifier (0x03 for general)
      *  0 -> 2B src  number of the source (sources are counted in file from 0)
@@ -351,5 +355,6 @@ class Archive implements Stamps.Updater {
             return code;
         }
     }
+
 }
 

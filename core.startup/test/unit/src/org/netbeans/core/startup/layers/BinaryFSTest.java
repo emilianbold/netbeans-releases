@@ -41,9 +41,11 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
@@ -75,9 +77,8 @@ public class BinaryFSTest extends FileSystemFactoryHid {
     
     protected FileSystem[] createFileSystem(String testName, String[] resources) throws IOException {
         XMLFileSystem xfs = (XMLFileSystem)TestUtilHid.createXMLFileSystem(testName, resources);
-        BinaryCacheManager bm = new BinaryCacheManager(getWorkDir());
-        FileSystem fs = bm.store(Arrays.asList(new URL[] {xfs.getXmlUrl()}));
-        return new FileSystem[] {fs};
+        LayerCacheManager bm = LayerCacheManager.manager(true);
+        return new FileSystem[] {BinaryCacheManagerTest.store(bm, Arrays.asList(xfs.getXmlUrls()))};
     }
 
     protected void destroyFileSystem(String testName) throws IOException {

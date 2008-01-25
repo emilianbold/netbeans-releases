@@ -69,7 +69,7 @@ implements CacheManagerTestBaseHid.ManagerFactory {
     // Manager factory methods
     //
     public LayerCacheManager createManager() throws Exception {
-        return LayerCacheManager.emptyManager();
+        return LayerCacheManager.manager(false);
     }
 
     public boolean supportsTimestamps () {
