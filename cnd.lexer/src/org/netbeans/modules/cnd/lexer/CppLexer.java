@@ -75,8 +75,24 @@ public class CppLexer extends CndLexer {
     @Override
     protected Token<CppTokenId> finishSharp() {
         // one prerpocessor directive block
+        // we should eat block comments to skip it's new lines
+        // also eat string and char literals to prevent incorrect recognition
+        // of started block comment like #define A "/*"
         while (true) {
             switch (read(true)) {
+                case '\"':
+                    skipLiteral(true);
+                    break;
+                case '\'':
+                    skipLiteral(false);
+                    break;
+                case '/':
+                    if (read(true) == '*') { // block or doxygen comment
+                        skipComment();
+                    } else {
+                        backup(1);
+                    }
+                    break;
                 case '\r': 
                     consumeNewline(); 
                     // nobreak
@@ -87,6 +103,36 @@ public class CppLexer extends CndLexer {
         }
     }
 
+    private void skipComment() {
+        super.finishComment(false);
+    }
+    
+    @SuppressWarnings("fallthrough")
+    private void skipLiteral(boolean endDblQuote) {
+        while (true) { // string literal
+            switch (read(true)) {
+                case '"': // NOI18N
+                    if (endDblQuote) {
+                        return;
+                    }
+                    break;
+                case '\'': // NOI18N
+                    if (!endDblQuote) {
+                        return;
+                    }
+                    break;
+                case '\\': // escaped char
+                    read(false); // read escaped char
+                    break;
+                case '\r': 
+                case '\n':
+                    backup(1);
+                case EOF:
+                    return;
+            }
+        }           
+    }
+    
     @Override
     protected CppTokenId getKeywordOrIdentifierID(CharSequence text) {
         CppTokenId id = lexerFilter.check(text);

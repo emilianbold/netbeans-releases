@@ -82,10 +82,11 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
             int ch = read();
             switch (ch) {
                 case EOF:
-                    if (input.readLength() > 0)
+                    if (input.readLength() > 0) {
                         return token(CppStringTokenId.TEXT);
-                    else
+                    } else {
                         return null;
+                    }
                 case '\\': //NOI18N
                     if (input.readLength() > 1) {// already read some text
                         input.backup(1);

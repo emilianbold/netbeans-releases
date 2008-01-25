@@ -207,7 +207,9 @@ public enum CppTokenId implements TokenId {
     DBL_SHARP("##", "special"),
     BACK_SLASH("\\", "special"),
             
-    WHITESPACE(null, "whitespace"),
+    WHITESPACE(null, "whitespace"), // all spaces except new line
+    ESCAPED_LINE(null, "whitespace"), // line escape with \
+    NEW_LINE(null, "whitespace"), // new line \n or \r
     LINE_COMMENT(null, "comment"),
     BLOCK_COMMENT(null, "comment"),
     DOXYGEN_COMMENT(null, "comment"),
