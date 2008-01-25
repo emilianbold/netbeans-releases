@@ -347,9 +347,8 @@ public class ModelSupport implements PropertyChangeListener {
                 FileObject fo = FileUtil.toFileObject(file);
                 if (fo != null) {
                     fo.addFileChangeListener(FileUtil.weakFileChangeListener(new FileDeleteListener(project), fo));
-                } else {
-                    project.onFileRemoved(file);
                 }
+                project.onFileRemoved(file);
             }
         } catch( Exception e ) {
             //TODO: FIX (most likely in Makeproject: path == null in this situation,
