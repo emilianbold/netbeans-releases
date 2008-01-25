@@ -36,6 +36,9 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 
 /**
@@ -47,9 +50,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     DocumentListener {
     /** prefered dimmension of the panels */
     private static final java.awt.Dimension PREF_DIM = new java.awt.Dimension(500, 340);
-    private static final String NEW_FILE_PREFIX = NbBundle.getMessage(
-            SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanelGUI_NewFilePrefix"
-        ); // NOI18N
+    String nbBundle20 = mLoc.t("PRSR001: new");
+    private final String NEW_FILE_PREFIX = Localizer.parse(nbBundle20); // NOI18N
     private final ListCellRenderer CELL_RENDERER = new GroupCellRenderer();
     private Project project;
     private String expectedExtension;
@@ -73,6 +75,8 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
     private javax.swing.JTextField projectTextField;
     private javax.swing.JSeparator targetSeparator;
 
+    private static transient final Logger mLogger = LogUtil.getLogger(SimpleTargetChooserPanelGUI.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Creates new form SimpleTargetChooserGUI
      *
@@ -101,11 +105,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         locationComboBox.addActionListener(this);
         documentNameTextField.getDocument().addDocumentListener(this);
         folderTextField.getDocument().addDocumentListener(this);
-
+        String nbBundle1 = mLoc.t("PRSR001: Name and Location");
         setName(
-            NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "LBL_SimpleTargetChooserPanel_Name"
-            )
+           Localizer.parse(nbBundle1)
         ); // NOI18N
     }
 
@@ -172,68 +174,55 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             documentNameTextField.setText(NEW_FILE_PREFIX + template.getName());
             documentNameTextField.selectAll();
         }
-
+        String nbBundle2 = mLoc.t("PRSR001: Folder Name:");
         if (isFolder) {
             jLabel3.setText(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FolderName_Label"
-                )
+               Localizer.parse(nbBundle2)
             ); // NOI18N
+            String nbBundle3 = mLoc.t("PRSR001: N");
             jLabel3.setDisplayedMnemonic(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_FolderName_Label"
-                ).charAt(0)
+              Localizer.parse(nbBundle3).charAt(0)
             ); // NOI18N
+            String nbBundle4 = mLoc.t("PRSR001: Parent Folder:");
             jLabel2.setText(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_ParentFolder_Label"
-                )
+              Localizer.parse(nbBundle4)
             ); // NOI18N
+            String nbBundle5 = mLoc.t("PRSR001: r");
             jLabel2.setDisplayedMnemonic(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_ParentFolder_Label"
-                ).charAt(0)
+               Localizer.parse(nbBundle5).charAt(0)
             ); // NOI18N
+            String nbBundle6 = mLoc.t("PRSR001: Created Folder:");
             jLabel4.setText(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFolder_Label"
-                )
+               Localizer.parse(nbBundle6)
             ); // NOI18N
+            String nbBundle7 = mLoc.t("PRSR001: C");
             jLabel4.setDisplayedMnemonic(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_CreatedFolder_Label"
-                ).charAt(0)
+                Localizer.parse(nbBundle7).charAt(0)
             ); // NOI18N
         } else {
+            String nbBundle8 = mLoc.t("PRSR001: File Name:");
             jLabel3.setText(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label"
-                )
+              Localizer.parse(nbBundle8)
             ); // NOI18N
+            String nbBundle9 = mLoc.t("PRSR001: Folder:");
             jLabel2.setText(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Folder_Label"
-                )
+              Localizer.parse(nbBundle9)
             ); // NOI18N
+            String nbBundle10 = mLoc.t("PRSR001: Created File:");
             jLabel4.setText(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label"
-                )
+               Localizer.parse(nbBundle10)
             ); // NOI18N
+            String nbBundle11 = mLoc.t("PRSR001: N");
             jLabel3.setDisplayedMnemonic(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_FileName_Label"
-                ).charAt(0)
+                Localizer.parse(nbBundle11).charAt(0)
             ); // NOI18N
+            String nbBundle12 = mLoc.t("PRSR001: l");
             jLabel2.setDisplayedMnemonic(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Folder_Label"
-                ).charAt(0)
+              Localizer.parse(nbBundle12).charAt(0)
             ); // NOI18N
+            String nbBundle13 = mLoc.t("PRSR001: C");
             jLabel4.setDisplayedMnemonic(
-                NbBundle.getMessage(
-                    SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_CreatedFile_Label"
-                ).charAt(0)
+             Localizer.parse(nbBundle13).charAt(0)
             ); // NOI18N
         }
     }
@@ -343,24 +332,21 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         bottomPanelContainer = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
-
+        
+        String nbBundle14 = mLoc.t("PRSR001: N/A");
         getAccessibleContext().setAccessibleDescription(
-            org.openide.util.NbBundle.getBundle(SimpleTargetChooserPanelGUI.class).getString(
-                "AD_SimpleTargetChooserPanelGUI"
-            )
+           Localizer.parse(nbBundle14)
         );
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
+        String nbBundle15 = mLoc.t("PRSR001: N");
         jLabel3.setDisplayedMnemonic(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_FileName_Label"
-            ).charAt(0)
+            Localizer.parse(nbBundle15).charAt(0)
         );
         jLabel3.setLabelFor(documentNameTextField);
+        String nbBundle16 = mLoc.t("PRSR001: File Name:");
         jLabel3.setText(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_FileName_Label"
-            )
+           Localizer.parse(nbBundle16)
         );
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -372,10 +358,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
         jPanel1.add(documentNameTextField, gridBagConstraints);
+        String nbBundle17 = mLoc.t("PRSR001: N/A");
         documentNameTextField.getAccessibleContext().setAccessibleDescription(
-            org.openide.util.NbBundle.getBundle(SimpleTargetChooserPanelGUI.class).getString(
-                "AD_documentNameTextField"
-            )
+           Localizer.parse(nbBundle17)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -384,15 +369,13 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 24, 0);
         add(jPanel1, gridBagConstraints);
 
+        String nbBundle18 = mLoc.t("PRSR001: P");
         jLabel1.setDisplayedMnemonic(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Project_Label"
-            ).charAt(0)
+            Localizer.parse(nbBundle18).charAt(0)
         );
+        String nbBundle19 = mLoc.t("PRSR001: Project:");
         jLabel1.setText(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Project_Label"
-            )
+          Localizer.parse(nbBundle19)
         );
         jLabel1.setLabelFor(projectTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -406,22 +389,19 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
         add(projectTextField, gridBagConstraints);
+        String nbBundle20 = mLoc.t("PRSR001: N/A");
         projectTextField.getAccessibleContext().setAccessibleDescription(
-            org.openide.util.NbBundle.getBundle(SimpleTargetChooserPanelGUI.class).getString(
-                "AD_projectTextField"
-            )
+          Localizer.parse(nbBundle20)
         );
 
+        String nbBundle21 = mLoc.t("PRSR001: t");
         locationLabel.setDisplayedMnemonic(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Location_Label"
-            ).charAt(0)
+           Localizer.parse(nbBundle21).charAt(0)
         );
         locationLabel.setLabelFor(locationComboBox);
+        String nbBundle22 = mLoc.t("PRSR001: Location:");
         locationLabel.setText(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Location_Label"
-            )
+           Localizer.parse(nbBundle22)
         );
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
@@ -435,22 +415,19 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 5, 0);
         add(locationComboBox, gridBagConstraints);
+        String nbBundle23 = mLoc.t("PRSR001: N/A");
         locationComboBox.getAccessibleContext().setAccessibleDescription(
-            org.openide.util.NbBundle.getBundle(SimpleTargetChooserPanelGUI.class).getString(
-                "AD_locationComboBox"
-            )
+            Localizer.parse(nbBundle23)
         );
 
+        String nbBundle24 = mLoc.t("PRSR001: r");
         jLabel2.setDisplayedMnemonic(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_ParentFolder_Label"
-            ).charAt(0)
+           Localizer.parse(nbBundle24).charAt(0)
         );
         jLabel2.setLabelFor(folderTextField);
+        String nbBundle25 = mLoc.t("PRSR001: Folder:");
         jLabel2.setText(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Folder_Label"
-            )
+           Localizer.parse(nbBundle25)
         );
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -465,42 +442,36 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(folderTextField, gridBagConstraints);
+        String nbBundle26 = mLoc.t("PRSR001: N/A");
         folderTextField.getAccessibleContext().setAccessibleDescription(
-            org.openide.util.NbBundle.getBundle(SimpleTargetChooserPanelGUI.class).getString(
-                "AD_folderTextField"
-            )
+          Localizer.parse(nbBundle26)
         );
 
+        String nbBundle27 = mLoc.t("PRSR001: w");
         browseButton.setMnemonic(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_Browse_Button"
-            ).charAt(0)
+            Localizer.parse(nbBundle27).charAt(0)
         );
+        String nbBundle28 = mLoc.t("PRSR001: Browse...");
         browseButton.setText(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_Browse_Button"
-            )
+           Localizer.parse(nbBundle28)
         );
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(browseButton, gridBagConstraints);
+        String nbBundle29 = mLoc.t("PRSR001: N/A");
         browseButton.getAccessibleContext().setAccessibleDescription(
-            org.openide.util.NbBundle.getBundle(SimpleTargetChooserPanelGUI.class).getString(
-                "AD_browseButton"
-            )
+          Localizer.parse(nbBundle29)
         );
 
+        String nbBundle30= mLoc.t("PRSR001: C");
         jLabel4.setDisplayedMnemonic(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "MNE_TargetChooser_CreatedFile_Label"
-            ).charAt(0)
+           Localizer.parse(nbBundle30).charAt(0)
         );
+        String nbBundle31= mLoc.t("PRSR001: Created File:");
         jLabel4.setText(
-            org.openide.util.NbBundle.getMessage(
-                SimpleTargetChooserPanelGUI.class, "LBL_TargetChooser_CreatedFile_Label"
-            )
+            Localizer.parse(nbBundle31)
         );
         jLabel4.setLabelFor(fileTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -515,10 +486,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 12, 0);
         add(fileTextField, gridBagConstraints);
+        String nbBundle32= mLoc.t("PRSR001: N/A");
         fileTextField.getAccessibleContext().setAccessibleDescription(
-            org.openide.util.NbBundle.getBundle(SimpleTargetChooserPanelGUI.class).getString(
-                "AD_fileTextField"
-            )
+           Localizer.parse(nbBundle32)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -670,12 +640,10 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
                 if (projectDisplayName.equals(groupDisplayName)) {
                     setText(groupDisplayName);
                 } else {
+                    String nbBundle33 = mLoc.t("PRSR001: {0} [{1}]",groupDisplayName,projectDisplayName);
                     setText(
                         MessageFormat.format(
-                            NbBundle.getMessage(
-                                SimpleTargetChooserPanelGUI.class,
-                                "FMT_TargetChooser_GroupProjectNameBadge"
-                            ), // NOI18N
+                            Localizer.parse(nbBundle33), // NOI18N
                             new Object[] {groupDisplayName, projectDisplayName}
                         )
                     );

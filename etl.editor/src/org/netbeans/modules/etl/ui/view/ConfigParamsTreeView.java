@@ -499,13 +499,15 @@ public class ConfigParamsTreeView extends JPanel implements PropertyChangeListen
                 if (obj instanceof SQLDBModel) {
                     SQLDBModel dbModel = (SQLDBModel) obj;
                     String dbName = dbModel.getModelName();
+                    String nbBundle1 = mLoc.t("PRSR001: {0} [Source]",dbName);
+                    String nbBundle2 = mLoc.t("PRSR001: {0} [Target]",dbName);
                     switch (dbModel.getObjectType()) {
                         case SQLConstants.SOURCE_DBMODEL:
-                            dbName = NbBundle.getMessage(ConfigParamsTreeView.class, "TEMPLATE_source_model_label", dbName);
+                            dbName = Localizer.parse(nbBundle1);
                             break;
 
                         case SQLConstants.TARGET_DBMODEL:
-                            dbName = NbBundle.getMessage(ConfigParamsTreeView.class, "TEMPLATE_target_model_label", dbName);
+                            dbName = Localizer.parse(nbBundle2);
                             break;
 
                         default:
