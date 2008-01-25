@@ -53,8 +53,6 @@ import org.netbeans.modules.sql.framework.ui.view.graph.SQLSourceTableArea;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-
 
 /**
  * Handles request to edit a source table condition as referenced by a validation error
@@ -68,6 +66,7 @@ public class SourceConditionValidationHandler implements ValidationHandler {
     private IGraphView graphView;
     private static transient final Logger mLogger = LogUtil.getLogger(SourceConditionValidationHandler.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Constructs a new instance of SourceConditionValidationHandler, referencing the
      * given IGraphView instance and SQLCondition.

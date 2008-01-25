@@ -71,9 +71,7 @@ import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
-
 
 /**
  * This is the main join dialog which provides a view to define join between various
@@ -93,7 +91,7 @@ public class JoinMainDialog extends JDialog {
     private static IGraphView graphView;
     private static transient final Logger mLogger = LogUtil.getLogger(JoinMainDialog.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
-    
+
     /** Creates a new instance of JoinMainDialog */
     public JoinMainDialog() {
         this(WindowManager.getDefault().getMainWindow());
@@ -161,7 +159,6 @@ public class JoinMainDialog extends JDialog {
     }
 
     public void reset() {
-
     }
 
     public static void showJoinDialog(Collection<DBTable> sList, Collection<DBTable> tList, IGraphView view, boolean enableButton) {
@@ -264,7 +261,6 @@ public class JoinMainDialog extends JDialog {
                 JoinMainDialog.this.setVisible(false);
             }
         }
-
     }
 
     private void handleCancel() {
@@ -272,6 +268,7 @@ public class JoinMainDialog extends JDialog {
     }
 
     class JoinWindowAdapter extends WindowAdapter {
+
         /**
          * Invoked when a window has been closed.
          */

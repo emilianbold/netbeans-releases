@@ -78,7 +78,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 
 import com.nwoods.jgo.JGoBrush;

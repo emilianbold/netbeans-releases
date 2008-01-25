@@ -47,7 +47,6 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
 
 /**
  * Abstract subclass of NetBeans wizard descriptor. ETL wizard descriptors should be
@@ -92,11 +91,11 @@ public abstract class ETLWizardDescriptor extends WizardDescriptor {
     protected void initializeLookAndFeel() {
 
         try {
+            String nbBundle1 = mLoc.t("PRSR001: {0}");
             // Sets message format used for panel title; {0} indicates component
             // name, if any; {1} indicates step info as provided by iterator.
             setTitleFormat(new MessageFormat(
-                    NbBundle.getMessage(ETLWizardDescriptor.class,
-                    "MSG_titleformat_wiz_default")));
+                    Localizer.parse(nbBundle1)));
         } catch (MissingResourceException e) {
             mLogger.errorNoloc(mLoc.t("PRSR040: Could not locate key for title format.{0}", LOG_CATEGORY), e);
         }

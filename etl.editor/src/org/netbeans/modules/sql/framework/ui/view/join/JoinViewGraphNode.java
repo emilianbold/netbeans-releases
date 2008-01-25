@@ -83,7 +83,6 @@ import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLTableArea;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoLink;
@@ -187,7 +186,7 @@ public class JoinViewGraphNode extends BasicCanvasArea {
 
         // show join data
         String nbBundle3 = mLoc.t("PRSR001: Show Data");
-        String lblShowData =  Localizer.parse(nbBundle3);
+        String lblShowData = Localizer.parse(nbBundle3);
         showDataItem = new JMenuItem(lblShowData, new ImageIcon(showJoinDataUrl));
         showDataItem.addActionListener(aListener);
         popUpMenu.add(showDataItem);
@@ -196,7 +195,7 @@ public class JoinViewGraphNode extends BasicCanvasArea {
         // NOTE: Use SQLBasicTableArea.class as superclass Bundle already contains this
         // resource
         String nbBundle4 = mLoc.t("PRSR001: Select Columns...");
-        String lblSelectColumns =  Localizer.parse(nbBundle4);
+        String lblSelectColumns = Localizer.parse(nbBundle4);
         selectColumnsItem = new JMenuItem(lblSelectColumns, new ImageIcon(selectColumnsUrl));
         selectColumnsItem.addActionListener(aListener);
         popUpMenu.add(selectColumnsItem);

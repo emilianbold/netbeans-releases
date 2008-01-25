@@ -64,7 +64,6 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuil
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;

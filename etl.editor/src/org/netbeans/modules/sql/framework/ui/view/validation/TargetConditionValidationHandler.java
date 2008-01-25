@@ -49,13 +49,10 @@ import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.view.IGraphViewContainer;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderUtil;
 import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuilderView;
-import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLTargetTableArea;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-
 
 /**
  * Handles request to edit a target table condition as referenced by a validation error
@@ -69,6 +66,7 @@ public class TargetConditionValidationHandler implements ValidationHandler {
     private IGraphView graphView;
     private static transient final Logger mLogger = LogUtil.getLogger(TargetConditionValidationHandler.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Constructs a new instance of TargetConditionValidationHandler, referencing the
      * given IGraphView instance and SQLCondition.
