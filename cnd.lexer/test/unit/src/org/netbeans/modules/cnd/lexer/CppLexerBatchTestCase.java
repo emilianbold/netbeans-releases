@@ -71,6 +71,30 @@ public class CppLexerBatchTestCase extends TestCase {
     protected void tearDown() throws java.lang.Exception {
     }
 
+    public void testPreprocEmbedding() {
+        String text = "#define C 1 \"/*\" /* \n@see C */";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_DIRECTIVE, "#define C 1 \"/*\" /* \n@see C */");
+        
+        TokenSequence<?> ep = ts.embedded();
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_START, "#");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_DEFINE, "define");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_IDENTIFIER, "C");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.INT_LITERAL, "1");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.STRING_LITERAL, "\"/*\"");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.BLOCK_COMMENT, "/* \n@see C */");
+        assertFalse("No more tokens", ep.moveNext());
+
+        assertFalse("No more tokens", ts.moveNext());
+        
+    }
+    
     public void testComments() {
         String text = "/*ml-comment*//**//***//**\n*doxygen-comment*//* a";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
@@ -97,9 +121,9 @@ public class CppLexerBatchTestCase extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "a");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "x");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "yZ");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\r\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\r\n");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.IDENTIFIER, "z");
     }
     
@@ -301,7 +325,7 @@ public class CppLexerBatchTestCase extends TestCase {
         assertEquals(19, ep.offset());
         LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.LINE_COMMENT, "// comment \\\n comment-again");
         assertEquals(20, ep.offset());
-        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.NEW_LINE, "\n");
         assertEquals(47, ep.offset());
         assertFalse("No more tokens", ep.moveNext());
         
@@ -329,7 +353,7 @@ public class CppLexerBatchTestCase extends TestCase {
         
         assertFalse("No more tokens", es.moveNext());
         
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
         assertEquals(68, ts.offset());
         assertFalse("No more tokens", ts.moveNext());
         

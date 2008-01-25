@@ -92,9 +92,9 @@ public class CppFlyTokensTestCase extends NbTestCase {
                 + "\nTotal text length: " + fileLen
                 + "\nDistribution: " + LexerTestUtilities.flyweightDistribution(ts)
         ); 
-        assertEquals(1216, LexerTestUtilities.flyweightTokenCount(ts));
-        assertEquals(2432, LexerTestUtilities.flyweightTextLength(ts));
-        assertEquals(2073, ts.tokenCount());         
+        assertEquals(1606, LexerTestUtilities.flyweightTokenCount(ts));
+        assertEquals(2822, LexerTestUtilities.flyweightTextLength(ts));
+        assertEquals(2485, ts.tokenCount());         
     }
     
     public void testHC() throws Exception {
@@ -115,9 +115,9 @@ public class CppFlyTokensTestCase extends NbTestCase {
                 + "\nDistribution: " + LexerTestUtilities.flyweightDistribution(ts)
         );   
         
-        assertEquals(2197, LexerTestUtilities.flyweightTokenCount(ts));
-        assertEquals(3303, LexerTestUtilities.flyweightTextLength(ts));
-        assertEquals(3441, ts.tokenCount());        
+        assertEquals(2402, LexerTestUtilities.flyweightTokenCount(ts));
+        assertEquals(3508, LexerTestUtilities.flyweightTextLength(ts));
+        assertEquals(3577, ts.tokenCount());        
     }
     
     public void testC() throws Exception {
@@ -161,9 +161,9 @@ public class CppFlyTokensTestCase extends NbTestCase {
                 + "\nFlyweight text length: " + fwTextLength
                 + "\nDistribution: " + distribution
         );
-        assertEquals(53, fwTokenCount);
+        assertEquals(52, fwTokenCount);
         assertEquals(66, tokenCount);
-        assertEquals(115, fwTextLength);
+        assertEquals(114, fwTextLength);
         
     }    
 }

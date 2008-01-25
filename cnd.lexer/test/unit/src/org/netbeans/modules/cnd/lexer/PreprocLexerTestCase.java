@@ -73,7 +73,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IFDEF, "ifdef");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MACRO");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
         
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -88,7 +88,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IFNDEF, "ifndef");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MACRO");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
         
         assertFalse("No more tokens", ts.moveNext());
     }    
@@ -104,7 +104,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_DEFINED, "defined");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MACRO");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -121,7 +121,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MACRO");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RPAREN, ")");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -137,7 +137,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LPAREN, "(");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MACRO");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RPAREN, ")");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -150,7 +150,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_ELSE, "else");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LINE_COMMENT, "//comment");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -164,7 +164,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "defined");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LINE_COMMENT, "// MACRO");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
 
@@ -207,7 +207,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "x");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RPAREN, ")");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RPAREN, ")");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -220,7 +220,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_UNDEF, "undef");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "MACRO");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -262,7 +262,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_IDENTIFIER, "kk");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RPAREN, ")");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -275,7 +275,8 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_ERROR, "error");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.STRING_LITERAL, "\"message\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  \n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -290,7 +291,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "100");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.LINE_COMMENT, "//change line");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -304,7 +305,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_SYS_INCLUDE, "<file.h>");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -318,7 +319,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_SYS_INCLUDE, "<file.h>");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -331,7 +332,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_SYS_INCLUDE, "<file.h>");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -344,7 +345,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_SYS_INCLUDE, "<file.h>");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
 
@@ -359,7 +360,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"file.h\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());    
     }
@@ -374,7 +375,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"file.h\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -387,7 +388,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE_NEXT, "include_next");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"file.h\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -401,7 +402,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_INCLUDE, "include");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"file.h\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }
@@ -420,7 +421,7 @@ public class PreprocLexerTestCase extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.COMMA, ",");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.INT_LITERAL, "7");
         LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.RPAREN, ")");
-        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.WHITESPACE, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.NEW_LINE, "\n");
 
         assertFalse("No more tokens", ts.moveNext());
     }

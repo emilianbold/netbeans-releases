@@ -72,6 +72,7 @@ public class CndLexerUnitTest extends NbTestSuite {
         addTestSuite(CppStringLexerTestCase.class);
         addTestSuite(DoxygenLexerTestCase.class);
         addTestSuite(PreprocLexerTestCase.class);
+        addTestSuite(EscapeLineTestCase.class);
     }
 
     public static Test suite() {
