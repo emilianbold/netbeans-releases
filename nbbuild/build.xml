@@ -1705,7 +1705,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="check-commit-validation">
     <condition property="run.validation" >
         <and>
-          <available file="../ide/test/build.xml" />
+          <available file="../ide/kit/test/build.xml" />
           <available file="../jemmy/build.xml" />
           <available file="../jellytools/build.xml" />
           <available file="../xtest/build.xml" />
