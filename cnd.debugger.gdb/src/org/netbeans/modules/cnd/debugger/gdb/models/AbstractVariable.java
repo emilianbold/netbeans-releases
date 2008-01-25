@@ -839,6 +839,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         if (t.equals("char")) { // NOI18N
             parseCharArray(this, name, type, value);
         } else {
+            value = value.substring(1, value.length() - 1);
             for (int i = 0; i < size && vstart != -1; i++) {
                 if (value.charAt(vstart) == '{') {
                     vend = GdbUtils.findNextComma(value, GdbUtils.findMatchingCurly(value, vstart));

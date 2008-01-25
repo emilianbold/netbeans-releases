@@ -264,6 +264,7 @@ public class GdbProxyEngine {
                 break;
                 
             default:
+                debugger.output(msg);
         }
     }
     

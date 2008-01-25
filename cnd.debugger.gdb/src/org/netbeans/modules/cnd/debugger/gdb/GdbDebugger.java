@@ -338,26 +338,32 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     public String[] getThreadsList() {
-        if (threadsList == emptyThreadsList) {
-            while (gdb == null) {
-                try {
-                    Thread.sleep(100); // called before session startup had completed...
-                } catch (InterruptedException ex) {
-                }
-            }
-            CommandBuffer cb = new CommandBuffer(gdb.info_threads());
-            String results = cb.postAndWait();
-            if (results.length() > 0) {
-                List<String> list = new ArrayList<String>();
-                for (String line : results.split("\\\\n")) { // NOI18N
-                    line = line.trim();
-                    if (line.length() > 0 && !line.startsWith("from ")) { // NOI18N
-                        list.add(line);
+        if (state.equals(STATE_STOPPED)) {
+            if (threadsList == emptyThreadsList) {
+                while (gdb == null) {
+                    try {
+                        Thread.sleep(100); // called before session startup had completed...
+                    } catch (InterruptedException ex) {
                     }
                 }
-                threadsList = list.toArray(new String[list.size()]);
-                return threadsList;
+                CommandBuffer cb = new CommandBuffer(gdb.info_threads());
+                String results = cb.postAndWait();
+                if (results.length() > 0) {
+                    List<String> list = new ArrayList<String>();
+                    for (String line : results.split("\\\\n")) { // NOI18N
+                        line = line.trim();
+                        if (line.length() > 0 && !line.startsWith("from ")) { // NOI18N
+                            list.add(line);
+                        }
+                    }
+                    threadsList = list.toArray(new String[list.size()]);
+                    return threadsList;
+                }
             }
+        } else {
+            return new String[] {
+                NbBundle.getMessage(GdbDebugger.class, "CTL_NoThreadInfoWhileRunning") // NOI18N
+            };
         }
         return threadsList;
     }
@@ -873,6 +879,11 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     /** Handle gdb responses starting with '@' */
     public void targetStreamOutput(String msg) {
        log.fine("GDI.targetStreamOutput: " + msg);  // NOI18N
+    }
+    
+    /** Handle gdb output */
+    public void output(String msg) {
+        // FIXME - Send to output window (see if it works right)
     }
         
     private void addArgsToLocalVariables(String info) {
