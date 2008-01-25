@@ -133,7 +133,6 @@ public class UMLCoreModule extends ModuleInstall
 			ClassLoader loader = UMLCoreModule.class.getClassLoader();
 			InputStream in = null;
 			if (loader!=null)
-                            //in = loader.getResourceAsStream("org/netbeans/modules/uml/dotuml.zip");
 			   in = loader.getResourceAsStream(zipResource);
 			else
 			   return;
