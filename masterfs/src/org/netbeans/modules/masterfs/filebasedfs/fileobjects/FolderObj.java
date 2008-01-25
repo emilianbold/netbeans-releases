@@ -522,6 +522,10 @@ public final class FolderObj extends BaseFileObj {
         public Set getCachedChildren() {
             return ch.getCachedChildren();
         }
+
+        public boolean isCacheInitialized() {
+            return ch.isCacheInitialized();
+        }
     }
 
 }

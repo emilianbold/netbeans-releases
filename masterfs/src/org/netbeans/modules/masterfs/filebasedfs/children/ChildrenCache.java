@@ -54,7 +54,9 @@ public interface ChildrenCache {
     FileNaming getChild(String childName, boolean rescan);
     void removeChild(FileNaming childName);    
     Set getChildren(boolean rescan);
+    //cached existing
     Set getCachedChildren();
+    boolean isCacheInitialized();    
     Map refresh();
     Mutex.Privileged getMutexPrivileged();
 }

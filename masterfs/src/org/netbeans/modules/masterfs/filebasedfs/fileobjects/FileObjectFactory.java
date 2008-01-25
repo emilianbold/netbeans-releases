@@ -121,18 +121,21 @@ public final class FileObjectFactory {
         FileObject retVal = null;
         FolderObj parent = BaseFileObj.getExistingParentFor(file, lfs); 
         FileNaming child = null;
+        boolean isInitializedCache = true;
         if (parent != null) {
             final ChildrenCache childrenCache = parent.getChildrenCache();
             final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
             mutexPrivileged.enterReadAccess();
             try {
-                final String nameExt = BaseFileObj.getNameExt(file);                
+                final String nameExt = BaseFileObj.getNameExt(file);         
+                isInitializedCache = childrenCache.isCacheInitialized();
                 child = childrenCache.getChild(nameExt, false);
             } finally {
                 mutexPrivileged.exitReadAccess();
             }
         }
-        return issueIfExist(file, caller, parent, child);        
+        int initTouch = (isInitializedCache) ? -1 : (child != null ? 1 : 0);
+        return issueIfExist(file, caller, parent, child, initTouch);        
     }
 
     private boolean checkCacheState(boolean exist, File file) {        
@@ -179,10 +182,10 @@ public final class FileObjectFactory {
         return true;
     }
     
-    private FileObject issueIfExist(File file, Caller caller, FileObject parent, FileNaming child) {
+    private FileObject issueIfExist(File file, Caller caller, FileObject parent, FileNaming child, int initTouch) {
         boolean exist = false;
         FileObject foForFile = null;
-        Integer realExists = new Integer(-1);
+        Integer realExists = new Integer(initTouch);
 
         //use cached info as much as possible + do refresh if something is wrong
         //exist = (parent != null) ? child != null : (((foForFile = get(file)) != null && foForFile.isValid()) || touchExists(file, realExists));

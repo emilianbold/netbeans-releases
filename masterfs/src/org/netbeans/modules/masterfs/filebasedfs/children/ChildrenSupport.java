@@ -82,6 +82,10 @@ public final class ChildrenSupport {
         return getExisting(false);
     }
     
+    public boolean isCacheInitialized() {
+        return !isStatus(ChildrenSupport.NO_CHILDREN_CACHED);
+    }
+    
     public synchronized FileNaming getChild(final String childName, final FileNaming folderName, final boolean rescan) {
         FileNaming retval = null;
         if (rescan || isStatus(ChildrenSupport.NO_CHILDREN_CACHED)) {
