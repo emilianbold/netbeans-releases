@@ -78,7 +78,15 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.model.api.Activity;
+import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
+import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.Correlation;
+import org.netbeans.modules.bpel.model.api.CorrelationContainer;
+import org.netbeans.modules.bpel.model.api.CorrelationSet;
+import org.netbeans.modules.bpel.model.api.CorrelationSetContainer;
+import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
 import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnAlarmPick;
 import org.netbeans.modules.bpel.model.api.OnEvent;
@@ -92,8 +100,13 @@ import org.netbeans.modules.bpel.model.api.Requester;
 import org.netbeans.modules.bpel.model.api.Responder;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.Sequence;
+import org.netbeans.modules.bpel.model.api.references.BpelReference;
+import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.bpel.model.api.support.Initiate;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
+import org.netbeans.modules.bpel.model.impl.InvokeReceiveReplyCommonImpl;
+import org.netbeans.modules.bpel.model.impl.OnMessageCommonImpl;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.bpel.properties.Util;
@@ -216,6 +229,17 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         return panelList;
     }
+        
+    protected BpelEntity getTopParentEntity(BpelEntity mainBpelEntity) {
+        BpelEntity parentEntity = mainBpelEntity.getParent();
+        while ((parentEntity != null) && 
+               (!(parentEntity instanceof Scope)) && 
+               (!(parentEntity instanceof Process))) {
+            if (parentEntity == null) return null;
+            parentEntity = parentEntity.getParent();
+        }
+        return parentEntity;    
+    }
     
     private Map<Class, Icon> createTreeNodeIconsMap() {
         if (mapTreeNodeIcons != null) return mapTreeNodeIcons;
@@ -284,17 +308,6 @@ public class DefineCorrelationWizard implements WizardProperties {
         protected Set<Class> permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(
             new Class[] {Requester.class, Responder.class}));
         protected Set<Class> forbiddenActivityTypeSet = new HashSet<Class>();
-        
-        protected BpelEntity getTopParentEntity(BpelEntity mainBpelEntity) {
-            BpelEntity parentEntity = mainBpelEntity.getParent();
-            while ((parentEntity != null) && 
-                   (!(parentEntity instanceof Scope)) && 
-                   (!(parentEntity instanceof Process))) {
-                if (parentEntity == null) return null;
-                parentEntity = parentEntity.getParent();
-            }
-            return parentEntity;    
-        }
         
         public List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity) {
             List<BpelEntity> bpelEntityList = new ArrayList<BpelEntity>();
@@ -614,6 +627,8 @@ public class DefineCorrelationWizard implements WizardProperties {
     //========================================================================//
     public class WizardDefineCorrelationPanel extends WizardAbstractPanel {
         private final String ACTION_KEY_DELETE = "ACTION_KEY_DELETE";
+        private final String CORRELATION_PROPERTY_NAME_PREFIX = "wizard_";
+        private final String CORRELATION_SET_NAME_PREFIX = "wizard_set_";
             
         private Mapper correlationMapper;
         
@@ -860,21 +875,85 @@ public class DefineCorrelationWizard implements WizardProperties {
                 correlationLinkers.removeAll(equalLinkerSublist);
                 
                 createCorrelationPropertiesAndPropertyAliases(equalLinkerSublist);
+                CorrelationSet correlationSet = createCorrelationSet(equalLinkerSublist);
+                equalLinkerSublist.get(0).createActivityCorrelation(correlationSet);
             }
-            
-                
-        
-/********??????
-     <correlationSets>
-        <correlationSet name="ItineraryCorrelator" properties="tres:ItineraryRefId"/>
-    </correlationSets>
-            <correlations>
-                <correlation set="ItineraryCorrelator" initiate="yes"/>
-            </correlations>
-
-**********?????????*/
         }
+
+        private CorrelationSet createCorrelationSet(List<CorrelationLinker> linkerList) {
+            BaseScope scopeEntity = (BaseScope) getTopParentEntity(mainBpelEntity);
+            if (scopeEntity == null) {
+                return null;
+            }
+            String correlationSetName = getUniqueCorrelationSetName(scopeEntity);
+
+            BpelModel bpelModel = mainBpelEntity.getBpelModel();
+            BPELElementsBuilder elementBuilder = bpelModel.getBuilder();
+            CorrelationSet correlationSet = elementBuilder.createCorrelationSet();
             
+            try {
+                correlationSet.setName(correlationSetName);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            List<WSDLReference<CorrelationProperty>> propertyRefList = new ArrayList<WSDLReference<CorrelationProperty>>();
+            for (CorrelationLinker linker : linkerList) {
+                WSDLReference<CorrelationProperty> correlationPropertyRef = 
+                    correlationSet.createWSDLReference(linker.getCorrelationProperty(), CorrelationProperty.class);
+                if (correlationPropertyRef != null) {
+                    propertyRefList.add(correlationPropertyRef);
+                }
+            }
+            if (! propertyRefList.isEmpty()) {   
+                correlationSet.setProperties(propertyRefList);
+            }
+            CorrelationSetContainer container = scopeEntity.getCorrelationSetContainer();
+            try {
+                bpelModel.startTransaction();
+                if (container == null) {
+                    container = elementBuilder.createCorrelationSetContainer();
+                    scopeEntity.setCorrelationSetContainer(container);
+                    container = scopeEntity.getCorrelationSetContainer();
+                }
+                container.insertCorrelationSet(correlationSet, 0);
+            } catch(Exception e) {
+            } finally {
+                bpelModel.endTransaction();
+            }
+            return correlationSet;
+        }
+
+        private String getUniqueCorrelationSetName(BpelEntity scopeEntity) {
+            String baseCorrelationSetName = CORRELATION_SET_NAME_PREFIX + 
+                mainBpelEntity.getAttribute(BpelAttributes.NAME);
+            List<CorrelationSet> correlationSetList = scopeEntity.getChildren(CorrelationSet.class);
+            if ((correlationSetList != null) && (! correlationSetList.isEmpty())) {
+                int index = 0;
+                String checkedName = baseCorrelationSetName;
+                while (++index < 10000) {
+                    if (containsCorrelationSetName(correlationSetList, checkedName)) {
+                        checkedName = baseCorrelationSetName + "_" + index;
+                    } else {
+                        return checkedName;
+                    }
+                }
+                if (index >= 10000) return null;
+            }
+            return baseCorrelationSetName;
+        }
+        
+        private boolean containsCorrelationSetName(List<CorrelationSet> correlationSetList,
+            String checkedName) {
+            for (CorrelationSet correlationSet : correlationSetList) {
+                String correlationSetName = correlationSet.getName();
+                if (ignoreNamespace(correlationSetName).equals(checkedName)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
         private void createCorrelationPropertiesAndPropertyAliases(List<CorrelationLinker> linkerList) {
             for (CorrelationLinker linker : linkerList) {
                 linker.createCorrelationProperty();
@@ -927,10 +1006,15 @@ public class DefineCorrelationWizard implements WizardProperties {
             return correlationLinkers;
         }
         
+        public String ignoreNamespace(String dataWithNamespace) {
+            int index = dataWithNamespace.indexOf(":");
+            if ((index > -1) && (index < dataWithNamespace.length() - 1)) {
+                return dataWithNamespace.substring(index + 1);
+            }
+            return dataWithNamespace;
+        }
         //====================================================================//
         private class CorrelationLinker {
-            private final String CORRELATION_PROPERTY_NAME_PREFIX = "wizard_";
-            
             private CorrelationDataHolder source, target;
             private CorrelationProperty correlationProperty;
             
@@ -944,9 +1028,13 @@ public class DefineCorrelationWizard implements WizardProperties {
             public CorrelationDataHolder getTarget() {return target;}
             public void setSource(CorrelationDataHolder source) {this.source = source;}
             public void setTarget(CorrelationDataHolder target) {this.target = target;}
-
             public CorrelationProperty getCorrelationProperty() {return correlationProperty;}
 
+            public void createActivityCorrelation(CorrelationSet correlationSet) {
+                source.createActivityCorrelation(correlationSet);
+                target.createActivityCorrelation(correlationSet);
+            }
+            
             public void createPropertyAlias() {
                 source.createPropertyAlias(correlationProperty);
                 target.createPropertyAlias(correlationProperty);
@@ -1030,6 +1118,49 @@ public class DefineCorrelationWizard implements WizardProperties {
                 PortType portType = ((PortTypeReference) activity).getPortType().get();
                 return portType.getModel();
             }
+        
+            public void createActivityCorrelation(CorrelationSet correlationSet) {
+                BpelModel bpelModel = activity.getBpelModel();
+                BPELElementsBuilder elementBuilder = bpelModel.getBuilder();
+                Correlation correlation = elementBuilder.createCorrelation();
+                
+                BpelReference<CorrelationSet> correlationSetRef = correlation.createReference(
+                    correlationSet, CorrelationSet.class);
+                try {
+                    correlation.setSet(correlationSetRef);
+                    correlation.setInitiate(Initiate.NO);
+                    if (activity instanceof Invoke) {
+                        //correlation.setAttribute(*****??????, 
+                        //    PatternedCorrelation.PATTERN, Pattern.REQUEST_RESPONSE);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                
+                CorrelationContainer container = null;
+                if (activity instanceof InvokeReceiveReplyCommonImpl) {
+                    container = ((InvokeReceiveReplyCommonImpl) activity).getCorrelationContainer();
+                } else if (activity instanceof OnMessageCommonImpl) {
+                    container = ((OnMessageCommonImpl) activity).getCorrelationContainer();
+                }
+                try {
+                    bpelModel.startTransaction();
+                    if (container == null) {
+                        container = elementBuilder.createCorrelationContainer();
+                        if (activity instanceof InvokeReceiveReplyCommonImpl) {
+                            ((InvokeReceiveReplyCommonImpl) activity).setCorrelationContainer(container);
+                            container = ((InvokeReceiveReplyCommonImpl) activity).getCorrelationContainer();
+                        } else if (activity instanceof OnMessageCommonImpl) {
+                            ((OnMessageCommonImpl) activity).setCorrelationContainer(container);
+                            container = ((OnMessageCommonImpl) activity).getCorrelationContainer();
+                        }
+                    }
+                    container.insertCorrelation(correlation, 0);
+                } catch(Exception e) {
+                } finally {
+                    bpelModel.endTransaction();
+                }
+            }
             
             public void createPropertyAlias(CorrelationProperty correlationProperty) {
                 WSDLModel wsdlModel = getWSDLModel();
@@ -1072,14 +1203,6 @@ public class DefineCorrelationWizard implements WizardProperties {
             public String getTypeNameIgnoreNamespace() {
                 String typeName = WizardDefineCorrelationPanel.this.getSchemaComponentTypeName(schemaComponent);
                 return ignoreNamespace(typeName);
-            }
-            
-            public String ignoreNamespace(String dataWithNamespace) {
-                int index = dataWithNamespace.indexOf(":");
-                if ((index > -1) && (index < dataWithNamespace.length() - 1)) {
-                    return dataWithNamespace.substring(index + 1);
-                }
-                return dataWithNamespace;
             }
             
             @Override
