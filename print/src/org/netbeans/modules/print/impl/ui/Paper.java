@@ -63,25 +63,11 @@ final class Paper extends JComponent {
 
   Paper(
     PrintPage page,
-    int number,
-    int count,
-    int row,
-    int column)
-  {
-    myPage = page;
-    myNumber = number;
-    myCount = String.valueOf(count);
-    myRow = row;
-    myColumn = column;
-    myRowNumber = String.valueOf(row + 1);
-    myColumnNumber = String.valueOf(column + 1);
-  }
-
-  void setInfo(
     String name,
     Date modified,
     double scale)
   {
+    myPage = page;
     myName = name;
     myLastModifiedDate = modified;
 
@@ -113,6 +99,20 @@ final class Paper extends JComponent {
     myIsPainting = true;
 
     setScale(scale);
+  }
+
+  void setInfo(
+    int number,
+    int row,
+    int column,
+    int count)
+  {
+    myNumber = number;
+    myRow = row;
+    myColumn = column;
+    myRowNumber = String.valueOf(row + 1);
+    myColumnNumber = String.valueOf(column + 1);
+    myCount = String.valueOf(count);
   }
 
   int getRow() {

@@ -118,7 +118,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     assert providers.size() > 0 : "Must be at least one provider"; // NOI18N
 //out();
 //out("Do action");
-    myPrintProvider = providers.get(0); // todo start here
+    myPrintProviders = providers;
 
     if (withPreview) {
       show();
@@ -542,6 +542,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   private void createPapers() {
+    PrintProvider myPrintProvider = myPrintProviders.get(0);
     PrintPage [][] pages = myPrintProvider.getPages(
       Option.getDefault().getPageWidth(),
       Option.getDefault().getPageHeight(),
@@ -580,14 +581,14 @@ public final class Preview extends Dialog implements Percent.Listener {
         }
         myPapers [number] = new Paper(
           page,
-          number + 1,
-          count,
-          i, j
-        );
-        myPapers [number].setInfo(
           name,
           modified,
           scale
+        );
+        myPapers [number].setInfo(
+          number + 1,
+          i, j,
+          count
         );
         number++;
       }
@@ -779,7 +780,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   private void close() {
 //out("Closed");
     myPapers = null;
-    myPrintProvider = null;
+    myPrintProviders = null;
     Option.getDefault().setScale(myScale.getValue());
   }
 
@@ -879,7 +880,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   private KeyListener myKeyListener;
 
   private Printer myPrinter;
-  private PrintProvider myPrintProvider;
+  private List<PrintProvider> myPrintProviders;
 
   private static final int GAP_SIZE = 20;
   private static final int SCROLL_INCREMENT = 40;
