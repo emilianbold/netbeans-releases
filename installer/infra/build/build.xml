@@ -281,19 +281,18 @@
         <set property="sjsas.milestone.number.real" value="58g"/>
         <set property="sjsas.build.type" value="fcs"/>
         <set property="sjsas.build.number" value="20070907"/>
-
-
+        
         -->
+        <!--
         <set property="openesb.build.number" value="2008012302"/>                       
         <set property="openesb.build.number.real" value="080123_2"/>
-	<!--
+	-->
         <get
             src="${openesb.builds.host}/kits/ojc/main/latest/log/"
             dest="${temp.file}"/>
         <openesb-buildnumber 
             file="${temp.file}" 
             prefix="openesb"/>
-        -->
         <!--        
         <get
             src="${glassfish.builds.host}/java/re/swdp/1.0/promoted/fcs/latest/bundles/"
