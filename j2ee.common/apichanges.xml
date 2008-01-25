@@ -147,8 +147,10 @@ is the proper place.
                     into newly created j2ee/ejbcore module's API.
                 </p>
             </description>
+            <!--
             <class package="org.netbeans.modules.j2ee.common.ui.nodes" name="FieldCustomizer"/>
             <class package="org.netbeans.modules.j2ee.common.ui.nodes" name="QueryCustomizer"/>
+            -->
         </change>
         
 
