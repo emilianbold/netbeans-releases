@@ -118,6 +118,18 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         if ("1.0".equals(meta.getValue("version")) == false) {  // NOI18N
             throw new SAXException("Invalid librray descriptor version"); // NOI18N
         }
+        cleanUp();
+    }
+    
+    /**
+     * Sets preconditions
+     */
+    private void cleanUp () {
+        this.libraryName = null;
+        this.libraryDescription = null;
+        this.libraryType = null;
+        this.localizingBundle = null;
+        this.contentTypes.clear ();
     }
     
     public void end_library() throws SAXException {        
@@ -157,12 +169,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             } catch (IllegalArgumentException e) {
                 throw (SAXException) new SAXException(e.toString()).initCause(e);
             }
-        }
-        this.libraryName = null;
-        this.libraryDescription = null;
-        this.libraryType = null;
-        this.localizingBundle = null;
-        this.contentTypes.clear ();
+        }        
     }
 
     public void handle_resource(URL data, final Attributes meta) throws SAXException {
