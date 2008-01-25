@@ -75,7 +75,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     public boolean beforeDelete(File file) {     
-        Subversion.LOG.fine("beforeDelete" + file);
+        Subversion.LOG.fine("beforeDelete " + file);
         if (SvnUtils.isPartOfSubversionMetadata(file)) return true;
         // calling cache results in SOE, we must check manually
         return !file.isFile() && hasMetadata(file);
@@ -87,7 +87,7 @@ class FilesystemHandler extends VCSInterceptor {
      * @param file file to delete
      */ 
     public void doDelete(File file) throws IOException {
-        Subversion.LOG.fine("doDelete" + file);
+        Subversion.LOG.fine("doDelete " + file);
         boolean isMetadata = SvnUtils.isPartOfSubversionMetadata(file);        
         if (!isMetadata) {
             remove(file);
@@ -95,7 +95,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     public void afterDelete(final File file) {
-        Subversion.LOG.fine("afterDelete" + file);
+        Subversion.LOG.fine("afterDelete " + file);
         Utils.post(new Runnable() {
             public void run() {
                 // If a regular file is deleted then update its Entries as if it has been removed.
@@ -118,7 +118,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     public boolean beforeMove(File from, File to) {
-        Subversion.LOG.fine("beforeMove" + from +  " -> " + to);
+        Subversion.LOG.fine("beforeMove " + from +  " -> " + to);
         File destDir = to.getParentFile();
         if (from != null && destDir != null) {            
             // a direct cache call could, because of the synchrone beforeMove handling, 
@@ -134,7 +134,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     public void doMove(final File from, final File to) throws IOException {        
-        Subversion.LOG.fine("doMove" + from +  " -> " + to);
+        Subversion.LOG.fine("doMove " + from +  " -> " + to);
         if (SwingUtilities.isEventDispatchThread()) {
             
             Subversion.LOG.log(Level.INFO, "Warning: launching external process in AWT", new Exception().fillInStackTrace());
@@ -170,7 +170,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     public void afterMove(final File from, final File to) {
-        Subversion.LOG.fine("afterMove" + from +  " -> " + to);
+        Subversion.LOG.fine("afterMove " + from +  " -> " + to);
         Utils.post(new Runnable() {
             public void run() {                
                 // there might have been no notification 
@@ -189,7 +189,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
     
     public boolean beforeCreate(File file, boolean isDirectory) {
-        Subversion.LOG.fine("beforeCreate" + file);
+        Subversion.LOG.fine("beforeCreate " + file);
         if ( SvnUtils.isPartOfSubversionMetadata(file)) {            
             synchronized(invalidMetadata) {
                 File p = file;
@@ -251,7 +251,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
 
     public void afterCreate(final File file) {   
-        Subversion.LOG.fine("afterCreate" + file);
+        Subversion.LOG.fine("afterCreate " + file);
         Utils.post(new Runnable() {
             public void run() {
                 if (file == null) return;
@@ -266,7 +266,7 @@ class FilesystemHandler extends VCSInterceptor {
     }
     
     public void afterChange(final File file) {        
-        Subversion.LOG.fine("afterChange" + file);
+        Subversion.LOG.fine("afterChange " + file);
         Utils.post(new Runnable() {
             public void run() {                
                 if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_MANAGED) != 0) {                    
