@@ -923,15 +923,17 @@ public class DefineCorrelationWizard implements WizardProperties {
             return correlationSet;
         }
 
-        private String getUniqueCorrelationSetName(BpelEntity scopeEntity) {
+        private String getUniqueCorrelationSetName(BaseScope scopeEntity) {
             String baseCorrelationSetName = CORRELATION_SET_NAME_PREFIX + 
                 mainBpelEntity.getAttribute(BpelAttributes.NAME);
-            List<CorrelationSet> correlationSetList = scopeEntity.getChildren(CorrelationSet.class);
-            if ((correlationSetList != null) && (! correlationSetList.isEmpty())) {
+            CorrelationSetContainer container = scopeEntity.getCorrelationSetContainer();
+            if (container == null) return baseCorrelationSetName;
+            CorrelationSet[] correlationSets = container.getCorrelationSets();
+            if ((correlationSets != null) && (correlationSets.length > 0)) {
                 int index = 0;
                 String checkedName = baseCorrelationSetName;
                 while (++index < 10000) {
-                    if (containsCorrelationSetName(correlationSetList, checkedName)) {
+                    if (containsCorrelationSetName(correlationSets, checkedName)) {
                         checkedName = baseCorrelationSetName + "_" + index;
                     } else {
                         return checkedName;
@@ -942,9 +944,9 @@ public class DefineCorrelationWizard implements WizardProperties {
             return baseCorrelationSetName;
         }
         
-        private boolean containsCorrelationSetName(List<CorrelationSet> correlationSetList,
+        private boolean containsCorrelationSetName(CorrelationSet[] correlationSets,
             String checkedName) {
-            for (CorrelationSet correlationSet : correlationSetList) {
+            for (CorrelationSet correlationSet : correlationSets) {
                 String correlationSetName = correlationSet.getName();
                 if (ignoreNamespace(correlationSetName).equals(checkedName)) {
                     return true;
@@ -977,8 +979,8 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         
         private List<CorrelationLinker> getCorrelationLinkers(CorrelationMapperModel mapperModel,
-            CorrelationMapperTreeModel leftTreeModel, 
-            CorrelationMapperTreeModel rightTreeModel) throws WizardValidationException {
+            CorrelationMapperTreeModel leftTreeModel, CorrelationMapperTreeModel rightTreeModel) 
+            throws WizardValidationException {
             List<CorrelationLinker> correlationLinkers = new ArrayList<CorrelationLinker>();
             BpelEntity leftActivity = leftTreeModel.getTopBpelEntity(),
                        rightActivity = rightTreeModel.getTopBpelEntity();
