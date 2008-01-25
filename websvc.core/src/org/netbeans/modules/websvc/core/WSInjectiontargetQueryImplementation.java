@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.common.Util;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -69,7 +70,8 @@ public class WSInjectiontargetQueryImplementation implements InjectionTargetQuer
         }
         FileObject fo = controller.getFileObject();
         Project project = FileOwnerQuery.getOwner(fo);
-        if (Util.isJavaEE5orHigher(project) && !(ElementKind.INTERFACE==typeElement.getKind())) {
+        
+        if (Util.isJavaEE5orHigher(project) && !isTomcatTargetServer(project) && !(ElementKind.INTERFACE==typeElement.getKind())) {
             
             List<? extends AnnotationMirror> annotations = typeElement.getAnnotationMirrors();
             boolean found = false;
@@ -94,4 +96,11 @@ public class WSInjectiontargetQueryImplementation implements InjectionTargetQuer
         return false;
     }
     
+    private boolean isTomcatTargetServer(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            if (j2eeModuleProvider.getServerID().startsWith("Tomcat")) return true; //NOI18N
+        }
+        return false;
+    }
 }
