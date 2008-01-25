@@ -740,8 +740,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         }
         
         while (--count >=0) {
-            var.addField(new AbstractField(var, basename + "[" + idx++ + "]", // NOI18N
-                t, '\'' + val + '\''));
+            var.addField(new AbstractField(var, basename + "[" + idx++ + "]", t, val)); // NOI18N
         }  
     }
     
@@ -789,7 +788,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         }
                     }
                     val = sb.toString();
-                } else if (value.substring(idx - 1, idx).matches("[\\'\"?abfnrt]")) { // NOI18N
+                } else if (value.substring(idx - 1, idx).matches("['\"?abfnrt]") || ch == '\\') { // NOI18N
                     val = '\\' + value.substring(idx - 1, idx);
                 } else {
                     log.warning("AV.parseCharArrayFragment: Ignoring invalid character array fragment"); // NOI18N
