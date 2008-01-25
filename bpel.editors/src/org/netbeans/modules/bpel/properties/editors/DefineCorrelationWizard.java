@@ -79,7 +79,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnAlarmPick;
 import org.netbeans.modules.bpel.model.api.OnEvent;
@@ -93,11 +92,11 @@ import org.netbeans.modules.bpel.model.api.Requester;
 import org.netbeans.modules.bpel.model.api.Responder;
 import org.netbeans.modules.bpel.model.api.Scope;
 import org.netbeans.modules.bpel.model.api.Sequence;
-import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.impl.BpelBuilderImpl;
 import org.netbeans.modules.bpel.model.impl.BpelModelImpl;
 import org.netbeans.modules.bpel.model.xam.BpelAttributes;
 import org.netbeans.modules.bpel.nodes.BpelNode;
+import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.soa.mappercore.DefaultMapperContext;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.Graph;
@@ -112,6 +111,7 @@ import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.ComplexType;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.GlobalSimpleType;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SimpleType;
@@ -121,7 +121,10 @@ import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.OperationParameter;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.wsdl.model.PortType;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xpath.ext.schema.FindAllChildrenSchemaVisitor;
@@ -855,21 +858,13 @@ public class DefineCorrelationWizard implements WizardProperties {
                 List<CorrelationLinker> equalLinkerSublist = getSublistEqualCorrelationLinkers(correlationLinkers);
                 if (equalLinkerSublist.isEmpty()) break;
                 correlationLinkers.removeAll(equalLinkerSublist);
-                List<WSDLReference<CorrelationProperty>> propertyRefList = generateWSDLPropertyList(equalLinkerSublist);
+                
+                createCorrelationPropertiesAndPropertyAliases(equalLinkerSublist);
             }
             
                 
         
 /********??????
-    <bpws:property name="ItineraryRefId" type="xs:string" /> 
-    
-    <bpws:propertyAlias 
-        propertyName="tres:ItineraryRefId"
-        messageType="tres:ItineraryIn"
-        part="itinerary">
-        <bpws:query>/ota:TravelItinerary/ota:ItineraryRef/ota:UniqueID</bpws:query>    
-    </bpws:propertyAlias>
- 
      <correlationSets>
         <correlationSet name="ItineraryCorrelator" properties="tres:ItineraryRefId"/>
     </correlationSets>
@@ -880,20 +875,12 @@ public class DefineCorrelationWizard implements WizardProperties {
 **********?????????*/
         }
             
-//List<WSDLReference<PropertyAlias>> generateWSDLPropertyAliasList();
-//List<WSDLReference<Correlation>> generateBPELCorrelationList();
-//void addBPELCorrelations();
-        private List<WSDLReference<CorrelationProperty>> generateWSDLPropertyList(
-            List<CorrelationLinker> linkerList) {
-            List<WSDLReference<CorrelationProperty>> propertyRefList = 
-                new ArrayList<WSDLReference<CorrelationProperty>>();
+        private void createCorrelationPropertiesAndPropertyAliases(List<CorrelationLinker> linkerList) {
             for (CorrelationLinker linker : linkerList) {
-                
+                linker.createCorrelationProperty();
+                linker.createPropertyAlias();
             }
-            return propertyRefList;
         }
-            
-            
         
         private List<CorrelationLinker> getSublistEqualCorrelationLinkers(List<CorrelationLinker> correlationLinkers) {
             List<CorrelationLinker> linkerSublist = new ArrayList<CorrelationLinker>();
@@ -942,18 +929,60 @@ public class DefineCorrelationWizard implements WizardProperties {
         
         //====================================================================//
         private class CorrelationLinker {
+            private final String CORRELATION_PROPERTY_NAME_PREFIX = "wizard_";
+            
             private CorrelationDataHolder source, target;
-
+            private CorrelationProperty correlationProperty;
+            
             public CorrelationLinker() {}
             public CorrelationLinker(CorrelationDataHolder source, CorrelationDataHolder target) {
                 this.source = source;
                 this.target = target;
             }
+            
             public CorrelationDataHolder getSource() {return source;}
             public CorrelationDataHolder getTarget() {return target;}
             public void setSource(CorrelationDataHolder source) {this.source = source;}
             public void setTarget(CorrelationDataHolder target) {this.target = target;}
 
+            public CorrelationProperty getCorrelationProperty() {return correlationProperty;}
+
+            public void createPropertyAlias() {
+                source.createPropertyAlias(correlationProperty);
+                target.createPropertyAlias(correlationProperty);
+            }
+
+            public void createCorrelationProperty() {
+                String propertyName = getBasePropertyName();
+                WSDLModel wsdlModel = source.getWSDLModel();
+                
+                correlationProperty = (CorrelationProperty) wsdlModel.getFactory().create(
+                    wsdlModel.getDefinitions(), BPELQName.PROPERTY.getQName());
+                correlationProperty.setName(propertyName);
+                
+                NamedComponentReference<GlobalType> typeRef = source.getGlobalTypeReference();
+                if (typeRef != null) {
+                    correlationProperty.setType(typeRef);
+                }
+                
+                if (Util.isUniquePropertyName(wsdlModel, propertyName)) {
+                    try {
+                        wsdlModel.startTransaction();
+                        wsdlModel.addChildComponent(wsdlModel.getRootComponent(), 
+                            correlationProperty, 0);
+                    } finally {
+                        wsdlModel.endTransaction();
+                    }
+                }
+            }
+            
+            private String getBasePropertyName() {
+                return CORRELATION_PROPERTY_NAME_PREFIX + 
+                       WizardDefineCorrelationPanel.this.getSchemaComponentName(source.getSchemaComponent()) + 
+                       "_" +
+                       WizardDefineCorrelationPanel.this.getSchemaComponentName(target.getSchemaComponent()); 
+            }
+            
             @Override
             public boolean equals(Object obj) {
                 if ((obj == null) || (getClass() != obj.getClass())) {
@@ -974,12 +1003,9 @@ public class DefineCorrelationWizard implements WizardProperties {
             public void checkTypesEquivalence() throws WizardValidationException {
                 SchemaComponent sourceSchemaComponent = source.getSchemaComponent(),
                                 targetSchemaComponent = target.getSchemaComponent();
-                String sourceType = WizardDefineCorrelationPanel.this.getSchemaComponentTypeName(sourceSchemaComponent),
-                       targetType = WizardDefineCorrelationPanel.this.getSchemaComponentTypeName(targetSchemaComponent);
+                String sourceType = source.getTypeNameIgnoreNamespace(),
+                       targetType = target.getTypeNameIgnoreNamespace();
 
-                sourceType = ignoreNamespace(sourceType);
-                targetType = ignoreNamespace(targetType);
-                    
                 if (! sourceType.equals(targetType)) {
                     String sourceComponentName = WizardDefineCorrelationPanel.this.getSchemaComponentName(sourceSchemaComponent),
                            targetComponentName = WizardDefineCorrelationPanel.this.getSchemaComponentName(targetSchemaComponent);
@@ -990,32 +1016,72 @@ public class DefineCorrelationWizard implements WizardProperties {
                     throw new WizardValidationException(wizardPanel, errMsg, errMsg);
                 }
             }
+        }
+        //--------------------------------------------------------------------//
+        private class CorrelationDataHolder {
+            private BpelEntity activity;
+            private Message message;
+            private Part part;
+            private SchemaComponent schemaComponent;
 
-            private String ignoreNamespace(String dataWithNamespace) {
+            public CorrelationDataHolder() {}
+
+            public WSDLModel getWSDLModel() {
+                PortType portType = ((PortTypeReference) activity).getPortType().get();
+                return portType.getModel();
+            }
+            
+            public void createPropertyAlias(CorrelationProperty correlationProperty) {
+                WSDLModel wsdlModel = getWSDLModel();
+                
+                PropertyAlias propertyAlias = (PropertyAlias) wsdlModel.getFactory().create(
+                    wsdlModel.getDefinitions(), BPELQName.PROPERTY_ALIAS.getQName());
+
+                NamedComponentReference<CorrelationProperty> correlationPropertyRef =
+                    propertyAlias.createReferenceTo(correlationProperty, CorrelationProperty.class);
+                propertyAlias.setPropertyName(correlationPropertyRef);
+
+                NamedComponentReference<Message> messageTypeRef =
+                    propertyAlias.createReferenceTo(message, Message.class);
+                propertyAlias.setMessageType(messageTypeRef);
+
+                propertyAlias.setPart(part.getName());
+                
+                try {
+                    wsdlModel.startTransaction();
+                    wsdlModel.addChildComponent(wsdlModel.getRootComponent(), 
+                        propertyAlias, 0);
+                } finally {
+                    wsdlModel.endTransaction();
+                }
+            }
+            
+            public NamedComponentReference<GlobalType> getGlobalTypeReference() {
+                Collection<GlobalSimpleType> globalSimpleTypes = getSchemaComponent().getModel().getSchema().getSimpleTypes();
+                NamedComponentReference<GlobalType> typeRef = null;
+                for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
+                    String typeName = getTypeNameIgnoreNamespace();
+                    if (globalSimpleType.toString().equals(typeName)) {
+                        typeRef = schemaComponent.createReferenceTo(globalSimpleType, GlobalType.class);
+                        return typeRef;
+                    }
+                }
+                return typeRef;
+            }
+
+            public String getTypeNameIgnoreNamespace() {
+                String typeName = WizardDefineCorrelationPanel.this.getSchemaComponentTypeName(schemaComponent);
+                return ignoreNamespace(typeName);
+            }
+            
+            public String ignoreNamespace(String dataWithNamespace) {
                 int index = dataWithNamespace.indexOf(":");
                 if ((index > -1) && (index < dataWithNamespace.length() - 1)) {
                     return dataWithNamespace.substring(index + 1);
                 }
                 return dataWithNamespace;
             }
-        }
-
-        private class CorrelationDataHolder {
-            private BpelEntity activity;
-            private Message message;
-            private Part part;
-            SchemaComponent schemaComponent;
-
-            public CorrelationDataHolder() {}
             
-            public CorrelationDataHolder(BpelEntity activity, Message message, Part part, 
-                SchemaComponent schemaComponent) {
-                this.activity = activity;
-                this.message = message;
-                this.part = part;
-                this.schemaComponent = schemaComponent;
-            }
-
             @Override
             public boolean equals(Object obj) {
                 if ((obj == null) || (getClass() != obj.getClass())){
