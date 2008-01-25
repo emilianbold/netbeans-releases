@@ -124,15 +124,16 @@ class OpenedEditors implements PropertyChangeListener {
             visibleEditors2Files.remove(c);
         }
 
-        // XXX: and how does it handle undocked windows?
         visibleEditors.clear();
 
-        JTextComponent editor = EditorRegistry.lastFocusedComponent();
+        for(JTextComponent editor : EditorRegistry.componentList()) {
+            if (editor.isShowing()) {
+                FileObject fo = editor != null ? getFileObject(editor) : null;
 
-        FileObject fo = editor != null ? getFileObject(editor) : null;
-
-        if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
-            visibleEditors.add(editor);
+                if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
+                    visibleEditors.add(editor);
+                }
+            }
         }
 
         for (JTextComponent c : visibleEditors) {
