@@ -59,6 +59,8 @@ import java.io.*;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Enumerations;
 import org.openide.util.Utilities;
@@ -782,5 +784,30 @@ public abstract class BaseFileObj extends FileObject {
                 getProvidedExtensions().deleteSuccess(fe.getFile());
             }
         }        
+    }    
+    
+    boolean checkCacheState(boolean exist, File file) {        
+        if (FileBasedFileSystem.WARNINGS) {
+            boolean notsame = exist != file.exists();
+            if (notsame) {
+                printWarning(file);
+            } 
+        }
+        return true;
+    }
+    
+    boolean printWarning(File file) {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(bos);
+            new Exception().printStackTrace(ps);
+            ps.close();
+            String h = file.exists() ? "WARNING: externally created " : "WARNING: externally deleted "; //NOI18N
+            h += (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath(); //NOI18N
+            h += "  - please report. (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)";//NOI18N
+            if (Utilities.isWindows()) {
+                h = h.replace('\\', '/');//NOI18N
+            }
+            Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));//NOI18N
+        return true;
     }    
 }

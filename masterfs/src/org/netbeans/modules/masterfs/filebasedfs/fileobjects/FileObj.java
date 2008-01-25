@@ -221,7 +221,9 @@ public class FileObj extends BaseFileObj {
 
     public boolean isValid() {
         //0 - because java.io.File.lastModififed returns 0 for not existing files        
-        return lastModified != 0;
+        boolean retval = lastModified != 0;
+        assert checkCacheState(retval, getFileName().getFile());
+        return retval;
     }
 
     protected void setValid(boolean valid) {
@@ -300,5 +302,5 @@ public class FileObj extends BaseFileObj {
     public void rename(final FileLock lock, final String name, final String ext, ProvidedExtensions.IOHandler handler) throws IOException {
         super.rename(lock, name, ext, handler);
         setLastModified(getFileName().getFile().lastModified());
-    }
+    }    
 }

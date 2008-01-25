@@ -440,6 +440,7 @@ public final class FolderObj extends BaseFileObj {
     }
 
     public boolean isValid() {
+        assert checkCacheState(valid, getFileName().getFile());        
         return valid;
     }
 

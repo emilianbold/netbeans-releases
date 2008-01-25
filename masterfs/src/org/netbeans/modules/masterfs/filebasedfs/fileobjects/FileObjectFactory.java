@@ -126,7 +126,7 @@ public final class FileObjectFactory {
             final Mutex.Privileged mutexPrivileged = childrenCache.getMutexPrivileged();
             mutexPrivileged.enterReadAccess();
             try {
-                final String nameExt = BaseFileObj.getNameExt(file);
+                final String nameExt = BaseFileObj.getNameExt(file);                
                 child = childrenCache.getChild(nameExt, false);
             } finally {
                 mutexPrivileged.exitReadAccess();
@@ -213,7 +213,7 @@ public final class FileObjectFactory {
                     if (!exist) {
                         foForFile.refresh();
                     }
-                    assert checkCacheState(exist, file, true);                     
+                    assert checkCacheState(exist, file, true);
                 } else {
                     exist = touchExists(file, realExists);
                     if (exist) {
@@ -245,8 +245,20 @@ public final class FileObjectFactory {
             switch (caller) {
                 case GetParent:
                     //guarantee issuing parent
-                    exist = true;
-                    break;
+                    FileObject retval = null;
+                    if (foForFile != null && !foForFile.isRoot()) {
+                        retval =  foForFile;
+                    } else {
+                         retval = getOrCreate(new FileInfo(file, 1));
+                    }
+                    if (retval instanceof BaseFileObj && retval.isValid()) {
+                        exist = touchExists(file, realExists);
+                        if (!exist) {
+                            //parent is exception must be issued even if not valid
+                            ((BaseFileObj)retval).setValid(false);
+                        }
+                    }
+                    return retval;
                 case ToFileObject:
                     //guarantee issuing for existing file
                     exist = touchExists(file, realExists);
@@ -257,7 +269,7 @@ public final class FileObjectFactory {
                     break;
             }
         }
-        return (exist) ? getOrCreate(new FileInfo(file, 1)) : null;        
+        return (exist) ? getOrCreate(new FileInfo(file, 1)) : null;
     }
 
     
