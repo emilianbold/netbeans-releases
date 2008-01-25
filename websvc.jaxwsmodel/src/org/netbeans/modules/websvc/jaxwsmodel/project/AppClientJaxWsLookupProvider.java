@@ -42,6 +42,8 @@
 package org.netbeans.modules.websvc.jaxwsmodel.project;
 
 import java.io.IOException;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntBuildExtender;
@@ -79,7 +81,7 @@ public class AppClientJaxWsLookupProvider implements LookupProvider {
         final JaxWsModel jaxWsModel = getJaxWsModel(prj);
         ProjectOpenedHook openhook = new ProjectOpenedHook() {
             private FileChangeListener jaxWsListener;
-            private FileChangeListener jaxWsCreationListener;
+            ChangeListener jaxWsCreationListener;
             
             protected void projectOpened() {
                 if (jaxWsModel!=null) { 
@@ -99,7 +101,7 @@ public class AppClientJaxWsLookupProvider implements LookupProvider {
                         } catch (IOException ex) {
                             ex.printStackTrace();
                         }
-                        FileObject jaxws_fo = getJaxWsFileObject(prj);
+                        FileObject jaxws_fo = jaxWsModel.getJaxWsFile();
                         if (jaxws_fo!=null) {                     
                             jaxWsListener = new FileChangeAdapter() {
                                 public void fileChanged(FileEvent fe) {
@@ -108,38 +110,33 @@ public class AppClientJaxWsLookupProvider implements LookupProvider {
                             };  
                             jaxws_fo.addFileChangeListener(jaxWsListener);
                         } else {
-                            FileObject nbprojectDir = prj.getProjectDirectory().getFileObject("nbproject"); //NOI18N
-                            if (nbprojectDir!=null) {
-                                jaxWsCreationListener = new FileChangeAdapter() {
-                                    public void fileDataCreated(FileEvent fe) {
-                                        if ("jax-ws.xml".equals(fe.getFile().getNameExt())) { //NOI18N
-                                            FileObject jaxws_fo = getJaxWsFileObject(prj);
-                                            if (jaxws_fo!=null) {
-                                                jaxWsListener = new FileChangeAdapter() {
-                                                    public void fileChanged(FileEvent fe) {
-                                                        handleJaxsClientBuildScript();
-                                                    }
-                                                };  
-                                                jaxws_fo.addFileChangeListener(jaxWsListener);                                           
+                            jaxWsCreationListener = new ChangeListener() {
+                                public void stateChanged(ChangeEvent e) {
+                                    FileObject jaxws_fo = jaxWsModel.getJaxWsFile();
+                                    if (jaxws_fo!=null) {
+                                        jaxWsListener = new FileChangeAdapter() {
+                                            public void fileChanged(FileEvent fe) {
+                                                handleJaxsClientBuildScript();
                                             }
-                                        }
-                                    }
-                                };
-                                nbprojectDir.addFileChangeListener(jaxWsCreationListener);
-                            }
+                                        };  
+                                        jaxws_fo.addFileChangeListener(jaxWsListener);                                           
+                                    }                                   
+                                }
+                                
+                            };
+                            jaxWsModel.addChangeListener(jaxWsCreationListener);
                         }
                     }
                 }
             }
             protected void projectClosed() {
-                FileObject nbprojectDir = prj.getProjectDirectory().getFileObject("nbproject"); //NOI18N
-                if (nbprojectDir!=null) {
-                    nbprojectDir.removeFileChangeListener(jaxWsCreationListener);
-                    FileObject jaxws_fo = getJaxWsFileObject(prj);
-                    if (jaxws_fo!=null)
+                if (jaxWsModel != null) {
+                    jaxWsModel.removeChangeListener(jaxWsCreationListener);
+                    FileObject jaxws_fo = jaxWsModel.getJaxWsFile();
+                    if (jaxws_fo!=null) {
                         jaxws_fo.removeFileChangeListener(jaxWsListener);
+                    }
                 }
-                
             }
             
             private void handleJaxsClientBuildScript() {
@@ -170,7 +167,7 @@ public class AppClientJaxWsLookupProvider implements LookupProvider {
     
     private JaxWsModel getJaxWsModel(Project prj) {
         try {
-            FileObject fo = getJaxWsFileObject(prj);
+            FileObject fo = findJaxWsFileObject(prj);
             if (fo==null)
                 return JaxWsModelProvider.getDefault().getJaxWsModel(
                         WSUtils.class.getResourceAsStream(JAX_WS_XML_RESOURCE));
@@ -182,11 +179,6 @@ public class AppClientJaxWsLookupProvider implements LookupProvider {
             ErrorManager.getDefault().notify(ex);
             return null;
         }
-    }
-    
-    private FileObject getJaxWsFileObject(Project prj) {
-        FileObject jaxWsFo = findJaxWsFileObject(prj);
-        return jaxWsFo;
     }
     
     public FileObject findJaxWsFileObject(Project prj) {

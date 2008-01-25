@@ -48,11 +48,14 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem.AtomicAction;
+import org.openide.util.ChangeSupport;
 
 /** Provides information about web services and clients in a project
  * Provides information used for build-impl generation
@@ -64,6 +67,7 @@ public final class JaxWsModel {
     private Object initLock = new Object();
     private List<ServiceListener> serviceListeners;
     private List<PropertyChangeListener> propertyChangeListeners;
+    private ChangeSupport changeSupport;
     
     JaxWsModel(org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.JaxWs jaxws) {
         this(jaxws,null);
@@ -74,6 +78,7 @@ public final class JaxWsModel {
         this.fo=fo;
         propertyChangeListeners = new ArrayList<PropertyChangeListener>();
         serviceListeners = new ArrayList<ServiceListener>();
+        changeSupport = new ChangeSupport(this);
     }
     
     public Service[] getServices() {
@@ -280,6 +285,7 @@ public final class JaxWsModel {
     
     public void setJaxWsFile(FileObject fo) {
         this.fo=fo;
+        changeSupport.fireChange();
     }
     
     public void write() throws IOException {
@@ -362,6 +368,23 @@ public final class JaxWsModel {
             return originalListener;
         }
         
+    }
+    
+    /** Registers ChangeListener for JaxWsModel object.
+     *  The listener fires the ChangeEvent when FileObject is set for JaxWsModel
+     *  (For projects, this occurs when jax-ws.xml is physicaly created in nbproject directory)   
+     * 
+     * @param listener ChangeListener instance
+     */
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+    /** Unregisters ChangeListener from JaxWsModel object.
+     * 
+     * @param listener ChangeListener instance
+     */
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
     
 }
