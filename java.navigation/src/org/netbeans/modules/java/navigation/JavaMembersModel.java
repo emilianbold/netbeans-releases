@@ -41,13 +41,13 @@
 
 package org.netbeans.modules.java.navigation;
 
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.openide.ErrorManager;
@@ -57,7 +57,6 @@ import org.openide.util.NbBundle;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
@@ -341,7 +340,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
         protected void openElementHandle() {
             if (fileObject == null) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaMembersModel.class, "MSG_CouldNotOpenElement", getLabel()));
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaMembersModel.class, "MSG_CouldNotOpenElement", getFQNLabel()));
                 return;
             }
             
@@ -349,7 +348,9 @@ public final class JavaMembersModel extends DefaultTreeModel {
                 return;
             }
 
-            ElementOpen.open(fileObject, elementHandle);
+            if (!ElementOpen.open(ClasspathInfo.create(fileObject), elementHandle)) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaMembersModel.class, "MSG_CouldNotOpenElement", getFQNLabel()));
+            }
         }
         
     }
@@ -474,9 +475,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
                     if ((superClass != null) &&
                             !superClass.getQualifiedName().toString()
                                            .equals(Object.class.getName())) {
-                        FileObject fileObject = SourceUtils.getFile(ElementHandle.create(superClass),
-                                compilationInfo.getClasspathInfo());
-                        insert(new TypeTreeNode(fileObject, superClass,
+                        insert(new TypeTreeNode(getFileObject(), superClass,
                                 compilationInfo, true), index++);
                     }
                 }
@@ -485,9 +484,7 @@ public final class JavaMembersModel extends DefaultTreeModel {
 
                 for (TypeMirror interfaceTypeMirror : interfaces) {
                     TypeElement anInterface = (TypeElement) ((DeclaredType) interfaceTypeMirror).asElement();
-                    FileObject fileObject = SourceUtils.getFile(ElementHandle.create(anInterface),
-                            compilationInfo.getClasspathInfo());
-                    insert(new TypeTreeNode(fileObject, anInterface,
+                    insert(new TypeTreeNode(getFileObject(), anInterface,
                             compilationInfo, true), index++);
                 }
             }

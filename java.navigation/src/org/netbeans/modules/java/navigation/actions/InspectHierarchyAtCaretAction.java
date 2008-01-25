@@ -46,15 +46,14 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import org.netbeans.api.editor.EditorRegistry;
 
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.editor.BaseAction;
 
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.navigation.JavaHierarchy;
 
 import org.openide.filesystems.FileObject;
@@ -152,61 +151,36 @@ public final class InspectHierarchyAtCaretAction extends BaseAction {
                             Element element = compilationController.getTrees()
                                                                    .getElement(tp);
 
-                            if (element instanceof TypeElement) {
-                                FileObject elementFileObject = SourceUtils.getFile(
-                                        ElementHandle.create(element),
-                                        compilationController.getClasspathInfo());
-
-                                if (elementFileObject != null) {
+                            FileObject elementFileObject = NbEditorUtilities.getFileObject(document);
+                            if (elementFileObject != null) {
+                                if (element instanceof TypeElement) {
                                     JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
-                                }
-
-                            } else if (element instanceof VariableElement) {
-                                TypeMirror typeMirror = ((VariableElement) element).asType();
-
-                                if (typeMirror.getKind() == TypeKind.DECLARED) {
-                                    element = ((DeclaredType) typeMirror).asElement();
-
-                                    if (element != null) {
-                                        FileObject elementFileObject =
-                                            SourceUtils.getFile(
-                                                ElementHandle.create(element),
-                                                compilationController.getClasspathInfo());
-
-                                        if (elementFileObject != null) {
+                                } else if (element instanceof VariableElement) {
+                                    TypeMirror typeMirror = ((VariableElement) element).asType();
+                                    
+                                    if (typeMirror.getKind() == TypeKind.DECLARED) {
+                                        element = ((DeclaredType) typeMirror).asElement();
+                                        
+                                        if (element != null) {
                                             JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
                                         }
                                     }
-                                }
-                            } else if (element instanceof ExecutableElement) {
-                                // Method
-                                if (element.getKind() == ElementKind.METHOD) {
-                                    TypeMirror typeMirror = ((ExecutableElement) element).getReturnType();
-
-                                    if (typeMirror.getKind() == TypeKind.DECLARED) {
-                                        element = ((DeclaredType) typeMirror).asElement();
-
-                                        if (element != null) {
-                                            FileObject elementFileObject =
-                                                SourceUtils.getFile(
-                                                    ElementHandle.create(element),
-                                                    compilationController.getClasspathInfo());
-
-                                            if (elementFileObject != null) {
+                                } else if (element instanceof ExecutableElement) {
+                                    // Method
+                                    if (element.getKind() == ElementKind.METHOD) {
+                                        TypeMirror typeMirror = ((ExecutableElement) element).getReturnType();
+                                        
+                                        if (typeMirror.getKind() == TypeKind.DECLARED) {
+                                            element = ((DeclaredType) typeMirror).asElement();
+                                            
+                                            if (element != null) {
                                                 JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
                                             }
                                         }
-                                    }
-                                } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
-                                    element = element.getEnclosingElement();
-
-                                    if (element != null) {
-                                        FileObject elementFileObject =
-                                            SourceUtils.getFile(
-                                                ElementHandle.create(element),
-                                                compilationController.getClasspathInfo());
-
-                                        if (elementFileObject != null) {
+                                    } else if (element.getKind() == ElementKind.CONSTRUCTOR) {
+                                        element = element.getEnclosingElement();
+                                        
+                                        if (element != null) {
                                             JavaHierarchy.show(elementFileObject, new Element[] {element}, compilationController);
                                         }
                                     }

@@ -391,7 +391,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
         protected void openElementHandle() {
         	if (fileObject == null) {
-                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_CouldNotOpenElement", getLabel()));
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_CouldNotOpenElement", getFQNLabel()));
                 return;
             }
         	
@@ -399,7 +399,9 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                 return;
             }
 
-            ElementOpen.open(fileObject, elementHandle);
+            if (!ElementOpen.open(cpInfo, elementHandle)) {
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaHierarchyModel.class, "MSG_CouldNotOpenElement", getFQNLabel()));
+            }
         }
 
     }
@@ -435,15 +437,13 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
 
             TypeElement superClass = (TypeElement) types.asElement(typeElement.getSuperclass());
             if (superClass != null && !superClass.getQualifiedName().toString().equals(Object.class.getName())) {
-                FileObject fileObject = SourceUtils.getFile(ElementHandle.create(superClass), compilationInfo.getClasspathInfo());
-                insert(new TypeTreeNode(fileObject, superClass, compilationInfo, true), index++);
+                insert(new TypeTreeNode(getFileObject(), superClass, compilationInfo, true), index++);
             }
             List<? extends TypeMirror> interfaces = typeElement.getInterfaces();
             for (TypeMirror interfaceMirror:interfaces) {
                 TypeElement interfaceElement = (TypeElement) types.asElement(interfaceMirror);
                 if (interfaceElement != null) {
-                    FileObject fileObject = SourceUtils.getFile(ElementHandle.create(interfaceElement), compilationInfo.getClasspathInfo());
-                    insert(new TypeTreeNode(fileObject, (TypeElement)interfaceElement, compilationInfo, true), index++);
+                    insert(new TypeTreeNode(getFileObject(), (TypeElement)interfaceElement, compilationInfo, true), index++);
                 }
             }
 
@@ -455,7 +455,7 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                             (childElement.getKind() == ElementKind.INTERFACE) ||
                             (childElement.getKind() == ElementKind.ENUM) ||
                             (childElement.getKind() == ElementKind.ANNOTATION_TYPE)) {
-                            node = new TypeTreeNode(fileObject, (TypeElement)childElement, compilationInfo, true);
+                            node = new TypeTreeNode(getFileObject(), (TypeElement)childElement, compilationInfo, true);
                             insert(node, index++);
                         }
                     }
@@ -548,7 +548,8 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                                         }
                                         processedImplementorElementHandles.add(implementorElementHandle);
                                         final ElementHandle<TypeElement> finalImplementorElementHandle = implementorElementHandle;
-                                        FileObject implementorfileObject = SourceUtils.getFile(implementorElementHandle, classpathInfo);
+                                        final FileObject implementorfileObject = 
+                                            SourceUtils.getFile(implementorElementHandle, classpathInfo);
                                         if (implementorfileObject == null) {
                                             continue;
                                         }
@@ -556,16 +557,12 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                                         if (javaSource != null) {
                                             try {
                                                 javaSource.runUserActionTask(new Task<CompilationController>() {
-
                                                         public void run(CompilationController compilationController)
                                                             throws Exception {
                                                             compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
                                                             Element implementor = finalImplementorElementHandle.resolve(compilationController);
                                                             if (implementor instanceof TypeElement && ((TypeElement)implementor).getNestingKind() != NestingKind.ANONYMOUS) {
-                                                                FileObject fo = SourceUtils.getFile(ElementHandle.create(implementor), compilationController.getClasspathInfo());
-                                                                if (fo != null) {
-                                                                    insert(new SimpleTypeTreeNode(fo, (TypeElement) implementor, compilationController), index[0]++);
-                                                                } 
+                                                                insert(new SimpleTypeTreeNode(implementorfileObject, (TypeElement) implementor, compilationController), index[0]++);
                                                             }
                                                         }
                                                     }, true);
