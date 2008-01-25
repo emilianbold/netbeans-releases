@@ -99,7 +99,7 @@ public class JSFConfigModelImpl extends AbstractDocumentModel<JSFConfigComponent
     public JSFVersion getVersion() {
         String namespaceURI = getRootComponent().getPeer().getNamespaceURI();
         JSFVersion version = JSFVersion.JSF_1_1;
-        if (namespaceURI != null){
+        if (JSFConfigQNames.JSF_1_2_NS.equals(namespaceURI)){
             version = JSFVersion.JSF_1_2;
         }
         return version;

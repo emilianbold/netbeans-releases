@@ -133,16 +133,10 @@ public class JSFConfigComponentFactoryImpl implements JSFConfigComponentFactory 
     
     public static boolean areSameQName(JSFConfigQNames jsfqname,Element element) {
         QName qname = AbstractDocumentComponent.getQName(element);
-        boolean aresame = false;
-        JSFVersion version = JSFVersion.JSF_1_1;
-        if (element.getNamespaceURI() != null && element.getNamespaceURI().length()>0)
-            version = JSFVersion.JSF_1_2;
-        if (element.getNamespaceURI() != null){
-            aresame = jsfqname.getQName(version).equals(qname);
-        } else {
-            aresame = jsfqname.getLocalName().equals(qname.getLocalPart());
+        if (JSFConfigQNames.JSF_1_2_NS.equals(element.getNamespaceURI())){
+            return jsfqname.getQName(JSFVersion.JSF_1_2).equals(qname);
         }
-        return aresame;
+        return jsfqname.getLocalName().equals(qname.getLocalPart());
     }
     
     public static class CreateVisitor extends JSFConfigVisitor.Default {
