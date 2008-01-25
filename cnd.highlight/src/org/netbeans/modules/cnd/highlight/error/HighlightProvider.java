@@ -47,17 +47,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
-import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.netbeans.editor.BaseDocument;
 import javax.swing.text.Position;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
 
@@ -80,38 +75,17 @@ public class HighlightProvider  {
     }
     
     /* package */ void update(CsmFile file, Document doc) {
-        checkFile(file, doc);
-    }
-    
-    /* package */ void clear(CsmFile file) {
-        removeAnnotations(file);
-    }
-    
-    private void checkFile(CsmFile file, Document doc) {
-        if (doc == null) {
-            // actually, we should never get here...
-            doc = findDocument(file);
-        }
+        assert doc!=null || file==null;
         if (doc instanceof BaseDocument){
             addAnnotations((BaseDocument)doc, file);
         }
     }
-
-    private Document findDocument(CsmFile searchFor) {
-        DataObject dao = CsmUtilities.getDataObject(searchFor);
-        if (dao == null) {
-            return null;
+    
+    /* package */ void clear(CsmFile file, Document doc) {
+        assert doc!=null || file==null;
+        if (doc instanceof BaseDocument){
+            removeAnnotations((BaseDocument)doc, file);
         }
-        for (JTextComponent component : EditorRegistry.componentList()) {
-            if (component.isShowing()) {
-                Document doc = component.getDocument();
-                DataObject found = NbEditorUtilities.getDataObject(doc);
-                if (dao.equals(found)) {
-                    return doc;
-                }
-            }
-        }
-        return null;
     }
     
     private boolean isNeededUpdateAnnotations(BaseDocument doc, CsmFile file) {
@@ -181,12 +155,7 @@ public class HighlightProvider  {
         }
     }
     
-    private void removeAnnotations(CsmFile file) {
-        BaseDocument doc = null;
-        Document sdoc = findDocument(file);
-        if (sdoc instanceof BaseDocument){
-            doc = (BaseDocument)sdoc;
-        }
+    private void removeAnnotations(BaseDocument doc, CsmFile file) {
         List<Annotation> fileAnnotations = annotations.get(file);
         if (fileAnnotations != null){
             if (TRACE_ANNOTATIONS)  System.out.println("Clear annotations: "+file.getName()); // NOI18N
