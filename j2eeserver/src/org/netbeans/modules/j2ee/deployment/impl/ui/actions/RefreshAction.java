@@ -80,51 +80,61 @@ public class RefreshAction extends NodeAction {
     }
     
     // private helper methods -------------------------------------------------
-    
+
     private static void performActionImpl(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
-            if (si != null) {
-                si.refresh();
-            }
+            ServerInstance si = (ServerInstance) nodes[i].getCookie(ServerInstance.class);
+            performActionImpl(si);
         }
     }
-    
+
+    private static void performActionImpl(final ServerInstance si) {
+        if (si != null) {
+            si.refresh();
+        }
+    }
+
     private static boolean enableImpl(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
-            if (si == null || si.getServerState() == ServerInstance.STATE_WAITING) {
+            ServerInstance si = (ServerInstance) nodes[i].getCookie(ServerInstance.class);
+            if (!enableImpl(si)) {
                 return false;
             }
         }
         return true;
     }
-    
+
+    private static boolean enableImpl(final ServerInstance si) {
+        if (si == null || si.getServerState() == ServerInstance.STATE_WAITING) {
+            return false;
+        }
+        return true;
+    }
+
     /** This action will be displayed in the server output window */
     public static class OutputAction extends AbstractAction implements ServerInstance.StateListener {
         
         private static final String ICON = 
                 "org/netbeans/modules/j2ee/deployment/impl/ui/resources/refresh.png"; // NOI18N
         private static final String PROP_ENABLED = "enabled"; // NOI18N
-        private Node node;
+        private final ServerInstance instance;
         
-        public OutputAction(Node node) {
+        public OutputAction(ServerInstance instance) {
             super(NbBundle.getMessage(DebugAction.class, "LBL_RefreshOutput"),
                   new ImageIcon(Utilities.loadImage(ICON)));
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DebugAction.class, "LBL_RefreshOutputDesc"));
-            this.node = node;
+            this.instance = instance;
             
             // start listening to changes
-            ServerInstance si = (ServerInstance)node.getCookie(ServerInstance.class);
-            si.addStateListener(this);
+            instance.addStateListener(this);
         }
 
         public void actionPerformed(ActionEvent e) {
-            performActionImpl(new Node[] {node});
+            performActionImpl(instance);
         }
 
         public boolean isEnabled() {
-            return enableImpl(new Node[] {node});
+            return enableImpl(instance);
         }
         
         // ServerInstance.StateListener implementation --------------------------

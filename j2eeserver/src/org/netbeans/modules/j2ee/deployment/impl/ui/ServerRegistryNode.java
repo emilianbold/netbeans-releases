@@ -146,9 +146,7 @@ implements ServerRegistry.PluginListener, InstanceListener {
             } else {
                 childNode = instance.getServer().getNodeProvider().createInstanceNode(instance);
             }
-            // XXX this is commented out because of the UISupoort calling this
-            // method - it should be fixed in UISupport as it is quite ugly
-            //instance.refresh(); // detect the server instance status
+            instance.refresh(); // detect the server instance status
             return new Node[] { childNode };
         }
         
@@ -166,10 +164,12 @@ implements ServerRegistry.PluginListener, InstanceListener {
             setKeys(instances);
         }
     }
-    
+
     private static ServerRegistryNode instance;
-    
+
     public static synchronized ServerRegistryNode getServerRegistryNode() {
+        assert false : "This shouldn't be invoked anymore";
+
         if (instance == null) {
             instance = new ServerRegistryNode();
         }

@@ -87,73 +87,83 @@ public class RestartAction extends NodeAction {
     }
     
     // private helper methods -------------------------------------------------
-    
+
     private static void performActionImpl(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            final ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
-            if (si != null) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        String title = NbBundle.getMessage(RestartAction.class, "LBL_Restarting", si.getDisplayName());
-                        ProgressUI progressUI = new ProgressUI(title, false);
-                        try {
-                            progressUI.start();
-                            si.restart(progressUI);
-                        } catch (ServerException ex) {
-                            String msg = ex.getLocalizedMessage();
-                            NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(desc);
-                        } finally {
-                            progressUI.finish();
-                        }
-                    }
-                });
-            }
+            final ServerInstance si = (ServerInstance) nodes[i].getCookie(ServerInstance.class);
+            performActionImpl(si);
         }
     }
-    
+
+    private static void performActionImpl(final ServerInstance si) {
+        if (si != null) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    String title = NbBundle.getMessage(RestartAction.class, "LBL_Restarting", si.getDisplayName());
+                    ProgressUI progressUI = new ProgressUI(title, false);
+                    try {
+                        progressUI.start();
+                        si.restart(progressUI);
+                    } catch (ServerException ex) {
+                        String msg = ex.getLocalizedMessage();
+                        NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(desc);
+                    } finally {
+                        progressUI.finish();
+                    }
+                }
+            });
+        }
+    }
+
     private static boolean enableImpl(Node[] nodes) {
         for (int i = 0; i < nodes.length; i++) {
-            ServerInstance si = (ServerInstance)nodes[i].getCookie(ServerInstance.class);
-            if (si == null || !si.canStartServer()) {
-                return false;
-            }
-            int state = si.getServerState();
-            if (state != ServerInstance.STATE_RUNNING 
-                && state != ServerInstance.STATE_DEBUGGING
-                && state != ServerInstance.STATE_PROFILING
-                && state != ServerInstance.STATE_PROFILER_BLOCKING) {
+            ServerInstance si = (ServerInstance) nodes[i].getCookie(ServerInstance.class);
+            if (!enableImpl(si)) {
                 return false;
             }
         }
         return true;
     }
-    
+
+    private static boolean enableImpl(final ServerInstance si) {
+        if (si == null || !si.canStartServer()) {
+            return false;
+        }
+        int state = si.getServerState();
+        if (state != ServerInstance.STATE_RUNNING
+            && state != ServerInstance.STATE_DEBUGGING
+            && state != ServerInstance.STATE_PROFILING
+            && state != ServerInstance.STATE_PROFILER_BLOCKING) {
+            return false;
+        }
+        return true;
+    }
+
     /** This action will be displayed in the server output window */
     public static class OutputAction extends AbstractAction implements ServerInstance.StateListener {
     
         private static final String ICON = 
                 "org/netbeans/modules/j2ee/deployment/impl/ui/resources/restart.png";  // NOI18N
         private static final String PROP_ENABLED = "enabled"; // NOI18N
-        private Node node;
+        private final ServerInstance instance;
         
-        public OutputAction(Node node) {
+        public OutputAction(ServerInstance instance) {
             super(NbBundle.getMessage(RestartAction.class, "LBL_RestartOutput"),
                   new ImageIcon(Utilities.loadImage(ICON)));
             putValue(SHORT_DESCRIPTION, NbBundle.getMessage(RestartAction.class, "LBL_RestartOutputDesc"));
-            this.node = node;
+            this.instance = instance;
             
             // start listening to changes
-            ServerInstance si = (ServerInstance)node.getCookie(ServerInstance.class);
-            si.addStateListener(this);
+            instance.addStateListener(this);
         }
 
         public void actionPerformed(ActionEvent e) {
-            performActionImpl(new Node[] {node});
+            performActionImpl(instance);
         }
 
         public boolean isEnabled() {
-            return enableImpl(new Node[] {node});
+            return enableImpl(instance);
         }
         
         // ServerInstance.StateListener implementation --------------------------

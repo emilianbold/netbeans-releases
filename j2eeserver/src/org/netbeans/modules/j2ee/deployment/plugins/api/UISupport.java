@@ -146,28 +146,19 @@ public final class UISupport {
         if (si == null) {
             return null;
         }
-        
+
         // look in the cache
-        InputOutput io = (InputOutput)ioWeakMap.get(si);
+        InputOutput io = (InputOutput) ioWeakMap.get(si);
         if (io != null) {
             return io;
         }
-        
-        // FIXME remove the usage of the node
-        // look up the node that belongs to the given server instance
-        Node node = ServerRegistryNode.getServerRegistryNode().getChildren().findChild(si.getUrl());
-        
-        // it looks like that the server instance has been removed 
-        if (node == null) {
-            return null;
-        }
-        
+
         Action[] actions = new Action[] {
-            new StartAction.OutputAction(node),
-            new DebugAction.OutputAction(node),
-            new RestartAction.OutputAction(node),
-            new StopAction.OutputAction(node),
-            new RefreshAction.OutputAction(node)
+            new StartAction.OutputAction(si),
+            new DebugAction.OutputAction(si),
+            new RestartAction.OutputAction(si),
+            new StopAction.OutputAction(si),
+            new RefreshAction.OutputAction(si)
         };
         InputOutput newIO = IOProvider.getDefault().getIO(si.getDisplayName(), actions);
         
