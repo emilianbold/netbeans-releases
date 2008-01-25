@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import java.awt.Color;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,6 +61,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -131,6 +133,8 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         super(doc);
     }
 
+    
+    public static final Color ES_COLOR = new Color( 175, 172, 102 ); 
     // Runnable
     public void run(Phase phase) {
         if (phase == Phase.PARSED || phase == Phase.INIT /*&& getCsmFile().isParsed()*/) {
@@ -146,10 +150,17 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
                 out = Collections.<CsmReference>emptyList();
             }
             clean();
+            Document doc = getDocument();
+            OffsetsBag obag = new OffsetsBag(doc);
+
+            obag.clear();
             for (CsmReference csmReference : out) {
-                getHighlightsBag(getDocument()).addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
-               // addAnnotation(csmReference.getStartOffset());
+                obag.addHighlight(csmReference.getStartOffset(), csmReference.getEndOffset(), defaultColors);
+            // addAnnotation(csmReference.getStartOffset());
             }
+            getHighlightsBag(doc).setHighlights(obag);
+            OccurrencesMarkProvider.get(doc).setOccurrences(
+                    OccurrencesMarkProvider.createMarks(doc, out, ES_COLOR, NbBundle.getMessage(MarkOccurrencesHighlighter.class, "LBL_ES_TOOLTIP")));
         } else if (phase == Phase.CLEANUP) {
             // removeAnnotations();
         }
