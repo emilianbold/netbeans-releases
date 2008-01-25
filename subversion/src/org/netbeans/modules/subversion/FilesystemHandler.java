@@ -203,21 +203,9 @@ class FilesystemHandler extends VCSInterceptor {
         } else {
             if (!file.exists()) {                
                 try {
-                    SvnClient client = Subversion.getInstance().getClient(true);                    
-                    
-                    ISVNStatus status = getStatus(client, file);
-                    if (status != null && status.getTextStatus().equals(SVNStatusKind.DELETED)) {    
-                        // we have a file scheduled for deletion but it's giong to created again,
-                        // so it's parent folder can't stay deleted either
-                        List<File> deletedParents = getDeletedParents(file, client);
-                        client.revert(deletedParents.toArray(new File[deletedParents.size()]), false);                        
-                        
-                        // reverting the file will set the metadata uptodate
-                        client.revert(file, false);                        
-                        // this is beforeCreate and our actuall goal was on;y to fix the metadata ->
-                        //  -> get rid of the reverted file
-                        file.delete();                        
-                    }
+                    SvnClient client = Subversion.getInstance().getClient(true);                                        
+                    // check if the file wasn't just deleted in this session
+                    revertDeleted(client, file, true); 
                 } catch (SVNClientException ex) {
                     SvnClientExceptionHandler.notifyException(ex, false, false);
                 }
@@ -256,10 +244,9 @@ class FilesystemHandler extends VCSInterceptor {
             public void run() {
                 if (file == null) return;
                 int status = cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN).getStatus();
-
-                if ((status & FileInformation.STATUS_MANAGED) == 0) return;
-
-//        if (properties_changed) cache.directoryContentChanged(file.getParentFile());
+                if ((status & FileInformation.STATUS_MANAGED) == 0) {
+                    return;
+                }
                 if (file.isDirectory()) cache.directoryContentChanged(file);
             }
         });
@@ -310,6 +297,29 @@ class FilesystemHandler extends VCSInterceptor {
         }
     }
 
+    private void revertDeleted(SvnClient client, final File file, boolean checkParents) {
+
+        try {
+            ISVNStatus status = getStatus(client, file);
+            if (status != null && status.getTextStatus().equals(SVNStatusKind.DELETED)) {
+                if(checkParents) {
+                    // we have a file scheduled for deletion but it's giong to created again,
+                    // so it's parent folder can't stay deleted either
+                    List<File> deletedParents = getDeletedParents(file, client);
+                    client.revert(deletedParents.toArray(new File[deletedParents.size()]), false);                        
+                }        
+                        
+                // reverting the file will set the metadata uptodate
+                client.revert(file, false);
+                // our goal was ony to fix the metadata ->
+                //  -> get rid of the reverted file
+                file.delete();
+            }
+        } catch (SVNClientException ex) {
+            SvnClientExceptionHandler.notifyException(ex, false, false);
+        }
+    }
+
     private void svnMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         try {                        
             boolean force = true; // file with local changes must be forced
@@ -340,21 +350,8 @@ class FilesystemHandler extends VCSInterceptor {
                 int retryCounter = 6;
                 while (true) {
                     try {
-
-                        if (!dstFile.exists()) {                                            
-                            try {
-                                ISVNStatus status = getStatus(client, dstFile);
-                                if (status != null && status.getTextStatus().equals(SVNStatusKind.DELETED)) {    
-                                    // reverting the file will set the metadata uptodate
-                                    client.revert(dstFile, false);                        
-                                    // our goal was ony to fix the metadata ->
-                                    //  -> get rid of the reverted file
-                                    dstFile.delete();                        
-                                }
-                            } catch (SVNClientException ex) {
-                                SvnClientExceptionHandler.notifyException(ex, false, false);
-                            }
-                        }                
+                        // check if the file wasn't just deleted in this session
+                        revertDeleted(client, dstFile, false);
                         
                         // check the status - if the file isn't in the repository yet ( ADDED | UNVERSIONED )
                         // then it also can't be moved via the svn client
@@ -373,7 +370,7 @@ class FilesystemHandler extends VCSInterceptor {
                                 cache.onNotify(f, null);    
                             }                                 
                         }                        
-                        
+                                                
                         break;
                     } catch (SVNClientException e) {                        
                         // svn: Working copy '/tmp/co/svn-prename-19/AnagramGame-pack-rename/src/com/toy/anagrams/ui2' locked
