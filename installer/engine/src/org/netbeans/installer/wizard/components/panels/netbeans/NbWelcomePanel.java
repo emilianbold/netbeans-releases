@@ -587,21 +587,19 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             leftImagePanel = new NbiPanel();
             int width = 0;
             int height = 0;
-            leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_TOP_IMAGE_RESOURCE,
-                    ANCHOR_TOP_LEFT);
-            leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_BOTTOM_IMAGE_RESOURCE,
-                    ANCHOR_BOTTOM_LEFT);
             if(ResourceUtils.getResource(WELCOME_PAGE_LEFT_TOP_IMAGE)!=null) {
                 leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_TOP_IMAGE_RESOURCE,
-                        ANCHOR_TOP_LEFT);                
-                width  = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconWidth();
-                height = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconHeight() +
-                    leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconHeight();
-            } else {
-                width  = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconWidth();
-                height = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconHeight();
-            }            
-            
+                        ANCHOR_TOP_LEFT);
+                width   = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconWidth();
+                height += leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconHeight();
+            }
+            if(ResourceUtils.getResource(WELCOME_PAGE_LEFT_BOTTOM_IMAGE)!=null) {
+                leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_BOTTOM_IMAGE_RESOURCE,
+                        ANCHOR_TOP_LEFT);
+                width   = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconWidth();
+                height += leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconHeight();
+            }
+             
             leftImagePanel.setPreferredSize(new Dimension(width,height));
             leftImagePanel.setMaximumSize(new Dimension(width,height));
             leftImagePanel.setMinimumSize(new Dimension(width,0));
