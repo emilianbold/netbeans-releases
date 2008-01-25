@@ -104,5 +104,9 @@ public interface ProcessInstance {
     
     RuntimePartnerLink[] getRuntimePartnerLinks();
     
+    CorrelationSet[] getCorrelationSets();
+    
+    Fault[] getFaults();
+    
     Value evaluate(String xpathExpression) throws InvalidStateException, EvaluationException;
 }

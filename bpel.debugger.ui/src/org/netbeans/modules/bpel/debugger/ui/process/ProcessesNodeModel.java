@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.debugger.ui.process;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.debugger.ui.util.HtmlUtil;
 import org.openide.util.NbBundle;
 
@@ -30,6 +31,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.BpelProcess;
+import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 
 /**
@@ -56,7 +58,7 @@ public class ProcessesNodeModel implements NodeModel {
     public String getDisplayName(
             final Object object) throws UnknownTypeException {
         
-        if (object == TreeModel.ROOT) {
+        if (object.equals(TreeModel.ROOT)) {
             return NbBundle.getMessage(
                     ProcessesNodeModel.class, 
                     "CTL_Process_Column_Name"); // NOI18N
@@ -76,6 +78,25 @@ public class ProcessesNodeModel implements NodeModel {
                 HtmlUtil.toBold(name) : name;
         }
         
+        if (object instanceof ProcessesTreeModel.CorrelationSetsWrapper) {
+            return "Correlation Sets";
+        }
+        
+        if (object instanceof CorrelationSet) {
+            return ((CorrelationSet) object).getName();
+        }
+        
+        if (object instanceof CorrelationSet.Property) {
+            final QName name = ((CorrelationSet.Property) object).getName();
+            final String prefix = name.getPrefix();
+            
+            if ((prefix == null) || prefix.equals("")) {
+                return name.getLocalPart();
+            } else {
+                return name.getPrefix() + ":" + name.getLocalPart();
+            }
+        }
+        
         throw new UnknownTypeException(object);
     }
     
@@ -83,10 +104,21 @@ public class ProcessesNodeModel implements NodeModel {
     public String getShortDescription(
             final Object object) throws UnknownTypeException {
         
-        if (object == TreeModel.ROOT) {
+        if (object.equals(TreeModel.ROOT)) {
             return NbBundle.getMessage(
                     ProcessesNodeModel.class, 
                     "CTL_Process_Column_Name_Tooltip"); // NOI18N
+        }
+        
+        if (object instanceof CorrelationSet.Property) {
+            final QName name = ((CorrelationSet.Property) object).getName();
+            
+            if (name.getNamespaceURI().equals("")) {
+                return name.getLocalPart();
+            } else {
+                return "{" + name.getNamespaceURI() + "} " + 
+                        name.getLocalPart();
+            }
         }
         
         return getDisplayName(object);
@@ -95,7 +127,8 @@ public class ProcessesNodeModel implements NodeModel {
     /**{@inheritDoc}*/
     public String getIconBase(
             final Object object) throws UnknownTypeException {
-        if (object == TreeModel.ROOT) {
+        
+        if (object.equals(TreeModel.ROOT)) {
             return CURRENT_INSTANCE_ICON;
         }
         
@@ -116,6 +149,18 @@ public class ProcessesNodeModel implements NodeModel {
             }
             
             return RUNNING_INSTANCE_ICON;
+        }
+        
+        if (object instanceof ProcessesTreeModel.CorrelationSetsWrapper) {
+            return PROCESS_ICON;
+        }
+        
+        if (object instanceof CorrelationSet) {
+            return PROCESS_ICON;
+        }
+        
+        if (object instanceof CorrelationSet.Property) {
+            return PROCESS_ICON;
         }
         
         throw new UnknownTypeException(object);
@@ -140,7 +185,7 @@ public class ProcessesNodeModel implements NodeModel {
         if (myDebugger == null) {
             return false;
         } else {
-            return instance == myDebugger.getCurrentProcessInstance();
+            return instance.equals(myDebugger.getCurrentProcessInstance());
         }
     }
     

@@ -22,6 +22,7 @@ package org.netbeans.modules.bpel.debugger.bdiclient.impl;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.xml.namespace.QName;
@@ -56,9 +57,12 @@ import org.netbeans.modules.bpel.debuggerbdi.rmi.api.VirtualBPELEngine;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.XpathExpressionException;
 import org.netbeans.modules.bpel.debugger.BpelDebuggerImpl;
 import org.netbeans.modules.bpel.debugger.BreakPosition;
+import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
+import org.netbeans.modules.bpel.debugger.api.Fault;
 import org.netbeans.modules.bpel.debugger.api.RuntimePartnerLink;
 import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel.Branch;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELPartnerLink;
+import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessRef;
 import org.w3c.dom.Element;
 
 /**
@@ -88,6 +92,8 @@ public class ProcessInstanceImpl implements ProcessInstance {
             Collections.synchronizedList(new ArrayList<BDIDebugFrame>());
     private EventLog myEventLog;
     private WeakReference<ProcessExecutionModelImpl> myPemRef;
+    
+    private List<Fault> myFaults = new LinkedList<Fault>();
     
     
     /** Creates a new instance of ProcessInstanceImpl */
@@ -234,6 +240,58 @@ public class ProcessInstanceImpl implements ProcessInstance {
         return new RuntimePartnerLink[0];
     }
     
+    public CorrelationSet[] getCorrelationSets() {
+        final List<CorrelationSet> list = new LinkedList<CorrelationSet>();
+        
+        final BPELProcessRef processRef = myBpelProcess.getProcessRef();
+        
+        for (String name: processRef.allCorrelationSetsNames()) {
+            final String value = 
+                    myProcessInstanceRef.getCorrelationSetValue(name);
+            
+            if (value == null) {
+                list.add(new CorrelationSetImpl(
+                        name, 
+                        processRef.getCorrelationSetId(name), 
+                        null,
+                        new QName[0],
+                        new QName[0],
+                        new String[0]));
+            } else {
+                String[] names = myProcessInstanceRef.getCorrelationSetPropertyNames(name);
+                String[] types = myProcessInstanceRef.getCorrelationSetPropertyTypes(name);
+                String[] values = myProcessInstanceRef.getCorrelationSetPropertyValues(name);
+                
+                QName[] realNames = new QName[names.length];
+                QName[] realTypes = new QName[names.length];
+                
+                for (int i = 0; i < names.length; i++) {
+                    String[] temp;
+                    
+                    temp = names[i].split("\n");
+                    realNames[i] = new QName(temp[0], temp[2], temp[1]);
+                    
+                    temp = types[i].split("\n");
+                    realTypes[i] = new QName(temp[0], temp[2], temp[1]);
+                }
+                
+                list.add(new CorrelationSetImpl(
+                        name, 
+                        processRef.getCorrelationSetId(name), 
+                        value,
+                        realNames,
+                        realTypes,
+                        values));
+            }
+        }
+        
+        return list.toArray(new CorrelationSet[list.size()]);
+    }
+    
+    public Fault[] getFaults() {
+        return myFaults.toArray(new Fault[myFaults.size()]);
+    }
+    
     public Value evaluate(
             final String expression) 
             throws InvalidStateException, EvaluationException {
@@ -293,6 +351,7 @@ public class ProcessInstanceImpl implements ProcessInstance {
         return pem;
     }
     
+    // Protected ///////////////////////////////////////////////////////////////
     protected void setUndeployed(
             final boolean isUndeployed) {
         
@@ -373,6 +432,28 @@ public class ProcessInstanceImpl implements ProcessInstance {
         }
         
         synchronized (mySyncLock) {
+            // add the fault to the list, so it can be displayed by the 
+            // processes view
+            if (faultData.isWSDLMessage()) {
+                myFaults.add(new FaultImpl(
+                        strFaultQName, 
+                        position.getXpath(), 
+                        new WsdlMessageVariableImpl(
+                                "faultData", position, faultData)));
+            } else if (faultData.isSimpleType()) {
+                myFaults.add(new FaultImpl(
+                        strFaultQName, 
+                        position.getXpath(), 
+                        new SimpleVariableImpl(
+                                "faultData", position, faultData)));
+            } else {
+                myFaults.add(new FaultImpl(
+                        strFaultQName, 
+                        position.getXpath(), 
+                        new XmlElementVariableImpl(
+                                "faultData", position, faultData)));
+            }
+            
             final String path = getDebugger().getSourcePath().getSourcePath(
                     position.getProcessQName());
             if (path == null) {

@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.bpel.debugger.ui.process;
 
+import javax.swing.JToolTip;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.debugger.api.BpelProcess;
+import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableModel;
@@ -29,27 +32,36 @@ import org.openide.util.NbBundle;
 
 /**
  * @author Vladimir Yaroslavskiy
+ * @author Kirill Sorokin
+ * 
  * @version 2005.10.24
  */
 public class ProcessesTableModel implements TableModel {
     /**{@inheritDoc}*/
     public Object getValueAt(
-            final Object object, 
+            final Object stuff, 
             final String column) throws UnknownTypeException {
         
-        if (object.equals(TreeModel.ROOT)) {
-            return "";
+        Object object = stuff;
+        boolean isTooltip = false;
+        
+        if (stuff instanceof JToolTip) {
+            isTooltip = true;
+            object = ((JToolTip) stuff).
+                        getClientProperty("getShortDescription");
         }
         
-        if (object instanceof BpelProcess) {
-            return "";
-        }
-        
-        if (object instanceof ProcessInstance) {
-            final ProcessInstance process = (ProcessInstance) object;
+        if (column.equals(ProcessesColumnModel_State.COLUMN_ID)) {
+            if (object.equals(TreeModel.ROOT)) {
+                return "";
+            }
             
-            if (column.equals(ProcessesColumnModel_State.COLUMN_ID)) {
-                switch (process.getState()) {
+            if (object instanceof BpelProcess) {
+                return "";
+            }
+            
+            if (object instanceof ProcessInstance) {
+                switch (((ProcessInstance) object).getState()) {
                     case ProcessInstance.STATE_UNKNOWN:
                         return NbBundle.getMessage(
                                 ProcessesTableModel.class,
@@ -84,6 +96,95 @@ public class ProcessesTableModel implements TableModel {
                         throw new UnknownTypeException(object);
                 }
             }
+            
+            if (object instanceof ProcessesTreeModel.CorrelationSetsWrapper) {
+                return "";
+            }
+            
+            if (object instanceof CorrelationSet) {
+                return "";
+            }
+            
+            if (object instanceof CorrelationSet.Property) {
+                return "";
+            }
+        }
+        
+        if (column.equals(ProcessesColumnModel_Type.COLUMN_ID)) {
+            if (object.equals(TreeModel.ROOT)) {
+                return "";
+            }
+            
+            if (object instanceof BpelProcess) {
+                return "";
+            }
+            
+            if (object instanceof ProcessInstance) {
+                return "";
+            }
+            
+            if (object instanceof ProcessesTreeModel.CorrelationSetsWrapper) {
+                return "";
+            }
+            
+            if (object instanceof CorrelationSet) {
+                return "";
+            }
+            
+            if (object instanceof CorrelationSet.Property) {
+                final QName qName = 
+                        ((CorrelationSet.Property) object).getType();
+                
+                if (isTooltip) {
+                    final String namespaceUri = qName.getNamespaceURI();
+                    
+                    if ((namespaceUri == null) || namespaceUri.equals("")) {
+                        return qName.getLocalPart();
+                    } else {
+                        return "{" + namespaceUri + "} " + qName.getLocalPart();
+                    }
+                } else {
+                    final String prefix = qName.getPrefix();
+                    
+                    if ((prefix == null) || prefix.equals("")) {
+                        return qName.getLocalPart();
+                    } else {
+                        return prefix + ":" + qName.getLocalPart();
+                    }
+                }
+            }
+        }
+        
+        if (column.equals(ProcessesColumnModel_Value.COLUMN_ID)) {
+            if (object.equals(TreeModel.ROOT)) {
+                return "";
+            }
+            
+            if (object instanceof BpelProcess) {
+                return "";
+            }
+            
+            if (object instanceof ProcessInstance) {
+                return "";
+            }
+            
+            if (object instanceof ProcessesTreeModel.CorrelationSetsWrapper) {
+                return "";
+            }
+            
+            if (object instanceof CorrelationSet) {
+                final String value = ((CorrelationSet) object).getValue();
+                
+                if (value == null) {
+                    return "> Correlation set " + ((CorrelationSet) object).getName() + " has not yet been initialized <";
+                } else {
+                    return value;
+                }
+            }
+            
+            if (object instanceof CorrelationSet.Property) {
+                return ((CorrelationSet.Property) object).getValue();
+            }
         }
         
         throw new UnknownTypeException(object);
@@ -95,19 +196,7 @@ public class ProcessesTableModel implements TableModel {
             final String column, 
             final Object value) throws UnknownTypeException {
         
-        if (object.equals(TreeModel.ROOT)) {
-            return;
-        }
-        
-        if (object instanceof BpelProcess) {
-            return;
-        }
-        
-        if (object instanceof ProcessInstance) {
-            return;
-        }
-        
-        throw new UnknownTypeException(object);
+        return;
     }
     
     /**{@inheritDoc}*/
@@ -115,19 +204,7 @@ public class ProcessesTableModel implements TableModel {
             final Object object, 
             final String column) throws UnknownTypeException {
         
-        if (object.equals(TreeModel.ROOT)) {
-            return true;
-        }
-        
-        if (object instanceof BpelProcess) {
-            return true;
-        }
-        
-        if (object instanceof ProcessInstance) {
-            return true;
-        }
-        
-        throw new UnknownTypeException(object);
+        return true;
     }
     
     /**{@inheritDoc}*/

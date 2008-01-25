@@ -27,6 +27,7 @@ import java.util.Vector;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.BpelProcess;
+import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstancesModel;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -72,15 +73,30 @@ public class ProcessesTreeModel implements TreeModel {
             final int from, 
             final int to) throws UnknownTypeException {
         
-        if (object.equals(ROOT)) {
-            return getProcesses(from, to);
+        if (object.equals(TreeModel.ROOT)) {
+            return filter(getProcesses(), from, to);
         }
         
         if (object instanceof BpelProcess) {
-            return getProcessInstances((BpelProcess) object, from, to);
+            return filter(getProcessInstances((BpelProcess) object), from, to);
         }
         
         if (object instanceof ProcessInstance) {
+            return new Object[] {
+                new CorrelationSetsWrapper((ProcessInstance) object),
+            };
+        }
+        
+        if (object instanceof ProcessesTreeModel.CorrelationSetsWrapper) {
+            return filter(((ProcessesTreeModel.CorrelationSetsWrapper) object).
+                    getProcessInstance().getCorrelationSets(), from, to);
+        }
+        
+        if (object instanceof CorrelationSet) {
+            return filter(((CorrelationSet) object).getProperties(), from, to);
+        }
+        
+        if (object instanceof CorrelationSet.Property) {
             return new Object[0];
         }
         
@@ -99,15 +115,28 @@ public class ProcessesTreeModel implements TreeModel {
     public int getChildrenCount(
             final Object object) throws UnknownTypeException {
         
-        if (object.equals(ROOT)) {
-            return getProcessesCount();
+        if (object.equals(TreeModel.ROOT)) {
+            return getProcesses().length;
         }
         
         if (object instanceof BpelProcess) {
-            return getProcessInstancesCount((BpelProcess) object);
+            return getProcessInstances((BpelProcess) object).length;
         }
         
         if (object instanceof ProcessInstance) {
+            return 1;
+        }
+        
+        if (object instanceof ProcessesTreeModel.CorrelationSetsWrapper) {
+            return ((ProcessesTreeModel.CorrelationSetsWrapper) object).
+                    getCorrelationSets().length;
+        }
+        
+        if (object instanceof CorrelationSet) {
+            return ((CorrelationSet) object).getProperties().length;
+        }
+        
+        if (object instanceof CorrelationSet.Property) {
             return 0;
         }
         
@@ -116,20 +145,7 @@ public class ProcessesTreeModel implements TreeModel {
     
     public boolean isLeaf(
             final Object object) throws UnknownTypeException {
-        
-        if (object.equals(ROOT)) {
-            return false;
-        }
-        
-        if (object instanceof BpelProcess) {
-            return getProcessInstancesCount((BpelProcess) object) == 0;
-        }
-        
-        if (object instanceof ProcessInstance) {
-            return true;
-        }
-        
-        throw new UnknownTypeException (object);
+        return getChildrenCount(object) == 0;
     }
 
     public void addModelListener(
@@ -181,98 +197,35 @@ public class ProcessesTreeModel implements TreeModel {
         runInDispatch(runner);
     }
     
-    private void fireNodeChanged(
-            final Object node) {
-        
-        final Runnable runner = new Runnable() {
-            public void run() {
-                @SuppressWarnings("unchecked")
-                final Vector<ModelListener> clone = 
-                        (Vector<ModelListener>) myListeners.clone();
-                
-                for (int i = 0; i < clone.size(); i++) {
-                    clone.get(i).modelChanged(
-                            new ModelEvent.NodeChanged(this, node));
-                }
-            }
-        };
-        
-        runInDispatch(runner);
-    }
-    
-    private void fireTableValueChanged(
-            final Object node, 
-            final String propertyName) {
-        
-        final Runnable runner = new Runnable() {
-            public void run() {
-                @SuppressWarnings("unchecked")
-                final Vector<ModelListener> clone = 
-                        (Vector<ModelListener>) myListeners.clone();
-                
-                for (int i = 0; i < clone.size(); i++) {
-                    clone.get(i).modelChanged(new ModelEvent.TableValueChanged(
-                            this, node, propertyName));
-                }
-            }
-        };
-        
-        runInDispatch(runner);
-    }
-    
-    private BpelProcess[] getProcesses(
-            final int from,
-            final int to) {
+    private BpelProcess[] getProcesses() {
         
         if (myDebugger != null) {
-            final BpelProcess[] processes = 
-                    myDebugger.getProcessInstancesModel().getProcesses();
-            final BpelProcess[] filtered = new BpelProcess[to - from];
-            
-            System.arraycopy(processes, from, filtered, 0, to - from);
-            return filtered;
+            return myDebugger.getProcessInstancesModel().getProcesses();
         }
         
         return new BpelProcess[0];
     }
     
-    private int getProcessesCount() {
-        if (myDebugger != null) {
-            return myDebugger.getProcessInstancesModel().getProcesses().length;
-        }
-        
-        return 0;
-    }
-
     private ProcessInstance[] getProcessInstances(
-            final BpelProcess process, 
-            final int from, 
-            final int to) {
+            final BpelProcess process) {
         
         if (myDebugger != null) {
-            final ProcessInstance[] instances = myDebugger.
+            return myDebugger.
                     getProcessInstancesModel().getProcessInstances(process);
-            
-            if (instances.length > 0) {
-                final ProcessInstance[] filtered = 
-                        new ProcessInstance[to - from];
-                        
-                System.arraycopy(instances, from, filtered, 0, to - from);
-                return filtered;
-            }
         }
         
         return new ProcessInstance[0];
     }
     
-    private int getProcessInstancesCount(
-            final BpelProcess process) {
-        if (myDebugger != null) {
-            return myDebugger.getProcessInstancesModel().
-                    getProcessInstances(process).length;
-        }
+    private Object[] filter(
+            final Object[] array, 
+            final int from, 
+            final int to) {
+        final Object[] filtered = new Object[to - from];
         
-        return 0;
+        System.arraycopy(array, from, filtered, 0, to - from);
+        
+        return filtered;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -369,6 +322,40 @@ public class ProcessesTreeModel implements TreeModel {
                     model.fireTreeChanged();
                 }
             }, 500);
+        }
+    }
+    
+    private static class ProcessInstanceWrapper {
+        private ProcessInstance myProcessInstance;
+        
+        public ProcessInstanceWrapper(final ProcessInstance instance) {
+            myProcessInstance = instance;
+        }
+        
+        public ProcessInstance getProcessInstance() {
+            return myProcessInstance;
+        }
+    }
+    
+    static class CorrelationSetsWrapper extends ProcessInstanceWrapper {
+        public CorrelationSetsWrapper(final ProcessInstance instance) {
+            super(instance);
+        }
+        
+        public CorrelationSet[] getCorrelationSets() {
+            return getProcessInstance().getCorrelationSets();
+        }
+    }
+    
+    static class FaultsWrapper extends ProcessInstanceWrapper {
+        public FaultsWrapper(final ProcessInstance instance) {
+            super(instance);
+        }
+    }
+    
+    static class WaitingMessagesWrapper extends ProcessInstanceWrapper {
+        public WaitingMessagesWrapper(final ProcessInstance instance) {
+            super(instance);
         }
     }
 }
