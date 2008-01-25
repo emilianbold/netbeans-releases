@@ -45,6 +45,9 @@ import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.StringUtil;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Concrete bean wrapper implementation for delimited instances of FlatfileDBTable,
@@ -57,6 +60,9 @@ import com.sun.sql.framework.utils.StringUtil;
  * @version $Revision$
  */
 public class DelimitedFlatfile extends FlatfileTable {
+    
+    private static transient final Logger mLogger = LogUtil.getLogger(DelimitedFlatfile.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Creates new instance of DelimitedFlatfile, wrapping the given FlatfileDBTable
      * instance.
@@ -75,7 +81,8 @@ public class DelimitedFlatfile extends FlatfileTable {
     public String getFieldDelimiter() {
         String delimiter = getProperty(PropertyKeys.FIELDDELIMITER);
         if (delimiter == null || delimiter.length() == 0) {
-            delimiter = NbBundle.getMessage(FlatfileTable.class, "LBL_none_placeholder");
+            String nbBundle1 = mLoc.t("PRSR001: <None>");
+            delimiter = Localizer.parse(nbBundle1);
         } else {
             delimiter = StringUtil.escapeControlChars(delimiter);
         }
@@ -90,7 +97,8 @@ public class DelimitedFlatfile extends FlatfileTable {
     public String getTextQualifier() {
         String qualifier = getProperty(PropertyKeys.QUALIFIER);
         if (qualifier == null || qualifier.length() == 0) {
-            qualifier = NbBundle.getMessage(FlatfileTable.class, "LBL_none_placeholder");
+            String nbBundle2 = mLoc.t("PRSR001: <None>");
+            qualifier = Localizer.parse(nbBundle2);
         } else {
             if("''".equals(qualifier)) {
                 qualifier = "'"; 

@@ -44,6 +44,9 @@ import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
 import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.StringUtil;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Concrete bean wrapper for instances of FlatfileDatabaseModel, exposing read-only
@@ -58,7 +61,9 @@ import com.sun.sql.framework.utils.StringUtil;
 public class FlatfileDatabase {
 
     private FlatfileDatabaseModel mDelegate;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileDatabase.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     public FlatfileDatabase(FlatfileDatabaseModel dbModel) {
         mDelegate = dbModel;
     }
@@ -69,7 +74,8 @@ public class FlatfileDatabase {
 
     public String getDescription() {
         String desc = mDelegate.getModelDescription();
-        return (StringUtil.isNullString(desc)) ? NbBundle.getMessage(FlatfileDatabase.class, "LBL_none_placeholder") : desc;
+        String nbBundle1 = mLoc.t("PRSR001: <None>");
+        return (StringUtil.isNullString(desc)) ? Localizer.parse(nbBundle1) : desc;
     }
 
     public FlatfileDatabaseModel getDeligate() {

@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,7 +39,8 @@ import org.openide.util.NbBundle;
 public class DelimitedFlatfileBeanInfo extends FlatfileTableBeanInfo {
 
     private static BeanDescriptor beanDescriptor = null;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(DelimitedFlatfileBeanInfo.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private static PropertyDescriptor[] properties = null;
 
     /**
@@ -68,18 +72,18 @@ public class DelimitedFlatfileBeanInfo extends FlatfileTableBeanInfo {
     public PropertyDescriptor[] getPropertyDescriptors() {
         if (properties == null) {
             List myProps = new ArrayList(Arrays.asList(super.getPropertyDescriptors()));
-
+            String nbBundle1 = mLoc.t("PRSR001: Field delimiter");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("fieldDelimiter", DelimitedFlatfile.class, "getFieldDelimiter", null); // NOI18N
-                String label = NbBundle.getMessage(DelimitedFlatfileBeanInfo.class, "LBL_field_delimiter"); // NOI18N
+                String label = Localizer.parse(nbBundle1); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException ignore) {
             }
-            
+            String nbBundle2 = mLoc.t("PRSR001: Text qualifier");
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("fieldQualifier", DelimitedFlatfile.class, "getTextQualifier", null); // NOI18N
-                String label = NbBundle.getMessage(DelimitedFlatfileBeanInfo.class, "LBL_prec_qualifier"); // NOI18N
+                String label = Localizer.parse(nbBundle2); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException ignore) {

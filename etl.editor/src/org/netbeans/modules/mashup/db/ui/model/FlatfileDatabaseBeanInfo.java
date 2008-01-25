@@ -24,6 +24,9 @@ import java.beans.SimpleBeanInfo;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -36,13 +39,11 @@ import org.openide.util.NbBundle;
 public class FlatfileDatabaseBeanInfo extends SimpleBeanInfo {
 
     private static BeanDescriptor beanDescriptor = null;
-
     private static EventSetDescriptor[] eventSet = null;
-
     private static MethodDescriptor[] methods = null;
-
     private static PropertyDescriptor[] properties = null;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileDatabaseBeanInfo.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private static int defaultPropertyIndex = -1; // GEN-BEGIN:Idx
     private static int defaultEventIndex = -1; // GEN-END:Idx
 
@@ -78,7 +79,8 @@ public class FlatfileDatabaseBeanInfo extends SimpleBeanInfo {
 
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("name", FlatfileDatabase.class, "getName", null); // NOI18N
-                String label = NbBundle.getMessage(FlatfileDatabaseBeanInfo.class, "LBL_mashup_db_name"); // NOI18N
+                String nbBundle1 = mLoc.t("PRSR001: Flat file definition name");
+                String label = Localizer.parse(nbBundle1); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {
@@ -86,7 +88,8 @@ public class FlatfileDatabaseBeanInfo extends SimpleBeanInfo {
 
             try {
                 PropertyDescriptor pd = new PropertyDescriptor("description", FlatfileDatabase.class, "getDescription", null); // NOI18N
-                String label = NbBundle.getMessage(FlatfileDatabaseBeanInfo.class, "LBL_description"); // NOI18N
+                String nbBundle2 = mLoc.t("PRSR001: Description");
+                String label = Localizer.parse(nbBundle2); // NOI18N
                 pd.setDisplayName(label);
                 myProps.add(pd);
             } catch (IntrospectionException e) {

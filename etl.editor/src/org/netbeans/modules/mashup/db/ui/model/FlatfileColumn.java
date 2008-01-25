@@ -43,9 +43,12 @@ package org.netbeans.modules.mashup.db.ui.model;
 import java.util.Map;
 
 import org.netbeans.modules.mashup.db.model.FlatfileDBColumn;
-import org.openide.util.NbBundle;
+
 
 import com.sun.sql.framework.utils.StringUtil;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
 /**
@@ -54,6 +57,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  */
 public class FlatfileColumn {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileColumn.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private FlatfileDBColumn mDelegate;
 
     /**
@@ -113,7 +118,8 @@ public class FlatfileColumn {
 
     public String getDefaultValue() {
         String defaultVal = mDelegate.getDefaultValue();
-        return (StringUtil.isNullString(defaultVal)) ? NbBundle.getMessage(FlatfileColumn.class, "LBL_none_placeholder") : defaultVal;
+        String nbBundle1 = mLoc.t("PRSR001: <None>");
+        return (StringUtil.isNullString(defaultVal)) ? Localizer.parse(nbBundle1) : defaultVal;
     }
 
     public int getOrdinalPosition() {

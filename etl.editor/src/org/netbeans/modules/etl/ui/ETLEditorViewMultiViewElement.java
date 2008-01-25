@@ -58,10 +58,13 @@ import javax.swing.text.Document;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+import net.java.hulp.i18n.Logger;
 import org.netbeans.core.spi.multiview.CloseOperationState;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.model.ETLDefinition;
 import org.netbeans.modules.etl.ui.palette.PaletteSupport;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
@@ -74,7 +77,6 @@ import org.openide.awt.UndoRedo;
 import org.openide.cookies.SaveCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -96,7 +98,9 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     private ETLEditorSupport mEditorSupport = null;
     private transient InstanceContent nodesHack;
     private transient javax.swing.JLabel errorLabel = new javax.swing.JLabel();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLEditorViewMultiViewElement.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     public ETLEditorViewMultiViewElement() {
         super();
     }
@@ -107,9 +111,9 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         try {
             initialize();
         } catch (Exception ex) {
+            String nbBundle1 = mLoc.t("PRSR001: Error in creating eTL Editor view");
             ErrorManager.getDefault().log(ErrorManager.ERROR,
-                    NbBundle.getMessage(ETLEditorViewMultiViewElement.class,
-                    "ERROR_IN_INITITALIZATION_OF_ETL_EDITOR") + ex.getMessage());
+                  Localizer.parse(nbBundle1) + ex.getMessage());
         }
     }
 
@@ -277,9 +281,8 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         //if it comes here, either the schema is not well-formed or invalid
         if (model == null) {
             if (errorMessage == null) {
-                errorMessage = NbBundle.getMessage(
-                        ETLEditorViewMultiViewElement.class,
-                        "MSG_NotWellformedEtl");
+                String nbBundle2 = mLoc.t("PRSR001: The etl is not well-formed");
+                errorMessage = Localizer.parse(nbBundle2);
             }
         }
 

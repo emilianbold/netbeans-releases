@@ -46,8 +46,11 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
+import net.java.hulp.i18n.Logger;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -61,7 +64,9 @@ public class ETLSourceMultiviewDesc
     private static final long serialVersionUID = -4505309173196320880L;
     public static final String PREFERRED_ID = "etl-sourceview";
     private ETLDataObject etlDataObject;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLSourceMultiviewDesc.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     // Constructor for reserialization
     public ETLSourceMultiviewDesc() {
 
@@ -92,7 +97,8 @@ public class ETLSourceMultiviewDesc
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(ETLEditorViewMultiViewDesc.class, "LBL_sourceView_name");
+        String nbBundle1 = mLoc.t("PRSR001: Source");
+        return Localizer.parse(nbBundle1);
     }
 
     public org.netbeans.core.spi.multiview.MultiViewElement createElement() {

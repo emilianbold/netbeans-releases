@@ -50,7 +50,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.io.Serializable;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -62,6 +61,9 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.output.ETLOutputPanel;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
@@ -90,7 +92,8 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private ETLOutputPanel newSelection;
     private JToolBar verticalBar;
     public static final String ICON_RESOURCE = "org/netbeans/modules/sql/framework/ui/resources/images/showOutput.png"; // NOI18N
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLOutputWindowTopComponent.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     private ETLOutputWindowTopComponent() {
         initComponents();
@@ -99,9 +102,11 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         setFocusable(true);
         setBackground(UIManager.getColor("text")); //NOI18N
 
-        setName(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "CTL_ETLOutputWindowTopComponent"));
+        String nbBundle1 = mLoc.t("PRSR001: Data Integrator Output");
+        setName(Localizer.parse(nbBundle1));
         setIcon(Utilities.loadImage(ICON_RESOURCE));
-        setToolTipText(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "HINT_ETLOutputWindowTopComponent"));
+        String nbBundle2 = mLoc.t("PRSR001: Data Integrator Output");
+        setToolTipText(Localizer.parse(nbBundle2));
 
         // create it but don't add it yet...
         verticalBar = new JToolBar(JToolBar.VERTICAL);
@@ -275,13 +280,13 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     public static synchronized ETLOutputWindowTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            Logger.getLogger(ETLOutputWindowTopComponent.class.getName()).warning("Cannot find " + PREFERRED_ID + " component. It will not be located properly in the window system.");
-            return getDefault();
+        mLogger.infoNoloc(mLoc.t("PRSR111: Cannot find {0}component. It will not be located properly in the window system.",PREFERRED_ID));
+        return getDefault();
         }
         if (win instanceof ETLOutputWindowTopComponent) {
             return (ETLOutputWindowTopComponent) win;
         }
-        Logger.getLogger(ETLOutputWindowTopComponent.class.getName()).warning("There seem to be multiple components with the '" + PREFERRED_ID + "' ID. That is a potential source of errors and unexpected behavior.");
+         mLogger.infoNoloc(mLoc.t("PRSR112: There seem to be multiple components with the '{0} ' ID. That is a potential source of errors and unexpected behavior.",PREFERRED_ID));
         return getDefault();
     }
 

@@ -42,8 +42,10 @@ import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /** Description of {@link WSDLDataLoader}.
@@ -51,12 +53,13 @@ import org.openide.util.Utilities;
  * @author Jerry Waldorf
  */
 public class ETLDataLoaderBeanInfo extends SimpleBeanInfo {
-
-    
-        
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLDataLoaderBeanInfo.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 	/**
 	 * copied from Ant Module
 	 */
+        String nbBundle1 = mLoc.t("PRSR001: MIME Type");
+        String nbBundle2 = mLoc.t("PRSR001: The MIME type used for ETL files in the IDE. The ETL MIME resolver recognizes this.");
     public PropertyDescriptor[] getPropertyDescriptors() {
         // Make extensions into a r/o property.
         // It will only contain the WSDL MIME type.
@@ -64,14 +67,14 @@ public class ETLDataLoaderBeanInfo extends SimpleBeanInfo {
         // Does not work to just use additional bean info from UniFileLoader and return one extensions
         // property with no setter--Introspector cleverly (!&#$@&) keeps your display name
         // and everything and adds back in the setter from the superclass.
-        // So bypass UniFileLoader in the beaninfo search.
+        // So bypass UniFileLoader in the beaninfo search.  
         try {
             PropertyDescriptor extensions = new PropertyDescriptor(
 				"extensions", ETLDataLoader.class, "getExtensions", null); // NOI18N
             extensions.setDisplayName(
-				NbBundle.getMessage(ETLDataLoaderBeanInfo.class, "PROP_extensions"));
+				Localizer.parse(nbBundle1));
             extensions.setShortDescription(
-				NbBundle.getMessage(ETLDataLoaderBeanInfo.class, "HINT_extensions"));
+				Localizer.parse(nbBundle2));
             extensions.setExpert(true);
             return new PropertyDescriptor[] {extensions};
         } catch (IntrospectionException ie) {
