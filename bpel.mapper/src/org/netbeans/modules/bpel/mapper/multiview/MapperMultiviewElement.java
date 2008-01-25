@@ -431,7 +431,7 @@ public abstract class MapperMultiviewElement extends TopComponent
         BpelDesignContext context = myContextController != null 
                 ? myContextController.getContext() : null;
         Node aNode = null;
-        if (BpelDesignContextFactory.isValidContext(context)) {
+        if (DesignContextUtil.isValidContext(context)) {
             aNode = context == null ? null : context.getActivatedNode();
         }        
         
@@ -439,7 +439,7 @@ public abstract class MapperMultiviewElement extends TopComponent
         Node tcANode = null;
         
         if (tcANodes != null && tcANodes.length > 0 
-                && BpelDesignContextFactory.isValidNode(tcANodes[0])) {
+                && DesignContextUtil.isValidNode(tcANodes[0])) {
             tcANode = tcANodes[0];
         }
         

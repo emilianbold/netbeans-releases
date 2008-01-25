@@ -110,7 +110,7 @@ public class DesignContextControllerImpl2
     public synchronized void setContext(BpelDesignContext newContext) {
         assert EventQueue.isDispatchThread();
         
-        boolean isValidContext = BpelDesignContextFactory.isValidContext(mContext);
+        boolean isValidContext = DesignContextUtil.isValidContext(mContext);
         // null means unsupported context - in result the old context must be stored
         if (newContext == null && isValidContext) {
             return;
@@ -170,7 +170,7 @@ public class DesignContextControllerImpl2
             myPreviousTask = null;
         }
 
-        if (!BpelDesignContextFactory.isValidContext(mContext)) {
+        if (!DesignContextUtil.isValidContext(mContext)) {
             setDelay(0);
             updateContext(-1);
             return;

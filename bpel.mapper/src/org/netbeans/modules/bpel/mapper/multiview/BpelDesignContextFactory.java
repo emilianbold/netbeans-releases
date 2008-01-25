@@ -52,7 +52,7 @@ import org.openide.windows.TopComponent;
 /**
  * @author Vitaly Bychkov
  */
-public class BpelDesignContextFactory {
+public class BpelDesignContextFactory implements DesignContextFactory {
 
     private static final BpelDesignContextFactory INSTANCE = new BpelDesignContextFactory();
     private final ContextCreator[] contextCreators;
@@ -117,11 +117,6 @@ public class BpelDesignContextFactory {
         return bpelContext;
     }
 
-    private interface ContextCreator {
-        boolean accepted(BpelEntity selectedEntity);
-        BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup);
-    }
-    
     private class AssignContextCreator implements ContextCreator {
 
         /**
@@ -435,46 +430,5 @@ public class BpelDesignContextFactory {
             //
             return context;
         }
-    }
-    
-    private class EmptyContextCreator implements ContextCreator {
-
-        /**
-         * @param selectedEntity - the selected bpel entity to show mapper
-         */
-        public boolean accepted(BpelEntity selectedEntity) {
-            return selectedEntity != null;
-        }
-
-        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
-            if (!accepted(selectedEntity)) {
-                return null;
-            }
-            return new BpelDesignContextImpl(null, null, selectedEntity, node, lookup);
-        }
-    }
-    
-    public static boolean isValidContext(BpelDesignContext context) {
-        if (context == null) {
-            return true;
-        }
-        BpelEntity contextEntity = context.getContextEntity();
-        BpelEntity graphEntity = context.getGraphEntity();
-        BpelEntity selectedtEntity = context.getSelectedEntity();
-        
-        return !(contextEntity != null && !contextEntity.isInDocumentModel())
-                || !(graphEntity != null && !graphEntity.isInDocumentModel())
-                || !(selectedtEntity != null && !selectedtEntity.isInDocumentModel());
-    }
-    
-    public static boolean isValidNode(Node node) {
-        if (!(node instanceof InstanceRef)) {
-            return true;
-        }
-        
-        Object ref  = ((InstanceRef)node).getReference();
-        
-        return ref instanceof DocumentComponent ? ((DocumentComponent)ref).isInDocumentModel() : true;
-    }
-
+    }    
 }

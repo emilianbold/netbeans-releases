@@ -28,9 +28,9 @@ import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.logging.model.LoggingMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
-import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContextFactory;
 import org.netbeans.modules.bpel.mapper.multiview.BpelModelSynchListener;
 import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
+import org.netbeans.modules.bpel.mapper.multiview.DesignContextUtil;
 import org.netbeans.modules.bpel.mapper.multiview.MapperMultiviewElement;
 import org.netbeans.modules.bpel.mapper.multiview.MapperStateManager;
 import org.netbeans.modules.bpel.mapper.multiview.ShowMapperCookie;
@@ -117,7 +117,7 @@ public class DesignContextControllerImpl2
     public synchronized void setContext(BpelDesignContext newContext) {
         assert EventQueue.isDispatchThread();
         
-        boolean isValidContext = BpelDesignContextFactory.isValidContext(mContext);
+        boolean isValidContext = DesignContextUtil.isValidContext(mContext);
         // null means unsupported context - in result the old context must be stored
         if (newContext == null && isValidContext) {
             return;
@@ -177,7 +177,7 @@ public class DesignContextControllerImpl2
             myPreviousTask = null;
         }
 
-        if (!BpelDesignContextFactory.isValidContext(mContext)) {
+        if (!DesignContextUtil.isValidContext(mContext)) {
             setDelay(0);
             updateContext(-1);
             return;
@@ -235,7 +235,7 @@ public class DesignContextControllerImpl2
     }
     
     private synchronized void initContext() {
-        setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
+        setContext(LoggingDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
         myMapperStateManager = new MapperStateManager(mMapperTcContext);
     }
     
@@ -256,7 +256,7 @@ public class DesignContextControllerImpl2
         }
 
         if (delay <= 0) {
-            setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
+            setContext(LoggingDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
         } else {
             myPreviousTask = RequestProcessor.getDefault().post(
                     new Runnable() {
@@ -264,7 +264,7 @@ public class DesignContextControllerImpl2
     //                BpelDesignContext newBpelContext = DesignContextChangeListener.getActivatedContext(myBpelModel);
                     SwingUtilities.invokeLater(new  Runnable() {
                         public void run() {
-                            setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
+                            setContext(LoggingDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
                         }
                     });
                 }
