@@ -43,8 +43,9 @@ package org.netbeans.modules.localhistory.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,7 +83,7 @@ public class Utils {
                 fo.delete();
             }
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+            LocalHistory.LOG.log(Level.SEVERE, null, e);
         } finally {
             try {
                 if(os != null) { os.close(); }

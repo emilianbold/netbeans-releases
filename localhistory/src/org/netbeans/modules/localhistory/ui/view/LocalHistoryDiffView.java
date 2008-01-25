@@ -47,7 +47,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
-import java.nio.charset.Charset;
+import java.util.logging.Level;
 import javax.swing.*;
 
 import org.netbeans.api.diff.*;
@@ -58,7 +58,6 @@ import org.netbeans.modules.versioning.util.NoContentPanel;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.explorer.ExplorerManager;
@@ -192,7 +191,7 @@ public class LocalHistoryDiffView implements PropertyChangeListener, ActionListe
                         panel.repaint();
 
                     } catch (IOException ioe)  {
-                        ErrorManager.getDefault().notify(ioe);
+                        LocalHistory.LOG.log(Level.SEVERE, null, ioe);
                     }                            
                 }
             });

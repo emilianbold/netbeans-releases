@@ -46,11 +46,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Set;
+import java.util.logging.Level;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -134,8 +134,8 @@ public class RevertDeletedAction extends NodeAction {
         File file = se.getFile();
         if(file.exists()) {
             // created externaly?
-            if(file.isFile()) {
-                ErrorManager.getDefault().log(ErrorManager.WARNING, "Skipping revert for file " + file.getAbsolutePath() + " which already exists.");    
+            if(file.isFile()) {                
+                LocalHistory.LOG.warning("Skipping revert for file " + file.getAbsolutePath() + " which already exists.");    
             }  
             // fix history
             // XXX create a new entry vs. fixing the entry timestamp and deleted flag?
@@ -156,7 +156,7 @@ public class RevertDeletedAction extends NodeAction {
                 FileUtil.copy(is, os);            
             }
         } catch (Exception e) {            
-            ErrorManager.getDefault().notify(ErrorManager.ERROR, e);
+            LocalHistory.LOG.log(Level.SEVERE, null, e);
             return;
         } finally {
             try {

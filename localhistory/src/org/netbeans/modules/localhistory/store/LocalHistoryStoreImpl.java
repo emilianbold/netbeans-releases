@@ -62,7 +62,8 @@ import java.util.List;
 import java.util.Map;  
 import java.util.Map.Entry;
 import java.util.Set;       
-import org.netbeans.modules.localhistory.Diagnostics;
+import java.util.logging.Level;
+import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.utils.FileUtils;
 import org.netbeans.modules.turbo.CustomProviders;     
 import org.netbeans.modules.turbo.Turbo;
@@ -72,7 +73,6 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.ErrorManager;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -130,7 +130,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         try {
             fileCreateImpl(file, ts, null, file.getAbsolutePath());        
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+            LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }
     }
 
@@ -143,11 +143,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(file.isFile()) {
             storeFile = getStoreFile(file, tsString, true); 
             FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));                                 
-            
-            if(Diagnostics.ON) {
-                Diagnostics.logCreate(file, storeFile, ts, from, to);
-            }
-            
+            LocalHistory.logCreate(file, storeFile, ts, from, to);
         } 
         touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));
         File parent = file.getParentFile();
@@ -167,20 +163,16 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             try {
                 File storeFile = getStoreFile(file, Long.toString(ts), true);
                 FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));                    
-                
-                if(Diagnostics.ON) {
-                    Diagnostics.logChange(file, storeFile, ts);
-                }                
-                
+                LocalHistory.logChange(file, storeFile, ts);
                 touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+                LocalHistory.LOG.log(Level.WARNING, null, ioe);
             }            
         } else {
             try {
                 touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));                  
             } catch (IOException ioe) {
-                ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+                LocalHistory.LOG.log(Level.WARNING, null, ioe);
             }             
         }
         fireChanged(file);        
@@ -190,7 +182,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         try {
             fileDeleteImpl(file, null, file.getAbsolutePath(), ts);                            
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+            LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }      
         fireChanged(file);
     }
@@ -200,18 +192,16 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         // XXX what if already deleted?
         
         if(data == null) {                        
-            if(Diagnostics.ON) {                
-                Diagnostics.println("deleting without data for file : " + file);
-            }         
+            LocalHistory.log("deleting without data for file : " + file);
             return;            
         }
         // copy from previous entry
         long lastModified = data.getLastModified();
         boolean isFile = data.isFile();
         
-        if(Diagnostics.ON) {
+        if(!LocalHistory.LOG.isLoggable(Level.FINE)) {            
             File storeFile = getDataFile(file);
-            Diagnostics.logDelete(file, storeFile, ts);
+            LocalHistory.logDelete(file, storeFile, ts);
         } 
         
         touch(file, new StoreDataFile(file.getAbsolutePath(), DELETED, lastModified, isFile));        
@@ -229,7 +219,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         try {
             fileCreateImpl(to, ts, from.getAbsolutePath(), to.getAbsolutePath());
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+            LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }
         fireChanged(to);        
     }
@@ -238,7 +228,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         try {
             fileDeleteImpl(from, from.getAbsolutePath(), to.getAbsolutePath(), ts);
         } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe);
+            LocalHistory.LOG.log(Level.WARNING, null, ioe);
         }        
         fireChanged(from);        
     }    
@@ -578,8 +568,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             oos.flush();
         } catch (EOFException e) {
             // ignore
-        } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+        } catch (Exception e) {            
+            LocalHistory.LOG.log(Level.INFO, null, e);
         } finally {
             if (dis != null) {
                 try { dis.close(); } catch (IOException e) { }                
@@ -594,7 +584,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 FileUtils.renameFile(labelsNew, labelsFile);   
             }
         } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);            
+            LocalHistory.LOG.log(Level.SEVERE, null, ex); 
         }
     
         return;        
@@ -612,15 +602,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         // XXX run only once a day - use the top folder metadata for version and cleanup flag
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {              
-                if(Diagnostics.ON) {
-                    Diagnostics.println("Cleanup Start");                       // NOI18N                                  
-                }
-                
+                LocalHistory.log("Cleanup Start");                       // NOI18N                                  
                 cleanUpImpl(ttl);
-                
-                if(Diagnostics.ON) {
-                    Diagnostics.println("Cleanup End");                         // NOI18N                                      
-                }                
+                LocalHistory.log("Cleanup End");                         // NOI18N                                      
             }
         });
     }
@@ -747,7 +731,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             }            
             oos.flush();
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LocalHistory.LOG.log(Level.INFO, null, e);
         } finally {
             if (dis != null) {
                 try { dis.close(); } catch (IOException e) { }                
@@ -904,7 +888,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (EOFException e) {
             return ret;
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LocalHistory.LOG.log(Level.INFO, null, e);
         } finally {
             if (dis != null) {
                 try { dis.close(); } catch (IOException e) { }
@@ -914,9 +898,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
                 
     private void writeHistoryForFile(File file, HistoryEntry[] entries, boolean append) { 
-        if(Diagnostics.ON) {                
+        if(!LocalHistory.LOG.isLoggable(Level.FINE)) {            
             if(getDataFile(file) == null) {
-                Diagnostics.println("writing history for file without data : " + file);    // NOI18N                                  
+                LocalHistory.log("writing history for file without data : " + file);    // NOI18N                                  
             }            
         }                 
         File history = getHistoryFile(file);
@@ -935,7 +919,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             }
             dos.flush();            
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LocalHistory.LOG.log(Level.INFO, null, e);
             return;
         }
         finally {
@@ -967,7 +951,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         } catch (EOFException e) {
             return entries;
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            LocalHistory.LOG.log(Level.INFO, null, e);
         } finally {
             if (dis != null) {
                 try { dis.close(); } catch (IOException e) { }
@@ -990,7 +974,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             writeString(dos, STORAGE_VERSION);
             dos.flush();
         } catch (Exception e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);                
+            LocalHistory.LOG.log(Level.INFO, null, e);                
         } finally {
             if (dos != null) {
                 try { dos.close(); } catch (IOException e) { }
@@ -1138,7 +1122,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 String fileName = readString(dis);
                 return new StoreDataFile(fileName, action, modified, isFile);
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                LocalHistory.LOG.log(Level.INFO, null, e);
             } finally {
                 if (dis != null) {
                     try { dis.close(); } catch (IOException e) { } 
@@ -1159,7 +1143,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 dos.writeChars(data.getAbsolutePath());          
                 dos.flush();
             } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);                
+                LocalHistory.LOG.log(Level.INFO, null, e);                
             } finally {
                 if (dos != null) {
                     try { dos.close(); } catch (IOException e) { }

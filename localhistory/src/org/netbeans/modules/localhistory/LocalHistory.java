@@ -42,9 +42,12 @@ package org.netbeans.modules.localhistory;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -207,9 +210,8 @@ public class LocalHistory {
     }
     
     boolean isManaged(File file) {
-        if(Diagnostics.ON) {
-            Diagnostics.println(".isManaged() " + file);
-        }
+        log("isManaged() " + file);
+
         if(file == null) {
             return false;
         }
@@ -253,5 +255,79 @@ public class LocalHistory {
             }                    
         }            
     };
-        
+
+    public static void logCreate(File file, File storeFile, long ts, String  from, String to) {
+        if(!LOG.isLoggable(Level.FINE)) {
+            return;
+        }
+        StringBuffer sb = new StringBuffer();
+        sb.append("create");
+        sb.append('\t');
+        sb.append(file.getAbsolutePath());
+        sb.append('\t');        
+        sb.append(storeFile.getAbsolutePath());
+        sb.append('\t');        
+        sb.append(ts);
+        sb.append('\t');        
+        sb.append(from);
+        sb.append('\t');        
+        sb.append(to);               
+        log(sb.toString());
+    }    
+    
+    public static void logChange(File file, File storeFile, long ts) {
+        if(!LOG.isLoggable(Level.FINE)) {
+            return;
+        }        
+        StringBuffer sb = new StringBuffer();
+        sb.append("change");
+        sb.append('\t');
+        sb.append(file.getAbsolutePath());
+        sb.append('\t');        
+        sb.append(storeFile.getAbsolutePath());
+        sb.append('\t');        
+        sb.append(ts);        
+        log(sb.toString());
+    }
+
+    public static void logDelete(File file, File storeFile, long ts) {
+        if(!LOG.isLoggable(Level.FINE)) {
+            return;
+        }  
+        StringBuffer sb = new StringBuffer();
+        sb.append("delete");
+        sb.append('\t');
+        sb.append(file.getAbsolutePath());
+        sb.append('\t');        
+        sb.append(storeFile.getAbsolutePath());
+        sb.append('\t');        
+        sb.append(ts);        
+        log(sb.toString());
+    }
+    
+    public static void logFile(String msg, File file) {
+        if(!LOG.isLoggable(Level.FINE)) {
+            return;
+        }        
+        StringBuffer sb = new StringBuffer();        
+        sb.append(msg);
+        sb.append('\t');
+        sb.append(file.getAbsolutePath());            
+        log(sb.toString()); 
+    }        
+    
+    public static void log(String msg) {
+        if(!LOG.isLoggable(Level.FINE)) {
+            return;
+        }        
+        StringBuffer sb = new StringBuffer();
+        SimpleDateFormat defaultFormat = new SimpleDateFormat("dd-MM-yyyy:HH-mm-ss.S");
+        sb.append(defaultFormat.format(new Date(System.currentTimeMillis())));
+        sb.append(":");
+        sb.append(msg);
+        sb.append('\t');
+        sb.append(Thread.currentThread().getName());            
+        LocalHistory.LOG.fine(sb.toString()); // NOI18N
+    }       
+    
 }
