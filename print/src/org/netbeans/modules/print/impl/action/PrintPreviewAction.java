@@ -101,7 +101,7 @@ public final class PrintPreviewAction extends IconAction {
 
   private List<PrintProvider> getPrintProviders() {
 //out();
-    List<PrintProvider> providers = getPrintProviders(getNodes());
+    List<PrintProvider> providers = getPrintProviders(getSelectedNodes());
 
     if (providers != null) {
 //out("NODE PROVIDER: " + provider);
@@ -199,7 +199,7 @@ public final class PrintPreviewAction extends IconAction {
     return null;
   }
 
-  private List<PrintProvider> getPrintProviders(List<Node> nodes) {
+  private List<PrintProvider> getPrintProviders(Node [] nodes) {
 //out();
     if (nodes == null) {
 //out("NODES NULL");
@@ -246,31 +246,6 @@ public final class PrintPreviewAction extends IconAction {
       return null;
     }
     return new TextProvider(editor, getDate(data));
-  }
-
-  private List<Node> getNodes() {
-//out();
-    Node [] selected = getSelectedNodes();
-
-    if (selected == null) {
-      return null;
-    }
-    List<Node> nodes = new ArrayList<Node>();
-    travel(selected, nodes);
-
-//    for (Node node : nodes) {
-//out("see: " + node.getName());
-//    }
-    return nodes;
-  }
-
-  private void travel(Node [] children, List<Node> nodes) {
-    for (Node child : children) {
-      if ( !nodes.contains(child)) {
-        nodes.add(child);
-      }
-      travel(child.getChildren().getNodes(true), nodes);
-    }
   }
 
   private Date getDate(DataObject data) {
