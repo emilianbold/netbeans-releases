@@ -208,7 +208,9 @@ public class FacesContainer {
      */
     public void destroy() {
         facesContext.setDesignContext(null);
-        facesContext.release();
+        // NPE from component base renderer.
+        // Fix that first, before this memory leak problem
+        //facesContext.release();
     }
 
     /**
