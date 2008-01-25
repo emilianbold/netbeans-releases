@@ -335,7 +335,9 @@ public class BuildServiceAssembly extends Task {
                         
             // 9/12/07, filter out unconnected JavaEE endpoints
             log("Filtering Java EE Endpoints...");
-            filterJavaEEEndpoints(connectionResolver, saEEJarPaths, serviceUnitsDirLoc);
+
+            // 01/25/08, disabled, see IZ#115609 and 113026
+            // filterJavaEEEndpoints(connectionResolver, saEEJarPaths, serviceUnitsDirLoc);
         } catch (Exception e) {
             e.printStackTrace();
             log("Build SA Failed: " + e.toString());
