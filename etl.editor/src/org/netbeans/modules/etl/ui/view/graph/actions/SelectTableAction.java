@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.etl.ui.view.graph.actions;
 
 import java.awt.event.ActionEvent;
@@ -49,11 +48,12 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
-import org.openide.util.NbBundle;
-
 
 /**
  * To change this template use Options | File Templates.
@@ -64,21 +64,23 @@ import org.openide.util.NbBundle;
 public class SelectTableAction extends GraphAction {
 
     private static final URL selTableImgUrl = SelectTableAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/select_tables.png");
+    private static transient final Logger mLogger = LogUtil.getLogger(SelectTableAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
 
     public SelectTableAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(SelectTableAction.class, "ACTION_SELECTTABLE"));
+        String nbBundle1 = mLoc.t("PRSR001: Select Tables...");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(selTableImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(SelectTableAction.class, "ACTION_SELECTTABLE_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Select Source And Target Tables");
+        this.putValue(Action.SHORT_DESCRIPTION, Localizer.parse(nbBundle2));
 
         // Acceleratot Cntl-Shift-S
-        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK
-                                                                    + InputEvent.SHIFT_DOWN_MASK));
-
+        this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));
     }
 
     /**

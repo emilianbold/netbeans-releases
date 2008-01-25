@@ -47,6 +47,9 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.model.impl.ETLCollaborationModel;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
@@ -65,16 +68,19 @@ import org.openide.util.NbBundle;
 public class EditDbModelAction extends GraphAction {
 
     private static final URL dbmodelNamesUrl = EditDbModelAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/DatabaseProperties.png");
-
+    private static transient final Logger mLogger = LogUtil.getLogger(EditDbModelAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public EditDbModelAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(EditDbModelAction.class, "ACTION_EDITDBMODEL"));
+        String nbBundle1 = mLoc.t("PRSR001: Database Properties...");
+        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(dbmodelNamesUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(EditDbModelAction.class, "ACTION_EDITDBMODEL_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Edit Database Properties");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
     }
 
     /**
@@ -99,7 +105,8 @@ public class EditDbModelAction extends GraphAction {
             if (!srcDBModels.isEmpty() || !tgtDBModels.isEmpty()) {
                 etlEditor.editDBModel();
             } else {
-                String noDBModelMsg = NbBundle.getMessage(EditDbModelAction.class, "ERROR_no_dbmodel_to_edit");
+                String nbBundle3 = mLoc.t("PRSR001: No associated database properties to edit.\nAt least one table needs to be added to this collaboration.");
+                String noDBModelMsg = Localizer.parse(nbBundle3);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(noDBModelMsg, NotifyDescriptor.INFORMATION_MESSAGE));
             }
         }

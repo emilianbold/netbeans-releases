@@ -44,14 +44,17 @@ package org.netbeans.modules.etl.ui.view.graph.actions;
 import java.awt.event.ActionEvent;
 import java.net.URL;
 
+
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
-import org.openide.util.NbBundle;
 
 
 /**
@@ -63,16 +66,20 @@ import org.openide.util.NbBundle;
 public class RuntimeInputAction extends GraphAction {
 
     private static final URL runtimeInputImgUrl = RuntimeInputAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/RuntimeInput.png");
-
+    private static transient final Logger mLogger = LogUtil.getLogger(RuntimeInputAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     public RuntimeInputAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(RuntimeInputAction.class, "ACTION_RUNTIMEINPUT"));
+        String nbBundle1 = mLoc.t("PRSR001: Runtime Inputs...");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(runtimeInputImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RuntimeInputAction.class, "ACTION_RUNTIMEINPUT_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Add/Edit Runtime Inputs");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
     }
 
     /**

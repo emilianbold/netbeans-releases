@@ -133,7 +133,8 @@ public final class ConfigureParametersAction extends CookieAction {
     }
 
     public String getName() {
-        return NbBundle.getMessage(ConfigureParametersAction.class, "CTL_ConfigureParametersAction");
+        String nbBundle1 = mLoc.t("PRSR001: Configure Parameters");
+        return Localizer.parse(nbBundle1);
     }
 
     protected Class[] cookieClasses() {

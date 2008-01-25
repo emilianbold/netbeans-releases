@@ -29,10 +29,12 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.model.SQLJoinView;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.sql.framework.ui.view.graph.MetaTableModel;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLTableArea;
 import org.netbeans.modules.sql.framework.model.visitors.SQLDBSynchronizationVisitor;
@@ -42,7 +44,6 @@ import org.netbeans.modules.sql.framework.ui.view.graph.SQLSourceTableArea;
 import org.netbeans.modules.sql.framework.ui.view.graph.SQLTargetTableArea;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
-import org.netbeans.modules.sql.framework.ui.view.graph.SQLBasicTableArea;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinViewGraphNode;
 import org.openide.windows.WindowManager;
 
@@ -53,16 +54,20 @@ import org.openide.windows.WindowManager;
 public class RefreshMetadataAction extends GraphAction {
 
     private static final URL synchroniseImgUrl = RefreshMetadataAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/refresh.png");
-
+    private static transient final Logger mLogger = LogUtil.getLogger(RefreshMetadataAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     public RefreshMetadataAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(RefreshMetadataAction.class, "ACTION_REFRESH"));
+        String nbBundle1 = mLoc.t("PRSR001: Refresh Metadata");
+        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(synchroniseImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RefreshMetadataAction.class, "ACTION_REFRESH_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Refresh Metadata");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
     }
 
     /**
@@ -74,8 +79,11 @@ public class RefreshMetadataAction extends GraphAction {
         IGraphView graphView = (IGraphView) ev.getSource();
         CollabSQLUIModel model = (CollabSQLUIModel) graphView.getGraphModel();
         List infoList = new ArrayList();
-        String dlgMsg = NbBundle.getMessage(SQLBasicTableArea.class, "MSG_dlg_refresh_metadata");
-        String dlgTitle = NbBundle.getMessage(SQLBasicTableArea.class, "TITLE_dlg_refresh_metadata");
+        String nbBundle3 = mLoc.t("PRSR001: If columns are deleted or renamed you may lose existing mappings.");
+        String dlgMsg = Localizer.parse(nbBundle3);
+        
+        String nbBundle4 = mLoc.t("PRSR001: Refresh Metadata");
+        String dlgTitle = Localizer.parse(nbBundle4);
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), dlgMsg, dlgTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
         if (JOptionPane.OK_OPTION == response) {
         Iterator targetTables = model.getSQLDefinition().getTargetTables().iterator();

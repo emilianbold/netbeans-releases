@@ -27,6 +27,9 @@ import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.visitors.SQLValidationVisitor;
 import org.openide.util.NbBundle;
 import com.sun.sql.framework.exception.BaseException;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Builds ETL process flow and delegates to appropriate ETLStrategyBuilder as required.
@@ -36,6 +39,9 @@ import com.sun.sql.framework.exception.BaseException;
  */
 public class ETLProcessFlowGeneratorFactory {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLProcessFlowGeneratorFactory.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     public static ETLProcessFlowGenerator getCollabFlowGenerator(SQLDefinition sqlDefinition, boolean overridingConnDefs) throws BaseException {
         ETLProcessFlowGenerator generator = null;
         validateExecutionMode(sqlDefinition);
@@ -86,12 +92,14 @@ public class ETLProcessFlowGeneratorFactory {
         if (sqlDef.getExecutionStrategyCode().intValue() == SQLDefinition.EXECUTION_STRATEGY_STAGING) {
 
             if (sqlDef.requiresPipelineProcess()) {
-                String desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Staging_mode_not_allowed");
+                String nbBundle1 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+                String desc =  Localizer.parse(nbBundle1);
                 throw new BaseException(desc);
             }
 
             if (PatternFinder.isSourceAndTargetAreInternalButDifferent(sqlDef)) {
-                String desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Staging_mode_not_allowed");
+                String nbBundle2 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+                String desc = Localizer.parse(nbBundle2);
                 throw new BaseException(desc);
             }
         }

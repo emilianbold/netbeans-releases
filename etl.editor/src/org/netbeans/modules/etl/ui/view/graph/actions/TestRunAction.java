@@ -23,13 +23,15 @@ public final class TestRunAction extends GraphAction {
 
     public TestRunAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(TestRunAction.class, "ACTION_TESTRUN"));
+        String nbBundle1 = mLoc.t("PRSR001: Run");
+        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
 
-        //action icon
+        //action 
         this.putValue(Action.SMALL_ICON, new ImageIcon(runIconUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(EditDbModelAction.class, "ACTION_TESTRUN_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Run Collaboration");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
 
     }
 

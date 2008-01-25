@@ -47,6 +47,9 @@ import java.net.URL;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
@@ -63,16 +66,20 @@ import org.openide.util.NbBundle;
 public class RuntimeOutputAction extends GraphAction {
 
     private static final URL runtimeOutputImgUrl = RuntimeOutputAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/RuntimeOutput.png");
-
+    private static transient final Logger mLogger = LogUtil.getLogger(RuntimeOutputAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     public RuntimeOutputAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(RuntimeOutputAction.class, "ACTION_RUNTIMEOUTPUT"));
+        String nbBundle1 = mLoc.t("PRSR001: Runtime Outputs...");
+        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(runtimeOutputImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RuntimeOutputAction.class, "ACTION_RUNTIMEOUTPUT_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Add/Edit Runtime Outputs");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
     }
 
     /**

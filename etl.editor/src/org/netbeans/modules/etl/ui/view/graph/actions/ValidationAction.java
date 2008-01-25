@@ -49,6 +49,9 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
@@ -64,16 +67,20 @@ import org.openide.util.NbBundle;
 public class ValidationAction extends GraphAction {
 
     private static final URL validateImgUrl = ValidationAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/validation_edm.png");
-
+    private static transient final Logger mLogger = LogUtil.getLogger(ValidationAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     public ValidationAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(ValidationAction.class, "ACTION_VALIDATION"));
+        String nbBundle1 = mLoc.t("PRSR001: Validate");
+        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(validateImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(ValidationAction.class, "ACTION_VALIDATION_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Validate Collaboration");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
 
         // Acceleratot Cntl-Shift-V
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('V', InputEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));

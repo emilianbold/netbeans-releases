@@ -80,13 +80,15 @@ public class JoinAction extends GraphAction {
 
     public JoinAction() {
         // action name
-        this.putValue(Action.NAME, NbBundle.getMessage(JoinAction.class, "ACTION_JOIN"));
+        String nbBundle1 = mLoc.t("PRSR001: Create New Join...");
+        this.putValue(Action.NAME, Localizer.parse(nbBundle1));
 
         // action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(joinImgUrl));
 
         // action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(JoinAction.class, "ACTION_JOIN_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Create New Join");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
 
         // Acceleratot Cntl-Shift-J
         this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke('J', InputEvent.CTRL_MASK + InputEvent.SHIFT_DOWN_MASK));

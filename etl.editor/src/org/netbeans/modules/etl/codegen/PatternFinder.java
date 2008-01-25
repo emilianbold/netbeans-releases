@@ -32,6 +32,9 @@ import org.netbeans.modules.sql.framework.model.visitors.SQLValidationVisitor;
 import org.openide.util.NbBundle;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.StringUtil;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
 import org.netbeans.modules.sql.framework.model.DBTable;
 
@@ -46,7 +49,8 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  * @version $Revision$
  */
 public class PatternFinder {
-
+    private static transient final Logger mLogger = LogUtil.getLogger(PatternFinder.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public static boolean allDBTablesAreInternal(Iterator tableIterator) throws BaseException {
         while (tableIterator.hasNext()) {
             DBTable srcTable = (DBTable) tableIterator.next();
@@ -71,17 +75,20 @@ public class PatternFinder {
             builder = (definition.hasValidationConditions()) ? new ValidatingStrategyBuilderImpl(model) : new PipelinedStrategyBuilderImpl(model);
         } else if (strategyOverride == SQLDefinition.EXECUTION_STRATEGY_STAGING) {
             if (definition.requiresPipelineProcess()) {
-                String desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Staging_mode_not_allowed");
+                String nbBundle1 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+                String desc = Localizer.parse(nbBundle1);
                 throw new BaseException(desc);
             }
 
             if (PatternFinder.isSourceAndTargetAreInternalButDifferent(definition)) {
-                String desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Staging_mode_not_allowed");
+                String nbBundle2 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+                String desc = Localizer.parse(nbBundle2);
                 throw new BaseException(desc);
             }
 
             if (isInternalDBTable(tt) && allDBTablesAreInternal(sourceTables.iterator())) {
-                String desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Staging_mode_not_allowed");
+                String nbBundle3 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+                String desc = Localizer.parse(nbBundle3);
                 throw new BaseException(desc);
             }
 

@@ -21,11 +21,13 @@ import java.net.URL;
 import javax.swing.Action;
 import java.util.Iterator;
 import javax.swing.ImageIcon;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.utils.SQLObjectUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.sql.framework.ui.graph.IGraphView;
 import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
@@ -38,16 +40,20 @@ import org.openide.awt.StatusDisplayer;
 public class RemountCollaborationAction extends GraphAction {
 
     private static final URL remountImgUrl = RemountCollaborationAction.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/redo.png");
-
+    private static transient final Logger mLogger = LogUtil.getLogger(RemountCollaborationAction.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     public RemountCollaborationAction() {
         //action name
-        this.putValue(Action.NAME, NbBundle.getMessage(RemountCollaborationAction.class, "ACTION_REMOUNT"));
+        String nbBundle1 = mLoc.t("PRSR001: Remount");
+        this.putValue(Action.NAME,Localizer.parse(nbBundle1));
 
         //action icon
         this.putValue(Action.SMALL_ICON, new ImageIcon(remountImgUrl));
 
         //action tooltip
-        this.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(RemountCollaborationAction.class, "ACTION_REMOUNT_TOOLTIP"));
+        String nbBundle2 = mLoc.t("PRSR001: Drops and re-creates all the tables.");
+        this.putValue(Action.SHORT_DESCRIPTION,Localizer.parse(nbBundle2));
     }
 
     /**
