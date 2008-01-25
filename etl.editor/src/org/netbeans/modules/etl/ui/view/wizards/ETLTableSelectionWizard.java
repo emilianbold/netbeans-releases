@@ -46,10 +46,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.MissingResourceException;
 
+import net.java.hulp.i18n.Logger;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.model.impl.ETLDefinitionImpl;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
@@ -63,6 +66,9 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
  */
 public class ETLTableSelectionWizard extends ETLWizard {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLTableSelectionWizard.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     class Descriptor extends ETLWizardDescriptor {
 
         public Descriptor(WizardDescriptor.Iterator iter) {
@@ -80,10 +86,13 @@ public class ETLTableSelectionWizard extends ETLWizard {
             List srcModel = new ArrayList();
             List destModel = new ArrayList();
             List dbModels = getModelConnections();
-            String selectSrcTitle = NbBundle.getMessage(ETLCollaborationWizard.class, "TITLE_tblwizard_selectsources");
+            
+            String nbBundle1 = mLoc.t("PRSR001: Select Source Tables.");
+            String selectSrcTitle = Localizer.parse(nbBundle1);
             sourceTransferPanel = new ETLCollaborationWizardTransferFinishPanel(selectSrcTitle, dbModels, srcModel, true);
             panels.add(sourceTransferPanel);
-            String selectTrgtTitle = NbBundle.getMessage(ETLCollaborationWizard.class, "TITLE_tblwizard_selecttargets");
+            String nbBundle2 = mLoc.t("PRSR001: Select Target Tables.");
+            String selectTrgtTitle = Localizer.parse(nbBundle2);
             targetTransferPanel = new ETLCollaborationWizardTransferFinishPanel(selectTrgtTitle, dbModels, destModel, false);
             panels.add(targetTransferPanel);
         }
@@ -109,7 +118,8 @@ public class ETLTableSelectionWizard extends ETLWizard {
         }
 
         public String name() {
-            return "Select Source/Target Tables";
+            String nbBundle4 = mLoc.t("PRSR001: Select Source/Target Tables");
+            return Localizer.parse(nbBundle4);
         }
 
         protected List createPanels() {
@@ -322,7 +332,8 @@ public class ETLTableSelectionWizard extends ETLWizard {
      */
     @Override
     protected String getDialogTitle() {
-        return NbBundle.getMessage(ETLTableSelectionWizard.class, "TITLE_dlg_selecttables");
+        String nbBundle3 = mLoc.t("PRSR001: Select Source and Target Tables");
+        return Localizer.parse(nbBundle3);
     }
 
     private List getSelectedModelsOfType(String typeKey) {

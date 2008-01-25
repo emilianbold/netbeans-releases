@@ -29,6 +29,9 @@ import java.util.List;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 
 /**
@@ -45,6 +48,8 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
     private WizardDescriptor wizard;
     private boolean isFolder;
 
+    private static transient final Logger mLogger = LogUtil.getLogger(SimpleTargetChooserPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Creates a new SimpleTargetChooserPanel object.
      *
@@ -134,20 +139,19 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
 
         // test whether the selected folder on selected filesystem already exists
         if (targetFolder == null) {
-            return NbBundle.getMessage(
-                SimpleTargetChooserPanel.class, "MSG_fs_or_folder_does_not_exist"
-            ); // NOI18N
+            String nbBundle1 = mLoc.t("PRSR001: The target folder does not exist.");
+            return Localizer.parse(nbBundle1); // NOI18N
         }
 
         // target filesystem should be writable
         if (!targetFolder.canWrite()) {
-            return NbBundle.getMessage(SimpleTargetChooserPanel.class, "MSG_fs_is_readonly"); // NOI18N
+            String nbBundle2 = mLoc.t("PRSR001: The target folder is read-only.");
+            return Localizer.parse(nbBundle2); // NOI18N
         }
 
         if (existFileName(targetFolder, relFileName)) {
-            return NbBundle.getMessage(
-                SimpleTargetChooserPanel.class, "MSG_file_already_exist", newObjectName
-            ); // NOI18N
+            String nbBundle3 = mLoc.t("PRSR001: The file {0} already exists.",newObjectName);
+            return Localizer.parse(nbBundle3) ; // NOI18N
         }
 
       // all ok

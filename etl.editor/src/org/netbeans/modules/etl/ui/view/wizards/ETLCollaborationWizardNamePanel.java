@@ -56,6 +56,9 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -72,6 +75,9 @@ import org.openide.util.NbBundle;
  */
 public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDescriptor.Panel {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizardNamePanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     class NameFieldKeyAdapter extends KeyAdapter {
 
         /**
@@ -121,7 +127,8 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
         outerPanel.add(new JPanel(), gbc);
 
         // Text field label.
-        JLabel header = new JLabel(NbBundle.getMessage(ETLCollaborationWizardNamePanel.class, "LBL_tblwizard_namefield"));
+        String nbBundle1 = mLoc.t("PRSR001: New Collaboration Name:");
+        JLabel header = new JLabel(Localizer.parse(nbBundle1));
         gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -241,13 +248,11 @@ public class ETLCollaborationWizardNamePanel extends JPanel implements WizardDes
 
         if (fo != null) { // file exists
             duplicated = true;
-            NotifyDescriptor.Message d1 = new NotifyDescriptor.Message(NbBundle.getMessage(ETLCollaborationWizardNamePanel.class,
-                    "ERROR_tblwizard_duplicatename", collaborationName), NotifyDescriptor.INFORMATION_MESSAGE);
+            String nbBundle2 = mLoc.t("PRSR001: An object already exists in this project with the name {0}.  Please enter a unique name.",collaborationName);
+            NotifyDescriptor.Message d1 = new NotifyDescriptor.Message(Localizer.parse(nbBundle2), NotifyDescriptor.INFORMATION_MESSAGE);
             DialogDisplayer.getDefault().notify(d1);
-
             textField.requestFocus();
         }
-
         return duplicated;
     }
 

@@ -64,6 +64,9 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
@@ -80,6 +83,9 @@ import org.openide.util.NbBundle;
  */
 public class ETLCollaborationWizardTablePanel extends JPanel {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(ETLCollaborationWizardTablePanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     class MetaTableComponent extends JTable {
         public MetaTableComponent() {
             setDefaultRenderer(AbstractDBTable.class, new MyTableModelCellRenderer());
@@ -95,7 +101,6 @@ public class ETLCollaborationWizardTablePanel extends JPanel {
         protected static Border noFocusBorder = BorderFactory.createEmptyBorder(1, 1, 1, 1);
 
         private JPanel myPanel;
-
         /**
          * Creates a default MyBooleanRenderer.
          */
@@ -124,23 +129,22 @@ public class ETLCollaborationWizardTablePanel extends JPanel {
 
                 if (obj instanceof TargetTable) {
                     TargetTable tt = (TargetTable) obj;
-
                     if (tt.isSelected()) {
-                        setToolTipText(NbBundle.getMessage(ETLCollaborationWizardTablePanel.class, "TOOLTIP_target_table_exists", rowDW.getTable()));
+                        String nbBundle1 = mLoc.t("PRSR001: Table {0} already exists as target in this collaboration.",rowDW.getTable());
+                        setToolTipText(Localizer.parse(nbBundle1));
                     } else {
-                        setToolTipText(NbBundle.getMessage(ETLCollaborationWizardTablePanel.class, "TOOLTIP_target_table_disabled_unselected",
-                            rowDW.getTable()));
+                        String nbBundle2 = mLoc.t("PRSR001: Table {0} already exists as source table in this collaboration.",rowDW.getTable());
+                        setToolTipText(Localizer.parse(nbBundle2));
                     }
                 }
 
                 if (obj instanceof SourceTable) {
                     SourceTable st = (SourceTable) obj;
                     if (!st.isSelected()) {
-                        setToolTipText(NbBundle.getMessage(ETLCollaborationWizardTablePanel.class, "TOOLTIP_source_table_disabled_unselected",
-                            rowDW.getTable()));
+                        String nbBundle3 = mLoc.t("PRSR001: Table {0} already exists as target table in this collaboration.",rowDW.getTable());
+                        setToolTipText(Localizer.parse(nbBundle3));
                     }
                 }
-
                 myPanel.setBorder(noFocusBorder);
                 myPanel.setBackground(Color.LIGHT_GRAY);
             } else {
@@ -315,19 +319,19 @@ public class ETLCollaborationWizardTablePanel extends JPanel {
                 if (obj instanceof TargetTable) {
                     TargetTable tt = (TargetTable) obj;
                     if (tt.isSelected()) {
-                        renderer.setToolTipText(NbBundle.getMessage(ETLCollaborationWizardTablePanel.class, "TOOLTIP_target_table_exists",
-                            rowDW.getTable()));
+                        String nbBundle4 = mLoc.t("PRSR001: Table {0} already exists as target in this collaboration.", rowDW.getTable());
+                        renderer.setToolTipText(Localizer.parse(nbBundle4));
                     } else {
-                        renderer.setToolTipText(NbBundle.getMessage(ETLCollaborationWizardTablePanel.class,
-                            "TOOLTIP_target_table_disabled_unselected", rowDW.getTable()));
+                        String nbBundle5 = mLoc.t("PRSR001: Table {0} already exists as source table in this collaboration.", rowDW.getTable());
+                        renderer.setToolTipText(Localizer.parse(nbBundle5));
                     }
                 }
 
                 if (obj instanceof SourceTable) {
                     SourceTable st = (SourceTable) obj;
                     if (!st.isSelected()) {
-                        renderer.setToolTipText(NbBundle.getMessage(ETLCollaborationWizardTablePanel.class,
-                            "TOOLTIP_source_table_disabled_unselected", rowDW.getTable()));
+                        String nbBundle6 = mLoc.t("PRSR001: Table {0} already exists as target table in this collaboration.",rowDW.getTable());
+                        renderer.setToolTipText(Localizer.parse(nbBundle6));
                     }
                 }
 

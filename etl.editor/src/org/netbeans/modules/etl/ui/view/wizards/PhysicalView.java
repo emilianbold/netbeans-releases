@@ -2,7 +2,6 @@
  * Copyright 2005 Sun Microsystems, Inc. All rights reserved.
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
-
 package org.netbeans.modules.etl.ui.view.wizards;
 
 import org.netbeans.api.project.Project;
@@ -49,7 +48,9 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Support for creating logical views.
@@ -57,6 +58,10 @@ import javax.swing.event.EventListenerList;
  * @author Jesse Glick, Petr Hrebejk
  */
 public class PhysicalView {
+
+    private static transient final Logger mLogger = LogUtil.getLogger(PhysicalView.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * DOCUMENT ME!
      *
@@ -78,8 +83,7 @@ public class PhysicalView {
     public static Node[] createNodesForProject(Project p) {
         Sources s = ProjectUtils.getSources(p);
         SourceGroup[] groups = s.getSourceGroups(
-               Sources.TYPE_GENERIC
-            );
+                Sources.TYPE_GENERIC);
 
         if ((groups == null) || (groups.length < 1)) {
             groups = s.getSourceGroups(Sources.TYPE_GENERIC);
@@ -92,10 +96,8 @@ public class PhysicalView {
         for (int i = 0; i < groups.length; i++) {
             FileObject groupRoot = groups[i].getRootFolder();
 
-            if (
-                projectDirectory.equals(groupRoot) ||
-                    FileUtil.isParentOf(groupRoot, projectDirectory)
-            ) {
+            if (projectDirectory.equals(groupRoot) ||
+                    FileUtil.isParentOf(groupRoot, projectDirectory)) {
                 if (projectDirGroup != null) {
                     // more than once => Illegal
                     projectDirGroup = null;
@@ -110,14 +112,12 @@ public class PhysicalView {
         if (projectDirGroup == null) {
             // Illegal project
             ErrorManager.getDefault().notify(
-                ErrorManager.INFORMATIONAL,
-                new IllegalStateException(
+                    ErrorManager.INFORMATIONAL,
+                    new IllegalStateException(
                     "Project " + p + // NOI18N
                     "either does not contain it's project directory under the " + // NOI18N
                     "Generic source groups or the project directory is under" + // NOI18N
-                    "more than one source group"
-                )
-            ); // NOI18N
+                    "more than one source group")); // NOI18N
 
             return new Node[0];
         }
@@ -125,10 +125,8 @@ public class PhysicalView {
         // Create the nodes
         ArrayList nodesList = new ArrayList(groups.length);
         nodesList.add(
-            new GroupNode(
-                p, projectDirGroup, true, DataFolder.findFolder(projectDirGroup.getRootFolder())
-            )
-        );
+                new GroupNode(
+                p, projectDirGroup, true, DataFolder.findFolder(projectDirGroup.getRootFolder())));
 
         for (int i = 0; i < groups.length; i++) {
             if (groups[i] == projectDirGroup) {
@@ -136,10 +134,8 @@ public class PhysicalView {
             }
 
             nodesList.add(
-                new GroupNode(
-                    p, groups[i], false, DataFolder.findFolder(groups[i].getRootFolder())
-                )
-            );
+                    new GroupNode(
+                    p, groups[i], false, DataFolder.findFolder(groups[i].getRootFolder())));
         }
 
         Node[] nodes = new Node[nodesList.size()];
@@ -152,6 +148,7 @@ public class PhysicalView {
      * DOCUMENT ME!
      */
     static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+
         /**
          * DOCUMENT ME!
          */
@@ -220,18 +217,19 @@ public class PhysicalView {
      * DOCUMENT ME!
      */
     static final class GroupNode extends FilterNode implements PropertyChangeListener {
-        private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
 
-        /**
-         * DOCUMENT ME!
-         */
-        static final String GROUP_NAME_PATTERN = NbBundle.getMessage(
-                PhysicalView.class, "FMT_PhysicalView_GroupName"
-            ); // NOI18N
+        private static final DataFilter VISIBILITY_QUERY_FILTER = new VisibilityQueryDataFilter();
         //private Project project;
         private ProjectInformation pi;
         private SourceGroup group;
         private boolean isProjectDir;
+        private DataFolder dataFolder;
+        /**
+         * DOCUMENT ME!
+         */
+        String nbBundle1 = mLoc.t("PRSR001: {1} - {0}", pi.getDisplayName(), dataFolder.getName());
+        static final String GROUP_NAME_PATTERN = NbBundle.getMessage(
+                PhysicalView.class, "FMT_PhysicalView_GroupName"); // NOI18N
 
         /**
          * Creates a new GroupNode object.
@@ -242,13 +240,10 @@ public class PhysicalView {
          * @param dataFolder DOCUMENT ME!
          */
         public GroupNode(
-            Project project, SourceGroup group, boolean isProjectDir, DataFolder dataFolder
-        ) {
+                Project project, SourceGroup group, boolean isProjectDir, DataFolder dataFolder) {
             super(
-                dataFolder.getNodeDelegate(), dataFolder.createNodeChildren(
-                    VISIBILITY_QUERY_FILTER
-                ), createLookup(project, group, dataFolder)
-            );
+                    dataFolder.getNodeDelegate(), dataFolder.createNodeChildren(
+                    VISIBILITY_QUERY_FILTER), createLookup(project, group, dataFolder));
 
             //this.project = project;
             this.pi = ProjectUtils.getInformation(project);
@@ -277,11 +272,10 @@ public class PhysicalView {
                 return pi.getDisplayName();
             } else {
                 return MessageFormat.format(
-                    GROUP_NAME_PATTERN,
-                    new Object[] {
-                        group.getDisplayName(), pi.getDisplayName(), getOriginal().getDisplayName()
-                    }
-                );
+                        GROUP_NAME_PATTERN,
+                        new Object[]{
+                    group.getDisplayName(), pi.getDisplayName(), getOriginal().getDisplayName()
+                });
             }
         }
 
@@ -295,9 +289,8 @@ public class PhysicalView {
             String dir = FileUtil.getFileDisplayName(gdir);
 
             return NbBundle.getMessage(
-                PhysicalView.class, isProjectDir ? "HINT_project" : "HINT_group", // NOI18N
-                dir
-            );
+                    PhysicalView.class, isProjectDir ? "HINT_project" : "HINT_group", // NOI18N
+                    dir);
         }
 
         /**
@@ -396,17 +389,15 @@ public class PhysicalView {
                 fireShortDescriptionChange(null, null);
             } else {
                 assert false : "Attempt to fire an unsupported property change event from " +
-                pi.getClass().getName() + ": " + prop;
+                        pi.getClass().getName() + ": " + prop;
             }
         }
 
         private static Lookup createLookup(Project p, SourceGroup group, DataFolder dataFolder) {
             return new ProxyLookup(
-                new Lookup[] {
-                    dataFolder.getNodeDelegate().getLookup(),
-                    Lookups.fixed(new Object[] {p, new PathFinder(group)}), p.getLookup(),
-                }
-            );
+                    new Lookup[]{
+                dataFolder.getNodeDelegate().getLookup(),
+                Lookups.fixed(new Object[]{p, new PathFinder(group)}), p.getLookup(),            });
         }
     }
 
@@ -414,6 +405,7 @@ public class PhysicalView {
      * DOCUMENT ME!
      */
     public static class PathFinder {
+
         private SourceGroup group;
 
         /**
