@@ -176,10 +176,12 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     public static FileObject showDialog( SourceGroup[] folders, Project project, String preselectedFileName ) {
 
         BrowseFolders bf = new BrowseFolders( folders, project, preselectedFileName );
-
+        
+        String nbBundle1 = mLoc.t("PRSR001: Select Folder");
+        String nbBundle2 = mLoc.t("PRSR001: Cancel");
         JButton options[] = new JButton[] {
-            new JButton( NbBundle.getMessage( BrowseFolders.class, "BTN_BrowseFolders_Select_Option") ), // NOI18N
-            new JButton( NbBundle.getMessage( BrowseFolders.class, "BTN_BrowseFolders_Cancel_Option") ), // NOI18N
+            new JButton(Localizer.parse(nbBundle1)), // NOI18N
+            new JButton(Localizer.parse(nbBundle2)), // NOI18N
         };
 
         OptionsListener optionsListener = new OptionsListener( bf );
