@@ -87,7 +87,6 @@ import org.openide.util.HelpCtx;
  * @author Craig MacKay
  */
 public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {  
-    public static final String LIBRARY_TYPE = "j2se";       //NOI18N  
     
     private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
