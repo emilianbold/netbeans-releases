@@ -625,18 +625,23 @@ public class RubyPlatformCustomizer extends JPanel {
     private void addGemPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addGemPathActionPerformed
         File repo = GemPanel.chooseGemRepository(this);
         if (repo != null) {
-            getSelectedPlatform().getGemManager().addRepository(repo.getAbsolutePath());
-            refreshPlatform();
+            String absPath = repo.getAbsolutePath();
+            if (!getGemPathListModel().getPaths().contains(absPath)) {
+                getGemPathListModel().addPath(absPath);
+                refreshPlatform();
+                gemPathList.requestFocus();
+                gemPathList.setSelectedValue(absPath, true);
+            }
         }
 }//GEN-LAST:event_addGemPathActionPerformed
 
     private void removeGemPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeGemPathActionPerformed
         getGemPathListModel().removePath((String) gemPathList.getSelectedValue());
+        refreshPlatform();
         if (getGemPathListModel().getSize() > 0) {
             gemPathList.setSelectedIndex(0);
         }
         gemPathList.requestFocus();
-        refreshPlatform();
 }//GEN-LAST:event_removeGemPathActionPerformed
 
     private void refreshDebugger() {
