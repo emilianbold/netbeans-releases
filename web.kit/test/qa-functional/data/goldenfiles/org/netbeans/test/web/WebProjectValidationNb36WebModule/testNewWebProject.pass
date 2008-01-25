@@ -1,0 +1,17 @@
++ WebModuleNB36 [Main] 
+.+ Web Pages 
+..+ META-INF 
+...+ context.xml
+..+ index.jsp
+.+ WEB-INF
+.+ Configuration Files 
+..+ context.xml
+..+ sun-web.xml
+..+ sun-web.xml
+.+ Server Resources
+.+ Source Packages 
+..+ <default package> 
+...+ dummy
+.+ Libraries 
+..+ JDK 1.6 (Default)
+

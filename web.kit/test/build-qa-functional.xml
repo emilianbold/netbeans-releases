@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+<!--
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+
+
+The contents of this file are subject to the terms of either the GNU
+General Public License Version 2 only ("GPL") or the Common
+Development and Distribution License("CDDL") (collectively, the
+"License"). You may not use this file except in compliance with the
+License. You can obtain a copy of the License at
+http://www.netbeans.org/cddl-gplv2.html
+or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+specific language governing permissions and limitations under the
+License.  When distributing the software, include this License Header
+Notice in each file and include the License file at
+nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+particular file as subject to the "Classpath" exception as provided
+by Sun in the GPL Version 2 section of the License file that
+accompanied this code. If applicable, add the following below the
+License Header, with the fields enclosed by brackets [] replaced by
+your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+Contributor(s):
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+Microsystems, Inc. All Rights Reserved.
+
+If you wish your version of this file to be governed by only the CDDL
+or only the GPL Version 2, indicate your decision by adding
+"[Contributor] elects to include this software in this distribution
+under the [CDDL or GPL Version 2] license." If you do not indicate a
+single choice of license, a recipient has the option to distribute
+your version of this file under either the CDDL, the GPL Version 2 or
+to extend the choice of license to its licensees as provided above.
+However, if you add GPL Version 2 code and therefore, elected the GPL
+Version 2 license, then the option applies only if the new code is
+made subject to such option by the copyright holder.
+-->
+<project name="web/test-qa-functional" basedir="." default="all">
+
+    <property name="tomcat_version" value="5.5.17"/>
+    <!-- Root folders -->
+    <property name="nball.dir" location="../../../../nb_all"/>
+    <property environment="env"/>
+
+    <!-- Imports default qa-functional-compiler and runidetes executor.
+        jemmy and jellytools jars are on classpath for both. -->
+    <import file="${nball.dir}/nbbuild/templates/xtest-qa-functional.xml"/>
+
+    <!-- Setting command line -->
+    <target name="ide_command_line_suffix">
+        <property name="reg.home"
+        value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
+        <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1"/>
+        <property name="jmxremote.option" value="-J-Dcom.sun.management.jmxremote=true"/>
+        <property name="xtest.ide.commandline.suffix" value="${reg.home} ${reg.token} ${jmxremote.option}"/>
+    </target>
+    
+    <!-- ========= -->
+    <!-- Executors -->
+    <!-- ========= -->
+    
+    <!--Executor for IDE test -->
+    <!-- Name of this task is defined in cfg-xxx.xml -->
+    <!-- This target executes tests inside IDE -->
+    <target name="runidetest" depends="init-cp,install-tomcat,ide_command_line_suffix">
+        <executeTests pluginName="ide">
+            <classpath refid="jemmy.and.jelly.path"/>
+            <classpath location="${test.qa-functional.run.cp.extra}"/>
+            <property name="xtest.timeout" value="7200000" />
+        </executeTests>
+    </target>
+    <property name="tomcat.ext.dir" location="${nball.dir}/tomcatint/tomcat5/bundled/external"/>
+    <import file="${nball.dir}/tomcatint/tomcat5/bundled/build.xml"/>
+    
+    <property name="tomcat.home" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
+    
+    <target name="install-tomcat" depends="init">
+        <delete dir="${tomcat.home}" quiet="true"/>
+        <unzip src="${tomcat.ext.dir}/apache-tomcat-${tomcat_version}.zip" dest="${xtest.tmpdir}/"/>
+        <chmod dir="${tomcat.home}/bin" perm="ugo+rx" includes="**/*.sh"/>
+    </target>
+
+    <target name="runidetest-debug" depends="setup-debugger,runidetest"/>
+
+    <target name="setup-debugger">
+        <property name="xtest.debug.port" value="1111"/>
+        <property name="xtest.debug.suspend" value="true"/>
+    </target>
+</project>
+

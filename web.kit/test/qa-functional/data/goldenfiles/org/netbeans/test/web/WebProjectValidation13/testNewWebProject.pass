@@ -1,0 +1,20 @@
++ SampleProject13 [Main] 
+.+ Web Pages 
+..+ META-INF 
+...+ context.xml
+..+ WEB-INF 
+...+ web.xml
+..+ index.jsp
+.+ Configuration Files 
+..+ MANIFEST.MF
+..+ context.xml
+..+ web.xml
+.+ Server Resources
+.+ Source Packages
+.+ Test Packages
+.+ Libraries 
+..+ JDK 1.6 (Default)
+.+ Test Libraries 
+..+ JUnit 3.8.2 - junit-3.8.2.jar
+..+ JUnit 4.1 - junit-4.1.jar
+
