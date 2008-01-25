@@ -168,6 +168,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
             i = root.indexOf("/usr/src"); // NOI18N
         }
         if (i > 0) {
+            String latest = null;
             String logfolder = root.substring(0, i) + "/log"; // NOI18N
             File log = new File(logfolder);
             if (log.exists() && log.isDirectory()) {
@@ -175,12 +176,20 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                     if (when.isDirectory()) {
                         for (File l : when.listFiles()) {
                             if (l.getAbsolutePath().endsWith("/nightly.log")) { // NOI18N
-                                return l.getAbsolutePath();
+                                if (latest == null){
+                                    latest = l.getAbsolutePath();
+                                } else {
+                                    if (latest.compareTo(l.getAbsolutePath())<0) {
+                                        latest = l.getAbsolutePath();
+                                    }
+                                }
+                                break;
                             }
                         }
                     }
                 }
             }
+            return latest;
         }
         return null;
     }
