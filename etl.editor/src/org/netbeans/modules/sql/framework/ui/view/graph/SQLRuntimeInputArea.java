@@ -54,7 +54,6 @@ import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.ui.graph.ICommand;
 import org.netbeans.modules.sql.framework.ui.graph.impl.GradientBrush;
-import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoBrush;
 import net.java.hulp.i18n.Logger;

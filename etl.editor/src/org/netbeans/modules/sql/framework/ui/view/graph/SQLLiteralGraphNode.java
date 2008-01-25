@@ -60,7 +60,7 @@ import org.netbeans.modules.sql.framework.ui.graph.IOperatorXmlInfo;
 import org.netbeans.modules.sql.framework.ui.graph.impl.BasicCellArea;
 import org.netbeans.modules.sql.framework.ui.graph.impl.CanvasArea;
 import org.netbeans.modules.sql.framework.ui.graph.impl.OperatorGraphFieldNode;
-import org.openide.util.NbBundle;
+
 
 import com.nwoods.jgo.JGoPen;
 import com.nwoods.jgo.JGoRectangle;

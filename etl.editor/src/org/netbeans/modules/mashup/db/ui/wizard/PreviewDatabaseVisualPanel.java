@@ -45,10 +45,13 @@ import java.util.MissingResourceException;
 
 import javax.swing.JPanel;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
 import org.netbeans.modules.mashup.db.ui.FlatfileTreeTableView;
 import org.netbeans.modules.mashup.db.ui.model.FlatfileTreeTableModel;
-import org.openide.util.NbBundle;
+
 
 
 /**
@@ -61,6 +64,9 @@ import org.openide.util.NbBundle;
  */
 public class PreviewDatabaseVisualPanel extends JPanel {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(PreviewDatabaseVisualPanel.class.getName());
+    
+    private static transient final Localizer mLoc = Localizer.get();
     /* Container to hold configuration components */
     private JPanel contentPanel;
 
@@ -81,9 +87,9 @@ public class PreviewDatabaseVisualPanel extends JPanel {
         mTreeView = new FlatfileTreeTableView();
 
         setLayout(new BorderLayout());
-
+        String nbBundle1 = mLoc.t("PRSR001: Preview Flat File Database Definition");
         try {
-            setName(NbBundle.getMessage(PreviewDatabaseVisualPanel.class, "TITLE_configure_ffdb"));
+            setName(Localizer.parse(nbBundle1));
         } catch (MissingResourceException e) {
             setName("*** Preview Flatfile Database ***");
         }
@@ -99,9 +105,9 @@ public class PreviewDatabaseVisualPanel extends JPanel {
         mTreeView = new FlatfileTreeTableView();
 
         setLayout(new BorderLayout());
-
+        String nbBundle2 = mLoc.t("PRSR001: Preview Flat File Database Definition");
         try {
-            setName(NbBundle.getMessage(PreviewDatabaseVisualPanel.class, "TITLE_configure_ffdb"));
+            setName(Localizer.parse(nbBundle2));
         } catch (MissingResourceException e) {
             setName("*** Preview Flatfile Database ***");
         }

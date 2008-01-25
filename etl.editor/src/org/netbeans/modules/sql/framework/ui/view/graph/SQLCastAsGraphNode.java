@@ -64,7 +64,6 @@ import org.netbeans.modules.sql.framework.ui.graph.impl.BasicCellArea;
 import org.netbeans.modules.sql.framework.ui.graph.impl.CanvasArea;
 import org.netbeans.modules.sql.framework.ui.graph.impl.HighlightConfiguratorImpl;
 import org.netbeans.modules.sql.framework.ui.graph.impl.OperatorGraphFieldNode;
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 import com.nwoods.jgo.JGoBrush;

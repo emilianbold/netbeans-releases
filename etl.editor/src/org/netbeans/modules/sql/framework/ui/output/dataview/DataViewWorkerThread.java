@@ -114,7 +114,7 @@ class DataViewWorkerThread extends SwingWorker {
     public void finished() {
 
         if (this.errMsg != null) {
-            String nbBundle = mLoc.t("PRSR001: Error fetching data for table {0}.\nCause: {1}", dbTable.getDisplayName(), this.errMsg);
+            String nbBundle = mLoc.t("PRSR001: Error fetching data for table {0}.Cause:{1}", dbTable.getDisplayName(), this.errMsg);
             String errorMsg = Localizer.parse(nbBundle);
             DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.ERROR_MESSAGE));
         }

@@ -85,7 +85,6 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;

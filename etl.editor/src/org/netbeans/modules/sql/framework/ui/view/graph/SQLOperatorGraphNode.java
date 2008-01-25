@@ -74,7 +74,7 @@ import org.netbeans.modules.sql.framework.ui.graph.impl.BasicComboBoxArea;
 import org.netbeans.modules.sql.framework.ui.graph.impl.CanvasArea;
 import org.netbeans.modules.sql.framework.ui.graph.impl.OperatorGraphFieldNode;
 import org.netbeans.modules.sql.framework.ui.graph.impl.OperatorGraphNode;
-import org.openide.util.NbBundle;
+
 
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoPen;

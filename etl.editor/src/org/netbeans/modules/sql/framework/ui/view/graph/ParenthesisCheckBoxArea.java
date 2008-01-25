@@ -50,7 +50,6 @@ import java.awt.event.ItemListener;
 import org.netbeans.modules.sql.framework.ui.graph.impl.BasicText;
 import org.netbeans.modules.sql.framework.ui.graph.impl.CanvasArea;
 import org.netbeans.modules.sql.framework.ui.graph.impl.CheckBoxArea;
-import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoPen;

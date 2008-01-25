@@ -52,7 +52,6 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.ExtensionList;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 
 

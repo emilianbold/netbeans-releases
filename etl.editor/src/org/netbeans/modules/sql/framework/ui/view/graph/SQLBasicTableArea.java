@@ -87,7 +87,6 @@ import org.netbeans.modules.sql.framework.ui.model.CollabSQLUIModel;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import org.netbeans.modules.sql.framework.ui.view.TableColumnNode;
 import org.netbeans.modules.sql.framework.ui.view.TableColumnTreePanel;
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 import net.java.hulp.i18n.Logger;
 import com.nwoods.jgo.JGoBrush;

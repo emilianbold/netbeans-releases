@@ -41,8 +41,6 @@
 package org.netbeans.modules.mashup.db.ui.model;
 
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
-import org.openide.util.NbBundle;
-
 import com.sun.sql.framework.utils.StringUtil;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;

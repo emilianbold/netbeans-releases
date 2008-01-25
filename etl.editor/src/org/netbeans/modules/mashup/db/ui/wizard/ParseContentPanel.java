@@ -86,8 +86,6 @@ import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyViewMa
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.util.HashSet;
@@ -96,6 +94,7 @@ import javax.swing.event.ChangeEvent;
 import jxl.Cell;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
+import org.openide.util.HelpCtx;
 
 /**
  * Captures information needed to determine the parsing configuration of a file to be
@@ -194,8 +193,8 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
             }
 
             panel.removeAll();
-
-            JLabel instr = new JLabel(NbBundle.getMessage(ParseContentPanel.class, "LBL_instr_import_parse"));
+            String nbBundle1 = mLoc.t("PRSR001: Supply the following information required to parse this file.");
+            JLabel instr = new JLabel(Localizer.parse(nbBundle1));
             instr.setAlignmentX(Component.LEFT_ALIGNMENT);
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.anchor = GridBagConstraints.FIRST_LINE_START;
@@ -384,10 +383,9 @@ public class ParseContentPanel implements PropertyChangeListener, VetoableChange
     private JComponent getPreviewPanel(WizardDescriptor wd) {
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
-
+        String nbBundle2 = mLoc.t("PRSR001: Preview of file");
         panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(NbBundle.getMessage(ParseContentPanel.class,
-                "LBL_preview_import_parse")), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
+                BorderFactory.createTitledBorder(Localizer.parse(nbBundle2)), BorderFactory.createEmptyBorder(4, 4, 4, 4)));
         panel.setPreferredSize(new Dimension(150, 100));
         JLabel lbl = new JLabel("");
         GridBagConstraints gbc = new GridBagConstraints();

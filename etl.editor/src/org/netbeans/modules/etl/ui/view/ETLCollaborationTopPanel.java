@@ -82,7 +82,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.SaveAction;
 import org.openide.nodes.Node;
-import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 import com.sun.sql.framework.exception.BaseException;

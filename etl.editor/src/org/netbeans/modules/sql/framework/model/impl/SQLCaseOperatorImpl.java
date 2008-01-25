@@ -54,12 +54,14 @@ import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.SQLWhen;
 import org.netbeans.modules.sql.framework.model.utils.GeneratorUtil;
 import org.netbeans.modules.sql.framework.model.visitors.SQLVisitor;
-import org.openide.util.NbBundle;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import com.sun.sql.framework.exception.BaseException;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Case operator used when we want to do a join and lookup
@@ -71,7 +73,9 @@ import com.sun.sql.framework.exception.BaseException;
 public class SQLCaseOperatorImpl extends SQLConnectableObjectImpl implements SQLCaseOperator {
 
     private static final String DEFAULT = "default"; // NOI18N
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLCaseOperatorImpl.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     /**
      * List of when for this case expression
      */
@@ -86,7 +90,8 @@ public class SQLCaseOperatorImpl extends SQLConnectableObjectImpl implements SQL
         super();
         this.type = SQLConstants.CASE;
 
-        String dispName = NbBundle.getMessage(SQLCaseOperatorImpl.class, "LBL_default");
+        String nbBundle1 = mLoc.t("PRSR001: default");
+        String dispName = Localizer.parse(nbBundle1);
         SQLInputObject input = new SQLInputObjectImpl(DEFAULT, dispName, null);
         this.inputMap.put(DEFAULT, input);
     }

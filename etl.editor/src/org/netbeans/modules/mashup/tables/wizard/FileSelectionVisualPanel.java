@@ -13,10 +13,14 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
-import org.openide.util.NbBundle;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 public final class FileSelectionVisualPanel extends JPanel {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(FileSelectionVisualPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * PropertyChangeListener class listens to the selection of file
      */
@@ -227,7 +231,8 @@ public final class FileSelectionVisualPanel extends JPanel {
         if (evt.getActionCommand().equalsIgnoreCase(JFileChooser.APPROVE_SELECTION)) {
             File files[] = fileChooser.getSelectedFiles();
             if ((files == null) || (files.length <= 0)) {
-                String msg = NbBundle.getMessage(FileSelectionVisualPanel.class, "ERR_file_selection");
+                String nbBundle1 = mLoc.t("PRSR001: Bad file selection. Please try again.");
+                String msg = Localizer.parse(nbBundle1);
                 error.setText(msg);
                 return;
             }

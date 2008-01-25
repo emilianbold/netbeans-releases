@@ -51,7 +51,6 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
-import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**

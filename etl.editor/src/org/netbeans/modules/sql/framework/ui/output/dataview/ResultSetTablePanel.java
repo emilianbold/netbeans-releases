@@ -67,7 +67,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.sql.framework.ui.utils.BinaryToStringConverter;
-import org.openide.util.NbBundle;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.awt.datatransfer.StringSelection;

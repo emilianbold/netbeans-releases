@@ -251,21 +251,17 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new generic's title
         // this name is used in NewFileWizard to modify the title
         Object substitute = gui.getClientProperty("NewEtlWizard_Title"); // NOI18N
-
+        
+        String nbBundle1 = mLoc.t("PRSR001: Choose File Type");
+        String nbBundle2 = mLoc.t("PRSR001: Name and Location");
         if (substitute != null) {
             wizard.putProperty("NewEtlWizard_Title", substitute); // NOI18N
         }
-
         wizard.putProperty(
             "WizardPanel_contentData",
             new String[] { // NOI18N
-
-                NbBundle.getBundle(SimpleTargetChooserPanel.class).getString(
-                    "LBL_TemplatesPanel_Name"
-                ), // NOI18N
-            NbBundle.getBundle(SimpleTargetChooserPanel.class).getString(
-                    "LBL_SimpleTargetChooserPanel_Name"
-                )
+                Localizer.parse(nbBundle1), // NOI18N
+           Localizer.parse(nbBundle2)
             }
         ); // NOI18N
 

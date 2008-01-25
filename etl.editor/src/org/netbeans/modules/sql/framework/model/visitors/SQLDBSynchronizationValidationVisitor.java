@@ -51,10 +51,11 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.ValidationInfo;
 import org.netbeans.modules.sql.framework.model.impl.ValidationInfoImpl;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import java.sql.Connection;
-import java.sql.SQLException;
+
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.common.utils.DBExplorerUtil;
 import org.netbeans.modules.sql.framework.model.DBConnectionDefinition;
@@ -67,7 +68,11 @@ import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
  */
 public class SQLDBSynchronizationValidationVisitor {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLDBSynchronizationValidationVisitor.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     private class Table extends AbstractDBTable {
+
         public Table(String tname, String tcatalog, String tschema) {
             super(tname, tschema, tcatalog);
         }
@@ -85,7 +90,7 @@ public class SQLDBSynchronizationValidationVisitor {
         connDef = etlDBModel.getETLDBConnectionDefinition();
 
         if (connDef != null) {
-            try{
+            try {
                 conn = DBExplorerUtil.createConnection(connDef.getConnectionProperties());
                 if (conn == null) {
                     return;
@@ -140,7 +145,8 @@ public class SQLDBSynchronizationValidationVisitor {
 
         if (!columnMatched) {
             // Column not present or is modified in Database
-            String desc = NbBundle.getMessage(this.getClass(), "MSG_column_not_found", collabColumn.getName(), table.getName());
+            String nbBundle1 = mLoc.t("PRSR001: Column {0} is removed or updated for table {1} in Database", collabColumn.getName(), table.getName());
+            String desc = Localizer.parse(nbBundle1);
             ValidationInfo vInfo = new ValidationInfoImpl(table, desc, ValidationInfo.VALIDATION_ERROR);
             this.validationInfoList.add(vInfo);
         }
@@ -161,7 +167,8 @@ public class SQLDBSynchronizationValidationVisitor {
 
         if (!columnMatched) {
             // new column found
-            String desc = NbBundle.getMessage(this.getClass(), "MSG_column_not_found", collabColumn.getName(), table.getName());
+            String nbBundle2 = mLoc.t("PRSR001: Column {0} is removed or updated for table {1} in Database", collabColumn.getName(), table.getName());
+            String desc = Localizer.parse(nbBundle2);
             ValidationInfo vInfo = new ValidationInfoImpl(table, desc, ValidationInfo.VALIDATION_ERROR);
             this.validationInfoList.add(vInfo);
         }
@@ -229,9 +236,10 @@ public class SQLDBSynchronizationValidationVisitor {
                 checkForNewColumns((SQLDBColumn) itr.next(), collabColumns, collabTable);
             }
 
-            // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
+        // TODO: XXXXX We also need to check PK, FK, Index modifications XXXXX
         } else {
-            String desc = NbBundle.getMessage(this.getClass(), "MSG_table_not_found", collabTable.getName()) + " " + meta.getDBName();
+            String nbBundle3 = mLoc.t("PRSR001: Table {0} is removed or renamed in Database", collabTable.getName());
+            String desc = Localizer.parse(nbBundle3) + " " + meta.getDBName();
             ValidationInfo vInfo = new ValidationInfoImpl(collabTable, desc, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(vInfo);
             return;

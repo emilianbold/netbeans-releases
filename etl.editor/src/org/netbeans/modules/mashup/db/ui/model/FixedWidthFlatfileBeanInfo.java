@@ -25,7 +25,7 @@ import java.util.List;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
-import org.openide.util.NbBundle;
+
 
 /**
  * Concrete class to expose fixedwidth-specific flatfile table properties. TODO Extend

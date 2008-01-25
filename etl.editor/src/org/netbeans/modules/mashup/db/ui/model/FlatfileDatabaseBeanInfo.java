@@ -27,7 +27,7 @@ import java.util.List;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
-import org.openide.util.NbBundle;
+
 
 /**
  * Exposes getters for flatfile database properties. TODO Extend this class to expose

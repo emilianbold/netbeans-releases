@@ -87,7 +87,6 @@ import org.netbeans.modules.sql.framework.ui.view.conditionbuilder.ConditionBuil
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoObject;

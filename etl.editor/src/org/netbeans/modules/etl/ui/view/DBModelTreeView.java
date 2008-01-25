@@ -82,7 +82,6 @@ import org.netbeans.modules.sql.framework.ui.editor.property.IPropertyGroup;
 import org.netbeans.modules.sql.framework.ui.editor.property.IPropertySheet;
 import org.netbeans.modules.sql.framework.ui.editor.property.impl.PropertyViewManager;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
-import org.openide.util.NbBundle;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;

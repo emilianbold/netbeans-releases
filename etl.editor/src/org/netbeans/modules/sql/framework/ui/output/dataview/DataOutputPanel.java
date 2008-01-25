@@ -82,7 +82,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.jdbc.DBConstants;
 import com.sun.sql.framework.exception.BaseException;
@@ -179,11 +178,11 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
         validate();
 
         URL url = null;
-
+        String nbBundle14 = mLoc.t("PRSR001: Truncate this table");
         if (showTruncate) {
             //create truncate button
             TruncateTableAction truncAction = new TruncateTableAction(this);
-            truncAction.putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(DataOutputPanel.class, "TOOLTIP_truncate"));
+            truncAction.putValue(Action.SHORT_DESCRIPTION,  Localizer.parse(nbBundle14));
             url = getClass().getResource("/org/netbeans/modules/sql/framework/ui/resources/images/stop.gif");
             truncAction.putValue(Action.SMALL_ICON, new ImageIcon(url));
             //add truncate button

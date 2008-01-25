@@ -158,11 +158,12 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
         };
 
     }
-
+    String nbBundle1 = mLoc.t("PRSR001: Close Tab");
+    String nbBundle2 = mLoc.t("PRSR001: Close All Tabs");
+    String nbBundle3 = mLoc.t("PRSR001: Close Other Tabs");
     private class Close extends AbstractAction {
-
         public Close() {
-            super(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "LBL_CloseTab"));
+            super(Localizer.parse(nbBundle1));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -176,7 +177,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private final class CloseAll extends AbstractAction {
 
         public CloseAll() {
-            super(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "LBL_CloseAllTabs"));
+            super(Localizer.parse(nbBundle2));
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -191,7 +192,7 @@ public final class ETLOutputWindowTopComponent extends TopComponent {
     private class CloseAllButCurrent extends AbstractAction {
 
         public CloseAllButCurrent() {
-            super(NbBundle.getMessage(ETLOutputWindowTopComponent.class, "LBL_CloseOtherTabs"));
+            super(Localizer.parse(nbBundle3));
         }
 
         public void actionPerformed(ActionEvent e) {

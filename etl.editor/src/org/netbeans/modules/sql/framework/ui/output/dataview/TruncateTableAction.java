@@ -68,7 +68,6 @@ import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
-import org.openide.util.NbBundle;
 
 /**
  * @author Ahimanikya Satapathy
@@ -174,10 +173,12 @@ class TruncateTableAction extends AbstractAction {
         public void finished() {
             UIUtil.stopProgressDialog();
             if (this.ex != null) {
-                String errorMsg = NbBundle.getMessage(DataOutputPanel.class, "MSG_error_truncate_failed", tTable.getDisplayName(), ex.getMessage());
+                String nbBundle4 = mLoc.t("PRSR001: Failed to truncate table {0}.Cause: {1}",tTable.getDisplayName(),ex.getMessage());
+                String errorMsg = Localizer.parse(nbBundle4);
                 DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.ERROR_MESSAGE));
             } else {
-                String informMsg = NbBundle.getMessage(DataOutputPanel.class, "MSG_inform_table_truncated", tTable.getDisplayName());
+                String nbBundle5 = mLoc.t("PRSR001: Table {0} truncated.",tTable.getDisplayName());
+                String informMsg = Localizer.parse(nbBundle5);
                 DialogDisplayer.getDefault().notify(new Message(informMsg, NotifyDescriptor.INFORMATION_MESSAGE));
             }
 

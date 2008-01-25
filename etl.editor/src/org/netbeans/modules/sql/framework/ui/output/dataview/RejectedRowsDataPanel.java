@@ -42,7 +42,6 @@ package org.netbeans.modules.sql.framework.ui.output.dataview;
 
 import com.sun.sql.framework.jdbc.DBConnectionFactory;
 import com.sun.sql.framework.jdbc.SQLPart;
-import com.sun.sql.framework.utils.Logger;
 import com.sun.sql.framework.utils.StringUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -54,7 +53,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.codegen.DBConnectionDefinitionTemplate;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.codegen.DB;
 import org.netbeans.modules.sql.framework.codegen.DBFactory;
 import org.netbeans.modules.sql.framework.codegen.StatementContext;
@@ -69,15 +71,15 @@ import org.netbeans.modules.sql.framework.model.SQLObject;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.ui.SwingWorker;
 import org.netbeans.modules.sql.framework.ui.utils.UIUtil;
-import org.netbeans.modules.sql.framework.ui.view.BasicTopView;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbBundle;
 
 /**
  * @author Ahimanikya Satapathy
  */
 public class RejectedRowsDataPanel extends DataOutputPanel {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(RejectedRowsDataPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public RejectedRowsDataPanel(SQLObject etlObject, SQLDefinition sqlDefinition) {
         super(etlObject, sqlDefinition, false, false);
     }
@@ -88,9 +90,12 @@ public class RejectedRowsDataPanel extends DataOutputPanel {
 
     public void generateResult(SQLObject aTable) {
         this.table = aTable;
-        this.setName(NbBundle.getMessage(DataOutputPanel.class, "LBL_tab_rejected_data", table.getDisplayName()));
-        String title = NbBundle.getMessage(BasicTopView.class, "MSG_LoadData");
-        String msg = NbBundle.getMessage(BasicTopView.class, "MSG_LoadProgress");
+        String nbBundle1 = mLoc.t("PRSR001: Rejected Data: {0} ",table.getDisplayName());
+        this.setName(Localizer.parse(nbBundle1));
+        String nbBundle2 = mLoc.t("PRSR001: Loading Data");
+        String title = Localizer.parse(nbBundle2);
+        String nbBundle3 = mLoc.t("PRSR001: Loading from database, please wait...");
+        String msg = Localizer.parse(nbBundle3);
         UIUtil.startProgressDialog(title, msg);
         generateRejectionTableData();
     }
@@ -159,8 +164,7 @@ public class RejectedRowsDataPanel extends DataOutputPanel {
                 String psSql = SQLUtils.createPreparedStatement(sql, attribMap, paramList);
                 pstmt = conn.prepareStatement(psSql);
                 SQLUtils.populatePreparedStatement(pstmt, attribMap, paramList);
-
-                Logger.print(Logger.DEBUG, RejectedRowsDataPanel.class.getName(), "Select statement used for show data:" + NL + sql);
+                mLogger.infoNoloc(mLoc.t("PRSR175: Select statement used for show data:{0}is{1}",NL,sql));
                 this.rs = pstmt.executeQuery();
                 queryView.setResultSet(rs, maxRows, 0);
                 pstmt.close();
@@ -168,8 +172,7 @@ public class RejectedRowsDataPanel extends DataOutputPanel {
                 //get the count of all rows
                 sqlPart = db.getStatements().getRowCountStatement(clone, context);
                 String countSql = db.getStatements().normalizeSQLForExecution(sqlPart).getSQL();
-                Logger.print(Logger.DEBUG, DataOutputPanel.class.getName(), "Select count(*) statement used for total rows:" + NL + countSql);
-
+                mLogger.infoNoloc(mLoc.t("PRSR176: Select count(*) statement used for total rows:{0}is{1}",NL,countSql));
                 paramList.clear();
                 psSql = SQLUtils.createPreparedStatement(countSql, attribMap, paramList);
                 pstmt = conn.prepareStatement(psSql);
@@ -181,11 +184,10 @@ public class RejectedRowsDataPanel extends DataOutputPanel {
                 cntRs.close();
             } catch (Exception e) {
                 this.ex = e;
-                Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Can't get contents for table " + ((aTable != null) ? aTable.getDisplayName() : ""), e);
+                mLogger.errorNoloc(mLoc.t("PRSR177: Can't get contents for table{0}in{1}",((aTable != null) ? aTable.getDisplayName() : ""),DataOutputPanel.class.getName()),e);
                 queryView.clearView();
                 totalRowsLabel.setText("0");
             }
-
             return "";
         }
 
@@ -193,14 +195,15 @@ public class RejectedRowsDataPanel extends DataOutputPanel {
         @Override
         public void finished() {
             if (this.ex != null) {
-                String errorMsg = NbBundle.getMessage(DataOutputPanel.class, "MSG_error_fetch_failed", aTable.getDisplayName(), ex.getMessage());
+                String nbBundle1 = mLoc.t("PRSR001: Error fetching data for table {0}.\nCause: {1}",aTable.getDisplayName(),ex.getMessage());
+                String errorMsg = Localizer.parse(nbBundle1);
 
                 // If rejection table does not exist, show a brief user-friendly message
                 // that doesn't include a stack trace.
                 if (ex instanceof SQLException && "42704".equals(((SQLException) ex).getSQLState())) {
-                    errorMsg = NbBundle.getMessage(DataOutputPanel.class, "MSG_no_rejection_data", aTable.getDisplayName());
+                    String nbBundle4 = mLoc.t("PRSR001: No rejection rows available for table {0}.",aTable.getDisplayName());
+                    errorMsg = Localizer.parse(nbBundle4);
                 }
-
                 StatusDisplayer.getDefault().setStatusText(errorMsg);
             }
 
@@ -248,7 +251,7 @@ public class RejectedRowsDataPanel extends DataOutputPanel {
                     stmt.close();
                 }
             } catch (SQLException sqle) {
-                Logger.printThrowable(Logger.ERROR, DataOutputPanel.class.getName(), null, "Could not close statement after retrieving aTable contents.", sqle);
+                mLogger.errorNoloc(mLoc.t("PRSR178: Could not close statement after retrieving aTable contents."),sqle);
             } finally {
                 if (conn != null) {
                     factory.closeConnection(conn);

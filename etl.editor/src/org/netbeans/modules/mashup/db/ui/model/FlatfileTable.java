@@ -45,7 +45,6 @@ import java.util.List;
 import org.netbeans.modules.mashup.db.common.PropertyKeys;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.sql.framework.model.DBColumn;
-import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.StringUtil;
 import net.java.hulp.i18n.Logger;
