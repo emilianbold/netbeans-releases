@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -97,14 +97,13 @@ public class UMLValidationTests extends UMLTestCase {
         suite.addTest(new UMLValidationTests("testCreateJavaPlatformProject"));
         suite.addTest(new UMLValidationTests("testCreatePlatformIndependentProject"));
         suite.addTest(new UMLValidationTests("testCreateREJavaPlatformProject"));
-        //suite.addTest(new UMLValidationTests("testUMLMainMenu"));
+        suite.addTest(new UMLValidationTests("testUMLMainMenu"));
         return suite;
     }
 
 
     protected void setUp() {
-        System.out.println("################  "+getName()+"  ####################");
-        //System.setOut(getLog());
+        System.setOut(getLog());
         Utils.waitScanningClassPath();
     }
 
