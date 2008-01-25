@@ -151,6 +151,7 @@ public class UMLProjectModule extends ModuleInstall
 		if ( ! initialized ) 
 		{ 
 		    lightInit();
+                    org.netbeans.modules.uml.UMLCoreModule.checkInit();
 		    IADProduct product = getProduct();
 		    IApplication app = product.initialize2(false);
 

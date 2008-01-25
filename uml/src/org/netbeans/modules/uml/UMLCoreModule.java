@@ -74,7 +74,7 @@ public class UMLCoreModule extends ModuleInstall
        String nbuser = System.getProperty("netbeans.user"); // NOI18N
        if (nbuser!=null)
        {
-		   copyDotUmlIntoUserDir(nbuser);
+           copyDotUmlIntoUserDir(nbuser, "org/netbeans/modules/uml/dotuml1.zip", null);
        }
    }
    
@@ -102,14 +102,28 @@ public class UMLCoreModule extends ModuleInstall
    private static boolean libDecrypted = false; 
    
    
-   public void copyDotUmlIntoUserDir(String userdir) 
+   public static void checkInit() {
+       String nbuser = System.getProperty("netbeans.user"); // NOI18N
+       if (nbuser!=null)
+       {
+           copyDotUmlIntoUserDir(nbuser, 
+                                 "org/netbeans/modules/uml/dotuml2.zip", 
+                                 "config"+File.separator+"DesignCenter");
+       }
+   }
+
+
+   public static void copyDotUmlIntoUserDir(String userdir, String zipResource, String subdirToExist) 
    {
        try 
 	   {
 			//check to see if .uml already exists in the userdir
-			File file1 = new File(userdir+File.separator+".uml");
+			File file1 = new File(userdir+File.separator+".uml"
+                                              + (subdirToExist != null && ! subdirToExist.equals("")
+                                                 ? File.separator + subdirToExist
+                                                 : ""));
 			if (file1.exists()) {
-				return;
+                            return;
 			}
 
                         if (Utilities.isMac()) {
@@ -119,7 +133,8 @@ public class UMLCoreModule extends ModuleInstall
 			ClassLoader loader = UMLCoreModule.class.getClassLoader();
 			InputStream in = null;
 			if (loader!=null)
-			   in = loader.getResourceAsStream("org/netbeans/modules/uml/dotuml.zip");
+                            //in = loader.getResourceAsStream("org/netbeans/modules/uml/dotuml.zip");
+			   in = loader.getResourceAsStream(zipResource);
 			else
 			   return;
 
@@ -167,7 +182,7 @@ public class UMLCoreModule extends ModuleInstall
         }
    }
  
-   private void showMacWarning() {
+   private static void showMacWarning() {
        MacWarningPanel mwp = new MacWarningPanel() ;
         DialogDescriptor dd = new DialogDescriptor(
                 mwp, 

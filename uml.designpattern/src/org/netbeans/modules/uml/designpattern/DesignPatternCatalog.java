@@ -145,6 +145,11 @@ public class DesignPatternCatalog implements IDesignPatternCatalog, IDesignPatte
     protected static Object m_Context = null;
     
     private static boolean m_Initialized = false;
+
+    static {
+        org.netbeans.modules.uml.UMLCoreModule.checkInit();        
+    }
+
     
     /**
      *

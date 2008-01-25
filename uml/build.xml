@@ -47,20 +47,25 @@ made subject to such option by the copyright holder.
     <!-- below hardcoded property values should be fixed -->
     <property name="nb.modules.dir" value="modules"/>
 
+    <!--
     <target name="dot-uml-zip" depends="init" >
         <zip destfile="${basedir}/build/dotuml.zip">
             <zipfileset  dir="config" prefix=".uml/config"/>
             <zipfileset  dir="scripts" prefix=".uml/scripts"/>
         </zip>
     </target>
+    --> 
 
     <target name="jar-prep" depends="init">
         <mkdir dir="${cluster}/${module.jar.dir}"/>
         <tstamp>
             <format property="buildnumber" pattern="yyMMdd" timezone="UTC"/>
         </tstamp>
-        <zip destfile="${build.classes.dir}/org/netbeans/modules/uml/dotuml.zip">
-            <zipfileset  dir="config" prefix=".uml/config"/>
+        <zip destfile="${build.classes.dir}/org/netbeans/modules/uml/dotuml1.zip">
+            <zipfileset  dir="config" prefix=".uml/config" excludes="DesignCenter/**, WebReportSupport/**" />
+        </zip>
+        <zip destfile="${build.classes.dir}/org/netbeans/modules/uml/dotuml2.zip">
+            <zipfileset  dir="config" prefix=".uml/config" excludes="*" />
             <zipfileset  dir="scripts" prefix=".uml/scripts"/>
         </zip>
     </target>
