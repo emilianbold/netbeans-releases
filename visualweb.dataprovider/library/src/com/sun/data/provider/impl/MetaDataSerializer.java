@@ -62,12 +62,12 @@ public class MetaDataSerializer {
      * @return an absolute filename
      */
     public String generateMetaDataName(String serFileName) {      
-        File cachedMetadataUserdirFolder = new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" +  File.separator + "CachedMetadata"); // NO18N
+        File cachedMetadataUserdirFolder = new File(System.getProperty("netbeans.user") + File.separator + "config" + File.separator + "Databases" +  File.separator + "CachedMetadata"); // NOI18N
         if (!cachedMetadataUserdirFolder.exists()) {
             cachedMetadataUserdirFolder.mkdir();
         }
         
-        return cachedMetadataUserdirFolder + File.separator + serFileName + ".ser";    // NO18N           
+        return cachedMetadataUserdirFolder + File.separator + serFileName + ".ser";    // NOI18N           
     }
     
     /**
