@@ -51,9 +51,12 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
+import net.java.hulp.i18n.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.ExplorerManager;
@@ -81,7 +84,9 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
     private Project project;
 
     private static JScrollPane SAMPLE_SCROLL_PANE = new JScrollPane();
-
+    private static transient final Logger mLogger = LogUtil.getLogger(BrowseFolders.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     /** Creates new form BrowseFolders */
     public BrowseFolders( SourceGroup[] folders, Project project, String preselectedFileName ) {
         initComponents();
@@ -98,8 +103,11 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         btv.setSelectionMode( javax.swing.tree.TreeSelectionModel.SINGLE_TREE_SELECTION );
         btv.setBorder( SAMPLE_SCROLL_PANE.getBorder() );
         btv.setPopupAllowed( false );
-        btv.getAccessibleContext ().setAccessibleName (NbBundle.getMessage(BrowseFolders.class, "ACSN_BrowseFolders_folderPanel"));
-        btv.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(BrowseFolders.class, "ACSD_BrowseFolders_folderPanel"));
+        
+        String nbBundle1 = mLoc.t("PRSR001: Folders:");
+        btv.getAccessibleContext ().setAccessibleName (Localizer.parse(nbBundle1));
+        String nbBundle2 = mLoc.t("PRSR001: The tree contains the folders contained in the project's directory");
+        btv.getAccessibleContext ().setAccessibleDescription(Localizer.parse(nbBundle2));
         expandSelection( preselectedFileName );
         //expandAllNodes( btv, manager.getRootContext() );
         folderPanel.add( btv, java.awt.BorderLayout.CENTER );
@@ -126,17 +134,27 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         setLayout(new java.awt.GridBagLayout());
 
         setBorder(new javax.swing.border.EmptyBorder(new java.awt.Insets(12, 12, 12, 12)));
-        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "ACSN_BrowseFolders"));
-        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "ACSN_BrowseFolders"));
-        jLabel1.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "MNE_BrowseFolders_jLabel1").charAt(0));
+        
+        String nbBundle3 = mLoc.t("PRSR001: Browse folders to choose a target folder");
+        getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle3));
+        
+        String nbBundle4 = mLoc.t("PRSR001: Browse folders to choose a target folder");
+        getAccessibleContext().setAccessibleDescription(Localizer.parse(nbBundle4));
+        
+        String nbBundle5 = mLoc.t("PRSR001: F");
+        jLabel1.setDisplayedMnemonic(Localizer.parse(nbBundle5).charAt(0));
         jLabel1.setLabelFor(folderPanel);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "LBL_BrowseFolders_jLabel1"));
+        
+        String nbBundle6 = mLoc.t("PRSR001: Folders:");
+        jLabel1.setText(Localizer.parse(nbBundle6));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         add(jLabel1, gridBagConstraints);
-        jLabel1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(BrowseFolders.class, "ACSN_BrowseFolders_jLabel1"));
+        
+        String nbBundle7 = mLoc.t("PRSR001: Folders:");
+        jLabel1.getAccessibleContext().setAccessibleName(Localizer.parse(nbBundle7));
 
         folderPanel.setLayout(new java.awt.BorderLayout());
 
@@ -168,13 +186,22 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
         options[ 0 ].setActionCommand( OptionsListener.COMMAND_SELECT );
         options[ 0 ].addActionListener( optionsListener );
-        options[ 0 ].setMnemonic (NbBundle.getMessage( BrowseFolders.class, "MNE_BrowseFolders_Select_Option").charAt (0) );
-        options[ 0 ].getAccessibleContext ().setAccessibleName (NbBundle.getMessage( BrowseFolders.class, "ACSN_BrowseFolders_Select_Option"));
-        options[ 0 ].getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage( BrowseFolders.class, "ACSD_BrowseFolders_Select_Option"));
+        
+        String nbBundle8 = mLoc.t("PRSR001: S");
+        options[ 0 ].setMnemonic (Localizer.parse(nbBundle8).charAt (0));
+        
+        String nbBundle9 = mLoc.t("PRSR001: Select Folder");
+        options[ 0 ].getAccessibleContext ().setAccessibleName(Localizer.parse(nbBundle9));
+        
+        String nbBundle10 = mLoc.t("PRSR001: N/A");
+        options[ 0 ].getAccessibleContext ().setAccessibleDescription(Localizer.parse(nbBundle10));
         options[ 1 ].setActionCommand( OptionsListener.COMMAND_CANCEL );
         options[ 1 ].addActionListener( optionsListener );
-        options[ 1 ].getAccessibleContext ().setAccessibleName (NbBundle.getMessage( BrowseFolders.class, "ACSN_BrowseFolders_Cancel_Option"));
-        options[ 1 ].getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage( BrowseFolders.class, "ACSD_BrowseFolders_Cancel_Option"));
+        
+        String nbBundle11 = mLoc.t("PRSR001: Cancel");
+        options[ 1 ].getAccessibleContext ().setAccessibleName (Localizer.parse(nbBundle11));
+        String nbBundle12 = mLoc.t("PRSR001: N/A");
+        options[ 1 ].getAccessibleContext ().setAccessibleDescription(Localizer.parse(nbBundle12));
 
         DialogDescriptor dialogDescriptor = new DialogDescriptor(
             bf,                                     // innerPane
