@@ -422,7 +422,7 @@ public class GdbUtils {
         
         while ((pos = findMatchingCurly(info, idx)) != -1 && pos < info.length()) {
             String frag = info.substring(idx, pos + 1);
-            int pos2 = findNextComma(frag, 0, 1, 1);
+            int pos2 = findNextComma(frag, 0, 1);
             if (pos2 != -1) {
                 name = frag.substring(7, pos2 - 1);
                 value = frag.substring(pos2 + 8, frag.length() - 2); // strip double quotes
@@ -651,10 +651,9 @@ public class GdbUtils {
      *
      * @param s The string to search
      * @param idx The starting index
-     * @param idx The starting index
      */
     public static int findNextComma(String s, int idx) {
-        return findNextComma(s, idx, 0, 0);
+        return findNextComma(s, idx, 0);
     }
     
     /**
@@ -662,15 +661,13 @@ public class GdbUtils {
      *
      * @param s The string to search
      * @param idx The starting index
-     * @param startSkipCount Number of chars to ignore at start if s[idx]
-     * @param endSkipCount Number of chars to ignore at the end of s
+     * @param skipCount Number of chars to ignore at start if s[idx]
      * @param idx The starting index
      */
-    public static int findNextComma(String s, int idx, int startSkipCount, int endSkipCount) {
+    public static int findNextComma(String s, int idx, int skipCount) {
         char last = ' ';
         char ch;
         int i;
-        int slen = s.length() - endSkipCount;
         boolean inDoubleQuote = false;
         boolean inSingleQuote = false;
         
@@ -678,7 +675,7 @@ public class GdbUtils {
         if (idx < 0) {
             return -1; // allow this to allow other find* functions to provide idx
         }
-        idx += startSkipCount;
+        idx += skipCount;
         
         while (idx < s.length()) {
             ch = s.charAt(idx);

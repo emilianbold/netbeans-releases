@@ -547,7 +547,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         }
         if (v != null) { // v can be null if we're no longer in a stopped state
             if (GdbUtils.isArray(t)) {
-                createChildrenForArray(t, v.substring(1, v.length() - 1));
+                createChildrenForArray(t, v);
             } else if (GdbUtils.isMultiPointer(t)) {
                 createChildrenForMultiPointer(t);
             } else {
@@ -673,9 +673,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return null;
     }
     
-    private int parseCharArray(AbstractVariable var, String basename, String type, String value) {
+    private void parseCharArray(AbstractVariable var, String basename, String type, String value) {
         String frag;
-        int count = 0;
         int idx = 0;
         int pos;
         boolean truncated = false;
@@ -696,12 +695,12 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     }
                     idx = value.length(); // stop iterating...
                 }
-                count += parseCharArrayFragment(var, basename, type, frag);
+                parseCharArrayFragment(var, basename, type, frag);
                 if (truncated) {
                     String high;
                     try {
                         high = type.substring(type.indexOf("[") + 1, type.indexOf("]")); // NOI18N
-                        int xx = Integer.parseInt(high);
+                        Integer.parseInt(high);
                     } catch (Exception ex) {
                         high = "..."; // NOI18N
                     }
@@ -719,68 +718,88 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 } else {
                     frag = value.substring(idx);
                 }
-                count += parseRepeatArrayFragment(var, basename, type, frag);
+                parseRepeatArrayFragment(var, basename, type, frag);
                 idx += frag.length();
             }
         }
-        return count;
     }
     
-    private int parseRepeatArrayFragment(AbstractVariable var, String basename, String type, String value) {
+    private void parseRepeatArrayFragment(AbstractVariable var, String basename, String type, String value) {
         String t = type.substring(0, type.indexOf('[')).trim();
         int count;
         int idx = var.fields.length;
         int pos = value.indexOf(' ');
-        String val = value.substring(0, pos);
+        String val = value.substring(0, pos).replace("\\\\", "\\");
         int pos1 = value.indexOf("<repeats "); // NOI18N
         int pos2 = value.indexOf(" times>"); // NOI18N
         
         try {
             count = Integer.parseInt(value.substring(pos1 + 9, pos2));
         } catch (Exception ex) {
-            return 0;
+            return;
         }
         
         while (--count >=0) {
             var.addField(new AbstractField(var, basename + "[" + idx++ + "]", // NOI18N
                 t, '\'' + val + '\''));
-        }
-        return 0;   
+        }  
     }
     
-    private int parseCharArrayFragment(AbstractVariable var, String basename, String type, String value) {
+    private void parseCharArrayFragment(AbstractVariable var, String basename, String type, String value) {
         String t = type.substring(0, type.indexOf('[')).trim();
-        int vidx = 0;
+        int idx = 0;
+        value = value.replace("\\\\", "\\"); // NOI18N - gdb doubles all backslashes...
         int count = value.length();
-        int idx = var.fields.length;
+        int fcount = var.fields.length;
         
-        while (vidx < count) {
+        while (idx < count) {
+            int vstart = idx;
+            char ch = value.charAt(idx++);
             String val;
-            if (vidx < (count - 2) && value.substring(vidx, vidx + 2).equals("\\\\")) { // NOI18N
-                char ch = value.charAt(vidx + 2);
-                if (Character.isDigit(ch)) {
-                    val = '\\' + value.substring(vidx + 2, vidx + 5);
-                    vidx += 5;
+
+            if (ch == '\\' && idx < count) {
+                ch = value.charAt(idx++);
+                if (ch >= '0' && ch <= '7') { // Octal constant
+                    StringBuilder sb = new StringBuilder();
+                    sb.append('\\');
+                    sb.append(ch);
+                    int i;
+                    for (i = 0; i < 2 && idx < count; i++) {
+                        ch = value.charAt(idx);
+                        if (ch < '0' || ch > '7') {
+                            break;
+                        } else {
+                            sb.append(ch);
+                            idx++;
+                        }
+                    }
+                    val = sb.toString();
+                } else if (ch == 'x' || ch == 'X') { // Hex constant
+                    StringBuilder sb = new StringBuilder();
+                    sb.append('\\');
+                    sb.append(ch);
+                    int i;
+                    for (i = 0; i < 2 && idx < count; i++) {
+                        ch = value.charAt(idx);
+                        if ((ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F')) {
+                            break;
+                        } else {
+                            sb.append(ch);
+                            idx++;
+                        }
+                    }
+                    val = sb.toString();
+                } else if (value.substring(idx - 1, idx).matches("[\\'\"?abfnrt]")) { // NOI18N
+                    val = '\\' + value.substring(idx - 1, idx);
                 } else {
-                    val = '\\' + value.substring(vidx + 2, vidx + 3);
-                    vidx += 3;
+                    log.warning("AV.parseCharArrayFragment: Ignoring invalid character array fragment"); // NOI18N
+                    continue;
                 }
-            } else if (charAt(value, vidx) == '\\') { // we're done...
-                val = "\\000"; // NOI18N
             } else {
-                val = value.substring(vidx, vidx + 1);
-                vidx++;
+                val = value.substring(vstart, idx);
             }
-            var.addField(new AbstractField(var, basename + "[" + idx++ + "]", // NOI18N
+            var.addField(new AbstractField(var, basename + "[" + fcount++ + "]", // NOI18N
                 t, '\'' + val + '\''));
-        }
-        return count;
-    }
-    private char charAt(String info, int idx) {
-        try {
-            return info.charAt(idx);
-        } catch (StringIndexOutOfBoundsException e) {
-            return 0;
         }
     }
     
@@ -819,15 +838,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             size = 0;
         }
         if (t.equals("char")) { // NOI18N
-            String nextv;
-            for (int i = 0; i < size && vstart != -1; i++) {
-                nextv = nextValue(value, vstart < size ? vstart : size);
-                if (nextv == null) {
-                    return;
-                }
-                addField(new AbstractField(this, name + "[" + i + "]", t, nextv)); // NOI18N
-                vstart += nextv.length();
-            }
+            parseCharArray(this, name, type, value);
         } else {
             for (int i = 0; i < size && vstart != -1; i++) {
                 if (value.charAt(vstart) == '{') {
@@ -839,26 +850,6 @@ public class AbstractVariable implements LocalVariable, Customizer {
                         vend == -1 ? value.substring(vstart) : value.substring(vstart, vend)));
                 vstart = GdbUtils.firstNonWhite(value, vend + 1);
             }
-        }
-    }
-    
-    private String nextValue(String info, int start) {
-        char ch = info.charAt(start);
-        
-        if (info.charAt(start) == '\\' && info.charAt(start + 1) == '\\') {
-            ch = info.charAt(start + 2);
-            if (ch == 'n' || ch == 't' || ch == 'b' || ch == 'r' || ch == '"' || ch == '\'') {
-                return info.substring(start, start + 3);
-            } else {
-                try {
-                    Integer.parseInt(info.substring(start + 2, start + 5), 8);
-                    return info.substring(start, start + 5);
-                } catch (Exception ex) {
-                    return null; // FIXME - Should handle this better...
-                }
-            }
-        } else {
-            return info.substring(start, start + 1);
         }
     }
     

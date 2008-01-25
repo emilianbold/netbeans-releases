@@ -1206,9 +1206,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     private void threadsViewInit() {
-        Properties props = Properties.getDefault().getProperties("debugger").getProperties("views");
-        props.getProperties("ThreadState").setBoolean("visible", false);
-        props.getProperties("ThreadSuspended").setBoolean("visible", false);
+        Properties props = Properties.getDefault().getProperties("debugger").getProperties("views"); // NOI18N
+        props.getProperties("ThreadState").setBoolean("visible", false); // NOI18N
+        props.getProperties("ThreadSuspended").setBoolean("visible", false); // NOI18N
     }
     
     /**
