@@ -75,6 +75,8 @@ public class RubyPlatformCustomizer extends JPanel {
     private static final String LAST_PLATFORM_DIRECTORY = "lastPlatformDirectory"; // NOI18N
     private static final String FIRST_TIME_KEY = "platform-manager-called-first-time"; // NOI18N
     
+    private static String lastSelectedPlatformID;
+    
     public static void showCustomizer() {
         RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
         JButton closeButton = new JButton();
@@ -142,6 +144,12 @@ public class RubyPlatformCustomizer extends JPanel {
     private void refreshPlatformList() {
         if (platformsList.getModel().getSize() > 0) {
             platformsList.setSelectedIndex(0);
+            if (lastSelectedPlatformID != null) {
+                RubyPlatform lastPlaf = RubyPlatformManager.getPlatformByID(lastSelectedPlatformID);
+                if (lastPlaf != null) {
+                    platformsList.setSelectedValue(lastPlaf, true);
+                }
+            }
         }
         refreshPlatform();
     }
@@ -180,6 +188,7 @@ public class RubyPlatformCustomizer extends JPanel {
             removeButton.setEnabled(false);
             return;
         }
+        lastSelectedPlatformID = plaf.getID();
         plfNameValue.setText(plaf.getInfo().getLongDescription());
         plfInterpreterValue.setText(plaf.getInterpreter());
         Color color;
