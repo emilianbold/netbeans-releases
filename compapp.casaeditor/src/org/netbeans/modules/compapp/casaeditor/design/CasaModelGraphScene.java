@@ -108,6 +108,7 @@ import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -816,7 +817,8 @@ implements PropertyChangeListener, CasaValidationListener {
      * the Composite Application project.
      */
     public String getSourcesPath() {
-        return mDataObject.getFolder().getPrimaryFile().getParent().getPath();
+        return FileUtil.toFile(mDataObject.getFolder().getPrimaryFile().getParent()).getAbsolutePath();
+        // return mDataObject.getFolder().getPrimaryFile().getParent().getPath();
     }
         /**
      * This method returns an identity code. It should be unique for each object in the scene.
