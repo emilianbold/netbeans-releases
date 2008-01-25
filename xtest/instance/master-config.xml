@@ -108,7 +108,7 @@ made subject to such option by the copyright holder.
   </config>
 
   <config name="commit-validation-uml">
-      <module name="uml" testtypes="qa-functional" attributes="commit"/>
+      <module name="uml/kit" testtypes="qa-functional" attributes="commit"/>
   </config>
 
   <config name="commit-validation-ruby">
