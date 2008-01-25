@@ -32,7 +32,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.mashup.db.ui;
 
 import java.awt.Image;
@@ -41,8 +40,10 @@ import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.ErrorManager;
-import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -51,44 +52,47 @@ import org.openide.util.Utilities;
  */
 public class AxionDBConfigurationBeanInfo extends SimpleBeanInfo {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(AxionDBConfigurationBeanInfo.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Creates a new instance of AxionDBConfigurationBeanInfo
      */
     public AxionDBConfigurationBeanInfo() {
     }
-    
+
     public PropertyDescriptor[] getPropertyDescriptors() {
         try {
             PropertyDescriptor[] descriptors = new PropertyDescriptor[2];
             descriptors[0] = new PropertyDescriptor(AxionDBConfiguration.PROP_LOC, AxionDBConfiguration.class);
-            descriptors[0].setDisplayName(NbBundle.getMessage(AxionDBConfigurationBeanInfo.class,
-                    "LBL_AxionDatabaseLocation"));
-            descriptors[0].setShortDescription(NbBundle.getMessage(AxionDBConfigurationBeanInfo.class,
-                    "TIP_AxionDatabaseLocation"));
+            String nbBundle1 = mLoc.t("PRSR001: Mashup Database Location");
+            descriptors[0].setDisplayName(Localizer.parse(nbBundle1));
+            String nbBundle2 = mLoc.t("PRSR001: The directory where the Mashup Database should be created.");
+            descriptors[0].setShortDescription(Localizer.parse(nbBundle2));
             descriptors[1] = new PropertyDescriptor(AxionDBConfiguration.PROP_DRV_LOC, AxionDBConfiguration.class);
-            descriptors[1].setDisplayName(NbBundle.getMessage(AxionDBConfigurationBeanInfo.class,
-                    "LBL_AxionDriverLocation"));
-            descriptors[1].setShortDescription(NbBundle.getMessage(AxionDBConfigurationBeanInfo.class,
-                    "TIP_AxionDriverLocation"));            
+            String nbBundle3 = mLoc.t("PRSR001: MashupDB Driver Location");
+            descriptors[1].setDisplayName(Localizer.parse(nbBundle3));
+            String nbBundle4 = mLoc.t("PRSR001: The directory where the MashupDB Driver(MashupDB.zip) is located.");
+            descriptors[1].setShortDescription(Localizer.parse(nbBundle4));
             return descriptors;
         } catch (IntrospectionException ex) {
             ErrorManager.getDefault().notify(ex);
             return new PropertyDescriptor[0];
         }
     }
-    
+
     public Image getIcon(int type) {
-        Image image = null;        
+        Image image = null;
         if (type == BeanInfo.ICON_COLOR_16x16) {
             image = Utilities.loadImage("org/netbeans/modules/sql/framework/ui/resources/images/DatabaseProperties.png"); // NOI18N
         }
-        
+
         return image != null ? image : super.getIcon(type);
     }
-    
+
     public BeanDescriptor getBeanDescriptor() {
         BeanDescriptor descriptor = new BeanDescriptor(AxionDBConfiguration.class);
         descriptor.setName("Mashup Database Configuration");
         return descriptor;
-    }  
+    }
 }
