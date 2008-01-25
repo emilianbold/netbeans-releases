@@ -117,6 +117,7 @@ public class SchemaEditorSupport extends DataEditorSupport
     /** Ignore the upcoming call to updateTitles() due to changes being
      * made to the document which cannot otherwise be ignored. */
     private transient boolean ignoreUpdateTitles;
+    private transient SchemaModel model;
     
     /**
      * Creates a new instance of SchemaEditorSupport.
@@ -251,17 +252,20 @@ public class SchemaEditorSupport extends DataEditorSupport
     }
     
     public SchemaModel getModel() throws IOException {
+        if(model != null)
+            return model;
         SchemaDataObject dobj = getEnv().getSchemaDataObject();
         FileObject fobj = dobj.getPrimaryFile();
         ModelSource modelSource = Utilities.getModelSource(fobj, true);
-        boolean validModelSource = modelSource != null &&
-                modelSource.getLookup().lookup(Document.class) != null;
-        if (!validModelSource) {
-            throw new IOException(
-                    NbBundle.getMessage(SchemaEditorSupport.class,
-                    "MSG_UnableToCreateModel"));
-        }
-        return validModelSource ? SchemaModelFactory.getDefault().getModel(modelSource) : null;
+        model = SchemaModelFactory.getDefault().getModel(modelSource);        
+//        boolean validModelSource = modelSource != null &&
+//                modelSource.getLookup().lookup(Document.class) != null;
+//        if (!validModelSource) {
+//            throw new IOException(
+//                    NbBundle.getMessage(SchemaEditorSupport.class,
+//                    "MSG_UnableToCreateModel"));
+//        }
+        return model;
     }
     
     /**
@@ -663,7 +667,7 @@ public class SchemaEditorSupport extends DataEditorSupport
                 // going to matter anyway.
             }
         }
-        
+        this.model = null;        
         super.notifyClosed();
     }
     
