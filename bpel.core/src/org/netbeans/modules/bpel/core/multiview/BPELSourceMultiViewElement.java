@@ -48,7 +48,17 @@ import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.events.ArrayUpdateEvent;
+import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
+import org.netbeans.modules.bpel.model.api.events.ChangeEventListener;
+import org.netbeans.modules.bpel.model.api.events.EntityInsertEvent;
+import org.netbeans.modules.bpel.model.api.events.EntityRemoveEvent;
+import org.netbeans.modules.bpel.model.api.events.EntityUpdateEvent;
+import org.netbeans.modules.bpel.model.api.events.PropertyRemoveEvent;
+import org.netbeans.modules.bpel.model.api.events.PropertyUpdateEvent;
+import org.netbeans.modules.soa.ui.nodes.InstanceRef;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
+import org.netbeans.modules.xml.xam.Nameable;
 import org.netbeans.modules.xml.xam.ui.multiview.CookieProxyLookup;
 import org.netbeans.modules.xml.xam.ui.undo.QuietUndoManager;
 import org.openide.awt.UndoRedo;
@@ -331,8 +341,8 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                 // projectui code will close our open editor windows when the
                 // project is closed.
                 myDataObject
-            }),
-        },delegate);
+            }),getDataObject().getLookup(),
+        }, delegate);
         associateLookup(lookup);
         addPropertyChangeListener("activatedNodes", lookup);
 //      associateLookup(new ProxyLookup(new Lookup[] { // # 67257
@@ -429,6 +439,53 @@ public class BPELSourceMultiViewElement extends CloneableEditor
             }
         };
         editorPane.addCaretListener(myCaretPositionListener);
+        
+        
+        BPELDataEditorSupport editorSupport = getDataObject().getEditorSupport();
+        BpelModel model = editorSupport != null ? editorSupport.getBpelModel() : null;
+        if (model != null) {
+            if (myBpelModelListener != null) {
+                model.removeEntityChangeListener(myBpelModelListener);
+            }
+
+            myBpelModelListener = new ChangeEventListener() {
+
+                private void handleEvent(ChangeEvent event) {
+                    if (event == null) {
+                        return;
+                    }
+                    if (event.isLastInAtomic()) {
+                        selectElement();
+                    }
+                }
+
+                public void notifyPropertyRemoved(PropertyRemoveEvent event) {
+                    handleEvent(event);
+                }
+
+                public void notifyEntityInserted(EntityInsertEvent event) {
+                    handleEvent(event);
+                }
+
+                public void notifyPropertyUpdated(PropertyUpdateEvent event) {
+                    handleEvent(event);
+                }
+
+                public void notifyEntityRemoved(EntityRemoveEvent event) {
+                    handleEvent(event);
+                }
+
+                public void notifyEntityUpdated(EntityUpdateEvent event) {
+                    handleEvent(event);
+                }
+
+                public void notifyArrayUpdated(ArrayUpdateEvent event) {
+                    handleEvent(event);
+                }
+            };
+
+            model.addEntityChangeListener(myBpelModelListener);
+        }
     }
     
     private void setCaretAssocActiveNodes() {
@@ -445,45 +502,45 @@ public class BPELSourceMultiViewElement extends CloneableEditor
 ////        }
     }
     
-    private void setActivatedNodes(int cursor) {
+    private void setActivatedNodes(final int cursor) {
         BPELDataEditorSupport editorSupport = getDataObject().getEditorSupport();
         if (editorSupport == null) {
             return;
         }
         
-        BpelModel model = editorSupport.getBpelModel();
+        final BpelModel model = editorSupport.getBpelModel();
         if (model == null) {
             return;
         }
         
-        BpelEntity foundedEntity = model.findElement( cursor );
-        if (foundedEntity == null) {
-            return;
-        }
-        
-//                NodeFactory nodeFactory = (NodeFactory)getDataObject().getLookup().lookup(NodeFactory.class);
-        NodeFactory nodeFactory = FactoryAccess.getPropertyNodeFactory();
-        assert nodeFactory != null;
-        
-        NodeType nodeType = Util.getBasicNodeType(foundedEntity);
-        if (nodeType == null) {
-            return;
-        }
-        
-        nodeType = NodeType.UNKNOWN_TYPE.equals(nodeType) 
-                ? NodeType.DEFAULT_BPEL_ENTITY_NODE 
-                : nodeType;
-        final Node node = nodeFactory.createNode(
-                nodeType,
-                foundedEntity,
-                getDataObject().getLookup());
-        if (node == null) {
-            return;
-        }
-        
-//                    System.out.println("set active node");
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
+                BpelEntity foundedEntity = model.findElement( cursor );
+                if (foundedEntity == null) {
+                    return;
+                }
+
+        //                NodeFactory nodeFactory = (NodeFactory)getDataObject().getLookup().lookup(NodeFactory.class);
+                NodeFactory nodeFactory = FactoryAccess.getPropertyNodeFactory();
+                assert nodeFactory != null;
+
+                NodeType nodeType = Util.getBasicNodeType(foundedEntity);
+                if (nodeType == null) {
+                    return;
+                }
+
+                nodeType = NodeType.UNKNOWN_TYPE.equals(nodeType) 
+                        ? NodeType.DEFAULT_BPEL_ENTITY_NODE 
+                        : nodeType;
+                final Node node = nodeFactory.createNode(
+                        nodeType,
+                        foundedEntity,
+                        getDataObject().getLookup());
+                if (node == null) {
+                    return;
+                }
+
+        //                    System.out.println("set active node");
                 
                 final TopComponent tc = myMultiViewObserver == null 
                         ? null 
@@ -506,13 +563,22 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         if (editorPane != null && myCaretPositionListener != null) {
             editorPane.removeCaretListener(myCaretPositionListener);
         }
+        
+        BPELDataEditorSupport editorSupport = getDataObject().getEditorSupport();
+        BpelModel model = editorSupport != null ? editorSupport.getBpelModel() : null;
+                
+        if (myBpelModelListener != null && model != null) {
+            model.removeEntityChangeListener(myBpelModelListener);
+        }
     }
 
-    private void selectElement() {
+    private void selectElement(int delay) {
         if (myPreviousTask != null) {
             myPreviousTask.cancel();
         }
-        if (myPreviousTask != null && !myPreviousTask.isFinished()) {
+        if (myPreviousTask != null && !myPreviousTask.isFinished()
+                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125439
+        {
             myPreviousTask.waitFinished();
             myPreviousTask = null;
         }
@@ -522,13 +588,20 @@ public class BPELSourceMultiViewElement extends CloneableEditor
             return;
         }
         
-        myPreviousTask = RequestProcessor.getDefault().post(
-                new Runnable() {
-            public void run() {
-                setActivatedNodes(curEditorPane.getCaret().getDot());
-            }
-        }, CARET_CHANGE_TASK_DELAY);
-        
+        if (delay <= 0) {
+            setActivatedNodes(curEditorPane.getCaret().getDot());
+        } else {
+            myPreviousTask = RequestProcessor.getDefault().post(
+                    new Runnable() {
+                public void run() {
+                    setActivatedNodes(curEditorPane.getCaret().getDot());
+                }
+            }, delay);
+        }
+    }
+    
+    private void selectElement() {
+        selectElement(CARET_CHANGE_TASK_DELAY);
     }
     
     private transient MultiViewElementCallback myMultiViewObserver;
@@ -538,6 +611,8 @@ public class BPELSourceMultiViewElement extends CloneableEditor
     private transient JToolBar myToolBar; 
     
     private CaretListener myCaretPositionListener;
+    
+    private ChangeEventListener myBpelModelListener;
 
     private transient RequestProcessor.Task myPreviousTask;
 }
