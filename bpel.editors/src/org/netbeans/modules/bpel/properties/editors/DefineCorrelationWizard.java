@@ -1189,10 +1189,11 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
             
             public NamedComponentReference<GlobalType> getGlobalTypeReference() {
+                String typeName = getTypeNameIgnoreNamespace();
+
                 Collection<GlobalSimpleType> globalSimpleTypes = getSchemaComponent().getModel().getSchema().getSimpleTypes();
                 NamedComponentReference<GlobalType> typeRef = null;
                 for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
-                    String typeName = getTypeNameIgnoreNamespace();
                     if (globalSimpleType.toString().equals(typeName)) {
                         typeRef = schemaComponent.createReferenceTo(globalSimpleType, GlobalType.class);
                         return typeRef;
