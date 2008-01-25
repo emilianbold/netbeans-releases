@@ -53,7 +53,6 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
-import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
 

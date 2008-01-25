@@ -59,7 +59,6 @@ import org.netbeans.modules.sql.framework.model.impl.SQLDefinitionImpl;
 import org.netbeans.modules.sql.framework.ui.editor.property.IPropertySheet;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.DialogDescriptor;
 import org.openide.util.actions.CookieAction;
 import org.openide.DialogDisplayer;

@@ -71,7 +71,7 @@ import org.netbeans.modules.sql.framework.model.SQLDBTable;
 import org.netbeans.modules.sql.framework.model.SourceTable;
 import org.netbeans.modules.sql.framework.model.TargetTable;
 import org.netbeans.modules.sql.framework.model.impl.AbstractDBTable;
-import org.openide.util.NbBundle;
+
 
 
 /**

@@ -54,7 +54,7 @@ import org.netbeans.modules.etl.ui.DataObjectProvider;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
-import org.openide.util.NbBundle;
+
 
 
 /**

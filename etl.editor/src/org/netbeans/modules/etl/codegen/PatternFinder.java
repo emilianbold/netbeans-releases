@@ -28,8 +28,6 @@ import org.netbeans.modules.etl.codegen.impl.ValidatingStrategyBuilderImpl;
 import org.netbeans.modules.sql.framework.model.SQLConstants;
 import org.netbeans.modules.sql.framework.model.SQLDefinition;
 import org.netbeans.modules.sql.framework.model.TargetTable;
-import org.netbeans.modules.sql.framework.model.visitors.SQLValidationVisitor;
-import org.openide.util.NbBundle;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.StringUtil;
 import net.java.hulp.i18n.Logger;
@@ -49,8 +47,10 @@ import org.netbeans.modules.sql.framework.model.DBTable;
  * @version $Revision$
  */
 public class PatternFinder {
+
     private static transient final Logger mLogger = LogUtil.getLogger(PatternFinder.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     public static boolean allDBTablesAreInternal(Iterator tableIterator) throws BaseException {
         while (tableIterator.hasNext()) {
             DBTable srcTable = (DBTable) tableIterator.next();

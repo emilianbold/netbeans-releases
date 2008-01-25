@@ -58,7 +58,6 @@ import org.netbeans.modules.sql.framework.ui.view.join.JoinMainDialog;
 import org.netbeans.modules.sql.framework.ui.view.join.JoinUtility;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 import net.java.hulp.i18n.Logger;
 import com.sun.sql.framework.exception.BaseException;
 import org.netbeans.modules.etl.logger.Localizer;

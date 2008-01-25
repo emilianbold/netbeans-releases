@@ -15,9 +15,6 @@ import org.openide.filesystems.FileUtil;
 
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-
-import org.openide.util.NbBundle;
-
 import java.awt.Component;
 import java.awt.event.ActionListener;
 

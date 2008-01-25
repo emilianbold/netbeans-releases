@@ -56,7 +56,6 @@ import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.ui.graph.actions.GraphAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 
 /**

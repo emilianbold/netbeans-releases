@@ -2,7 +2,6 @@
  * Copyright 2005 Sun Microsystems, Inc. All rights reserved.
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
  */
-
 package org.netbeans.modules.etl.ui.view.wizards;
 
 import org.netbeans.api.project.Project;
@@ -16,8 +15,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-
 import java.awt.Component;
 
 import java.io.File;
@@ -33,13 +30,13 @@ import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.netbeans.modules.etl.logger.LogUtil;
 
-
 /**
  * DOCUMENT ME!
  *
  * @author Petr Hrebejk
  */
 final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel, ChangeListener {
+
     private final List /*<ChangeListener>*/ listeners = new ArrayList();
     private SimpleTargetChooserPanelGUI gui;
     private Project project;
@@ -47,9 +44,9 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
     private WizardDescriptor.Panel bottomPanel;
     private WizardDescriptor wizard;
     private boolean isFolder;
-
     private static transient final Logger mLogger = LogUtil.getLogger(SimpleTargetChooserPanel.class.getName());
     private static transient final Localizer mLoc = Localizer.get();
+
     /**
      * Creates a new SimpleTargetChooserPanel object.
      *
@@ -59,8 +56,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
      * @param isFolder DOCUMENT ME!
      */
     SimpleTargetChooserPanel(
-        Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel, boolean isFolder
-    ) {
+            Project project, SourceGroup[] folders, WizardDescriptor.Panel bottomPanel, boolean isFolder) {
         this.folders = folders;
         this.project = project;
         this.bottomPanel = bottomPanel;
@@ -73,7 +69,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         this.gui = null;
     }
 
-   public boolean isFinishPanel() {
+    public boolean isFinishPanel() {
         return true;
     }
 
@@ -86,8 +82,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         if (gui == null) {
             gui = new SimpleTargetChooserPanelGUI(
                     project, folders, (bottomPanel == null) ? null : bottomPanel.getComponent(),
-                    isFolder
-                );
+                    isFolder);
             gui.addChangeListener(this);
         }
 
@@ -123,8 +118,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
      * @return localized error message or null if all right
      */
     private String canUseFileName(
-        FileObject targetFolder, String folderName, String newObjectName, String extension
-    ) {
+            FileObject targetFolder, String folderName, String newObjectName, String extension) {
         if ((extension != null) && (extension.length() > 0)) {
             StringBuilder sb = new StringBuilder();
             sb.append(newObjectName);
@@ -133,9 +127,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
             newObjectName = sb.toString();
         }
 
-        String relFileName = (folderName == null) ? newObjectName : (
-                folderName + "/" + newObjectName
-            ); // NOI18N
+        String relFileName = (folderName == null) ? newObjectName : (folderName + "/" + newObjectName); // NOI18N
 
         // test whether the selected folder on selected filesystem already exists
         if (targetFolder == null) {
@@ -150,11 +142,11 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         }
 
         if (existFileName(targetFolder, relFileName)) {
-            String nbBundle3 = mLoc.t("PRSR001: The file {0} already exists.",newObjectName);
-            return Localizer.parse(nbBundle3) ; // NOI18N
+            String nbBundle3 = mLoc.t("PRSR001: The file {0} already exists.", newObjectName);
+            return Localizer.parse(nbBundle3); // NOI18N
         }
 
-      // all ok
+        // all ok
         return null;
     }
 
@@ -178,7 +170,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
      */
     public boolean isValid() {
         boolean ok = ((gui != null) && (gui.getTargetName() != null) &&
-            ((bottomPanel == null) || bottomPanel.isValid()));
+                ((bottomPanel == null) || bottomPanel.isValid()));
 
         if (!ok) {
             return false;
@@ -190,8 +182,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         // String errorMessage = ProjectUtilities.canUseFileName (gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(), template.getExt ());
         String errorMessage = canUseFileName(
                 gui.getTargetGroup().getRootFolder(), gui.getTargetFolder(), gui.getTargetName(),
-                template.getExt()
-            );
+                template.getExt());
         wizard.putProperty("WizardPanel_errorMessage", errorMessage); // NOI18N
 
         return errorMessage == null;
@@ -251,25 +242,23 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         // XXX hack, TemplateWizard in final setTemplateImpl() forces new generic's title
         // this name is used in NewFileWizard to modify the title
         Object substitute = gui.getClientProperty("NewEtlWizard_Title"); // NOI18N
-        
+
         String nbBundle1 = mLoc.t("PRSR001: Choose File Type");
         String nbBundle2 = mLoc.t("PRSR001: Name and Location");
         if (substitute != null) {
             wizard.putProperty("NewEtlWizard_Title", substitute); // NOI18N
         }
         wizard.putProperty(
-            "WizardPanel_contentData",
-            new String[] { // NOI18N
-                Localizer.parse(nbBundle1), // NOI18N
-           Localizer.parse(nbBundle2)
-            }
-        ); // NOI18N
+                "WizardPanel_contentData",
+                new String[]{ // NOI18N
+            Localizer.parse(nbBundle1), // NOI18N
+            Localizer.parse(nbBundle2)        }); // NOI18N
 
         if (bottomPanel != null) {
             bottomPanel.readSettings(settings);
         }
         String collabName = (String) wizard.getProperty(ETLCollaborationWizard.COLLABORATION_NAME);
-        if(!(collabName == null || "".equals(collabName))) {
+        if (!(collabName == null || "".equals(collabName))) {
             gui.setDocumentName(collabName);
         }
     }
@@ -294,7 +283,7 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.FinishablePanel
         }
 
         ((WizardDescriptor) settings).putProperty(ETLCollaborationWizard.COLLABORATION_NAME, gui.getTargetName());
-        
+
         ((WizardDescriptor) settings).putProperty("NewDtelWizard_Title", null); // NOI18N
     }
 

@@ -66,7 +66,6 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.util.NbBundle;
 
 /**
  * Wizard to collect name and participating tables information to be used in creating a
