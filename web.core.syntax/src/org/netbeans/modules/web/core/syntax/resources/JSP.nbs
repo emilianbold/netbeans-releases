@@ -73,20 +73,22 @@ AST {
 
 FOLD:tag: {
     fold_display_name:"<$startTag.TAG$>...</$startTag.TAG$>";
-    expand_type_action_name:"Expand HTML Tag";
-    collapse_type_action_name:"Collapse HTML Tag";
+    expand_type_action_name:"LBL_Expand_JSP_Tag";
+    collapse_type_action_name:"LBL_Collapse_JSP_Tag";
 }
 
 FOLD:scriptlet: {
     fold_display_name:"<% ... %>";
-    expand_type_action_name:"Expand Scriptlet";
-    collapse_type_action_name:"Collapse Scriptlet";
+    expand_type_action_name:"LBL_Expand_Scriptlet";
+    collapse_type_action_name:"LBL_Collapse_Scriptlet";
 }
 
 
 FOLD:comment: {
     fold_display_name:"<%-- --%>";
-    expand_type_action_name:"Expand JSP Comment";
-    collapse_type_action_name:"Collapse JSP Comment";
+    expand_type_action_name:"LBL_Expand_JSP_Comment";
+    collapse_type_action_name:"LBL_Collapse_JSP_Comment";
 }
+
+BUNDLE "org.netbeans.modules.web.core.syntax.resources.Bundle"
 
