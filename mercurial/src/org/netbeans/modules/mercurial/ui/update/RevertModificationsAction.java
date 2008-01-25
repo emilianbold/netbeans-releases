@@ -118,18 +118,22 @@ public class RevertModificationsAction extends AbstractAction {
     }
 
     public static void performRevert(File repository, String revStr, File file) {
-        File[] files = new File[1];
-        files[0] = file;
+        List<File> revertFiles = new ArrayList<File>();
+        revertFiles.add(file);        
 
-        performRevert(repository, revStr, files);
+        performRevert(repository, revStr, revertFiles);
     }
-
+    
     public static void performRevert(File repository, String revStr, File[] files) {
-        try {
-            List<File> revertFiles = new ArrayList<File>();
-            for (File file : files) {
-                revertFiles.add(file);
-            }
+        List<File> revertFiles = new ArrayList<File>();
+        for (File file : files) {
+            revertFiles.add(file);
+        }
+        performRevert(repository, revStr, revertFiles);
+    }
+    
+    public static void performRevert(File repository, String revStr, List<File> revertFiles) {
+        try{
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_TITLE")); // NOI18N
@@ -139,14 +143,14 @@ public class RevertModificationsAction extends AbstractAction {
             HgUtils.outputMercurialTab(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_REVISION_STR", revStr)); // NOI18N
-            for (File file : files) {
+            for (File file : revertFiles) {
                 HgUtils.outputMercurialTab(file.getAbsolutePath());
             }
             HgUtils.outputMercurialTab(""); // NOI18N
  
             HgCommand.doRevert(repository, revertFiles, revStr);
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
-            File[] conflictFiles = cache.listFiles(files, FileInformation.STATUS_VERSIONED_CONFLICT);
+            File[] conflictFiles = cache.listFiles(revertFiles.toArray(new File[0]), FileInformation.STATUS_VERSIONED_CONFLICT);
             if(conflictFiles.length != 0){
                 ConflictResolvedAction.conflictResolved(repository, conflictFiles);
             }
@@ -164,6 +168,7 @@ public class RevertModificationsAction extends AbstractAction {
         HgUtils.outputMercurialTabInRed(
                 NbBundle.getMessage(RevertModificationsAction.class,
                 "MSG_REVERT_DONE")); // NOI18N
+        HgUtils.outputMercurialTabInRed(""); // NOI18N
  
     }
 

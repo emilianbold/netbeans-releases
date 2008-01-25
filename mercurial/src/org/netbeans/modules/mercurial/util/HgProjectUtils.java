@@ -68,6 +68,8 @@ public class HgProjectUtils {
     private static final String ProjectTab_ID_LOGICAL = "projectTabLogical_tc"; // NOI18N    
     
     public static void renameProject(Project p, Object caller) {
+        if( p == null) return;
+        
         ContextAwareAction action = (ContextAwareAction) CommonProjectActions.renameProjectAction();
         Lookup ctx = Lookups.singleton(p);
         Action ctxAction = action.createContextAwareInstance(ctx);
@@ -75,6 +77,8 @@ public class HgProjectUtils {
     }
 
     public static void openProject(Project p, Object caller, boolean setMain) {
+        if( p == null) return;
+        
         Project[] projects = new Project[] {p};
         OpenProjects.getDefault().open(projects, false);
         if (setMain) {
@@ -86,6 +90,7 @@ public class HgProjectUtils {
     }
     
     public static void selectAndExpandProject( final Project p ) {
+        if( p == null) return;
         
         // invoke later to select the being opened project if the focus is outside ProjectTab
         SwingUtilities.invokeLater(new Runnable() {
@@ -134,11 +139,10 @@ public class HgProjectUtils {
     }
 
     public static String getProjectName( final Project p ) {        
-        if(p != null) {
-            ProjectInformation pi = ProjectUtils.getInformation( p );
-            return pi == null? null: pi.getDisplayName();
-        }
-        return null;
+        if( p == null) return null;
+        
+        ProjectInformation pi = ProjectUtils.getInformation(p);
+        return pi == null ? null : pi.getDisplayName();
     }
       
     private static synchronized ExplorerManager.Provider findDefault( String tcID ) {

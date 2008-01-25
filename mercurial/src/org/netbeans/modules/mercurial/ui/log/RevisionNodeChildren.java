@@ -38,69 +38,47 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.mercurial.ui.log;
 
-package org.netbeans.modules.mercurial;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
-import java.io.*;
-import org.netbeans.modules.mercurial.ui.diff.Setup;
-import org.netbeans.modules.mercurial.util.*;
+import java.util.*;
 
 /**
- * File revisions cache. It can access pristine files.
+ * Represents children of a Revision Node in Search history results table.
  *
- * XXX and what exactly is cached here?!
- * 
- * @author Petr Kuzel
+ * @author Maros Sandor
  */
-public class VersionsCache {
+class RevisionNodeChildren extends Children.Keys<RepositoryRevision.Event> {
 
-    private static VersionsCache instance;
+    private RepositoryRevision container;
+    private SearchHistoryPanel master;
 
-    /** Creates a new instance of VersionsCache */
-    private VersionsCache() {
+    public RevisionNodeChildren(RepositoryRevision container, SearchHistoryPanel master) {
+        this.container = container;
+        this.master = master;
     }
 
-    public static synchronized VersionsCache getInstance() {
-        if (instance == null) {
-            instance = new VersionsCache();
-        }
-        return instance;
+    protected void addNotify() {
+        refreshKeys();
     }
 
-    /**
-     * Loads the file in specified revision.
-     *
-     * @return null if the file does not exist in given revision
-     */
-    public File getFileRevision(File base, String revision) throws IOException {
-        if(revision.equals("-1")) return null; // NOI18N
-        
-        if (Setup.REVISION_BASE.equals(revision)) {
-            try {
-                File tempFile = File.createTempFile(base.getName(), null);
-                File repository = Mercurial.getInstance().getTopmostManagedParent(base);
-                HgCommand.doCat(repository, base, tempFile);
-                if (tempFile.length() == 0) return null;
-                return tempFile;
-            } catch (HgException e) {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
-            }
-        } else if (Setup.REVISION_CURRENT.equals(revision)) {
-            return base;
-        } else {
-            try {
-                File tempFile = File.createTempFile(base.getName(), null);
-                File repository = Mercurial.getInstance().getTopmostManagedParent(base);
-                HgCommand.doCat(repository, base, tempFile, revision);
-                if (tempFile.length() == 0) return null;
-                return tempFile;
-            } catch (HgException e) {
-                IOException ioe = new IOException();
-                ioe.initCause(e);
-                throw ioe;
-            }
-        }
+    protected void removeNotify() {
+        setKeys (Collections.<RepositoryRevision.Event>emptySet());
+    }
+    
+    private void refreshKeys() {
+        setKeys(container.getEvents());
+    }
+    
+    protected Node[] createNodes(RepositoryRevision.Event fn) {
+        RevisionNode node = new RevisionNode(fn, master);
+        return new Node[] { node };
+    }
+
+    public void refreshChildren() {
+        refreshKeys();
     }
 }
+

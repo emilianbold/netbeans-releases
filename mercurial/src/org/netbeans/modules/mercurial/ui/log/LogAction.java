@@ -74,8 +74,6 @@ import org.openide.util.NbBundle;
 public class LogAction extends AbstractAction {
     
     private final VCSContext context;
-    private List<File> logFiles = new ArrayList<File>();
-    private boolean bMergeNeeded = false;
     
     public LogAction(String name, VCSContext context) {
         this.context = context;
@@ -96,107 +94,9 @@ public class LogAction extends AbstractAction {
             HgUtils.outputMercurialTab(""); // NOI18N
             return;
         }
-        log(context);
+        SearchHistoryAction.openHistory(context, "Mercurial History");
     }
-    
-    private void log(VCSContext ctx){
-        final File root = HgUtils.getRootFile(ctx);
-        if (root == null) return;
         
-        File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        if (files == null || files.length == 0) return;
-        String projectName = HgProjectUtils.getProjectName(root);
-        Boolean projIsRepos = true;
-        File projFile = root;
-        if (projectName == null) {
-            projIsRepos = false;
-            projFile = HgUtils.getProjectFile(ctx);
-            projectName =  HgProjectUtils.getProjectName(projFile);
-        }
-        final String prjName = projectName;
-        final File prjFile = projFile;
-        
-        for (File file: files) {
-            logFiles.add(file);
-        }
-                
-        RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());        
-        HgProgressSupport support = new HgProgressSupport() {
-            public void perform() {
-                Mercurial hg = Mercurial.getInstance();
-                try {                    
-                    List<String> headRevList = HgCommand.getHeadRevisions(root);
-                    if(headRevList == null) return;
-                    bMergeNeeded = headRevList.size() > 1;
-                    
-                    List<String> list = new LinkedList<String>();
-                    list = HgCommand.doLog(root, logFiles);
-                    
-                    if (list != null && !list.isEmpty()){
-                        String tabTitle;
-                        int rev =  HgCommand.getBranchRev(root);
-                        if ( rev > -1){
-                            tabTitle = NbBundle.getMessage(LogAction.class,
-                                    "MSG_Log_TabTitle", prjName); // NOI18N
-                        }else{
-                            tabTitle = NbBundle.getMessage(LogAction.class,
-                                    "MSG_Log_TabTitleNotCommitted"); // NOI18N
-                        }
-                        InputOutput io = IOProvider.getDefault().getIO(tabTitle, false);
-                        io.select();
-                        OutputWriter out = io.getOut();
-                        OutputWriter outRed = io.getErr();
-
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Title")); // NOI18N
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Title_Sep")); // NOI18N
-                        
-                        for( String s : list){
-                            if (s.indexOf(Mercurial.CHANGESET_STR) == 0){
-                                outRed.println(s);
-                            }else if( !s.equals("")){ // NOI18N
-                                out.println(s);
-                            }
-                        }
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Files", // NOI18N
-                                logFiles));
-                        
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_PrjName", // NOI18N
-                                prjName));
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_PrjPath", // NOI18N
-                                prjFile.getAbsolutePath()));
-                        String pullPath = HgCommand.getPullDefault(root);
-                        if(pullPath != null){
-                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Pull_Path",pullPath)); // NOI18N
-                        }
-                        String pushPath = HgCommand.getPushDefault(root);
-                        if(pushPath != null){
-                            outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_Push_Path",pushPath)); // NOI18N
-                        }
-                        
-                        if(bMergeNeeded){
-                            outRed.println(""); // NOI18N
-                            MergeAction.printMergeWarning(outRed, headRevList);
-                        }
-                        outRed.println(NbBundle.getMessage(LogAction.class, "MSG_Log_DONE")); // NOI18N
-                        out.println(""); // NOI18N
-                        out.close();
-                        outRed.close();
-                    }
-                } catch (HgException ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }
-            }
-        };
-        support.start(rp, root.getAbsolutePath(), org.openide.util.NbBundle.getMessage(LogAction.class, "MSG_Log_Progress")); // NOI18N
-
-        //COMMENT: think this is redundent with Merge menu support added
-        //if(bMergeNeeded){
-        //    HgUtils.warningDialog(MergeAction.class,"MSG_MERGE_WARN_TITLE","MSG_MERGE_WARN_TEXT");   // NOI18N
-        //}
-
-    }
-    
     public boolean isEnabled() {
         return HgUtils.getRootFile(context) != null;
     } 
