@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -88,6 +89,9 @@ public class LocalHistory {
         
     public final static Object EVENT_FILE_CREATED = new Object();
     final static Object EVENT_PROJECTS_CHANGED = new Object();
+        
+    /** default logger for whole module */
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.localhistory"); // NOI18N
     
     public LocalHistory() {
         String include = System.getProperty("netbeans.localhistory.includeFiles");
@@ -128,9 +132,19 @@ public class LocalHistory {
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             for(SourceGroup group : groups) {
                 FileObject fo = group.getRootFolder();
-                addRootFile(newRoots, fo);
+                File root = FileUtil.toFile(fo); 
+                if( root == null ) {
+                    LOG.warning("source group" + group.getDisplayName() + " returned null root folder" );
+                } else {
+                    addRootFile(newRoots, root);    
+                }                
             }
-            addRootFile(newRoots, project.getProjectDirectory());
+            File root = FileUtil.toFile(project.getProjectDirectory()); 
+            if( root == null ) {
+                LOG.warning("project " + project.getProjectDirectory() + " returned null root folder" );
+            } else {
+                addRootFile(newRoots, root);    
+            }
         }                
         synchronized(roots) {
             roots = newRoots;
@@ -138,14 +152,11 @@ public class LocalHistory {
         fireFileEvent(EVENT_PROJECTS_CHANGED, null);
     }
     
-    private void addRootFile(Set<File> set, FileObject fo) {
-        addRootFile(set, FileUtil.toFile(fo));
-    }
-    
     private void addRootFile(Set<File> set, File file) {
         if(file == null) {
             return;
         }
+        LOG.fine("adding root folder " + file);
         set.add(file);
         return;        
     }
