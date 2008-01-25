@@ -955,7 +955,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             fakeRegistrationUIDs.clear();
         }
 	for (FunctionImplEx curElem: fakes) {
-	    curElem.fixFakeRegistration();
+            // Due to lazy list the client should check value on null.
+            if (curElem != null) {
+                curElem.fixFakeRegistration();
+            }
 	}
     }
     
