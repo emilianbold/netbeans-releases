@@ -194,7 +194,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
     }
 
     protected void addSelectVisibleColumnsPopUpMenu(ActionListener aListener) {
-        String lbl = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_select_columns");
+        String nbBundle1 = mLoc.t("PRSR001: Select Columns...");
+        String lbl = Localizer.parse(nbBundle1);
         selectColumnsItem = new JMenuItem(lbl, new ImageIcon(selectColumnsUrl));
         selectColumnsItem.addActionListener(aListener);
         popUpMenu.add(selectColumnsItem);
@@ -202,7 +203,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
 
     protected void addRemovePopUpMenu(ActionListener aListener) {
         //remove menu
-        String lbl = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_remove");
+        String nbBundle2 = mLoc.t("PRSR001: Remove");
+        String lbl = Localizer.parse(nbBundle2);
         removeItem = new JMenuItem(lbl, new ImageIcon(removeUrl));
         removeItem.addActionListener(aListener);
         popUpMenu.add(removeItem);
@@ -565,7 +567,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
         gbc.weighty = 0.0;
-        String dlgLabel = NbBundle.getMessage(SQLBasicTableArea.class, "MSG_dlg_select_columns");
+        String nbBundle3 = mLoc.t("PRSR001: Select columns to display for this table.");
+        String dlgLabel = Localizer.parse(nbBundle3);
         JLabel lbl = new JLabel(dlgLabel);
         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
         panel.add(lbl, gbc);
@@ -589,7 +592,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
         gbc.weighty = 1.0;
         panel.add(columnPanel, gbc);
 
-        String dlgTitle = NbBundle.getMessage(SQLBasicTableArea.class, "TITLE_dlg_select_columns");
+        String nbBundle4 = mLoc.t("PRSR001: Select Columns");
+        String dlgTitle = Localizer.parse(nbBundle4);
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), panel, dlgTitle, JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE);
 
@@ -770,7 +774,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
 
     private List getForeignKeyList(DBColumn column) {
         ArrayList optionList = new ArrayList();
-        String refString = column.getName() + NbBundle.getMessage(SQLBasicTableArea.class, "LBL_fk_pointer");
+        String nbBundle5 = mLoc.t("PRSR001: -->");
+        String refString = column.getName() + Localizer.parse(nbBundle5);
 
         List list = table.getForeignKeys();
         Iterator it = list.iterator();
@@ -846,7 +851,8 @@ public abstract class SQLBasicTableArea extends BasicTableArea implements IGraph
 
         public String getDisplayString() {
             if (pkVec.isEmpty()) {
-                return NbBundle.getMessage(SQLBasicTableArea.class, "LBL_none");
+                String nbBundle6 = mLoc.t("PRSR001: None");
+                return Localizer.parse(nbBundle6);
             }
 
             StringBuilder strBuf = null;
