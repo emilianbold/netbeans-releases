@@ -56,6 +56,9 @@ import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoPen;
 import com.nwoods.jgo.JGoRectangle;
 import com.nwoods.jgo.JGoView;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Extension of CanvasArea to show toggle control for parentheses surrounding a given operator.
@@ -73,6 +76,9 @@ public class ParenthesisCheckBoxArea extends CanvasArea {
 
     private int checkboxTextGap = 1;
 
+    private static transient final Logger mLogger = LogUtil.getLogger(ParenthesisCheckBoxArea.class.getName());
+    
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Constructs a default instance of ParenthesisCheckBoxArea.
      */
@@ -91,13 +97,15 @@ public class ParenthesisCheckBoxArea extends CanvasArea {
 
         // Add check box
         cbArea = new CheckBoxArea();
-        String toolTipText = NbBundle.getMessage(ParenthesisCheckBoxArea.class, "LBL_hide_display_parentheses");
+        String nbBundle1 = mLoc.t("PRSR001: Display or hide parentheses in SQL");
+        String toolTipText = Localizer.parse(nbBundle1);
         cbArea.setToolTipText(toolTipText);
         cbArea.setBackground(new Color(221, 235, 246));
         addObjectAtTail(cbArea);
 
         //add text of title
-        String titleText = NbBundle.getMessage(ParenthesisCheckBoxArea.class, "LBL_use_parentheses");
+        String nbBundle2 = mLoc.t("PRSR001: Use parentheses ( )");
+        String titleText = Localizer.parse(nbBundle2);
         title = new BasicText(titleText);
         title.setEditable(false);
         title.setSelectable(false);
