@@ -629,12 +629,15 @@ public class Utilities {
         }
         Lookup proxyLookup = Lookups.proxy(
                 new Lookup.Provider() {
+            private Lookup lookup;
             public Lookup getLookup() {
+                if(lookup != null)
+                    return lookup;
                 Document document = null;
                 try {
                     document = _getDocument(dobj);
                     if (document != null) {
-                        return Lookups.fixed(new Object[] {
+                        lookup = Lookups.fixed(new Object[] {
                             dobj.getPrimaryFile(),
                             document,
                             dobj,
@@ -642,7 +645,7 @@ public class Utilities {
                             catalogModel
                         });
                     } else {
-                        return Lookups.fixed(new Object[] {
+                        lookup = Lookups.fixed(new Object[] {
                             dobj.getPrimaryFile(),
                             dobj,
                             catalogModel
@@ -655,6 +658,7 @@ public class Utilities {
                         catalogModel
                     });
                 }
+                return lookup;
             }
         }
         );
