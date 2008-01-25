@@ -84,7 +84,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -417,8 +416,6 @@ public class Utils {
         for (VariableElement paramEl:paramElements) {
             ParamModel param = new ParamModel("arg"+String.valueOf(i++));
             param.setImplementationClass(methodModel.getImplementationClass());
-            TreePathHandle paramHandle = TreePathHandle.create(paramEl, controller);
-            param.setParamHandle(paramHandle);
             populateParam(controller, paramEl, param);
             params.add(param);
         }

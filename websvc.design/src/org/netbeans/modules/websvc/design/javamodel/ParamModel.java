@@ -43,7 +43,6 @@ package org.netbeans.modules.websvc.design.javamodel;
 
 import javax.jws.WebParam;
 import javax.jws.WebParam.Mode;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.filesystems.FileObject;
@@ -91,14 +90,6 @@ public class ParamModel {
     void setImplementationClass(FileObject impl){
         implementationClass = impl;
     }
-    
-   public TreePathHandle getParamHandle() {
-       return paramHandle;
-   }
-    
-   void setParamHandle(TreePathHandle paramHandle) {
-       this.paramHandle=paramHandle;
-   }
     
     public String getTargetNamespace() {
         return targetNamespace;
