@@ -595,7 +595,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             }
             if(ResourceUtils.getResource(WELCOME_PAGE_LEFT_BOTTOM_IMAGE)!=null) {
                 leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_BOTTOM_IMAGE_RESOURCE,
-                        ANCHOR_TOP_LEFT);
+                        ANCHOR_BOTTOM_LEFT);
                 width   = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconWidth();
                 height += leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconHeight();
             }
