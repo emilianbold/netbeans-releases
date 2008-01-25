@@ -267,6 +267,7 @@ Thsi module needs JRE 1.4 or 1.5. The module is compiled with with JDK 1.4 for n
 -->
 <answer id="dep-nb">
 It uses various kinds of API's:
+<!--
 <ul>
 <li>
     <api 
@@ -415,8 +416,9 @@ It uses various kinds of API's:
 </li>
 
 
-
 </ul>
+-->
+
 </answer>
 
   
