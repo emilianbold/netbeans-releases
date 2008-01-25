@@ -63,6 +63,7 @@ import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.status.ProgressObject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentConfigurationInterface;
@@ -237,6 +238,89 @@ public class DirectoryDeployment extends IncrementalDeployment {
         }
         return retVal;
     }
+
+    private String computeModuleID(J2eeModule app, File dir) {
+        String moduleID = null;
+        File foo = app.getDeploymentConfigurationFile("application.xml"); // NOI18N
+        if (foo.exists()) {
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(foo));
+            try {
+                if (null != fo) {
+                    org.netbeans.modules.j2ee.dd.api.application.Application appdd = org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getDDRoot(fo);
+                    moduleID = appdd.getDisplayName(null);
+                }
+            } catch (IOException ioe) {
+                Logger.getLogger(DirectoryDeployment.class.getName()).log(Level.FINER, null, ioe);
+            } catch (org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException vnse) {
+                Logger.getLogger(DirectoryDeployment.class.getName()).log(Level.FINER, null, vnse);
+            }
+        }
+        if (null == moduleID) {
+            foo = app.getDeploymentConfigurationFile("web.xml"); // NOI18N
+            if (foo.exists()) {
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(foo));
+                try {
+                    if (null != fo) {
+                        org.netbeans.modules.j2ee.dd.api.web.WebApp webdd = org.netbeans.modules.j2ee.dd.api.web.DDProvider.getDefault().getDDRoot(fo);
+                        moduleID = webdd.getDisplayName(null);
+                    }
+                } catch (IOException ioe) {
+                    Logger.getLogger(DirectoryDeployment.class.getName()).log(Level.FINER, null, ioe);
+                } catch (org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException vnse) {
+                    Logger.getLogger(DirectoryDeployment.class.getName()).log(Level.FINER, null, vnse);
+                }
+            }
+        }
+        if (null == moduleID) {
+            foo = app.getDeploymentConfigurationFile("ejb-jar.xml"); // NOI18N
+            if (foo.exists()) {
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(foo));
+                try {
+                    if (null != fo) {
+                        org.netbeans.modules.j2ee.dd.api.ejb.EjbJar ejbdd = org.netbeans.modules.j2ee.dd.api.ejb.DDProvider.getDefault().getDDRoot(fo);
+                        moduleID = ejbdd.getDisplayName(null);
+                    }
+                } catch (IOException ioe) {
+                    Logger.getLogger(DirectoryDeployment.class.getName()).log(Level.FINER, null, ioe);
+                } catch (org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException vnse) {
+                    Logger.getLogger(DirectoryDeployment.class.getName()).log(Level.FINER, null, vnse);
+                }
+            }
+        }
+        if (null == moduleID) {
+            foo = app.getDeploymentConfigurationFile("application-client.xml"); // NOI18N
+            if (foo.exists()) {
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(foo));
+                try {
+                    if (null != fo) {
+                        org.netbeans.modules.j2ee.dd.api.client.AppClient acdd = org.netbeans.modules.j2ee.dd.api.client.DDProvider.getDefault().getDDRoot(fo);
+                        moduleID = acdd.getDisplayName(null);
+                    }
+                } catch (IOException ioe) {
+                    Logger.getLogger(DirectoryDeployment.class.getName()).log(Level.FINER, null, ioe);
+                } catch (org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException vnse) {
+                    Logger.getLogger(DirectoryDeployment.class.getName()).log(Level.FINER, null, vnse);
+                }
+            }
+        }
+        
+        // make sure the user hasn't set the desplay name to be "", too.
+        //
+        if (null == moduleID || moduleID.trim().length() < 1) {            
+            FileObject fo = null;
+            try {
+                fo = app.getContentDirectory();
+                moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getName();
+            } catch (IOException ioe) {
+                Logger.getLogger(DirectoryDeployment.class.getName()).log(Level.FINER, null, ioe);
+            }
+        }
+        if (null == moduleID || moduleID.trim().length() < 1) {
+            moduleID = getGoodDirNameFromContextRoot(dir.getParentFile().getParentFile().getName());
+        }
+
+        return moduleID;
+    }
     
     private String getGoodDirNameFromContextRoot(String contextRoot){
         String   moduleID = null;
@@ -317,8 +401,7 @@ public class DirectoryDeployment extends IncrementalDeployment {
     
     public ProgressObject initialDeploy(Target target, J2eeModule app, ModuleConfiguration configuration, File dir) {
         ContextRootConfiguration crp = (ContextRootConfiguration) configuration.getLookup().lookup(ContextRootConfiguration.class);
-        String moduleID= 
-                getGoodDirNameFromContextRoot(dir.getParentFile().getParentFile().getName());
+        String moduleID= computeModuleID(app,dir);
         ProgressObject retVal = null;
         try {
             
