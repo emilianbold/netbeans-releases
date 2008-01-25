@@ -71,6 +71,9 @@ import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoPen;
 import com.nwoods.jgo.JGoText;
 import com.nwoods.jgo.JGoView;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Ritesh Adval
@@ -80,6 +83,9 @@ public class SQLCastAsGraphNode extends SQLOperatorGraphNode implements Property
 
     private static final URL propertiesUrl = SQLCastAsGraphNode.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/properties.png");
     
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLCastAsGraphNode.class.getName());
+    
+    private static transient final Localizer mLoc = Localizer.get();
     /* contains literal value + link node */
     private OperatorGraphFieldNode valueNode;
     
@@ -185,8 +191,8 @@ public class SQLCastAsGraphNode extends SQLOperatorGraphNode implements Property
         
         // Properties menu
         popUpMenu.addSeparator();
-        
-        propsItem = new JMenuItem(NbBundle.getMessage(SQLCastAsGraphNode.class, "LBL_properties"), new ImageIcon(propertiesUrl));
+        String nbBundle1 = mLoc.t("PRSR001: Properties");
+        propsItem = new JMenuItem(Localizer.parse(nbBundle1), new ImageIcon(propertiesUrl));
         propsItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 SQLCastAsGraphNode.this.showCastAsDialog();
@@ -334,7 +340,8 @@ public class SQLCastAsGraphNode extends SQLOperatorGraphNode implements Property
                 valueNode.setTextColor(textColor);
                 valueNode.setHighlightConfigurator(hc);
             } catch (IllegalArgumentException ignore) {
-                final String typeLabel = NbBundle.getMessage(SQLCastAsGraphNode.class, "LBL_unknown_type");
+                String nbBundle2 = mLoc.t("PRSR001: Unknown");
+                final String typeLabel = Localizer.parse(nbBundle2);
                 valueNode.setText(typeLabel);
             }
             
@@ -347,8 +354,9 @@ public class SQLCastAsGraphNode extends SQLOperatorGraphNode implements Property
     }
     
     public void showCastAsDialog() {
+        String nbBundle3 = mLoc.t("PRSR001: Cast-As Operator Properties");
         CastAsDialog castDlg = new CastAsDialog(WindowManager.getDefault().getMainWindow(), 
-            NbBundle.getMessage(SQLGraphController.class, "TITLE_edit_castas"), true);
+            Localizer.parse(nbBundle3), true);
         
         SQLCastOperator castOp = (SQLCastOperator) dataObject;
         

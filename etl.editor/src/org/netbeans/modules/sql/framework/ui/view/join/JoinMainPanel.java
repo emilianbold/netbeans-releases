@@ -166,8 +166,9 @@ public class JoinMainPanel extends JPanel {
         if (showInstruction) {
             JPanel labelPnl = new JPanel();
             labelPnl.setLayout(new BorderLayout());
-
-            JLabel joinLabel = new JLabel(NbBundle.getMessage(JoinMainPanel.class, "JOIN_SELECT_TABLE_LABEL"));
+            
+            String nbBundle1 = mLoc.t("PRSR001: Select which tables you would like to join.");
+            JLabel joinLabel = new JLabel(Localizer.parse(nbBundle1));
 
             labelPnl.add(joinLabel, BorderLayout.NORTH);
             labelPnl.add(new JSeparator(), BorderLayout.SOUTH);
@@ -177,8 +178,10 @@ public class JoinMainPanel extends JPanel {
         }
 
         // initialize list transfer panel
-        listPanel = new ListTransferPanel(this, NbBundle.getMessage(JoinMainPanel.class, "JOIN_LIST_TRANSFER_PANEL_SOURCE_LABEL"),
-                NbBundle.getMessage(JoinMainPanel.class, "JOIN_LIST_TRANSFER_PANEL_TARGET_LABEL"), sources, targets);
+        String nbBundle2 = mLoc.t("PRSR001: Available Tables:");
+        String nbBundle3 = mLoc.t("PRSR001: Selected Tables:");
+        listPanel = new ListTransferPanel(this, Localizer.parse(nbBundle2),
+                Localizer.parse(nbBundle3), sources, targets);
 
         // set the target list to allow continuous selection for up and down purpose
         listPanel.getDestinationJList().setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
@@ -203,11 +206,13 @@ public class JoinMainPanel extends JPanel {
 
         // initalize join preview panel which is the first tab
         previewPanel = new JoinPreviewPanel(this);
-        previewPanel.setName(NbBundle.getMessage(JoinMainPanel.class, "PREVIEW_LABEL"));
+        String nbBundle4 = mLoc.t("PRSR001: Preview");
+        previewPanel.setName(Localizer.parse(nbBundle4));
 
         // initialize select table column panel
         tableColumnPanel = new TableColumnTreePanel(new ArrayList());
-        tableColumnPanel.setName(NbBundle.getMessage(JoinMainPanel.class, "SELECT_COLUMNS_LABEL"));
+        String nbBundle5 = mLoc.t("PRSR001: Select Columns");
+        tableColumnPanel.setName(Localizer.parse(nbBundle5));
 
         // add these above two panel as tabs to bottom tab panel
         bottomTabPane.add(previewPanel);

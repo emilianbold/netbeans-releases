@@ -80,6 +80,9 @@ import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoPen;
 import com.nwoods.jgo.JGoText;
 import com.sun.sql.framework.exception.BaseException;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Graphical representation of a SQL operator.
@@ -112,15 +115,22 @@ public class SQLOperatorGraphNode extends OperatorGraphNode implements ItemListe
     private static URL showSqlUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Show_Sql.png");
 
     private static URL removeUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/remove.png");
+    
     protected static URL editUrl = SQLBasicTableArea.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/edit_join.png");
     
     private JMenuItem showSqlItem;
+    
     private JMenuItem removeItem;
 
     private Map fieldNameToControlMap = new HashMap();
 
     private boolean showParen = false;
+    
     private ParenthesisCheckBoxArea cbWrap;
+    
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLOperatorGraphNode.class.getName());
+    
+    private static transient final Localizer mLoc = Localizer.get();
 
     /** Creates a new instance of OperatorGraphNode */
     public SQLOperatorGraphNode(IOperatorXmlInfo info) {
@@ -399,7 +409,8 @@ public class SQLOperatorGraphNode extends OperatorGraphNode implements ItemListe
         } else {
             String msg = "SQLOperatorGraphNode only accepts as its data object " + "instances of SQLOperator.";
             try {
-                msg = NbBundle.getMessage(SQLOperatorGraphNode.class, "ERROR_paramopgraphnode_invalid_data_object");
+                String nbBundle1 = mLoc.t("PRSR001: SQLParameterizedOperatorGraphNode only accepts as its data object instances of SQLOperator that implement HasStaticParameters.");
+                msg = Localizer.parse(nbBundle1);
             } catch (MissingResourceException ignore) {
                 // Do nothing - use default message above.
             }

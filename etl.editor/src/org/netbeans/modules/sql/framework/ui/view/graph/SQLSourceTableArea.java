@@ -84,6 +84,9 @@ import org.openide.util.NbBundle;
 import com.nwoods.jgo.JGoBrush;
 import com.nwoods.jgo.JGoView;
 import javax.swing.JOptionPane;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.etl.ui.view.ETLCollaborationTopPanel;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
@@ -122,7 +125,9 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
     private JMenuItem synchroniseItem;
     private JMenuItem remountItem;
     private transient ETLCollaborationTopPanel designView;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLSourceTableArea.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     /**
      * Creates a new instance of SQLSourceTableArea
      */
@@ -146,13 +151,15 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         try {
             ActionListener aListener = new TableActionListener();
             // Show SQL
-            String lblShowSql = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_sql");
+            String nbBundle1 = mLoc.t("PRSR001: Show SQL");
+            String lblShowSql = Localizer.parse(nbBundle1);
             showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
             showSqlItem.addActionListener(aListener);
             popUpMenu.add(showSqlItem);
 
             // Show data
-            String lblShowData = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_data");
+            String nbBundle2 = mLoc.t("PRSR001: Show Data");
+            String lblShowData = Localizer.parse(nbBundle2);
             showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
             showDataItem.addActionListener(aListener);
             popUpMenu.add(showDataItem);
@@ -163,7 +170,8 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             synchroniseItem.addActionListener(aListener);
             popUpMenu.add(synchroniseItem);
 
-            String lblRemount = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_Remount");
+            String nbBundle3 = mLoc.t("PRSR001: Remount");
+            String lblRemount = Localizer.parse(nbBundle3);
             remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
             remountItem.addActionListener(aListener);
             SQLObject tbl = (SQLObject) SQLSourceTableArea.this.getDataObject();
@@ -174,13 +182,15 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
             }
 
             // Define data filtering action
+            String nbBundle4 = mLoc.t("PRSR001: Extraction Condition...");
             popUpMenu.addSeparator();
-            dataFilterMapItem = new JMenuItem("Extraction Condition...", new ImageIcon(dataFilterImgUrl));
+            dataFilterMapItem = new JMenuItem(Localizer.parse(nbBundle4), new ImageIcon(dataFilterImgUrl));
             dataFilterMapItem.addActionListener(aListener);
             popUpMenu.add(dataFilterMapItem);
 
             // Define data validation action
-            dataValidationMapItem = new JMenuItem("Data Validation...", new ImageIcon(defineValidationImgUrl));
+            String nbBundle5 = mLoc.t("PRSR001: Data Validation...");
+            dataValidationMapItem = new JMenuItem(Localizer.parse(nbBundle5), new ImageIcon(defineValidationImgUrl));
             dataValidationMapItem.addActionListener(aListener);
             popUpMenu.add(dataValidationMapItem);
 
@@ -190,13 +200,15 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
 
             // Show properties
             popUpMenu.addSeparator();
-            String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
+            String nbBundle6 = mLoc.t("PRSR001: Properties");
+            String lblProps = Localizer.parse(nbBundle6);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
 
             // Auto map action
-            autoMapItem = new JMenuItem("Auto Map", new ImageIcon(autoMapImgUrl));
+            String nbBundle7 = mLoc.t("PRSR001: Auto Map");
+            autoMapItem = new JMenuItem(Localizer.parse(nbBundle7), new ImageIcon(autoMapImgUrl));
             autoMapItem.addActionListener(aListener);
 
             popUpMenu.addSeparator();
@@ -281,8 +293,10 @@ public class SQLSourceTableArea extends SQLBasicTableArea {
         IGraphView gView = this.getGraphView();
         CollabSQLUIModel sqlModel = (CollabSQLUIModel) gView.getGraphModel();
 
-        String dlgMsg = NbBundle.getMessage(SQLBasicTableArea.class, "MSG_dlg_refresh_metadata");
-        String dlgTitle = NbBundle.getMessage(SQLBasicTableArea.class, "TITLE_dlg_refresh_metadata");
+        String nbBundle8 = mLoc.t("PRSR001: If columns are deleted or renamed you may lose existing mappings.");
+        String dlgMsg = Localizer.parse(nbBundle8);
+        String nbBundle9 = mLoc.t("PRSR001: Refresh Metadata");
+        String dlgTitle = Localizer.parse(nbBundle9);
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), dlgMsg, dlgTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 
         if (JOptionPane.OK_OPTION == response) {

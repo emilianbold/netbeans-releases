@@ -61,6 +61,9 @@ import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoBrush;
 import javax.swing.JOptionPane;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.sql.framework.model.DBMetaDataFactory;
 import org.netbeans.modules.sql.framework.model.SQLDBModel;
 import org.netbeans.modules.sql.framework.model.SQLDBTable;
@@ -98,7 +101,9 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     private JMenuItem propertiesItem;
     private JMenuItem synchroniseItem;
     private JMenuItem remountItem;
-
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLTargetTableArea.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
+    
     /**
      * Creates a new instance of SQLTargetTableArea
      */
@@ -123,13 +128,15 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
         try {
             ActionListener aListener = new TableActionListener();
             // Show SQL
-            String lblShowSql = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_sql");
+            String nbBundle1 = mLoc.t("PRSR001: Show SQL");
+            String lblShowSql =  Localizer.parse(nbBundle1);
             showSqlItem = new JMenuItem(lblShowSql, new ImageIcon(showSqlUrl));
             showSqlItem.addActionListener(aListener);
             popUpMenu.add(showSqlItem);
 
             // Show data
-            String lblShowData = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_data");
+            String nbBundle2 = mLoc.t("PRSR001: Show Data");
+            String lblShowData = Localizer.parse(nbBundle2);
             showDataItem = new JMenuItem(lblShowData, new ImageIcon(showDataUrl));
             showDataItem.addActionListener(aListener);
             popUpMenu.add(showDataItem);
@@ -137,7 +144,8 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
             // Show rejection data
             // TODO: Add listener framework to enable/disable this action depending on whether
             // a validation condition exists
-            String lblRjtShowData = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_show_rejection_data");
+            String nbBundle3 = mLoc.t("PRSR001: Show Rejected Data...");
+            String lblRjtShowData = Localizer.parse(nbBundle3);
             showRejectionDataItem = new JMenuItem(lblRjtShowData, new ImageIcon(showRejectionDataImgUrl));
 
             showRejectionDataItem.addActionListener(aListener);
@@ -145,11 +153,13 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
 
 
             addSelectVisibleColumnsPopUpMenu(aListener);
-            synchroniseItem = new JMenuItem("Refresh Metadata", new ImageIcon(synchroniseImgUrl));
+            String nbBundle4 = mLoc.t("PRSR001: Refresh Metadata");
+            synchroniseItem = new JMenuItem(Localizer.parse(nbBundle4), new ImageIcon(synchroniseImgUrl));
             synchroniseItem.addActionListener(aListener);
             popUpMenu.add(synchroniseItem);
 
-            String lblRemount = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_Remount");
+            String nbBundle5 = mLoc.t("PRSR001: Remount");
+            String lblRemount = Localizer.parse(nbBundle5);
             remountItem = new JMenuItem(lblRemount, new ImageIcon(remountImgUrl));
             remountItem.addActionListener(aListener);
             SQLObject tbl = (SQLObject) SQLTargetTableArea.this.getDataObject();
@@ -162,13 +172,15 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
 
             // TODO: show join condition only if source table exist (Delete, Static Insert/Update does not require Join Condition)
             // Target Join Condition
-            String lblTargetCondition = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_edit_target_join_condition");
+            String nbBundle6 = mLoc.t("PRSR001: Target Join Condition...");
+            String lblTargetCondition = Localizer.parse(nbBundle6);
             editJoinConditionItem = new JMenuItem(lblTargetCondition, new ImageIcon(targetTableConditionImgUrl));
             editJoinConditionItem.addActionListener(aListener);
             popUpMenu.add(editJoinConditionItem);
 
             // Target Filter Condition
-            String lblTargetFilterCondition = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_edit_target_filter_condition");
+            String nbBundle7 = mLoc.t("PRSR001: Outer Filter Condition...");
+            String lblTargetFilterCondition = Localizer.parse(nbBundle7);
             editFilterConditionItem = new JMenuItem(lblTargetFilterCondition, new ImageIcon(dataFilterImgUrl));
             editFilterConditionItem.addActionListener(aListener);
             popUpMenu.add(editFilterConditionItem);
@@ -179,7 +191,8 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
 
             // Properties
             popUpMenu.addSeparator();
-            String lblProps = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_properties");
+            String nbBundle8 = mLoc.t("PRSR001: Properties");
+            String lblProps =  Localizer.parse(nbBundle8);
             propertiesItem = new JMenuItem(lblProps, new ImageIcon(propertiesUrl));
             propertiesItem.addActionListener(aListener);
             popUpMenu.add(propertiesItem);
@@ -272,8 +285,10 @@ public class SQLTargetTableArea extends SQLBasicTableArea {
     private void synchroniseItem_ActionPerformed(ActionEvent e) {
         IGraphView gView = this.getGraphView();
 
-        String dlgMsg = NbBundle.getMessage(SQLBasicTableArea.class, "MSG_dlg_refresh_metadata");
-        String dlgTitle = NbBundle.getMessage(SQLBasicTableArea.class, "TITLE_dlg_refresh_metadata");
+        String nbBundle9 = mLoc.t("PRSR001: If columns are deleted or renamed you may lose existing mappings.");
+        String dlgMsg = Localizer.parse(nbBundle9);
+        String nbBundle10 = mLoc.t("PRSR001: Refresh Metadata");
+        String dlgTitle = Localizer.parse(nbBundle10);
         int response = JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(), dlgMsg, dlgTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 
         if (JOptionPane.OK_OPTION == response) {

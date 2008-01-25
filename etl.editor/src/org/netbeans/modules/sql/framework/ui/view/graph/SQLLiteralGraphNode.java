@@ -65,6 +65,9 @@ import org.openide.util.NbBundle;
 import com.nwoods.jgo.JGoPen;
 import com.nwoods.jgo.JGoRectangle;
 import com.nwoods.jgo.JGoText;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * Graphical representation of literal element.
@@ -81,7 +84,8 @@ public class SQLLiteralGraphNode extends SQLOperatorGraphNode implements Propert
     private static final URL URL_NUMBER_ICON = SQLLiteralGraphNode.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/Math.png");
     private static final URL URL_DATE_ICON = SQLLiteralGraphNode.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/NOW2.png");
     private static final URL URL_TEXT_ICON = SQLLiteralGraphNode.class.getResource("/org/netbeans/modules/sql/framework/ui/resources/images/literal.png");
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLLiteralGraphNode.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     private static Icon numberIcon;
 
     private static Icon dateIcon;
@@ -187,7 +191,8 @@ public class SQLLiteralGraphNode extends SQLOperatorGraphNode implements Propert
                 
                 titleArea.setTitle(SQLUtils.getStdSqlType(jdbcType));
             } catch (IllegalArgumentException ignore) {
-                final String typeLabel = NbBundle.getMessage(SQLLiteralGraphNode.class, "LBL_literal_sqltype");
+                String nbBundle1 = mLoc.t("PRSR001: SQL type:");
+                final String typeLabel = Localizer.parse(nbBundle1);
                 titleArea.setTitle(typeLabel);
             }
         }

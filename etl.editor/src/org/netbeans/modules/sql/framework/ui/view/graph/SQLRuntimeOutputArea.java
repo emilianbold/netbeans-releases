@@ -57,6 +57,9 @@ import org.netbeans.modules.sql.framework.ui.graph.impl.GradientBrush;
 import org.openide.util.NbBundle;
 
 import com.nwoods.jgo.JGoBrush;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 
 /**
@@ -77,6 +80,10 @@ public class SQLRuntimeOutputArea extends SQLBasicTableArea {
     
     private JMenuItem editRuntimeItem;
     
+    private static transient final Logger mLogger = LogUtil.getLogger(SQLRuntimeOutputArea.class.getName());
+    
+    private static transient final Localizer mLoc = Localizer.get();
+    
     /**
      * Creates a new instance of SQLRuntimeOutputArea
      */
@@ -96,7 +103,8 @@ public class SQLRuntimeOutputArea extends SQLBasicTableArea {
     protected void initializePopUpMenu() {
         ActionListener aListener = new TableActionListener();
         //      edit runtime
-        String lbl = NbBundle.getMessage(SQLBasicTableArea.class, "LBL_edit");
+        String nbBundle1 = mLoc.t("PRSR001: Edit");
+        String lbl = Localizer.parse(nbBundle1);
         editRuntimeItem = new JMenuItem(lbl, new ImageIcon(propertiesUrl));
         editRuntimeItem.addActionListener(aListener);
         popUpMenu.add(editRuntimeItem);
