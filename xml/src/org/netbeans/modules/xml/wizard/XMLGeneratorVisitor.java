@@ -181,6 +181,9 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
                 writer.write(buffer.toString() +">" +"\n");
             else
                 writer.write(buffer.toString() + ">");
+            
+            //write the default/fixed value of the element, if any
+            writer.write(getComponentValue(element));
         }
         if(component instanceof AnyElement) {
             AnyElement element = (AnyElement)component;
@@ -198,13 +201,13 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
              if(attr instanceof Attribute) {
                 if(!contentAttr.generateOptionalAttributes()){ 
                    if(((Attribute)attr).getUse().equals(Use.REQUIRED)){
-                        attrs.append(attr+ "=\"" + getAttributeValue((Attribute)attr) + "\" ");
+                        attrs.append(attr+ "=\"" + getComponentValue((Attribute)attr) + "\" ");
                     }
                     continue;
                 }
             }
             if(attr instanceof Attribute)
-                attrs.append(attr+ "=\"" + getAttributeValue((Attribute)attr) + "\" ");
+                attrs.append(attr+ "=\"" + getComponentValue((Attribute)attr) + "\" ");
             else
                 attrs.append(attr+"= \" \" ");            
         }
@@ -294,10 +297,19 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         return null;
     }
      
-   private String getAttributeValue(Attribute attribute) {
-       String value = attribute.getFixed();
-       if(value == null)
-           value = attribute.getDefault();
+   private String getComponentValue(AXIComponent component) {
+       String value = null;
+       if(component instanceof Attribute ) {
+           Attribute attribute = (Attribute)component;
+           value = attribute.getFixed();
+           if(value == null)
+               value = attribute.getDefault();
+       } else if(component instanceof Element) {
+           Element element =(Element)component;
+           value = element.getFixed();
+           if(value == null)
+               value = element.getDefault();    
+       }
        
        if(value != null)
            return value;   
