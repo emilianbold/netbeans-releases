@@ -557,9 +557,9 @@ public class FileStatusCache implements ISVNNotifyListener {
         Map<File, FileInformation> folderFiles = new HashMap<File, FileInformation>(files.length);
 
         ISVNStatus [] entries = null;
-        try {
-            SvnClient client = Subversion.getInstance().getClient(true); 
+        try {            
             if (Subversion.getInstance().isManaged(dir)) {
+                SvnClient client = Subversion.getInstance().getClient(true); 
                 entries = client.getStatus(dir, false, false); 
             }
         } catch (SVNClientException e) {
