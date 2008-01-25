@@ -94,9 +94,9 @@ public abstract class ETLWizardDescriptor extends WizardDescriptor {
         try {
             // Sets message format used for panel title; {0} indicates component
             // name, if any; {1} indicates step info as provided by iterator.
-            String nbBundle1 = mLoc.t("PRSR001: {0}", LOG_CATEGORY);
             setTitleFormat(new MessageFormat(
-                    Localizer.parse(nbBundle1)));
+                    NbBundle.getMessage(ETLWizardDescriptor.class,
+                    "MSG_titleformat_wiz_default")));
         } catch (MissingResourceException e) {
             mLogger.errorNoloc(mLoc.t("PRSR040: Could not locate key for title format.{0}", LOG_CATEGORY), e);
         }

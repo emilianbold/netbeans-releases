@@ -48,7 +48,6 @@ import java.util.MissingResourceException;
 
 import net.java.hulp.i18n.Logger;
 import org.openide.WizardDescriptor;
-import org.openide.util.NbBundle;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.etl.logger.Localizer;
@@ -128,7 +127,9 @@ public class ETLTableSelectionWizard extends ETLWizard {
 
         protected String[] createSteps() {
             try {
-                return new String[]{NbBundle.getMessage(ETLTableSelectionWizard.class, "STEP_tblwizard_sources"), NbBundle.getMessage(ETLTableSelectionWizard.class, "STEP_tblwizard_targets")};
+                String nbBundle5 = mLoc.t("PRSR001: Select Source Tables");
+                String nbBundle6 = mLoc.t("PRSR001: Select Target Tables");
+                return new String[]{Localizer.parse(nbBundle5), Localizer.parse(nbBundle6)};
             } catch (MissingResourceException e) {
                 return new String[]{};
             }
