@@ -43,14 +43,11 @@ package gui;
 
 
 import gui.action.CreateRubyProject;
-/*
 import gui.action.EditorMenuPopup;
-import gui.action.OpenRubyProject;
 import gui.action.ScriptingExpandFolder;
-import gui.action.ScriptingNodePopup;
-import gui.action.ScriptingProjectNodePopup;
 import gui.action.TypingInScriptingEditor;
-*/
+import gui.menu.ScriptingNodePopup;
+import gui.menu.ScriptingProjectNodePopup;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -63,12 +60,6 @@ public class ScriptingMeasureActions {
 
         suite.addTest(new CreateRubyProject("testCreateRubyProject","Create Ruby project"));
         suite.addTest(new CreateRubyProject("testCreateRubyOnRailsProject","Create Ruby on Rails project"));
-        /*        
-        
-        suite.addTest(new OpenRubyProject("testOpenRubyProject","Open Ruby Project"));
-        suite.addTest(new OpenRubyProject("testOpenRailsProject","Open Ruby on Rails Project"));
-
-       
         
         suite.addTest(new ScriptingProjectNodePopup("testRubyProjectNodePopupMenu","Ruby Project node popup test"));
         suite.addTest(new ScriptingProjectNodePopup("testRubyProjectNodePopupMenu","Rails Project node popup test"));
@@ -104,8 +95,13 @@ public class ScriptingMeasureActions {
         
         suite.addTest(new TypingInScriptingEditor("test_RB_EditorTyping","test_RB_EditorTyping"));
         suite.addTest(new TypingInScriptingEditor("test_RHTML_EditorTyping","test_RHTML_EditorTyping"));
-        suite.addTest(new TypingInScriptingEditor("test_JScript_EditorTyping","test_JScript_EditorTyping"));
+        suite.addTest(new TypingInScriptingEditor("test_JScript_EditorTyping","test_JScript_EditorTyping"));        
         
+        /*        
+        
+        suite.addTest(new OpenRubyProject("testOpenRubyProject","Open Ruby Project"));
+        suite.addTest(new OpenRubyProject("testOpenRailsProject","Open Ruby on Rails Project"));
+             
         */
         return suite;        
     }
