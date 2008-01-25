@@ -55,6 +55,7 @@ public class DocOffsetableImpl implements CsmOffsetable {
     
     public DocOffsetableImpl(BaseDocument doc, CsmFile file, int offset) {
         this.pos = new DocOffsPositionImpl(doc, offset);
+        assert file != null : "null file for document " + doc + " on offset " + offset;
         this.file = file;
     }
 

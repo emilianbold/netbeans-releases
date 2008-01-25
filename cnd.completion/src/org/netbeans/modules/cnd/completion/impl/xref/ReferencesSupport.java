@@ -235,6 +235,7 @@ public final class ReferencesSupport {
     
     public static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token token) {
         assert token != null;
+        assert file != null : "null file for document " + doc + " on offset " + offset + " " + token;
         ReferenceImpl ref = new ReferenceImpl(file, doc, offset, token);
         return ref;
     }
