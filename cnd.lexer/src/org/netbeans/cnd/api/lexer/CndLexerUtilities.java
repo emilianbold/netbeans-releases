@@ -61,6 +61,7 @@ public final class CndLexerUtilities {
         return ts;
     }
     
+    @SuppressWarnings("unchecked")
     public static TokenSequence<CppTokenId> getCppTokenSequence(final TokenHierarchy hierarchy, final int offset) {
         if (hierarchy != null) {
             TokenSequence<?> ts = hierarchy.tokenSequence();
