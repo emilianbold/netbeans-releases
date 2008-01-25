@@ -183,13 +183,20 @@ public class FileEntry {
         }
     }
     
-    public String toXml() {
+    private String escapeXmlTags(final String str) {        
+        return (str == null) ? null : str.
+                replace("&", "&amp;").//NOI18N
+                replace("<", "&lt;").//NOI18N
+                replace(">", "&gt;");//NOI18N        
+    }
+    
+    public String toXml() {        
         if (directory) {
             return "<entry " +
                     "type=\"directory\" " +
                     "empty=\"" + empty + "\" " +
                     "modified=\"" + modified + "\" " +
-                    "permissions=\"" + Integer.toString(permissions, 8) + "\">" + name + "</entry>";
+                    "permissions=\"" + Integer.toString(permissions, 8) + "\">" + escapeXmlTags(name) + "</entry>";
         } else {
             return "<entry " +
                     "type=\"file\" " +
@@ -199,7 +206,7 @@ public class FileEntry {
                     "packed=\"" + packed + "\" " +
                     "signed=\"" + signed + "\" " +
                     "modified=\"" + modified + "\" " +
-                    "permissions=\"" + Integer.toString(permissions, 8) + "\">" + name + "</entry>";
+                    "permissions=\"" + Integer.toString(permissions, 8) + "\">" + escapeXmlTags(name) + "</entry>";
         }
     }
     
