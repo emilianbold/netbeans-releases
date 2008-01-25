@@ -81,6 +81,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
 
         Part lp = (Part)
             getAttachedAnnotatable();
+        if (lp == null) return null;
         Line line = lp.getLine ();
         DataObject dob = DataEditorSupport.findDataObject (line);
         if (dob == null) return null;
