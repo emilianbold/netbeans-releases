@@ -42,15 +42,35 @@
 package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ArrayReference;
+import com.sun.jdi.BooleanType;
+import com.sun.jdi.ByteType;
+import com.sun.jdi.ByteValue;
+import com.sun.jdi.CharType;
 import com.sun.jdi.CharValue;
+import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
+import com.sun.jdi.DoubleType;
+import com.sun.jdi.DoubleValue;
 import com.sun.jdi.Field;
+import com.sun.jdi.FloatType;
+import com.sun.jdi.FloatValue;
+import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.IntegerType;
+import com.sun.jdi.IntegerValue;
+import com.sun.jdi.InvalidTypeException;
+import com.sun.jdi.InvocationException;
+import com.sun.jdi.LongType;
+import com.sun.jdi.LongValue;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
+import com.sun.jdi.PrimitiveType;
 import com.sun.jdi.PrimitiveValue;
 import com.sun.jdi.ReferenceType;
+import com.sun.jdi.ShortType;
+import com.sun.jdi.ShortValue;
 import com.sun.jdi.StringReference;
+import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VoidValue;
 import com.sun.jdi.VMDisconnectedException;
@@ -63,8 +83,10 @@ import java.util.Set;
 
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.expr.EvaluatorVisitor;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.openide.util.NbBundle;
 
@@ -159,10 +181,13 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         } else {
             // evaluate expression to Value
             Value evaluatedValue = debugger.evaluateIn (expression);
-            if (!(evaluatedValue instanceof PrimitiveValue)) {
-                throw new InvalidExpressionException(expression);
+            if (oldV != null && evaluatedValue != null) {
+                Type type = oldV.type();
+                if (!type.equals(evaluatedValue.type())) {
+                    evaluatedValue = convertValue(evaluatedValue, type);
+                }
             }
-            value = (PrimitiveValue) evaluatedValue;
+            value = evaluatedValue;
         }
         // set new value to remote veriable
         setValue (value);
@@ -179,6 +204,77 @@ class AbstractVariable implements JDIVariable, Customizer, Cloneable {
         }
         //pchs.firePropertyChange("value", null, value);
         //getModel ().fireTableValueChangedChanged (this, null);
+    }
+    
+    private Value convertValue(Value value, Type type) {
+        if (type instanceof PrimitiveType) {
+            if (value instanceof ObjectReference) {
+                JPDAThread ct = getDebugger().getCurrentThread();
+                if (ct != null) {
+                    try {
+                        value = EvaluatorVisitor.unbox((ObjectReference) value,
+                                                       (PrimitiveType) type,
+                                                       ((JPDAThreadImpl) ct).getThreadReference());
+                    } catch (InvalidTypeException ex) {
+                    } catch (ClassNotLoadedException ex) {
+                    } catch (IncompatibleThreadStateException ex) {
+                    } catch (InvocationException ex) {
+                    }
+                }
+                if (value.type().equals(type)) {
+                    return value;
+                }
+            }
+            if (value instanceof PrimitiveValue) {
+                PrimitiveValue pv = (PrimitiveValue) value;
+                if (type instanceof BooleanType) return pv.virtualMachine().mirrorOf(pv.booleanValue());
+                if (type instanceof ByteType) return pv.virtualMachine().mirrorOf(pv.byteValue());
+                if (type instanceof CharType) return pv.virtualMachine().mirrorOf(pv.charValue());
+                if (type instanceof ShortType) return pv.virtualMachine().mirrorOf(pv.shortValue());
+                if (type instanceof IntegerType) return pv.virtualMachine().mirrorOf(pv.intValue());
+                if (type instanceof LongType) return pv.virtualMachine().mirrorOf(pv.longValue());
+                if (type instanceof FloatType) return pv.virtualMachine().mirrorOf(pv.floatValue());
+                if (type instanceof DoubleType) return pv.virtualMachine().mirrorOf(pv.doubleValue());
+            }
+        }
+        if (type instanceof ClassType && value instanceof PrimitiveValue) {
+            JPDAThread ct = getDebugger().getCurrentThread();
+            if (ct != null) {
+                PrimitiveValue pv = (PrimitiveValue) value;
+                String classType = type.name();
+                if (classType.equals("java.lang.Byte") && !(pv instanceof ByteValue)) {
+                    pv = pv.virtualMachine().mirrorOf(pv.byteValue());
+                }
+                if (classType.equals("java.lang.Character") && !(pv instanceof CharValue)) {
+                    pv = pv.virtualMachine().mirrorOf(pv.charValue());
+                }
+                if (classType.equals("java.lang.Short") && !(pv instanceof ShortValue)) {
+                    pv = pv.virtualMachine().mirrorOf(pv.shortValue());
+                }
+                if (classType.equals("java.lang.Integer") && !(pv instanceof IntegerValue)) {
+                    pv = pv.virtualMachine().mirrorOf(pv.intValue());
+                }
+                if (classType.equals("java.lang.Long") && !(pv instanceof LongValue)) {
+                    pv = pv.virtualMachine().mirrorOf(pv.longValue());
+                }
+                if (classType.equals("java.lang.Float") && !(pv instanceof FloatValue)) {
+                    pv = pv.virtualMachine().mirrorOf(pv.floatValue());
+                }
+                if (classType.equals("java.lang.Double") && !(pv instanceof DoubleValue)) {
+                    pv = pv.virtualMachine().mirrorOf(pv.doubleValue());
+                }
+                try {
+                    value = EvaluatorVisitor.box(pv,
+                                                 (ReferenceType) type,
+                                                 ((JPDAThreadImpl) ct).getThreadReference());
+                } catch (InvalidTypeException ex) {
+                } catch (ClassNotLoadedException ex) {
+                } catch (IncompatibleThreadStateException ex) {
+                } catch (InvocationException ex) {
+                }
+            }
+        }
+        return value;
     }
     
     /**

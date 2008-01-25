@@ -166,7 +166,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Martin Entlicher
  */
- class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext> {
+public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext> {
 
     private static final Logger loggerMethod = Logger.getLogger("org.netbeans.modules.debugger.jpda.invokeMethod"); // NOI18N
     private static final Logger loggerValue = Logger.getLogger("org.netbeans.modules.debugger.jpda.getValue"); // NOI8N
