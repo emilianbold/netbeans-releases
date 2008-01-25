@@ -67,6 +67,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -90,6 +91,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.NotifyDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
@@ -155,6 +157,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private long lastCheck = 0;
     private boolean isRunning = false;
     
+    private final ChangeSupport managerChangeSupport = new ChangeSupport(this);
     
     private volatile static ServerInstance profiledServerInstance;
     private ProfilerServerSettings  profilerSettings;
@@ -181,7 +184,15 @@ public class ServerInstance implements Node.Cookie, Comparable {
     public String getDisplayName() {
         return instanceProperties.getProperty(InstanceProperties.DISPLAY_NAME_ATTR);
     }
-    
+
+    public void addManagerChangeListener(ChangeListener listener) {
+        managerChangeSupport.addChangeListener(listener);
+    }
+
+    public void removeManagerChangeListener(ChangeListener listener) {
+        managerChangeSupport.removeChangeListener(listener);
+    }
+
     /**
      * Returns value of the specified timeout propety in milliseconds. If the
      * timeout property is not defined the specified default values is returned.
@@ -245,8 +256,13 @@ public class ServerInstance implements Node.Cookie, Comparable {
             String username = (String) fo.getAttribute(ServerRegistry.USERNAME_ATTR);
             String password = (String) fo.getAttribute(ServerRegistry.PASSWORD_ATTR);
             managerTmp = server.getDeploymentManager(url, username, password);
+            boolean fire = false;
             synchronized (this) {
+                fire = (manager != managerTmp);
                 manager = managerTmp;
+            }
+            if (fire) {
+                firePossibleManagerChange();
             }
         } catch(javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException e) {
             throw new RuntimeException(e);
@@ -272,8 +288,13 @@ public class ServerInstance implements Node.Cookie, Comparable {
             throw new DeploymentManagerCreationException(msg);
         }
         disconnectedManagerTmp = server.getDisconnectedDeploymentManager(url);
+        boolean fire = false;
         synchronized (this) {
+            fire = (manager == null) && (disconnectedManager != disconnectedManagerTmp);
             disconnectedManager = disconnectedManagerTmp;
+        }
+        if (fire) {
+            firePossibleManagerChange();
         }
         return disconnectedManagerTmp;
     }
@@ -375,11 +396,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         synchronized (this) {
             managerTmp = manager;
             manager = null;
-        }
-        if (managerTmp != null) {
-            managerTmp.release();
-        }
-        synchronized (this) {
+
             disconnectedManager = null;
             incrementalDeployment = null;
             tmidResolver = null;
@@ -388,6 +405,11 @@ public class ServerInstance implements Node.Cookie, Comparable {
             coTarget = null;
             targets = null;
         }
+        firePossibleManagerChange();
+        
+        if (managerTmp != null) {
+            managerTmp.release();
+        }        
     }
     
     /** Remove this server instance and stop it if it has been started from within the IDE */
@@ -1621,6 +1643,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
             throw new IllegalArgumentException();
         }
         return getDisplayName().compareTo(((ServerInstance)other).getDisplayName());
+    }
+
+    private void firePossibleManagerChange() {
+        managerChangeSupport.fireChange();
     }
 
     /**

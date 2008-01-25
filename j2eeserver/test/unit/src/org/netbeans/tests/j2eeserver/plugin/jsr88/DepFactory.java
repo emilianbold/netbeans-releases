@@ -57,7 +57,7 @@ public class DepFactory implements DeploymentFactory {
     }
 
     public javax.enterprise.deploy.spi.DeploymentManager getDeploymentManager(String str, String str1, String str2) throws javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException {
-        DepManager manager = (DepManager) managers.get(str);
+        DepManager manager = (DepManager) managers.get(str + str1 + str2);
         if (manager == null){
             manager = new DepManager(str, str1, str2);
             managers.put(str, manager);

@@ -43,15 +43,9 @@ package org.netbeans.modules.j2ee.deployment.impl.ui;
 
 
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.Target;
-import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
-import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstanceLookup;
 import org.netbeans.modules.j2ee.deployment.impl.ServerTarget;
-import org.openide.util.Exceptions;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
 
 
@@ -64,19 +58,22 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.RegistryNodeFactory;
 
 public class RegistryNodeProvider {
     RegistryNodeFactory factory;
-    
+
     /** Creates a new instance of RegistryNodeProvider */
     public RegistryNodeProvider(RegistryNodeFactory factory) {
         this.factory = factory;
     }
-       
+
     public Node createInstanceNode(ServerInstance instance) {
         return new InstanceNodeDecorator(createInstanceNodeImpl(instance, true), instance);
     }
-    
+
     public Node createTargetNode(ServerTarget target) {
         if (factory != null) {
-            Node original = factory.getTargetNode(createLookup(target));
+            Node original = factory.getTargetNode(new ServerInstanceLookup(
+                    target.getInstance(),
+                    target.getInstance().getServer().getDeploymentFactory(),
+                    target.getTarget()));
             if (original != null) {
                 TargetBaseNode xnode = new TargetBaseNode(org.openide.nodes.Children.LEAF, target);
                 return new FilterXNode(original, xnode, true);
@@ -84,86 +81,22 @@ public class RegistryNodeProvider {
         }
         return new TargetBaseNode(org.openide.nodes.Children.LEAF, target);
     }
-    
+
     public Node createInstanceTargetNode(ServerInstance instance) {
         Node original = createInstanceNodeImpl(instance, false);
         return new InstanceNodeDecorator(new InstanceTargetXNode(original, instance), instance);
     }
-    
+
     private Node createInstanceNodeImpl(ServerInstance instance, boolean addStateListener) {
         InstanceNode xnode = new InstanceNode(instance, addStateListener);
-        
+
         if (factory != null) {
-            Node original = factory.getManagerNode(createLookup(instance));
+            Node original = factory.getManagerNode(new ServerInstanceLookup(instance,
+                    instance.getServer().getDeploymentFactory(), null));
             if (original != null) {
                 return new FilterXNode(original, xnode, true, new FilterXNode.XChildren(xnode));
             }
         }
         return xnode;
-    }
-    
-//    static Lookup createLookup(final Server server) {
-//        return new Lookup() {
-//            public Object lookup(Class clazz) {
-//                if (DeploymentFactory.class.isAssignableFrom(clazz))
-//                    return server.getDeploymentFactory();
-//                if (DeploymentManager.class.isAssignableFrom(clazz)) {
-//                    try {
-//                        return server.getDisconnectedDeploymentManager();
-//                    } catch (DeploymentManagerCreationException dmce) {
-//                        Exceptions.printStackTrace(dmce);
-//                    }
-//                }
-//                return null;
-//            }
-//            public Lookup.Result lookup(Lookup.Template template) {
-//                return null;
-//            }
-//        };
-//    }
-    
-    static Lookup createLookup(final ServerInstance instance) {
-        return new Lookup() {
-            public Object lookup(Class clazz) {
-                if (DeploymentFactory.class.isAssignableFrom(clazz))
-                    return instance.getServer().getDeploymentFactory();
-                if (DeploymentManager.class.isAssignableFrom(clazz)) {
-                    try {
-                        return instance.isConnected() ? instance.getDeploymentManager()
-                                                      : instance.getDisconnectedDeploymentManager();
-                    } catch (DeploymentManagerCreationException dmce) {
-                        Exceptions.printStackTrace(dmce);
-                    }
-                }
-                return null;
-            }
-            public Lookup.Result lookup(Lookup.Template template) {
-                return null;
-            }
-        };
-    }
-    
-    static Lookup createLookup(final ServerTarget target) {
-        return new Lookup() {
-            public Object lookup(Class clazz) {
-                if (DeploymentFactory.class.isAssignableFrom(clazz))
-                    return target.getInstance().getServer().getDeploymentFactory();
-                if (DeploymentManager.class.isAssignableFrom(clazz)) {
-                    ServerInstance instance = target.getInstance();
-                    try {
-                        return instance.isConnected() ? instance.getDeploymentManager()
-                                                      : instance.getDisconnectedDeploymentManager();
-                    } catch (DeploymentManagerCreationException dmce) {
-                        Exceptions.printStackTrace(dmce);
-                    }
-                }
-                if (Target.class.isAssignableFrom(clazz))
-                    return target.getTarget();
-                return null;
-            }
-            public Lookup.Result lookup(Lookup.Template template) {
-                return null;
-            }
-        };
     }
 }

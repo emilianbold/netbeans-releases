@@ -42,19 +42,17 @@ package org.netbeans.modules.j2ee.deployment.impl.bridge;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
-import javax.enterprise.deploy.spi.DeploymentManager;
-import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
-import javax.enterprise.deploy.spi.factories.DeploymentFactory;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstanceLookup;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.CustomizerAction;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.spi.server.ServerManager;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
@@ -100,29 +98,11 @@ public class BridgingServerInstance extends org.netbeans.spi.server.ServerInstan
 
     @Override
     public Node getBasicNode() {
-        Node j2eeNode = instance.getServer().getRegistryNodeFactory().getManagerNode(new Lookup() {
-            public Object lookup(Class clazz) {
-                if (DeploymentFactory.class.isAssignableFrom(clazz))
-                    return instance.getServer().getDeploymentFactory();
-                if (DeploymentManager.class.isAssignableFrom(clazz)) {
-                    try {
-                        return instance.isConnected() ? instance.getDeploymentManager()
-                                                      : instance.getDisconnectedDeploymentManager();
-                    } catch (DeploymentManagerCreationException dmce) {
-                        Exceptions.printStackTrace(dmce);
-                    }
-                }
-                return null;
-            }
-
-            public Lookup.Result lookup(Lookup.Template template) {
-                return null;
-            }
-        });
+        Node j2eeNode = instance.getServer().getRegistryNodeFactory().getManagerNode(
+                new ServerInstanceLookup(instance, instance.getServer().getDeploymentFactory(), null));
 
         return new ManagerNode(j2eeNode, instance.getDisplayName());
     }
-
 
     @Override
     public JComponent getCustomizer() {

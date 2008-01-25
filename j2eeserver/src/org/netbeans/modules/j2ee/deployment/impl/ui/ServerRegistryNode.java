@@ -71,7 +71,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
     static final String SERVERS_ICON = "org/netbeans/modules/j2ee/deployment/impl/ui/resources/Servers.png";//NOI18N
     
     private transient HelpCtx helpCtx;
-    private boolean expandablePassTargetNode = true;
     
     /** Creates a new instance of ServerRegistryNode2 */
     private ServerRegistryNode() {
@@ -87,14 +86,6 @@ implements ServerRegistry.PluginListener, InstanceListener {
     }
     public void serverRemoved(Server server) {
         updateKeys();
-    }
-    
-    public boolean isExpandablePassTargetNode() {
-        return expandablePassTargetNode;
-    }
-    public void setExpandablePassTargetNode(boolean v) {
-        expandablePassTargetNode = v;
-        setChildren(new ServerChildren());
     }
     
     public void instanceAdded(String instance) {

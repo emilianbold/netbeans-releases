@@ -162,7 +162,7 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
         }
         
         public void updateNodes(final InstanceTargetXNode parent) {
-            if (isFurtherExpandable()) {
+            //if (isFurtherExpandable()) {
                 if (original == Node.EMPTY) {
                     changeOriginal(createWaitNode());
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -180,9 +180,9 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
                         }
                     });
                 }
-            } else {
-                changeOriginal(Node.EMPTY);
-            }
+//            } else {
+//                changeOriginal(Node.EMPTY);
+//            }
         }
         
         public void hideNodes() {
@@ -206,12 +206,12 @@ public class InstanceTargetXNode extends FilterXNode implements ServerInstance.S
             return new AbstractNode(children);
         }
         
-        private boolean isFurtherExpandable() {
-            ServerRegistryNode root = ServerRegistryNode.getServerRegistryNode();
-            if (root != null) {
-                return root.isExpandablePassTargetNode();
-            }
-            return true;
-        }
+//        private boolean isFurtherExpandable() {
+//            ServerRegistryNode root = ServerRegistryNode.getServerRegistryNode();
+//            if (root != null) {
+//                return root.isExpandablePassTargetNode();
+//            }
+//            return true;
+//        }
     }
 }

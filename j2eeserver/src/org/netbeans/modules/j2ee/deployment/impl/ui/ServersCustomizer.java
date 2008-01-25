@@ -61,6 +61,7 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.UIManager;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.impl.ServerInstanceLookup;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.wizard.AddServerInstanceWizard;
 import org.openide.nodes.Node;
@@ -527,7 +528,9 @@ public class ServersCustomizer extends javax.swing.JPanel implements PropertyCha
         private final ServerInstance serverInstance;
         
         public ServerNode(ServerInstance serverInstance) {
-            super(serverInstance.getServer().getRegistryNodeFactory().getManagerNode(RegistryNodeProvider.createLookup(serverInstance)));
+            super(serverInstance.getServer().getRegistryNodeFactory().getManagerNode(
+                    new ServerInstanceLookup(serverInstance,
+                        serverInstance.getServer().getDeploymentFactory(), null)));
             disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME |
                     DELEGATE_GET_NAME | DELEGATE_SET_NAME);
             this.serverInstance = serverInstance;
