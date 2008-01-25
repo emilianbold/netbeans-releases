@@ -42,11 +42,9 @@
 package org.netbeans.modules.masterfs.filebasedfs;
 
 import java.awt.Image;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectStreamException;
-import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,13 +54,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.ProvidedExtensionsProxy;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.BaseFileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj;
-import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.providers.AnnotationProvider;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
@@ -77,11 +71,16 @@ import org.openide.util.actions.SystemAction;
  */
 public final class FileBasedFileSystem extends FileSystem {
     private static Map allInstances = new HashMap();
+
     private transient final FileObjectFactory factory;
     transient private final StatusImpl status = new StatusImpl();
     public static boolean WARNINGS = true;
-    public static boolean PERF_PRINTING = false;
-    
+    private ThreadLocal<Boolean> refreshIsOn = new ThreadLocal<Boolean>();
+
+    public boolean isWarningEnabled() {
+        Boolean isRefreshOn = refreshIsOn.get();
+        return WARNINGS && (isRefreshOn == null || !isRefreshOn.booleanValue());
+    }    
 
     //only for tests purposes
     public static void reinitForTests() {
@@ -179,11 +178,16 @@ public final class FileBasedFileSystem extends FileSystem {
         Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
         stopWatch.start();
         try {
-            this.runAtomicAction(new FileSystem.AtomicAction(){
-                public void run() throws IOException {
-                    getFactory().refreshAll(expected);
-                }            
-            });
+            try {
+                refreshIsOn.set(true);            
+                this.runAtomicAction(new FileSystem.AtomicAction() {
+                    public void run() throws IOException {
+                        getFactory().refreshAll(expected);
+                    }            
+                });
+            } finally {
+                refreshIsOn.set(false);
+            }
         } catch(IOException iex) {/*method refreshAll doesn't throw IOException*/}
         stopWatch.stop();
 	
@@ -201,6 +205,39 @@ public final class FileBasedFileSystem extends FileSystem {
         Statistics.REFRESH_FOLDER.reset();
         Statistics.REFRESH_FILE.reset();
     }
+    
+    public final void refreshFor(final File file) {
+        Statistics.StopWatch stopWatch = Statistics.getStopWatch(Statistics.REFRESH_FS);
+        stopWatch.start();
+        try {
+            try {
+                refreshIsOn.set(true);            
+                this.runAtomicAction(new FileSystem.AtomicAction() {
+                    public void run() throws IOException {
+                        getFactory().refreshFor(file);
+                    }            
+                });
+            } finally {
+                refreshIsOn.set(false);
+            }
+        } catch(IOException iex) {/*method refreshAll doesn't throw IOException*/}
+        stopWatch.stop();        
+	
+        // print refresh stats unconditionally in trunk
+        Logger.getLogger("org.netbeans.modules.masterfs.REFRESH").fine(
+            "FS.refresh statistics (" + Statistics.fileObjects() + "FileObjects):\n  " +
+            Statistics.REFRESH_FS.toString() + "\n  " +
+            Statistics.LISTENERS_CALLS.toString() + "\n  " + 
+            Statistics.REFRESH_FOLDER.toString() + "\n  " + 
+            Statistics.REFRESH_FILE.toString() + "\n"
+        );
+
+        Statistics.REFRESH_FS.reset();
+        Statistics.LISTENERS_CALLS.reset();
+        Statistics.REFRESH_FOLDER.reset();
+        Statistics.REFRESH_FILE.reset();
+    }
+    
 
     public final boolean isReadOnly() {
         return false;

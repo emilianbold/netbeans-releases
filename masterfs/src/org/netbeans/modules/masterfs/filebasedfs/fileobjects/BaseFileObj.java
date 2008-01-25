@@ -321,7 +321,7 @@ public abstract class BaseFileObj extends FileObject {
 
     public final void setAttribute(final String attrName, final Object value) throws java.io.IOException {
         if ("request_for_refreshing_files_be_aware_this_is_not_public_api".equals(attrName) && (value instanceof File)) {//NOI18N
-            getLocalFileSystem().getFactory().refreshFor((File)value);
+            getLocalFileSystem().refreshFor((File)value);
             return;
         }
         final Object oldValue = BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
@@ -787,7 +787,7 @@ public abstract class BaseFileObj extends FileObject {
     }    
     
     boolean checkCacheState(boolean exist, File file) {        
-        if (FileBasedFileSystem.WARNINGS) {
+        if (getLocalFileSystem().isWarningEnabled()) {
             boolean notsame = exist != file.exists();
             if (notsame) {
                 printWarning(file);
