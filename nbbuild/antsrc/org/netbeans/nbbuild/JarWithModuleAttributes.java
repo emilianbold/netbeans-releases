@@ -43,10 +43,13 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
@@ -65,7 +68,17 @@ public class JarWithModuleAttributes extends Jar {
 
     private static final Pattern COMMA_SPACE = Pattern.compile(", *");
     private static final Pattern IMPL_DEP = Pattern.compile(" *([a-zA-Z0-9_.]+)(/[0-9]+)? *= *(.+) *");
+    
+    private File stamp;
+    /** Location of a stamp file to create and/or make newer than the JAR file.
+     * 
+     * @param stamp the file to create and update
+     */
+    public void setStamp(File stamp) {
+        this.stamp = stamp;
+    }
 
+    @Override
     public void setManifest(File manifestFile) throws BuildException {
         Manifest added = new Manifest();
         try {
@@ -234,4 +247,22 @@ public class JarWithModuleAttributes extends Jar {
         }
     }
 
+    @Override
+    public void execute() throws BuildException {
+        super.execute();
+        if (stamp != null) {
+            log("Stamp " + stamp + " against " + zipFile, Project.MSG_DEBUG);
+            if (stamp.lastModified() < zipFile.lastModified()) {
+                try {
+                    stamp.getParentFile().mkdirs();
+                    stamp.createNewFile();
+                    stamp.setLastModified(zipFile.lastModified());
+                } catch (IOException ex) {
+                    throw new BuildException(ex);
+                }
+            }
+        }
+    }
+
+    
 }

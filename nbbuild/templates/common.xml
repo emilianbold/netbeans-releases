@@ -173,17 +173,16 @@ made subject to such option by the copyright holder.
             <format property="buildnumber" pattern="yyMMdd" timezone="UTC"/>
         </tstamp>
     </target>
-
+    
     <target name="jar" depends="init,compile,jar-prep">
         <!-- XXX it seems that using <manifest> forces the JAR to be recreated each time -->
         <!-- (presumably due to the variable OIDE-M-I-V) -->
         <!-- so might have to use e.g. <manifest> task (created in build/ somewhere)? -->
         <!-- Cf: http://issues.apache.org/bugzilla/show_bug.cgi?id=29085 -->
         <!-- This task adds some or all of: -Public-Packages, -Friends, Class-Path, -IDE-Dependencies, -Module-Dependencies, -Specification-Version, -Implementation-Version, -Build-Version, AutoUpdate-Show-In-Client -->
-        <jarwithmoduleattributes jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
+        <jarwithmoduleattributes jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}" stamp="${cluster}/.lastModified">
             <fileset dir="${build.classes.dir}"/>
         </jarwithmoduleattributes>
-        <touch file="${cluster}/.lastModified"/>
     </target>
     
     <!-- Can insert extra stuff in here: -->
