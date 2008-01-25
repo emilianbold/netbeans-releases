@@ -41,6 +41,7 @@
 
 package gui;
 
+import gui.setup.ScriptingSetupTest;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -49,7 +50,19 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class ScriptingMeasuringSetup extends NbTestSuite {
     public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite");
+        NbTestSuite suite = new NbTestSuite("Scripting pack UI Responsiveness Setup suite");
+        suite.addTest(new ScriptingSetupTest("closeMemoryToolbar"));
+        
+        suite.addTest(new ScriptingSetupTest("closeWelcome"));
+        
+        // server is registered from command line
+        //suite.addTest(new WebSetupTest("setupAppServer"));
+        
+        suite.addTest(new ScriptingSetupTest("OpenRubyProject"));
+        suite.addTest(new ScriptingSetupTest("OpenRailsProject"));
+        suite.addTest(new ScriptingSetupTest("OpenScriptingProject"));
+        
+        suite.addTest(new ScriptingSetupTest("closeAllDocuments"));        
         return suite;
     }
 }
