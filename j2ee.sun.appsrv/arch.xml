@@ -261,38 +261,17 @@ Thsi module needs JRE 1.4 or 1.5. The module is compiled with with JDK 1.4 for n
 -->
 <answer id="dep-nb">
 It uses various kinds of API's:
+<!--
 <ul>
-<li>
-    <api 
-        name="OpenAPIs"
-        type="import"
-        category="stable"
-        group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/OpenAPIs/"
-    >
-    NetBeans Open APIs
-    </api>
-</li>
 <li>
     <api 
         name="ExecutionAPIs"
         type="import"
         category="stable"
         group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/ExecutionAPI/index.html"
+        url="http://bits.netbeans.org/dev/javadoc/org-openide-execution/"
     >
     NetBeans Execution APIs
-    </api>
-</li>
-<li>
-    <api 
-        name="openide.src"
-        type="import"
-        category="stable"
-        group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/JavaHierarchyAPI/index.html"
-    >
-    The Java Hierarchy API.
     </api>
 </li>
 <li>
@@ -312,7 +291,7 @@ It uses various kinds of API's:
         type="import"
         category="stable"
         group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/InputOutputAPI/index.html"
+        url="http://bits.netbeans.org/dev/javadoc/org-openide-io/"
     >
     NetBeans Input-Output APIs
     </api>
@@ -323,7 +302,7 @@ It uses various kinds of API's:
         type="import"
         category="stable"
         group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/DebuggerAPI/index.html"
+        url="http://bits.netbeans.org/dev/javadoc/org-netbeans-api-debugger/"
     >
     NetBeans Debugger APIs
     </api>
@@ -402,7 +381,7 @@ It uses various kinds of API's:
         type="import"
         category="friend"
         group="java"
-        url="http://www.netbeans.org/download/dev/javadoc/J2EEDDAPI/index.html"
+        url="http://bits.netbeans.org/dev/javadoc/org-netbeans-modules-j2ee-dd/"
     >
     The J2EE DD APIS (Deployment descriptors)
     </api>
@@ -411,6 +390,7 @@ It uses various kinds of API's:
 
 
 </ul>
+-->
 </answer>
 
   
