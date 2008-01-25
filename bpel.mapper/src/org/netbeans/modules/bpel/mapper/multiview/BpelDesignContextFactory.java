@@ -44,6 +44,7 @@ import org.netbeans.modules.bpel.model.api.To;
 import org.netbeans.modules.bpel.model.api.Wait;
 import org.netbeans.modules.bpel.model.api.While;
 import org.netbeans.modules.soa.ui.nodes.InstanceRef;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -61,7 +62,8 @@ public class BpelDesignContextFactory {
             new AssignContextCreator(), 
             new BooleanConditionContextCreator(), 
             new TimeConditionContextCreator(), 
-            new ForEachContextCreator()};
+            new ForEachContextCreator(),
+            new EmptyContextCreator()};
     }
     
     public static BpelDesignContextFactory getInstance() {
@@ -101,7 +103,7 @@ public class BpelDesignContextFactory {
         if (nodes[0] instanceof InstanceRef) {
             Object entity = ((InstanceRef) nodes[0]).getReference();
             if (entity instanceof BpelEntity 
-                    && currentBpelModel.equals(((BpelEntity)entity).getBpelModel())) 
+                    && currentBpelModel.equals(((BpelEntity)entity).getBpelModel()))
             {
                 bpelEntity = (BpelEntity)entity;
             }
@@ -435,4 +437,44 @@ public class BpelDesignContextFactory {
         }
     }
     
+    private class EmptyContextCreator implements ContextCreator {
+
+        /**
+         * @param selectedEntity - the selected bpel entity to show mapper
+         */
+        public boolean accepted(BpelEntity selectedEntity) {
+            return selectedEntity != null;
+        }
+
+        public BpelDesignContext create(BpelEntity selectedEntity, Node node, Lookup lookup) {
+            if (!accepted(selectedEntity)) {
+                return null;
+            }
+            return new BpelDesignContextImpl(null, null, selectedEntity, node, lookup);
+        }
+    }
+    
+    public static boolean isValidContext(BpelDesignContext context) {
+        if (context == null) {
+            return true;
+        }
+        BpelEntity contextEntity = context.getContextEntity();
+        BpelEntity graphEntity = context.getGraphEntity();
+        BpelEntity selectedtEntity = context.getSelectedEntity();
+        
+        return !(contextEntity != null && !contextEntity.isInDocumentModel())
+                || !(graphEntity != null && !graphEntity.isInDocumentModel())
+                || !(selectedtEntity != null && !selectedtEntity.isInDocumentModel());
+    }
+    
+    public static boolean isValidNode(Node node) {
+        if (!(node instanceof InstanceRef)) {
+            return true;
+        }
+        
+        Object ref  = ((InstanceRef)node).getReference();
+        
+        return ref instanceof DocumentComponent ? ((DocumentComponent)ref).isInDocumentModel() : true;
+    }
+
 }

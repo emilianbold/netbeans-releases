@@ -24,17 +24,19 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
 import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
-import org.netbeans.modules.bpel.model.api.support.UniqueId;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.xml.xam.Model.State;
+import org.netbeans.modules.xml.xam.Nameable;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
@@ -59,35 +61,33 @@ public class DesignContextControllerImpl2
     private BpelModelSynchListener mBpelModelSynchListener;
     
     private BpelModel myBpelModel;
+    // flag property for MapperTC showing/hidding states
     private boolean isMapperShown;
-    
-    // Fields which hold parameters for the UpdateProcessor
     private BpelDesignContext mNewContext;
-//    private boolean mNeedReload;
     private MapperStateManager myMapperStateManager;
 
-    private static final int ACTION_NODE_CHANGE_TASK_DELAY = 200;
+    private static final int ACTION_NODE_CHANGE_TASK_DELAY = 150;
     private transient RequestProcessor.Task myPreviousTask;
+    private int myDelay = ACTION_NODE_CHANGE_TASK_DELAY;
     
     private WeakReference<Object> mBpelModelUpdateSourceRef;
     
     /**
-     * The lookup of mapper Tc contains BPELDataObject and BpelModel
+     * The lookup of mapper Tc must contain BPELDataObject, BpelModel and ShowMapperCookie
      * @param mapperTc 
      */
     public DesignContextControllerImpl2(TopComponent mapperTc) {
         assert mapperTc != null;
         assert mapperTc instanceof MapperTcContext;
         
-        mMapperTcContext = (MapperTcContext)mapperTc;
-        mBpelModelSynchListener = new BpelModelSynchListener(this);
-        
+        mMapperTcContext = (MapperTcContext)mapperTc;       
         myBpelModel = mapperTc.getLookup().lookup(BpelModel.class);
         assert myBpelModel != null;
+        mBpelModelSynchListener = new BpelModelSynchListener(this);
+        myBpelModel.addEntityChangeListener(mBpelModelSynchListener);
         
         TopComponent.getRegistry().addPropertyChangeListener(this);
         
-        myBpelModel.addEntityChangeListener(mBpelModelSynchListener);
         initContext();
     }
     
@@ -98,37 +98,34 @@ public class DesignContextControllerImpl2
         mMapperTcContext = null;
     }
     
-    public MapperTcContext getMapperTcContext() {
-        return mMapperTcContext;
-    }
-    
     public synchronized void setBpelModelUpdateSource(Object source) {
         mBpelModelUpdateSourceRef = new WeakReference<Object>(source);
-    }
-    
-    private synchronized Object getBpelModelUpdateSource() {
-        if (mBpelModelUpdateSourceRef != null) {
-            return mBpelModelUpdateSourceRef.get();
-        }
-        //
-        return null;
     }
     
     public synchronized BpelDesignContext getContext() {
         return mContext;
     }
-    
-    private synchronized void initContext() {
-        setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
-        myMapperStateManager = new MapperStateManager(mMapperTcContext);
-    }
-    
+
     // context changes if selectedEntity changes
     public synchronized void setContext(BpelDesignContext newContext) {
-        if (newContext == null) {
+        assert EventQueue.isDispatchThread();
+        
+        boolean isValidContext = BpelDesignContextFactory.isValidContext(mContext);
+        // null means unsupported context - in result the old context must be stored
+        if (newContext == null && isValidContext) {
             return;
         }
+        
+        // todo m
+        if (newContext == null && !isValidContext) {
+            if (isMapperShown) {
+                showNotValidContext(mContext);
+            }
+            return;
+        }
+        
         BpelEntity newEntity = newContext.getSelectedEntity();
+        
         // avoid entities from another BpelModel
         if ((newEntity != null && !myBpelModel.equals(newEntity.getBpelModel())) 
                 || newEntity == null) 
@@ -136,139 +133,62 @@ public class DesignContextControllerImpl2
             return;
         }
 
-        BpelEntity oldEntity = mContext != null ? mContext.getSelectedEntity() : null;
-        UniqueId oldEntityUid = oldEntity != null ? oldEntity.getUID() : null;
-        UniqueId newEntityUid = newEntity.getUID();
-        // the context doesn't changed
-        if (newEntityUid.equals(oldEntityUid)) {
+        // the context have to be updated just if context changes,
+        // in case the bpel model changes doesn't need to update context
+        if (newContext.equals(mContext)) 
+        {
             return;
         }
-        
-        setActivatedNodes(newContext.getActivatedNode());
+
         //
         mNewContext = newContext;
+
+        setActivatedNodes(newContext == null ? null : newContext.getActivatedNode());
 
         if (isMapperShown) {
             setContextImpl();
         }
     }
     
-    /**
-     * works in swing thread only
-     * 
-     */
-    private void setActivatedNodes(final Node aNode) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            public void run() {
-                if ( aNode != null && mMapperTcContext != null) {
-
-                    TopComponent mapperTc = mMapperTcContext.getTopComponent();
-                    if (mapperTc != null) {
-                        mapperTc.setActivatedNodes(new Node[] {aNode});
-                    }
-                }
-            }
-        });
-    }
-    
+    // TODO m
     public synchronized void reloadMapper(ChangeEvent event) {
+        assert EventQueue.isDispatchThread();
+                
         //
-        // Ignore reload if is has been initiated by the mapper itself 
+        // Ignore reload if it has been initiated by the mapper itself 
         if (event.getSource() == getBpelModelUpdateSource()) {
             return;
         }
         
+        if (myPreviousTask != null) {
+            myPreviousTask.cancel();
+        }
+        if (myPreviousTask != null && !myPreviousTask.isFinished() 
+                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125439
+        {
+            myPreviousTask.waitFinished();
+            myPreviousTask = null;
+        }
+
+        if (!BpelDesignContextFactory.isValidContext(mContext)) {
+            setDelay(0);
+            updateContext(-1);
+            return;
+        }
+
         if (isMapperShown) {
             reloadMapperImpl();
         }
     }
     
-    private void setMapperModel(MapperModel newMapperModel) {
-        assert newMapperModel != null;
-        mMapperTcContext.setMapperModel(newMapperModel);
+    private void setDelay(int delay) {
+        myDelay = delay;
     }
     
-        public void reloadMapperImpl() {
-            if (mContext == null) {
-                return;
-            }
-            //
-            if (isModelInvalid()) {
-                disableMapper();
-                return;
-            }
-            MapperModel newMapperModel = new BpelMapperModelFactory().
-                    constructModel(mMapperTcContext, mContext);
-            
-            myMapperStateManager.storeOldEntityContext(mContext);
-            setMapperModel(newMapperModel);
-            myMapperStateManager.restoreOldEntityContext(mContext);
-        }
+    private int getDelay() {
+        return myDelay;
+    }
     
-        // TODO m correct behaviour if just selectedEntity changes
-        public void setContextImpl() {
-            // Copy the context to a new local variable at first.
-            BpelDesignContext newContext = mNewContext;
-            //
-            if (newContext == null || newContext.getSelectedEntity() == null) {
-                // Hide the mapper if there is not a BPEL entity selected
-                disableMapper();
-                return;
-            } 
-            //
-            if  (isModelInvalid()) {
-                disableMapper();
-                return;
-            } 
-            //
-            if (!newContext.equals(mContext)) {
-                myMapperStateManager.storeOldEntityContext(mContext);
-                //
-                MapperModel newMapperModel = new BpelMapperModelFactory().
-                        constructModel(mMapperTcContext, newContext);
-                //
-                mContext = newContext;
-                setMapperModel(newMapperModel);
-                myMapperStateManager.restoreOldEntityContext(mContext);
-                //
-                SwingUtilities.invokeLater(new Runnable() {
-                    public void run() {
-                        GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
-                    }
-                });
-                //
-                mMapperTcContext.showMapperTcGroup(true);
-            }
-/*            
-            else {
-                //
-                boolean needReload;
-                synchronized(DesignContextControllerImpl2.this) {
-                    needReload = mNeedReload;
-                }
-                if (needReload) {
-                    reloadMapperImpl();
-                }
-            }
- */
-        }
-
-        private void disableMapper() {
-            mMapperTcContext.showMapperTcGroup(false);
-            mMapperTcContext.setMapper(null);
-            //
-            mContext = null;
-        }
-
-        private boolean isModelInvalid() {
-            BpelModel bpelModel = myBpelModel;
-            if (bpelModel != null) {
-                return bpelModel.getState().equals(State.NOT_WELL_FORMED);
-            }
-            return false; // Consider the model valid by default
-        }
-
     // TODO m
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
@@ -281,25 +201,6 @@ public class DesignContextControllerImpl2
         }
     }
 
-    private void updateContext() {
-        if (myPreviousTask != null) {
-            myPreviousTask.cancel();
-        }
-        if (myPreviousTask != null && !myPreviousTask.isFinished()) {
-            myPreviousTask.waitFinished();
-            myPreviousTask = null;
-        }
-
-        myPreviousTask = RequestProcessor.getDefault().post(
-                new Runnable() {
-            public void run() {
-//                BpelDesignContext newBpelContext = DesignContextChangeListener.getActivatedContext(myBpelModel);
-                setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
-            }
-        }, ACTION_NODE_CHANGE_TASK_DELAY);
-        
-    }
-    
     public void showMapper() {
         assert EventQueue.isDispatchThread();
         // TODO m
@@ -321,4 +222,226 @@ public class DesignContextControllerImpl2
             mapper.setVisible(false);
         }
     }
+
+    public MapperTcContext getMapperTcContext() {
+        return mMapperTcContext;
+    }
+    
+    private synchronized void initContext() {
+        setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
+        myMapperStateManager = new MapperStateManager(mMapperTcContext);
+    }
+    
+    private void updateContext(int delay) {
+        assert EventQueue.isDispatchThread();
+        if (delay <= 0) {
+            setDelay(ACTION_NODE_CHANGE_TASK_DELAY);
+        }
+
+        if (myPreviousTask != null) {
+            myPreviousTask.cancel();
+        }
+        if (myPreviousTask != null && !myPreviousTask.isFinished() 
+                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125439
+        {
+            myPreviousTask.waitFinished();
+            myPreviousTask = null;
+        }
+
+        if (delay <= 0) {
+            setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
+        } else {
+            myPreviousTask = RequestProcessor.getDefault().post(
+                    new Runnable() {
+                public void run() {
+    //                BpelDesignContext newBpelContext = DesignContextChangeListener.getActivatedContext(myBpelModel);
+                    SwingUtilities.invokeLater(new  Runnable() {
+                        public void run() {
+                            setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
+                        }
+                    });
+                }
+            }, delay);
+        }
+    }
+    
+    // todo m
+    private void updateContext() {
+        updateContext(getDelay());
+    }
+    
+    // TODO m correct behaviour if just selectedEntity changes
+    private void setContextImpl() {
+        // Copy the context to a new local variable at first.
+        BpelDesignContext newContext = mNewContext;
+        //        
+        if (newContext == null) {
+            // do nothing - simple continue to show the old context
+            return;
+        }
+        
+        if  (isModelInvalid()) {
+            myMapperStateManager.storeOldEntityContext(mContext);
+            // hide mapper if BpelModel is invalid
+            showModelIsInvalid();
+            return;
+        } 
+        //
+        BpelEntity oldContextEntity = mContext != null ? mContext.getContextEntity() : null;
+        BpelEntity newContextEntity = newContext.getContextEntity();        
+        if (newContextEntity == null) {
+            myMapperStateManager.storeOldEntityContext(mContext);
+            // Hide the mapper if unmappable BPEL entity is selected
+            showUnsupportedEntity(newContext);
+            return;
+        } 
+        //
+        
+        if (!newContext.equals(mContext)) {
+            if (!newContextEntity.equals(oldContextEntity)) {
+                myMapperStateManager.storeOldEntityContext(mContext);
+                //
+                MapperModel newMapperModel = new BpelMapperModelFactory().
+                        constructModel(mMapperTcContext, newContext);
+                //
+
+                mContext = newContext;
+                setMapperModel(newMapperModel);
+                myMapperStateManager.restoreOldEntityContext(mContext);
+                //
+            }
+            
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
+                }
+            });
+            //
+//            mMapperTcContext.showMapperTcGroup(true);
+        }
+/*            
+        else {
+            //
+            boolean needReload;
+            synchronized(DesignContextControllerImpl2.this) {
+                needReload = mNeedReload;
+            }
+            if (needReload) {
+                reloadMapperImpl();
+            }
+        }
+*/
+    }
+
+    private void reloadMapperImpl() {
+        if (mContext == null) {
+            return;
+        }
+        //
+        if (isModelInvalid()) {
+            myMapperStateManager.storeOldEntityContext(mContext);
+            showModelIsInvalid();
+            return;
+        }
+
+//        if (!isValidContext(mContext)) {
+//            updateContext();
+//            return;
+//        }
+//        
+//        
+        MapperModel newMapperModel = new BpelMapperModelFactory().
+                constructModel(mMapperTcContext, mContext);
+
+        myMapperStateManager.storeOldEntityContext(mContext);
+        setMapperModel(newMapperModel);
+        myMapperStateManager.restoreOldEntityContext(mContext);
+    }
+        
+    private synchronized Object getBpelModelUpdateSource() {
+        if (mBpelModelUpdateSourceRef != null) {
+            return mBpelModelUpdateSourceRef.get();
+        }
+        //
+        return null;
+    }
+    
+    /**
+     * works in swing thread only
+     * 
+     */
+    private void setActivatedNodes(final Node aNode) {
+        assert EventQueue.isDispatchThread();
+        if (mMapperTcContext != null) {
+
+            TopComponent mapperTc = mMapperTcContext.getTopComponent();
+            if (mapperTc != null) {
+                if (aNode != null) {
+                    mapperTc.setActivatedNodes(new Node[] {aNode});
+                } else {
+                    mapperTc.setActivatedNodes(new Node[0]);
+                }
+            }
+        }
+    }
+    
+    private void setMapperModel(MapperModel newMapperModel) {
+        assert newMapperModel != null;
+        mMapperTcContext.setMapperModel(newMapperModel);
+    }
+    
+    private void showModelIsInvalid() {
+        disableMapper(NbBundle.getMessage(MapperMultiviewElement.class, "LBL_Invalid_BpelModel")); // NOI18N
+    }
+
+    private void showUnsupportedEntity(BpelDesignContext context) {
+        assert context != null;
+        String entityName = null;
+        Node node = context.getActivatedNode();
+        entityName = node != null ? node.getDisplayName() : null;
+        if (entityName == null) {
+            BpelEntity entity = context.getSelectedEntity();
+            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : Util.getTagName(entity);
+        }
+        entityName = entityName == null ? "" : entityName;
+        disableMapper(NbBundle.getMessage(MapperMultiviewElement.class, 
+                                            "LBL_EmptyMapper", entityName)); // NOI18N            
+    }
+
+    private void showNotValidContext(BpelDesignContext context) {
+        assert context != null;
+        String entityName = null;
+        Node node = context.getActivatedNode();
+        entityName = node != null ? node.getDisplayName() : null;
+        if (entityName == null) {
+            BpelEntity entity = context.getSelectedEntity();
+            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : Util.getTagName(entity);
+        }
+        entityName = entityName == null ? "" : entityName;
+        disableMapper(NbBundle.getMessage(MapperMultiviewElement.class, 
+                                            "LBL_InValidMapperContext", entityName)); // NOI18N            
+    }
+
+    private void disableMapper(String message) {
+        TopComponent tc = mMapperTcContext.getTopComponent();
+        if ( tc == null) {
+            return;
+        }
+
+        ShowMapperCookie showCookie = tc.getLookup().lookup(ShowMapperCookie.class);
+        if (showCookie != null) {
+            showCookie.show(message);
+        }
+
+        mContext = null;
+    }
+
+    private boolean isModelInvalid() {
+        BpelModel bpelModel = myBpelModel;
+        if (bpelModel != null) {
+            return bpelModel.getState().equals(State.NOT_WELL_FORMED);
+        }
+        return false; // Consider the model valid by default
+    }
+
 }

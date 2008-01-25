@@ -37,6 +37,7 @@ public class BpelDesignContextImpl implements BpelDesignContext {
     private WeakReference<BpelEntity> mSelectedEntityRef;
     private WeakReference<BpelEntity> mGraphEntityRef;
     private WeakReference<BpelEntity> mContextEntityRef;
+    private String mMessage;
     
     public BpelDesignContextImpl(BpelEntity contextEntity, 
             BpelEntity graphEntity, BpelEntity selectedEntity, 
@@ -46,6 +47,11 @@ public class BpelDesignContextImpl implements BpelDesignContext {
         mContextEntityRef = new WeakReference<BpelEntity>(contextEntity);
         mGraphEntityRef = new WeakReference<BpelEntity>(graphEntity);
         mSelectedEntityRef = new WeakReference<BpelEntity>(selectedEntity);
+    }
+
+    public BpelDesignContextImpl(String message) {
+        this(null, null, null, null, null);
+        mMessage = message;
     }
 
     public BpelEntity getContextEntity() {
@@ -110,6 +116,10 @@ public class BpelDesignContextImpl implements BpelDesignContext {
             }
         }
         return false;
+    }
+
+    public String getMessage() {
+        return mMessage;
     }
 
 }

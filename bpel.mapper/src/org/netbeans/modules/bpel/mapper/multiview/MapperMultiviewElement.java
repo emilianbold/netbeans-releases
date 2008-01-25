@@ -19,6 +19,7 @@
 package org.netbeans.modules.bpel.mapper.multiview;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -33,6 +34,8 @@ import java.util.Enumeration;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
@@ -44,6 +47,7 @@ import org.netbeans.core.spi.multiview.MultiViewElementCallback;
 import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.BPELDataEditorSupport;
 import org.netbeans.modules.bpel.core.BPELDataObject;
+import org.netbeans.modules.bpel.mapper.model.BpelMapperFactory;
 import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.soa.mappercore.Mapper;
@@ -68,7 +72,11 @@ public abstract class MapperMultiviewElement extends TopComponent
 {
     
 //    private static final long serialVersionUID = 1L;   
+    public static final String MAPPER_PANEL_ID = "mapperPanelId"; // NOI18N
+    private transient JPanel myMapperPanel;
     private transient Mapper myMapper;
+    private transient JEditorPane myErrorPanel;
+    private transient CardLayout myCardLayout;
     private transient JComponent myToolBarPanel;
     private transient MultiViewElementCallback myMultiViewObserver;
     private BPELDataObject myDataObject;
@@ -100,7 +108,7 @@ public abstract class MapperMultiviewElement extends TopComponent
             toolbar.setFloatable(false);
             toolbar.setFocusable(false);
             toolbar.addSeparator();
-            
+
             int maxButtonHeight = 0;
             
             for (Component c : toolbar.getComponents()) {
@@ -127,6 +135,7 @@ public abstract class MapperMultiviewElement extends TopComponent
                     c.setFocusable(false);
                 }
             }
+            
             myToolBarPanel = toolbar;
         }
         
@@ -358,12 +367,23 @@ public abstract class MapperMultiviewElement extends TopComponent
     protected abstract DesignContextController createDesignContextController();
     
     protected void initialize() {
+        ShowMapperCookie showCookie = new ShowMapperCookie() {
+            public void show(MapperModel mapperModel) {
+                MapperMultiviewElement.this.setMapperModel(mapperModel);
+            }
+
+            public void show(String message) {
+                MapperMultiviewElement.this.setMessage(message);
+            }
+        };
+        
         myExplorerManager = new ExplorerManager();
         Node delegate = myDataObject.getNodeDelegate();
         myNodesMediator = new ActivatedNodesMediator(delegate);
         myNodesMediator.setExplorerManager(this);
         myCookieProxyLookup = new CookieProxyLookup(new Lookup[] {
                 Lookups.fixed(new Object[] {
+                        showCookie,
                         // Need the data object registered in the lookup so that the
                         // projectui code will close our open editor windows when the
                         // project is closed.
@@ -390,19 +410,45 @@ public abstract class MapperMultiviewElement extends TopComponent
     protected void initializeUI() {
         // activate cur node
         activateContextNode();
+        // create empty mapper;
+        myMapperPanel = new JPanel();
+        myMapperPanel.setLayout(new BorderLayout());
+        myMapper = BpelMapperFactory.createMapper(null);
+        myMapperPanel.add(myMapper, BorderLayout.CENTER);
+        myMapperPanel.add(new Palette(myMapper).getPanel(), BorderLayout.NORTH);
+
+        myErrorPanel = new MessagePanel(myMapper);
+        myErrorPanel.setText("<b>It is Error Panel !!!</b>"); // NOI18N
+        
+        myCardLayout = new CardLayout();
+        setLayout(myCardLayout);
+        add(myMapperPanel, MAPPER_PANEL_ID);
+        add(myErrorPanel, MessagePanel.MESSAGE_PANEL_ID);
+        
     }
 
     private void activateContextNode() {
         BpelDesignContext context = myContextController != null 
                 ? myContextController.getContext() : null;
-        Node aNode = context == null ? null : context.getActivatedNode();
-        Node[] tcANodes = getActivatedNodes();
+        Node aNode = null;
+        if (BpelDesignContextFactory.isValidContext(context)) {
+            aNode = context == null ? null : context.getActivatedNode();
+        }        
         
-        if (tcANodes == null || tcANodes.length < 1 
-                || !tcANodes[0].equals(aNode)) 
-        {
+        Node[] tcANodes = getActivatedNodes();
+        Node tcANode = null;
+        
+        if (tcANodes != null && tcANodes.length > 0 
+                && BpelDesignContextFactory.isValidNode(tcANodes[0])) {
+            tcANode = tcANodes[0];
+        }
+        
+        if (tcANode == null 
+                || !tcANode.equals(aNode)) {
             if (aNode != null) {
                 setActivatedNodes(new Node[] {aNode});
+            } else {
+                setActivatedNodes(new Node[0]);
             }
         }
     }
@@ -445,28 +491,38 @@ public abstract class MapperMultiviewElement extends TopComponent
     
     // TODO r
     public void setMapper(final Mapper newMapper) {
-        if (!EventQueue.isDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    MapperMultiviewElement.this.setMapperInAwt(newMapper);
-                }
-            });
-        } else {
-            setMapperInAwt(newMapper);
-        }
+        assert true : "mapper shouldn't be changed in mapper tc";
+////        if (!EventQueue.isDispatchThread()) {
+////            SwingUtilities.invokeLater(new Runnable() {
+////                public void run() {
+////                    MapperMultiviewElement.this.setMapperInAwt(newMapper);
+////                }
+////            });
+////        } else {
+////            setMapperInAwt(newMapper);
+////        }
     }
 
-    public void setMapperInAwt(Mapper newMapper) {
+    private void setMapperInAwt(Mapper newMapper) {
         assert EventQueue.isDispatchThread();
 
-        removeAll();
-        this.myMapper = newMapper;
-
+        //removeAll();
+        
         if (newMapper != null) {
-            setLayout(new BorderLayout());
-            add(newMapper, BorderLayout.CENTER);
-            add(new Palette(myMapper).getPanel(), BorderLayout.NORTH);
+            myCardLayout.show(this, MAPPER_PANEL_ID);
+        } 
+        revalidate();
+        repaint();        
+    }
+
+    private void showMapper() {
+        assert EventQueue.isDispatchThread();
+        if (myMapper == null) {
+            return;
         }
+        
+        myCardLayout.show(this, MAPPER_PANEL_ID);
+
         revalidate();
         repaint();        
     }
@@ -476,6 +532,31 @@ public abstract class MapperMultiviewElement extends TopComponent
         return myMapper;
     }
     
+    private void setMessage(final String message) {
+        if (!EventQueue.isDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    MapperMultiviewElement.this.setMessageInAwt(message);
+//                    updateTitle();
+                }
+            });
+        } else {
+            setMessageInAwt(message);
+//            updateContextTitle();
+        }
+    }
+    
+    private void setMessageInAwt(String message) {
+        assert EventQueue.isDispatchThread();
+
+        if (message != null) {
+            myErrorPanel.setText(message);
+        } else {
+            myErrorPanel.setText(NbBundle.getMessage(MapperMultiviewElement.class, "LBL_CantShowMapper")); // NOI18N
+        }
+        myCardLayout.show(this, MessagePanel.MESSAGE_PANEL_ID);
+    }
+
     // TODO m
     public void setMapperModel(final MapperModel mModel) {
         
@@ -483,12 +564,13 @@ public abstract class MapperMultiviewElement extends TopComponent
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     MapperMultiviewElement.this.setMapperModelInAwt(mModel);
+//                    updateContextTitle();
                 }
             });
         } else {
             setMapperModelInAwt(mModel);
+//            updateContextTitle();
         }
-//        updateTitle();
     }
     
     private void setMapperModelInAwt(MapperModel mModel) {
@@ -498,30 +580,35 @@ public abstract class MapperMultiviewElement extends TopComponent
             myMapper.setModel(mModel);
             
             //
-            setMapper(myMapper);
-        } else {
-            Mapper newMapper = createMapper(mModel);
-            setMapper(newMapper);
-        }
+//            setMapper(myMapper);
+            showMapper();
+        } 
+//        
+//        else {
+//            Mapper newMapper = createMapper(mModel);
+//            setMapper(newMapper);
+//        }
     }
 
     protected abstract Mapper createMapper(MapperModel mModel);
     
-////    private void updateTitle() {
-////        String activeNodeDisplayName = null;
-////        BpelDesignContext currentDesignContext = myContextController.getContext();
-////        if (currentDesignContext != null) {
-////            Node node = currentDesignContext.getActivatedNode();
-////            if (node != null) {
-////                activeNodeDisplayName = node.getDisplayName();
-////            }
-////        }
-////        if (activeNodeDisplayName != null) {
-////              setDisplayName(getTitleBase() + " - " + activeNodeDisplayName);  // NOI18N
-////        } else {
-////              setDisplayName(getTitleBase()); 
-////        }
-////    }    
+//    private void updateContextTitle() {
+//        assert EventQueue.isDispatchThread();
+//
+//        String activeNodeDisplayName = null;
+//        BpelDesignContext currentDesignContext = myContextController.getContext();
+//        if (currentDesignContext != null) {
+//            Node node = currentDesignContext.getActivatedNode();
+//            if (node != null) {
+//                activeNodeDisplayName = node.getDisplayName();
+//            }
+//        }
+//        if (activeNodeDisplayName != null && myContextTitle != null) {
+//            myContextTitle.setText("Context Entity: "+activeNodeDisplayName);
+//              //setDisplayName(getTitleBase() + " - " + activeNodeDisplayName);  // NOI18N
+//
+//        } 
+//    }    
     
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
