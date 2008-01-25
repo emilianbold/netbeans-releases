@@ -72,6 +72,7 @@ made subject to such option by the copyright holder.
   This module implements the configuration editors that support editing "Sun specific"
   deployment descriptors.  These editors are based on an extended version of the 
   API's defined in JSR-88, that is customizer based.
+  </p>
   <p>
       It was developed by refactoring the server integration module and jars that 
       supported SJSAS 8.1 PE in NetBeans 5.0.  The goal of the refactoring is to allow
