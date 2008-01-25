@@ -211,7 +211,7 @@ public class XAMCatalogWSDLSerializer extends CatalogWSDLSerializer {
     protected void addNamespacePrefix(WSDLModel wsdlModel, String namespace) {
         String prefix = null;
         String prefixPrefix = "ns";
-        Map<String,String> prefixes = null;
+        Map prefixes = null;
         AbstractDocumentComponent def =
                 (AbstractDocumentComponent) wsdlModel.getDefinitions();
         prefixes = def.getPrefixes();
