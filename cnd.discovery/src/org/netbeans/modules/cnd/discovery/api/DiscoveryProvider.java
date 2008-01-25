@@ -75,7 +75,7 @@ public interface DiscoveryProvider {
     ProviderProperty getProperty(String key);
     
     /**
-     * Clean provader state
+     * Clean provider state
      */
    void clean();
 
@@ -85,9 +85,12 @@ public interface DiscoveryProvider {
     boolean isApplicable(ProjectProxy project);
 
     /**
-     * Can analyze project
+     * Can analyze project. Returns weight of assurance of results.
+     * Results range is [0,100].
+     * 0 provider is not sure about results at all
+     * 100 provider is sure about results
      */
-    boolean canAnalyze(ProjectProxy project);
+    int canAnalyze(ProjectProxy project);
 
     /**
      * Analyze project and returns list of configuration

@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
-public class DwarfProvider extends BaseDwarfProvider {
+abstract public class DwarfProvider extends BaseDwarfProvider {
     private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String EXECUTABLES_KEY = "binaries"; // NOI18N
     

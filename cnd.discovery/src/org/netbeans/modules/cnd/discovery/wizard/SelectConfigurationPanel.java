@@ -58,6 +58,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
@@ -367,8 +368,24 @@ public final class SelectConfigurationPanel extends JPanel {
             public boolean createSubProjects() {
                 return false;
             }
-            public Object getProject() {
+            public Project getProject() {
                 return wizardDescriptor.getProject();
+            }
+
+            public String getMakefile() {
+                return null;
+            }
+
+            public String getSourceRoot() {
+                return wizardDescriptor.getRootFolder();
+            }
+
+            public String getExecutable() {
+                return wizardDescriptor.getBuildResult();
+            }
+
+            public String getWorkingFolder() {
+                return null;
             }
         });
         List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();

@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.cnd.discovery.api;
 
+import org.netbeans.api.project.Project;
+
 /**
  *
  * @author Alexander Simon
@@ -55,5 +57,25 @@ public interface ProjectProxy {
     /**
      * Returns native project if provider called for existent project
      */
-    Object getProject();
+    Project getProject();
+
+    /**
+     * Returns path to makefile
+     */
+    String getMakefile();
+
+    /**
+     * Returns path to sources
+     */
+    String getSourceRoot();
+
+    /**
+     * Returns path to build result
+     */
+    String getExecutable();
+
+    /**
+     * Returns path to working folder
+     */
+    String getWorkingFolder();
 }

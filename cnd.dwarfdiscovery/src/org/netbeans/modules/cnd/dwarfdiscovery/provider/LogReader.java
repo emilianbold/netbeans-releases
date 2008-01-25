@@ -66,9 +66,11 @@ public class LogReader {
     private static final String INVOKE_GNU_CC = "g++ -";
     
     private String workingDir;
+    private String root;
     private List<SourceFileProperties> result = new ArrayList<SourceFileProperties>();
     
-    public LogReader(String fileName){
+    public LogReader(String fileName, String root){
+        this.root = root;
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
@@ -110,6 +112,9 @@ public class LogReader {
            }
        }
        if (workingDir == null) {
+           return false;
+       }
+       if (!workingDir.startsWith(root)){
            return false;
        }
        int i = line.indexOf(INVOKE_GNU_C);

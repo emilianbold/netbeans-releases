@@ -207,8 +207,8 @@ public class AnalyzeModel implements DiscoveryProvider {
     }
     
     public boolean isApplicable(ProjectProxy project) {
-        if (project.getProject() instanceof Project){
-            Project makeProject = (Project)project.getProject();
+        if (project.getProject() != null){
+            Project makeProject = project.getProject();
             CsmProject langProject = CsmModelAccessor.getModel().getProject(makeProject);
             if (langProject != null/* && langProject.isStable(null)*/){
                 return true;
@@ -217,8 +217,8 @@ public class AnalyzeModel implements DiscoveryProvider {
         return false;
     }
     
-    public boolean canAnalyze(ProjectProxy project) {
-        return true;
+    public int canAnalyze(ProjectProxy project) {
+        return 40;
     }
     
     private class MyConfiguration implements Configuration{
@@ -228,7 +228,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         private CsmProject langProject;
         
         private MyConfiguration(ProjectProxy project){
-            Project makeProject = (Project)project.getProject();
+            Project makeProject = project.getProject();
             langProject = CsmModelAccessor.getModel().getProject(makeProject);
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();

@@ -81,10 +81,6 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         return true;
     }
     
-    public boolean canAnalyze(ProjectProxy project) {
-        return true;
-    }
-    
     public void stop() {
         isStoped = true;
     }
@@ -258,7 +254,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
             if (TRACE_READ_EXCEPTIONS) System.out.println("File not found "+objFileName+": "+ex.getMessage());  // NOI18N
         } catch (WrongFileFormatException ex) {
             if (TRACE_READ_EXCEPTIONS) System.out.println("Unsuported format of file "+objFileName+": "+ex.getMessage());  // NOI18N
-            list = new LogReader(objFileName).getResults();
+            ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
+            String root = "";
+            if (p != null) {
+                root = (String)p.getValue();
+            }
+            list = new LogReader(objFileName, root).getResults();
         } catch (IOException ex) {
             if (TRACE_READ_EXCEPTIONS){
                 System.err.println("Exception in file "+objFileName);  // NOI18N

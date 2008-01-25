@@ -286,37 +286,30 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
             public boolean createSubProjects() {
                 return false;
             }
-            public Object getProject() {
+            public Project getProject() {
                 return wizardDescriptor.getProject();
+            }
+
+            public String getMakefile() {
+                return null;
+            }
+
+            public String getSourceRoot() {
+                return wizardDescriptor.getRootFolder();
+            }
+
+            public String getExecutable() {
+                return wizardDescriptor.getBuildResult();
+            }
+
+            public String getWorkingFolder() {
+                return null;
             }
         };
         List<ProviderItem> list = new ArrayList<ProviderItem>();
         for(DiscoveryProvider provider : providers.allInstances()){
             provider.clean();
             if (provider.isApplicable(proxy)) {
-                if ("make-log".equals(provider.getID())){ // NOI18N
-                    String root = wizardDescriptor.getRootFolder();
-                    boolean foundLog = false;
-                    int i = root.indexOf("/usr/src/"); // NOI18N
-                    if (i > 0) {
-                        String logfolder = root.substring(0, i)+"/log"; // NOI18N
-                        File log = new File(logfolder);
-                        if (log.exists() && log.isDirectory()) {
-                            for(File when : log.listFiles()){
-                                if(when.isDirectory()){
-                                    for(File l : when.listFiles()){
-                                        if (l.getAbsolutePath().endsWith("/nightly.log")) { // NOI18N
-                                            foundLog = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if (!foundLog) {
-                        continue;
-                    }
-                }
                 list.add(new ProviderItem(provider));
             }
         }
@@ -337,24 +330,19 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
     
     private ProviderItem getDefaultProvider(List<ProviderItem> list, ProjectProxy proxy, DiscoveryDescriptor wizardDescriptor){
         ProviderItem def = null;
+        int assurance = 0;
         for(ProviderItem item:list){
-            if ("model-folder".equals(item.getID())){ // NOI18N
-                // select model if no other variants
-                def = item;
-            } else if ("dwarf-executable".equals(item.getID())){ // NOI18N
+            if ("dwarf-executable".equals(item.getID())){ // NOI18N
                 // select executable if make project has output
                 // and output has debug information.
                 item.getProvider().getProperty("executable").setValue(wizardDescriptor.getBuildResult()); // NOI18N
-                if (item.getProvider().canAnalyze(proxy)) {
-                    return item;
-                }
             } else if ("dwarf-folder".equals(item.getID())){ // NOI18N
-                // select executable if make project has output
-                // and output has debug information.
                 item.getProvider().getProperty("folder").setValue(wizardDescriptor.getRootFolder()); // NOI18N
-                if (item.getProvider().canAnalyze(proxy)) {
-                    return item;
-                }
+            }
+            int i = item.getProvider().canAnalyze(proxy);
+            if (i > assurance) {
+                def = item;
+                assurance = i;
             }
         }
         return def;

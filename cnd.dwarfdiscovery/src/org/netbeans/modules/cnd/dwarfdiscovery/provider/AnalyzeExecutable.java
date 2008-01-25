@@ -172,13 +172,12 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         return myProperties.get(key);
     }
     
-    @Override
-    public boolean canAnalyze(ProjectProxy project) {
+    public int canAnalyze(ProjectProxy project) {
         String set = (String)getProperty(EXECUTABLE_KEY).getValue();
         if (set == null || set.length() == 0) {
-            return false;
+            return 0;
         }
-        return sizeComilationUnit(set) > 0;
+        return 70;
     }
     
     public List<Configuration> analyze(ProjectProxy project) {

@@ -155,27 +155,26 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         return myProperties.get(key);
     }
     
-    @Override
-    public boolean canAnalyze(ProjectProxy project) {
+    public int canAnalyze(ProjectProxy project) {
         String root = (String)getProperty(FOLDER_KEY).getValue();
         if (root == null || root.length() == 0) {
-            return false;
+            return 0;
         }
         Set<String> set = getObjectFiles(root);
         if (set.size() == 0) {
-            return false;
+            return 0;
         }
         int i = 0;
         for(String obj : set){
             i++;
             if (sizeComilationUnit(obj) > 0) {
-                return true;
+                return 50;
             }
             if (i > 25) {
-                return false;
+                return 0;
             }
         }
-        return false;
+        return 0;
     }
     
     public List<Configuration> analyze(ProjectProxy project) {

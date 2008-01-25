@@ -99,6 +99,8 @@ public class DiscoveryExtension implements IteratorExtension {
     public boolean isApplicable(DiscoveryDescriptor descriptor) {
         if (isApplicableDwarfExecutable(descriptor)){
             return true;
+        } else if (isApplicableMakeLog(descriptor)){
+            return true;
         }
         return isApplicableDwarfFolder(descriptor);
     }
@@ -112,19 +114,12 @@ public class DiscoveryExtension implements IteratorExtension {
         if (!file.exists()) {
             return false;
         }
-        ProjectProxy proxy = new ProjectProxy(){
-            public boolean createSubProjects() {
-                return false;
-            }
-            public Object getProject() {
-                return null;
-            }
-        };
+        ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("dwarf-executable"); // NOI18N
-        if (provider != null){
+        if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("executable").setValue(selectedExecutable); // NOI18N
             provider.getProperty("libraries").setValue(new String[0]); // NOI18N
-            if (provider.canAnalyze(proxy)){
+            if (provider.canAnalyze(proxy)>0){
                 descriptor.setProvider(provider);
                 return true;
             }
@@ -137,18 +132,27 @@ public class DiscoveryExtension implements IteratorExtension {
         if (rootFolder == null) {
             return false;
         }
-        ProjectProxy proxy = new ProjectProxy(){
-            public boolean createSubProjects() {
-                return false;
-            }
-            public Object getProject() {
-                return null;
-            }
-        };
+        ProjectProxy proxy = new ProjectProxyImpl(descriptor);
         DiscoveryProvider provider = findProvider("dwarf-folder"); // NOI18N
-        if (provider != null){
+        if (provider != null && provider.isApplicable(proxy)){
             provider.getProperty("folder").setValue(rootFolder); // NOI18N
-            if (provider.canAnalyze(proxy)){
+            if (provider.canAnalyze(proxy)>0){
+                descriptor.setProvider(provider);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isApplicableMakeLog(DiscoveryDescriptor descriptor){
+        String rootFolder = descriptor.getRootFolder();
+        if (rootFolder == null) {
+            return false;
+        }
+        ProjectProxy proxy = new ProjectProxyImpl(descriptor);
+        DiscoveryProvider provider = findProvider("make-log"); // NOI18N
+        if (provider != null && provider.isApplicable(proxy)){
+            if (provider.canAnalyze(proxy)>0){
                 descriptor.setProvider(provider);
                 return true;
             }
@@ -199,6 +203,9 @@ public class DiscoveryExtension implements IteratorExtension {
         } else if ("dwarf-folder".equals(provider.getID())){ // NOI18N
             String rootFolder = descriptor.getRootFolder();
             provider.getProperty("folder").setValue(rootFolder); // NOI18N
+        } else if ("make-log".equals(provider.getID())){ // NOI18N
+            //String rootFolder = descriptor.getRootFolder();
+            //provider.getProperty("folder").setValue(rootFolder); // NOI18N
         } else {
             return false;
         }
@@ -236,5 +243,30 @@ public class DiscoveryExtension implements IteratorExtension {
         }
         return null;
     }
+    
+    private static class ProjectProxyImpl implements ProjectProxy {
+            private DiscoveryDescriptor descriptor;
+            private ProjectProxyImpl(DiscoveryDescriptor descriptor){
+                this.descriptor = descriptor;
+            }
+            public boolean createSubProjects() {
+                return false;
+            }
+            public Project getProject() {
+                return null;
+            }
+            public String getMakefile() {
+                return null;
+            }
+            public String getSourceRoot() {
+                return descriptor.getRootFolder();
+            }
+            public String getExecutable() {
+                return descriptor.getBuildResult();
+            }
+            public String getWorkingFolder() {
+                return null;
+            }
+        };
 
 }

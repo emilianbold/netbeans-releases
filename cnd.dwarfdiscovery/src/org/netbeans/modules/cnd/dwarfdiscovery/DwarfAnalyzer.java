@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.FolderProperties;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
@@ -59,13 +60,34 @@ import org.netbeans.modules.cnd.dwarfdiscovery.provider.*;
 public class DwarfAnalyzer {
     
     public static void analyze(String[] files){
-        DwarfProvider provider = new DwarfProvider();
+        DwarfProvider provider = new DwarfProvider() {
+            public int canAnalyze(ProjectProxy project) {
+                return 1;
+            }
+        };
         provider.getProperty(DwarfProvider.EXECUTABLES_KEY).setValue(files);
         dumpProject(provider, new ProjectProxy() {
             public boolean createSubProjects() {
                 return false;
             }
-            public Object getProject() {
+
+            public Project getProject() {
+                return null;
+            }
+
+            public String getMakefile() {
+                return null;
+            }
+
+            public String getSourceRoot() {
+                return null;
+            }
+
+            public String getExecutable() {
+                return null;
+            }
+
+            public String getWorkingFolder() {
                 return null;
             }
         });

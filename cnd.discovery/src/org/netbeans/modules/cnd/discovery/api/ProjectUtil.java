@@ -55,33 +55,33 @@ public class ProjectUtil {
     private ProjectUtil() {
     }
     public static List<String> getSystemIncludePaths(ProjectProxy project, boolean isCPP) {
-        Object p = project.getProject();
-        if (p instanceof Project){
-            return new ProjectBridge((Project)p).getSystemIncludePaths(isCPP);
+        Project p = project.getProject();
+        if (p != null){
+            return new ProjectBridge(p).getSystemIncludePaths(isCPP);
         }
         return null;
     }
     
     public static String getCompilerFlavor(ProjectProxy project){
-        Object p = project.getProject();
-        if (p instanceof Project){
-            return new ProjectBridge((Project)p).getCompilerFlavor();
+        Project p = project.getProject();
+        if (p != null){
+            return new ProjectBridge(p).getCompilerFlavor();
         }
         return null;
     }
 
     public static String getCompilerDirectory(ProjectProxy project){
-        Object p = project.getProject();
-        if (p instanceof Project){
-            return new ProjectBridge((Project)p).getCompilerDirectory();
+        Project p = project.getProject();
+        if (p != null){
+            return new ProjectBridge(p).getCompilerDirectory();
         }
         return null;
     }
 
     public static Map<String,String> getSystemMacroDefinitions(ProjectProxy project, boolean isCPP) {
-        Object p = project.getProject();
-        if (p instanceof Project){
-            return new ProjectBridge((Project)p).getSystemMacroDefinitions(isCPP);
+        Project p = project.getProject();
+        if (p != null){
+            return new ProjectBridge(p).getSystemMacroDefinitions(isCPP);
         }
         return null;
     }

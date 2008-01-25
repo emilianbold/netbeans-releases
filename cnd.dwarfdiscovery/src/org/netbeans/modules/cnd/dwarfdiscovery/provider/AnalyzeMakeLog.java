@@ -45,7 +45,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -60,7 +59,7 @@ import org.openide.util.NbBundle;
  */
 public class AnalyzeMakeLog extends BaseDwarfProvider {
     private Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
-    public static final String MAKE_LOG_KEY = "make-log"; // NOI18N
+    public static final String MAKE_LOG_KEY = "make-log-file"; // NOI18N
     
     public AnalyzeMakeLog() {
         clean();
@@ -149,17 +148,55 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     public ProviderProperty getProperty(String key) {
         return myProperties.get(key);
     }
-    
+
     @Override
-    public boolean canAnalyze(ProjectProxy project) {
-        String set = (String)getProperty(MAKE_LOG_KEY).getValue();
-        if (set == null || set.length() == 0) {
-            return false;
+    public boolean isApplicable(ProjectProxy project) {
+        if (detectMakeLog(project) != null){
+            Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
+            if (o == null || "".equals(o.toString())){ // NOI18N
+                getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
+            }
+            return true;
         }
-        return sizeComilationUnit(set) > 0;
+        return false;
     }
     
-    public List<Configuration> analyze(ProjectProxy project) {
+    private String detectMakeLog(ProjectProxy project){
+        String root = project.getSourceRoot();
+        int i = root.indexOf("/usr/src/"); // NOI18N
+        if (i < 0 && root.endsWith("/usr/src")){
+            i = root.indexOf("/usr/src"); // NOI18N
+        }
+        if (i > 0) {
+            String logfolder = root.substring(0, i) + "/log"; // NOI18N
+            File log = new File(logfolder);
+            if (log.exists() && log.isDirectory()) {
+                for (File when : log.listFiles()) {
+                    if (when.isDirectory()) {
+                        for (File l : when.listFiles()) {
+                            if (l.getAbsolutePath().endsWith("/nightly.log")) { // NOI18N
+                                return l.getAbsolutePath();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+    
+    public int canAnalyze(ProjectProxy project) {
+        String set = (String)getProperty(MAKE_LOG_KEY).getValue();
+        if (set == null || set.length() == 0) {
+            set = detectMakeLog(project);
+        }
+        if (set == null || set.length() == 0) {
+            return 0;
+        }
+        return 80;
+    }
+    
+    public List<Configuration> analyze(final ProjectProxy project) {
         isStoped = false;
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
@@ -178,6 +215,9 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
                         String set = (String)getProperty(MAKE_LOG_KEY).getValue();
+                        if (set == null || set.length() == 0) {
+                            set = detectMakeLog(project);
+                        }
                         if (set != null && set.length() > 0) {
                             myFileProperties = getSourceFileProperties(new String[]{set});
                         }

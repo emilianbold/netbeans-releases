@@ -246,6 +246,10 @@ public class SimpleConfigurationPanel extends javax.swing.JPanel {
             additionalLibrariesButton.setVisible(true);
             librariesLabel.setVisible(true);
             librariesTextField.setVisible(true);
+        } else if ("make-log".equals(providerID)){ // NOI18N
+            additionalLibrariesButton.setVisible(false);
+            librariesLabel.setVisible(false);
+            librariesTextField.setVisible(false);
         } else if ("dwarf-folder".equals(providerID)){ // NOI18N
             additionalLibrariesButton.setVisible(false);
             librariesLabel.setVisible(false);

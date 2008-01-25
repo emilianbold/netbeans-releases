@@ -108,7 +108,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 additionalLibrariesButton.setVisible(true);
                 librariesLabel.setVisible(true);
                 librariesTextField.setVisible(true);
-            } else if ("dwarf-folder".equals(providerID)){ // NOI18N
+            } else { // NOI18N
                 additionalLibrariesButton.setVisible(false);
                 librariesLabel.setVisible(false);
                 librariesTextField.setVisible(false);
