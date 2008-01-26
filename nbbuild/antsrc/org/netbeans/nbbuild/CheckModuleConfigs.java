@@ -48,8 +48,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -79,7 +81,7 @@ public final class CheckModuleConfigs extends Task {
         nbroot = f;
     }
     
-    public void execute() throws BuildException {
+    public @Override void execute() throws BuildException {
         if (nbroot == null) {
             throw new BuildException("Must define 'nbroot' param", getLocation());
         }
@@ -183,8 +185,16 @@ public final class CheckModuleConfigs extends Task {
     }
     
     @SuppressWarnings("unchecked")
-    private Set<String> split(String list) {
-        return new HashSet(Collections.list(new StringTokenizer(list, ", ")));
+    private Set<String> split(String list, boolean warnIfUnsorted) {
+        List elements = Collections.list(new StringTokenizer(list, ", "));
+        if (warnIfUnsorted) {
+            List sorted = new ArrayList(elements);
+            Collections.sort(sorted);
+            if (!sorted.equals(elements)) {
+                log("warning: unsorted list: " + elements);
+            }
+        }
+        return new HashSet(elements);
     }
     
     private Map<String,Set<String>> loadModuleConfigs(Map<String,String> buildProperties, File buildPropertiesFile) {
@@ -195,11 +205,11 @@ public final class CheckModuleConfigs extends Task {
                 continue;
             }
             String config = k.substring(prefix.length());
-            Set<String> modules = new TreeSet<String>(split(buildProperties.get(k)));
+            Set<String> modules = new TreeSet<String>(split(buildProperties.get(k), false));
             String fixedK = "config.fixedmodules." + config;
             String fixed = buildProperties.get(fixedK);
             if (fixed != null) {
-                modules.addAll(split(fixed));
+                modules.addAll(split(fixed, false));
             } else {
                 log(buildPropertiesFile + ": warning: have " + k + " but no " + fixedK, Project.MSG_WARN);
             }
@@ -234,13 +244,13 @@ public final class CheckModuleConfigs extends Task {
             return Collections.emptyMap();
         }
         Map<String,Set<String>> clusters = new TreeMap<String,Set<String>>();
-        for (String cluster : split(l)) {
+        for (String cluster : split(l, false)) {
             l = clusterProperties.get(cluster);
             if (l == null) {
                 log(clusterPropertiesFile + ": warning: no definition for " + cluster, Project.MSG_WARN);
                 continue;
             }
-            clusters.put(cluster, new TreeSet<String>(split(l)));
+            clusters.put(cluster, new TreeSet<String>(split(l, true)));
         }
         return clusters;
     }
