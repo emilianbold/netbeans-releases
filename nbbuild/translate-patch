@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+@translations = {}
+IO.foreach("#{File.dirname(File.expand_path(__FILE__))}/translations") do |line|
+  from, to = line.chomp.split '//'
+  @translations[from] = to.sub(%r{^main/}, '')
+end
+while gets do
+  gsub!(%r{^(Index: |--- |\+\+\+ )(.+)/}) do |all|
+    header = $1
+    dir = $2
+    if dir == '/dev'
+      # /dev/null, OK
+    elsif @translations.has_key? dir
+      dir = @translations[dir]
+    else
+      dir = "XXX-new-location-unknown/#{dir}"
+    end
+    "#{header}#{dir}/"
+  end
+  puts $_
+end
