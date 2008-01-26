@@ -223,7 +223,7 @@ public class LoggingDesignContextFactory implements DesignContextFactory {
                     While.class)
                     );
     // todo m
-    private static boolean canExtend(ExtensibleElements extensible) {
+    public static boolean canExtend(ExtensibleElements extensible) {
             return sSupportedParents.contains(extensible.getElementType());
     }
 

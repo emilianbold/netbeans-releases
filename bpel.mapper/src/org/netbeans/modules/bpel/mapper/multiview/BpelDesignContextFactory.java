@@ -70,6 +70,24 @@ public class BpelDesignContextFactory implements DesignContextFactory {
         return INSTANCE;
     }
     
+    public boolean isMappableEntity(BpelEntity entity) {
+        if (entity == null) {
+            return false;
+        }
+        boolean isMappable = false;
+        assert contextCreators != null;
+        for (BpelDesignContextFactory.ContextCreator contextCreator : contextCreators) {
+            if (contextCreator.accepted(entity) 
+                    && !(contextCreator instanceof EmptyContextCreator)) 
+            {
+                isMappable = true;
+                break;
+            }
+        }
+        
+        return isMappable;
+    }
+    
     public BpelDesignContext createBpelDesignContext(
                     BpelEntity selectedEntity, Node node, Lookup lookup) 
     {

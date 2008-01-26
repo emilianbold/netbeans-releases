@@ -207,6 +207,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.bpel.editors</friend>
+                <package>org.netbeans.modules.bpel.mapper.logging.multiview</package>
                 <package>org.netbeans.modules.bpel.mapper.multiview</package>
             </friend-packages>
         </data>
