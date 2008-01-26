@@ -14,7 +14,7 @@ AS_ROOT=/hudson/workdir/jobs/trunk/testappsrv
 AS_HOME=${AS_ROOT}/glassfish
 AS_DOMAIN=domain1
 AS_PORT=8080
-TEST_ROOT=`pwd`/visualweb/kit/test
+TEST_ROOT=`pwd`/visualweb.kit/test
 
 ###################################################################
 
@@ -39,7 +39,7 @@ run_sanity() {
 	# Run Sanity test on VisualWeb build
         cd $TEST_ROOT
 	ant build-test-tools
-        ant commit-validation -Dxtest.no.cleanresults=true -Dxtest.results=$TEST_ROOT/../../../xtest/instance/results -Dxtest.timeout=1200000
+        ant commit-validation -Dxtest.no.cleanresults=true -Dxtest.results=$TEST_ROOT/../../xtest/instance/results -Dxtest.timeout=1200000
 
 	ERROR_CODE=$?
 	if [ $ERROR_CODE != 0 ]; then
