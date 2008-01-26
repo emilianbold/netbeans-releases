@@ -71,7 +71,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
 import org.openide.explorer.propertysheet.editors.EnhancedCustomPropertyEditor;
 import org.openide.util.NbBundle;
 
@@ -99,14 +99,14 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
     private String tableLabelText;
     private String tableLabelDescription;
     
-    protected OldJBIComponentConfigurationDescriptor descriptor;
+    protected ComponentConfigurationDescriptor descriptor;
     
     protected boolean isWritable = true;
     
     public SimpleTabularDataCustomEditor(TabularData tabularData, 
             String tableLabelText, 
             String tableLabelDescription,
-            OldJBIComponentConfigurationDescriptor descriptor, 
+            ComponentConfigurationDescriptor descriptor, 
             boolean isWritable) {
         this.tableLabelText = tableLabelText;
         this.tableLabelDescription = tableLabelDescription;
@@ -120,7 +120,7 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
     public SimpleTabularDataCustomEditor(SimpleTabularDataEditor editor, 
             String tableLabelText, 
             String tableLabelDescription,
-            OldJBIComponentConfigurationDescriptor descriptor,
+            ComponentConfigurationDescriptor descriptor,
             boolean isWritable) {        
         this.tableLabelText = tableLabelText;
         this.tableLabelDescription = tableLabelDescription;
@@ -186,7 +186,7 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
                     for (int col = 0; col < itemValues.length; col++) {
                         Object itemValue = itemValues[col];
                         String columnName = columnNames[col];
-                        OldJBIComponentConfigurationDescriptor childDescriptor = 
+                        ComponentConfigurationDescriptor childDescriptor = 
                                 descriptor.getChild(columnName);
                         if (childDescriptor.isRequired()) {
                             if (itemValue == null ||
@@ -453,7 +453,7 @@ public class SimpleTabularDataCustomEditor extends javax.swing.JPanel
                 // Display name and description in the composite type 
                 // definition will take precedence if there are any 
                 // inconsistencies.
-                OldJBIComponentConfigurationDescriptor childDescriptor = 
+                ComponentConfigurationDescriptor childDescriptor = 
                         descriptor.getChild(value.toString());
                 columnTitle = childDescriptor.getDisplayName();
                 columnDescription = childDescriptor.getDescription();

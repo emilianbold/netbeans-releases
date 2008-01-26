@@ -1,1 +1,29 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - RQQ_Q09    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE RQQ_Q09-->  <!-- .. message definition RQQ_Q09 -->  <xsd:complexType name="RQQ_Q09.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ERQ" minOccurs="1" maxOccurs="1" />      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RQQ_Q09" type="RQQ_Q09.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - RQQ_Q09
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE RQQ_Q09
+-->
+
+  <!-- .. message definition RQQ_Q09 -->
+  <xsd:complexType name="RQQ_Q09.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ERQ" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RQQ_Q09" type="RQQ_Q09.CONTENT"/>
+
+</xsd:schema>

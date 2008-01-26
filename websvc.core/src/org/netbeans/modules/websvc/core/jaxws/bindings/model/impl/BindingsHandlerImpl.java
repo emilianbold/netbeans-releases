@@ -44,51 +44,43 @@ import java.util.Collections;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsComponent;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandler;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerClass;
-import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerName;
 import org.w3c.dom.Element;
+
+
 
 /**
  *
  * @author Roderico Cruz
  */
-public class BindingsHandlerImpl extends BindingsComponentImpl implements BindingsHandler {
-
+public class BindingsHandlerImpl extends BindingsComponentImpl implements BindingsHandler{
+    
     /**
      * Creates a new instance of BindingsHandlerImpl
      */
     public BindingsHandlerImpl(BindingsModelImpl model, Element element) {
         super(model, element);
     }
-
-    public BindingsHandlerImpl(BindingsModelImpl model) {
+    
+    public BindingsHandlerImpl(BindingsModelImpl model){
         this(model, createPrefixedElement(BindingsQName.HANDLER.getQName(), model));
     }
 
     public void setHandlerClass(BindingsHandlerClass handlerClass) {
         java.util.List<Class<? extends BindingsComponent>> classes = Collections.emptyList();
         setChild(BindingsHandlerClass.class, HANDLER_CLASS_PROPERTY, handlerClass,
-                classes);
+                 classes);
     }
 
     public void removeHandlerClass(BindingsHandlerClass handlerClass) {
         removeChild(HANDLER_CLASS_PROPERTY, handlerClass);
     }
 
+    
     public BindingsHandlerClass getHandlerClass() {
         return getChild(BindingsHandlerClass.class);
     }
 
     protected String getNamespaceURI() {
         return BindingsQName.JAVAEE_NS_URI;
-    }
-
-    public void setHandlerName(BindingsHandlerName handlerName) {
-        java.util.List<Class<? extends BindingsComponent>> names = Collections.emptyList();
-        setChild(BindingsHandlerName.class, HANDLER_NAME_PROPERTY, handlerName,
-                names);
-    }
-
-    public BindingsHandlerName getHandlerName() {
-        return getChild(BindingsHandlerName.class);
     }
 }

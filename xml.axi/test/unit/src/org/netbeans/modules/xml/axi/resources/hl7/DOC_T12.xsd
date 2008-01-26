@@ -1,1 +1,44 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - DOC_T12    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE DOC_T12-->  <!-- .. groups used in message DOC_T12 -->  <xsd:complexType name="DOC_T12.EVNPIDPV1TXAOBX_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="EVN" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="TXA" minOccurs="1" maxOccurs="1" />      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="DOC_T12.EVNPIDPV1TXAOBX_SUPPGRP" type="DOC_T12.EVNPIDPV1TXAOBX_SUPPGRP.CONTENT"/>  <!-- .. message definition DOC_T12 -->  <xsd:complexType name="DOC_T12.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="QAK" minOccurs="0" maxOccurs="1" />      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="DOC_T12.EVNPIDPV1TXAOBX_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="DOC_T12" type="DOC_T12.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - DOC_T12
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE DOC_T12
+-->
+  <!-- .. groups used in message DOC_T12 -->
+  <xsd:complexType name="DOC_T12.EVNPIDPV1TXAOBX_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="EVN" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="TXA" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="DOC_T12.EVNPIDPV1TXAOBX_SUPPGRP" type="DOC_T12.EVNPIDPV1TXAOBX_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition DOC_T12 -->
+  <xsd:complexType name="DOC_T12.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="QAK" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="DOC_T12.EVNPIDPV1TXAOBX_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="DOC_T12" type="DOC_T12.CONTENT"/>
+
+</xsd:schema>

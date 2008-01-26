@@ -40,22 +40,14 @@
  */
 package org.netbeans.modules.websvc.core.jaxws.bindings.model;
 
+
 /**
  *
  * @author Roderico Cruz
  */
-public interface BindingsHandler extends BindingsComponent {
-
+public interface BindingsHandler extends BindingsComponent{
     public static final String HANDLER_CLASS_PROPERTY = "handler_class";
-    public static final String HANDLER_NAME_PROPERTY = "handler_name";
-
     void setHandlerClass(BindingsHandlerClass handlerClass);
-
     void removeHandlerClass(BindingsHandlerClass handlerClass);
-
     BindingsHandlerClass getHandlerClass();
-
-    void setHandlerName(BindingsHandlerName name);
-
-    BindingsHandlerName getHandlerName();
 }

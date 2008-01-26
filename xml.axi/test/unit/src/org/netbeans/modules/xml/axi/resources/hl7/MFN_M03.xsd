@@ -1,1 +1,38 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - MFN_M03    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE MFN_M03-->  <!-- .. groups used in message MFN_M03 -->  <xsd:complexType name="MFN_M03.MFEOM1anyHL7Sement_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="MFE" minOccurs="1" maxOccurs="1" />      <xsd:element ref="OM1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="anyHL7Segment" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="MFN_M03.MFEOM1anyHL7Sement_SUPPGRP" type="MFN_M03.MFEOM1anyHL7Sement_SUPPGRP.CONTENT"/>  <!-- .. message definition MFN_M03 -->  <xsd:complexType name="MFN_M03.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MFI" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MFN_M03.MFEOM1anyHL7Sement_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="MFN_M03" type="MFN_M03.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - MFN_M03
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE MFN_M03
+-->
+  <!-- .. groups used in message MFN_M03 -->
+  <xsd:complexType name="MFN_M03.MFEOM1anyHL7Sement_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MFE" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="OM1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="anyHL7Segment" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MFN_M03.MFEOM1anyHL7Sement_SUPPGRP" type="MFN_M03.MFEOM1anyHL7Sement_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition MFN_M03 -->
+  <xsd:complexType name="MFN_M03.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MFI" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MFN_M03.MFEOM1anyHL7Sement_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MFN_M03" type="MFN_M03.CONTENT"/>
+
+</xsd:schema>

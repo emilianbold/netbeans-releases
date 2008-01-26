@@ -1,1 +1,45 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - MFN_M08    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE MFN_M08-->  <!-- .. groups used in message MFN_M08 -->  <xsd:complexType name="MFN_M08.MFEOM2OM3OM4_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="MFE" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MFN_M08.OM2OM3OM4_SUPPGRP" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="MFN_M08.MFEOM2OM3OM4_SUPPGRP" type="MFN_M08.MFEOM2OM3OM4_SUPPGRP.CONTENT"/>  <xsd:complexType name="MFN_M08.OM2OM3OM4_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="OM2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="OM3" minOccurs="0" maxOccurs="1" />      <xsd:element ref="OM4" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="MFN_M08.OM2OM3OM4_SUPPGRP" type="MFN_M08.OM2OM3OM4_SUPPGRP.CONTENT"/>  <!-- .. message definition MFN_M08 -->  <xsd:complexType name="MFN_M08.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MFI" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MFN_M08.MFEOM2OM3OM4_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="MFN_M08" type="MFN_M08.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - MFN_M08
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE MFN_M08
+-->
+  <!-- .. groups used in message MFN_M08 -->
+  <xsd:complexType name="MFN_M08.MFEOM2OM3OM4_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MFE" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MFN_M08.OM2OM3OM4_SUPPGRP" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MFN_M08.MFEOM2OM3OM4_SUPPGRP" type="MFN_M08.MFEOM2OM3OM4_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="MFN_M08.OM2OM3OM4_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="OM2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="OM3" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="OM4" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MFN_M08.OM2OM3OM4_SUPPGRP" type="MFN_M08.OM2OM3OM4_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition MFN_M08 -->
+  <xsd:complexType name="MFN_M08.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MFI" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MFN_M08.MFEOM2OM3OM4_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MFN_M08" type="MFN_M08.CONTENT"/>
+
+</xsd:schema>

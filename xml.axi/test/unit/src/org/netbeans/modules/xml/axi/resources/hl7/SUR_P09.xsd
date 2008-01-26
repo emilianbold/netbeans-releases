@@ -1,1 +1,53 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - SUR_P09    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE SUR_P09-->  <!-- .. groups used in message SUR_P09 -->  <xsd:complexType name="SUR_P09.FACPSHPDCPSHFACPDCNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="FAC" minOccurs="1" maxOccurs="1" />      <xsd:element ref="SUR_P09.PSHPDC_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="PSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="SUR_P09.FACPDCNTE_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SUR_P09.FACPSHPDCPSHFACPDCNTE_SUPPGRP" type="SUR_P09.FACPSHPDCPSHFACPDCNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="SUR_P09.PSHPDC_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PDC" minOccurs="1" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SUR_P09.PSHPDC_SUPPGRP" type="SUR_P09.PSHPDC_SUPPGRP.CONTENT"/>  <xsd:complexType name="SUR_P09.FACPDCNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="FAC" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PDC" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="1" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SUR_P09.FACPDCNTE_SUPPGRP" type="SUR_P09.FACPDCNTE_SUPPGRP.CONTENT"/>  <!-- .. message definition SUR_P09 -->  <xsd:complexType name="SUR_P09.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="SUR_P09.FACPSHPDCPSHFACPDCNTE_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SUR_P09" type="SUR_P09.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - SUR_P09
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE SUR_P09
+-->
+  <!-- .. groups used in message SUR_P09 -->
+  <xsd:complexType name="SUR_P09.FACPSHPDCPSHFACPDCNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="FAC" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="SUR_P09.PSHPDC_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="PSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="SUR_P09.FACPDCNTE_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SUR_P09.FACPSHPDCPSHFACPDCNTE_SUPPGRP" type="SUR_P09.FACPSHPDCPSHFACPDCNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SUR_P09.PSHPDC_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PDC" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SUR_P09.PSHPDC_SUPPGRP" type="SUR_P09.PSHPDC_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SUR_P09.FACPDCNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="FAC" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PDC" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SUR_P09.FACPDCNTE_SUPPGRP" type="SUR_P09.FACPDCNTE_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition SUR_P09 -->
+  <xsd:complexType name="SUR_P09.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="SUR_P09.FACPSHPDCPSHFACPDCNTE_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SUR_P09" type="SUR_P09.CONTENT"/>
+
+</xsd:schema>

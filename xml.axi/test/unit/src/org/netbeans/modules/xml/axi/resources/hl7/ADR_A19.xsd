@@ -1,1 +1,72 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - ADR_A19    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE ADR_A19-->  <!-- .. groups used in message ADR_A19 -->  <xsd:complexType name="ADR_A19.EVNPIDPD1NK1PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1IN1IN2IN3ACCUB1UB2_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="EVN" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NK1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="DB1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="AL1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="DG1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="DRG" minOccurs="0" maxOccurs="1" />      <xsd:element ref="ADR_A19.PR1ROL_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="GT1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="ADR_A19.IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="ACC" minOccurs="0" maxOccurs="1" />      <xsd:element ref="UB1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="UB2" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="ADR_A19.EVNPIDPD1NK1PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1IN1IN2IN3ACCUB1UB2_SUPPGRP" type="ADR_A19.EVNPIDPD1NK1PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1IN1IN2IN3ACCUB1UB2_SUPPGRP.CONTENT"/>  <xsd:complexType name="ADR_A19.PR1ROL_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PR1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ROL" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="ADR_A19.PR1ROL_SUPPGRP" type="ADR_A19.PR1ROL_SUPPGRP.CONTENT"/>  <xsd:complexType name="ADR_A19.IN1IN2IN3_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="IN3" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="ADR_A19.IN1IN2IN3_SUPPGRP" type="ADR_A19.IN1IN2IN3_SUPPGRP.CONTENT"/>  <!-- .. message definition ADR_A19 -->  <xsd:complexType name="ADR_A19.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="QAK" minOccurs="0" maxOccurs="1" />      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />      <xsd:element ref="ADR_A19.EVNPIDPD1NK1PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1IN1IN2IN3ACCUB1UB2_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="ADR_A19" type="ADR_A19.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - ADR_A19
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE ADR_A19
+-->
+  <!-- .. groups used in message ADR_A19 -->
+  <xsd:complexType name="ADR_A19.EVNPIDPD1NK1PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1IN1IN2IN3ACCUB1UB2_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="EVN" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NK1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="DB1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="AL1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="DG1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="DRG" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="ADR_A19.PR1ROL_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="GT1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="ADR_A19.IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="ACC" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="UB1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="UB2" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="ADR_A19.EVNPIDPD1NK1PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1IN1IN2IN3ACCUB1UB2_SUPPGRP" type="ADR_A19.EVNPIDPD1NK1PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1IN1IN2IN3ACCUB1UB2_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="ADR_A19.PR1ROL_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PR1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ROL" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="ADR_A19.PR1ROL_SUPPGRP" type="ADR_A19.PR1ROL_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="ADR_A19.IN1IN2IN3_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="IN3" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="ADR_A19.IN1IN2IN3_SUPPGRP" type="ADR_A19.IN1IN2IN3_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition ADR_A19 -->
+  <xsd:complexType name="ADR_A19.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="QAK" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="ADR_A19.EVNPIDPD1NK1PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1IN1IN2IN3ACCUB1UB2_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="ADR_A19" type="ADR_A19.CONTENT"/>
+
+</xsd:schema>

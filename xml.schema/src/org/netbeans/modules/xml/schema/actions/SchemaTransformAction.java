@@ -73,25 +73,20 @@ public class SchemaTransformAction extends CookieAction {
     
     private static final String EMPTY_DOC =
             "<schema xmlns=\"http://www.w3.org/2001/XMLSchema\"/>";
-        
-    private SchemaDataObject sdo = null;
+    
+    SchemaDataObject sdo = null;
     
     /** Creates a new instance of SchemaViewOpenAction */
     public SchemaTransformAction() {
         putValue("noIconInMenu", Boolean.TRUE); // NOI18N
     }
     
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        return isDocumentOpen(activatedNodes);
-    }    
-    
     protected void performAction(Node[] node) {
         assert node.length==1:
             "Length of nodes array should be 1";
         try {
             //at this point forceResetDoc
-            SchemaModel sm = getSchemaModel(node);
+            SchemaModel sm = getSchemaModel(node, true);
             if(sm != null) {
                 AXIModel am = AXIModelFactory.getDefault().getModel(sm);
                 SchemaTransformWizard wizard = new SchemaTransformWizard(sm);
@@ -104,37 +99,63 @@ public class SchemaTransformAction extends CookieAction {
         }
     }
     
-    private SchemaModel getSchemaModel(final Node[] node) throws IOException {
+    private SchemaModel getSchemaModel(final Node[] node, boolean forceResetDoc) throws IOException {
         if(node == null || node.length == 0 || node[0] == null)
             return null;
         
-        sdo = node[0].getLookup().lookup(SchemaDataObject.class);
-        if (sdo == null)
-            return null;
-        
-        SchemaEditorSupport editor = sdo.getSchemaEditorSupport();
-        if (editor == null)
-            return null;
-        
-        return editor.getModel();
-    }
-    
-    private boolean isDocumentOpen(Node[] nodes) {
-        if(nodes == null || nodes.length == 0)
-            return false;
-        SchemaDataObject sDO = nodes[0].getLookup().lookup(
+        sdo = node[0].getLookup().lookup(
                 SchemaDataObject.class);
-        if (sDO == null)
-            return false;
-        SchemaEditorSupport editor = sDO.getSchemaEditorSupport();
-        if(editor == null)
-            return false;
-        
-        if(editor.getOpenedPanes() == null ||
-            editor.getOpenedPanes().length == 0)
-            return false;
-        
-        return true;
+        if (sdo != null){
+            SchemaEditorSupport editor = sdo.getSchemaEditorSupport();
+            SchemaModel model = null;
+            if(editor != null) {
+                model = editor.getModel();
+                StyledDocument doc = editor.getDocument();
+                //Do this only when the document is not opened
+                if(forceResetDoc && 
+                        model != null && doc != null && 
+                            (editor.getOpenedPanes() == null || 
+                                editor.getOpenedPanes().length == 0)) {
+                    try {
+                        // Reset the model state by forcing it to sync again.
+                        boolean saveState = sdo.isModified();
+                        String saved = doc.getText(0, doc.getLength());
+                        String emptyDoc = EMPTY_DOC;
+                        if(saved != null) {
+                            int schemaStart = saved.indexOf("schema");
+                            int schemaEnd = saved.lastIndexOf("schema");
+                            if(schemaStart != -1 && schemaEnd != -1) {
+                                int ss = saved.indexOf(">", schemaStart);                                
+                                emptyDoc = saved.substring(0, ss+1);
+                                emptyDoc += "\n";
+                                int se = saved.lastIndexOf("<", schemaEnd);
+                                emptyDoc += saved.substring(se, saved.length());
+                            }
+                        }
+                        // Remove undo manager as a listener (IZ# 96476).
+                        boolean undoValue = editor.suspendUndoRedo();
+                        doc.remove(0, doc.getLength());
+                        doc.insertString(0, emptyDoc, null);
+                        model.sync();
+                        doc.remove(0, doc.getLength());
+                        doc.insertString(0, saved, null);
+                        model.sync();
+                        AXIModel am = AXIModelFactory.getDefault().getModel(model);
+                        am.sync();
+                        sdo.setModified(saveState);
+                        editor.resumeUndoRedo(undoValue);
+                    } catch(BadLocationException e) {
+                        Logger.getLogger(SchemaTransformAction.class.getName()).log(
+                                Level.FINE, "forceResetDocument", e);
+                    } catch(IOException e) {
+                        Logger.getLogger(SchemaTransformAction.class.getName()).log(
+                                Level.FINE, "forceResetDocument", e);
+                    }
+                }
+            }
+            return model;
+        }
+        return null;
     }
         
     public String getName() {

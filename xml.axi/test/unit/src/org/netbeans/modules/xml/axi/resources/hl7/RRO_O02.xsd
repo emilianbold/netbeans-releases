@@ -1,1 +1,51 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - RRO_O02    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE RRO_O02-->  <!-- .. groups used in message RRO_O02 -->  <xsd:complexType name="RRO_O02.PIDNTEORCRXONTERXRRXCNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE*)" minOccurs="0" maxOccurs="1" />      <xsd:element ref="(ORC" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RRO_O02.RXONTERXRRXCNTE_SUPPGRP" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RRO_O02.PIDNTEORCRXONTERXRRXCNTE_SUPPGRP" type="RRO_O02.PIDNTEORCRXONTERXRRXCNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="RRO_O02.RXONTERXRRXCNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="RXO" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="RXR" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="RXC" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RRO_O02.RXONTERXRRXCNTE_SUPPGRP" type="RRO_O02.RXONTERXRRXCNTE_SUPPGRP.CONTENT"/>  <!-- .. message definition RRO_O02 -->  <xsd:complexType name="RRO_O02.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="RRO_O02.PIDNTEORCRXONTERXRRXCNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RRO_O02" type="RRO_O02.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - RRO_O02
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE RRO_O02
+-->
+  <!-- .. groups used in message RRO_O02 -->
+  <xsd:complexType name="RRO_O02.PIDNTEORCRXONTERXRRXCNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE*)" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="(ORC" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RRO_O02.RXONTERXRRXCNTE_SUPPGRP" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RRO_O02.PIDNTEORCRXONTERXRRXCNTE_SUPPGRP" type="RRO_O02.PIDNTEORCRXONTERXRRXCNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="RRO_O02.RXONTERXRRXCNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="RXO" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="RXR" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="RXC" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RRO_O02.RXONTERXRRXCNTE_SUPPGRP" type="RRO_O02.RXONTERXRRXCNTE_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition RRO_O02 -->
+  <xsd:complexType name="RRO_O02.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="RRO_O02.PIDNTEORCRXONTERXRRXCNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RRO_O02" type="RRO_O02.CONTENT"/>
+
+</xsd:schema>

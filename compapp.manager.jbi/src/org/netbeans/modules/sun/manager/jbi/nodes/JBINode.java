@@ -64,7 +64,7 @@ import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
-import org.netbeans.modules.sun.manager.jbi.nodes.property.OldSchemaBasedConfigPropertySupportFactory;
+import org.netbeans.modules.sun.manager.jbi.nodes.property.SchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.util.ComparableAttribute;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.DialogDisplayer;
@@ -245,7 +245,7 @@ public class JBINode extends AppserverJBIMgmtContainerNode {
 
             PropertySupport property;
             if (minValue != null && maxValue != null) {
-                property = OldSchemaBasedConfigPropertySupportFactory.
+                property = SchemaBasedConfigPropertySupportFactory.
                         getIntegerPropertySupport(
                         this, attr, attrInfo,
                         Integer.parseInt(minValue),
@@ -257,7 +257,7 @@ public class JBINode extends AppserverJBIMgmtContainerNode {
                 if (enumValue.endsWith("}")) {
                     enumValue = enumValue.substring(0, enumValue.length() - 2);
                 }
-                property = OldSchemaBasedConfigPropertySupportFactory.
+                property = SchemaBasedConfigPropertySupportFactory.
                         getEnumeratedStringPropertySupport(
                         this, attr, attrInfo,
                         enumValue.split("\\s*,\\s*")); // NOI18N

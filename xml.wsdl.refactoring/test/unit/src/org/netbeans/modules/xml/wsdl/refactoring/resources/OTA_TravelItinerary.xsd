@@ -4821,6 +4821,7 @@
             </xs:documentation>
 		</xs:annotation>
 		<xs:sequence>
+
 			<xs:element name="OriginDestinationOptions">
 				<xs:annotation>
 					<xs:documentation xml:lang="en">A collection of  OriginDestinationOption</xs:documentation>
@@ -13344,6 +13345,7 @@
 				<xs:attribute name="Name" type="StringLength0to64" use="optional">
 					<xs:annotation>
 						<xs:documentation xml:lang="en">This is used to accommodate a city name, rail station name etc. when using the indexPoint attribute.</xs:documentation>
+
 					</xs:annotation>
 				</xs:attribute>
 			</xs:extension>

@@ -1,1 +1,39 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - BAR_P02    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE BAR_P02-->  <!-- .. groups used in message BAR_P02 -->  <xsd:complexType name="BAR_P02.PIDPD1PV1DB1_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="DB1" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="BAR_P02.PIDPD1PV1DB1_SUPPGRP" type="BAR_P02.PIDPD1PV1DB1_SUPPGRP.CONTENT"/>  <!-- .. message definition BAR_P02 -->  <xsd:complexType name="BAR_P02.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />      <xsd:element ref="BAR_P02.PIDPD1PV1DB1_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="BAR_P02" type="BAR_P02.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - BAR_P02
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE BAR_P02
+-->
+  <!-- .. groups used in message BAR_P02 -->
+  <xsd:complexType name="BAR_P02.PIDPD1PV1DB1_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="DB1" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="BAR_P02.PIDPD1PV1DB1_SUPPGRP" type="BAR_P02.PIDPD1PV1DB1_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition BAR_P02 -->
+  <xsd:complexType name="BAR_P02.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="BAR_P02.PIDPD1PV1DB1_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="BAR_P02" type="BAR_P02.CONTENT"/>
+
+</xsd:schema>

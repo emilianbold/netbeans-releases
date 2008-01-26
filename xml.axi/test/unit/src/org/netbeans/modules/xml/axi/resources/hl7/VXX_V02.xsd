@@ -1,1 +1,39 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - VXX_V02    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE VXX_V02-->  <!-- .. groups used in message VXX_V02 -->  <xsd:complexType name="VXX_V02.PIDNK1_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NK1" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="VXX_V02.PIDNK1_SUPPGRP" type="VXX_V02.PIDNK1_SUPPGRP.CONTENT"/>  <!-- .. message definition VXX_V02 -->  <xsd:complexType name="VXX_V02.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />      <xsd:element ref="VXX_V02.PIDNK1_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="VXX_V02" type="VXX_V02.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - VXX_V02
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE VXX_V02
+-->
+  <!-- .. groups used in message VXX_V02 -->
+  <xsd:complexType name="VXX_V02.PIDNK1_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NK1" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="VXX_V02.PIDNK1_SUPPGRP" type="VXX_V02.PIDNK1_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition VXX_V02 -->
+  <xsd:complexType name="VXX_V02.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="VXX_V02.PIDNK1_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="VXX_V02" type="VXX_V02.CONTENT"/>
+
+</xsd:schema>

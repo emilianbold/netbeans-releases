@@ -1,1 +1,31 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - MDM_T01    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE MDM_T01-->  <!-- .. message definition MDM_T01 -->  <xsd:complexType name="MDM_T01.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="TXA" minOccurs="1" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="MDM_T01" type="MDM_T01.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - MDM_T01
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE MDM_T01
+-->
+
+  <!-- .. message definition MDM_T01 -->
+  <xsd:complexType name="MDM_T01.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="TXA" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MDM_T01" type="MDM_T01.CONTENT"/>
+
+</xsd:schema>

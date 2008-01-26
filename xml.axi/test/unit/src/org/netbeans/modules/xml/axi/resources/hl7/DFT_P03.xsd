@@ -1,1 +1,63 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - DFT_P03    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE DFT_P03-->  <!-- .. groups used in message DFT_P03 -->  <xsd:complexType name="DFT_P03.PR1ROL_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PR1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ROL" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="DFT_P03.PR1ROL_SUPPGRP" type="DFT_P03.PR1ROL_SUPPGRP.CONTENT"/>  <xsd:complexType name="DFT_P03.IN1IN2IN3_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="IN3" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="DFT_P03.IN1IN2IN3_SUPPGRP" type="DFT_P03.IN1IN2IN3_SUPPGRP.CONTENT"/>  <xsd:complexType name="DFT_P03.FT1PR1ROL_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="FT1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="DFT_P03.PR1ROL_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="DFT_P03.FT1PR1ROL_SUPPGRP" type="DFT_P03.FT1PR1ROL_SUPPGRP.CONTENT"/>  <!-- .. message definition DFT_P03 -->  <xsd:complexType name="DFT_P03.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="DB1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="DFT_P03.FT1PR1ROL_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="DG1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="DRG" minOccurs="0" maxOccurs="1" />      <xsd:element ref="GT1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="DFT_P03.IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="ACC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="DFT_P03" type="DFT_P03.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - DFT_P03
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE DFT_P03
+-->
+  <!-- .. groups used in message DFT_P03 -->
+  <xsd:complexType name="DFT_P03.PR1ROL_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PR1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ROL" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="DFT_P03.PR1ROL_SUPPGRP" type="DFT_P03.PR1ROL_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="DFT_P03.IN1IN2IN3_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="IN3" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="DFT_P03.IN1IN2IN3_SUPPGRP" type="DFT_P03.IN1IN2IN3_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="DFT_P03.FT1PR1ROL_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="FT1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="DFT_P03.PR1ROL_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="DFT_P03.FT1PR1ROL_SUPPGRP" type="DFT_P03.FT1PR1ROL_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition DFT_P03 -->
+  <xsd:complexType name="DFT_P03.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="DB1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="DFT_P03.FT1PR1ROL_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="DG1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="DRG" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="GT1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="DFT_P03.IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="ACC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="DFT_P03" type="DFT_P03.CONTENT"/>
+
+</xsd:schema>

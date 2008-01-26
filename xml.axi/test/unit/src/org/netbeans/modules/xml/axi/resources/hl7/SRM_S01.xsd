@@ -1,1 +1,85 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - SRM_S01    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE SRM_S01-->  <!-- .. groups used in message SRM_S01 -->  <xsd:complexType name="SRM_S01.RGSAISAPRNTEAIGAPRNTEAILAPRNTEAIPAPRNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="RGS" minOccurs="1" maxOccurs="1" />      <xsd:element ref="SRM_S01.AISAPRNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="SRM_S01.AIGAPRNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="SRM_S01.AILAPRNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="SRM_S01.AIPAPRNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SRM_S01.RGSAISAPRNTEAIGAPRNTEAILAPRNTEAIPAPRNTE_SUPPGRP" type="SRM_S01.RGSAISAPRNTEAIGAPRNTEAILAPRNTEAIPAPRNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="SRM_S01.AIGAPRNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="AIG" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SRM_S01.AIGAPRNTE_SUPPGRP" type="SRM_S01.AIGAPRNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="SRM_S01.AIPAPRNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="AIP" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SRM_S01.AIPAPRNTE_SUPPGRP" type="SRM_S01.AIPAPRNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="SRM_S01.AILAPRNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="AIL" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SRM_S01.AILAPRNTE_SUPPGRP" type="SRM_S01.AILAPRNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="SRM_S01.AISAPRNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="AIS" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SRM_S01.AISAPRNTE_SUPPGRP" type="SRM_S01.AISAPRNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="SRM_S01.PIDPV1PV2OBXDG1_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="DG1" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SRM_S01.PIDPV1PV2OBXDG1_SUPPGRP" type="SRM_S01.PIDPV1PV2OBXDG1_SUPPGRP.CONTENT"/>  <!-- .. message definition SRM_S01 -->  <xsd:complexType name="SRM_S01.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ARQ" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="SRM_S01.PIDPV1PV2OBXDG1_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="SRM_S01.RGSAISAPRNTEAIGAPRNTEAILAPRNTEAIPAPRNTE_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SRM_S01" type="SRM_S01.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - SRM_S01
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE SRM_S01
+-->
+  <!-- .. groups used in message SRM_S01 -->
+  <xsd:complexType name="SRM_S01.RGSAISAPRNTEAIGAPRNTEAILAPRNTEAIPAPRNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="RGS" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="SRM_S01.AISAPRNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="SRM_S01.AIGAPRNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="SRM_S01.AILAPRNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="SRM_S01.AIPAPRNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SRM_S01.RGSAISAPRNTEAIGAPRNTEAILAPRNTEAIPAPRNTE_SUPPGRP" type="SRM_S01.RGSAISAPRNTEAIGAPRNTEAILAPRNTEAIPAPRNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SRM_S01.AIGAPRNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="AIG" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SRM_S01.AIGAPRNTE_SUPPGRP" type="SRM_S01.AIGAPRNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SRM_S01.AIPAPRNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="AIP" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SRM_S01.AIPAPRNTE_SUPPGRP" type="SRM_S01.AIPAPRNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SRM_S01.AILAPRNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="AIL" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SRM_S01.AILAPRNTE_SUPPGRP" type="SRM_S01.AILAPRNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SRM_S01.AISAPRNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="AIS" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SRM_S01.AISAPRNTE_SUPPGRP" type="SRM_S01.AISAPRNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SRM_S01.PIDPV1PV2OBXDG1_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="DG1" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SRM_S01.PIDPV1PV2OBXDG1_SUPPGRP" type="SRM_S01.PIDPV1PV2OBXDG1_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition SRM_S01 -->
+  <xsd:complexType name="SRM_S01.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ARQ" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="SRM_S01.PIDPV1PV2OBXDG1_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="SRM_S01.RGSAISAPRNTEAIGAPRNTEAILAPRNTEAIPAPRNTE_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SRM_S01" type="SRM_S01.CONTENT"/>
+
+</xsd:schema>

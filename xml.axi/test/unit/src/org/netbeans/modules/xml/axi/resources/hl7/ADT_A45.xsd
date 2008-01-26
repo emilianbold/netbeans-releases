@@ -1,1 +1,39 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - ADT_A45    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE ADT_A45-->  <!-- .. groups used in message ADT_A45 -->  <xsd:complexType name="ADT_A45.MRGPV1_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="MRG" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="ADT_A45.MRGPV1_SUPPGRP" type="ADT_A45.MRGPV1_SUPPGRP.CONTENT"/>  <!-- .. message definition ADT_A45 -->  <xsd:complexType name="ADT_A45.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="ADT_A45.MRGPV1_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="ADT_A45" type="ADT_A45.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - ADT_A45
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE ADT_A45
+-->
+  <!-- .. groups used in message ADT_A45 -->
+  <xsd:complexType name="ADT_A45.MRGPV1_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MRG" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="ADT_A45.MRGPV1_SUPPGRP" type="ADT_A45.MRGPV1_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition ADT_A45 -->
+  <xsd:complexType name="ADT_A45.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="ADT_A45.MRGPV1_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="ADT_A45" type="ADT_A45.CONTENT"/>
+
+</xsd:schema>

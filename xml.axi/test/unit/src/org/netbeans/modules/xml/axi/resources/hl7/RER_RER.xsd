@@ -1,1 +1,57 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - RER_RER    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE RER_RER-->  <!-- .. groups used in message RER_RER -->  <xsd:complexType name="RER_RER.PIDNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RER_RER.PIDNTE_SUPPGRP" type="RER_RER.PIDNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="RER_RER.QRDQRFPIDNTEORCRXERXRRXC_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />      <xsd:element ref="RER_RER.PIDNTE_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="RER_RER.ORCRXERXRRXC_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RER_RER.QRDQRFPIDNTEORCRXERXRRXC_SUPPGRP" type="RER_RER.QRDQRFPIDNTEORCRXERXRRXC_SUPPGRP.CONTENT"/>  <xsd:complexType name="RER_RER.ORCRXERXRRXC_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="ORC" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RXE" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RXR" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="RXC" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RER_RER.ORCRXERXRRXC_SUPPGRP" type="RER_RER.ORCRXERXRRXC_SUPPGRP.CONTENT"/>  <!-- .. message definition RER_RER -->  <xsd:complexType name="RER_RER.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="RER_RER.QRDQRFPIDNTEORCRXERXRRXC_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RER_RER" type="RER_RER.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - RER_RER
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE RER_RER
+-->
+  <!-- .. groups used in message RER_RER -->
+  <xsd:complexType name="RER_RER.PIDNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RER_RER.PIDNTE_SUPPGRP" type="RER_RER.PIDNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="RER_RER.QRDQRFPIDNTEORCRXERXRRXC_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="RER_RER.PIDNTE_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="RER_RER.ORCRXERXRRXC_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RER_RER.QRDQRFPIDNTEORCRXERXRRXC_SUPPGRP" type="RER_RER.QRDQRFPIDNTEORCRXERXRRXC_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="RER_RER.ORCRXERXRRXC_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="ORC" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RXE" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RXR" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="RXC" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RER_RER.ORCRXERXRRXC_SUPPGRP" type="RER_RER.ORCRXERXRRXC_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition RER_RER -->
+  <xsd:complexType name="RER_RER.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="RER_RER.QRDQRFPIDNTEORCRXERXRRXC_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RER_RER" type="RER_RER.CONTENT"/>
+
+</xsd:schema>

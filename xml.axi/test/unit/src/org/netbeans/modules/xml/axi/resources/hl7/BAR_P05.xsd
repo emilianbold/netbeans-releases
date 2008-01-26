@@ -1,1 +1,66 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - BAR_P05    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE BAR_P05-->  <!-- .. groups used in message BAR_P05 -->  <xsd:complexType name="BAR_P05.PR1ROL_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PR1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ROL" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="BAR_P05.PR1ROL_SUPPGRP" type="BAR_P05.PR1ROL_SUPPGRP.CONTENT"/>  <xsd:complexType name="BAR_P05.PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1NK1IN1IN2IN3ACCUB1UB2_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="DB1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="AL1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="DG1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="DRG" minOccurs="0" maxOccurs="1" />      <xsd:element ref="BAR_P05.PR1ROL_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="GT1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="NK1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="BAR_P05.IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="ACC" minOccurs="0" maxOccurs="1" />      <xsd:element ref="UB1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="UB2" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="BAR_P05.PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1NK1IN1IN2IN3ACCUB1UB2_SUPPGRP" type="BAR_P05.PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1NK1IN1IN2IN3ACCUB1UB2_SUPPGRP.CONTENT"/>  <xsd:complexType name="BAR_P05.IN1IN2IN3_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="IN3" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="BAR_P05.IN1IN2IN3_SUPPGRP" type="BAR_P05.IN1IN2IN3_SUPPGRP.CONTENT"/>  <!-- .. message definition BAR_P05 -->  <xsd:complexType name="BAR_P05.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="BAR_P05.PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1NK1IN1IN2IN3ACCUB1UB2_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="BAR_P05" type="BAR_P05.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - BAR_P05
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE BAR_P05
+-->
+  <!-- .. groups used in message BAR_P05 -->
+  <xsd:complexType name="BAR_P05.PR1ROL_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PR1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ROL" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="BAR_P05.PR1ROL_SUPPGRP" type="BAR_P05.PR1ROL_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="BAR_P05.PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1NK1IN1IN2IN3ACCUB1UB2_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="DB1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="AL1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="DG1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="DRG" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="BAR_P05.PR1ROL_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="GT1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="NK1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="BAR_P05.IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="ACC" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="UB1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="UB2" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="BAR_P05.PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1NK1IN1IN2IN3ACCUB1UB2_SUPPGRP" type="BAR_P05.PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1NK1IN1IN2IN3ACCUB1UB2_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="BAR_P05.IN1IN2IN3_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="IN3" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="BAR_P05.IN1IN2IN3_SUPPGRP" type="BAR_P05.IN1IN2IN3_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition BAR_P05 -->
+  <xsd:complexType name="BAR_P05.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="BAR_P05.PV1PV2DB1OBXAL1DG1DRGPR1ROLGT1NK1IN1IN2IN3ACCUB1UB2_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="BAR_P05" type="BAR_P05.CONTENT"/>
+
+</xsd:schema>

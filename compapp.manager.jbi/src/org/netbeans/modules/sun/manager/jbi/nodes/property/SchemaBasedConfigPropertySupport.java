@@ -47,7 +47,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.management.OldConfigurationMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.ConfigurationMBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtNode;
 import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainMessage;
@@ -74,10 +74,9 @@ class SchemaBasedConfigPropertySupport<T>
     protected Attribute attr;
     protected MBeanAttributeInfo info;
     protected AppserverJBIMgmtNode componentNode;
-    private PropertySheetOwner propertySheetOwner;
 
     SchemaBasedConfigPropertySupport(
-            PropertySheetOwner propertySheetOwner, 
+            AppserverJBIMgmtNode componentNode, 
             Class<T> type, 
             Attribute attr, 
             MBeanAttributeInfo info) {
@@ -91,12 +90,7 @@ class SchemaBasedConfigPropertySupport<T>
         
         this.attr = attr;
         this.info = info;
-        
-        this.propertySheetOwner = propertySheetOwner;
-        
-        if (propertySheetOwner instanceof AppserverJBIMgmtNode) {
-            this.componentNode = (AppserverJBIMgmtNode) propertySheetOwner;
-        }
+        this.componentNode = componentNode;
     }
 
     @SuppressWarnings(value = "unchecked")
@@ -130,14 +124,8 @@ class SchemaBasedConfigPropertySupport<T>
         
         try {
             if (validate(newValue)) {
-                if (propertySheetOwner != null) {                    
-                    attr = propertySheetOwner.setSheetProperty(getName(), newValue);
-                } else {
-                    attr = componentNode.setSheetProperty(getName(), newValue);
-                }
-                if (componentNode != null) {
-                    checkForPromptToRestart();
-                }
+                attr = componentNode.setSheetProperty(getName(), newValue);
+                checkForPromptToRestart();
             }
         } catch (Exception ex) {
             NotifyDescriptor d = new NotifyDescriptor.Message(
@@ -157,10 +145,10 @@ class SchemaBasedConfigPropertySupport<T>
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (info instanceof OldConfigurationMBeanAttributeInfo) {
+                if (info instanceof ConfigurationMBeanAttributeInfo) {
 
-                    OldConfigurationMBeanAttributeInfo myInfo =
-                            (OldConfigurationMBeanAttributeInfo)info;
+                    ConfigurationMBeanAttributeInfo myInfo =
+                            (ConfigurationMBeanAttributeInfo)info;
 
                     DoNotShowAgainMessage d;
 

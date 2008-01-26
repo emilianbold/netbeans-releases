@@ -1,18 +1,26 @@
 XML checking started.
-Checking filename
+
+Checking filename
 The element type "notes" must be terminated by the matching end-tag "</notes>". [17] 
 XML checking finished.
 
+
 XML checking started.
-Checking filename
+
+Checking filename
 XML checking finished.
 
+
 XML validation started.
-Checking filename
+
+Checking filename
 Attribute "a" must be declared for element type "to". [11] 
 XML validation finished.
 
+
 XML validation started.
-Checking filename
+
+Checking filename
 XML validation finished.
+
 

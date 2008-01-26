@@ -865,6 +865,7 @@ implements ToolbarPool.Configuration, PropertyChangeListener {
                 : ((JMenu)menu).getPopupMenu().getComponents()) {
             if( c instanceof AbstractButton ) {
                 AbstractButton b = (AbstractButton)c;
+
                 if( isContextMenu ) {
                     b.setText( Actions.cutAmpersand(b.getText()) );
                 } else {

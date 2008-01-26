@@ -44,7 +44,7 @@ package org.netbeans.modules.sun.manager.jbi.editors;
 
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularType;
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
 
 
 /**
@@ -67,7 +67,7 @@ public class ApplicationConfigurationsEditor extends SimpleTabularDataEditor {
      */
     public ApplicationConfigurationsEditor(String tableLabelText,
             String tableLabelDescription, TabularType tabularType,
-            String[] keys, OldJBIComponentConfigurationDescriptor descriptor,
+            String[] keys, ComponentConfigurationDescriptor descriptor,
             boolean isWritable){
         super(tableLabelText, tableLabelDescription, tabularType, descriptor,
                 isWritable);

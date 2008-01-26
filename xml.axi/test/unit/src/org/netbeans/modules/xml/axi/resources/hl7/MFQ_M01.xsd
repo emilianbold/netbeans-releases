@@ -1,1 +1,30 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - MFQ_M01    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE MFQ_M01-->  <!-- .. message definition MFQ_M01 -->  <xsd:complexType name="MFQ_M01.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="MFQ_M01" type="MFQ_M01.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - MFQ_M01
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE MFQ_M01
+-->
+
+  <!-- .. message definition MFQ_M01 -->
+  <xsd:complexType name="MFQ_M01.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MFQ_M01" type="MFQ_M01.CONTENT"/>
+
+</xsd:schema>

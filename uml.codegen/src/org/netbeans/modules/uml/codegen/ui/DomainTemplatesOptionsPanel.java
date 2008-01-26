@@ -1,6 +1,8 @@
-/*DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+/*
+DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved. *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -19,7 +21,11 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s): * * The Original Software is NetBeans. The Initial Developer of the Original * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun * Microsystems, Inc. All Rights Reserved.
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -30,4 +36,78 @@
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
- * made subject to such option by the copyright holder. */package org.netbeans.modules.uml.codegen.ui;import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;import java.util.Hashtable;import javax.swing.JComponent;import org.openide.util.NbBundle;/** * * @author krichard */public class DomainTemplatesOptionsPanel implements UMLOptionsPanel{    private final boolean debug = true ;    private DomainTemplatesManagerPanel form = null ;        /** Creates a new instance of OptionsPanel */        public DomainTemplatesOptionsPanel()    {    }        public void update() {        form.load ();    }        public void applyChanges()    {        form.store() ;    }        public void cancel() {        form.cancel() ;    }        public JComponent create()    {        if (form == null)            form = new DomainTemplatesManagerPanel() ;        return form ;    }        public Hashtable getCurrentValues()    {        Hashtable p = new Hashtable() ;        return p ;    }        public Hashtable getUpdatedValues()    {        Hashtable p = new Hashtable() ;        return p ;    }        public String getDisplayName()    {        return loc("CODE_GEN_OPTIONS") ; // NOI18N    }        private String loc(String key)    {        return NbBundle.getMessage(DomainTemplatesOptionsPanel.class, key) ; // NOI18N    }        private void log(String s)    {        if (debug) System.out.println(this.getClass().toString()+"::"+s); // NOI18N    }}
+ * made subject to such option by the copyright holder.
+ */
+
+package org.netbeans.modules.uml.codegen.ui;
+
+import org.netbeans.modules.uml.propertysupport.options.api.UMLOptionsPanel;
+import java.util.Hashtable;
+import javax.swing.JComponent;
+import org.openide.util.NbBundle;
+
+/**
+ *
+ * @author krichard
+ */
+
+public class DomainTemplatesOptionsPanel implements UMLOptionsPanel
+{
+    private final boolean debug = true ;
+    private DomainTemplatesManagerPanel form = null ;
+    
+    /** Creates a new instance of OptionsPanel */
+    
+    public DomainTemplatesOptionsPanel()
+    {
+    }
+    
+    public void update() {
+        form.load ();
+    }
+    
+    public void applyChanges()
+    {
+        form.store() ;
+    }
+    
+    public void cancel() {
+        form.cancel() ;
+    }
+    
+    public JComponent create()
+    {
+        if (form == null)
+            form = new DomainTemplatesManagerPanel() ;
+
+        return form ;
+    }
+    
+    public Hashtable getCurrentValues()
+    {
+        Hashtable p = new Hashtable() ;
+        return p ;
+    }
+    
+    public Hashtable getUpdatedValues()
+    {
+        Hashtable p = new Hashtable() ;
+        return p ;
+    }
+    
+    public String getDisplayName()
+    {
+        return loc("CODE_GEN_OPTIONS") ; // NOI18N
+    }
+    
+    private String loc(String key)
+    {
+        return NbBundle.getMessage(DomainTemplatesOptionsPanel.class, key) ; // NOI18N
+    }
+    
+    private void log(String s)
+    {
+        if (debug) System.out.println(this.getClass().toString()+"::"+s); // NOI18N
+    }
+
+}

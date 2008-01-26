@@ -1,1 +1,79 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - SQM_S25    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE SQM_S25-->  <!-- .. groups used in message SQM_S25 -->  <xsd:complexType name="SQM_S25.AIPAPR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="AIP" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SQM_S25.AIPAPR_SUPPGRP" type="SQM_S25.AIPAPR_SUPPGRP.CONTENT"/>  <xsd:complexType name="SQM_S25.AISAPR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="AIS" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SQM_S25.AISAPR_SUPPGRP" type="SQM_S25.AISAPR_SUPPGRP.CONTENT"/>  <xsd:complexType name="SQM_S25.ARQAPRPIDRGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="ARQ" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PID" minOccurs="0" maxOccurs="1" />      <xsd:element ref="SQM_S25.RGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SQM_S25.ARQAPRPIDRGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP" type="SQM_S25.ARQAPRPIDRGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP.CONTENT"/>  <xsd:complexType name="SQM_S25.AIGAPR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="AIG" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SQM_S25.AIGAPR_SUPPGRP" type="SQM_S25.AIGAPR_SUPPGRP.CONTENT"/>  <xsd:complexType name="SQM_S25.RGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="RGS" minOccurs="1" maxOccurs="1" />      <xsd:element ref="SQM_S25.AISAPR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="SQM_S25.AIGAPR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="SQM_S25.AIPAPR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="SQM_S25.AILAPR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SQM_S25.RGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP" type="SQM_S25.RGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP.CONTENT"/>  <xsd:complexType name="SQM_S25.AILAPR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="AIL" minOccurs="1" maxOccurs="1" />      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SQM_S25.AILAPR_SUPPGRP" type="SQM_S25.AILAPR_SUPPGRP.CONTENT"/>  <!-- .. message definition SQM_S25 -->  <xsd:complexType name="SQM_S25.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />      <xsd:element ref="SQM_S25.ARQAPRPIDRGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="SQM_S25" type="SQM_S25.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - SQM_S25
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE SQM_S25
+-->
+  <!-- .. groups used in message SQM_S25 -->
+  <xsd:complexType name="SQM_S25.AIPAPR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="AIP" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SQM_S25.AIPAPR_SUPPGRP" type="SQM_S25.AIPAPR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SQM_S25.AISAPR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="AIS" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SQM_S25.AISAPR_SUPPGRP" type="SQM_S25.AISAPR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SQM_S25.ARQAPRPIDRGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="ARQ" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PID" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="SQM_S25.RGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SQM_S25.ARQAPRPIDRGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP" type="SQM_S25.ARQAPRPIDRGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SQM_S25.AIGAPR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="AIG" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SQM_S25.AIGAPR_SUPPGRP" type="SQM_S25.AIGAPR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SQM_S25.RGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="RGS" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="SQM_S25.AISAPR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="SQM_S25.AIGAPR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="SQM_S25.AIPAPR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="SQM_S25.AILAPR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SQM_S25.RGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP" type="SQM_S25.RGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="SQM_S25.AILAPR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="AIL" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="APR" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SQM_S25.AILAPR_SUPPGRP" type="SQM_S25.AILAPR_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition SQM_S25 -->
+  <xsd:complexType name="SQM_S25.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="SQM_S25.ARQAPRPIDRGSAISAPRAIGAPRAIPAPRAILAPR_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SQM_S25" type="SQM_S25.CONTENT"/>
+
+</xsd:schema>

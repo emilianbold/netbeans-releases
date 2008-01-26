@@ -53,7 +53,6 @@ import javax.management.MBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
-import org.netbeans.modules.sun.manager.jbi.nodes.property.PropertySheetOwner;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
@@ -67,8 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author jqian
  */
-public abstract class AppserverJBIMgmtNode extends AbstractNode 
-        implements PropertySheetOwner {
+public abstract class AppserverJBIMgmtNode extends AbstractNode {
 
     protected static final String GENERAL_SHEET_SET_NAME = "GENERAL"; // NOI18N
     
@@ -266,18 +264,18 @@ public abstract class AppserverJBIMgmtNode extends AbstractNode
         return null;
     }
 
-//    /**
-//     * Sets the property as an attribute to the underlying AMX mbeans. It 
-//     * usually will delegate to the controller object which is responsible for
-//     * finding the correct AMX mbean objectname in order to execute a 
-//     * JMX setAttribute.
-//     *
-//     * @param attrName The name of the property to be set.
-//     * @param value The value retrieved from the property sheet to be set in the
-//     *        backend.
-//     * @returns the updated Attribute accessed from the Sheet.
-//     */
-//    public abstract Attribute setSheetProperty(String attrName, Object value);
+    /**
+     * Sets the property as an attribute to the underlying AMX mbeans. It 
+     * usually will delegate to the controller object which is responsible for
+     * finding the correct AMX mbean objectname in order to execute a 
+     * JMX setAttribute.
+     *
+     * @param attrName The name of the property to be set.
+     * @param value The value retrieved from the property sheet to be set in the
+     *        backend.
+     * @returns the updated Attribute accessed from the Sheet.
+     */
+    public abstract Attribute setSheetProperty(String attrName, Object value);
 
     /**
      * Returns the logger for all nodes.

@@ -1,1 +1,38 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - MFN_M04    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE MFN_M04-->  <!-- .. groups used in message MFN_M04 -->  <xsd:complexType name="MFN_M04.MFECDMPRC_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="MFE" minOccurs="1" maxOccurs="1" />      <xsd:element ref="CDM" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PRC" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="MFN_M04.MFECDMPRC_SUPPGRP" type="MFN_M04.MFECDMPRC_SUPPGRP.CONTENT"/>  <!-- .. message definition MFN_M04 -->  <xsd:complexType name="MFN_M04.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MFI" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MFN_M04.MFECDMPRC_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="MFN_M04" type="MFN_M04.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - MFN_M04
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE MFN_M04
+-->
+  <!-- .. groups used in message MFN_M04 -->
+  <xsd:complexType name="MFN_M04.MFECDMPRC_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MFE" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="CDM" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PRC" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MFN_M04.MFECDMPRC_SUPPGRP" type="MFN_M04.MFECDMPRC_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition MFN_M04 -->
+  <xsd:complexType name="MFN_M04.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MFI" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MFN_M04.MFECDMPRC_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MFN_M04" type="MFN_M04.CONTENT"/>
+
+</xsd:schema>

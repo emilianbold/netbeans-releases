@@ -832,6 +832,7 @@ public class JComponentOperator extends ContainerOperator
      */
     public static class JComponentByTipFinder implements ComponentChooser {
 	String label;
+
 	StringComparator comparator;
 	boolean compareExactly;
 	boolean compareCaseSensitive;

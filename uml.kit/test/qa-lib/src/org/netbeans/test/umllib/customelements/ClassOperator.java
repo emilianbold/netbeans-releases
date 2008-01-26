@@ -694,6 +694,7 @@ public class ClassOperator extends DiagramElementOperator{
                     if(!innerCall){innerCall=true;operationNaturalWayNaming(visibility,retType,name,oldParTypes,oldParNames,false);}
                     if(!innerCall){innerCall=true;operationNaturalWayNaming(visibility,retType,name,parTypes,parNames,false);}
                 } else {
+
                     int visFrom=0;
                     int visTo=oldVis.length();
                     //

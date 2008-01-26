@@ -1,1 +1,65 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - RAR_RAR    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE RAR_RAR-->  <!-- .. groups used in message RAR_RAR -->  <xsd:complexType name="RAR_RAR.PIDNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RAR_RAR.PIDNTE_SUPPGRP" type="RAR_RAR.PIDNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="RAR_RAR.RXERXRRXC_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="RXE" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RXR" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="RXC" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RAR_RAR.RXERXRRXC_SUPPGRP" type="RAR_RAR.RXERXRRXC_SUPPGRP.CONTENT"/>  <xsd:complexType name="RAR_RAR.QRDQRFPIDNTEORCRXERXRRXCRXARXR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />      <xsd:element ref="RAR_RAR.PIDNTE_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="RAR_RAR.ORCRXERXRRXCRXARXR_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RAR_RAR.QRDQRFPIDNTEORCRXERXRRXCRXARXR_SUPPGRP" type="RAR_RAR.QRDQRFPIDNTEORCRXERXRRXCRXARXR_SUPPGRP.CONTENT"/>  <xsd:complexType name="RAR_RAR.ORCRXERXRRXCRXARXR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="ORC" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RAR_RAR.RXERXRRXC_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="RXA" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="RXR" minOccurs="1" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RAR_RAR.ORCRXERXRRXCRXARXR_SUPPGRP" type="RAR_RAR.ORCRXERXRRXCRXARXR_SUPPGRP.CONTENT"/>  <!-- .. message definition RAR_RAR -->  <xsd:complexType name="RAR_RAR.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />      <xsd:element ref="RAR_RAR.QRDQRFPIDNTEORCRXERXRRXCRXARXR_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="RAR_RAR" type="RAR_RAR.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - RAR_RAR
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE RAR_RAR
+-->
+  <!-- .. groups used in message RAR_RAR -->
+  <xsd:complexType name="RAR_RAR.PIDNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RAR_RAR.PIDNTE_SUPPGRP" type="RAR_RAR.PIDNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="RAR_RAR.RXERXRRXC_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="RXE" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RXR" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="RXC" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RAR_RAR.RXERXRRXC_SUPPGRP" type="RAR_RAR.RXERXRRXC_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="RAR_RAR.QRDQRFPIDNTEORCRXERXRRXCRXARXR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="QRD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="QRF" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="RAR_RAR.PIDNTE_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="RAR_RAR.ORCRXERXRRXCRXARXR_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RAR_RAR.QRDQRFPIDNTEORCRXERXRRXCRXARXR_SUPPGRP" type="RAR_RAR.QRDQRFPIDNTEORCRXERXRRXCRXARXR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="RAR_RAR.ORCRXERXRRXCRXARXR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="ORC" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RAR_RAR.RXERXRRXC_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="RXA" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="RXR" minOccurs="1" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RAR_RAR.ORCRXERXRRXCRXARXR_SUPPGRP" type="RAR_RAR.ORCRXERXRRXCRXARXR_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition RAR_RAR -->
+  <xsd:complexType name="RAR_RAR.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="MSA" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="ERR" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="RAR_RAR.QRDQRFPIDNTEORCRXERXRRXCRXARXR_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="RAR_RAR" type="RAR_RAR.CONTENT"/>
+
+</xsd:schema>

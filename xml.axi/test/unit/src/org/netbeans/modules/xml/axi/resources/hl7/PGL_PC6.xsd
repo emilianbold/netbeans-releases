@@ -1,1 +1,127 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - PGL_PC6    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE PGL_PC6-->  <!-- .. groups used in message PGL_PC6 -->  <xsd:complexType name="PGL_PC6.ORCOBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="ORC" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PGL_PC6.OBRRXONTEVAROBXNTEVAR_SUPPGRP" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.ORCOBRRXONTEVAROBXNTEVAR_SUPPGRP" type="PGL_PC6.ORCOBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.OBXNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="OBX" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.OBXNTE_SUPPGRP" type="PGL_PC6.OBXNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.PV1PV2_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.PV1PV2_SUPPGRP" type="PGL_PC6.PV1PV2_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.GOLNTEVARROLVARPTHVAROBXNTEPRBNTEVARROLVAROBXNTEORCOBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="GOL" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PGL_PC6.ROLVAR_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PGL_PC6.PTHVAR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PGL_PC6.OBXNTE_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PGL_PC6.PRBNTEVARROLVAROBXNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PGL_PC6.ORCOBRRXONTEVAROBXNTEVAR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.GOLNTEVARROLVARPTHVAROBXNTEPRBNTEVARROLVAROBXNTEORCOBRRXONTEVAROBXNTEVAR_SUPPGRP" type="PGL_PC6.GOLNTEVARROLVARPTHVAROBXNTEPRBNTEVARROLVAROBXNTEORCOBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.OBXNTEVAR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="OBX" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.OBXNTEVAR_SUPPGRP" type="PGL_PC6.OBXNTEVAR_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.OBRRXO_SUPPGRP.CONTENT">    <xsd:choice>      <xsd:element ref="OBR" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RXO" minOccurs="1" maxOccurs="1" />    </xsd:choice>  </xsd:complexType>  <xsd:element name="PGL_PC6.OBRRXO_SUPPGRP" type="PGL_PC6.OBRRXO_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.PRBNTEVARROLVAROBXNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PRB" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PGL_PC6.ROLVAR_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PGL_PC6.OBXNTE_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.PRBNTEVARROLVAROBXNTE_SUPPGRP" type="PGL_PC6.PRBNTEVARROLVAROBXNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.ROLVAR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="ROL" minOccurs="1" maxOccurs="1" />      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.ROLVAR_SUPPGRP" type="PGL_PC6.ROLVAR_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.ROLVAR_SUPPGRP2.CONTENT">    <xsd:sequence>      <xsd:element ref="ROL" minOccurs="1" maxOccurs="1" />      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.ROLVAR_SUPPGRP2" type="PGL_PC6.ROLVAR_SUPPGRP2.CONTENT"/>  <xsd:complexType name="PGL_PC6.PTHVAR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PTH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.PTHVAR_SUPPGRP" type="PGL_PC6.PTHVAR_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.OBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PGL_PC6.OBRRXO_SUPPGRP" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PGL_PC6.OBXNTEVAR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.OBRRXONTEVAROBXNTEVAR_SUPPGRP" type="PGL_PC6.OBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT"/>  <xsd:complexType name="PGL_PC6.OBXNTE_SUPPGRP2.CONTENT">    <xsd:sequence>      <xsd:element ref="OBX" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6.OBXNTE_SUPPGRP2" type="PGL_PC6.OBXNTE_SUPPGRP2.CONTENT"/>  <!-- .. message definition PGL_PC6 -->  <xsd:complexType name="PGL_PC6.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PGL_PC6.PV1PV2_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PGL_PC6.GOLNTEVARROLVARPTHVAROBXNTEPRBNTEVARROLVAROBXNTEORCOBRRXONTEVAROBXNTEVAR_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PGL_PC6" type="PGL_PC6.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - PGL_PC6
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE PGL_PC6
+-->
+  <!-- .. groups used in message PGL_PC6 -->
+  <xsd:complexType name="PGL_PC6.ORCOBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="ORC" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PGL_PC6.OBRRXONTEVAROBXNTEVAR_SUPPGRP" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.ORCOBRRXONTEVAROBXNTEVAR_SUPPGRP" type="PGL_PC6.ORCOBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.OBXNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="OBX" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.OBXNTE_SUPPGRP" type="PGL_PC6.OBXNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.PV1PV2_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.PV1PV2_SUPPGRP" type="PGL_PC6.PV1PV2_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.GOLNTEVARROLVARPTHVAROBXNTEPRBNTEVARROLVAROBXNTEORCOBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="GOL" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PGL_PC6.ROLVAR_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PGL_PC6.PTHVAR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PGL_PC6.OBXNTE_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PGL_PC6.PRBNTEVARROLVAROBXNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PGL_PC6.ORCOBRRXONTEVAROBXNTEVAR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.GOLNTEVARROLVARPTHVAROBXNTEPRBNTEVARROLVAROBXNTEORCOBRRXONTEVAROBXNTEVAR_SUPPGRP" type="PGL_PC6.GOLNTEVARROLVARPTHVAROBXNTEPRBNTEVARROLVAROBXNTEORCOBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.OBXNTEVAR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="OBX" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.OBXNTEVAR_SUPPGRP" type="PGL_PC6.OBXNTEVAR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.OBRRXO_SUPPGRP.CONTENT">
+    <xsd:choice>
+      <xsd:element ref="OBR" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RXO" minOccurs="1" maxOccurs="1" />
+    </xsd:choice>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.OBRRXO_SUPPGRP" type="PGL_PC6.OBRRXO_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.PRBNTEVARROLVAROBXNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PRB" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PGL_PC6.ROLVAR_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PGL_PC6.OBXNTE_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.PRBNTEVARROLVAROBXNTE_SUPPGRP" type="PGL_PC6.PRBNTEVARROLVAROBXNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.ROLVAR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="ROL" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.ROLVAR_SUPPGRP" type="PGL_PC6.ROLVAR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.ROLVAR_SUPPGRP2.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="ROL" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.ROLVAR_SUPPGRP2" type="PGL_PC6.ROLVAR_SUPPGRP2.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.PTHVAR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PTH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.PTHVAR_SUPPGRP" type="PGL_PC6.PTHVAR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.OBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PGL_PC6.OBRRXO_SUPPGRP" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="VAR" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PGL_PC6.OBXNTEVAR_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.OBRRXONTEVAROBXNTEVAR_SUPPGRP" type="PGL_PC6.OBRRXONTEVAROBXNTEVAR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PGL_PC6.OBXNTE_SUPPGRP2.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="OBX" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6.OBXNTE_SUPPGRP2" type="PGL_PC6.OBXNTE_SUPPGRP2.CONTENT"/>
+
+  <!-- .. message definition PGL_PC6 -->
+  <xsd:complexType name="PGL_PC6.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PGL_PC6.PV1PV2_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PGL_PC6.GOLNTEVARROLVARPTHVAROBXNTEPRBNTEVARROLVAROBXNTEORCOBRRXONTEVAROBXNTEVAR_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PGL_PC6" type="PGL_PC6.CONTENT"/>
+
+</xsd:schema>

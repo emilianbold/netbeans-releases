@@ -1,1 +1,113 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - PEX_P07    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE PEX_P07-->  <!-- .. groups used in message PEX_P07 -->  <xsd:complexType name="PEX_P07.PV1PV2_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.PV1PV2_SUPPGRP" type="PEX_P07.PV1PV2_SUPPGRP.CONTENT"/>  <xsd:complexType name="PEX_P07.RXARXR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="RXA" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RXR" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.RXARXR_SUPPGRP" type="PEX_P07.RXARXR_SUPPGRP.CONTENT"/>  <xsd:complexType name="PEX_P07.PCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PCR" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PEX_P07.RXERXR_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PEX_P07.RXARXR_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PRB" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PEX_P07.NK1RXERXRRXARXRPRBOBX_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PEX_P07.CSRCSP_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.PCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" type="PEX_P07.PCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT"/>  <xsd:complexType name="PEX_P07.RXERXR_SUPPGRP2.CONTENT">    <xsd:sequence>      <xsd:element ref="RXE" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RXR" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.RXERXR_SUPPGRP2" type="PEX_P07.RXERXR_SUPPGRP2.CONTENT"/>  <xsd:complexType name="PEX_P07.NK1RXERXRRXARXRPRBOBX_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="NK1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PEX_P07.RXERXR_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PEX_P07.RXARXR_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PRB" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.NK1RXERXRRXARXRPRBOBX_SUPPGRP" type="PEX_P07.NK1RXERXRRXARXRPRBOBX_SUPPGRP.CONTENT"/>  <xsd:complexType name="PEX_P07.RXARXR_SUPPGRP2.CONTENT">    <xsd:sequence>      <xsd:element ref="RXA" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RXR" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.RXARXR_SUPPGRP2" type="PEX_P07.RXARXR_SUPPGRP2.CONTENT"/>  <xsd:complexType name="PEX_P07.PEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PEO" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PEX_P07.PCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.PEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" type="PEX_P07.PEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT"/>  <xsd:complexType name="PEX_P07.CSRCSP_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="CSR" minOccurs="1" maxOccurs="1" />      <xsd:element ref="CSP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.CSRCSP_SUPPGRP" type="PEX_P07.CSRCSP_SUPPGRP.CONTENT"/>  <xsd:complexType name="PEX_P07.PESPEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PES" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PEX_P07.PEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.PESPEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" type="PEX_P07.PESPEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT"/>  <xsd:complexType name="PEX_P07.RXERXR_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="RXE" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RXR" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07.RXERXR_SUPPGRP" type="PEX_P07.RXERXR_SUPPGRP.CONTENT"/>  <!-- .. message definition PEX_P07 -->  <xsd:complexType name="PEX_P07.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PEX_P07.PV1PV2_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="PEX_P07.PESPEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PEX_P07" type="PEX_P07.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - PEX_P07
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE PEX_P07
+-->
+  <!-- .. groups used in message PEX_P07 -->
+  <xsd:complexType name="PEX_P07.PV1PV2_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.PV1PV2_SUPPGRP" type="PEX_P07.PV1PV2_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PEX_P07.RXARXR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="RXA" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RXR" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.RXARXR_SUPPGRP" type="PEX_P07.RXARXR_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PEX_P07.PCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PCR" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PEX_P07.RXERXR_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PEX_P07.RXARXR_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PRB" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PEX_P07.NK1RXERXRRXARXRPRBOBX_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PEX_P07.CSRCSP_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.PCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" type="PEX_P07.PCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PEX_P07.RXERXR_SUPPGRP2.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="RXE" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RXR" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.RXERXR_SUPPGRP2" type="PEX_P07.RXERXR_SUPPGRP2.CONTENT"/>
+  <xsd:complexType name="PEX_P07.NK1RXERXRRXARXRPRBOBX_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="NK1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PEX_P07.RXERXR_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PEX_P07.RXARXR_SUPPGRP2" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PRB" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="OBX" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.NK1RXERXRRXARXRPRBOBX_SUPPGRP" type="PEX_P07.NK1RXERXRRXARXRPRBOBX_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PEX_P07.RXARXR_SUPPGRP2.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="RXA" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RXR" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.RXARXR_SUPPGRP2" type="PEX_P07.RXARXR_SUPPGRP2.CONTENT"/>
+  <xsd:complexType name="PEX_P07.PEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PEO" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PEX_P07.PCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.PEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" type="PEX_P07.PEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PEX_P07.CSRCSP_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="CSR" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="CSP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.CSRCSP_SUPPGRP" type="PEX_P07.CSRCSP_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PEX_P07.PESPEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PES" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PEX_P07.PEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.PESPEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" type="PEX_P07.PESPEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PEX_P07.RXERXR_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="RXE" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RXR" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07.RXERXR_SUPPGRP" type="PEX_P07.RXERXR_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition PEX_P07 -->
+  <xsd:complexType name="PEX_P07.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="EVN" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PEX_P07.PV1PV2_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="PEX_P07.PESPEOPCRRXERXRRXARXRPRBOBXNTENK1RXERXRRXARXRPRBOBXCSRCSP_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PEX_P07" type="PEX_P07.CONTENT"/>
+
+</xsd:schema>

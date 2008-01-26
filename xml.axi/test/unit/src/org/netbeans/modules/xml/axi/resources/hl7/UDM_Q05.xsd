@@ -1,1 +1,31 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - UDM_Q05    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE UDM_Q05-->  <!-- .. message definition UDM_Q05 -->  <xsd:complexType name="UDM_Q05.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="URD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="URS" minOccurs="0" maxOccurs="1" />      <xsd:element ref="DSP" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="UDM_Q05" type="UDM_Q05.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - UDM_Q05
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE UDM_Q05
+-->
+
+  <!-- .. message definition UDM_Q05 -->
+  <xsd:complexType name="UDM_Q05.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="URD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="URS" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="DSP" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="UDM_Q05" type="UDM_Q05.CONTENT"/>
+
+</xsd:schema>

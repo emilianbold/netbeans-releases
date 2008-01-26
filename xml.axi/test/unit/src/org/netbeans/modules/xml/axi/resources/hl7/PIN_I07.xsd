@@ -1,1 +1,55 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - PIN_I07    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE PIN_I07-->  <!-- .. groups used in message PIN_I07 -->  <xsd:complexType name="PIN_I07.IN1IN2IN3_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="IN3" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PIN_I07.IN1IN2IN3_SUPPGRP" type="PIN_I07.IN1IN2IN3_SUPPGRP.CONTENT"/>  <xsd:complexType name="PIN_I07.GT1IN1IN2IN3_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="GT1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PIN_I07.IN1IN2IN3_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PIN_I07.GT1IN1IN2IN3_SUPPGRP" type="PIN_I07.GT1IN1IN2IN3_SUPPGRP.CONTENT"/>  <xsd:complexType name="PIN_I07.PRDCTD_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PRD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="CTD" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PIN_I07.PRDCTD_SUPPGRP" type="PIN_I07.PRDCTD_SUPPGRP.CONTENT"/>  <!-- .. message definition PIN_I07 -->  <xsd:complexType name="PIN_I07.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PIN_I07.PRDCTD_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NK1" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="PIN_I07.GT1IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="PIN_I07" type="PIN_I07.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - PIN_I07
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE PIN_I07
+-->
+  <!-- .. groups used in message PIN_I07 -->
+  <xsd:complexType name="PIN_I07.IN1IN2IN3_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="IN3" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PIN_I07.IN1IN2IN3_SUPPGRP" type="PIN_I07.IN1IN2IN3_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PIN_I07.GT1IN1IN2IN3_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="GT1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PIN_I07.IN1IN2IN3_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PIN_I07.GT1IN1IN2IN3_SUPPGRP" type="PIN_I07.GT1IN1IN2IN3_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="PIN_I07.PRDCTD_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PRD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="CTD" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PIN_I07.PRDCTD_SUPPGRP" type="PIN_I07.PRDCTD_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition PIN_I07 -->
+  <xsd:complexType name="PIN_I07.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PIN_I07.PRDCTD_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NK1" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="PIN_I07.GT1IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="PIN_I07" type="PIN_I07.CONTENT"/>
+
+</xsd:schema>

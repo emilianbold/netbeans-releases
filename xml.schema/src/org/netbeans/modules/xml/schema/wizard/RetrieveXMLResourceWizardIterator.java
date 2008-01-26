@@ -130,15 +130,19 @@ public final class RetrieveXMLResourceWizardIterator implements TemplateWizard.I
     }
     
     private Set instantiateLocalFile() throws IOException{
-        String getFileURI = (String) wizard.getProperty(IConstants.SOURCE_LOCATION_KEY);
-        
+        URI getFileURI = null;
+        try {
+            getFileURI = new URI((String) wizard.getProperty(IConstants.SOURCE_LOCATION_KEY));
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex.getMessage());
+        }
         File storedFile = (File) wizard.getProperty(IConstants.TARGET_FILE_KEY);
         boolean overwriteFiles = ((Boolean)wizard.getProperty(IConstants.OVERWRITE_FILES)).booleanValue();
         //for which new file type, was the wizard invoked??
         if (((TemplateWizard) wizard).getTemplate().getName().equals(schemaFileType) )
-            new ImportDirectory(getFileURI, storedFile, overwriteFiles, DocumentTypesEnum.schema);
+            new ImportDirectory(new File(getFileURI), storedFile, overwriteFiles, DocumentTypesEnum.schema);
         else 
-            new ImportDirectory(getFileURI, storedFile, overwriteFiles, DocumentTypesEnum.wsdl);
+            new ImportDirectory(new File(getFileURI), storedFile, overwriteFiles, DocumentTypesEnum.wsdl);
         if (storedFile == null) {
             // Doesn't matter what it is, just so it's not null.
             storedFile = new File(System.getProperty("user.dir"));

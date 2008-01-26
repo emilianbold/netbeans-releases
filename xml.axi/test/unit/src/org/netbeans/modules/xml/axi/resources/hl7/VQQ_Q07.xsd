@@ -1,1 +1,30 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - VQQ_Q07    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE VQQ_Q07-->  <!-- .. message definition VQQ_Q07 -->  <xsd:complexType name="VQQ_Q07.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="VTQ" minOccurs="1" maxOccurs="1" />      <xsd:element ref="RDF" minOccurs="0" maxOccurs="1" />      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="VQQ_Q07" type="VQQ_Q07.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - VQQ_Q07
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE VQQ_Q07
+-->
+
+  <!-- .. message definition VQQ_Q07 -->
+  <xsd:complexType name="VQQ_Q07.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="VTQ" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="RDF" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="DSC" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="VQQ_Q07" type="VQQ_Q07.CONTENT"/>
+
+</xsd:schema>

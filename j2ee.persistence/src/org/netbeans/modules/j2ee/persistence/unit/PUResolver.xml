@@ -1,1 +1,23 @@
-<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd"><MIME-resolver>    <file>        <ext name="xml"/>        <resolver mime="text/x-persistence1.0">            <xml-rule>                <element name="persistence" ns="http://java.sun.com/xml/ns/persistence"/>            </xml-rule>        </resolver>    </file>    <file>        <ext name="xml"/>            <resolver mime="text/x-orm1.0">            <xml-rule>                <element name="entity-mappings" ns="http://java.sun.com/xml/ns/persistence/orm"/>            </xml-rule>        </resolver>    </file></MIME-resolver>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MIME-resolver PUBLIC "-//NetBeans//DTD MIME Resolver 1.0//EN" "http://www.netbeans.org/dtds/mime-resolver-1_0.dtd">
+
+<MIME-resolver>
+    <file>
+        <ext name="xml"/>
+        <resolver mime="text/x-persistence1.0">
+            <xml-rule>
+                <element name="persistence" ns="http://java.sun.com/xml/ns/persistence"/>
+            </xml-rule>
+        </resolver>
+
+    </file>
+    <file>
+        <ext name="xml"/>
+            <resolver mime="text/x-orm1.0">
+            <xml-rule>
+                <element name="entity-mappings" ns="http://java.sun.com/xml/ns/persistence/orm"/>
+            </xml-rule>
+        </resolver>
+    </file>
+</MIME-resolver>
+

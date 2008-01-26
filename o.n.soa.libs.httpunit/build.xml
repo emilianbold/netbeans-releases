@@ -20,12 +20,12 @@
 <project name="httpunit" default="netbeans" basedir=".">
     <import file="../../../nbbuild/templates/projectized.xml"/>
 
-    <!--target name="netbeans-extra">
+    <target name="netbeans-extra">
         <mkdir dir="${cluster}/modules/ext"/>
         <copy todir="${cluster}/modules/ext/jbi">
             <fileset dir="external">
                 <include name="*.jar"/>
             </fileset>
         </copy>
-    </target-->
+    </target>
 </project>

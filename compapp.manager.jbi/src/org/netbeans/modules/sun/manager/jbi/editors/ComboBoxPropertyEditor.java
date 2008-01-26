@@ -50,7 +50,6 @@ package org.netbeans.modules.sun.manager.jbi.editors;
 import java.beans.PropertyEditorSupport;
 import java.util.Arrays;
 
-import java.util.List;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
@@ -76,10 +75,6 @@ public class ComboBoxPropertyEditor extends PropertyEditorSupport implements ExP
          */
         public ComboBoxPropertyEditor(String[] values) {
             setValues(values);
-        }
-        
-        public ComboBoxPropertyEditor(List<String> values) {
-            this(values.toArray(new String[]{}));
         }
 
         /**

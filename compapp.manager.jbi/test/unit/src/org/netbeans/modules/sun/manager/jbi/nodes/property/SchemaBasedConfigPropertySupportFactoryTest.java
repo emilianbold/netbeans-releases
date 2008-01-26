@@ -45,8 +45,8 @@ import javax.management.Attribute;
 import junit.framework.TestCase;
 import org.netbeans.modules.sun.manager.jbi.editors.ComboBoxPropertyEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.PasswordEditor;
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
-import org.netbeans.modules.sun.manager.jbi.management.OldConfigurationMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.ConfigurationMBeanAttributeInfo;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.openide.nodes.PropertySupport;
 
@@ -58,7 +58,7 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
     
     private Schema schema;
     
-    private OldJBIComponentConfigurationDescriptor descriptor;
+    private ComponentConfigurationDescriptor descriptor;
 
     public SchemaBasedConfigPropertySupportFactoryTest(String testName) {
         super(testName);
@@ -69,13 +69,13 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
                 "resources/sun-http-binding-config.xsd").toURI();
         File xsdFile = new File(xsdURI);        
         String schemaText = getContent(xsdFile);
-        schema = OldSchemaBasedConfigPropertySupportFactory.getSchema(schemaText, "whatever");
+        schema = SchemaBasedConfigPropertySupportFactory.getSchema(schemaText, "whatever");
         
         URI xmlURI = getClass().getResource(
                 "resources/sun-http-binding-config.xml").toURI();
         File xmlFile = new File(xmlURI);        
         String xmlText = getContent(xmlFile);
-        descriptor = OldJBIComponentConfigurationDescriptor.parse(xmlText);        
+        descriptor = ComponentConfigurationDescriptor.parse(xmlText);        
     }
 
     protected void tearDown() throws Exception {        
@@ -83,32 +83,32 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
     
     public void testGetBaseTypeName() {
         // integer
-        String type = OldSchemaBasedConfigPropertySupportFactory.
+        String type = SchemaBasedConfigPropertySupportFactory.
             getGlobalSimpleTypeName(schema, "OutboundThreads");
         assertEquals(type, "tns:SimpleRestrictedThreadType");
         
         // boolean
-        type = OldSchemaBasedConfigPropertySupportFactory.
+        type = SchemaBasedConfigPropertySupportFactory.
             getGlobalSimpleTypeName(schema, "UseJVMProxySettings");
         assertEquals(type, "xsd:boolean");
         
         // string
-        type = OldSchemaBasedConfigPropertySupportFactory.
+        type = SchemaBasedConfigPropertySupportFactory.
             getGlobalSimpleTypeName(schema, "ProxyHost");
         assertEquals(type, "tns:SimpleStringType");
 
         // string enumeration
-        type = OldSchemaBasedConfigPropertySupportFactory.
+        type = SchemaBasedConfigPropertySupportFactory.
             getGlobalSimpleTypeName(schema, "ProxyType");
         assertEquals(type, "tns:ProxyTypeSimpleType"); 
         
         // password
-        type = OldSchemaBasedConfigPropertySupportFactory.
+        type = SchemaBasedConfigPropertySupportFactory.
             getGlobalSimpleTypeName(schema, "ProxyPassword");
         assertEquals(type, "tns:SimpleStringType"); 
         
         // tabular data
-        type = OldSchemaBasedConfigPropertySupportFactory.
+        type = SchemaBasedConfigPropertySupportFactory.
             getGlobalSimpleTypeName(schema, "ApplicationConfigurations");
         assertEquals(type, null); 
     }
@@ -116,35 +116,35 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
     public void testGetPropertySupport() throws Exception {
         
         // integer
-        PropertySupport propSupport = OldSchemaBasedConfigPropertySupportFactory.
+        PropertySupport propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("OutboundThreads", 4), 
-                new OldConfigurationMBeanAttributeInfo(
+                new ConfigurationMBeanAttributeInfo(
                 descriptor.getChild("OutboundThreads"), "java.lang.Integer", true, true, false));
         assertTrue(propSupport.getValue() instanceof Integer);
 
         // boolean
-        propSupport = OldSchemaBasedConfigPropertySupportFactory.
+        propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("UseJVMProxySettings", true), 
-                new OldConfigurationMBeanAttributeInfo(
+                new ConfigurationMBeanAttributeInfo(
                 descriptor.getChild("UseJVMProxySettings"), "java.lang.Boolean", true, true, false));
         assertTrue(propSupport.getValue() instanceof Boolean);
         
         // string
-        propSupport = OldSchemaBasedConfigPropertySupportFactory.
+        propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("ProxyHost", "localhost"), 
-                new OldConfigurationMBeanAttributeInfo(
+                new ConfigurationMBeanAttributeInfo(
                 descriptor.getChild("ProxyHost"), "java.lang.String", true, true, false));
         assertTrue(propSupport.getValue() instanceof String);
         assertFalse(propSupport.getPropertyEditor() instanceof ComboBoxPropertyEditor);
 
         // string enumeration
-        propSupport = OldSchemaBasedConfigPropertySupportFactory.
+        propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("ProxyType", "SOCKS"), 
-                new OldConfigurationMBeanAttributeInfo(
+                new ConfigurationMBeanAttributeInfo(
                 descriptor.getChild("ProxyType"), "java.lang.String", true, true, false));
         assertTrue(propSupport.getValue() instanceof String);
         PropertyEditor propEditor = propSupport.getPropertyEditor();
@@ -158,10 +158,10 @@ public class SchemaBasedConfigPropertySupportFactoryTest extends TestCase {
         }
         
         // password
-        propSupport = OldSchemaBasedConfigPropertySupportFactory.
+        propSupport = SchemaBasedConfigPropertySupportFactory.
             getPropertySupport(schema, null, 
                 new Attribute("ProxyPassword", "somePassword"), 
-                new OldConfigurationMBeanAttributeInfo(
+                new ConfigurationMBeanAttributeInfo(
                 descriptor.getChild("ProxyPassword"), "java.lang.String", true, true, false));
         assertTrue(propSupport.getValue() instanceof String);
         assertTrue(propSupport.getPropertyEditor() instanceof PasswordEditor);

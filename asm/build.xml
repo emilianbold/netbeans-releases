@@ -1,1 +1,56 @@
-<?xml version="1.0" encoding="UTF-8"?><!-- You may freely edit this file. See harness/README in the NetBeans platform --><!-- for some information on what you could do (e.g. targets to override). --><!-- If you delete this file and reopen the project it will be recreated. --><project name="org.netbeans.modules.asm" default="netbeans" basedir=".">    <description>Builds, tests, and runs the project org.netbeans.modules.asm.</description>    <import file="../../nbbuild/templates/projectized.xml"/>     <target name="compile" depends="antlr,projectized-common.compile">          </target>      <target name="init-antlr">        <property name="asm.output.dir" location="src/org/netbeans/modules/asm/base/generated"/>                <property name="asm.base.dir" location="src/org/netbeans/modules/asm/base"/>                                       <property name="antlr.jar" location="${cluster}/modules/org-netbeans-modules-cnd-antlr.jar"/>                <property name="d_antlr.jar" location="../../antlr/build/org-netbeans-modules-cnd-antlr.jar"/>        <property name="asm.grammar.dir.att" location="src/org/netbeans/modules/asm/base/att"/>        <property name="asm.grammar.dir.dis" location="src/org/netbeans/modules/asm/base/dis"/>                         <property name="asm.grammar.dir.ident" location="src/org/netbeans/modules/asm/base/ident"/>     </target>        <target name="clean-antlr" depends="projectized-common.clean, init-antlr">        <delete dir="${asm.grammar.dir.att}"/>                   <delete dir="${asm.grammar.dir.dis}"/>     </target>        <target name="antlr" depends="init-antlr" unless="up-to-date">        <mkdir dir="${asm.output.dir}"/>           <copy file="${asm.base.dir}/AntlrTokenTypes.txt"               tofile="${asm.output.dir}/AntlrTokenTypes.txt"              overwrite="true"/>        <java classname="antlr.Tool" fork="true">            <arg value="-o"/>            <arg value="${asm.output.dir}"/>            <arg value="${asm.grammar.dir.att}/ATTScanner.g"/>            <classpath path="${antlr.jar}"/>        </java>         <java classname="antlr.Tool" fork="true">            <arg value="-o"/>            <arg value="${asm.output.dir}"/>            <arg value="${asm.grammar.dir.dis}/DisScanner.g"/>            <classpath path="${antlr.jar}"/>        </java>         <java classname="antlr.Tool" fork="true">            <arg value="-o"/>            <arg value="${asm.output.dir}"/>            <arg value="${asm.grammar.dir.ident}/IdentScanner.g"/>            <classpath path="${antlr.jar}"/>        </java>           </target>                   </project>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- You may freely edit this file. See harness/README in the NetBeans platform -->
+<!-- for some information on what you could do (e.g. targets to override). -->
+<!-- If you delete this file and reopen the project it will be recreated. -->
+
+<project name="org.netbeans.modules.asm" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project org.netbeans.modules.asm.</description>
+
+    <import file="../../nbbuild/templates/projectized.xml"/> 
+
+    <target name="compile" depends="antlr,projectized-common.compile">      
+    </target>
+  
+    <target name="init-antlr">
+        <property name="asm.output.dir" location="src/org/netbeans/modules/asm/base/generated"/>        
+        <property name="asm.base.dir" location="src/org/netbeans/modules/asm/base"/>                               
+        <property name="antlr.jar" location="${cluster}/modules/org-netbeans-modules-cnd-antlr.jar"/>        
+        <property name="d_antlr.jar" location="../../antlr/build/org-netbeans-modules-cnd-antlr.jar"/>
+        <property name="asm.grammar.dir.att" location="src/org/netbeans/modules/asm/base/att"/>
+        <property name="asm.grammar.dir.dis" location="src/org/netbeans/modules/asm/base/dis"/>                 
+        <property name="asm.grammar.dir.ident" location="src/org/netbeans/modules/asm/base/ident"/> 
+    </target>
+    
+    <target name="clean-antlr" depends="projectized-common.clean, init-antlr">
+        <delete dir="${asm.grammar.dir.att}"/>           
+        <delete dir="${asm.grammar.dir.dis}"/> 
+    </target>
+    
+    <target name="antlr" depends="init-antlr" unless="up-to-date">
+        <mkdir dir="${asm.output.dir}"/>   
+        <copy file="${asm.base.dir}/AntlrTokenTypes.txt" 
+              tofile="${asm.output.dir}/AntlrTokenTypes.txt"
+              overwrite="true"/>
+        <java classname="antlr.Tool" fork="true">
+            <arg value="-o"/>
+            <arg value="${asm.output.dir}"/>
+            <arg value="${asm.grammar.dir.att}/ATTScanner.g"/>
+            <classpath path="${antlr.jar}"/>
+        </java> 
+        <java classname="antlr.Tool" fork="true">
+            <arg value="-o"/>
+            <arg value="${asm.output.dir}"/>
+            <arg value="${asm.grammar.dir.dis}/DisScanner.g"/>
+            <classpath path="${antlr.jar}"/>
+        </java> 
+        <java classname="antlr.Tool" fork="true">
+            <arg value="-o"/>
+            <arg value="${asm.output.dir}"/>
+            <arg value="${asm.grammar.dir.ident}/IdentScanner.g"/>
+            <classpath path="${antlr.jar}"/>
+        </java>       
+    </target>   
+                
+</project>
+

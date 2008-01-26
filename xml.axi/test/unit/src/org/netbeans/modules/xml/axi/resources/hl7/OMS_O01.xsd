@@ -1,1 +1,81 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - OMS_O01    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE OMS_O01-->  <!-- .. groups used in message OMS_O01 -->  <xsd:complexType name="OMS_O01.OBXNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="OBX" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="OMS_O01.OBXNTE_SUPPGRP" type="OMS_O01.OBXNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="OMS_O01.RQDNTEOBXNTE_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="RQD" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="OMS_O01.OBXNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="OMS_O01.RQDNTEOBXNTE_SUPPGRP" type="OMS_O01.RQDNTEOBXNTE_SUPPGRP.CONTENT"/>  <xsd:complexType name="OMS_O01.PV1PV2_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="OMS_O01.PV1PV2_SUPPGRP" type="OMS_O01.PV1PV2_SUPPGRP.CONTENT"/>  <xsd:complexType name="OMS_O01.PIDPD1NTEPV1PV2IN1IN2IN3GT1AL1_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="OMS_O01.PV1PV2_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="OMS_O01.IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="GT1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="AL1" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="OMS_O01.PIDPD1NTEPV1PV2IN1IN2IN3GT1AL1_SUPPGRP" type="OMS_O01.PIDPD1NTEPV1PV2IN1IN2IN3GT1AL1_SUPPGRP.CONTENT"/>  <xsd:complexType name="OMS_O01.ORCRQDNTEOBXNTEBLG_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="ORC" minOccurs="1" maxOccurs="1" />      <xsd:element ref="OMS_O01.RQDNTEOBXNTE_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="BLG" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="OMS_O01.ORCRQDNTEOBXNTEBLG_SUPPGRP" type="OMS_O01.ORCRQDNTEOBXNTEBLG_SUPPGRP.CONTENT"/>  <xsd:complexType name="OMS_O01.IN1IN2IN3_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />      <xsd:element ref="IN3" minOccurs="0" maxOccurs="1" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="OMS_O01.IN1IN2IN3_SUPPGRP" type="OMS_O01.IN1IN2IN3_SUPPGRP.CONTENT"/>  <!-- .. message definition OMS_O01 -->  <xsd:complexType name="OMS_O01.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />      <xsd:element ref="OMS_O01.PIDPD1NTEPV1PV2IN1IN2IN3GT1AL1_SUPPGRP" minOccurs="0" maxOccurs="1" />      <xsd:element ref="OMS_O01.ORCRQDNTEOBXNTEBLG_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="OMS_O01" type="OMS_O01.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - OMS_O01
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE OMS_O01
+-->
+  <!-- .. groups used in message OMS_O01 -->
+  <xsd:complexType name="OMS_O01.OBXNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="OBX" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="OMS_O01.OBXNTE_SUPPGRP" type="OMS_O01.OBXNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="OMS_O01.RQDNTEOBXNTE_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="RQD" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="OMS_O01.OBXNTE_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="OMS_O01.RQDNTEOBXNTE_SUPPGRP" type="OMS_O01.RQDNTEOBXNTE_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="OMS_O01.PV1PV2_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PV1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PV2" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="OMS_O01.PV1PV2_SUPPGRP" type="OMS_O01.PV1PV2_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="OMS_O01.PIDPD1NTEPV1PV2IN1IN2IN3GT1AL1_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PD1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="OMS_O01.PV1PV2_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="OMS_O01.IN1IN2IN3_SUPPGRP" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="GT1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="AL1" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="OMS_O01.PIDPD1NTEPV1PV2IN1IN2IN3GT1AL1_SUPPGRP" type="OMS_O01.PIDPD1NTEPV1PV2IN1IN2IN3GT1AL1_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="OMS_O01.ORCRQDNTEOBXNTEBLG_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="ORC" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="OMS_O01.RQDNTEOBXNTE_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="BLG" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="OMS_O01.ORCRQDNTEOBXNTEBLG_SUPPGRP" type="OMS_O01.ORCRQDNTEOBXNTEBLG_SUPPGRP.CONTENT"/>
+  <xsd:complexType name="OMS_O01.IN1IN2IN3_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="IN1" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="IN2" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="IN3" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="OMS_O01.IN1IN2IN3_SUPPGRP" type="OMS_O01.IN1IN2IN3_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition OMS_O01 -->
+  <xsd:complexType name="OMS_O01.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="NTE" minOccurs="0" maxOccurs="unbounded" />
+      <xsd:element ref="OMS_O01.PIDPD1NTEPV1PV2IN1IN2IN3GT1AL1_SUPPGRP" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="OMS_O01.ORCRQDNTEOBXNTEBLG_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="OMS_O01" type="OMS_O01.CONTENT"/>
+
+</xsd:schema>

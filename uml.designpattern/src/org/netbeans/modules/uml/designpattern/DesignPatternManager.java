@@ -3690,6 +3690,7 @@ public class DesignPatternManager implements IDesignPatternManager {
      * @return HRESULT
      */
     public void addTaggedValue(IDesignPatternDetails pDetails, IDesignPatternRole pRole, IElement pElement) {
+
         if (pDetails != null && pRole != null && pElement != null) {
             // the tagged value is going to be in the format
             // Name = "PatternApplied"

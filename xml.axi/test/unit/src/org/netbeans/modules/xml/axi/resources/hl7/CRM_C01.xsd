@@ -1,1 +1,38 @@
-<?xml version = "1.0" ?><!--    v2.xml Message Definitions Version v231  - CRM_C01    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.--><xsd:schema  xmlns:xsd="http://www.w3.org/2001/XMLSchema"  xmlns="urn:hl7-org:v2xml"  targetNamespace="urn:hl7-org:v2xml">  <!-- include segment definitions for version v231 -->  <xsd:include schemaLocation="segments.xsd"/><!--    MESSAGE CRM_C01-->  <!-- .. groups used in message CRM_C01 -->  <xsd:complexType name="CRM_C01.PIDPV1CSRCSP_SUPPGRP.CONTENT">    <xsd:sequence>      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />      <xsd:element ref="CSR" minOccurs="1" maxOccurs="1" />      <xsd:element ref="CSP" minOccurs="0" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="CRM_C01.PIDPV1CSRCSP_SUPPGRP" type="CRM_C01.PIDPV1CSRCSP_SUPPGRP.CONTENT"/>  <!-- .. message definition CRM_C01 -->  <xsd:complexType name="CRM_C01.CONTENT">    <xsd:sequence>      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />      <xsd:element ref="CRM_C01.PIDPV1CSRCSP_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />    </xsd:sequence>  </xsd:complexType>  <xsd:element name="CRM_C01" type="CRM_C01.CONTENT"/></xsd:schema>
+<?xml version = "1.0" ?>
+<!--
+    v2.xml Message Definitions Version v231  - CRM_C01
+    Copyright (c) 1999-2004, Health Level Seven. All rights reserved.
+-->
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns="urn:hl7-org:v2xml"
+  targetNamespace="urn:hl7-org:v2xml">
+
+
+  <!-- include segment definitions for version v231 -->
+  <xsd:include schemaLocation="segments.xsd"/>
+
+<!--
+    MESSAGE CRM_C01
+-->
+  <!-- .. groups used in message CRM_C01 -->
+  <xsd:complexType name="CRM_C01.PIDPV1CSRCSP_SUPPGRP.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="PID" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="PV1" minOccurs="0" maxOccurs="1" />
+      <xsd:element ref="CSR" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="CSP" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="CRM_C01.PIDPV1CSRCSP_SUPPGRP" type="CRM_C01.PIDPV1CSRCSP_SUPPGRP.CONTENT"/>
+
+  <!-- .. message definition CRM_C01 -->
+  <xsd:complexType name="CRM_C01.CONTENT">
+    <xsd:sequence>
+      <xsd:element ref="MSH" minOccurs="1" maxOccurs="1" />
+      <xsd:element ref="CRM_C01.PIDPV1CSRCSP_SUPPGRP" minOccurs="1" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="CRM_C01" type="CRM_C01.CONTENT"/>
+
+</xsd:schema>
