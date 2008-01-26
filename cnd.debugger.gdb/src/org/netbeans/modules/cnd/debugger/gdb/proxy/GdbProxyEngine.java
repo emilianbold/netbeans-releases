@@ -236,6 +236,9 @@ public class GdbProxyEngine {
         
         switch (msg.charAt(0)) {
             case '^': // result-record
+                if (token == currentToken && msg.equals("^done")) {
+                    currentToken = -1;
+                }
                 debugger.resultRecord(token, msg);
                 break;
                 
@@ -275,8 +278,6 @@ public class GdbProxyEngine {
             if (ci != null) {
                 tokenList.remove(ci);
                 currentToken = ci.getToken();
-            } else {
-                currentToken = -1;
             }
         }
         return currentToken;

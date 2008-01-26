@@ -539,7 +539,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 v = null;
             } else {
                 t = GdbUtils.getBaseType(resolvedType);
-                v = getDebugger().requestValue('*' + name);
+                v = getDebugger().requestValue('*' + getFullName(false));
             }
         } else {
             t = resolvedType;
@@ -556,7 +556,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                     if (map.isEmpty()) {
                         // an empty map means its a pointer to a non-struct/class/union
                         createChildrenForPointer(t, v);
-                    } else {
+                    } else if (v.length() > 0) {
                         String val = v.substring(1, v.length() - 1);
                         int start = 0;
                         int end = GdbUtils.findNextComma(val, 0);
@@ -567,6 +567,8 @@ public class AbstractVariable implements LocalVariable, Customizer {
                             end = GdbUtils.findNextComma(val, end + 1);
                         }
                         addField(completeFieldDefinition(this, map, val.substring(start).trim()));
+                    } else {
+                        log.fine("AV.createChildren: 0 length value for " + getFullName(false));
                     }
                 }
             }
@@ -892,6 +894,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
         } catch (NumberFormatException ex) {
             return false;
         }
+    }
+        
+    public String getFullName() {
+        return getFullName(false);
     }
         
     public String getFullName(boolean showBase) {

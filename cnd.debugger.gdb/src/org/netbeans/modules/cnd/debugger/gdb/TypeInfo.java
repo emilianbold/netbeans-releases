@@ -68,7 +68,7 @@ public class TypeInfo {
         
         TypeInfo tinfo = ticache.get(var.getType());
         if (tinfo != null) {
-            log.fine("TI.getTypeInfo[var]: " + var.getType() + " ==> [" + tinfo.resolvedType + "]"); // NOI18N
+//            log.fine("TI.getTypeInfo[t]: " + var.getType() + " ==> [" + tinfo.resolvedType + "]"); // NOI18N
             return tinfo;
         }
         
@@ -88,7 +88,7 @@ public class TypeInfo {
                 int pos2 = resolvedType.indexOf(" : "); // NOI18N
                 if (pos2 != -1) {
                     resolvedType = resolvedType.substring(0, pos2);
-            }
+                }
                 pos2 = GdbUtils.findMatchingCurly(rawInfo, pos1);
                 if (pos2 != -1) {
                     resolvedType = resolvedType + rawInfo.substring(pos2 + 1);
@@ -96,7 +96,7 @@ public class TypeInfo {
             }
             tinfo = ticache.get(resolvedType);
             if (tinfo != null) {
-                log.fine("TI.getTypeInfo[rt]: " + var.getType() + " ==> [" + resolvedType + "]"); // NOI18N
+//                log.fine("TI.getTypeInfo[rt]: " + var.getType() + " ==> [" + resolvedType + "]"); // NOI18N
                 return tinfo;
             }
         } else {
