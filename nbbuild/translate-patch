@@ -8,14 +8,23 @@ while gets do
   gsub!(%r{^(Index: |--- |\+\+\+ )(.+)/}) do |all|
     header = $1
     dir = $2
-    if dir == '/dev'
-      # /dev/null, OK
-    elsif @translations.has_key? dir
-      dir = @translations[dir]
-    else
-      dir = "XXX-new-location-unknown/#{dir}"
+    suffix = ''
+    if dir != '/dev' # /dev/null
+      until @translations.has_key? dir
+        if dir =~ %r{^(.+)(/[^/]+)$}
+          dir = $1
+          suffix = "#{$2}#{suffix}"
+        else
+          break
+        end
+      end
+      if @translations.has_key? dir
+        dir = @translations[dir]
+      else
+        dir = "XXX-new-location-unknown/#{dir}"
+      end
     end
-    "#{header}#{dir}/"
+    "#{header}#{dir}#{suffix}/"
   end
   puts $_
 end
