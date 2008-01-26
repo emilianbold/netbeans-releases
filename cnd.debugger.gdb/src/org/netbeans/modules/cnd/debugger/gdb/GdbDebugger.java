@@ -651,20 +651,20 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                 addLocalsToLocalVariables(msg.substring(13));
             } else {
-                log.fine("GDI.resultRecord: Skipping results from -stack-list-locals (not stopped)");
+                log.finest("GD.resultRecord: Skipping results from -stack-list-locals (not stopped)");
             }
         } else if (msg.startsWith("^done,stack-args=")) { // NOI18N (-stack-list-arguments)
             if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                 addArgsToLocalVariables(msg.substring(17));
             } else {
-                log.fine("GDI.resultRecord: Skipping results from -stack-list-arguments (not stopped)");
+                log.finest("GD.resultRecord: Skipping results from -stack-list-arguments (not stopped)");
             }
         } else if (msg.startsWith("^done,new-thread-id=")) { // NOI18N (-thread-select)
             String tid = msg.substring(21, msg.indexOf('"', 22));
             if (!tid.equals(currentThreadID)) {
                 String otid = currentThreadID;
                 currentThreadID = tid;
-                log.fine("GDI.resultRecord: Thread change, firing PROP_CURRENT_THREAD");
+                log.finest("GD.resultRecord: Thread change, firing PROP_CURRENT_THREAD");
                 firePropertyChange(PROP_CURRENT_THREAD, otid, currentThreadID);
             }
         } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c++")) { // NOI18N
@@ -862,23 +862,23 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 msg.contains("/usr/lib/ld.so")) { // NOI18N
             // ignore these messages
         } else {
-            log.finest("GDI.logStreamOutput: " + msg); // NOI18N
+            log.finest("GD.logStreamOutput: " + msg); // NOI18N
         }
     }
     
     /** Handle gdb responses starting with '+' */
     public void statusAsyncOutput(int token, String msg) {
-      log.fine("GDI.statusAsyncOutput[" + token + "]: " + msg); // NOI18N
+      log.finest("GD.statusAsyncOutput[" + token + "]: " + msg); // NOI18N
     }
     
     /** Handle gdb responses starting with '=' */
     public void notifyAsyncOutput(int token, String msg) {
-        log.fine("GDI.notifyAsyncOutput[" + token + "]: " + msg); // NOI18N
+        log.finest("GD.notifyAsyncOutput[" + token + "]: " + msg); // NOI18N
     }
     
     /** Handle gdb responses starting with '@' */
     public void targetStreamOutput(String msg) {
-       log.fine("GDI.targetStreamOutput: " + msg);  // NOI18N
+       log.finest("GD.targetStreamOutput: " + msg);  // NOI18N
     }
     
     /** Handle gdb output */
@@ -896,18 +896,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         Collection<GdbVariable> v = GdbUtils.createArgumentList(info);
         if (!v.isEmpty()) {
-            log.fine("GDI.addArgsToLocalVariables: Starting to add Args to localVariables"); // NOI18N
+            log.finest("GD.addArgsToLocalVariables: Starting to add Args to localVariables"); // NOI18N
             synchronized (localVariables) {
                 localVariables.addAll(v);
             }
-            log.fine("GDI.addArgsToLocalVariables: Added " + v.size() + " args");
+            log.finest("GD.addArgsToLocalVariables: Added " + v.size() + " args");
         }
     }
     
     private void addLocalsToLocalVariables(String info) {
         Collection<GdbVariable> v = GdbUtils.createLocalsList(info.substring(1, info.length() - 1));
         if (!v.isEmpty()) {
-            log.fine("GDI.addLocalsToLocalVariables: Starting to add locals to localVariables"); // NOI18N
+            log.finest("GD.addLocalsToLocalVariables: Starting to add locals to localVariables"); // NOI18N
             synchronized (localVariables) {
                 for (GdbVariable var : v) {
                     if (!localVariables.contains(var)) {
@@ -915,7 +915,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 }
             }
-            log.fine("GDI.addLocalsToLocalVariables: Added " + v.size() + " locals");
+            log.finest("GD.addLocalsToLocalVariables: Added " + v.size() + " locals");
         }
     }
     
@@ -1060,9 +1060,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         String oldState = this.state;
         this.state = state;
-        log.fine("GDI.setState: Setting state to " + state + " and firing propertyChange");
+        log.finest("GD.setState: Setting state to " + state + " and firing propertyChange");
         firePropertyChange(PROP_STATE, oldState, state);
-        log.fine("GDI.setState: Done firing propertyChange on state " + state);
+        log.finest("GD.setState: Done firing propertyChange on state " + state);
     }
     
     public void setStarting() {
@@ -1145,7 +1145,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             return;
         }
         
-        log.fine("GD.stopped[" + Thread.currentThread().getName() + "]:\n"); // NOI18N
+        log.finest("GD.stopped[" + Thread.currentThread().getName() + "]:\n"); // NOI18N
         resetThreadInfo();
         if (reason != null) {
             setCurrentCallStackFrameNoFire(null);   // will be reset when stack updates
@@ -1370,10 +1370,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (fullname == null && file != null) {
                 if (file.charAt(0) == '/') {
                     fullname = file;
-                    log.fine("GDI.stackUpdate: Setting fullname from file"); // NOI18N
+                    log.finest("GD.stackUpdate: Setting fullname from file"); // NOI18N
                 } else {
                     fullname = runDirectory + file;
-                    log.fine("GDI.stackUpdate: Setting fullname from runDirectory + file"); // NOI18N
+                    log.finest("GD.stackUpdate: Setting fullname from runDirectory + file"); // NOI18N
                 }
             }
             
