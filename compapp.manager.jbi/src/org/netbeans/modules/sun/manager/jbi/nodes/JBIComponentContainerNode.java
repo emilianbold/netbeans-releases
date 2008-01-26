@@ -41,15 +41,25 @@
 package org.netbeans.modules.sun.manager.jbi.nodes;
 
 import com.sun.esb.management.api.installation.InstallationService;
-import com.sun.esb.management.api.runtime.RuntimeManagementService;
 import com.sun.esb.management.common.ManagementRemoteException;
+import java.awt.Frame;
+import java.io.IOException;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import java.awt.Image;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.jar.JarFile;
+import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.Action;
@@ -64,24 +74,37 @@ import org.netbeans.modules.sun.manager.jbi.util.ProgressUI;
 import org.netbeans.modules.sun.manager.jbi.actions.InstallAction;
 import org.netbeans.modules.sun.manager.jbi.actions.RefreshAction;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationParser;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.util.FileFilters;
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
+import org.openide.windows.WindowManager;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
- * Container node for all JBI Components of the same type.
+ * Container node for all the JBI Components (SE, BC, or Shared Library) 
+ * of the same type.
  *
  * @author jqian
  */
-public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContainerNode
-        implements Installable {
+public abstract class JBIComponentContainerNode
+        extends AppserverJBIMgmtContainerNode implements Installable {
 
     private boolean busy;
+    
+    private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.node.JBIComponentContainerNode"); // NOI18N
+
 
     public JBIComponentContainerNode(final AppserverJBIMgmtController controller,
             NodeType type, String name) {
@@ -160,6 +183,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         final ProgressUI progressUI = new ProgressUI(message, false);
 
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 setBusy(true);
                 progressUI.start();
@@ -170,40 +194,41 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
             final String jarFilePath = file.getAbsolutePath();
 
             try {
-                String result = installJBIComponent(jarFilePath);
-                assert result != null;
+                String result = installComponent(jarFilePath);
 
-                String lowerCaseResult = result.toLowerCase();
-                if (!lowerCaseResult.contains("error") && // NOI18N
-                        !lowerCaseResult.contains("warning") && // NOI18N
-                        !lowerCaseResult.contains("exception") &&// NOI18N
-                        !lowerCaseResult.contains("info")) {     // NOI18N
-                    if (start) {
-                        // Start component automatically only upon 
-                        // successful installation.
-                        // The successful installation result is the 
-                        // component ID.
-                        try {
-                            String componentID = result;
-                            RuntimeManagementServiceWrapper mgmtService =
-                                    getRuntimeManagementServiceWrapper();
-                            result = mgmtService.startComponent(
-                                    componentID, SERVER_TARGET);
+                if (result != null) {
+                    String lowerCaseResult = result.toLowerCase();
+                    if (!lowerCaseResult.contains("error") && // NOI18N
+                            !lowerCaseResult.contains("warning") && // NOI18N
+                            !lowerCaseResult.contains("exception") &&// NOI18N
+                            !lowerCaseResult.contains("info")) {     // NOI18N
+                        if (start) {
+                            // Start component automatically only upon 
+                            // successful installation.
+                            // The successful installation result is the 
+                            // component ID.
+                            try {
+                                String componentID = result;
+                                RuntimeManagementServiceWrapper mgmtService =
+                                        getRuntimeManagementServiceWrapper();
+                                result = mgmtService.startComponent(
+                                        componentID, SERVER_TARGET);
 
-                            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                                    GenericConstants.START_COMPONENT_OPERATION_NAME,
-                                    componentID, result);
-                        } catch (ManagementRemoteException e) {
-                            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                                    GenericConstants.START_COMPONENT_OPERATION_NAME,
-                                    jarFilePath, e.getMessage());
+                                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                        GenericConstants.START_COMPONENT_OPERATION_NAME,
+                                        componentID, result);
+                            } catch (ManagementRemoteException e) {
+                                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                        GenericConstants.START_COMPONENT_OPERATION_NAME,
+                                        jarFilePath, e.getMessage());
+                            }
                         }
+                    } else {
+                        // Failed to install
+                        JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                                GenericConstants.INSTALL_COMPONENT_OPERATION_NAME,
+                                jarFilePath, result);
                     }
-                } else {
-                    // Failed to install
-                    JBIMBeanTaskResultHandler.showRemoteInvokationResult(
-                        GenericConstants.INSTALL_COMPONENT_OPERATION_NAME,
-                        jarFilePath, result);
                 }
             } catch (ManagementRemoteException e) {
                 JBIMBeanTaskResultHandler.showRemoteInvokationResult(
@@ -213,6 +238,7 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         }
 
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 progressUI.finish();
                 setBusy(false);
@@ -288,7 +314,16 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
         return chooser;
     }
 
-    protected abstract String installJBIComponent(String jarFilePath)
+    /**
+     * Installs the given JBI Component or Shared Library.
+     * 
+     * @param jarFilePath   absolute path for the component jar file
+     * @return  the component ID if the installation is successful; 
+     *          or the error string in XML if the installation is failed;
+     *          or <code>null</code> if the component installation is cancelled.
+     * @throws com.sun.esb.management.common.ManagementRemoteException
+     */
+    protected abstract String installComponent(String jarFilePath)
             throws ManagementRemoteException;
 
     protected abstract String getFileChooserTitleLabel();
@@ -305,15 +340,14 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
 
     //==========================================================================
     /**
-     * Container node for all JBI Service Engines.
+     * Container node for all Service Engines or Binding Components.
      */
-    public static class ServiceEngines extends JBIComponentContainerNode {
+    static abstract class RealJBIComponentContainerNode
+            extends JBIComponentContainerNode {
 
-        public ServiceEngines(final AppserverJBIMgmtController controller) {
-            super(controller,
-                    NodeType.SERVICE_ENGINES,
-                    NbBundle.getMessage(JBIComponentContainerNode.class,
-                    "SERVICE_ENGINES"));    // NOI18N
+        RealJBIComponentContainerNode(final AppserverJBIMgmtController controller,
+                NodeType type, String name) {
+            super(controller, type, name);
         }
 
         @Override
@@ -325,12 +359,129 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
                 SystemAction.get(RefreshAction.class)
             };
         }
-        
-        protected String installJBIComponent(String jarFilePath) 
+
+        protected String installComponent(String jarFilePath)
                 throws ManagementRemoteException {
-            InstallationService installationService = getInstallationService(); 
-            return installationService.installComponent(jarFilePath, SERVER_TARGET);
-        }        
+            Properties properties = new Properties();
+
+            InstallationService installationService = getInstallationService();
+
+            try {
+                // Get jbi.xml from component jar file
+                JarFile jarFile = new JarFile(jarFilePath);
+                ZipEntry jbiEntry = jarFile.getEntry("META-INF/jbi.xml");
+                InputStream is = jarFile.getInputStream(jbiEntry);
+                String jbiXml = getContent(is);
+
+                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                factory.setNamespaceAware(true);
+                DocumentBuilder builder = factory.newDocumentBuilder();
+                Document jbiDoc = builder.parse(
+                        new InputSource(new StringReader(jbiXml)));
+
+//                // TMP
+//                File tmpJbiFile = new File("C:\\Temp\\sun-http-binding-jbi.xml");
+//                jbiXml = getContent(tmpJbiFile);
+
+                // Get configuration descriptor from jbi.xml
+                final JBIComponentConfigurationDescriptor rootDescriptor =
+                        JBIComponentConfigurationParser.parse(jbiDoc);
+                if (rootDescriptor != null) {
+                    String componentName = getComponentIDFromJbiDoc(jbiDoc);
+                    
+                    // Show installation configuration dialog.
+                    JBIComponentInstallationConfigurationDialog dialog =
+                            new JBIComponentInstallationConfigurationDialog(
+                            componentName, rootDescriptor);
+                    dialog.pack();
+                    dialog.setLocationRelativeTo(null);
+                    dialog.setVisible(true);
+                    if (dialog.isCancelled()) {
+                        return null;
+                    }
+                    
+                    properties = dialog.getProperties();
+                    
+                    logger.info("Install " + componentName + // NOI18N
+                            " with these properties:" + properties); // NOI18N
+                }
+            } catch (Exception ex) {
+                logger.severe(ex.getMessage());
+            }
+
+            return installationService.installComponent(
+                    jarFilePath, properties, SERVER_TARGET);
+        }
+
+        private String getComponentIDFromJbiDoc(Document jbiDoc) {
+            NodeList ns = jbiDoc.getElementsByTagName("component"); // NOI18N
+            if (ns.getLength() > 0) {
+                Element e = (Element) ns.item(0);
+                NodeList ids = e.getElementsByTagName("identification"); // NOI18N
+                if (ids.getLength() > 0) {
+                    Element id = (Element) ids.item(0);
+                    NodeList names = id.getElementsByTagName("name"); // NOI18N
+                    if (names.getLength() > 0) {
+                        Element n = (Element) names.item(0);
+                        return n.getFirstChild().getNodeValue();
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        private String getContent(InputStream is) {
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(is));
+                StringBuffer buffer = new StringBuffer();
+                String line;
+                while ((line = in.readLine()) != null) {
+                    buffer.append(line);
+                }
+                return buffer.toString();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+
+        private String getContent(File file) {
+            String ret = "";
+
+            BufferedReader is = null;
+            try {
+                is = new BufferedReader(new FileReader(file));
+                String inputLine;
+                while ((inputLine = is.readLine()) != null) {
+                    ret += inputLine;
+                }
+            } catch (IOException e) {
+                System.out.println("IOException: " + e);
+            } finally {
+                if (is != null) {
+                    try {
+                        is.close();
+                    } catch (Exception e) {
+                    }
+                }
+            }
+
+            return ret;
+        }
+    }
+
+    /**
+     * Container node for all JBI Service Engines.
+     */
+    static class ServiceEngines extends RealJBIComponentContainerNode {
+
+        ServiceEngines(final AppserverJBIMgmtController controller) {
+            super(controller,
+                    NodeType.SERVICE_ENGINES,
+                    NbBundle.getMessage(JBIComponentContainerNode.class,
+                    "SERVICE_ENGINES"));    // NOI18N
+        }
 
         protected JBIArtifactValidator getValidator() {
             return JBIArtifactValidator.getServiceEngineValidator(null);
@@ -365,30 +516,14 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
     /**
      * Container node for all JBI Binding Components.
      */
-    public static class BindingComponents extends JBIComponentContainerNode {
+    static class BindingComponents extends RealJBIComponentContainerNode {
 
-        public BindingComponents(final AppserverJBIMgmtController controller) {
+        BindingComponents(final AppserverJBIMgmtController controller) {
             super(controller,
                     NodeType.BINDING_COMPONENTS,
                     NbBundle.getMessage(JBIComponentContainerNode.class,
                     "BINDING_COMPONENTS")); // NOI18N
         }
-
-        @Override
-        public Action[] getActions(boolean flag) {
-            return new SystemAction[]{
-                SystemAction.get(InstallAction.InstallOnly.class),
-                SystemAction.get(InstallAction.InstallAndStart.class),
-                null,
-                SystemAction.get(RefreshAction.class)
-            };
-        }
-        
-        protected String installJBIComponent(String jarFilePath) 
-                throws ManagementRemoteException {
-            InstallationService installationService = getInstallationService(); 
-            return installationService.installComponent(jarFilePath, SERVER_TARGET);
-        }     
 
         protected JBIArtifactValidator getValidator() {
             return JBIArtifactValidator.getBindingComponentValidator(null);
@@ -423,9 +558,9 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
     /**
      * Container node for all JBI Shared Libraries.
      */
-    public static class SharedLibraries extends JBIComponentContainerNode {
+    static class SharedLibraries extends JBIComponentContainerNode {
 
-        public SharedLibraries(final AppserverJBIMgmtController controller) {
+        SharedLibraries(final AppserverJBIMgmtController controller) {
             super(controller,
                     NodeType.SHARED_LIBRARIES,
                     NbBundle.getMessage(JBIComponentContainerNode.class,
@@ -441,17 +576,17 @@ public abstract class JBIComponentContainerNode extends AppserverJBIMgmtContaine
             };
         }
 
-        protected  String installJBIComponent( 
-             String jarFilePath) 
+        protected String installComponent(
+                String jarFilePath)
                 throws ManagementRemoteException {
-            InstallationService installationService = getInstallationService(); 
+            InstallationService installationService = getInstallationService();
             return installationService.installSharedLibrary(jarFilePath, SERVER_TARGET);
-        }        
-             
+        }
+
         protected JBIArtifactValidator getValidator() {
             return JBIArtifactValidator.getSharedLibraryValidator();
         }
-        
+
         protected String getFileChooserTitleLabel() {
             return "LBL_Install_Shared_Library_Chooser_Name";      // NOI18N
         }

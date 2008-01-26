@@ -51,8 +51,8 @@ import javax.management.openmbean.TabularData;
 import org.netbeans.modules.sun.manager.jbi.editors.EnvironmentVariablesEditor;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
-import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
-import org.netbeans.modules.sun.manager.jbi.management.ConfigurationMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.OldConfigurationMBeanAttributeInfo;
 
 /**
  * Property support for Application Variables.
@@ -65,18 +65,18 @@ class ApplicationVariablesPropertySupport extends AbstractTabularPropertySupport
     private static final String APPLICATION_VARIABLE_TYPE = "type"; // NOI18N
             
     ApplicationVariablesPropertySupport(
-            JBIComponentNode parent,
+            PropertySheetOwner propertySheetOwner,
             Attribute attr, 
             MBeanAttributeInfo info) {
-        super(parent, attr, info, 
+        super(propertySheetOwner, attr, info, 
                 new String[] {APPLICATION_VARIABLE_NAME, APPLICATION_VARIABLE_TYPE});
     }
     
     @Override
     public PropertyEditor getPropertyEditor() {
-        ComponentConfigurationDescriptor descriptor = 
-                (info instanceof ConfigurationMBeanAttributeInfo) ? 
-                ((ConfigurationMBeanAttributeInfo)info).getDescriptor() : null;
+        OldJBIComponentConfigurationDescriptor descriptor = 
+                (info instanceof OldConfigurationMBeanAttributeInfo) ? 
+                ((OldConfigurationMBeanAttributeInfo)info).getDescriptor() : null;
         
         return new EnvironmentVariablesEditor(true, getTabularType(), 
                 descriptor, info.isWritable());
