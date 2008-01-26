@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions targetNamespace="http://j2ee.netbeans.org/wsdl/newWSDL"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://j2ee.netbeans.org/wsdl/newWSDL" name="newWSDL" xmlns:ns="http://xml.netbeans.org/schema/newXMLSchema1" xmlns:ns0="http://xml.netbeans.org/schema/newXMLSchema2" xmlns:plnk="http://docs.oasis-open.org/wsbpel/2.0/plnktype">
+    <types>
+        <xsd:schema targetNamespace="http://j2ee.netbeans.org/wsdl/newWSDL">
+            <xsd:import namespace="http://xml.netbeans.org/schema/newXMLSchema2" schemaLocation="newpo2.xsd"/>
+            <xsd:import namespace="http://xml.netbeans.org/schema/newXMLSchema1" schemaLocation="newpo1.xsd"/>
+        </xsd:schema>
+    </types>
+    <message name="newWSDLOperationRequest">
+        <part name="part1" element="ns:purchaseOrder1"/>
+    </message>
+    <message name="newWSDLOperationReply">
+        <part name="part1" element="ns0:purchaseOrder2"/>
+    </message>
+    <portType name="newWSDLPortType">
+        <wsdl:operation name="newWSDLOperation">
+            <wsdl:input name="input1" message="tns:newWSDLOperationRequest"/>
+            <wsdl:output name="output1" message="tns:newWSDLOperationReply"/>
+        </wsdl:operation>
+    </portType>
+    <binding name="newWSDLBinding" type="tns:newWSDLPortType">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="newWSDLOperation">
+            <soap:operation/>
+            <wsdl:input name="input1">
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output name="output1">
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </binding>
+    <service name="newWSDLService">
+        <wsdl:port name="newWSDLPort" binding="tns:newWSDLBinding">
+            <soap:address location="http://localhost:18181/newWSDLService/newWSDLPort"/>
+        </wsdl:port>
+    </service>
+    <plnk:partnerLinkType name="newWSDL1">
+        <!-- A partner link type is automatically generated when a new port type is added. Partner link types are used by BPEL processes. 
+In a BPEL process, a partner link represents the interaction between the BPEL process and a partner service. Each partner link is associated with a partner link type.
+A partner link type characterizes the conversational relationship between two services. The partner link type can have one or two roles.-->
+        <plnk:role name="newWSDLPortTypeRole" portType="tns:newWSDLPortType"/>
+    </plnk:partnerLinkType>
+</definitions>

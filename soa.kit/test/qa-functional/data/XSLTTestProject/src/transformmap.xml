@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<transformmap xmlns='http://xml.netbeans.org/schema/transformmap' xmlns:ns1="http://j2ee.netbeans.org/wsdl/newWSDL">
+       
+<!--
+       <service partnerLinkType="ns0:plt1" roleName="role1">
+           <operation opName="operation0">
+               <transform result="" source="" file="">
+                   <param name="param1" type="t1"></param>
+                   <param name="param2" type="t2"></param>
+               </transform>
+           </operation>
+           <operation opName="operation1">
+               <invokes  roleName="role2" partnerLinkType="ns0:plt2" inputVariable=""  outputVariable=""/>
+           </operation>
+       </service>
+
+-->
+    <service partnerLinkType="ns1:newWSDL1" roleName="newWSDLPortTypeRole">
+        <operation opName="newWSDLOperation" inputVariable="inOpVar1" outputVariable="outOpVar1">
+            <transform file="newXslFile1.xsl" source="inOpVar1.part1" result="outOpVar1.part1"/>
+        </operation>
+    </service>
+</transformmap>

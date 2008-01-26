@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
   
   <config name="commit-validation-enterprise">
       <!--module name="enterprise/bpel" testtypes="qa-functional" attributes="commit"/-->
-      <module name="enterprise/xslt" testtypes="qa-functional" attributes="commit"/>
+      <module name="soa.kit" testtypes="qa-functional" attributes="commit"/>
       <module name="xml.schema" testtypes="qa-functional" attributes="commit"/>
   </config>
 
