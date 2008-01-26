@@ -53,6 +53,7 @@ import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -96,18 +97,24 @@ public class RetrieveXMLResourceWizardPanel1 implements WizardDescriptor.Panel, 
             if(retrieveXMLResourceVisualPanel1.getSourceLocation() == null) {
                 return false;
             }
-            File sourceFile = null;
+            String sourceFile =retrieveXMLResourceVisualPanel1.getSourceLocation();
+           
+            if(sourceFile == null || sourceFile.equals(""))
+                return false;
             try {
-                sourceFile = new File(new URI(retrieveXMLResourceVisualPanel1.getSourceLocation()));
-            } catch (URISyntaxException ex) {
-            }
-            if(!sourceFile.isDirectory()){
+                retrieveXMLResourceVisualPanel1.validateFiles(sourceFile);
+            } catch (WizardValidationException e) {
+                String message = e.getLocalizedMessage();
+                wizd.putProperty("WizardPanel_errorMessage", message);  
+             //   fireChangeEvent();
                 return false;
             }
             
             if(retrieveXMLResourceVisualPanel1.getSaveLocation() == null){
                 return false;
             }
+            wizd.putProperty("WizardPanel_errorMessage", ""); 
+          //  fireChangeEvent();
             return true;
         }
         if(retrieveXMLResourceVisualPanel1.getSelectedSourceType() == RetrieveXMLResourceVisualPanel1.SourceType.URL_ADDR){
