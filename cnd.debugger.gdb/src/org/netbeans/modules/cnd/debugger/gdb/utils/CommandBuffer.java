@@ -58,6 +58,7 @@ public class CommandBuffer {
     public static final int STATE_OK = 3;
     public static final int STATE_DONE = 4;
     public static final int STATE_ERROR = 5;
+    private final int WAIT_TIME = 500;
     
     private static Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
     
@@ -102,10 +103,10 @@ public class CommandBuffer {
                 state = STATE_WAITING; // this will change unless we timeout
                 if (log.isLoggable(Level.FINE)) {
                     tstart = System.currentTimeMillis();
-                    lock.wait(10000);
+                    lock.wait(WAIT_TIME);
                     tend = System.currentTimeMillis();
                 } else {
-                    lock.wait(10000);
+                    lock.wait(WAIT_TIME);
                     tstart = tend = 0;
                 }
                 if (state == STATE_WAITING) {
