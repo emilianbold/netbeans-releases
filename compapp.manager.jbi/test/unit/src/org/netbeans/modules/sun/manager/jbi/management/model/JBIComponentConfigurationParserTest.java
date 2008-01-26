@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.sun.manager.jbi.management.model;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
-import java.util.List;
+import java.net.URISyntaxException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -53,9 +56,9 @@ import static org.junit.Assert.*;
  *
  * @author jqian
  */
-public class ComponentInformationParserTest {
+public class JBIComponentConfigurationParserTest {
 
-    public ComponentInformationParserTest() {
+    public JBIComponentConfigurationParserTest() {
     }
 
     @BeforeClass
@@ -67,7 +70,7 @@ public class ComponentInformationParserTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws URISyntaxException {
     }
 
     @After
@@ -75,51 +78,47 @@ public class ComponentInformationParserTest {
     }
 
     /**
-     * Test of parse method, of class ComponentInformationParser.
+     * Test of parse method, of class ComponentConfigurationParser.
      */
     @Test
-    public void parse_BindingComponentInformation() throws Exception {
-        System.out.println("parse BindingComponentInformation.xml");
+    public void parse() throws Exception {
+        System.out.println("parse");
         
-        URI xmlURI = getClass().getResource("resources/BindingComponentInformation.xml").toURI();
+        URI xmlURI = getClass().getResource("resources/sun-jms-binding-jbi.xml").toURI();
         File xmlFile = new File(xmlURI);
-        List<JBIComponentStatus> compList = ComponentInformationParser.parse(xmlFile);
-        assertEquals(5, compList.size());
+        String xmlText = getContent(xmlFile);
         
-        // check one BC
-        JBIComponentStatus httpBC = compList.get(1);
-        assertEquals("sun-http-binding", httpBC.getName());
-        assertTrue(httpBC.isBindingComponent());
-        assertEquals(2, httpBC.getNamespaces().size());
-        assertTrue(httpBC.getNamespaces().contains("http://schemas.xmlsoap.org/wsdl/http/"));
-        assertTrue(httpBC.getNamespaces().contains("http://schemas.xmlsoap.org/wsdl/soap/"));
-        
-        // check another BC 
-        JBIComponentStatus ftpBC = compList.get(4);
-        assertEquals("sun-ftp-binding", ftpBC.getName());
-        assertTrue(ftpBC.isBindingComponent());  // case insensitive
-    }
+        JBIComponentConfigurationDescriptor result =
+                JBIComponentConfigurationParser.parse(xmlText);
+        assertEquals(3, result.getChildren().size());
+        assertNotNull(result.getChild("ThreadCount"));
+        assertNotNull(result.getChild("JMSApplicationVariables"));
+        assertNotNull(result.getChild("JMSApplicationConfiguration"));
+        assertNull(result.getChild("FOO"));
+    }    
     
-     /**
-     * Test of parse method, of class ComponentInformationParser.
-     */
-    @Test
-    public void parse_ComponentInformation() throws Exception {
-        System.out.println("parse ComponentInformation.xml");        
-        
-        URI xmlURI = getClass().getResource("resources/ComponentInformation.xml").toURI();
-        File xmlFile = new File(xmlURI);
-        List<JBIComponentStatus> compList = ComponentInformationParser.parse(xmlFile);
-        assertEquals(11, compList.size());
-        
-        // check one SE
-        JBIComponentStatus bpelSE = compList.get(3);
-        assertEquals("sun-bpel-engine", bpelSE.getName());
-        assertTrue(bpelSE.isServiceEngine());
-        
-        // check another SE
-        JBIComponentStatus etlSE = compList.get(9);
-        assertEquals("sun-etl-engine", etlSE.getName());
-        assertTrue(etlSE.isServiceEngine()); // case insensitive
+    private static String getContent(File file) {
+        String ret = "";
+
+        BufferedReader is = null;
+        try {
+            is = new BufferedReader(new FileReader(file));
+            String inputLine;
+            while ((inputLine = is.readLine()) != null) {
+                ret += inputLine;
+            }
+        } catch (IOException e) {
+            System.out.println("IOException: " + e);
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (Exception e) {
+                }
+            }
+        }
+
+        return ret;
     }
+
 }

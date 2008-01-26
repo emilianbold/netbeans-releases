@@ -37,26 +37,55 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.openide.util.NbBundle;
 
 /**
+ * Total digits constraint for numeric type.
  *
  * @author jqian
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
+public class TotalDigitsConstraint implements JBIComponentConfigurationConstraint {
 
+    private int totalDigits;
+
+    TotalDigitsConstraint(int totalDigits) {
+        if (totalDigits <= 0) {
+            String msg = NbBundle.getMessage(getClass(),
+                    "MSG_ILLEGAL_TOTAL_DIGITS", totalDigits); // NOI18N
+            throw new IllegalArgumentException(msg);
+        }
+        this.totalDigits = totalDigits;
+    }
+    
+    public int getValue() {
+        return totalDigits;
+    }
+
+    public String validate(Object value) {
+        if (value == null) {
+            return NbBundle.getMessage(getClass(), "MSG_NULL_VALUE"); // NOI18N
+        }
+                
+        double doubleValue = Double.parseDouble(value.toString());
+        
+        int n = 0;
+        double i = doubleValue;
+        while (i != Math.round(i)) {
+            i *= 10;
+            n++;
+        }
+        // doubleValue = i Ã 10^-n
+        // Requirement: |i| < 10^{value} and 0 <= n <= {value}.
+        if (Math.abs(i) < Math.pow(10, totalDigits) && 
+                0 <= n && 
+                n <= totalDigits) {
+            return null;
+        } else {
+            return NbBundle.getMessage(getClass(),
+                    "MSG_EXCEED_TOTAL_DIGITS", // NOI18N
+                    doubleValue, totalDigits);
+        }
+    }
 }

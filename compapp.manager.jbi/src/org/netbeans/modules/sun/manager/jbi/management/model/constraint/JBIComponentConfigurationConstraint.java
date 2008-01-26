@@ -37,26 +37,22 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
 /**
- *
+ * Constraint for a JBI Component configuration property.
+ * 
  * @author jqian
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
+public interface JBIComponentConfigurationConstraint {
 
+    /**
+     * Validates the given configuration property value.
+     * 
+     * @param value     a given component configuration property value
+     * @return          the validation error message if validation fails;
+     *                  <code>null</code> otherwise.
+     */
+    public String validate(Object value);
+    
 }

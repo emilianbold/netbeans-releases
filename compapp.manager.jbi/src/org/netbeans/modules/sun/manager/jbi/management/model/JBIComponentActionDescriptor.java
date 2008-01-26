@@ -64,7 +64,7 @@ import org.xml.sax.SAXException;
  * 
  * @author jqian
  */
-public class ComponentActionDescriptor {
+public class JBIComponentActionDescriptor {
 
     private static final String ACTION_NAMESPACE = "http://sun.com/jbi/components/ActionableMBeans";
     private static final String ACTION = "Action"; // NOI18N
@@ -81,12 +81,12 @@ public class ComponentActionDescriptor {
     private String operationName;
     private boolean enabled;
     private boolean isGroup;
-    private List<ComponentActionDescriptor> children;
+    private List<JBIComponentActionDescriptor> children;
 
     /**
      * Creates a new group action descriptor.
      */
-    private ComponentActionDescriptor(String displayName,
+    private JBIComponentActionDescriptor(String displayName,
             String description) {
         this.displayName = displayName;
         this.description = description;
@@ -96,7 +96,7 @@ public class ComponentActionDescriptor {
     /**
      * Creates a new leaf action descriptor.
      */
-    private ComponentActionDescriptor(
+    private JBIComponentActionDescriptor(
             String displayName,
             String description,
             String mBeanKey,
@@ -134,14 +134,14 @@ public class ComponentActionDescriptor {
         return isGroup;
     }
 
-    public void addChild(ComponentActionDescriptor descriptor) {
+    public void addChild(JBIComponentActionDescriptor descriptor) {
         if (children == null) {
-            children = new LinkedList<ComponentActionDescriptor>();
+            children = new LinkedList<JBIComponentActionDescriptor>();
         }
         children.add(descriptor);
     }
 
-    public List<ComponentActionDescriptor> getChildren() {
+    public List<JBIComponentActionDescriptor> getChildren() {
         return children;
     }
 
@@ -154,7 +154,7 @@ public class ComponentActionDescriptor {
      */
     public static List<MBeanOperationAction> getActions(String actionXML) {
 
-        ComponentActionDescriptor actionDescriptor = null;
+        JBIComponentActionDescriptor actionDescriptor = null;
 
         try {
             actionDescriptor = parse(actionXML);
@@ -172,7 +172,7 @@ public class ComponentActionDescriptor {
     }
 
     private static MBeanOperationAction getAction(
-            ComponentActionDescriptor actionDescriptor) {
+            JBIComponentActionDescriptor actionDescriptor) {
 
         MBeanOperationAction action = null;
         
@@ -183,7 +183,7 @@ public class ComponentActionDescriptor {
             if (actionDescriptor.isGroup()) {
                 MBeanOperationGroupAction groupAction = 
                         new MBeanOperationGroupAction(displayName, description);
-                for (ComponentActionDescriptor childDescriptor : actionDescriptor.getChildren()) {
+                for (JBIComponentActionDescriptor childDescriptor : actionDescriptor.getChildren()) {
                     MBeanOperationAction childAction = getAction(childDescriptor);
                     groupAction.addAction(childAction);
                 }
@@ -211,7 +211,7 @@ public class ComponentActionDescriptor {
      * @throws java.io.IOException
      * @throws org.xml.sax.SAXException
      */
-    private static ComponentActionDescriptor parse(String actionXmlData)
+    private static JBIComponentActionDescriptor parse(String actionXmlData)
             throws ParserConfigurationException, IOException, SAXException {
 
         if (actionXmlData == null) {
@@ -224,8 +224,8 @@ public class ComponentActionDescriptor {
         Document document = builder.parse(
                 new InputSource(new StringReader(actionXmlData)));
 
-        ComponentActionDescriptor dummyRootDescriptor =
-                new ComponentActionDescriptor("", ""); // NOI18N
+        JBIComponentActionDescriptor dummyRootDescriptor =
+                new JBIComponentActionDescriptor("", ""); // NOI18N
 
         Element root = document.getDocumentElement();
         NodeList children = root.getChildNodes();
@@ -242,10 +242,10 @@ public class ComponentActionDescriptor {
         return dummyRootDescriptor;
     }
 
-    private static ComponentActionDescriptor parseActionElement(
+    private static JBIComponentActionDescriptor parseActionElement(
             Element actionElement) {
 
-        ComponentActionDescriptor childDescriptor;
+        JBIComponentActionDescriptor childDescriptor;
 
         String displayName =
                 actionElement.getElementsByTagNameNS(
@@ -260,7 +260,7 @@ public class ComponentActionDescriptor {
         if (isGroup != null && isGroup.length() > 0 &&
                 Boolean.parseBoolean(isGroup)) {
             childDescriptor =
-                    new ComponentActionDescriptor(displayName, description);
+                    new JBIComponentActionDescriptor(displayName, description);
 
             NodeList children = actionElement.getChildNodes();
             for (int i = 0; i < children.getLength(); i++) {
@@ -290,7 +290,7 @@ public class ComponentActionDescriptor {
             }
 
             childDescriptor =
-                    new ComponentActionDescriptor(
+                    new JBIComponentActionDescriptor(
                     displayName, description,
                     mBeanKey, operationName, enabled);
         }

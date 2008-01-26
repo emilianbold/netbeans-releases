@@ -37,26 +37,50 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- *
+ * Composite constraint.
+ * 
  * @author jqian
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
+public class CompositeConstraint implements JBIComponentConfigurationConstraint {
 
+    private List<JBIComponentConfigurationConstraint> constraints;
+
+    public void addConstraint(JBIComponentConfigurationConstraint constraint) {
+        if (constraints == null) {
+            constraints = new ArrayList<JBIComponentConfigurationConstraint>();
+        }
+        
+        constraints.add(constraint);
+    }
+    
+    public List<JBIComponentConfigurationConstraint> getConstraints() {
+        List<JBIComponentConfigurationConstraint> ret = 
+                new ArrayList<JBIComponentConfigurationConstraint>();
+        if (constraints != null) {
+            ret.addAll(constraints);
+        }
+        return ret;
+    }
+
+    public String validate(Object value) {
+        String ret = null;
+        for (JBIComponentConfigurationConstraint constraint : constraints) {
+            String msg = constraint.validate(value);
+            if (msg != null) {
+                if (ret == null) {
+                    ret = msg;
+                } else {
+                    ret += msg;
+                }
+            }
+        }
+
+        return ret;
+    }
 }

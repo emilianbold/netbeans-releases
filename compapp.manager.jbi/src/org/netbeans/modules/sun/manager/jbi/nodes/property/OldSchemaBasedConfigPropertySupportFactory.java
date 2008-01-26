@@ -55,7 +55,7 @@ import javax.xml.namespace.QName;
 import org.netbeans.modules.sun.manager.jbi.editors.ComboBoxPropertyEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.PasswordEditor;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
-import org.netbeans.modules.sun.manager.jbi.management.ConfigurationMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.OldConfigurationMBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtNode;
 import org.netbeans.modules.xml.schema.model.ComplexTypeDefinition;
 import org.netbeans.modules.xml.schema.model.Element;
@@ -95,7 +95,7 @@ import org.xml.sax.SAXException;
  * 
  * @author jqian
  */
-public class SchemaBasedConfigPropertySupportFactory {
+public class OldSchemaBasedConfigPropertySupportFactory {
         
     private static MyCatalogModel catalogModel = new MyCatalogModel();
          
@@ -194,8 +194,8 @@ public class SchemaBasedConfigPropertySupportFactory {
                 componentNode, String.class, attr, info) {
             @Override
             public PropertyEditor getPropertyEditor() {
-                if (info instanceof ConfigurationMBeanAttributeInfo && 
-                        ((ConfigurationMBeanAttributeInfo)info).isPassword()) {
+                if (info instanceof OldConfigurationMBeanAttributeInfo && 
+                        ((OldConfigurationMBeanAttributeInfo)info).isPassword()) {
                     return new PasswordEditor();
                 } else {
                     return super.getPropertyEditor();

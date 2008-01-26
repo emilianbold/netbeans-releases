@@ -37,26 +37,56 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author jqian
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
+public class PatternConstraintTest {
+
+    public PatternConstraintTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of validate method, of class PatternConstraint.
+     */
+    @Test
+    public void validate() {
+        System.out.println("validate");
+        String facet = JBIComponentConfigurationConstraintFactory.PATTERN;
+        String value = "foo.*";
+        JBIComponentConfigurationConstraint constraint = 
+                JBIComponentConfigurationConstraintFactory.newConstraint(
+                facet, value);
+        assertNull(constraint.validate("foo"));
+        assertNull(constraint.validate("foobar"));
+        assertNotNull(constraint.validate("bar"));
+        
+        assertNotNull(constraint.validate(null));
+    }
 
 }

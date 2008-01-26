@@ -59,9 +59,10 @@ import org.xml.sax.SAXException;
 /**
  * JBI Component configuration property descriptor.
  * 
+ * @deprecated to be removed
  * @author jqian
  */
-public class ComponentConfigurationDescriptor {
+public class OldJBIComponentConfigurationDescriptor {
      
     private static final String DISPLAY_NAME = "displayName"; // NOI18N
     private static final String DISPLAY_DESCRIPTION = "displayDescription"; // NOI18N
@@ -80,12 +81,12 @@ public class ComponentConfigurationDescriptor {
     private boolean needsServerRestart;
     private boolean isRequired;
     
-    private Map<String, ComponentConfigurationDescriptor> children;
+    private Map<String, OldJBIComponentConfigurationDescriptor> children;
 
-    private ComponentConfigurationDescriptor() {        
+    private OldJBIComponentConfigurationDescriptor() {        
     }
     
-    private ComponentConfigurationDescriptor(String name,
+    private OldJBIComponentConfigurationDescriptor(String name,
             String displayName,
             String description,
             boolean isPassword,
@@ -135,9 +136,9 @@ public class ComponentConfigurationDescriptor {
         return isRequired;
     }
     
-    public void addChild(ComponentConfigurationDescriptor descriptor) {
+    public void addChild(OldJBIComponentConfigurationDescriptor descriptor) {
         if (children == null) {
-            children = new LinkedHashMap<String, ComponentConfigurationDescriptor>();
+            children = new LinkedHashMap<String, OldJBIComponentConfigurationDescriptor>();
         }
         children.put(descriptor.getName(), descriptor);
     }
@@ -146,7 +147,7 @@ public class ComponentConfigurationDescriptor {
         return children == null ? new HashSet<String>() : children.keySet();
     }
     
-    public ComponentConfigurationDescriptor getChild(String name) {
+    public OldJBIComponentConfigurationDescriptor getChild(String name) {
         return children == null ? null : children.get(name);
     }
         
@@ -159,7 +160,7 @@ public class ComponentConfigurationDescriptor {
      * @throws java.io.IOException
      * @throws org.xml.sax.SAXException
      */
-    public static ComponentConfigurationDescriptor parse(String configXmlData) 
+    public static OldJBIComponentConfigurationDescriptor parse(String configXmlData) 
             throws ParserConfigurationException, IOException, SAXException {
         
         if (configXmlData == null) {
@@ -172,7 +173,7 @@ public class ComponentConfigurationDescriptor {
         Document document = builder.parse(
                 new InputSource(new StringReader(configXmlData)));
         
-        ComponentConfigurationDescriptor descriptor = new ComponentConfigurationDescriptor();
+        OldJBIComponentConfigurationDescriptor descriptor = new OldJBIComponentConfigurationDescriptor();
         
         parseConfigurationElement(descriptor, document.getDocumentElement());
         
@@ -180,7 +181,7 @@ public class ComponentConfigurationDescriptor {
     }
     
     private static void parseConfigurationElement(
-            ComponentConfigurationDescriptor descriptor, 
+            OldJBIComponentConfigurationDescriptor descriptor, 
             Element element) {
               
         NodeList children = element.getChildNodes();
@@ -198,8 +199,8 @@ public class ComponentConfigurationDescriptor {
                 String isRequired = 
                         childElement.getAttribute(IS_REQUIRED_FIELD);
                 
-                ComponentConfigurationDescriptor childDescriptor =
-                        new ComponentConfigurationDescriptor(
+                OldJBIComponentConfigurationDescriptor childDescriptor =
+                        new OldJBIComponentConfigurationDescriptor(
                         childElement.getLocalName(),
                         childElement.getAttribute(DISPLAY_NAME),
                         childElement.getAttribute(DISPLAY_DESCRIPTION),

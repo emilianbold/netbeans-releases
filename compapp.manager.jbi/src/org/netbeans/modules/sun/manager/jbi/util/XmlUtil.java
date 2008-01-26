@@ -37,26 +37,59 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
+package org.netbeans.modules.sun.manager.jbi.util;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import javax.xml.namespace.QName;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 
 /**
  *
  * @author jqian
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
-
+public class XmlUtil {
+    
+    public static QName getAttributeNSName(Element e, String attrName) {
+        String attrValue = e.getAttribute(attrName);
+        return getNSName(e, attrValue);
+    }
+    
+    private static QName getNSName(Element e, String qname) {
+        if (qname == null) {
+            return null;
+        }
+        int i = qname.indexOf(':');
+        if (i > 0) {
+            String name = qname.substring(i + 1);
+            String prefix = qname.substring(0, i);
+            return new QName(getNamespaceURI(e, prefix), name);
+        } else {
+            return new QName(qname);
+        }
+    }
+        
+    public static String getNamespaceURI(Element el, String prefix) {
+        if ((prefix == null) || (prefix.length() < 1)) {
+            return "";
+        }
+        prefix = prefix.trim();
+        try {
+            NamedNodeMap map = el.getOwnerDocument().getDocumentElement().getAttributes();
+            for (int j = 0; j < map.getLength(); j++) {
+                Node n = map.item(j);
+                String attrName = ((Attr)n).getName();
+                if (attrName != null) {
+                    if (attrName.trim().equals("xmlns:" + prefix)) {
+                        return ((Attr)n).getValue();
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+        
+        return "";
+    }
+    
 }

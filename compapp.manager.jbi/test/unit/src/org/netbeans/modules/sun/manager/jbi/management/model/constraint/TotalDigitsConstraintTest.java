@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,48 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.sun.manager.jbi.management;
 
-import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
-import javax.management.MBeanAttributeInfo;
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
+
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author jqian
  */
-public class ConfigurationMBeanAttributeInfo extends MBeanAttributeInfo {
-    
-    private ComponentConfigurationDescriptor descriptor;
-    
-    public ConfigurationMBeanAttributeInfo(ComponentConfigurationDescriptor descriptor,
-            String type,
-            boolean isReadable,
-            boolean isWritable,
-            boolean isIs) {
-        super(descriptor.getDisplayName(), type, descriptor.getDescription(),
-                isReadable, isWritable, isIs);
+public class TotalDigitsConstraintTest {
 
-        this.descriptor = descriptor;
+    public TotalDigitsConstraintTest() {
     }
 
-    public ComponentConfigurationDescriptor getDescriptor() {
-        return descriptor;
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
-    
-    public boolean isPassword() {
-        return descriptor.isPassword();
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
-    
-    public boolean isApplicationRestartRequired() {
-        return descriptor.needsApplicationRestart();
+
+    @Before
+    public void setUp() {
     }
-    
-    public boolean isComponentRestartRequired() {
-        return descriptor.needsComponentRestart();
+
+    @After
+    public void tearDown() {
     }
-    
-    public boolean isServerRestartRequired() {
-        return descriptor.needsServerRestart();
+
+    /**
+     * Test of validate method, of class TotalDigitsConstraint.
+     */
+    @Test
+    public void validate() {
+        System.out.println("validate");
+        String facet = JBIComponentConfigurationConstraintFactory.TOTAL_DIGITS;
+        String value = "5";
+        JBIComponentConfigurationConstraint constraint = 
+                JBIComponentConfigurationConstraintFactory.newConstraint(
+                facet, value);
+        
+        assertNull(constraint.validate("99.99"));
+        assertNull(constraint.validate("99.999"));
+        assertNotNull(constraint.validate("999.999"));
+        assertNull(constraint.validate("-99.99f"));
+        assertNull(constraint.validate("-99.999f"));
+        assertNotNull(constraint.validate("-999.999f"));
+        
+        assertNotNull(constraint.validate(null));
     }
 }

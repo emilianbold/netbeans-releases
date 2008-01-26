@@ -78,7 +78,7 @@ public class JBIPropertySupportFactory {
      */
     @SuppressWarnings("unchecked")
     public static PropertySupport getPropertySupport(
-            final AppserverJBIMgmtNode parent, 
+            final PropertySheetOwner parent, 
             final Attribute attr,
             final MBeanAttributeInfo info) {
         
@@ -89,8 +89,9 @@ public class JBIPropertySupportFactory {
             support = new MyPropertySupport(parent, Boolean.class, attr, info); 
         } else if (attrValue instanceof Integer) {
             support = new MyPropertySupport(parent, Integer.class, attr, info);
-        } else if (attrValue instanceof Level) {  
-            support = createLogLevelProperty(parent, attr, info);
+        } else if (attrValue instanceof Level &&
+                parent instanceof AppserverJBIMgmtNode) {  
+            support = createLogLevelProperty((AppserverJBIMgmtNode)parent, attr, info);
         } else if (attrValue instanceof TabularData) {
             support = createTabularDataProperty((JBIComponentNode)parent, attr, info);  
         } else {  // default           
@@ -201,10 +202,10 @@ public class JBIPropertySupportFactory {
     
 class MyPropertySupport<T> extends PropertySupport<T> {
 
-    protected AppserverJBIMgmtNode parent;
+    protected PropertySheetOwner parent;
     protected Attribute attribute;
 
-    MyPropertySupport(AppserverJBIMgmtNode parent,                
+    MyPropertySupport(PropertySheetOwner parent,                
             Class<T> type, 
             Attribute attr, 
             MBeanAttributeInfo info) {

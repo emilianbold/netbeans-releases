@@ -37,26 +37,43 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.openide.util.NbBundle;
 
 /**
+ * Pattern constraint for any type.
  *
  * @author jqian
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
+public class PatternConstraint implements JBIComponentConfigurationConstraint {
 
+    private String regex;
+
+    PatternConstraint(String regex) {
+        this.regex = regex;
+    }  
+    
+    public String getValue() {
+        return regex;
+    }
+
+    public String validate(Object value) {
+        if (value == null) {
+            return NbBundle.getMessage(getClass(), "MSG_NULL_VALUE"); // NOI18N
+        }
+        
+        String stringValue = value.toString();
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(stringValue);
+        if (!m.matches()) {
+            return NbBundle.getMessage(getClass(),
+                    "MSG_PATTERN_MISMATCH", // NOI18N
+                    stringValue, regex);
+        } else {
+            return null;
+        }
+    }
 }

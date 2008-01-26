@@ -37,26 +37,44 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.openide.util.NbBundle;
 
 /**
+ * Maximum length constraint for any type.
  *
  * @author jqian
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
+public class MaxLengthConstraint implements JBIComponentConfigurationConstraint {
 
+    private int maxLength;
+
+    MaxLengthConstraint(int maxLength) {
+        if (maxLength < 0) {
+            String msg = NbBundle.getMessage(getClass(),
+                    "MSG_ILLEGAL_MAX_LENGTH", maxLength); // NOI18N
+            throw new IllegalArgumentException(msg);
+        }
+        this.maxLength = maxLength;
+    }    
+    
+    public int getValue() {
+        return maxLength;
+    }        
+
+    public String validate(Object value) {
+        if (value == null) {
+            return NbBundle.getMessage(getClass(), "MSG_NULL_VALUE"); // NOI18N
+        }
+        
+        String stringValue = value.toString();
+        if (stringValue.length() > maxLength) {
+            return NbBundle.getMessage(getClass(),
+                    "MSG_EXCEED_MAX_LENGTH", // NOI18N
+                    stringValue, maxLength);
+        } else {
+            return null;
+        }
+    }
 }

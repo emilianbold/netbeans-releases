@@ -37,26 +37,41 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import java.util.List;
+import org.openide.util.NbBundle;
 
 /**
+ * Enumeration constraint for string type.
  *
  * @author jqian
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
+public class EnumerationConstraint implements JBIComponentConfigurationConstraint {
 
+    private List<String> options;
+
+    EnumerationConstraint(List<String> options) {        
+        this.options = options;
+    }
+    
+    public List<String> getOptions() {
+        return options;
+    }
+
+    public String validate(Object value) {
+        if (value == null) {
+            return NbBundle.getMessage(getClass(), "MSG_NULL_VALUE"); // NOI18N
+        }
+        
+        // can not validate by itself
+        if (options.contains(value.toString())) {
+            return null;
+        } else {
+            return NbBundle.getMessage(getClass(),
+                    "MSG_ENUMERATION_MISMATCH", // NOI18N
+                    value, options);
+        }
+    }
 }
+

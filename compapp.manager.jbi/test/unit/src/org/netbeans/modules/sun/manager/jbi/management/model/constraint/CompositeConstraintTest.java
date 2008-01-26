@@ -36,27 +36,79 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
-
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author jqian
  */
-@RunWith(Suite.class)
-@Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
+public class CompositeConstraintTest {
 
+    private JBIComponentConfigurationConstraint happyConstraint =
+            new JBIComponentConfigurationConstraint() {
+                public String validate(Object value) {
+                    return null;
+                }
+            };
+            
+    private JBIComponentConfigurationConstraint grumpyConstraint =
+            new JBIComponentConfigurationConstraint() {
+                public String validate(Object value) {
+                    return "blah blah blah...";
+                }
+            };
+
+    public CompositeConstraintTest() {
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Before
+    public void setUp() {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    /**
+     * Test of addConstraint method, of class ComponentConfigurationConstraints.
+     */
+    @Test
+    public void addConstraint() {
+        System.out.println("addConstraint");
+
+        CompositeConstraint instance = new CompositeConstraint();
+        instance.addConstraint(happyConstraint);
+        instance.addConstraint(grumpyConstraint);
+        assertEquals(2, instance.getConstraints().size());
+    }
+
+    /**
+     * Test of validate method, of class ComponentConfigurationConstraints.
+     */
+    @Test
+    public void validate() {
+        System.out.println("validate");
+        
+        CompositeConstraint instance = new CompositeConstraint();
+        instance.addConstraint(happyConstraint);
+        assertNull(instance.validate("FOO"));
+        
+        instance.addConstraint(grumpyConstraint);
+        assertNotNull(instance.validate("FOO"));
+    }
 }

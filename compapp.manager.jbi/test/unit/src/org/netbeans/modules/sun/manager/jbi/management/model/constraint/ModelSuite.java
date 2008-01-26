@@ -37,8 +37,9 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.sun.manager.jbi.management.model.beaninfo;
+package org.netbeans.modules.sun.manager.jbi.management.model.constraint;
 
+import org.netbeans.modules.sun.manager.jbi.management.model.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -48,15 +49,18 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.JBIComponentInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.EndpointStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ComponentStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitInfoBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceUnitStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.NMRStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.FrameworkStatisticsDataBeanInfoTest.class,
-        org.netbeans.modules.sun.manager.jbi.management.model.beaninfo.ServiceAssemblyInfoBeanInfoTest.class})
-public class BeaninfoSuite {
-
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxExclusiveConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxInclusiveConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinExclusiveConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinInclusiveConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.PatternConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.LengthConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MaxLengthConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.MinLengthConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.TotalDigitsConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.FractionDigitsConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.EnumerationConstraintTest.class,
+        org.netbeans.modules.sun.manager.jbi.management.model.constraint.CompositeConstraintTest.class
+})
+public class ModelSuite {
 }

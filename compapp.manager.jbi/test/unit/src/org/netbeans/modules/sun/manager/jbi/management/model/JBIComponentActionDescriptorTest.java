@@ -24,11 +24,11 @@ import static org.junit.Assert.*;
  *
  * @author jqian
  */
-public class ComponentActionDescriptorTest {
+public class JBIComponentActionDescriptorTest {
 
-    private ComponentActionDescriptor descriptor;
+    private JBIComponentActionDescriptor descriptor;
 
-    public ComponentActionDescriptorTest() {
+    public JBIComponentActionDescriptorTest() {
     }
 
     @BeforeClass
@@ -60,7 +60,7 @@ public class ComponentActionDescriptorTest {
         String xmlText = getContent(xmlFile);
 
         List<MBeanOperationAction> result =
-                ComponentActionDescriptor.getActions(xmlText);
+                JBIComponentActionDescriptor.getActions(xmlText);
         assertEquals(2, result.size());
         assertTrue(result.get(1) instanceof MBeanOperationGroupAction);
 
