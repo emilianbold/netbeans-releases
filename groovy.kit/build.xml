@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="netbeans" name="scripting/groovy/kit">
+<project basedir="." default="netbeans" name="contrib/groovy.kit">
     <description>Builds, tests, and runs the project org.netbeans.modules.groovy.kit</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
     
     <target name="groovy-build">
-        <ant dir="../editor"/>
-        <ant dir="../grails"/>
-        <ant dir="../support"/>
-        <ant dir="../grailsproject"/>
-        <ant dir="../groovyproject"/>
-        <ant dir="../gsp"/>
+        <ant dir="../../contrib/groovy.editor"/>
+        <ant dir="../../contrib/groovy.grails"/>
+        <ant dir="../../contrib/groovy.support"/>
+        <ant dir="../../contrib/groovy.grailsproject"/>
+        <ant dir="../../contrib/groovy.groovyproject"/>
+        <ant dir="../../contrib/groovy.gsp"/>
         <antcall target="netbeans"/>
     </target>
 
     <target name="groovy-clean">
-        <ant dir="../gsp" inheritAll="false" target="clean"/>
-        <ant dir="../groovyproject" inheritAll="false" target="clean"/>
-        <ant dir="../grailsproject" inheritAll="false" target="clean"/>
-        <ant dir="../support" inheritAll="false" target="clean"/>
-        <ant dir="../grails" inheritAll="false" target="clean"/>
-        <ant dir="../editor" inheritAll="false" target="clean"/>
+        <ant dir="../../contrib/groovy.gsp" inheritAll="false" target="clean"/>
+        <ant dir="../../contrib/groovy.groovyproject" inheritAll="false" target="clean"/>
+        <ant dir="../../contrib/groovy.grailsproject" inheritAll="false" target="clean"/>
+        <ant dir="../../contrib/groovy.support" inheritAll="false" target="clean"/>
+        <ant dir="../../contrib/groovy.grails" inheritAll="false" target="clean"/>
+        <ant dir="../../contrib/groovy.editor" inheritAll="false" target="clean"/>
         <ant target="clean"/>
     </target>
 

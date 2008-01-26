@@ -4,7 +4,7 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.modules.groovy.editor" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.groovy.editor</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
     
     <taskdef name="groovyc"
              classpath="external/groovy-all-1.5.0.jar" 
