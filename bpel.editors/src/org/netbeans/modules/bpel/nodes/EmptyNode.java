@@ -65,8 +65,9 @@ public class EmptyNode extends BpelNode<Empty> {
 
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.WRAP,
             ActionType.SEPARATOR,

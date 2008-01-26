@@ -161,8 +161,9 @@ public class OnEventNode extends BpelNode<OnEvent> {
         return new ActionType[] {
             ActionType.ADD_FROM_PALETTE,
             ActionType.SEPARATOR,
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,

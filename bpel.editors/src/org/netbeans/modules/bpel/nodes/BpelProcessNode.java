@@ -112,8 +112,9 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
     protected ActionType[] getActionsArray() {
         if (isModelReadOnly()) {
             return new ActionType[] {
-                ActionType.GO_TO_SOURCE,
-                ActionType.GO_TO_DIAGRAMM,
+//                ActionType.GO_TO_SOURCE,
+//                ActionType.GO_TO_DIAGRAMM,
+                ActionType.GO_TO,
                 ActionType.SEPARATOR,
                 ActionType.PROPERTIES
             };
@@ -124,8 +125,9 @@ public class BpelProcessNode extends BaseScopeNode<Process> {
             ActionType.SEPARATOR,
             ActionType.ADD_FROM_PALETTE,
             ActionType.SEPARATOR,
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.PROPERTIES
         };

@@ -119,8 +119,9 @@ public abstract class BaseScopeNode<BS extends BaseScope> extends BpelNode<BS>
     protected ActionType[] getActionsArray() {
         if (isModelReadOnly()) {
             return new ActionType[] {
-                ActionType.GO_TO_SOURCE,
-                ActionType.GO_TO_DIAGRAMM,
+//                ActionType.GO_TO_SOURCE,
+//                ActionType.GO_TO_DIAGRAMM,
+                ActionType.GO_TO,
                 ActionType.SEPARATOR,
                 ActionType.SHOW_POPERTY_EDITOR,
                 ActionType.SEPARATOR,
@@ -133,8 +134,9 @@ public abstract class BaseScopeNode<BS extends BaseScope> extends BpelNode<BS>
         return new ActionType[] {
             ActionType.ADD_NEWTYPES,
             ActionType.SEPARATOR,
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.SHOW_POPERTY_EDITOR,
             ActionType.SEPARATOR,

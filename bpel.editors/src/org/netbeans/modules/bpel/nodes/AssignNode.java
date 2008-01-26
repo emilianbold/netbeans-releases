@@ -148,8 +148,9 @@ public class AssignNode extends BpelNode<Assign> {
 
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.WRAP,
             ActionType.SEPARATOR,
@@ -159,8 +160,8 @@ public class AssignNode extends BpelNode<Assign> {
             ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,
             ActionType.REMOVE,
-            ActionType.SEPARATOR,
-            ActionType.SHOW_BPEL_MAPPER,
+//            ActionType.SEPARATOR,
+//            ActionType.SHOW_BPEL_MAPPER,
             ActionType.SEPARATOR,
             ActionType.PROPERTIES
         };

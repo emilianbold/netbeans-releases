@@ -91,8 +91,9 @@ public class IfNode extends BpelNode<If> {
             ActionType.ADD_FROM_PALETTE,
             ActionType.WRAP,
             ActionType.SEPARATOR,
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.MOVE_UP,
             ActionType.MOVE_DOWN,
@@ -101,8 +102,8 @@ public class IfNode extends BpelNode<If> {
             ActionType.SEPARATOR,
             ActionType.REMOVE,
             ActionType.SEPARATOR,
-            ActionType.SHOW_BPEL_MAPPER,
-            ActionType.SEPARATOR,
+//            ActionType.SHOW_BPEL_MAPPER,
+//            ActionType.SEPARATOR,
             ActionType.PROPERTIES
         };
     }

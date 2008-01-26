@@ -225,6 +225,8 @@ public abstract class BpelNode<T>
                 , SystemAction.get(OpenInEditorAction.class));
         ACTION_TYPE_MAP.put(ActionType.OPEN_PL_IN_EDITOR
                 , SystemAction.get(OpenPartnerLinkInEditor.class));
+        ACTION_TYPE_MAP.put(ActionType.GO_TO
+                , SystemAction.get(org.netbeans.modules.bpel.nodes.actions.GoToAction.class));
         ACTION_TYPE_MAP.put(ActionType.GO_TO_SOURCE
                 , SystemAction.get(GoToSourceAction.class));
         ACTION_TYPE_MAP.put(ActionType.GO_TO_WSDL_SOURCE
@@ -1390,10 +1392,11 @@ public abstract class BpelNode<T>
             actionList.add(ActionType.SEPARATOR);
         }
         
-        actionList.add(ActionType.GO_TO_SOURCE);
-        if (ref instanceof Activity) {
-            actionList.add(ActionType.GO_TO_DIAGRAMM);
-        }
+        actionList.add(ActionType.GO_TO);
+//        actionList.add(ActionType.GO_TO_SOURCE);
+//        if (ref instanceof Activity) {
+//            actionList.add(ActionType.GO_TO_DIAGRAMM);
+//        }
         if (ref instanceof Activity) {
             actionList.add(ActionType.SEPARATOR);
             actionList.add(ActionType.MOVE_UP);

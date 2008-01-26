@@ -38,8 +38,9 @@ public class EventHandlersNode extends BpelNode<EventHandlers> {
     protected ActionType[] getActionsArray() {
         if (isModelReadOnly()) {
             return new ActionType[] {
-                ActionType.GO_TO_SOURCE,
-                ActionType.GO_TO_DIAGRAMM,
+//                ActionType.GO_TO_SOURCE,
+//                ActionType.GO_TO_DIAGRAMM,
+                ActionType.GO_TO,
                 ActionType.SEPARATOR,
                 ActionType.REMOVE
             };
@@ -48,8 +49,9 @@ public class EventHandlersNode extends BpelNode<EventHandlers> {
         return new ActionType[] {
             ActionType.ADD_NEWTYPES,
             ActionType.SEPARATOR,
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.REMOVE
         };

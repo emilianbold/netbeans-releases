@@ -134,8 +134,9 @@ public class OnMessageNode extends BpelNode<OnMessage> {
         return new ActionType[] {
             ActionType.ADD_FROM_PALETTE,
             ActionType.SEPARATOR,
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
 //            ActionType.CYCLE_MEX, // Issue 85553
             ActionType.SHOW_POPERTY_EDITOR,

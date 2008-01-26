@@ -93,8 +93,9 @@ public class PickNode extends BpelNode<Pick> {
     protected ActionType[] getActionsArray() {
         if (isModelReadOnly()) {
             return new ActionType[] {
-                ActionType.GO_TO_SOURCE,
-                ActionType.GO_TO_DIAGRAMM,
+//                ActionType.GO_TO_SOURCE,
+//                ActionType.GO_TO_DIAGRAMM,
+                ActionType.GO_TO,
                 ActionType.SEPARATOR,
                 ActionType.TOGGLE_BREAKPOINT,
                 ActionType.SEPARATOR,
@@ -109,8 +110,9 @@ public class PickNode extends BpelNode<Pick> {
             ActionType.SEPARATOR,
             ActionType.WRAP,
             ActionType.SEPARATOR,
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.MOVE_UP,
             ActionType.MOVE_DOWN,

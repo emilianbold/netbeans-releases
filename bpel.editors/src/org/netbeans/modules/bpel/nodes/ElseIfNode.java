@@ -71,14 +71,15 @@ public class ElseIfNode extends BpelNode<ElseIf> {
         return new ActionType[] {
             ActionType.ADD_FROM_PALETTE,
             ActionType.SEPARATOR,
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
             ActionType.SEPARATOR,
             ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,
             ActionType.REMOVE,
-            ActionType.SEPARATOR,
-            ActionType.SHOW_BPEL_MAPPER,
+//            ActionType.SEPARATOR,
+//            ActionType.SHOW_BPEL_MAPPER,
             ActionType.SEPARATOR,
             ActionType.PROPERTIES
         };

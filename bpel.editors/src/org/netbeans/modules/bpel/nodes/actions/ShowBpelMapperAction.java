@@ -19,6 +19,7 @@
 package org.netbeans.modules.bpel.nodes.actions;
 
 import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContextFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.openide.loaders.DataNode;
@@ -58,7 +59,13 @@ public class ShowBpelMapperAction extends BpelNodeAction {
         DataNode dataNode = null;
         for (int i = 0; i < nodes.length; i++) {
             if (nodes[i] instanceof BpelNode) {
-                isEnable = true;
+                Object ref = ((BpelNode)nodes[i]).getReference();
+                
+                isEnable = ref instanceof BpelEntity 
+                        && BpelDesignContextFactory.getInstance().isMappableEntity((BpelEntity)ref);
+                if (isEnable) {
+                    break;
+                }
             }
             if (nodes[i] instanceof DataNode) {
                 dataNode = (DataNode)nodes[i];
@@ -70,7 +77,8 @@ public class ShowBpelMapperAction extends BpelNodeAction {
             TopComponent activatedTc = WindowManager.getDefault().getRegistry().getActivated();
             Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
             BpelEntity[] entities = getBpelEntities(activatedNodes);
-            isEnable = entities != null && entities.length > 0;
+            isEnable = entities != null && entities.length > 0
+                        && BpelDesignContextFactory.getInstance().isMappableEntity(entities[0]);
         }
         return isEnable;
     }

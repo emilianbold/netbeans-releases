@@ -39,8 +39,9 @@ public class FaultHandlersNode extends BpelNode<FaultHandlers> {
     protected ActionType[] getActionsArray() {
         if (isModelReadOnly()) {
             return new ActionType[] {
-                ActionType.GO_TO_SOURCE,
-                ActionType.GO_TO_DIAGRAMM,
+//                ActionType.GO_TO_SOURCE,
+//                ActionType.GO_TO_DIAGRAMM,
+                ActionType.GO_TO,
                 ActionType.SEPARATOR,
                 ActionType.REMOVE
             };
@@ -49,8 +50,9 @@ public class FaultHandlersNode extends BpelNode<FaultHandlers> {
         return new ActionType[] {
             ActionType.ADD_NEWTYPES,
             ActionType.SEPARATOR,
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.REMOVE
         };

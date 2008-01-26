@@ -228,8 +228,9 @@ public class ForEachNode extends BpelNode<ForEach> {
     
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
             ActionType.SEPARATOR,
             ActionType.ADD_FROM_PALETTE,
             ActionType.WRAP,
@@ -241,8 +242,8 @@ public class ForEachNode extends BpelNode<ForEach> {
             ActionType.SEPARATOR,
             ActionType.REMOVE,
             ActionType.SEPARATOR,
-            ActionType.SHOW_BPEL_MAPPER,
-            ActionType.SEPARATOR,
+//            ActionType.SHOW_BPEL_MAPPER,
+//            ActionType.SEPARATOR,
             ActionType.PROPERTIES
         };
     }

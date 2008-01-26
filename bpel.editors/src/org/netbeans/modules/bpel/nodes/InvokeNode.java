@@ -213,10 +213,12 @@ public class InvokeNode extends BpelNode<Invoke> {
     
     protected ActionType[] getActionsArray() {
         return new ActionType[] {
-//            ActionType.ADD_NEWTYPES,  // issue 79780, 79777
-//            ActionType.SEPARATOR,  // issue 79780, 79777
-            ActionType.GO_TO_SOURCE,
-            ActionType.GO_TO_DIAGRAMM,
+            ActionType.ADD_NEWTYPES,  // issue 79780, 79777
+            ActionType.SEPARATOR,  // issue 79780, 79777
+//            ActionType.GO_TO_SOURCE,
+//            ActionType.GO_TO_DIAGRAMM,
+            ActionType.GO_TO,
+            ActionType.SEPARATOR,
             ActionType.WRAP,
             ActionType.SEPARATOR,
             ActionType.MOVE_UP,
@@ -228,10 +230,10 @@ public class InvokeNode extends BpelNode<Invoke> {
             ActionType.DEFINE_CORRELATION,
             ActionType.SEPARATOR,
             
-            ActionType.ADD_CATCH,
-            ActionType.ADD_CATCH_ALL,
-            ActionType.ADD_COMPENSATION_HANDLER,
-            ActionType.SEPARATOR,
+//            ActionType.ADD_CATCH,
+//            ActionType.ADD_CATCH_ALL,
+//            ActionType.ADD_COMPENSATION_HANDLER,
+//            ActionType.SEPARATOR,
             ActionType.TOGGLE_BREAKPOINT,
             ActionType.SEPARATOR,
             ActionType.REMOVE,
@@ -241,9 +243,9 @@ public class InvokeNode extends BpelNode<Invoke> {
     }    
     public ActionType[] getAddActionArray() {
         return new ActionType[] {
-//            ActionType.ADD_CATCH, // issue 79780
-//            ActionType.ADD_CATCH_ALL,  // issue 79780
-//            ActionType.ADD_COMPENSATION_HANDLER // issue 79777
+            ActionType.ADD_CATCH, // issue 79780
+            ActionType.ADD_CATCH_ALL,  // issue 79780
+            ActionType.ADD_COMPENSATION_HANDLER // issue 79777
         };
     }
 }

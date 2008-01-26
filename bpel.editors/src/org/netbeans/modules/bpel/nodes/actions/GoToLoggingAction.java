@@ -19,7 +19,9 @@
 package org.netbeans.modules.bpel.nodes.actions;
 
 import org.netbeans.modules.bpel.editors.api.utils.Util;
+import org.netbeans.modules.bpel.mapper.logging.multiview.LoggingDesignContextFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.ExtensibleElements;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Node;
@@ -65,7 +67,13 @@ public class GoToLoggingAction extends BpelNodeAction {
         DataNode dataNode = null;
         for (int i = 0; i < nodes.length; i++) {
             if (nodes[i] instanceof BpelNode) {
-                isEnable = true;
+                Object ref = ((BpelNode)nodes[i]).getReference();
+                
+                isEnable = ref instanceof ExtensibleElements 
+                        && LoggingDesignContextFactory.canExtend((ExtensibleElements)ref);
+                if (isEnable) {
+                    break;
+                }
             }
             if (nodes[i] instanceof DataNode) {
                 dataNode = (DataNode)nodes[i];
@@ -77,7 +85,9 @@ public class GoToLoggingAction extends BpelNodeAction {
             TopComponent activatedTc = WindowManager.getDefault().getRegistry().getActivated();
             Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
             BpelEntity[] entities = getBpelEntities(activatedNodes);
-            isEnable = entities != null && entities.length > 0;
+            isEnable = entities != null && entities.length > 0
+                    && entities[0] instanceof ExtensibleElements 
+                    && LoggingDesignContextFactory.canExtend((ExtensibleElements)entities[0]);
         }
         return isEnable;
     }

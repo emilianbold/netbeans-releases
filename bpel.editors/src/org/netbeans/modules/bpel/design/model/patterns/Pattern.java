@@ -60,6 +60,7 @@ import org.netbeans.modules.bpel.nodes.actions.AddPaletteActivityAction;
 import org.netbeans.modules.bpel.nodes.actions.AddStructuredActivitiesAction;
 import org.netbeans.modules.bpel.nodes.actions.AddWebServiceActivitiesAction;
 import org.netbeans.modules.bpel.nodes.actions.BpelNodeAction;
+import org.netbeans.modules.bpel.nodes.actions.GoToAction;
 import org.netbeans.modules.bpel.nodes.actions.GoToDiagrammAction;
 import org.netbeans.modules.bpel.nodes.actions.WrapAction;
 import org.openide.actions.NewAction;
@@ -312,6 +313,23 @@ public abstract class Pattern {
                             JMenu submenu = new JMenu(((WrapAction)a).getBundleName());
                             for (AbstractWrapWithAction wrapElem : wrapActions) {
                                 submenu.add(new Actions.MenuItem(wrapElem, false));
+                            }
+                            menu.add(submenu);
+                        }
+                    }  else if (a instanceof GoToAction ) {
+                        BpelNodeAction[] gotoActions = ((GoToAction)a).getGoToActions(new Node[] {node});
+                        // todo m
+                        if (gotoActions.length == 1 
+                                && !(a instanceof GoToDiagrammAction)) 
+                        {
+                            menu.add(new Actions.MenuItem(a, false));
+                        } else {
+                            JMenu submenu = new JMenu(((GoToAction)a).getBundleName());
+                            for (BpelNodeAction gotoElem : gotoActions) {
+                                if (gotoElem instanceof GoToDiagrammAction) {
+                                    continue;
+                                }
+                                submenu.add(new Actions.MenuItem(gotoElem, false));
                             }
                             menu.add(submenu);
                         }
