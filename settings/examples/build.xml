@@ -41,12 +41,12 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="core/settings/examples" default="netbeans" basedir=".">
+<project name="settings/examples" default="netbeans" basedir=".">
 
     <property name="nbm_alias" value="nb_ide"/>
     <property name="homepage.base" value="netbeans.org"/>
     <property name="dist.base" value="www.netbeans.org/download/nbms/40"/>
-    <property name="nb_all" location="../../.."/>
+    <property name="nb_all" location="../../o.n.core/.."/>
     <property name="license.file" location="${nb_all}/nbbuild/standard-nbm-license.txt"/>
 
     <taskdef name="makenbm" classname="org.netbeans.nbbuild.MakeNBM" classpath="${nb_all}/nbbuild/nbantext.jar"/>

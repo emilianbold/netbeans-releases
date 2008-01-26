@@ -42,5 +42,5 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="websvc/wsdlmodel/test-unit" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 </project>

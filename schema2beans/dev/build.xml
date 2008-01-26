@@ -42,11 +42,11 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="schema2beansdev" default="netbeans" basedir=".">
-  <import file="../../../nbbuild/default.xml"/>
+  <import file="../../nbbuild/default.xml"/>
 
   <target name="init" depends="default.init">
     <path id="cp">
-      <pathelement location="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar"/>
+      <pathelement location="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar"/>
     </path>
     <property name="schema2beansdev-jar" location="schema2beansdev.jar" />
   </target>

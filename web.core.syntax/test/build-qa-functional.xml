@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
     <!-- ignore jdk1.5 check -->
     <property name="permit.jdk6.builds" value="true"/>
@@ -64,12 +64,12 @@ made subject to such option by the copyright holder.
     <!-- Compilers -->
     <!-- ========= -->
     <target name="check-lib-classes">
-        <available file="../../../languages/engine/build/test/qa-functional/classes" property="lib.classes.exist" type="dir"/>
+        <available file="../../languages/build/test/qa-functional/classes" property="lib.classes.exist" type="dir"/>
     </target>
     
     <target name="build-languages-lib" unless="lib.classes.exist" depends="check-lib-classes">
         <echo> BUILDING LANGUAGES LIB </echo>
-	<java classname="org.apache.tools.ant.Main" dir="../../../languages/engine/test" failonerror="true" fork="true">
+	<java classname="org.apache.tools.ant.Main" dir="../../languages/test" failonerror="true" fork="true">
           <jvmarg value="-Dant.home=${ant.home}"/>
           <arg value="buildtests"/>
           <arg value="-Dxtest.testtype=qa-functional"/>

@@ -37,7 +37,7 @@ Contributor(s):
 
 
 <project name="DwarfDump" default="jar" basedir=".">
-    <property name="project.dm-utils" value="../modelimpl/test/whitebox/dm-utils"/>
+    <property name="project.dm-utils" value="../cnd.modelimpl/test/whitebox/dm-utils"/>
 
     <property name="module-jar-name" value="DwarfDump.jar"/>
     <property name="src.dir" value="./src"/>

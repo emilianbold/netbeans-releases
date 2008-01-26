@@ -41,26 +41,26 @@
  made subject to such option by the copyright holder.
 -->
 
-<project basedir="." default="netbeans" name="websvc/restkit">
+<project basedir="." default="netbeans" name="websvc.restkit">
     <description>Builds, tests, and runs the project org.netbeans.modules.websvc.restkit</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="all-rest">
-        <ant dir="../swdp"/>
-        <ant dir="../restapi"/>
-        <ant dir="../rest"/>
-        <ant dir="../restsamples"/>
-        <ant dir="../components/strikeiron"/>
-        <ant dir="../components/google"/>
+        <ant dir="../websvc.restlib"/>
+        <ant dir="../websvc.restapi"/>
+        <ant dir="../websvc.rest"/>
+        <ant dir="../websvc.rest.samples"/>
+        <ant dir="../websvc.components.strikeiron"/>
+        <ant dir="../websvc.components.google"/>
         <antcall target="netbeans"/>
     </target>
 
     <target name="all-plugin-nbms">
-        <ant dir="../restapi" target="nbm"/>
-        <ant dir="../swdp" target="nbm"/>
-        <ant dir="../rest" target="nbm"/>
-        <ant dir="../restsamples" target="nbm"/>
-        <ant dir="../components/google" target="nbm"/>
+        <ant dir="../websvc.restapi" target="nbm"/>
+        <ant dir="../websvc.restlib" target="nbm"/>
+        <ant dir="../websvc.rest" target="nbm"/>
+        <ant dir="../websvc.rest.samples" target="nbm"/>
+        <ant dir="../websvc.components.google" target="nbm"/>
         <antcall target="nbm"/>
         <copy todir="nbms" flatten="true">
             <fileset dir="..">
@@ -71,22 +71,22 @@
     </target>
     
     <target name="clean-rest">
-        <ant dir="../swdp" target="clean"/>
-        <ant dir="../restapi" target="clean"/>
-        <ant dir="../rest" target="clean"/>
-        <ant dir="../restsamples" target="clean"/>
-        <ant dir="../components/strikeiron" target="clean"/>
-        <ant dir="../components/google" target="clean"/>
+        <ant dir="../websvc.restlib" target="clean"/>
+        <ant dir="../websvc.restapi" target="clean"/>
+        <ant dir="../websvc.rest" target="clean"/>
+        <ant dir="../websvc.rest.samples" target="clean"/>
+        <ant dir="../websvc.components.strikeiron" target="clean"/>
+        <ant dir="../websvc.components.google" target="clean"/>
         <antcall target="clean"/>
         <delete dir="nbms"/>
     </target>
     
     <target name="clean-plugin-jars">
-        <ant dir="../restapi" target="clean"/>
-        <ant dir="../swdp" target="clean"/>
-        <ant dir="../rest" target="clean"/>
-        <ant dir="../restsamples" target="clean"/>
-        <ant dir="../components/google" target="clean"/>
+        <ant dir="../websvc.restapi" target="clean"/>
+        <ant dir="../websvc.restlib" target="clean"/>
+        <ant dir="../websvc.rest" target="clean"/>
+        <ant dir="../websvc.rest.samples" target="clean"/>
+        <ant dir="../websvc.components.google" target="clean"/>
         <antcall target="clean"/>
     </target>
 </project>

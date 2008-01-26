@@ -44,13 +44,13 @@ made subject to such option by the copyright holder.
 <project basedir="." default="all" name="API XTest Workspace Script">
 
     <!-- Points to directory with IDE to test-->
-    <property location="../../../../nb_all/nbbuild/netbeans" name="netbeans.home"/>
+    <property location="../../xml/../../nb_all/nbbuild/netbeans" name="netbeans.home"/>
 
     <!-- Name of tested module -->
     <property name="xtest.module" value="test"/>
 
     <!-- Home of XTest -->
-    <property location="../../../../nb_all/xtest" name="xtest.home"/>
+    <property location="../../xml/../../nb_all/xtest" name="xtest.home"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>

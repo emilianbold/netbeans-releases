@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <project name="com.sun.webui.themes" default="netbeans" basedir=".">
 
     <description>Builds, tests, and runs the project com.sun.webui.themes.</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <property name="extract.dir" location="build"/>
 

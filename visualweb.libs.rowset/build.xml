@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.modules.visualweb.libs.rowset" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.visualweb.libs.rowset.</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     
     <!-- Create the javadoc zip file from the rowset src -->
     <!-- this target below is not currently being used -->

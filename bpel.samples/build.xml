@@ -18,7 +18,7 @@
   Microsystems, Inc. All Rights Reserved.
 -->
 <project name="samples" default="netbeans" basedir=".">
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     <property name="zip.folder" value="src/org/netbeans/modules/bpel/samples/resources/zip"/>
 
     <target name="jar" depends="create-zip,zip-trs,zip-synchronous,zip-asynchronous,zip-blueprint,projectized-common.jar"/>

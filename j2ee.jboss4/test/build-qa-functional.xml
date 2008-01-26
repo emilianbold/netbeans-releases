@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <project name="serverplugins/jboss4/test/qa-functional" basedir="." default="all">
 
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
     <!-- ========= -->
     <!-- Executors -->

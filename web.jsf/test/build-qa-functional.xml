@@ -45,6 +45,6 @@ made subject to such option by the copyright holder.
     <!-- ignore jdk1.5 check -->
     <property name="permit.jdk6.builds" value="true"/>
 
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
     
 </project>

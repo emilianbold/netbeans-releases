@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
               because inheritAll="false" doesn't work for all properties. -->
         <java classname="org.apache.tools.ant.Main" classpath="${java.class.path}" fork="true">
             <arg value="-f"/>
-            <arg value="../../openide/text/test/build.xml"/>
+            <arg value="../../openide.text/test/build.xml"/>
             <arg value="-Dxtest.testtype=${xtest.testtype}"/>
             <arg value="-Dxtest.attribs=${xtest.attribs}"/>
             <arg value="buildtests"/>

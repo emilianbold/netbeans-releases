@@ -18,7 +18,7 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 <project name="xmlbeans" default="netbeans" basedir=".">
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     
     <target name="ext_init">
        <mkdir dir="external/xmlbeans-2.1.0"/>

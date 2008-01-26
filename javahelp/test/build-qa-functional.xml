@@ -45,6 +45,6 @@ made subject to such option by the copyright holder.
 
     <!-- Imports jemmy.and.jelly.path and default qa-functional-compiler and
          runidetest executor -->
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
 </project>

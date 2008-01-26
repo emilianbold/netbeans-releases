@@ -4,7 +4,7 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.jruby" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.jruby</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="init" depends="projectized.init">
         <!-- Avoid confusing NetBeans when it has the project open. Having

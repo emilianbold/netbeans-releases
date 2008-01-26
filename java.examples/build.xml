@@ -42,18 +42,18 @@ made subject to such option by the copyright holder.
 -->
 <project name="j2seexamples" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="clean" depends="client-editor-clean,projectized-common.clean"/>
 
     <target name="client-editor-compile">
         <path id="swing-layout-classpath">
-            <fileset dir="../../libs/swing-layout/external">
+            <fileset dir="../o.jdesktop.layout/external">
                 <include name="**/*.jar"/>
             </fileset>
         </path>
         <path id="beans-binding-classpath">
-            <fileset dir="../../form/external">
+            <fileset dir="../form/external">
                 <include name="**/beansbinding*.jar"/>
             </fileset>
         </path>

@@ -40,9 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="ant/docs" default="netbeans" basedir=".">
+<project name="o.apache.tools.ant.module.docs" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="javahelp" depends="init" if="has.javahelp">
         <mkdir dir="${build.javahelp.dir}/${javahelp.base}/ant-docs"/>
@@ -66,7 +66,7 @@ made subject to such option by the copyright holder.
     </target>
     <target name="-preview-javahelp-nb" if="netbeans.home">
         <pathconvert dirsep="/" property="docs.zip">
-            <fileset dir="../external">
+            <fileset dir="../o.apache.tools.ant.module/external">
                 <include name="ant-docs-*.zip"/>
             </fileset>
         </pathconvert>

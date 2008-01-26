@@ -42,12 +42,12 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project basedir="." default="all" name="visualweb/kit/test">
+<project basedir="." default="all" name="visualweb.kit/test">
 
     <!-- Name of tested module   -->
-    <property name="xtest.module" value="visualweb/kit"/>
+    <property name="xtest.module" value="visualweb.kit"/>
     
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>
@@ -107,10 +107,10 @@ made subject to such option by the copyright holder.
         <!--property name="xtest.home" location="../../xtest"/-->
         <ant dir="../gravy" target="clean"/>
         <!--exec dir="${basedir}/../kit/gravy" executable="ant" failonerror="yes"/-->
-        <ant dir="../../../jemmy" target="jar"/>
+        <ant dir="../../jemmy" target="jar"/>
         <ant dir="${basedir}/../gravy" target="jar">
             <property name="no.deps" value="true"/>
-            <property name="java.version.excludes" location="${basedir}/../../../jemmy/util/${ant.java.version}.excludes"/>
+            <property name="java.version.excludes" location="${basedir}/../../jemmy/util/${ant.java.version}.excludes"/>
         </ant>    
         <ant dir="." target="${commit.validation.target}"/>
         <delete dir="../../../nbbuild/netbeans/extra"/> <!-- #114661 -->
@@ -121,10 +121,10 @@ made subject to such option by the copyright holder.
             <and>
                 <!--available file="../kit/test/build.xml"/-->
                 <available file="../gravy/build.xml"/>
-                <available file="../../../jemmy/build.xml"/>
-                <available file="../../../jellytools/build.xml"/>
-                <available file="../../../xtest/build.xml"/>
-                <available file="../../../testtools/external/httpunit.jar"/>
+                <available file="../../jemmy/build.xml"/>
+                <available file="../../jellytools/build.xml"/>
+                <available file="../../xtest/build.xml"/>
+                <available file="../../testtools/external/httpunit.jar"/>
             </and>
         </condition>
     </target>
@@ -162,7 +162,7 @@ made subject to such option by the copyright holder.
         <!--ant dir="${basedir}/../../jellytools">
            <property name="netbeans.dest.dir" value="${basedir}/../../nbbuild/netbeans"/>
         </ant-->
-        <ant dir="${basedir}/../../../jemmy"/>
+        <ant dir="${basedir}/../../jemmy"/>
     </target>
 
     <target name="checkout-test-tools" depends="check-commit-validation" unless="run.validation">

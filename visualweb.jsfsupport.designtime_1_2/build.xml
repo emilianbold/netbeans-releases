@@ -46,5 +46,5 @@ made subject to such option by the copyright holder.
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="Creator JSF 1.2 Components Design-Time" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project Creator JSF 1.2 Components Design-Time.</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

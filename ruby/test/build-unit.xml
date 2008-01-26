@@ -43,13 +43,13 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="ruby/editing/test-unit" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
     <target name="pre-init-cp">
         <!-- XXX: xtext does not support compilation to build/test/classes.
             Add org.netbeans.api.project.TestUtil to classpath. -->
         <!-- Extra classpath for compilation: -->
-        <property name="cp.compile.extra" value="../../../projects/projectapi/test/unit/src"/>
+        <property name="cp.compile.extra" value="../../projectapi/test/unit/src"/>
         <!-- Extra classpath for execution: -->
         <!-- <property name="cp.run.extra" value=""/> -->
     </target>

@@ -168,7 +168,7 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-usecases">
-  <usecase id="register-drivers" name="Registering JDBC drivers">
+  <usecase id="register-drivers" name="Registering JDBC ../db.drivers">
    <p>
     An external module can register JDBC drivers. A typical example is a module
     which provides integration with a database server. In this case the module
@@ -208,7 +208,7 @@ made subject to such option by the copyright holder.
     <code>nbinst:/modules/ext/bundled-driver.jar</code>.
    </p>
   </usecase>
-  <usecase id="retrieve-drivers" name="Retrieving the list of JDBC drivers">
+  <usecase id="retrieve-drivers" name="Retrieving the list of JDBC ../db.drivers">
    <p>
     When creating a new connection the JDBC driver which it should use can be specified.
     A list of all the registered JDBC drivers can be retrieved using 
@@ -1112,7 +1112,7 @@ made subject to such option by the copyright holder.
 -->
  <answer id="perf-scale">
   <p>
-   Performance scales linearly with the number of connections and drivers, 
+   Performance scales linearly with the number of connections and ../db.drivers, 
    but usually the numbers are small.
   </p>
  </answer>

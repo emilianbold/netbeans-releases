@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.netbeans.modules.cnd.makeproject" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.cnd.makeproject.</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     
     <!-- zip up samples before creating the jar file -->
     <property name="sample-src" value="src/org/netbeans/modules/cnd/makeproject/samples"/>

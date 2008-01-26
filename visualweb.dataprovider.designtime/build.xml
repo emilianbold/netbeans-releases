@@ -44,6 +44,6 @@ made subject to such option by the copyright holder.
 <project name="org.netbeans.modules.visualweb.dataprovider.designtime" default="netbeans" basedir=".">
 
     <description>Builds and tests the project org.netbeans.modules.visualweb.dataprovider.designtime</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     
 </project>

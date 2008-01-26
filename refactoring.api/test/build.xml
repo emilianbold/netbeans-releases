@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
     <!-- Property used when generating golden files -->
     <!-- <property name="xtest.ide.commandline.suffix" value="-J-Dcreate.goldenfiles=true"/> -->
 
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>

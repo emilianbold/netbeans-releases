@@ -40,23 +40,23 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="jemmy/idemodule" default="netbeans" basedir=".">
+<project name="jemmy.idemodule" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="netbeans-extra">
         <!-- build jemmy.jar -->
-        <ant dir=".." target="jar" inheritAll="false"/>
-        <copy file="../dist/jemmy.jar" todir="${cluster}/modules/ext"/>
+        <ant dir="../jemmy" target="jar" inheritAll="false"/>
+        <copy file="../jemmy/dist/jemmy.jar" todir="${cluster}/modules/ext"/>
         <!-- create javadoc -->
         <antcall target="javadoc"/>
         <mkdir dir="${cluster}/docs"/>
-        <copy file="../dist/javadoc/org-netbeans-jemmy.zip" todir="${cluster}/docs"/>
+        <copy file="../jemmy/dist/javadoc/org-netbeans-jemmy.zip" todir="${cluster}/docs"/>
     </target>
 
      <!-- overridden because we need to read jemmy version from version_info -->
     <target name="jar" depends="init,compile,jar-prep">
-        <property file="../src/org/netbeans/jemmy/version_info"/>
+        <property file="../jemmy/src/org/netbeans/jemmy/version_info"/>
         <jarwithmoduleattributes jarfile="${cluster}/${module.jar}" compress="${build.package.compress}" index="${build.package.index}" manifest="${manifest.mf}">
             <fileset dir="${build.classes.dir}"/>
             <manifest>
@@ -66,12 +66,12 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="clean" depends="projectized-common.clean">
-        <ant dir=".." target="clean" inheritAll="false"/>
+        <ant dir="../jemmy" target="clean" inheritAll="false"/>
     </target>
 
     <!-- Create jemmy javadoc to be published at http://www.netbeans.org/download/dev/javadoc/jemmy-api/index.html. -->
     <target name="javadoc" depends="init">
-        <ant dir=".." target="javadoc" inheritAll="false"/>
+        <ant dir="../jemmy" target="javadoc" inheritAll="false"/>
     </target>
 
 </project>

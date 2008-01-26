@@ -40,9 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="apisupport/refactoring/test" basedir="." default="all">
-    <property name="xtest.module" value="apisupport/refactoring"/>
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+<project name="apisupport.refactoring/test" basedir="." default="all">
+    <property name="xtest.module" value="apisupport.refactoring"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="qa-functional"/>
     <property name="xtest.attribs" value="validation"/>
     <property name="xtest.ide.use.classloader" value="org.netbeans.modules.apisupport.refactoring"/>

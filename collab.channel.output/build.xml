@@ -43,12 +43,12 @@ made subject to such option by the copyright holder.
 
 <project name="collab-output" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="xmlbeangen">
         <taskdef name="xmlbean" classname="org.apache.xmlbeans.impl.tool.XMLBean"
-                classpath="../../libs/xmlbeans/external/xbean-1.0.4.jar" />
-	<xmlbean classpath="../../libs/xmlbeans/external/xbean-1.0.4.jar"
+                classpath="../libs.xmlbeans/external/xbean-1.0.4.jar" />
+	<xmlbean classpath="../libs.xmlbeans/external/xbean-1.0.4.jar"
 		schema="src/org/netbeans/modules/collab/channel/output/resources/share-output.xsd"
 		destfile="lib/output-schema.jar"/>
     </target>

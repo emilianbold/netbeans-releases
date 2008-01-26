@@ -45,11 +45,11 @@ made subject to such option by the copyright holder.
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
     
     <property name="test.qa-functional.cp.extra" value="
-              ${openide/util.dir}/lib/org-openide-util.jar:
-              ${xtest/nbjunit.dir}/modules/ext/nbjunit.jar:"/>
+              ${openide.util.dir}/lib/org-openide-util.jar:
+              ${nbjunit.dir}/modules/ext/nbjunit.jar:"/>
 <!--              ../../../nbbuild/netbeans/nb6.0/modules/org-netbeans-modules-uihandler.jar: -->
 
     <target name="qa-functional-compiler" depends="init,init-cp">

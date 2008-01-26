@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="websvc/designer/test" basedir="." default="all">
     <property name="xtest.module" value="websvc/designer"/>
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
 </project>

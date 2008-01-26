@@ -49,9 +49,9 @@ made subject to such option by the copyright holder.
   <target name="s2binit" depends="build-init">
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
-		<pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-		<pathelement path="${nb_all}/schema2beans/rt/dev/schema2beansdev.jar" />
-		<pathelement path="${nb_all}/schema2beans/rt/anttask/s2banttask.jar"/>
+		<pathelement path="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+		<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
+		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
 	  </classpath>
 	</taskdef>
   </target>
@@ -77,10 +77,10 @@ made subject to such option by the copyright holder.
      <echo message="Generated schema2beans from ${dtdfile}"/>
      <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">
        <classpath>
-          <pathelement location="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-          <pathelement location="${nb_all}/schema2beans/rt/dev/schema2beansdev.jar" />
+          <pathelement location="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+          <pathelement location="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
           <pathelement location="${openide.dir}/core/openide.jar"/>
-          <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+          <pathelement location="${openide.loaders.dir}/core/openide-loaders.jar"/>
        </classpath>
        <arg line= "-f ${dtdfile}" />
        <arg line= "-p ${dtdpackage}" />

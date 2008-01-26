@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
     <target name="stress-compiler">
         <buildTests srcDir="stress/src" compileExcludes="**/data/**">
             <classpath>
-                <pathelement location="${openide/windows.dir}/modules/org-openide-windows.jar"/>
+                <pathelement location="${openide.windows.dir}/modules/org-openide-windows.jar"/>
                 <path refid="compiletest.classpath"/>
                 <path refid="jemmy.and.jelly.path"/>
                 <path refid="performance.testutilities.path"/>
@@ -129,7 +129,7 @@ made subject to such option by the copyright holder.
                 <path refid="performance.testutilities.path"/>
                 <pathelement path="${compile.destdir}"/>
                 <pathelement path="${junit.classpath}"/>
-                <pathelement location="../insanelibmodule/insanelib/dist/insanelib.jar"/>
+                <pathelement location="../../o.n.insane/insanelib/dist/insanelib.jar"/>
             </classpath>
         </internalExecution>
     </target>

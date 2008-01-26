@@ -41,9 +41,9 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="core/progress/test" basedir="." default="all" >
-    <property name="xtest.module" value="core/progress"/>
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+<project name="api.progress/test" basedir="." default="all" >
+    <property name="xtest.module" value="api.progress"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
     <property name="xtest.ide.use.classloader" value="org.netbeans.progress"/>

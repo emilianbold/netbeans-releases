@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
     <!-- Adds property to IDE command line: suppress scanning of classpath -->
     <property name="xtest.ide.commandline.suffix" value="-J-Dnetbeans.javacore.noscan=true"/>
@@ -64,18 +64,18 @@ made subject to such option by the copyright holder.
     <target name="unit-compiler">
         <buildTests srcDir="unit/src" compileExcludes="**/data/**">
             <classpath refid="test.qa-functional.run.cp"/>
-            <pathelement location="${xml/tageditorsupport.dir}/modules/org-netbeans-modules-editor-structure.jar"/>
+            <pathelement location="${editor.structure.dir}/modules/org-netbeans-modules-editor-structure.jar"/>
                                 
-            <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
-            <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
+            <pathelement location="${openide.loaders.dir}/core/openide-loaders.jar"/>
+            <pathelement location="${openide.util.dir}/lib/org-openide-util.jar"/>
                 
-            <pathelement location="${editor/mimelookup.dir}/modules/org-netbeans-modules-editor-mimelookup.jar"/>
+            <pathelement location="${editor.mimelookup.dir}/modules/org-netbeans-modules-editor-mimelookup.jar"/>
             <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
             <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-util.jar"/>
             <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
             <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-fold.jar"/>
-            <pathelement location="${html/editor.dir}/modules/org-netbeans-modules-html-editor-lib.jar"/>
-            <pathelement location="${html/editor.dir}/modules/org-netbeans-modules-html-editor.jar"/>
+            <pathelement location="${html.editor.dir}/modules/org-netbeans-modules-html-editor-lib.jar"/>
+            <pathelement location="${html.editor.dir}/modules/org-netbeans-modules-html-editor.jar"/>
         </buildTests>
     </target>
     

@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <property name="xtest.module" value="org.netbeans.modules.xml.wsdl.refactoring"/>
     
     <!-- Home of XTest -->
-    <property name="xtest.home" location="../../../../xtest"/>
+    <property name="xtest.home" location="../../xtest"/>
     <import file="${xtest.home}/lib/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
@@ -58,7 +58,7 @@ made subject to such option by the copyright holder.
     -->
     
     <!-- Points to directory with IDE to test. Optional for IDE tests.  -->
-    <property name="netbeans.dest.dir" location="../../../../nbbuild/netbeans"/>
+    <property name="netbeans.dest.dir" location="../../nbbuild/netbeans"/>
     
     <!--
     *****************************************************

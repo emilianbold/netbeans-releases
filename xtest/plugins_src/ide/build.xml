@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
     <patternset id="xtest.ide.main">
         <include name="org/netbeans/xtest/plugin/ide/Main*"/>
         <!-- Exclude when building against NetBeans Platform. -->
-        <exclude name="org/netbeans/xtest/plugin/ide/MainWithProjects*" unless="java/source.dir"/>
+        <exclude name="org/netbeans/xtest/plugin/ide/MainWithProjects*" unless="java.source.dir"/>
         <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
         <include name="org/netbeans/xtest/plugin/ide/services/XTestErrorManager*"/>
         <include name="META-INF/**"/>

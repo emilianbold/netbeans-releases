@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
     
     <!-- Imports jemmy.and.jelly.path and default qa-functional-compiler and
     runidetest executor -->
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
     <import file="./build.xml"/>
      
     <path id="cp.extra">
@@ -55,8 +55,8 @@ made subject to such option by the copyright holder.
         <pathelement location="${netbeans.dest.dir}/platform7/modules/org-netbeans-core.jar"/>
         <pathelement location="${netbeans.dest.dir}/platform7/modules/org-netbeans-core-windows.jar"/>
         <pathelement location="${netbeans.dest.dir}/platform7/modules/org-netbeans-swing-tabcontrol.jar"/>
-        <pathelement location="../../../jemmy/builds/jemmy.jar"/>                    
-        <pathelement location="../../../jellytools/builds/jelly2-nb.jar"/>
+        <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
+        <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
         <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
         <pathelement location="${netbeans.dest.dir}/java1/modules/org-netbeans-modules-java-j2seproject.jar"/> 
@@ -70,8 +70,8 @@ made subject to such option by the copyright holder.
     </path>    
     <path id="run.extra">
         <pathelement location="./qa-lib/uml-lib.jar"/>
-        <pathelement location="../../../jemmy/builds/jemmy.jar"/>                    
-        <pathelement location="../../../jellytools/builds/jelly2-nb.jar"/>
+        <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
+        <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
         <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
        

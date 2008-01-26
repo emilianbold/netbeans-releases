@@ -9,7 +9,7 @@
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/glassfish-jspparser-2.0.jar</runtime-relative-path>
-                <binary-origin>../../jspparser/external/glassfish-jspparser-2.0.jar</binary-origin>
+                <binary-origin>../web.jspparser/external/glassfish-jspparser-2.0.jar</binary-origin>
             </class-path-extension>
             <module-dependencies>
                 <dependency>

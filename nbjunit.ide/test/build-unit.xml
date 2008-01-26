@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 
    <!-- imports default-compiler which have all dependent jars on classpath.
         Other required jars add to nbproject/project.properties -->
-   <import file="../../../../nbbuild/templates/xtest-unit.xml"/>
+   <import file="../../nbbuild/templates/xtest-unit.xml"/>
    
     <!-- Run tests in IDE -->
     <target name="run-ide">

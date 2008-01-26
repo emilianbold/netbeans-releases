@@ -46,10 +46,10 @@ made subject to such option by the copyright holder.
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
     <target name="-init-props">
-        <property name="build.dir" value="${nb_all}/websvc/restkit/build" />
+        <property name="build.dir" value="${nb_all}/websvc.restkit/build" />
         <mkdir dir="${build.dir}" />
         <property name="lib.dir" value="${build.dir}/libs"/>
         <mkdir dir="${lib.dir}" />
@@ -83,7 +83,7 @@ made subject to such option by the copyright holder.
     <target name="-init-httpunit" depends="-init-props, -httpunit"/>
 
     <target name="qa-functional-compiler" depends="-init-httpunit">
-        <ant inheritAll="false" antfile="../../kit/test/build.xml" target="buildtests"/>
+        <ant inheritAll="false" antfile="../../websvc.kit/test/build.xml" target="buildtests"/>
         <antcall target="xtest-qa-functional.qa-functional-compiler"/>
     </target>
 

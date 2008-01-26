@@ -41,25 +41,25 @@ Microsystems, Inc. All Rights Reserved.
     <javac srcdir="src" destdir="src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
         <pathelement location="${openide.dir}/core/openide.jar" />
-        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar" />
+        <pathelement location="${openide.loaders.dir}/core/openide-loaders.jar" />
         <pathelement location="${openide/compiler.dir}/modules/autoload/openide-compiler.jar" />
-        <pathelement location="${openide/execution.dir}/modules/org-openide-execution.jar" />
+        <pathelement location="${openide.execution.dir}/modules/org-openide-execution.jar" />
         <pathelement location="${openide/execution/deprecated.dir}/modules/org-openide-execution-deprecated.jar" />
         
-        <pathelement location="${core.dir}/core/core.jar" />
-        <pathelement location="${core/windows.dir}/modules/org-netbeans-core-windows.jar" />
+        <pathelement location="${o.n.core.dir}/core/core.jar" />
+        <pathelement location="${core.windows.dir}/modules/org-netbeans-core-windows.jar" />
         <pathelement location="${java.dir}/modules/org-netbeans-modules-java.jar" />
         <pathelement location="${java/srcmodel.dir}/modules/org-openide-src.jar" />
-        <pathelement location="${ant.dir}/modules/org-apache-tools-ant-module.jar" />
-	<fileset dir="${nbroot}/ant/external">
+        <pathelement location="${o.apache.tools.ant.module.dir}/modules/org-apache-tools-ant-module.jar" />
+	<fileset dir="${nbroot}/o.apache.tools.ant.module/external">
           <!-- For 1.6: -->
           <include name="lib/ant.jar"/>
 	</fileset>
         <pathelement location="${nbroot}/jemmy/jemmy.jar" />
         <pathelement location="${nbroot}/jellytools/jelly2-nb.jar" />
-        <pathelement location="${jemmysupport.dir}/modules/org-netbeans-modules-jemmysupport.jar" />
+        <pathelement location="${contrib/jemmysupport.dir}/modules/org-netbeans-modules-jemmysupport.jar" />
         <pathelement location="${tools.jar}"/>
-        <fileset dir="${nbroot}/libs/xerces/external">
+        <fileset dir="${nbroot}/libs.xerces/external">
           <include name="xerces*.jar"/>
         </fileset>
       </classpath>
@@ -136,8 +136,8 @@ Microsystems, Inc. All Rights Reserved.
      <copy file="${nbroot}/xtest/xtest.nbm" tofile="xtest.nbm" filtering="off"/>
      <ant dir="${nbroot}/jemmy/" target="nbm"/>
      <copy file="${nbroot}/jemmy/jemmy.nbm" tofile="jemmy.nbm" filtering="off"/>
-     <ant dir="${nbroot}/jemmysupport/" target="nbm"/>
-     <copy file="${nbroot}/jemmysupport/jemmysupport.nbm" tofile="jemmysupport.nbm" filtering="off"/>
+     <ant dir="${nbroot}/contrib/jemmysupport/" target="nbm"/>
+     <copy file="${nbroot}/contrib/jemmysupport/jemmysupport.nbm" tofile="jemmysupport.nbm" filtering="off"/>
      <ant dir="${nbroot}/jellytools/" target="nbm"/>
      <copy file="${nbroot}/jellytools/jellytools.nbm" tofile="jellytools.nbm" filtering="off"/>
      <antcall target="nbm"/>
@@ -149,7 +149,7 @@ Microsystems, Inc. All Rights Reserved.
 
   <target name="realclean" depends="clean">
     <ant dir="${nbroot}/jemmy" antfile="build.xml" target="clean"/>
-    <ant dir="${nbroot}/jemmysupport" antfile="build.xml" target="clean"/>
+    <ant dir="${nbroot}/contrib/jemmysupport" antfile="build.xml" target="clean"/>
     <ant dir="${nbroot}/jellytools" antfile="build.xml" target="clean"/>
     <ant dir="${nbroot}/xtest" antfile="build.xml" target="clean"/>
     <ant dir="${nbroot}/junit" antfile="build.xml" target="clean"/>
@@ -160,7 +160,7 @@ Microsystems, Inc. All Rights Reserved.
     <jhindexer basedir="javahelp/org/netbeans/modules/testtools/docs/"
                db="javahelp/org/netbeans/modules/testtools/docs/JavaHelpSearch2">
       <classpath>
-        <fileset dir="../apisupport/harness/external">
+        <fileset dir="../apisupport.harness/external">
           <include name="jsearch*.jar"/>
         </fileset>
       </classpath>

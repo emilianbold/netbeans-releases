@@ -41,13 +41,13 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="logger/uihandler/test" basedir="." default="all">
+<project name="uihandler/test" basedir="." default="all">
 
     <!-- Name of tested module -->
-    <property name="xtest.module" value="logger/uihandler"/>
+    <property name="xtest.module" value="uihandler"/>
 
     <!-- Imports buildtests, cleantests, runtest, cleanresults, realclean, printconfig targets. -->
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
 
      <!-- default testtypes, attributes and executors -->
     <property name="xtest.testtype" value="unit"/>

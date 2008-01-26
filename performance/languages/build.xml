@@ -42,7 +42,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project basedir="." default="netbeans" name="languages/performancetests">
+<project basedir="." default="netbeans" name="performance/languages">
     <description>Builds, tests, and runs the project langpackperftests</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
 </project>

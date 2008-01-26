@@ -40,9 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="core/swing/plaf" default="netbeans" basedir=".">
+<project name="o.n.swing.plaf" default="netbeans" basedir=".">
 
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <!-- No such main method any more:
     <target name="demo" depends="jar" description="Run a demo">

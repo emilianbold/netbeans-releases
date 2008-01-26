@@ -276,7 +276,7 @@ that depends on  NetBeans APIs specified in this document.
 -->
 <answer id="dep-non-nb">
     <api group="java" name="JAXP" type="import" category="standard" url="http://java.sun.com/xml/jaxp/dist/1.1/docs/api/"> 
-    Standard XML APIs (DOM, SAX) - distributed with the IDE (in lib/ext/xml-apis*.jar),
+    Standard XML APIs (DOM, SAX) - distributed with the IDE (in ../editor.lib/ext/xml-apis*.jar),
     already part of JDK 1.4 and newer).
     </api>
 </answer>
@@ -362,7 +362,7 @@ Description of public packages:
     </li>
     <li> <code>org.netbeans.modules.editor.java</code> - NetBeans-specific java editor infrastructure
     </li>
-    <li> <code>org.netbeans.modules.editor.options</code> - Editor generic options support plus options for plain, html and java editors
+    <li> <code>org.netbeans.modules.editor.options</code> - Editor generic options support plus options for ../editor.plain, html and java editors
     </li>
     <li> <code>org.netbeans.modules.editor.plain</code> - NetBeans-specific plain text editor infrastructure
     </li>

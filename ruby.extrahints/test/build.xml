@@ -53,7 +53,7 @@ made subject to such option by the copyright holder.
     <!-- Name of tested module -->
     <property name="xtest.module" value="ruby/hints"/>
 
-    <import file="../../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>

@@ -41,9 +41,9 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project basedir="." default="netbeans" name="javawebstart/signtask">
+<project basedir="." default="netbeans" name="javawebstart.signtask">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="nblib" depends="init">
         <mkdir dir="build/antclasses"/>

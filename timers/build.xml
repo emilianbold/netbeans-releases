@@ -39,7 +39,7 @@
  - Version 2 license, then the option applies only if the new code is
  - made subject to such option by the copyright holder.
  -->
-<project basedir="." default="netbeans" name="apisupport/timers">
+<project basedir="." default="netbeans" name="timers">
     <description>Builds, tests, and runs the project org.netbeans.modules.timers</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

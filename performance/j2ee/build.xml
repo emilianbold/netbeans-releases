@@ -42,7 +42,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project basedir="." default="netbeans" name="j2ee/performancetests">
+<project basedir="." default="netbeans" name="performance/j2ee">
     <description>Builds, tests, and runs the project j2ee perftests</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
 </project>

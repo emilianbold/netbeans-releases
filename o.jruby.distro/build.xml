@@ -4,7 +4,7 @@
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="org.jruby.distro" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.jruby.distro</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     <!--
     <propertyfile file="../jruby/nbproject/project.properties"/>
 -->
@@ -29,7 +29,7 @@
         <delete dir="${unpatched_source}"/>
         <mkdir dir="${unpatched_source}"/>
         <unzip dest="${unpatched_source}">
-			<fileset dir="../jruby/external/">
+			<fileset dir="../o.jruby/external/">
 				<include name="jruby-src-${jruby_src_version}.zip"/>
 			</fileset>
 		</unzip>

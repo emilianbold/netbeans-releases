@@ -105,7 +105,7 @@ made subject to such option by the copyright holder.
         
         <nbjpdastart transport="dt_socket" addressproperty="jpda.address" name="${test.class}">
             <classpath> 
-                <fileset dir="${openide/util.dir}" >
+                <fileset dir="${openide.util.dir}" >
                     <include name="**/*.jar" />
                 </fileset>
                 <pathelement location="build/test/unit/classes" />

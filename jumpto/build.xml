@@ -43,6 +43,6 @@ made subject to such option by the copyright holder.
 
 Contributor(s): Andrei Badea
 -->
-<project basedir="." default="netbeans" name="utilities/jumpto">
-    <import file="../../nbbuild/templates/projectized.xml"/>
+<project basedir="." default="netbeans" name="jumpto">
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

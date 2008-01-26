@@ -41,14 +41,14 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="ide/launcher/upgrade" default="netbeans" basedir=".">
+<project name="o.n.upgrader" default="netbeans" basedir=".">
 
     <target name="compile" depends="projectized-common.compile">
         <echo message="${build.classes.dir}"/>
-        <copy file="../../branding/release/LICENSE.txt"
+        <copy file="../ide.branding/release/LICENSE.txt"
               tofile="${build.classes.dir}/org/netbeans/license/LICENSE.txt" failonerror="true"/>
     </target>
 
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
 </project>

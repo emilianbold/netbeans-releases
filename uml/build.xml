@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="org.netbeans.modules.uml" default="netbeans" basedir=".">
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <!-- below hardcoded property values should be fixed -->
     <property name="nb.modules.dir" value="modules"/>
@@ -82,7 +82,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="release">
-        <ant dir="../tomsawyer" target="common-init"/>
+        <ant dir="../uml.tomsawyer" target="common-init"/>
         <antcall target="projectized.release"/>
     </target>
     

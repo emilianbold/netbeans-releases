@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="tomcat5" default="netbeans" basedir=".">
-  <import file="../../nbbuild/templates/projectized.xml"/>
+  <import file="../nbbuild/templates/projectized.xml"/>
 
   <property name="tomcat5_dir" location="src/org/netbeans/modules/tomcat5"/>
 
@@ -51,9 +51,9 @@ made subject to such option by the copyright holder.
   <target name="s2binit" depends="build-init">
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
-		<pathelement path="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-		<pathelement path="${nb_all}/schema2beans/rt/dev/schema2beansdev.jar" />
-		<pathelement path="${nb_all}/schema2beans/rt/anttask/s2banttask.jar"/>
+		<pathelement path="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+		<pathelement path="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
+		<pathelement path="${nb_all}/schema2beans/anttask/s2banttask.jar"/>
 	  </classpath>
 	</taskdef>
   </target>

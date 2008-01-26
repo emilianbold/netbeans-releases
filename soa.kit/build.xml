@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="netbeans" name="enterprise/soa/kit">
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+<project basedir="." default="netbeans" name="soa.kit">
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

@@ -81,7 +81,7 @@ made subject to such option by the copyright holder.
     <target name="build-looks" depends="init" unless="looks.and.registry.available">
         <ant dir="${nbroot}/openide/registry" inheritall="false" inheritrefs="false"/>
         <ant dir="${nbroot}/openide/convertor" inheritall="false" inheritrefs="false"/>
-        <ant dir="${nbroot}/core/registry" inheritall="false" inheritrefs="false"/>
+        <ant dir="${nbroot}/o.n.core/registry" inheritall="false" inheritrefs="false"/>
         <ant dir="${nbroot}/openide/looks" inheritall="false" inheritrefs="false"/>
     </target>
     

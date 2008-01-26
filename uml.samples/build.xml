@@ -42,7 +42,7 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project basedir="." default="netbeans" name="uml/samples">
+<project basedir="." default="netbeans" name="uml.samples">
     <description>Builds, tests, and runs the project org.netbeans.modules.uml.samples</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

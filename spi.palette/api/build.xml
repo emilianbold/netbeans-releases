@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <project name="Arch Questions and Answers Generator" default="answer" basedir=".">
   <!-- modify this property to point to root of NetBeans CVS
        so necessary files in the build system may be found -->
-  <property name="ide.root" value="../../.." />
+  <property name="ide.root" value="../../o.n.core/.." />
 
   <!-- choose a name of your project. It will be used to name
        input and output files -->

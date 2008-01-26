@@ -40,14 +40,14 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project basedir="." default="netbeans" name="refactoring/api">
+<project basedir="." default="netbeans" name="refactoring.api">
     <description>Builds, tests, and runs the project org.netbeans.modules.refactoring.api</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <!-- Remove this part as soon as issue 55845 is fixed -->
     <target name="compile" depends="projectized-common.compile">
-        <copy file="../../core/output2/src/org/netbeans/core/output2/resources/tabclose.gif" tofile="${build.classes.dir}/org/netbeans/modules/refactoring/api/resources/RefCloseTab.gif" />
-        <copy file="../../core/output2/src/org/netbeans/core/output2/resources/tabcloseinactive.gif" tofile="${build.classes.dir}/org/netbeans/modules/refactoring/api/resources/RefCloseTabInactive.gif" />
+        <copy file="../core.output2/src/org/netbeans/core/output2/resources/tabclose.gif" tofile="${build.classes.dir}/org/netbeans/modules/refactoring/api/resources/RefCloseTab.gif" />
+        <copy file="../core.output2/src/org/netbeans/core/output2/resources/tabcloseinactive.gif" tofile="${build.classes.dir}/org/netbeans/modules/refactoring/api/resources/RefCloseTabInactive.gif" />
     </target>
     <!-- End of: Remove this part as soon as issue 55845 is fixed -->
     

@@ -42,6 +42,6 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="debuggercore/viewmodel/test" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+<project name="spi.viewmodel/test" basedir="." default="all">
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 </project>

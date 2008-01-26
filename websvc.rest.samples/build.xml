@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="org.netbeans.modules.websvc.rest.samples" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
  
     <!-- 
     netbeans-extra is a hook provided to plug in file copying. 

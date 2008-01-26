@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
     <!--
     <import file="${xtest.home}/lib/templates/xtest.xml"/>
     -->
-    <import file="../../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>

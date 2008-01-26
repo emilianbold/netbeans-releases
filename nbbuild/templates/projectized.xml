@@ -299,7 +299,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <jhindexer basedir="${build.javahelp.dir}/${javahelp.base}"
                    db="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}">
             <classpath>
-                <fileset dir="${nb_all}/apisupport/harness/external">
+                <fileset dir="${nb_all}/apisupport.harness/external">
                     <include name="jsearch*.jar"/>
                 </fileset>
             </classpath>
@@ -410,7 +410,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <copy todir="${build.javahelp.dir}-ml">
             <fileset dir="${nb_all}/translatedfiles/src/${module.name}/javahelp"/>
         </copy>
-        <property name="locjhindexer.jhall" value="${nb_all}/apisupport/harness/external/jsearch*.jar"/>
+        <property name="locjhindexer.jhall" value="${nb_all}/apisupport.harness/external/jsearch*.jar"/>
         <locjhindexer locales="${locales}"
                       basedir="${build.javahelp.dir}-ml/${javahelp.base}"
                       dbdir="${javahelp.search}"/>
@@ -425,7 +425,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <taskdef name="checkhelpsets" classname="org.netbeans.nbbuild.CheckHelpSets">
             <classpath>
                 <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
-                <fileset dir="${nb_all}/core/javahelp/external">
+                <fileset dir="${nb_all}/javahelp/external">
                     <include name="jh*.jar"/>
                 </fileset>
             </classpath>

@@ -48,13 +48,13 @@ made subject to such option by the copyright holder.
          in property ${test.unit.cp.extra} (compilation) and ${test.unit.run.cp.extra}
          (run).
       -->
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
-    <import file="../../../nbbuild/default.xml"/>
+    <import file="../../nbbuild/default.xml"/>
 
     <path id="compiletest.classpath">   
         <pathelement location="${openide.dir}/core/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+        <pathelement location="${openide.loaders.dir}/core/openide-loaders.jar"/>
     </path>
     
     <path id="codetest.classpath">
@@ -70,10 +70,10 @@ made subject to such option by the copyright holder.
 -->        
 				
         <pathelement location="${openide.dir}/core/openide.jar"/>
-        <pathelement location="${openide/loaders.dir}/core/openide-loaders.jar"/>
+        <pathelement location="${openide.loaders.dir}/core/openide-loaders.jar"/>
         
-        <pathelement location="${core.dir}/core/core.jar"/>
-        <pathelement location="${core.dir}/lib/boot.jar"/>
+        <pathelement location="${o.n.core.dir}/core/core.jar"/>
+        <pathelement location="${o.n.core.dir}/lib/boot.jar"/>
     </path>
     
     <!-- ========= -->

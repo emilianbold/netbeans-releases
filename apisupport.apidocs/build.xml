@@ -40,12 +40,12 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="apisupport/apidocs" default="netbeans" basedir=".">
+<project name="apisupport.apidocs" default="netbeans" basedir=".">
     <property name="local.javadoc.dir" location="build/javadoc"/>
     <property name="local.export.interfaces" location="build/ModulesExportedInterfaces" />
     <property name="local.export.apichanges" location="build/APIChanges" />
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="netbeans-extra" depends="docs"/>
 
@@ -57,9 +57,9 @@ made subject to such option by the copyright holder.
 
     <target name="docs" depends="docs-check" unless="have.docs">
         <!-- Build Javadoc in the usual way: -->
-        <property file="../../nbbuild/build.properties"/>
+        <property file="../nbbuild/build.properties"/>
         <mkdir dir="${docs.dir}"/>
-        <ant dir="../../nbbuild" target="build-javadoc" inheritall="false">
+        <ant dir="../nbbuild" target="build-javadoc" inheritall="false">
             <!-- Skip friend and experimental APIs: -->
             <property name="config.javadoc.all" value="${config.javadoc.stable},${config.javadoc.devel},${config.javadoc.deprecated}"/>
             <!-- build into my personal javadoc build area -->

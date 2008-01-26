@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <project name="org.netbeans.modules.visualweb.woodstock.webui.jsf" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.visualweb.woodstock.webui.jsf.</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
   <property name="nbroot" location="../../.."/>
   <property name="translated.src.dir" value="${nbroot}/translatedfiles/src/visualweb/woodstock/components/src"/>
 

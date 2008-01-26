@@ -41,10 +41,10 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="tomcatint/tomcat5" basedir="." default="all">
+<project name="tomcat5" basedir="." default="all">
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
     
 </project>

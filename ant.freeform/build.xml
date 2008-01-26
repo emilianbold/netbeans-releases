@@ -40,9 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project basedir="." default="netbeans" name="ant/freeform">
+<project basedir="." default="netbeans" name="ant.freeform">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="try-TargetMappingPanel" depends="compile" description="Check appearance of TargetMappingPanel.">
         <java fork="true" classname="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel">
@@ -58,9 +58,9 @@ made subject to such option by the copyright holder.
                 <path refid="cp"/>
                 <pathelement location="${build.classes.dir}"/>
                 <!-- Need real DialogDisplayer, not just openide version: -->
-                <pathelement location="${core/windows.dir}/modules/org-netbeans-core-windows.jar"/>
-                <pathelement location="${core.dir}/core/core.jar"/>
-                <pathelement location="${core.dir}/lib/boot.jar"/>
+                <pathelement location="${core.windows.dir}/modules/org-netbeans-core-windows.jar"/>
+                <pathelement location="${o.n.core.dir}/core/core.jar"/>
+                <pathelement location="${o.n.core.dir}/lib/boot.jar"/>
             </classpath>
         </java>
     </target>

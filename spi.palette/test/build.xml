@@ -41,9 +41,9 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="core/palette/test" basedir="." default="all" >
-    <property name="xtest.module" value="core/palette"/>
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+<project name="spi.palette/test" basedir="." default="all" >
+    <property name="xtest.module" value="spi.palette"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
     <property name="xtest.ide.use.classloader" value="org.netbeans.modules.palette"/>

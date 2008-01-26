@@ -5,7 +5,7 @@
 <project name="org.netbeans.bluej" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.bluej.</description>
     
-    <property file="${basedir}/../../bluej-suite/external-references.properties"/>
+    <property file="${basedir}/../../contrib/bluej-suite/external-references.properties"/>
     <import file="nbproject/build-impl.xml"/>
     <target name="nblib" depends="init">
         

@@ -184,7 +184,7 @@ All Rights Reserved.
     </target>
 
     <path id="cp">
-        <pathelement location="${core.dir}/core/core.jar"/>
+        <pathelement location="${o.n.core.dir}/core/core.jar"/>
         <pathelement location="${jnlp-api.file.location}"/>
     </path>
     

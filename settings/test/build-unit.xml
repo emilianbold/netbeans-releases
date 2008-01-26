@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
          in property ${test.unit.cp.extra} (compilation) and ${test.unit.run.cp.extra}
          (run).
       -->
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
     <!-- ========= -->
     <!-- Compilers -->

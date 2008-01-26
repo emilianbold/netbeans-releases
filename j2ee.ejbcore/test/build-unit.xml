@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="j2ee/ejbcore/test-unit" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 
     <property name="test.classpath" value=""/>
     <property name="xtest.ide.commandline.suffix" value="-J-Xint -J-Dnetbeans.javacore.noscan=true"/>

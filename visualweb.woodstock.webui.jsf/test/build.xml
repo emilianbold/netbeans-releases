@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 <project basedir="." default="all" name="VW Components test suite">
     <delete failonerror="false" file="functional-compile.mark"/>
     <property file="${basedir}/build.properties"/>
-    <import file="../../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="qa-functional"/>

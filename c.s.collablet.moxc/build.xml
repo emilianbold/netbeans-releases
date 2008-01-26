@@ -43,6 +43,6 @@ made subject to such option by the copyright holder.
 
 <project name="collab-moxc" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
 </project>

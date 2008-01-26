@@ -40,8 +40,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="editor/lib" default="netbeans" basedir=".">
-    <import file="../../nbbuild/templates/projectized.xml"/>
+<project name="editor.lib" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <!-- Binary compatibility pacthes -->
     <target name="compile" depends="projectized-common.compile">
@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
 
        <enhanceclass basedir="${build.classes.dir}" >
            <classpath>
-               <pathelement location="${core/bootstrap.dir}/lib/boot.jar"/>
+               <pathelement location="${o.n.bootstrap.dir}/lib/boot.jar"/>
 <!-- I have absolutely no idea why this is not working!
                <pathelement location="${openide/util.dir}/modules/org-openide-util.jar"/>
 -->

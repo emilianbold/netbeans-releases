@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="org.netbeans.modules.visualweb.dataprovider/test-unit" basedir="." default="all">
-    <import file="../../../../nbbuild/templates/xtest-unit.xml"/>    
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>    
 
     <loadproperties srcfile="${xtest.file_database.properties}" />
     <!-- -->
@@ -52,9 +52,9 @@ made subject to such option by the copyright holder.
     <echo message="Pause..."/>
     <sleep seconds="1"/>
 
-<property name="dataprovider.libdir" value="../../../../nbbuild/netbeans/visualweb1/modules/ext"/>
+<property name="dataprovider.libdir" value="../../nbbuild/netbeans/visualweb1/modules/ext"/>
 <property name="dataprovider.libfile" value="dataprovider.jar"/>
-<property name="rowset.libdir" value="../../../../nbbuild/netbeans/visualweb1/modules/ext"/>
+<property name="rowset.libdir" value="../../nbbuild/netbeans/visualweb1/modules/ext"/>
 <property name="rowset.libfile" value="sqlx.jar"/>
 
 <path id="derby_jar_path">

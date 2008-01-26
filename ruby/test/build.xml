@@ -51,9 +51,9 @@ made subject to such option by the copyright holder.
     <property name="xtest.enable.assertions" value="true"/>
 
     <!-- Name of tested module -->
-    <property name="xtest.module" value="ruby/editing"/>
+    <property name="xtest.module" value="ruby"/>
 
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>

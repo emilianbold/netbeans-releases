@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="org.netbeans.modules.web.struts/test-unit" basedir="." default="all">
-	<import file="../../../nbbuild/templates/xtest-unit.xml"/>
+	<import file="../../nbbuild/templates/xtest-unit.xml"/>
     <!-- ========= -->
     <!-- Compilers -->
     <!-- ========= -->

@@ -45,31 +45,31 @@ made subject to such option by the copyright holder.
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
-    <property name="test.qa-functional.run.cp.extra" value="../../test/qa-lib/xml-test-lib.jar"/>
+    <property name="test.qa-functional.run.cp.extra" value="../../xml/test/qa-lib/xml-test-lib.jar"/>
 
-    <property name="test.qa-functional.cp.extra" value="../../test/qa-lib/xml-test-lib.jar:
+    <property name="test.qa-functional.cp.extra" value="../../xml/test/qa-lib/xml-test-lib.jar:
             ${openide.dir}/core/openide.jar:
-            ${openide/loaders.dir}/core/openide-loaders.jar:
-            ${core.dir}/core/core.jar:
+            ${openide.loaders.dir}/core/openide-loaders.jar:
+            ${o.n.core.dir}/core/core.jar:
             ${xml/css.dir}/modules/css.jar:
-            ${xml/tax.dir}/modules/autoload/ext/tax.jar:
-            ${xml/api.dir}/modules/autoload/xml-api.jar:
-            ${xml/tax.dir}/modules/autoload/xml-tax.jar:
-	    ${openidex.dir}/modules/org-openide-src.jar:
-            ${xml/catalog.dir}/modules/org-netbeans-modules-xml-catalog.jar:
-            ${xml/core.dir}/modules/autoload/xml-core.jar:
-            ${xml/text-edit.dir}/modules/org-netbeans-modules-xml-text.jar:
-            ${xml/tools.dir}/modules/org-netbeans-modules-xml-tools.jar:
-            ${openide/execution.dir}/modules/org-openide-execution.jar:
+            ${xml.tax.dir}/modules/autoload/ext/tax.jar:
+            ${api.xml.dir}/modules/autoload/xml-api.jar:
+            ${xml.tax.dir}/modules/autoload/xml-tax.jar:
+	    ${o.openidex.util.dir}/modules/org-openide-src.jar:
+            ${xml.catalog.dir}/modules/org-netbeans-modules-xml-catalog.jar:
+            ${xml.core.dir}/modules/autoload/xml-core.jar:
+            ${xml.text.dir}/modules/org-netbeans-modules-xml-text.jar:
+            ${xml.tools.dir}/modules/org-netbeans-modules-xml-tools.jar:
+            ${openide.execution.dir}/modules/org-openide-execution.jar:
             ${editor.dir}/modules/org-netbeans-modules-editor.jar:
             ${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
 
     <!--<echo message="FFFFFFFFFFFFFFFFFFFFFFFF ${test.qa-functional.cp.extra}"/>-->
     
     <target name="qa-functional-compiler" depends="init,init-cp">
-         <ant antfile="build.xml" dir="../../test" target="build-xml-lib"/>
+         <ant antfile="build.xml" dir="../../xml/test" target="build-xml-lib"/>
          <buildTests srcdir="qa-functional/src" compileexcludes="**/data/**">
             <classpath refid="test.qa-functional.compile.cp"/>
         </buildTests>

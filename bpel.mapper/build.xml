@@ -18,7 +18,7 @@
   Microsystems, Inc. All Rights Reserved.
 -->
 <project name="mapper" default="netbeans" basedir=".">
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="check">
         <ant dir="../../../_codereview" inheritAll="true">

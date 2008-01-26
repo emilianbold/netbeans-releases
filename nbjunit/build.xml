@@ -40,9 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="xtest/nbjunit" basedir="." default="netbeans">
+<project name="nbjunit" basedir="." default="netbeans">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="netbeans-extra">
         <mkdir dir="build/javadoc"/>
@@ -64,10 +64,10 @@ made subject to such option by the copyright holder.
 	<property name="version" value="${OpenIDE-Module-Specification-Version}"/>
 
 	<echo file="build/build.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<project name="xtest/nbjunit" basedir="." default="all">
+<project name="nbjunit" basedir="." default="all">
   <target name="all">
     <ant dir="nbbuild" target="bootstrap"/>
-    <ant dir="xtest/nbjunit" target="netbeans">
+    <ant dir="nbjunit" target="netbeans">
     </ant>
     <copy file="nbbuild/netbeans/testtools/modules/org-netbeans-modules-nbjunit.jar" todir="."/>
     <copy file="xtest/nbjunit/build/javadoc/org-netbeans-modules-nbjunit.zip" todir="."/>
@@ -76,8 +76,8 @@ made subject to such option by the copyright holder.
 ]]></echo>
 
 	<typedef name="cvsfileset" classname="org.netbeans.nbbuild.CvsFileSet" 
-		classpath="../../nbbuild/nbantext.jar"/>
-        <cvsfileset id="sources.set" dir="../..">
+		classpath="../nbbuild/nbantext.jar"/>
+        <cvsfileset id="sources.set" dir="../xtest/..">
             <include name="nbbuild/**/*"/>
             <exclude name="nbbuild/**/CheckHelpSet*java"/>
             <exclude name="nbbuild/www/**/*"/>

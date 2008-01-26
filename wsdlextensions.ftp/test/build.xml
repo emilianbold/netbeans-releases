@@ -23,7 +23,7 @@
     <property name="xtest.module" value="org.netbeans.modules.wsdlextensions.ftp"/>
     
     <!-- Home of XTest -->
-    <property name="xtest.home" location="../../../../xtest"/>
+    <property name="xtest.home" location="../../xtest"/>
     <import file="${xtest.home}/lib/templates/xtest.xml"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->

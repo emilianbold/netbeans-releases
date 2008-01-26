@@ -44,5 +44,5 @@ made subject to such option by the copyright holder.
 
 <project name="com.sun.rave.propertyeditors" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project com.sun.rave.propertyeditors.</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <project name="websphere6" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
 </project>
 

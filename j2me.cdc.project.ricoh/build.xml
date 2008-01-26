@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="org.netbeans.modules.j2me.cdc.project.ricoh" default="netbeans" basedir=".">
 
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 				         	
     <target name="compile" depends="projectized-common.compile">
 	<mkdir dir="build/classes/org/netbeans/modules/j2me/cdc/project/ricoh/resources/samples"/>

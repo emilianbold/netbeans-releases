@@ -45,5 +45,5 @@ made subject to such option by the copyright holder.
 <!-- If you delete this file and reopen the project it will be recreated. -->
 <project name="antlr272" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project antlr272.</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

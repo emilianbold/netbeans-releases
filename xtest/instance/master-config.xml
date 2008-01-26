@@ -75,43 +75,43 @@ made subject to such option by the copyright holder.
        See http://wiki.netbeans.org/wiki/view/UICommitValidation.
   -->
   <config name="commit-validation-nb">
-      <module name="core" testtypes="unit" attributes="commit"/>
-      <module name="core/windows" testtypes="unit" attributes="commit" />
-      <module name="core/javahelp" testtypes="unit" attributes="commit" />
-      <module name="ide/kit" testtypes="qa-functional" attributes="commit"/>
+      <module name="o.n.core" testtypes="unit" attributes="commit"/>
+      <module name="core.windows" testtypes="unit" attributes="commit" />
+      <module name="javahelp" testtypes="unit" attributes="commit" />
+      <module name="ide.kit" testtypes="qa-functional" attributes="commit"/>
       <module name="editor" testtypes="qa-functional" attributes="commit" />
   </config>
   
   <config name="commit-validation-enterprise">
       <!--module name="enterprise/bpel" testtypes="qa-functional" attributes="commit"/-->
       <module name="enterprise/xslt" testtypes="qa-functional" attributes="commit"/>
-      <module name="xml/schema" testtypes="qa-functional" attributes="commit"/>
+      <module name="xml.schema" testtypes="qa-functional" attributes="commit"/>
   </config>
 
   <config name="commit-validation-cnd">
-      <module name="ide/kit" testtypes="qa-functional" attributes="cnd"/>
+      <module name="ide.kit" testtypes="qa-functional" attributes="cnd"/>
   </config>
   
   <config name="commit-validation-profiler">
-      <module name="ide/kit" testtypes="qa-functional" attributes="profiler"/>
+      <module name="ide.kit" testtypes="qa-functional" attributes="profiler"/>
   </config>
   
   <config name="commit-validation-j2ee">
-      <module name="ide/kit" testtypes="qa-functional" attributes="j2ee"/>
+      <module name="ide.kit" testtypes="qa-functional" attributes="j2ee"/>
   </config>
 
   <config name="commit-validation-mobility">
-      <module name="mobility/project" testtypes="qa-functional" attributes="commit">
+      <module name="mobility.project" testtypes="qa-functional" attributes="commit">
           <!-- Propagate wtk.dir property to build-qa-functional.xml. -->
           <property name="wtk.dir" value="${wtk.dir}"/>
       </module>
   </config>
 
   <config name="commit-validation-uml">
-      <module name="uml/kit" testtypes="qa-functional" attributes="commit"/>
+      <module name="uml.kit" testtypes="qa-functional" attributes="commit"/>
   </config>
 
   <config name="commit-validation-ruby">
-      <module name="ide/kit" testtypes="qa-functional" attributes="ruby"/>
+      <module name="ide.kit" testtypes="qa-functional" attributes="ruby"/>
   </config>
 </testconfig>

@@ -42,10 +42,10 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="org.netbeans.modules.xml.xam.ui" default="netbeans" basedir=".">
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="check">
-        <ant dir="../../_codereview" inheritAll="true">
+        <ant dir="../xml/../_codereview" inheritAll="true">
             <property name="check.dir" value="${basedir}"/>
         </ant>
     </target>

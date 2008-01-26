@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="schema2beans_anttask" default="jars" basedir=".">
-  <import file="../../../nbbuild/default-properties.xml"/>
+  <import file="../../nbbuild/default-properties.xml"/>
 
   <target name="jars" depends="compile">
 	<jar jarfile="s2banttask.jar"
@@ -60,8 +60,8 @@ made subject to such option by the copyright holder.
                 <!-- Ant in NB -->
                 <!-- Note: in NB 4.0, ${ant.home}/lib/ant.jar will work as is -->
                 <pathelement path="${netbeans.library.path}"/>
-		<pathelement location="${schema2beans/rt.dir}/modules/org-netbeans-modules-schema2beans.jar" />
-		<pathelement location="${nb_all}/schema2beans/rt/dev/schema2beansdev.jar" />
+		<pathelement location="${schema2beans.dir}/modules/org-netbeans-modules-schema2beans.jar" />
+		<pathelement location="${nb_all}/schema2beans/dev/schema2beansdev.jar" />
 	  </classpath>
 	</javac>
   </target>

@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="schema2beans" default="netbeans" basedir=".">
-  <import file="../../nbbuild/templates/projectized.xml"/>
+  <import file="../nbbuild/templates/projectized.xml"/>
 
   <target name="netbeans-extra">
     <ant dir="dev" target="netbeans"/>

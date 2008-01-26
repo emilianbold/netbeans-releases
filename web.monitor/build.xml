@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 
-<project name="monitor" default="netbeans" basedir=".">
+<project name="web.monitor" default="netbeans" basedir=".">
 
     <import file="../nbbuild/templates/projectized.xml"/>
 

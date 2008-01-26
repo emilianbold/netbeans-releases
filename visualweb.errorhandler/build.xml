@@ -43,5 +43,5 @@ made subject to such option by the copyright holder.
 
 <project name="org.netbeans.modules.visualweb.errorhandler" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.visualweb.errorhandler.</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

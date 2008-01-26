@@ -18,5 +18,5 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 <project name="model" default="netbeans" basedir=".">
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

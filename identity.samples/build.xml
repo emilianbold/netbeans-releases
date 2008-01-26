@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="org.netbeans.modules.identity.samples" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     <!-- import file="../../nbbuild/default.xml"/ -->
     <!--import file="../../nbbuild/templates/projectized.xml"/>
 

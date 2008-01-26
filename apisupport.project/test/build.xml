@@ -40,9 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="apisupport/project/test" basedir="." default="pre-apisupport-test">
-    <property name="xtest.module" value="apisupport/project"/>
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+<project name="apisupport.project/test" basedir="." default="pre-apisupport-test">
+    <property name="xtest.module" value="apisupport.project"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable-cvs"/>
     <property name="xtest.ide.use.classloader" value="org.netbeans.modules.apisupport.project"/>
@@ -52,6 +52,6 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="compile-nb-org-sources" if="apisupport-test4u">
-        <ant  dir="../../../nbbuild/" target="build" inheritAll="false"/>
+        <ant  dir="../../nbbuild/" target="build" inheritAll="false"/>
     </target>
 </project>

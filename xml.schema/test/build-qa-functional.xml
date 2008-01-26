@@ -48,11 +48,11 @@ made subject to such option by the copyright holder.
     <property name="test.qa-functional.runtime.cp" value=""/>
     <property name="test.qa-functional.compile.cp" value=""/>
 
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
          
     <path id="cp.extra">
-        <pathelement location="../../../jemmy/builds/jemmy.jar"/>                    
-        <pathelement location="../../../jellytools/builds/jelly2-nb.jar"/>
+        <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
+        <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
         <pathelement location="${xtest.home}/lib/nbjunit.jar"/> 
     </path>    

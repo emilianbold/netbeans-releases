@@ -18,5 +18,5 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 <project name="jdbcwizard" default="netbeans" basedir=".">
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

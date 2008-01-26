@@ -42,15 +42,15 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="core/palette/test-unit" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
-    <import file="../../../nbbuild/default.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/default.xml"/>
 
     <path id="codetest.classpath">
 				
         <pathelement location="${openide.dir}/core/openide.jar"/>
 
-        <pathelement location="${core.dir}/core/core.jar"/>
-        <pathelement location="${core.dir}/lib/boot.jar"/>
+        <pathelement location="${o.n.core.dir}/core/core.jar"/>
+        <pathelement location="${o.n.core.dir}/lib/boot.jar"/>
     </path>
 
     <!-- ========= -->

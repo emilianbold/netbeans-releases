@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <project name="org.netbeans.modules.visualweb.designtime.base" default="netbeans" basedir=".">
 
     <description>Builds ant tests the project com.sun.rave.designtime.base.</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     
     <target name="init" depends="library-init,projectized.init"/>
     

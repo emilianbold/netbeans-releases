@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <project name="collab-filesharing" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <property name="msgbeangenroot" location="src/org/netbeans/modules/collab/channel/filesharing/msgbean"/>
 
@@ -106,8 +106,8 @@ made subject to such option by the copyright holder.
              <echo message="generating beans from message schema" />
              <java classname="org.netbeans.modules.schema2beansdev.GenBeans" fork="yes">	
                    <classpath>
-                      <pathelement location="../../schema2beans/rt/dev/schema2beansdev.jar" />
-                      <pathelement location="../../nbbuild/netbeans/ide6/modules/org-netbeans-modules-schema2beans.jar" />
+                      <pathelement location="../schema2beans/dev/schema2beansdev.jar" />
+                      <pathelement location="../nbbuild/netbeans/ide6/modules/org-netbeans-modules-schema2beans.jar" />
                    </classpath>
                     <arg line= "-f src/org/netbeans/modules/collab/channel/filesharing/resources/collab.xsd" />
                     <arg line= "-p org.netbeans.modules.collab.channel.filesharing.msgbean2" />
@@ -119,9 +119,9 @@ made subject to such option by the copyright holder.
     
 <!--MOXC schema -->    
     <target name="xmlbeangen">
-            <taskdef name="xmlbean" classname="org.apache.xmlbeans.impl.tool.XMLBean" classpath="../../libs/xmlbeans/external/xmlbeans-1.0.4/xbean.jar" />
+            <taskdef name="xmlbean" classname="org.apache.xmlbeans.impl.tool.XMLBean" classpath="../libs.xmlbeans/external/xmlbeans-1.0.4/xbean.jar" />
             <xmlbean 
-                classpath="../../libs/xmlbeans/external/xbean.jar"
+                classpath="../libs.xmlbeans/external/xbean.jar"
                 schema="../filesharing/src/com/org/netbeans/modules/collab/channel/filesharing/resources/message.xsd" 
                 destfile="../filesharing/lib/filesharing-schema.jar"/>
     </target>       

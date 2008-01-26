@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 <project name="org.netbeans.modules.visualweb.designtime" default="netbeans" basedir=".">
 
     <description>Builds and tests the project org.netbeans.modules.visualweb.designtime.</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="init" depends="library-init,projectized.init"/>
     

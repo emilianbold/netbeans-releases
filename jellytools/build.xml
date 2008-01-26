@@ -47,9 +47,9 @@ made subject to such option by the copyright holder.
     <target name="all" depends="jar-library,zipsrc,javadoc,javadocWithJemmy" description="Create jars, source zip and javadoc zip"/>
 
     <target name="buildDependentModules">
-        <ant dir="../xtest/nbjunit" inheritAll="false"/>
+        <ant dir="../nbjunit" inheritAll="false"/>
         <!-- Write jemmy/idemodule.dir property to moduleCluster.properties. -->
-        <ant dir="../jemmy/idemodule" target="init" inheritAll="false"/>
+        <ant dir="../jemmy.idemodule" target="init" inheritAll="false"/>
         <!-- Re-read moduleCluster.properties to initialize jemmy/idemodule.dir. -->
         <property file="${netbeans.dest.dir}/moduleCluster.properties"/>
         <!-- Need to build jemmy because jellytools has jemmy/dist/jemmy.jar in cp.extra. -->

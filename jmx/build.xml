@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 -->
 <!-- You may freely edit this file. -->
 <project basedir="." default="netbeans" name="jmx">
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     <target name="jar" depends="zip-examples,projectized-common.jar"/>
     <!-- <target name="jar" depends="init,compile,jar-prep,zip-examples,jar-no-module-deps,jar-with-module-deps"/> -->
 

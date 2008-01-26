@@ -41,8 +41,8 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <project name="org.netbeans.modules.websvc.editor.hints/test" basedir="." default="all">
-    <property name="xtest.module" value="websvc/editorhints"/>
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+    <property name="xtest.module" value="websvc.editor.hints"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.testtype" value="unit"/>
     <property name="xtest.attribs" value="stable"/>
 </project>

@@ -41,8 +41,8 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="web/libs/glassfish_logging" default="netbeans" basedir=".">
+<project name="libs.glassfish_logging" default="netbeans" basedir=".">
 
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
 </project>

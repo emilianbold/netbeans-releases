@@ -42,5 +42,5 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="contrib/profiles/test-unit" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
 </project>

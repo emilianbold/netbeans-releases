@@ -41,10 +41,10 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
 -->
-<project basedir="." default="netbeans" name="ide/branding">
+<project basedir="." default="netbeans" name="ide.branding">
 
   <!-- Apparently needed by ML build? -->
-  <property name="nb_all" location="../.."/>
+  <property name="nb_all" location="../ide/.."/>
 
   <import file="${nb_all}/nbbuild/templates/projectized.xml"/>
 

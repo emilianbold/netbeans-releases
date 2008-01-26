@@ -42,5 +42,5 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="monitor/jmeter">
     <description>Builds, tests, and runs the project jmeter-kit</description>
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 </project>

@@ -103,9 +103,9 @@ made subject to such option by the copyright holder.
      <pathelement location="${ant.core.lib}"/>
      <fileset dir="..">
         <!-- For JavaHelp indexing: -->
-        <include name="apisupport/harness/external/jsearch*.jar"/>
+        <include name="apisupport.harness/external/jsearch*.jar"/>
         <!-- For JavaHelp link checking: -->
-        <include name="core/javahelp/external/jh*.jar"/>
+        <include name="javahelp/external/jh*.jar"/>
       </fileset>
     </path>
     <!-- Sanity check: -->
@@ -126,7 +126,7 @@ made subject to such option by the copyright holder.
         Probably you failed to clean your sources before updating them from CVS.
     </fail>
     <!-- OK, continue: -->
-    <available property="have.javahelp" file="../apisupport/harness/external" type="dir"/>
+    <available property="have.javahelp" file="../apisupport.harness/external" type="dir"/>
     <javac srcdir="antsrc" destdir="build/antclasses" deprecation="true" debug="${build.compiler.debug}" source="1.5" target="1.5">
       <classpath refid="bootstrap-cp"/>
       <exclude name="**/CheckHelpSets.java" unless="have.javahelp"/>
@@ -163,7 +163,7 @@ made subject to such option by the copyright holder.
     <fail message="You need to have some modules checked out to build NetBeans. For example, try running the 'checkout' target.">
         <condition>
             <not>
-                <available file="../core"/>
+                <available file="../o.n.core"/>
             </not>
         </condition>
     </fail>
@@ -202,7 +202,7 @@ made subject to such option by the copyright holder.
       <param name="one.cluster.dependencies" value="${dependsClusters}"/>
       <param name="one.cluster.name" value="this-cluster"/>
     </antcall>
-    <ant dir="../xtest/nbjunit"/>
+    <ant dir="../nbjunit"/>
     <echo message="Building module xtest..."/>
     <ant dir="../xtest" antfile="build.xml" target="netbeans"/>
   </target>
@@ -550,7 +550,7 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
       <taskdef name="checkhelpsetsbin" classname="org.netbeans.nbbuild.CheckHelpSetsBin">
         <classpath>
           <pathelement location="${nb_all}/nbbuild/nbantext.jar"/>
-            <fileset dir="${nb_all}/core/javahelp/external">
+            <fileset dir="${nb_all}/javahelp/external">
               <include name="jh*.jar"/>
             </fileset>
         </classpath>
@@ -1705,7 +1705,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="check-commit-validation">
     <condition property="run.validation" >
         <and>
-          <available file="../ide/kit/test/build.xml" />
+          <available file="../ide.kit/test/build.xml" />
           <available file="../jemmy/build.xml" />
           <available file="../jellytools/build.xml" />
           <available file="../xtest/build.xml" />
@@ -2077,8 +2077,8 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>      
 
   <target name="commit-validation-vw" description="Run the Visual Web sanity tests">
-      <ant dir="../visualweb/kit/test" target="build-test-tools" inheritall="true"/>
-      <ant dir="../visualweb/kit/test" target="commit-validation" inheritall="false"/> 
+      <ant dir="../visualweb.kit/test" target="build-test-tools" inheritall="true"/>
+      <ant dir="../visualweb.kit/test" target="commit-validation" inheritall="false"/> 
   </target>
 
   <target name="sigtests-init" depends="bootstrap">

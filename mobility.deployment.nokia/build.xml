@@ -40,8 +40,8 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="mobility/deployment/nokia" default="netbeans" basedir=".">
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+<project name="mobility.deployment.nokia" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
     <description>Builds, tests, and runs the project org.netbeans.modules.mobility.deployment.nokia.</description>
     <target name="release" depends="init">
         <mkdir dir="${cluster}/modules/scr"/>

@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
   </target>
 
   <target name="editor" depends="init">
-     <ant dir="../lib"/>
+     <ant dir="../../editor.lib"/>
   </target>
 
   <target name="compile" depends="editor">

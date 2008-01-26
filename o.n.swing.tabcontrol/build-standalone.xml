@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="core/swing/tabcontrol" default="test-beanjar" basedir=".">
+<project name="o.n.swing.tabcontrol" default="test-beanjar" basedir=".">
 
     <!-- Stuff here is only used when compiling a standalone jar
     of the tab control for use outside netbeans.  What you need:
@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
           and the three classes that make up the HTML renderer
     -->
 
-    <available type="file" file="../../../openide/src/org/openide/awt/HtmlRenderer.java" property="found-openide"/>
+    <available type="file" file="../openide/src/org/openide/awt/HtmlRenderer.java" property="found-openide"/>
     
     <target name="check-openide" unless="found-openide">
         <property name="dont-do-checkout" value="true"/>
@@ -65,15 +65,15 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="set-openide-dir" if="found-openide">
-        <property value="../../../openide/src" name="openide-source-dir"/>
+        <property value="../openide/src" name="openide-source-dir"/>
         <echo message="Openide src dir set to ${openide-source-dir}"/>
     </target>
     
     <target name="prepare-beanjar" depends="check-openide,set-openide-dir">
         <mkdir dir="beanstubs/org/openide/awt"/>
-        <copy file="../../../openide/src/org/openide/awt/HtmlRenderer.java" todir="beanstubs/org/openide/awt" failonerror="true"/>
-        <copy file="../../../openide/src/org/openide/awt/HtmlLabelUI.java" todir="beanstubs/org/openide/awt" failonerror="true"/>
-        <copy file="../../../openide/src/org/openide/awt/HtmlRendererImpl.java" todir="beanstubs/org/openide/awt" failonerror="true"/>
+        <copy file="../openide/src/org/openide/awt/HtmlRenderer.java" todir="beanstubs/org/openide/awt" failonerror="true"/>
+        <copy file="../openide/src/org/openide/awt/HtmlLabelUI.java" todir="beanstubs/org/openide/awt" failonerror="true"/>
+        <copy file="../openide/src/org/openide/awt/HtmlRendererImpl.java" todir="beanstubs/org/openide/awt" failonerror="true"/>
     </target>
     
     <target name="compile-bean" depends="prepare-beanjar">

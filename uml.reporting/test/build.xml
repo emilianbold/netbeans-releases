@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <property name="xtest.module" value="org.netbeans.modules.uml.webreport"/>
 
     <!-- Home of XTest -->
-    <property name="xtest.home" location="../../../xtest"/>
+    <property name="xtest.home" location="../../xtest"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>
@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
     -->
     
     <!-- Points to directory with IDE to test. Optional for IDE tests.  -->
-    <property name="netbeans.dest.dir" location="../../../nbbuild/netbeans"/>
+    <property name="netbeans.dest.dir" location="../../nbbuild/netbeans"/>
     
     <!-- This imports the file that imports a file from xtest/lib/templates
         so that global changes to all UML modules can be done in one file.

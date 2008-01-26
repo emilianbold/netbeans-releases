@@ -61,9 +61,9 @@ made subject to such option by the copyright holder.
                 <runtime-relative-path>ext/jemmy.jar</runtime-relative-path>
             </class-path-extension>
             <extra-compilation-unit>
-                <package-root>../src</package-root>
+                <package-root>../jemmy/src</package-root>
                 <classpath/>
-		<built-to>../build/classes</built-to>
+		<built-to>../jemmy/build/classes</built-to>
 		<built-to>${cluster}/modules/ext/jemmy.jar</built-to>
             </extra-compilation-unit>
         </data>

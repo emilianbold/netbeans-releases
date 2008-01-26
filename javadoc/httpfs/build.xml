@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
   <target name="compile">
     <javac srcdir="../src" destdir="../src" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}">
       <classpath>
-		<pathelement location="../../openide/loaders/netbeans/lib/openide-loaders.jar"/>
+		<pathelement location="../../openide.loaders/netbeans/lib/openide-loaders.jar"/>
         <fileset dir="../../openide/netbeans/lib">
           <include name="openide*.jar" />
         </fileset>

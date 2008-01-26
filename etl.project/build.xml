@@ -18,7 +18,7 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 <project name="etl.project" default="netbeans" basedir=".">
-    <import file="../../../nbbuild/templates/projectized.xml"/>  
+    <import file="../nbbuild/templates/projectized.xml"/>  
     <target name="ant-extra" depends="init">
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" >
@@ -42,7 +42,7 @@
     </target>
 
     <target name="netbeans-extra" depends="ant-extra"/> 
-    <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/../eTLEditor/external/net.java.hulp.i18ntask.jar"></taskdef>
+    <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/../etl.editor/external/net.java.hulp.i18ntask.jar"></taskdef>
 	  <target name="compile-i18" depends="init">
         <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties" prefix="DM-DI-" strict="false" pattern="([A-Z][A-Z][A-Z]\d\d\d)(: )(.*)"></i18n>   
     </target>

@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="ide/applemenu" basedir="." default="netbeans">
-  <import file="../../nbbuild/templates/projectized.xml"/>
+  <import file="../nbbuild/templates/projectized.xml"/>
 
   <target name="build-eawtstub">
     <ant dir="eawtstub" inheritAll="false" target="jar"/>

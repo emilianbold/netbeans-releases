@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <project name="db/derby/test/qa-functional" basedir="." default="all">
 
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
     <target name="runidetest" depends="init,init-cp,check-appserver,commandline-suffix">
         <executeTests pluginname="ide">

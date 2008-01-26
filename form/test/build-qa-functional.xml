@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
                 <path refid="jemmy.and.jelly.path"/>
-                <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
+                <pathelement location="${openide.nodes.dir}/modules/org-openide-nodes.jar"/>
             </classpath>
         </buildTests>
     </target>

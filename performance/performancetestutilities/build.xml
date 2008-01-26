@@ -82,21 +82,21 @@ made subject to such option by the copyright holder.
     </target>
     
     <path id="testutilities.classpath">        
-        <pathelement location="${openide/nodes.dir}/modules/org-openide-nodes.jar"/>
-        <pathelement location="${openide/options.dir}/modules/org-openide-options.jar"/>
-        <pathelement location="${openide/util.dir}/lib/org-openide-util.jar"/>
+        <pathelement location="${openide.nodes.dir}/modules/org-openide-nodes.jar"/>
+        <pathelement location="${openide.options.dir}/modules/org-openide-options.jar"/>
+        <pathelement location="${openide.util.dir}/lib/org-openide-util.jar"/>
         
         <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor.jar"/>
         <pathelement location="${editor.dir}/modules/org-netbeans-modules-editor-lib.jar"/>
-        <pathelement location="${editor/plain.dir}/modules/org-netbeans-modules-editor-plain.jar"/>
+        <pathelement location="${editor.plain.dir}/modules/org-netbeans-modules-editor-plain.jar"/>
         
-        <pathelement location="${projects/projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
+        <pathelement location="${projectui.dir}/modules/org-netbeans-modules-projectui.jar"/>
         
-        <pathelement location="${java/editor.dir}/modules/org-netbeans-modules-java-editor.jar"/>
+        <pathelement location="${java.editor.dir}/modules/org-netbeans-modules-java-editor.jar"/>
         
-        <pathelement location="${web/jspsyntax.dir}/modules/org-netbeans-modules-web-core-syntax.jar"/>
+        <pathelement location="${web.core.syntax.dir}/modules/org-netbeans-modules-web-core-syntax.jar"/>
         
-        <pathelement location="${xml/text-edit.dir}/modules/org-netbeans-modules-xml-text.jar"/>        
+        <pathelement location="${xml.text.dir}/modules/org-netbeans-modules-xml-text.jar"/>        
                 
         <pathelement location="${nball.dir}/xtest/lib/junit.jar"/>
         <pathelement location="${nball.dir}/xtest/lib/nbjunit.jar"/>

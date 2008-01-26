@@ -62,7 +62,7 @@ made subject to such option by the copyright holder.
     
     <target name="runplatformtest">
         <executeTests  pluginName="ide">
-            <property name="xtest.ide.commandline.suffix" value="--clusters ${core.dir} --nogui" />
+            <property name="xtest.ide.commandline.suffix" value="--clusters ${o.n.core.dir} --nogui" />
             <classpath/>
         </executeTests>
     </target>

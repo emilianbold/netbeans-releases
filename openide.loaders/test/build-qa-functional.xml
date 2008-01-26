@@ -42,6 +42,6 @@ made subject to such option by the copyright holder.
 -->
 <project name="qa-functional tests extensions" basedir="." default="all">
 
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
 </project>

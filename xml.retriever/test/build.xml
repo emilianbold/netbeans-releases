@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 
 <project name="org.netbeans.modules.xml.retriever/test" basedir="." default="all">
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
     <property name="xtest.module" value="org.netbeans.modules.xml.retriever"/>
 
     <!-- default testtypes, attributes used when no value is supplied from command line -->

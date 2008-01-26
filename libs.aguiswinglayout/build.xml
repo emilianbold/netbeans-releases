@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="org.netbeans.libs.aguiswinglayout" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.libs.aguiswinglayout.</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
     <target name="nblib" depends="init">
         <mkdir dir="build/layoutclasses"/>
         <javac srcdir="layoutsrc" destdir="build/layoutclasses" source="1.4" target="1.4" debug="true" deprecation="true" />

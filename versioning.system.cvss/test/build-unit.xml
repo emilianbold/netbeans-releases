@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="all" name="build-unit">
 
-    <import file="../../../nbbuild/templates/xtest-unit.xml"/>
+    <import file="../../nbbuild/templates/xtest-unit.xml"/>
     <!--    Add this property to enable test debugging-->
     <!--    <property name="xtest.jvm.args" value="-Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,server=n,suspend=n,address=5005 -Djava.compiler=NONE"/>-->
 

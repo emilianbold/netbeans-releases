@@ -40,9 +40,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="xtest/nbjunit/ide" basedir="." default="netbeans">
+<project name="nbjunit.ide" basedir="." default="netbeans">
 
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="netbeans-extra" depends="projectized-common.netbeans-extra">
         <mkdir dir="build/javadoc"/>

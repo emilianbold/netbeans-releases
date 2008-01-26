@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <project name="collab-core" default="netbeans" basedir=".">
 
-    <import file="../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="compile-lib" depends="init">
         <echo message="Building collablet API..."/>

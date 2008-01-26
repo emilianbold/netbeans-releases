@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 
     <!-- Imports default qa-functional-compiler, runidetest and runidetest-with-appserver executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
     <!-- Override to call set-freeform-project. -->
     <target name="runidetest-with-appserver" depends="set-freeform-project,xtest-init.runidetest-with-appserver">

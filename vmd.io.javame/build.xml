@@ -42,6 +42,6 @@ made subject to such option by the copyright holder.
 -->
 <project name="org.netbeans.modules.vmd.io.javame" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.vmd.io.javame.</description>
-    <import file="../../../nbbuild/templates/projectized.xml"/>
+    <import file="../nbbuild/templates/projectized.xml"/>
 <!--    <import file="nbproject/build-impl.xml"/>-->
 </project>

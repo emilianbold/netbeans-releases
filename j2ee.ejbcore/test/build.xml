@@ -41,11 +41,11 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<project name="j2ee/ejbcore/test" basedir="." default="all" >
+<project name="j2ee.ejbcore/test" basedir="." default="all" >
     <!-- Name of tested module -->
-    <property name="xtest.module" value="j2ee/ejbcore"/>
+    <property name="xtest.module" value="j2ee.ejbcore"/>
     
-    <import file="../../../nbbuild/templates/xtest.xml"/>
+    <import file="../../nbbuild/templates/xtest.xml"/>
     
     <!-- default testtypes, attributes used when no value is supplied from command line -->
     <property name="xtest.testtype" value="unit"/>

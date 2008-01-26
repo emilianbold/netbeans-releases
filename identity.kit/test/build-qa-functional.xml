@@ -46,10 +46,10 @@ made subject to such option by the copyright holder.
 
     <!-- Imports default qa-functional-compiler and runidetest executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
 
     <target name="qa-functional-compiler">
-        <ant inheritAll="false" antfile="../../../websvc/kit/test/build.xml" target="buildtests"/>
+        <ant inheritAll="false" antfile="../../websvc.kit/test/build.xml" target="buildtests"/>
         <antcall target="xtest-qa-functional.qa-functional-compiler"/>
     </target>
 
