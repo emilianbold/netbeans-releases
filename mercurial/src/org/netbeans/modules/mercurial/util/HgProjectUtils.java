@@ -122,11 +122,10 @@ public class HgProjectUtils {
         }
  
         String res = null;
-        
         if (projectManager.isProject(rootFileObj)){
-            try         {
+            try {
                 Project prj = projectManager.findProject(rootFileObj);
-                
+
                 res = getProjectName(prj);
             } catch (Exception ex) {
                 Mercurial.LOG.log(Level.FINE, "getProjectName() file: {0} {1}", new Object[] {rootFileObj.getPath(), ex.toString()}); // NOI18N

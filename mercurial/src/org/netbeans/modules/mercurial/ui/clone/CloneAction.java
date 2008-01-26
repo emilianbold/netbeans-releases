@@ -125,7 +125,8 @@ public class CloneAction extends AbstractAction {
         performClone(source, target, projIsRepos, projFile, false);
     }
 
-    private static void performClone(final String source, final String target, boolean projIsRepos, File projFile, final boolean isLocalClone) {
+    private static void performClone(final String source, final String target, 
+            boolean projIsRepos, File projFile, final boolean isLocalClone) {
         final Mercurial hg = Mercurial.getInstance();
         final ProjectManager projectManager = ProjectManager.getDefault();
         final File prjFile = projFile;
@@ -137,7 +138,11 @@ public class CloneAction extends AbstractAction {
         final String prjName = projName;
         File cloneProjFile;
         if (!prjIsRepos) {
-            String name = prjFile.getAbsolutePath().substring(source.length() + 1);
+            String name = null;
+            if(prjFile != null)
+                name = prjFile.getAbsolutePath().substring(source.length() + 1);
+            else
+                name = target;
             cloneProjFile = new File (normalizedCloneFolder, name);
         } else {
             cloneProjFile = normalizedCloneFolder;
@@ -147,19 +152,29 @@ public class CloneAction extends AbstractAction {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(source);
         HgProgressSupport support = new HgProgressSupport() {
             Runnable doOpenProject = new Runnable () {
-                public void run()  { 
-                    // Open and set focus on the cloned project
+                public void run()  {
+                    // Open and set focus on the cloned project if possible
                     try {
                         FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
-                        Project prj = projectManager.findProject(cloneProj);
-                        HgProjectUtils.openProject(prj, this, HgModuleConfig.getDefault().getSetMainProject());
-                        hg.versionedFilesChanged();
-                        hg.refreshAllAnnotations();
+                        Project prj = null;
+                        if(clonePrjFile != null && cloneProj != null)
+                            prj = projectManager.findProject(cloneProj);
+                        if(prj != null){
+                            HgProjectUtils.openProject(prj, this, HgModuleConfig.getDefault().getSetMainProject());
+                            hg.versionedFilesChanged();
+                            hg.refreshAllAnnotations();
+                        }else{
+                            HgUtils.outputMercurialTabInRed( NbBundle.getMessage(CloneAction.class,
+                                    "MSG_EXTERNAL_CLONE_PRJ_NOT_FOUND_CANT_SETASMAIN")); // NOI18N
+                        }
             
                     } catch (java.lang.Exception ex) {
                         NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(new HgException(ex.toString()));
                         DialogDisplayer.getDefault().notifyLater(e);
-                    } 
+                    } finally{
+                       HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
+                       HgUtils.outputMercurialTab(""); // NOI18N
+                    }
                 }
             };
             public void perform() {
@@ -195,7 +210,6 @@ public class CloneAction extends AbstractAction {
                         }
                         HgUtils.outputMercurialTab(""); // NOI18N
 
-                        FileObject cloneProj = FileUtil.toFileObject(clonePrjFile);
                         if (isLocalClone){
                             SwingUtilities.invokeLater(doOpenProject);
                         } else if (HgModuleConfig.getDefault().getShowCloneCompleted()) {
@@ -232,9 +246,10 @@ public class CloneAction extends AbstractAction {
                             }
                         }
                     }
-
-                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
-                    HgUtils.outputMercurialTab(""); // NOI18N
+                    if(!isLocalClone){
+                        HgUtils.outputMercurialTabInRed(NbBundle.getMessage(CloneAction.class, "MSG_CLONE_DONE")); // NOI18N
+                        HgUtils.outputMercurialTab(""); // NOI18N
+                    }
                 }
             }
         };

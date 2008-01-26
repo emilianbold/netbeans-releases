@@ -161,8 +161,8 @@ public class CloneCompleted implements ActionListener {
                     FileObject projectFolder = FileUtil.toFileObject(projectDir);
                     if (projectFolder != null) {
                         try {
-                            Project p = ProjectManager.getDefault().findProject(projectFolder);
-                            if (p != null) {
+                            if(projectFolder != null){
+                                Project p = ProjectManager.getDefault().findProject(projectFolder);
                                 openProject(p);
                             }
                         } catch (IOException e1) {
@@ -173,9 +173,6 @@ public class CloneCompleted implements ActionListener {
                     }
                 }
             } else {
-                if (projectToBeOpened == null) {
-                    return;
-                }
                 openProject(projectToBeOpened);
             }
         } else if (panel.createButton.equals(src)) {
@@ -184,6 +181,8 @@ public class CloneCompleted implements ActionListener {
     }
 
     private void openProject(Project p) {
+        if(p == null) return;
+        
         Project[] projects = new Project[]{p};
         OpenProjects.getDefault().open(projects, false);
 
