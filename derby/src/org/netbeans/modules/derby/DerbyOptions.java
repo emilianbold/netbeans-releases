@@ -182,14 +182,20 @@ public class DerbyOptions {
 
     public synchronized boolean trySetLocation(String location) {
         LOGGER.log(Level.FINE, "trySetLocation: Trying to set location to {0}", location); // NOI18N
-        if (getLocation().length() == 0) {
+        String current = getLocation();
+        if (current.length() == 0) {
             setLocation(location);
             LOGGER.fine("trysetLocation: Succeeded"); // NOI18N
             return true;
-        } else {
-            LOGGER.fine("trySetLocation: Another location already set"); // NOI18N
-            return false;
         }
+        File currentFile = new File(current);
+        if (!currentFile.exists() || currentFile.isFile()) {
+             setLocation(location);
+             LOGGER.fine("trysetLocation: correcting"); // NOI18N
+             return true;                
+        }
+        LOGGER.fine("trySetLocation: Another location already set"); // NOI18N
+        return false;
     }
 
     /**
