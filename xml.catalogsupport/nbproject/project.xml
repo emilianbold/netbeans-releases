@@ -164,6 +164,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.xslt.tmap</friend>
                 <friend>org.netbeans.modules.compapp.projects.base</friend>
                 <friend>org.netbeans.modules.script.project</friend>
+                <friend>org.netbeans.modules.compapp.xmlproject</friend>
                 <package>org.netbeans.modules.xml.catalogsupport</package>
                 <package>org.netbeans.modules.xml.catalogsupport.ui.customizer</package>
                 <package>org.netbeans.modules.xml.catalogsupport.util</package>
