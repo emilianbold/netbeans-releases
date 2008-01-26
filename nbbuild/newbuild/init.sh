@@ -4,33 +4,26 @@ set -x
 #Initialize all the environment
 
 #ML BUILD yes/no 1/0
-if [ -z "${ML_BUILD}" ]; then
+if [ -z ${ML_BUILD} ]; then
     export ML_BUILD=1
 fi
-if [ -z "${LOCALES}" ]; then
+if [ -z ${LOCALES} ]; then
     export LOCALES=ja,zh_CN,pt_BR
 fi
 
-if [ -z "${UPLOAD_ML}" ]; then
+if [ -z ${UPLOAD_ML} ]; then
     export UPLOAD_ML=0
 fi
 
-if [ -z "${UPLOAD_JDK}" ]; then
+if [ -z ${UPLOAD_JDK} ]; then
     export UPLOAD_JDK=0
 fi
 
 export ANT_OPTS="-Xmx512m"
 export JAVA_HOME=$JDK_HOME
 
-if [ -z "${CVS_STAMP}" ]; then
-    HOUR_TIME=`date -u +%H`
-    if [ $HOUR_TIME -ge 12 ]; then
-	export CVS_STAMP="12:00UTC today"
-	export DATESTAMP=`date -u +%Y%m%d1200`
-    else
-	export CVS_STAMP="00:00UTC today"
-	export DATESTAMP=`date -u +%Y%m%d0000`
-    fi
+if [ -z ${DATESTAMP} ]; then
+    export DATESTAMP=`date -u +%Y%m%d%H%M`
 fi
 
 BUILDNUM=$BUILD_DESC-$DATESTAMP
@@ -53,9 +46,7 @@ if [ -z $DIST_SERVER_PATH ]; then
     DIST_SERVER_PATH=/releng/www/netbeans/6.0/nightly
 fi
 
-NB_ALL=$BASE_DIR/nb-all
-
-mkdir -p $NB_ALL
+NB_ALL=$BASE_DIR/main
 
 DIST=$BASE_DIR/dist
 LOGS=$DIST/logs

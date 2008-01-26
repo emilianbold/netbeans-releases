@@ -6,10 +6,7 @@ cd ${DIRNAME}
 SCRIPTS_DIR=`pwd`
 source init.sh
 
-cd $BASE_DIR
-cvs -d :pserver:anoncvs@cvs.netbeans.org:/cvs checkout -D "$CVS_STAMP" -PA -d NBI installer/infra/build
-
-cd NBI
+cd $NB_ALL/installer/infra/build
 
 if [ ! -z $NATIVE_MAC_MACHINE ]; then
    ssh $NATIVE_MAC_MACHINE rm -f $MAC_PATH/zip/*

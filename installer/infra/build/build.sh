@@ -111,12 +111,7 @@ cd ${DIRNAME}
 
 ################################################################################
 # load the properties
-. ./build-private.sh
-
-################################################################################
-# define the working directory location and create it
-WORK_DIR=nbi_all
-[ ! -d ${WORK_DIR} ] && mkdir ${WORK_DIR}
+source ../../../../build-private.sh
 
 ################################################################################
 # define the temp file location
@@ -190,6 +185,7 @@ run() {
 	    \"-Dmakedmg.remote.user=${MAKEDMG_MACOSX_SYSTEM_USER}\" \
 	    \"-Dmakedmg.ssh.keyfile=${MAKEDMG_MACOSX_SYSTEM_SSH_KEYFILE}\" \
 	    \"-Dmakedmg.ssh.keypass=${MAKEDMG_MACOSX_SYSTEM_SSH_PASSPHRASE}\" \
+            \"-Dnbi.cache.dir=${CACHE_DIR}\" \
             ${ADDITIONAL_PARAMETERS} \
             $*
             ERROR_CODE=$?
