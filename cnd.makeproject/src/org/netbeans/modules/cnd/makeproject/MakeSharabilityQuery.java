@@ -55,11 +55,13 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
     private File baseDirFile;
     private String baseDir;
     private int baseDirLength;
+    private boolean privateShared;
 
     MakeSharabilityQuery (File baseDirFile) {
         this.baseDirFile = baseDirFile;
         this.baseDir = baseDirFile.getPath();
 	this.baseDirLength = this.baseDir.length();
+        privateShared = false;
     }
 
 
@@ -90,7 +92,7 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
 		    else if (subString.equals("nbproject" + File.separator + "configurations.xml")) // NOI18N
 			return new Integer(SharabilityQuery.SHARABLE);
 		    else if (subString.equals("nbproject" + File.separator + "private")) // NOI18N
-			return new Integer(SharabilityQuery.NOT_SHARABLE);
+			return new Integer(privateShared ? SharabilityQuery.SHARABLE : SharabilityQuery.NOT_SHARABLE); // see IZ 121796, IZ 109580 and IZ 109573
 		    else if (subString.equals("nbproject" + File.separator + "project.properties")) // NOI18N
 			return new Integer(SharabilityQuery.SHARABLE);
 		    else if (subString.equals("nbproject" + File.separator + "project.xml")) // NOI18N
@@ -106,5 +108,13 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
             }
         });
         return ret.intValue();
+    }
+    
+    public void setPrivateShared(boolean privateShared) {
+        this.privateShared = privateShared;
+    }
+    
+    public boolean getPrivateShared() {
+        return privateShared;
     }
 }

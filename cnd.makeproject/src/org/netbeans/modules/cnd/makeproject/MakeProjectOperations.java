@@ -131,6 +131,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
     public void notifyCopying() {
         ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         pdp.getConfigurationDescriptor().save();
+        // Also move private
+        MakeSharabilityQuery makeSharabilityQuery = (MakeSharabilityQuery)project.getLookup().lookup(MakeSharabilityQuery.class );
+        makeSharabilityQuery.setPrivateShared(true);
     }
     
     public void notifyCopied(Project original, File originalPath, String nueName) {
@@ -154,12 +157,18 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 //      project.getReferenceHelper().fixReferences(originalPath);
         
         project.setName(nueName);
+        
+        MakeSharabilityQuery makeSharabilityQuery = (MakeSharabilityQuery)original.getLookup().lookup(MakeSharabilityQuery.class );
+        makeSharabilityQuery.setPrivateShared(false);
     }
     
     public void notifyMoving() throws IOException {
         ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         pdp.getConfigurationDescriptor().save();
         notifyDeleting();
+        // Also move private
+        MakeSharabilityQuery makeSharabilityQuery = (MakeSharabilityQuery)project.getLookup().lookup(MakeSharabilityQuery.class );
+        makeSharabilityQuery.setPrivateShared(true);
     }
     
     public void notifyMoved(Project original, File originalPath, String nueName) {
