@@ -148,7 +148,7 @@ public class RegisterExternalHook extends Task {
                 boolean doCheckout = false;
                 String binary;
                 while ((binary = r.readLine()) != null) {
-                    File f = new File(root, binary);
+                    File f = new File(repo, binary);
                     log("Examining: " + f, Project.MSG_DEBUG);
                     if (!f.isFile()) {
                         log("No such file checked out: " + f, Project.MSG_VERBOSE);
