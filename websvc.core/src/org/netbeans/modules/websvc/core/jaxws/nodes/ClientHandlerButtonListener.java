@@ -52,7 +52,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.Collection;
-import javax.swing.ListModel;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsComponentFactory;
@@ -68,6 +67,7 @@ import org.netbeans.modules.websvc.core.webservices.ui.panels.MessageHandlerPane
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Client;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
+import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerName;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.openide.ErrorManager;
@@ -85,51 +85,58 @@ import org.openide.nodes.Node;
  *
  * @author Roderico Cruz
  */
-public class ClientHandlerButtonListener implements ActionListener{
+public class ClientHandlerButtonListener implements ActionListener {
+
     private MessageHandlerPanel panel;
     private BindingsModel bindingsModel;
     private Client client;
     private Node node;
     private JaxWsModel jaxWsModel;
-    private FileObject bindingHandlerFO;
+    //private FileObject bindingHandlerFO;
     private String bindingsHandlerFile;
-    
-    
+
     public ClientHandlerButtonListener(MessageHandlerPanel panel,
-            BindingsModel bindingsModel, Client client, Node node, JaxWsModel jaxWsModel){
-        
+            BindingsModel bindingsModel, Client client, Node node, JaxWsModel jaxWsModel) {
+
         this.panel = panel;
         this.bindingsModel = bindingsModel;
         this.client = client;
         this.node = node;
         this.jaxWsModel = jaxWsModel;
     }
+
     public void actionPerformed(ActionEvent evt) {
-        if(evt.getSource() == NotifyDescriptor.OK_OPTION) {
-            if(!panel.isChanged()) return;
-            try{
-                FileObject srcRoot = (FileObject)node.getLookup().lookup(FileObject.class);
+
+        if (evt.getSource() == NotifyDescriptor.OK_OPTION) {
+            if (!panel.isChanged()) {
+                return;
+            }
+            try {
+                FileObject srcRoot = (FileObject) node.getLookup().lookup(FileObject.class);
                 JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
                 final FileObject bindingsFolder = support.getBindingsFolderForClient(node.getName(), true);
-                Client client = (Client)node.getLookup().lookup(Client.class);
+                Client client = (Client) node.getLookup().lookup(Client.class);
                 assert client != null;
                 bindingsHandlerFile = client.getHandlerBindingFile();
-                if(bindingsHandlerFile == null){
+                if (bindingsHandlerFile == null) {
                     String baseBindingsHandlerFile = node.getName() + "_handler";
                     bindingsHandlerFile = FileUtil.findFreeFileName(bindingsFolder, baseBindingsHandlerFile, "xml") +
                             ".xml";
                     client.setHandlerBindingFile(bindingsHandlerFile);
                 }
-                
+                final FileObject bindingHandlerFO = FileUtil.createData(bindingsFolder, bindingsHandlerFile);
                 //if bindingsModel is null, create it
-                if(bindingsModel == null){
-                    final String bindingsContent = readResource(Repository.getDefault().getDefaultFileSystem().
-                            findResource("jax-ws/default-binding-handler.xml").getInputStream()); //NOI18N
-                    
+                if (bindingsModel == null) {
+                    InputStream is = Repository.getDefault().getDefaultFileSystem().
+                            findResource("jax-ws/default-binding-handler.xml").getInputStream();
+                    final String bindingsContent = readResource(is); //NOI18N
+                    is.close();
+
                     bindingsFolder.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+
                         public void run() throws IOException {
-                            bindingHandlerFO =
-                                    FileUtil.createData(bindingsFolder, bindingsHandlerFile);//NOI18N
+                            //bindingHandlerFO =
+                            //        FileUtil.createData(bindingsFolder, bindingsHandlerFile);//NOI18N
                             BufferedWriter bw = null;
                             OutputStream os = null;
                             OutputStreamWriter osw = null;
@@ -140,148 +147,145 @@ public class ClientHandlerButtonListener implements ActionListener{
                                 bw = new BufferedWriter(osw);
                                 bw.write(bindingsContent);
                             } finally {
-                                try{
-                                    if(bw != null){
+                                try {
+                                    if (bw != null) {
                                         bw.close();
                                     }
-                                    if(os != null) {
+                                    if (os != null) {
                                         os.close();
                                     }
-                                    if(osw != null){
+                                    if (osw != null) {
                                         osw.close();
                                     }
-                                }catch(IOException e){
+                                } catch (IOException e) {
                                     ErrorManager.getDefault().notify(e);
                                 }
-                                
-                                if(lock != null){
+
+                                if (lock != null) {
                                     lock.releaseLock();
                                 }
                             }
                         }
                     });
-                    
+
                     //now load the model and add the entry
                     ModelSource ms = Utilities.getModelSource(bindingHandlerFO, true);
-                    bindingsModel =  BindingsModelFactory.getDefault().getModel(ms);
+                    bindingsModel = BindingsModelFactory.getDefault().getModel(ms);
                     //get the relative path of the wsdl
                     FileObject localWsdlFile =
-                            support.getLocalWsdlFolderForClient(client.getName(),false).getFileObject(client.getLocalWsdlFile());
+                            support.getLocalWsdlFolderForClient(client.getName(), false).getFileObject(client.getLocalWsdlFile());
                     File f = FileUtil.toFile(bindingHandlerFO);
                     String relativePath = Utilities.relativize(f.toURI(), new URI(localWsdlFile.getURL().toExternalForm()));
                     GlobalBindings gb = bindingsModel.getGlobalBindings();
-                    bindingsModel.startTransaction();
-                    gb.setWsdlLocation(relativePath);
-                    bindingsModel.endTransaction();
-                    
+                    try {
+                        bindingsModel.startTransaction();
+                        gb.setWsdlLocation(relativePath);
+                    } finally {
+                        bindingsModel.endTransaction();  //becomes locked here
+                    }
+
+                    //hack
+                    DataObject dobj = DataObject.find(bindingHandlerFO);
+                    if (dobj.isModified()) {
+                        SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
+                        saveCookie.save(); //becomes false here
+                    }
+                //end hack
+
                 }//end if bindingsModel == null
-                
+
                 //get handler chain
                 TableModel tableModel = panel.getHandlerTableModel();
                 GlobalBindings gb = bindingsModel.getGlobalBindings();
                 DefinitionsBindings db = gb.getDefinitionsBindings();
                 BindingsHandlerChains bhc = db.getHandlerChains();
                 BindingsHandlerChain chain = bhc.getHandlerChains().iterator().next();
-                
+
                 //refresh handlers
-                bindingsModel.startTransaction();
-                Collection<BindingsHandler> handlers = chain.getHandlers();
-                for(BindingsHandler handler : handlers){
-                    chain.removeHandler(handler);
+                try {
+                    bindingsModel.startTransaction();
+                    Collection<BindingsHandler> handlers = chain.getHandlers();
+                    for (BindingsHandler handler : handlers) {
+                        chain.removeHandler(handler);
+                    }
+
+                    if (tableModel.getRowCount() > 0) {
+                        BindingsComponentFactory factory = bindingsModel.getFactory();
+                        for (int i = 0; i < tableModel.getRowCount(); i++) {
+                            String className = (String) tableModel.getValueAt(i, 0);
+                            BindingsHandler handler = factory.createHandler();
+                            
+                            String handlerName = className.substring(className.indexOf(".") + 1);
+                            BindingsHandlerName name = factory.createHandlerName();
+                            name.setHandlerName(handlerName);
+                            handler.setHandlerName(name);
+                            
+                            BindingsHandlerClass handlerClass = factory.createHandlerClass();                           
+                            handlerClass.setClassName(className);
+                            handler.setHandlerClass(handlerClass);
+                            
+                            chain.addHandler(handler);
+                        }
+                    }
+                } finally {
+                    bindingsModel.endTransaction();
                 }
-                
-                if(tableModel.getRowCount() > 0){
-                    BindingsComponentFactory factory = bindingsModel.getFactory();
-                    for(int i = 0; i < tableModel.getRowCount(); i++){
-                        String className = (String)tableModel.getValueAt(i, 0);
-                        BindingsHandler handler = factory.createHandler();
-                        BindingsHandlerClass handlerClass = factory.createHandlerClass();
-                        handlerClass.setClassName(className);
-                        handler.setHandlerClass(handlerClass);
-                        chain.addHandler(handler);
+
+                //save bindingshandler file
+                DataObject dobj = DataObject.find(bindingHandlerFO);
+                if (dobj.isModified()) {
+                    SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
+                    saveCookie.save(); //becomes false here
+                }
+
+                if (tableModel.getRowCount() > 0) {
+                    Binding binding = client.getBindingByFileName(bindingsHandlerFile);
+                    if (binding == null) {
+                        binding = client.newBinding();
+                        binding.setFileName(bindingsHandlerFile);
+                        client.addBinding(binding);
+                    }
+                } else {
+                    Binding binding = client.getBindingByFileName(bindingsHandlerFile);
+                    if (binding != null) {
+                        client.removeBinding(binding);
                     }
                 }
-                
-            //}
-            bindingsModel.endTransaction();
-            
-            //reset bindingHandlerFO so we can save it
-            if(bindingHandlerFO == null){
-                bindingHandlerFO = bindingsFolder.getFileObject(client.getHandlerBindingFile());
-            }
- 
-            //save bindingshandler file
-            DataObject dobj = DataObject.find(bindingHandlerFO);
-            if(dobj.isModified()){
-                SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
-                saveCookie.save();
-            }
-            
-            if(tableModel.getRowCount() > 0){
-                Binding binding = client.getBindingByFileName(bindingsHandlerFile);
-                if(binding == null){
-                    binding = client.newBinding();
-                    binding.setFileName(bindingsHandlerFile);
-                    client.addBinding(binding);
-                }
-            } else{
-                Binding binding = client.getBindingByFileName(bindingsHandlerFile);
-                if(binding != null){
-                    client.removeBinding(binding);
-                }
-            }
-            //save the jaxws model
-            jaxWsModel.write();
-        }catch(Exception e){
-            ErrorManager.getDefault().notify(e);
-        }
-    }
-}
-
-//TODO: UNUSED METHOD => DEAD CODE???
-private boolean isInModel(String className, ListModel model){
-    for(int i = 0; i < model.getSize(); i++){
-        String cls = (String)model.getElementAt(i);
-        if(className.equals(cls)){
-            return true;
-        }
-    }
-    return false;
-}
-
-//TODO: UNUSED METHOD => DEAD CODE???
-private boolean isNewHandler(String className, BindingsHandlerChain handlerChain){
-    if(handlerChain != null){
-        Collection<BindingsHandler> handlers = handlerChain.getHandlers();
-        for(BindingsHandler handler : handlers){
-            if (handler.getHandlerClass().getClassName().equals(className)){
-                return false;
+                //save the jaxws model
+                jaxWsModel.write();
+                boolean l = bindingHandlerFO.isLocked();
+                ErrorManager.getDefault().log(ErrorManager.ERROR, "isLocked: " + l);
+                System.out.println("isLocked: " + bindingHandlerFO.isLocked());
+            } catch (Exception e) {
+                ErrorManager.getDefault().notify(e);
             }
         }
     }
-    return true;
-}
 
 
 //TODO: close all streams properly
-private static String readResource(InputStream is) throws IOException {
-    // read the config from resource first
-    BufferedReader br= null;
-    StringBuilder sb = new StringBuilder();
-    try{
-        
-        String lineSep = System.getProperty("line.separator");//NOI18N
-        br = new BufferedReader(new InputStreamReader(is));
-        String line = br.readLine();
-        while (line != null) {
-            sb.append(line);
-            sb.append(lineSep);
-            line = br.readLine();
-        }
-    }finally{
-        br.close();
-    }
-    return sb.toString();
-}
+    private static String readResource(InputStream is) throws IOException {
+        // read the config from resource first
+        BufferedReader br = null;
+        InputStreamReader isr = null;
+        StringBuilder sb = new StringBuilder();
+        try {
 
+            String lineSep = System.getProperty("line.separator");//NOI18N
+            isr = new InputStreamReader(is);
+            br = new BufferedReader(isr);
+
+            String line = br.readLine();
+            while (line != null) {
+                sb.append(line);
+                sb.append(lineSep);
+                line = br.readLine();
+            }
+        } finally {
+            isr.close();
+            br.close();
+            is.close();
+        }
+        return sb.toString();
+    }
 }
