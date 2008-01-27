@@ -5,18 +5,7 @@
 
     <target name="jar" depends="doc-gen,projectized-common.jar"/>
 
-    <target name="doc-gen" depends="doc-clean">
+    <target name="doc-gen">
         <ant dir="libdoc"/>
-    </target>
-
-    <target name="doc-clean">
-        <delete includeEmptyDirs="true">
-                <fileset dir="${basedir}/src/org/netbeans/modules/php/doc/resources" includes="**/*">
-                        <exclude name="*.java"/>
-                        <exclude name="package.html"/>
-			<exclude name="layer.xml"/>
-			<exclude name="Bundle.properties"/>
-                </fileset>
-        </delete>
     </target>
 </project>
