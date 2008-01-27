@@ -448,7 +448,6 @@
 ^performance/threaddemo/user\.build\.properties$
 ^php.doc/libdoc/doc\.gzip$
 ^php.doc/libdoc/doc\.html$
-^php\.doc/src/org/netbeans/modules/php/doc/resources
 ^lib.profiler/native/build/dist$
 ^lib.profiler/test/functional/data/projects/j2se-simple/dist$
 ^o.jruby.distro/patched_source$
