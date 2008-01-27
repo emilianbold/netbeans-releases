@@ -736,9 +736,6 @@
 ^xtest/xtest-distribution\.zip$
 ^xtest/results$
 ^xtest/plugins$
-^xtest/examples/MyModule/mymodule\.jar$
-^xtest/examples/PaintApp/dist$
-^xtest/examples/anagrams/dist$
 ^xtest/external/emma\.jar$
 ^xtest/external/emma_ant\.jar$
 ^xtest/instance/results$
