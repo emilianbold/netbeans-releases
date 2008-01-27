@@ -15,7 +15,7 @@ then
     ant -f nbbuild/build.xml hg-clean || exit
 fi
 
-mydir=`cd $(dirname $0); pwd`
+mydir=`cd $(dirname $0)/..; pwd`
 keystore=$mydir/NBstore
 storepass=`cat $mydir/storepass`
 ant -emacs -Dbuildnum=$BUILD_TAG -Dcluster.config=experimental -Dmoduleconfig=daily-alpha-nbms -Dkeystore=$keystore -Dstorepass=$storepass -f nbbuild/build.xml build-nozip build-nbms || exit
