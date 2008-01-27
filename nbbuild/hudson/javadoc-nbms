@@ -3,26 +3,17 @@
 ANT_OPTS='-Xmx512m -XX:MaxPermSize=128m'
 export ANT_OPTS
 
-desired_modules=`ant -f nbbuild/build.xml -Dcluster.config=experimental print-cvs-modules | perl -ne 'print sort qw(jemmy jellytools testtools xtest), split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'`
-current_modules=`perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'`
-if [ "$desired_modules" \!= "$current_modules" ]
-then
-    echo "Set of modules changed, getting fresh checkout..."
-    echo "(desired modules: $desired_modules; current modules: $current_modules)"
-    rm -rf `ls | fgrep -v nbbuild`
-    ant -f nbbuild/build.xml -Dcluster.config=experimental checkout cvs-clean || exit
-elif [ builds/`ls -1 ../builds | tail -2 | head -1` '!=' `readlink ../lastSuccessful` ]
-then
-    echo "Previous build failed, running clean build this time..."
-    ant -f nbbuild/build.xml cvs-clean || exit
+if [ -d contrib/.hg ] ; then
+    hg -R contrib pull -u
+else
+    hg clone http://hg.netbeans.org/main/contrib contrib
 fi
 
-for www in */www ; do
-    if [ \! -f $www/.IGNOREME ] ; then
-        rm -rf $www
-        cp -r nbbuild/dummy $www
-    fi
-done
+if [ builds/`ls -1 ../builds | tail -2 | head -1` '!=' `readlink ../lastSuccessful` ]
+then
+    echo "Previous build failed, running clean build this time..."
+    ant -f nbbuild/build.xml hg-clean || exit
+fi
 
 mydir=`cd $(dirname $0); pwd`
 keystore=$mydir/NBstore
