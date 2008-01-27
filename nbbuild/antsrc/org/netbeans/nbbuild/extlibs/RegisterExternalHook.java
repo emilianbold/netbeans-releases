@@ -129,7 +129,7 @@ public class RegisterExternalHook extends Task {
                     }
                 }
                 String config = baos.toString();
-                if (Pattern.compile("(?m)^external *= *\\Q" + hook + "\\E$").matcher(config).find()) {
+                if (Pattern.compile("(?m)^external *= *" + Pattern.quote(hook.getAbsolutePath()) + "$").matcher(config).find()) {
                     log("Hook already registered in " + hgrc, Project.MSG_VERBOSE);
                     continue;
                 }
