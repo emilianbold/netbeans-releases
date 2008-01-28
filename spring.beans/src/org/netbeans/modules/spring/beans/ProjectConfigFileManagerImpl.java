@@ -43,13 +43,18 @@ package org.netbeans.modules.spring.beans;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -57,12 +62,24 @@ import org.openide.util.Mutex.Action;
  */
 public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementation {
 
+    private static final String SPRING_CONFIG = "spring-config"; // NOI18N
+    private static final String CONFIG_FILE_GROUPS = "config-file-groups"; // NOI18N
+    private static final String CONFIG_FILE_GROUP = "config-file-group"; // NOI18N
+    private static final String NAME = "name"; // NOI18N
+    private static final String CONFIG_FILE = "config-file"; // NOI18N
+    private static final String SPRING_CONFIG_NS = "http://www.netbeans.org/ns/spring-config/1"; // NOI18N
+
     private final Project project;
+    private final AuxiliaryConfiguration auxConfig;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private List<ConfigFileGroup> groups;
 
     public ProjectConfigFileManagerImpl(Project project) {
         this.project = project;
+        auxConfig = project.getLookup().lookup(AuxiliaryConfiguration.class);
+        if (auxConfig == null) {
+            throw new IllegalStateException("Project " + project + " does not have an AuxiliaryConfiguration in its lookup");
+        }
     }
 
     /**
@@ -84,8 +101,11 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
     public List<ConfigFileGroup> getConfigFileGroups() {
         return mutex().readAccess(new Action<List<ConfigFileGroup>>() {
             public List<ConfigFileGroup> run() {
-                if (groups == null) {
-                    readGroups();
+                synchronized (ProjectConfigFileManagerImpl.this) {
+                    if (groups == null) {
+                        groups = readGroups();
+                    }
+                    assert groups != null;
                 }
                 List<ConfigFileGroup> result = new ArrayList<ConfigFileGroup>(groups.size());
                 result.addAll(groups);
@@ -116,11 +136,13 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
      * @throws IllegalStateException if the called does not hold {@code mutex()}
      *         write access.
      */
-    public void putConfigFileGroups(List<ConfigFileGroup> groups) {
+    public void putConfigFileGroups(List<ConfigFileGroup> newGroups) {
         if (!mutex().isWriteAccess()) {
-            throw new IllegalStateException("The setConfigFileGroups() method should be called under mutex() write access");
+            throw new IllegalStateException("The putConfigFileGroups() method should be called under mutex() write access");
         }
-        writeGroups(groups);
+        writeGroups(newGroups);
+        groups = new ArrayList<ConfigFileGroup>(newGroups.size());
+        groups.addAll(newGroups);
         changeSupport.fireChange();
     }
 
@@ -128,11 +150,81 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
         changeSupport.addChangeListener(listener);
     }
 
-    private void readGroups() {
+    List<ConfigFileGroup> readGroups() {
         assert mutex().isReadAccess();
+        List<ConfigFileGroup> result = new ArrayList<ConfigFileGroup>();
+        Element springConfigEl = auxConfig.getConfigurationFragment(SPRING_CONFIG, SPRING_CONFIG_NS, true);
+        if (springConfigEl != null) {
+            NodeList list = springConfigEl.getElementsByTagNameNS(SPRING_CONFIG_NS, CONFIG_FILE_GROUPS);
+            if (list.getLength() > 0) {
+                Element configFileGroupsEl = (Element)list.item(0);
+                list = configFileGroupsEl.getElementsByTagNameNS(SPRING_CONFIG_NS, CONFIG_FILE_GROUP);
+                readGroups(list, result);
+            }
+        }
+        return result;
+    }
+
+    private void readGroups(NodeList configFileGroupEls, List<ConfigFileGroup> groups) {
+        for (int i = 0; i < configFileGroupEls.getLength(); i++) {
+            Element configFileGroupEl = (Element)configFileGroupEls.item(i);
+            String name = configFileGroupEl.getAttribute(NAME);
+            NodeList configFileEls = configFileGroupEl.getElementsByTagNameNS(SPRING_CONFIG_NS, CONFIG_FILE);
+            File[] configFiles = new File[configFileEls.getLength()];
+            for (int j = 0; j < configFileEls.getLength(); j++) {
+                Element configFileEl = (Element)configFileEls.item(j);
+                configFiles[j] = getAbsoluteFile(configFileEl.getTextContent());
+            }
+            groups.add(ConfigFileGroup.create(name, configFiles));
+        }
+    }
+
+    private File getAbsoluteFile(String path) {
+        File projectDir = FileUtil.toFile(project.getProjectDirectory());
+        if (projectDir == null) {
+            return null;
+        }
+        return resolveFile(projectDir, path);
     }
 
     private void writeGroups(List<ConfigFileGroup> groups) {
         assert mutex().isWriteAccess();
+    }
+
+    // XXX copied from PropertyUtils.
+    private static final Pattern RELATIVE_SLASH_SEPARATED_PATH = Pattern.compile("[^:/\\\\.][^:/\\\\]*(/[^:/\\\\.][^:/\\\\]*)*"); // NOI18N
+
+    /**
+     * Find an absolute file path from a possibly relative path.
+     * @param basedir base file for relative filename resolving; must be an absolute path
+     * @param filename a pathname which may be relative or absolute and may
+     *                 use / or \ as the path separator
+     * @return an absolute file corresponding to it
+     * @throws IllegalArgumentException if basedir is not absolute
+     */
+    private static File resolveFile(File basedir, String filename) throws IllegalArgumentException {
+        if (basedir == null) {
+            throw new NullPointerException("null basedir passed to resolveFile"); // NOI18N
+        }
+        if (filename == null) {
+            throw new NullPointerException("null filename passed to resolveFile"); // NOI18N
+        }
+        if (!basedir.isAbsolute()) {
+            throw new IllegalArgumentException("nonabsolute basedir passed to resolveFile: " + basedir); // NOI18N
+        }
+        File f;
+        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
+            // Shortcut - simple relative path. Potentially faster.
+            f = new File(basedir, filename.replace('/', File.separatorChar));
+        } else {
+            // All other cases.
+            String machinePath = filename.replace('/', File.separatorChar).replace('\\', File.separatorChar);
+            f = new File(machinePath);
+            if (!f.isAbsolute()) {
+                f = new File(basedir, machinePath);
+            }
+            assert f.isAbsolute();
+        }
+        return FileUtil.normalizeFile(f);
     }
 }

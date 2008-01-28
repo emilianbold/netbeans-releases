@@ -42,9 +42,8 @@
 package org.netbeans.modules.spring.api.beans;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Encapsulates a group of Spring config files.
@@ -53,16 +52,46 @@ import java.util.TreeSet;
  */
 public final class ConfigFileGroup {
 
-    private final Set<File> configFiles = new TreeSet<File>();
+    private final String name;
+    // This needs to be a list to ensure the order is maintained.
+    private final List<File> configFiles;
 
+    /**
+     * Creates an unnamed group.
+     *
+     * @param  files the files to be put into this group.
+     * @return a new group; never null.
+     */
     public static ConfigFileGroup create(File... files) {
-        return new ConfigFileGroup(files);
+        return create(null, files);
     }
 
-    private ConfigFileGroup(File... files) {
+    /**
+     * Creates a group with the given name.
+     *
+     * @param  name the name or null.
+     * @param  files the files to be put into this group.
+     * @return a new group; never null.
+     */
+    public static ConfigFileGroup create(String name, File... files) {
+        return new ConfigFileGroup(name, files);
+    }
+
+    private ConfigFileGroup(String name, File... files) {
+        this.name = name;
+        configFiles = new ArrayList<File>(files.length);
         for (File file : files) {
             configFiles.add(file);
         }
+    }
+
+    /**
+     * Returns the name, if any, of this group.
+     *
+     * @return the name or null.
+     */
+    public String getName() {
+        return name;
     }
 
     /**
@@ -70,13 +99,15 @@ public final class ConfigFileGroup {
      *
      * @return the set of beans configuration files; never null.
      */
-    public synchronized Set<File> getConfigFiles() {
-        Set<File> result = new HashSet<File>(configFiles.size());
+    public List<File> getConfigFiles() {
+        List<File> result = new ArrayList<File>(configFiles.size());
         result.addAll(configFiles);
         return result;
     }
 
-    public synchronized boolean containsFile(File file) {
+    public boolean containsFile(File file) {
+        // Linear search, but we will hopefully only have a couple of
+        // files in the group.
         return configFiles.contains(file);
     }
 }
