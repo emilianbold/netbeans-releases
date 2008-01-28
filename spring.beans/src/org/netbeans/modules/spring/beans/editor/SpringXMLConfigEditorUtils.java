@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.spring.beans.editor;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +58,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -78,9 +80,16 @@ import org.netbeans.modules.xml.text.syntax.dom.EmptyTag;
 import org.netbeans.modules.xml.text.syntax.dom.StartTag;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
 import org.openide.awt.StatusDisplayer;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -256,28 +265,6 @@ public final class SpringXMLConfigEditorUtils {
         }
     }
     
-    public static final Node getFirstReferenceableNodeById(Document document, String id) {
-        Map<String, Node> nodes = getReferenceableNodes(document);
-        for (Map.Entry<String, Node> node : nodes.entrySet()) {
-            if (node.getKey().equals(id)) {
-                return node.getValue();
-            }
-        }
-        return null;
-    }
-    
-    public static final Map<String, Node> getReferenceableNodes(Document document) {
-        Map<String, Node> nodes = new HashMap<String, Node>();
-        BeansReferenceableElementsLocator locator = new BeansReferenceableElementsLocator();
-
-        Map<String, Node> tempNodes = locator.getReferenceableElements(document);
-        if (tempNodes != null) {
-            nodes.putAll(tempNodes);
-        }
-
-        return nodes;
-    }
-    
     public static final Tag getDocumentRoot(Document doc) {
         Tag retTag = null;
         try {
@@ -314,14 +301,59 @@ public final class SpringXMLConfigEditorUtils {
         return null;
     }
     
-    public static void openDocumentAtOffset(Document document, int offset) {
-        DataObject dataObject = NbEditorUtilities.getDataObject(document);
-        if (dataObject != null) {
-            Line line = NbEditorUtilities.getLine(document, offset, true);
-            line.show(Line.SHOW_GOTO);
+    public static boolean openFile(File file, int offset) {
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo != null) {
+            return openFile(fo, offset);
         }
+        return false;
     }
-
+    
+    public static boolean openFile(FileObject fo, int offset) {
+        DataObject dataObject;
+        boolean opened = false;
+        try {
+            dataObject = DataObject.find(fo);
+            if (offset > 0) {
+                opened = openFileAtOffset(dataObject, offset);
+            }
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
+            return false;
+        }
+        if (opened) {
+            return true;
+        } else {
+            OpenCookie oc = dataObject.getCookie(org.openide.cookies.OpenCookie.class);
+            if (oc != null) {
+                oc.open();
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static boolean openFileAtOffset(DataObject dataObject, int offset) throws IOException {
+        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
+        LineCookie lc = dataObject.getCookie(LineCookie.class);
+        if (ec != null && lc != null) {
+            StyledDocument doc = ec.openDocument();
+            if (doc != null) {
+                int lineNumber = NbDocument.findLineNumber(doc, offset);
+                if (lineNumber != -1) {
+                    Line line = lc.getLineSet().getCurrent(lineNumber);
+                    if (line != null) {
+                        int lineOffset = NbDocument.findLineOffset(doc, lineNumber);
+                        int column = offset - lineOffset;
+                        line.show(Line.SHOW_GOTO, column);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
     private static final class MethodFinder implements Task<CompilationController> {
 
         private String classFqn;

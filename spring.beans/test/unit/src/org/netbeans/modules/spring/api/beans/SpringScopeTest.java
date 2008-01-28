@@ -44,6 +44,7 @@ package org.netbeans.modules.spring.api.beans;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
+import org.netbeans.modules.spring.beans.ConfigFileManagerAccessor;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.SpringScopeAccessor;
 import org.netbeans.modules.spring.beans.TestUtils;
@@ -65,7 +66,8 @@ public class SpringScopeTest extends ConfigFileTestCase {
         String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' class='org.example.Foo'/>");
         TestUtils.copyStringToFile(contents, configFile);
         FileObject configFO = FileUtil.toFileObject(configFile);
-        SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope();
+        ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new DefaultConfigFileManagerImpl());
+        SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
 
         SpringConfigModel model = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
         final int[] beanCount = { 0 };

@@ -42,72 +42,89 @@
 package org.netbeans.modules.spring.api.beans;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.spring.beans.ConfigFileManagerAccessor;
+import org.netbeans.modules.spring.beans.ConfigFileManagerImplementation;
+import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 
 /**
- * Encapsulates a group of Spring config files.
+ * Manages all config file groups in a {@link SpringScope Spring scope}.
  *
  * @author Andrei Badea
  */
-public final class ConfigFileGroup {
+public final class ConfigFileManager {
 
-    private final String name;
-    // This needs to be a list to ensure the order is maintained.
-    private final List<File> configFiles;
+    private final ConfigFileManagerImplementation impl;
 
-    /**
-     * Creates an unnamed group.
-     *
-     * @param  files the files to be put into this group.
-     * @return a new group; never null.
-     */
-    public static ConfigFileGroup create(File... files) {
-        return create(null, files);
+    static {
+        ConfigFileManagerAccessor.DEFAULT = new ConfigFileManagerAccessor() {
+            @Override
+            public ConfigFileManager createConfigFileManager(ConfigFileManagerImplementation impl) {
+                return new ConfigFileManager(impl);
+            }
+        };
+    }
+
+    private ConfigFileManager(ConfigFileManagerImplementation impl) {
+        this.impl = impl;
     }
 
     /**
-     * Creates a group with the given name.
+     * Returns the mutex which protectes the access to this ConfigFileManager.
      *
-     * @param  name the name or null.
-     * @param  files the files to be put into this group.
-     * @return a new group; never null.
+     * @return the mutex; never null.
      */
-    public static ConfigFileGroup create(String name, File... files) {
-        return new ConfigFileGroup(name, files);
+    public Mutex mutex() {
+        return impl.mutex();
     }
 
-    private ConfigFileGroup(String name, File... files) {
-        this.name = name;
-        configFiles = new ArrayList<File>(files.length);
-        for (File file : files) {
-            configFiles.add(file);
+    /**
+     * Returns the list of config file groups in this manger. The list is
+     * modifiable and not live, therefore changes to the list do not
+     * modify the contents of the manager.
+     *
+     * @return the list; never null.
+     */
+    public List<ConfigFileGroup> getConfigFileGroups() {
+        return impl.getConfigFileGroups();
+    }
+
+    /**
+     * Returns the config file group (if any) which contains the given config file.
+     *
+     * @param  file a file; never null.
+     * @return the config file group or null.
+     */
+    public ConfigFileGroup getConfigFileGroupFor(File file) {
+        Parameters.notNull("file", file);
+        for (ConfigFileGroup group : getConfigFileGroups()) {
+            if (group.containsFile(file)) {
+                return group;
+            }
         }
+        return null;
     }
 
     /**
-     * Returns the name, if any, of this group.
+     * Modifies the list of config file groups. This method needs to be called
+     * under {@code mutex()} write access.
      *
-     * @return the name or null.
+     * @throws IllegalStateException if the called does not hold {@code mutex()}
+     *         write access.
      */
-    public String getName() {
-        return name;
+    public void putConfigFileGroups(List<ConfigFileGroup> groups) {
+        impl.putConfigFileGroups(groups);
     }
 
     /**
-     * Returns the set of beans configuration files in this group.
+     * Adds a change listener which will be notified of changes to the
+     * list of config file groups.
      *
-     * @return the set of beans configuration files; never null.
+     * @param  listener a listener.
      */
-    public List<File> getConfigFiles() {
-        List<File> result = new ArrayList<File>(configFiles.size());
-        result.addAll(configFiles);
-        return result;
-    }
-
-    public boolean containsFile(File file) {
-        // Linear search, but we will hopefully only have a couple of
-        // files in the group.
-        return configFiles.contains(file);
+    void addChangeListener(ChangeListener listener) {
+        impl.addChangeListener(listener);
     }
 }
