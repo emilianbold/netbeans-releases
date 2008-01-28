@@ -39,47 +39,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.spring.beans;
 
-import java.io.IOException;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.spring.api.Action;
-import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SpringConfigModelTest extends NbTestCase {
+public abstract class ConfigFileManagerAccessor {
 
-    public SpringConfigModelTest(String testName) {
-        super(testName);
-    }
+    public static ConfigFileManagerAccessor DEFAULT;
 
-    public void testRunReadAction() throws Exception {
-        ConfigFileGroup fileGroup = ConfigFileGroup.create();
-        SpringConfigModel model = new SpringConfigModel(fileGroup);
-        final boolean[] actionRun = { false };
-        model.runReadAction(new Action<SpringBeans>() {
-            public void run(SpringBeans springBeans) {
-                actionRun[0] = true;
-            }
-        });
-        assertTrue(actionRun[0]);
-    }
-
-    public void testExceptionPropagation() throws IOException {
-        ConfigFileGroup fileGroup = ConfigFileGroup.create();
-        SpringConfigModel model = new SpringConfigModel(fileGroup);
+    static {
         try {
-            model.runReadAction(new Action<SpringBeans>() {
-                public void run(SpringBeans parameter) {
-                    throw new RuntimeException();
-                }
-            });
-            fail();
-        } catch (RuntimeException e) {
-            // OK.
+            Class.forName(ConfigFileManager.class.getName(), true, ConfigFileManager.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            throw new AssertionError(e);
         }
     }
+
+    public abstract ConfigFileManager createConfigFileManager(ConfigFileManagerImplementation impl);
 }
