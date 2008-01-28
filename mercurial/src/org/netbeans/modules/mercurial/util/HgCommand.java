@@ -2175,8 +2175,9 @@ public class HgCommand {
      */
 
     private static List<String> execEnv(List<String> command, List<String> env) throws HgException{
-        assert( !EventQueue.isDispatchThread());
-        assert ( command != null && command.size() > 0);
+        if( EventQueue.isDispatchThread()){
+            Mercurial.LOG.log(Level.FINE, "WARNING execEnv():  calling Hg command in AWT Thread - could stall UI"); // NOI18N
+        }        assert ( command != null && command.size() > 0);
         List<String> list = new ArrayList<String>();
         BufferedReader input = null;
         Process proc = null;
@@ -2281,7 +2282,7 @@ public class HgCommand {
      * @return List of the command's output or an exception if one occured
      */
     private static List<String> exec(List<String> command) throws HgException{
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()){
+        if(!Mercurial.getInstance().isGoodVersion()){
             return new ArrayList<String>();
         }
         return execEnv(command, null);
