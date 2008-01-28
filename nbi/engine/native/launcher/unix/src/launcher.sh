@@ -478,11 +478,19 @@ message() {
 createTempDirectory() {
 	if [ 0 -eq $EXTRACT_ONLY ] ; then
             if [ -z "$LAUNCHER_JVM_TEMP_DIR" ] ; then
-		if [ 0 -eq $EXTRACT_ONLY ] ; then 
-                    SYSTEM_TEMP="/tmp"
-                    if [ -d "$SYSTEM_TEMP" ] ; then
-                                debug "Using system temp"
-                                LAUNCHER_JVM_TEMP_DIR="/tmp"
+		if [ 0 -eq $EXTRACT_ONLY ] ; then
+                    if [ -n "$TEMP" ] && [ -d "$TEMP" ] ; then
+                        debug "TEMP var is used : $TEMP"
+                        LAUNCHER_JVM_TEMP_DIR="$TEMP"
+                    elif [ -n "$TMP" ] && [ -d "$TMP" ] ; then
+                        debug "TMP var is used : $TMP"
+                        LAUNCHER_JVM_TEMP_DIR="$TMP"
+                    elif [ -n "$TEMPDIR" ] && [ -d "$TEMPDIR" ] ; then
+                        debug "TEMPDIR var is used : $TEMPDIR"
+                        LAUNCHER_JVM_TEMP_DIR="$TEMPDIR"
+                    elif [ -d "/tmp" ] ; then
+                        debug "Using /tmp for temp"
+                        LAUNCHER_JVM_TEMP_DIR="/tmp"
                     else
                         debug "Using home dir for temp"
                         LAUNCHER_JVM_TEMP_DIR="$HOME"
