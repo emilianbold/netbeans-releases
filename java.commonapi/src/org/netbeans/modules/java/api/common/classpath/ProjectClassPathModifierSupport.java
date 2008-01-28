@@ -58,7 +58,6 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -72,8 +71,7 @@ import org.openide.util.Parameters;
 /**
  * @author Tomas Zezula, Tomas Mysik
  */
-public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
-        extends ProjectClassPathModifierImplementation {
+public final class ProjectClassPathModifierSupport<T extends ClassPathItem> {
 
     public static enum Operation {
         ADD,
@@ -88,15 +86,23 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
     private final SourceRoots testSourceRoots;
     private final Properties properties;
 
-    protected BaseProjectClassPathModifier(Project project, UpdateHelper helper, PropertyEvaluator eval,
+    // XXX javadoc
+    public static ProjectClassPathModifierSupport create(Project project, UpdateHelper helper, PropertyEvaluator eval,
             ReferenceHelper refHelper, SourceRoots sourceRoots, SourceRoots testSourceRoots, Properties properties) {
-        assert project != null;
-        assert helper != null;
-        assert eval != null;
-        assert refHelper != null;
-        assert sourceRoots != null;
-        assert testSourceRoots != null;
-        assert properties != null;
+
+        return new ProjectClassPathModifierSupport(project, helper, eval, refHelper, sourceRoots, testSourceRoots,
+                properties);
+    }
+
+    private ProjectClassPathModifierSupport(Project project, UpdateHelper helper, PropertyEvaluator eval,
+            ReferenceHelper refHelper, SourceRoots sourceRoots, SourceRoots testSourceRoots, Properties properties) {
+        Parameters.notNull("project", project);
+        Parameters.notNull("helper", helper);
+        Parameters.notNull("eval", eval);
+        Parameters.notNull("refHelper", refHelper);
+        Parameters.notNull("sourceRoots", sourceRoots);
+        Parameters.notNull("testSourceRoots", testSourceRoots);
+        Parameters.notNull("properties", properties);
 
         this.project = project;
         this.helper = helper;
@@ -107,61 +113,22 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
         this.properties = properties;
     }
 
-    protected PropertyEvaluator getEval() {
-        return eval;
-    }
-
-    protected UpdateHelper getHelper() {
-        return helper;
-    }
-
-    protected Project getProject() {
-        return project;
-    }
-
-    protected Properties getProperties() {
-        return properties;
-    }
-
-    protected ReferenceHelper getRefHelper() {
-        return refHelper;
-    }
-
-    protected SourceRoots getSourceRoots() {
-        return sourceRoots;
-    }
-
-    protected SourceRoots getTestSourceRoots() {
-        return testSourceRoots;
-    }
-
-    protected abstract T createClassPathItem(File file, String property);
-
-    protected abstract T createClassPathItem(AntArtifact antArtifact, URI antArtifactURI, String property);
-
-    protected abstract T createClassPathItem(Library library, String property);
-
-    protected abstract List<T> getClassPathItems(String reference, String elementName);
-
-    protected abstract String[] encodeToStrings(List<T> items, String elementName);
-
-    protected abstract String getLibraryReference(T item);
-
-    protected SourceGroup[] getExtensibleSourceGroups() {
+    public SourceGroup[] getExtensibleSourceGroups() {
         Sources s = project.getLookup().lookup(Sources.class);
         assert s != null;
         return s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
 
-    protected String[] getExtensibleClassPathTypes (SourceGroup sg) {
+    public String[] getExtensibleClassPathTypes (SourceGroup sg) {
         return new String[] {
             ClassPath.COMPILE,
             ClassPath.EXECUTE
         };
     }
 
-    protected boolean handleRoots(final URL[] classPathRoots, final String classPathProperty, final String elementName,
-            final Operation operation) throws IOException, UnsupportedOperationException {
+    public boolean handleRoots(final URL[] classPathRoots, final String classPathProperty, final Operation operation,
+            final ClassPathItemProvider<T> provider) throws IOException,
+            UnsupportedOperationException {
         assert classPathRoots != null : "The classPathRoots cannot be null";
         assert classPathProperty != null;
 
@@ -171,7 +138,7 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
                         public Boolean run() throws Exception {
                             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathProperty);
-                            List<T> resources = getClassPathItems(raw, elementName);
+                            List<T> resources = provider.getClassPathItems(raw);
                             boolean changed = false;
                             for (URL classPathRoot : classPathRoots) {
                                 assert classPathRoot != null;
@@ -185,7 +152,7 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
                                 if (f == null) {
                                     throw new IllegalArgumentException("The file must exist on disk");
                                 }
-                                T item = createClassPathItem(f, null);
+                                T item = provider.createClassPathItem(f, null);
                                 if (operation == Operation.ADD && !resources.contains(item)) {
                                     resources.add(item);
                                     changed = true;
@@ -206,7 +173,7 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
                                 }
                             }
                             if (changed) {
-                                String[] itemRefs = encodeToStrings(resources, elementName);
+                                String[] itemRefs = provider.encodeToStrings(resources);
                                 // PathParser may change the EditableProperties
                                 props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 props.setProperty(classPathProperty, itemRefs);
@@ -229,9 +196,9 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
         }
     }
 
-    protected boolean handleAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements,
-            final String classPathProperty, final String elementName, final Operation operation) throws IOException,
-            UnsupportedOperationException {
+    public boolean handleAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements,
+            final String classPathProperty, final Operation operation, final ClassPathItemProvider<T> provider)
+            throws IOException, UnsupportedOperationException {
         assert artifacts != null : "Artifacts cannot be null";
         assert artifactElements != null : "ArtifactElements cannot be null";
         assert artifacts.length == artifactElements.length : "Each artifact has to have corresponding artifactElement";
@@ -243,13 +210,13 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
                         public Boolean run() throws Exception {
                             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathProperty);
-                            List<T> resources = getClassPathItems(raw, elementName);
+                            List<T> resources = provider.getClassPathItems(raw);
                             boolean changed = false;
                             for (int i = 0; i < artifacts.length; i++) {
                                 assert artifacts[i] != null;
                                 assert artifactElements[i] != null;
 
-                                T item = createClassPathItem(artifacts[i], artifactElements[i], null);
+                                T item = provider.createClassPathItem(artifacts[i], artifactElements[i], null);
                                 if (operation == Operation.ADD && !resources.contains(item)) {
                                     resources.add(item);
                                     changed = true;
@@ -259,7 +226,7 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
                                 }
                             }
                             if (changed) {
-                                String[] itemRefs = encodeToStrings(resources, elementName);
+                                String[] itemRefs = provider.encodeToStrings(resources);
                                 // reread the properties, PathParser changes them
                                 props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 props.setProperty(classPathProperty, itemRefs);
@@ -282,8 +249,9 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
         }
     }
 
-    protected boolean handleLibraries(final Library[] libraries, final String classPathProperty, final String elementName,
-            final Operation operation) throws IOException, UnsupportedOperationException {
+    public boolean handleLibraries(final Library[] libraries, final String classPathProperty, final String elementName,
+            final Operation operation, final ClassPathItemProvider<T> provider) throws IOException,
+            UnsupportedOperationException {
         assert libraries != null : "Libraries cannot be null";
         assert classPathProperty != null;
 
@@ -293,12 +261,12 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
                         public Boolean run() throws IOException {
                             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                             String raw = props.getProperty(classPathProperty);
-                            List<T> resources = getClassPathItems(raw, elementName);
+                            List<T> resources = provider.getClassPathItems(raw);
                             List<T> changed = new ArrayList<T>(libraries.length);
                             for (Library library : libraries) {
                                 assert library != null;
 
-                                T item = createClassPathItem(library, null);
+                                T item = provider.createClassPathItem(library, null);
                                 if (operation == Operation.ADD && !resources.contains(item)) {
                                     resources.add(item);
                                     changed.add(item);
@@ -308,13 +276,13 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
                                 }
                             }
                             if (!changed.isEmpty()) {
-                                String[] itemRefs = encodeToStrings(resources, elementName);
+                                String[] itemRefs = provider.encodeToStrings(resources);
                                 // PathParser may change the EditableProperties
                                 props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                                 props.setProperty(classPathProperty, itemRefs);
                                 if (operation == Operation.ADD) {
                                     for (T item : changed) {
-                                        String prop = getLibraryReference(item);
+                                        String prop = provider.getLibraryReference(item);
                                         // XXX make a PropertyUtils method for this!
                                         prop = prop.substring(2, prop.length() - 1);
                                         ClassPathSupport.relativizeLibraryClassPath(props, helper.getAntProjectHelper(),
@@ -334,7 +302,7 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
         }
     }
 
-    protected String getClassPathProperty(final SourceGroup sg, final String type) throws UnsupportedOperationException {
+    public String getClassPathProperty(final SourceGroup sg, final String type) throws UnsupportedOperationException {
         assert sg != null : "SourceGroup cannot be null";
         assert type != null : "Type cannot be null";
 
@@ -355,7 +323,7 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
      * @param type classpath type - compile or execute, see {@link ClassPath} for more information.
      * @return the property name or <code>null</code> if nothing found.
      */
-    protected String getPropertyName(SourceGroup sg, String type) {
+    private String getPropertyName(SourceGroup sg, String type) {
         FileObject root = sg.getRootFolder();
         for (FileObject fo : sourceRoots.getRoots()) {
             if (root.equals(fo)) {
@@ -401,5 +369,20 @@ public abstract class BaseProjectClassPathModifier<T extends ClassPathItem>
             this.testSourceCompileTimeClassPath = testSourceCompileTimeClassPath;
             this.testSourceRunTimeClassPath = testSourceRunTimeClassPath;
         }
+    }
+
+    // XXX javadoc
+    public interface ClassPathItemProvider<T> {
+        T createClassPathItem(File file, String property);
+
+        T createClassPathItem(AntArtifact antArtifact, URI antArtifactURI, String property);
+
+        T createClassPathItem(Library library, String property);
+
+        List<T> getClassPathItems(String reference);
+
+        String[] encodeToStrings(List<T> items);
+
+        String getLibraryReference(T item);
     }
 }
