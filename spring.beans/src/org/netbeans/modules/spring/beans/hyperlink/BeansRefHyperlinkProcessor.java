@@ -41,9 +41,17 @@
 
 package org.netbeans.modules.spring.beans.hyperlink;
 
+import java.io.File;
+import java.io.IOException;
+import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.spring.api.Action;
+import org.netbeans.modules.spring.api.beans.model.Location;
+import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
-import org.w3c.dom.Node;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -51,6 +59,7 @@ import org.w3c.dom.Node;
  */
 public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
 
+    // XXX what is this for?
     private boolean showExternal;
 
     public BeansRefHyperlinkProcessor(boolean showExternal) {
@@ -58,22 +67,34 @@ public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
     }
 
     public void process(HyperlinkEnv env) {
-        Node bean = SpringXMLConfigEditorUtils.getFirstReferenceableNodeById(env.getDocument(), env.getValueString());
-        if (bean != null) {
-            SpringXMLConfigEditorUtils.openDocumentAtOffset(env.getDocument(), getNodeOffset(bean));
+        FileObject fileObject = NbEditorUtilities.getFileObject(env.getDocument());
+        if (fileObject == null) {
+            return;
         }
-    }
-    
-    private int getNodeOffset(Node node) {
-        int offset = -1;
-        
-        switch(node.getNodeType()) {
-            case Node.ELEMENT_NODE:
-                Tag tag = (Tag) node;
-                offset = tag.getElementOffset();
-                break;
+        SpringConfigModel model = SpringConfigModel.forFileObject(fileObject);
+        final String beanName = env.getValueString();
+        final File[] file = { null };
+        final int[] offset = { -1 };
+        try {
+            model.runReadAction(new Action<SpringBeans>() {
+                public void run(SpringBeans beans) {
+                    SpringBean bean = beans.findBean(beanName);
+                    if (bean == null) {
+                        return;
+                    }
+                    Location location = bean.getLocation();
+                    if (location == null) {
+                        return;
+                    }
+                    file[0] = location.getFile();
+                    offset[0] = location.getOffset();
+                }
+            });
+        } catch (IOException e) {
+            Exceptions.printStackTrace(e);
         }
-        
-        return offset;
+        if (file[0] != null) {
+            SpringXMLConfigEditorUtils.openFile(file[0], offset[0]);
+        }
     }
 }
