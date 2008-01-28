@@ -2071,7 +2071,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         dumpClasses((List<? extends ClassSymbol>)classes, fm, root.toExternalForm(), null,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
                                 TransTypes.instance(jt.getContext()),
-                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
+                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()), cpInfo);
                         sa.analyse(trees, jt, fm, active, added);
 
                         for (Pair<String,String> s : classNamesToDelete) {
@@ -2741,7 +2741,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 rootFo.getURL().toExternalForm(), dirtyFiles,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
                                 TransTypes.instance(jt.getContext()),
-                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
+                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()), cpInfo);
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
                             jt = null;
@@ -2780,7 +2780,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 rootFo.getURL().toExternalForm(), dirtyFiles,
                                 com.sun.tools.javac.code.Types.instance(jt.getContext()),
                                 TransTypes.instance(jt.getContext()),
-                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()));
+                                com.sun.tools.javac.util.Name.Table.instance(jt.getContext()),cpInfo);
                         if (listener.lowMemory.getAndSet(false)) {
                             jt.finish();
                             jt = null;
@@ -2910,10 +2910,11 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static void dumpClasses (final List<? extends ClassSymbol> entered, final JavaFileManager fileManager,
         final String currentRoot, final Set<URI> dirtyFiles, final com.sun.tools.javac.code.Types javacTypes,
         final TransTypes trans,
-        final com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
+        final com.sun.tools.javac.util.Name.Table nameTable,
+        final ClasspathInfo cpInfo) throws IOException {
         for (ClassSymbol classSym : entered) {
             JavaFileObject source = classSym.sourcefile;            
-            dumpTopLevel(classSym, fileManager, source, currentRoot, dirtyFiles, javacTypes, trans, nameTable);
+            dumpTopLevel(classSym, fileManager, source, currentRoot, dirtyFiles, javacTypes, trans, nameTable, cpInfo);
         }
     }
     
@@ -2921,7 +2922,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         final JavaFileObject source, final String currentRootURL, final Set<URI> dirtyFiles,
         final com.sun.tools.javac.code.Types types,
         final TransTypes trans,
-        final com.sun.tools.javac.util.Name.Table nameTable) throws IOException {
+        final com.sun.tools.javac.util.Name.Table nameTable,
+        final ClasspathInfo cpInfo) throws IOException {
         assert source != null;
         if (classSym.getSimpleName() != nameTable.error && classSym.getEnclosingElement().getSimpleName() != nameTable.error) {
             URI uri = source.toUri();
@@ -2932,7 +2934,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             if (sourceName == null && !(new File (source.toUri()).exists())) {
                 return;
             }       
-            assert sourceName != null : "Cannot infer file: " + uri.toString();     //NOI18N
+            if (sourceName == null) {
+                throw new AssertionError ("Cannot infer file: " + uri.toString() + " " + cpInfo);   //NOI18N
+            }
             final StringBuilder classNameBuilder = new StringBuilder ();
             ClassFileUtil.encodeClassName(classSym, classNameBuilder, '.');  //NOI18N
             final String binaryName = classNameBuilder.toString();

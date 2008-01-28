@@ -225,7 +225,7 @@ public class ServerInstanceLookup extends Lookup {
         // this can fire fake events in rare cases
         public void stateChanged(ChangeEvent e) {
             List<LookupListener> toFire = new ArrayList<LookupListener>();
-            synchronized (this) {
+            synchronized (listeners) {
                 toFire.addAll(listeners);
             }
 

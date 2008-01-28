@@ -111,6 +111,7 @@ util.filtertable.update({
     'download:': download,
     'upload:': upload,
     })
+# XXX for Hg 0.9.6+, try instead adding to reposetup: repo.adddatafilter(name, fn)
 # --- FROM http://odin.himinbi.org/MultipartPostHandler.py ---
 import urllib
 import urllib2

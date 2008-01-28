@@ -39,16 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.editor;
+package org.netbeans.modules.spring.beans;
 
-import java.util.Map;
-import javax.swing.text.Document;
-import org.w3c.dom.Node;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.LookupProvider;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * @author Andrei Badea
  */
-public interface ReferenceableElementsLocator {
-	Map<String, Node> getReferenceableElements(Document document);
+public class ProjectLookupProvider implements LookupProvider {
+
+    public Lookup createAdditionalLookup(Lookup baseContext) {
+        Project project = baseContext.lookup(Project.class);
+        if (project == null) {
+            throw new IllegalStateException("Could not find a project in lookup " + baseContext);
+        }
+        return Lookups.singleton(new ProjectSpringScopeProvider(project));
+    }
 }

@@ -335,7 +335,6 @@ public class MercurialAnnotator extends VCSAnnotator {
         Node [] nodes = ctx.getElements().lookupAll(Node.class).toArray(new Node[0]);
         File [] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
         File root = HgUtils.getRootFile(ctx);
-        boolean goodVersion = Mercurial.getInstance().isGoodVersion();
         boolean noneVersioned = root == null;
         boolean onlyFolders = onlyFolders(files);
         boolean onlyProjects = onlyProjects(nodes);
@@ -376,9 +375,6 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(new RevertModificationsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Revert"), ctx)); // NOI18N
             actions.add(new ResolveConflictsAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Resolve"), ctx)); // NOI18N
             IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx); // NOI18N
-            if (files.length > 0 && tempIA.getActionStatus(files) == IgnoreAction.UNIGNORING) {
-                tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Unignore"), ctx); // NOI18N
-            }
             actions.add(tempIA);
             actions.add(null);
             actions.add(new PropertiesAction(loc.getString("CTL_PopupMenuItem_Properties"), ctx)); // NOI18N
@@ -425,9 +421,6 @@ public class MercurialAnnotator extends VCSAnnotator {
                         "CTL_PopupMenuItem_MarkResolved"), ctx)); // NOI18N
                     
                     IgnoreAction tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Ignore"), ctx);  // NOI18N
-                    if (files.length > 0 && tempIA.getActionStatus(files) == IgnoreAction.UNIGNORING) {
-                        tempIA = new IgnoreAction(loc.getString("CTL_PopupMenuItem_Unignore"), ctx);  // NOI18N
-                    }
                     actions.add(tempIA);
                 }
                 actions.add(null);

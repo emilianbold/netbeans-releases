@@ -104,6 +104,10 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         this.controller = controller;
         this.customizer = customizer;
     }
+    
+    public ExtenderController getController() {
+        return controller;
+    }
 
     public String getDispatcherName() {
         return dispatcherName;
