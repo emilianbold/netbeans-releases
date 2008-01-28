@@ -160,7 +160,7 @@ public final class SpringScope {
         }
         SpringConfigModel model;
         synchronized (this) {
-            model = group2Model.get(configFile);
+            model = group2Model.get(group);
             if (model == null) {
                 model = new SpringConfigModel(group);
                 group2Model.put(group, model);

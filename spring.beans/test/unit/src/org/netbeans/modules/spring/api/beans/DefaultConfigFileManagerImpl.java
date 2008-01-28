@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.spring.api.beans;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.spring.beans.ConfigFileManagerImplementation;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 
 /**
@@ -54,17 +55,29 @@ import org.openide.util.Mutex;
  */
 public class DefaultConfigFileManagerImpl implements ConfigFileManagerImplementation {
 
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private List<ConfigFileGroup> groups = new ArrayList<ConfigFileGroup>();
+
+    public DefaultConfigFileManagerImpl(ConfigFileGroup... groups) {
+        for (ConfigFileGroup group : groups) {
+            this.groups.add(group);
+        }
+    }
+
     public Mutex mutex() {
         return ProjectManager.mutex();
     }
 
     public List<ConfigFileGroup> getConfigFileGroups() {
-        return Collections.emptyList();
+        return groups;
     }
 
     public void putConfigFileGroups(List<ConfigFileGroup> groups) {
+        this.groups = groups;
+        changeSupport.fireChange();
     }
 
     public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
     }
 }

@@ -47,6 +47,9 @@ import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.openide.util.Mutex;
 
 /**
+ * Interface to which {@link ConfigFileManager} delegates to. Mainly useful
+ * for tests, where the {@link ProjectConfigFileManagerImpl} can be replaced with
+ * a mock one.
  *
  * @author Andrei Badea
  */
