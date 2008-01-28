@@ -45,8 +45,8 @@
                       </Group>
                       <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="nameText" pref="455" max="32767" attributes="0"/>
-                          <Component id="mappingText" alignment="0" pref="455" max="32767" attributes="0"/>
+                          <Component id="nameText" pref="471" max="32767" attributes="0"/>
+                          <Component id="mappingText" alignment="0" pref="471" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -65,7 +65,7 @@
                           <Component id="mappingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="mappingText" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="337" max="32767" attributes="0"/>
+                      <EmptySpace pref="334" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -112,7 +112,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="includeJstlCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="500" max="32767" attributes="0"/>
+                      <EmptySpace pref="506" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -121,7 +121,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="-2" pref="15" max="-2" attributes="0"/>
                       <Component id="includeJstlCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="354" max="32767" attributes="0"/>
+                      <EmptySpace pref="351" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
