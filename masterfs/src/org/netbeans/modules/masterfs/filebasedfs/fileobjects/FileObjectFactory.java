@@ -58,6 +58,7 @@ import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 import org.netbeans.modules.masterfs.filebasedfs.children.ChildrenCache;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -165,6 +166,7 @@ public final class FileObjectFactory {
     }    
 
     private boolean printWarning(File file, Status stat) {
+            NbPreferences.root().node("/org/netbeans").put("warning", file.getAbsolutePath()); 
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             PrintStream ps = new PrintStream(bos);
             new Exception().printStackTrace(ps);
@@ -204,7 +206,7 @@ public final class FileObjectFactory {
                     if (!exist) {
                         parent.refresh();
                     }
-                    assert checkCacheState(exist, file, true, lfs); 
+                    //assert checkCacheState(exist, file, true, lfs); 
                 }
             } else {
                 if (foForFile == null) {
@@ -216,7 +218,7 @@ public final class FileObjectFactory {
                     if (!exist) {
                         foForFile.refresh();
                     }
-                    assert checkCacheState(exist, file, true, lfs);
+                    //assert checkCacheState(exist, file, true, lfs);
                 } else {
                     exist = touchExists(file, realExists);
                     if (exist) {
@@ -237,7 +239,7 @@ public final class FileObjectFactory {
                     if (!exist) {
                         foForFile.refresh();
                     }
-                    assert checkCacheState(exist, file, true, lfs);
+                    //assert checkCacheState(exist, file, true, lfs);
                 }
             } else {
                 exist = false;
