@@ -55,13 +55,14 @@ public final class ConfigFileGroup {
 
     private final Set<File> configFiles = new TreeSet<File>();
 
-    // XXX constructor should not be public.
-    public ConfigFileGroup() {
+    public static ConfigFileGroup create(File... files) {
+        return new ConfigFileGroup(files);
     }
 
-    // XXX remove this constructor in final implementation.
-    public ConfigFileGroup(File file) {
-        configFiles.add(file);
+    private ConfigFileGroup(File... files) {
+        for (File file : files) {
+            configFiles.add(file);
+        }
     }
 
     /**
@@ -73,5 +74,9 @@ public final class ConfigFileGroup {
         Set<File> result = new HashSet<File>(configFiles.size());
         result.addAll(configFiles);
         return result;
+    }
+
+    public synchronized boolean containsFile(File file) {
+        return configFiles.contains(file);
     }
 }
