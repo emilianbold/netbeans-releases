@@ -5,6 +5,7 @@
 \.DS_Store$
 \.orig$
 \.rej$
+^nbbuild/antsrc/org/netbeans/nbbuild/extlibs/external\.pyc$
 ^o.apache.tools.ant.module/external/lib$
 ^ant.freeform/test/unit/data/example-projects/simple/dist$
 ^apisupport.project/src/org/netbeans/modules/apisupport/project/resources/sample-build-impl\.xml$
@@ -736,9 +737,6 @@
 ^xtest/xtest-distribution\.zip$
 ^xtest/results$
 ^xtest/plugins$
-^xtest/examples/MyModule/mymodule\.jar$
-^xtest/examples/PaintApp/dist$
-^xtest/examples/anagrams/dist$
 ^xtest/external/emma\.jar$
 ^xtest/external/emma_ant\.jar$
 ^xtest/instance/results$

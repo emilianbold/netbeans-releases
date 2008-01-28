@@ -931,7 +931,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
         
         public void setName(String newName) {
-            String oldName = folder.getName();
+            String oldName = folder.getDisplayName();
             if (folder.getParent() != null && folder.getParent().findFolderByDisplayName(newName) != null) {
                 String msg = NbBundle.getMessage(MakeLogicalViewProvider.class, "CANNOT_RENAME", oldName, newName); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
