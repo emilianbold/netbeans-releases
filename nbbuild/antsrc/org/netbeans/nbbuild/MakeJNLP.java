@@ -177,6 +177,10 @@ public class MakeJNLP extends Task {
         
         if (signJars) {
             getSignTask().setJar(from);
+            if (to != null) {
+                // #125970: might be .../modules/locale/something_ja.jar
+                to.getParentFile().mkdirs();
+            }
             getSignTask().setSignedjar(to);
             getSignTask().execute();
         } else if (to != null) {
