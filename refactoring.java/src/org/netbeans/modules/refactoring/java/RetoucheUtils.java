@@ -285,6 +285,8 @@ public class RetoucheUtils {
     }
 
     public static boolean isElementInOpenProject(FileObject f) {
+        if (f==null)
+            return false;
         Project p = FileOwnerQuery.getOwner(f);
         Project[] opened = OpenProjects.getDefault().getOpenProjects();
         for (int i = 0; i<opened.length; i++) {
