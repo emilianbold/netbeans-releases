@@ -42,7 +42,7 @@ package org.netbeans.modules.server;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeListener;
-import org.netbeans.spi.server.ServerInstance;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.util.ChangeSupport;
 
