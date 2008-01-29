@@ -1021,8 +1021,11 @@ public abstract class BpelNode<T>
         }
         
         for (Action elem : actions) {
-            if (elem instanceof ShowBpelMapperAction) {
-                return elem;
+            if (elem instanceof org.netbeans.modules.bpel.nodes.actions.GoToAction) {
+                ShowBpelMapperAction goToMapper = SystemAction.get(ShowBpelMapperAction.class);
+                if (goToMapper != null && goToMapper.enable(new Node[] {this})) {
+                    return goToMapper;
+                }
             }
             
             if (elem instanceof ShowPropertyEditorAction) {
