@@ -603,11 +603,13 @@ public class RetoucheUtils {
         
         if (backSource) {
             for (FileObject file : files) {
-                ClassPath source = ClassPath.getClassPath(file, ClassPath.COMPILE);
-                for (Entry root : source.entries()) {
-                    Result r = SourceForBinaryQuery.findSourceRoots(root.getURL());
-                    for (FileObject root2:r.getRoots()) {
-                        dependentRoots.add(URLMapper.findURL(root2, URLMapper.INTERNAL));
+                if (file!=null) {
+                    ClassPath source = ClassPath.getClassPath(file, ClassPath.COMPILE);
+                    for (Entry root : source.entries()) {
+                        Result r = SourceForBinaryQuery.findSourceRoots(root.getURL());
+                        for (FileObject root2 : r.getRoots()) {
+                            dependentRoots.add(URLMapper.findURL(root2, URLMapper.INTERNAL));
+                        }
                     }
                 }
             }
