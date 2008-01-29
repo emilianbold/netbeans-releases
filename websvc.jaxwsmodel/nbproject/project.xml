@@ -209,6 +209,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.jaxwsapi</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
                 <friend>org.netbeans.modules.websvc.rest</friend>
+                <friend>org.netbeans.modules.websvc.saas.api</friend>
+                <friend>org.netbeans.modules.websvc.saas.ui</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.api.jaxws.project</package>
                 <package>org.netbeans.modules.websvc.api.jaxws.project.config</package>
