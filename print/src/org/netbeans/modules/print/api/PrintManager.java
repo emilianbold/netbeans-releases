@@ -51,8 +51,8 @@ public final class PrintManager {
   private PrintManager() {}
 
   /**
-   * Returns Print Preview instance.
-   * @return Print Preview instance
+   * Returns Print Manager instance.
+   * @return Print Manager instance
    */
   public static PrintManager getDefault() {
     return DEFAULT;

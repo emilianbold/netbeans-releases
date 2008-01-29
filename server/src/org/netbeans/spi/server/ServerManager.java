@@ -46,6 +46,7 @@ import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import javax.swing.JButton;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.server.ui.manager.ServerManagerPanel;
 
 /**
