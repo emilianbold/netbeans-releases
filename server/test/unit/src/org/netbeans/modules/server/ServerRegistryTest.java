@@ -99,18 +99,18 @@ public class ServerRegistryTest extends NbTestCase {
         TestInstance instance2 = TestInstance.createInstance(testProvider);
 
         List<ServerInstance> step1 = new ArrayList<ServerInstance>();
-        Collections.addAll(step1, instance1.getApiInstance());
+        Collections.addAll(step1, instance1.getCommonInstance());
         List<ServerInstance> step2 = new ArrayList<ServerInstance>();
-        Collections.addAll(step2, instance1.getApiInstance(), instance2.getApiInstance());
+        Collections.addAll(step2, instance1.getCommonInstance(), instance2.getCommonInstance());
 
         InstanceListener listener = new InstanceListener(step1, step2,
                 step1, Collections.<ServerInstance>emptyList());
         ServerRegistry.getInstance().addChangeListener(listener);
 
-        testProvider.addInstance(instance1.getApiInstance());
-        testProvider.addInstance(instance2.getApiInstance());
-        testProvider.removeInstance(instance2.getApiInstance());
-        testProvider.removeInstance(instance1.getApiInstance());
+        testProvider.addInstance(instance1.getCommonInstance());
+        testProvider.addInstance(instance2.getCommonInstance());
+        testProvider.removeInstance(instance2.getCommonInstance());
+        testProvider.removeInstance(instance1.getCommonInstance());
     }
 
     private static class InstanceListener implements ChangeListener {
