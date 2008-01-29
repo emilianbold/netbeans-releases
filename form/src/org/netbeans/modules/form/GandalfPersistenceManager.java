@@ -1039,12 +1039,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         if (SwingLayoutBuilder.isRelevantContainer(cont)) {
                             // acknowledged by SwingLayoutBuilder - this is new layout
                             visualContainer.setOldLayoutSupport(false);
-                            java.awt.Dimension prefSize = cont.getPreferredSize();
-                            java.awt.Insets insets = cont.getInsets();
-                            int w = prefSize != null ? prefSize.width - insets.left - insets.right : 100;
-                            int h = prefSize != null ? prefSize.height - insets.top - insets.bottom : 100;
                             formModel.getLayoutModel().addRootComponent(
-                                new LayoutComponent(visualContainer.getId(), true, w, h));
+                                new LayoutComponent(visualContainer.getId(), true));
                             layoutSupport = null;
                             newLayout = Boolean.TRUE;
                         }

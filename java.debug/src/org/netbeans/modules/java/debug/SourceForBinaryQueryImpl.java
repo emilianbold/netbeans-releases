@@ -68,6 +68,10 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
                     result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/java/source/javacapi/external/javac-api-nb-7.0-b07.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
                 } else if (binaryRootS.endsWith("/java/source/javacimpl/external/javac-impl-nb-7.0-b07.jar!/")) { // NOI18N
                     result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/java/source/javacimpl/external/javac-impl-nb-7.0-b07.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
+                } else if (binaryRootS.endsWith("/libs.javacapi/external/javac-api-nb-7.0-b07.jar!/")) { // NOI18N
+                    result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/libs.javacapi/external/javac-api-nb-7.0-b07.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
+                } else if (binaryRootS.endsWith("/libs.javacimpl/external/javac-impl-nb-7.0-b07.jar!/")) { // NOI18N
+                    result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/libs.javacimpl/external/javac-impl-nb-7.0-b07.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
                 }
                 final FileObject resultFO = result != null ? URLMapper.findFileObject(result) : null;
                 if (resultFO != null) {
