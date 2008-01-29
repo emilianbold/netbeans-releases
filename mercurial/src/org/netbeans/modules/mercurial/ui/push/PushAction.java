@@ -171,7 +171,7 @@ public class PushAction extends AbstractAction {
             if (bNoChanges) {
                 list = listOutgoing;
             } else {
-                list = HgCommand.doPush(root, pushPath, false);
+                list = HgCommand.doPush(root, pushPath);
             }
             if (!list.isEmpty() &&
                     HgCommand.isErrorAbortPush(list.get(list.size() - 1))) {

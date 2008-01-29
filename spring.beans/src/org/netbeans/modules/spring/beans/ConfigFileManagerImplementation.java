@@ -39,50 +39,24 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.beans.editor;
+package org.netbeans.modules.spring.beans;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import javax.swing.text.Document;
-import org.netbeans.modules.spring.beans.utils.StringUtils;
-import org.netbeans.modules.xml.text.syntax.dom.Tag;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.openide.util.Mutex;
 
 /**
  *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * @author Andrei Badea
  */
-public class BeansReferenceableElementsLocator implements
-        ReferenceableElementsLocator {
+public interface ConfigFileManagerImplementation {
 
-    public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
+    Mutex mutex();
 
-    public Map<String, Node> getReferenceableElements(Document document) {
-        Map<String, Node> nodes = new HashMap<String, Node>();
-        Tag rootNode = SpringXMLConfigEditorUtils.getDocumentRoot(document);
-        NodeList childNodes = rootNode.getChildNodes();
+    List<ConfigFileGroup> getConfigFileGroups();
 
-        for (int i = 0; i < childNodes.getLength(); i++) {
-            Node node = childNodes.item(i);
-            if ("bean".equals(node.getNodeName())) { // NOI18N
-                if (SpringXMLConfigEditorUtils.hasAttribute(node, "id")) { // NOI18N
-                    nodes.put(SpringXMLConfigEditorUtils.getAttribute(node, "id"), node); // NOI18N
-                }
-                if (SpringXMLConfigEditorUtils.hasAttribute(node, "name")) { // NOI18N
-                    String aliasesString = SpringXMLConfigEditorUtils.getAttribute(node,
-                            "name"); // NOI18N
-                    List<String> nameList = StringUtils.tokenize(
-                            aliasesString, BEAN_NAME_DELIMITERS);
-                    for (String name : nameList) {
-                        nodes.put(name, node);
-                    }
-                }
-            }
-        }
-        return nodes;
-    }
-    
+    void putConfigFileGroups(List<ConfigFileGroup> groups);
 
+    void addChangeListener(ChangeListener listener);
 }

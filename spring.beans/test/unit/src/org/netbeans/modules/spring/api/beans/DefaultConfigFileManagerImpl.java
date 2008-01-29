@@ -39,47 +39,32 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.spring.api.beans;
 
-import java.io.IOException;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.spring.api.Action;
-import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.spring.beans.ConfigFileManagerImplementation;
+import org.openide.util.Mutex;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SpringConfigModelTest extends NbTestCase {
+public class DefaultConfigFileManagerImpl implements ConfigFileManagerImplementation {
 
-    public SpringConfigModelTest(String testName) {
-        super(testName);
+    public Mutex mutex() {
+        return ProjectManager.mutex();
     }
 
-    public void testRunReadAction() throws Exception {
-        ConfigFileGroup fileGroup = ConfigFileGroup.create();
-        SpringConfigModel model = new SpringConfigModel(fileGroup);
-        final boolean[] actionRun = { false };
-        model.runReadAction(new Action<SpringBeans>() {
-            public void run(SpringBeans springBeans) {
-                actionRun[0] = true;
-            }
-        });
-        assertTrue(actionRun[0]);
+    public List<ConfigFileGroup> getConfigFileGroups() {
+        return Collections.emptyList();
     }
 
-    public void testExceptionPropagation() throws IOException {
-        ConfigFileGroup fileGroup = ConfigFileGroup.create();
-        SpringConfigModel model = new SpringConfigModel(fileGroup);
-        try {
-            model.runReadAction(new Action<SpringBeans>() {
-                public void run(SpringBeans parameter) {
-                    throw new RuntimeException();
-                }
-            });
-            fail();
-        } catch (RuntimeException e) {
-            // OK.
-        }
+    public void putConfigFileGroups(List<ConfigFileGroup> groups) {
+    }
+
+    public void addChangeListener(ChangeListener listener) {
     }
 }
