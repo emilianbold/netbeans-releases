@@ -489,7 +489,12 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         if (ev.getSource () == next && exceptions.setNextElement() || ev.getSource () == previous && exceptions.setPreviousElement()) {
             current = exceptions.get();
             LogRecord rec = new LogRecord(Level.CONFIG, "NotifyExcPanel: " + ev.getActionCommand());// NOI18N
-            Object[] params = {current.getClassName()+": "+ current.getMessage(), current.getFirstStacktraceLine()}; // NOI18N
+            String message = current.getMessage();
+            String className = current.getClassName();
+            if (message != null){
+                className = className+": "+ message;
+            }
+            Object[] params = {className, current.getFirstStacktraceLine()}; // NOI18N
             rec.setParameters(params);
             //log changes in NotifyPanel - #119632
             Logger.getLogger("org.netbeans.ui.NotifyExcPanel").log(rec);// NOI18N
