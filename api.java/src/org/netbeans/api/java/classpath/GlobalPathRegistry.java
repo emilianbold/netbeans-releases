@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -379,7 +380,9 @@ public final class GlobalPathRegistry {
     
     private synchronized void resetSourceRootsCache () {
         this.sourceRoots = null;
-        for (SourceForBinaryQuery.Result result : results) {
+        for (Iterator< ? extends SourceForBinaryQuery.Result>  it = results.iterator(); it.hasNext();) {
+            SourceForBinaryQuery.Result result = it.next();
+            it.remove();
             result.removeChangeListener(this.resultListener);
         }
         this.resetCount++;
@@ -394,5 +397,15 @@ public final class GlobalPathRegistry {
             }
         }
     };
+    
+    /**
+     * Testability
+     * Used by unit GlobalPathRegistryTest
+     * @return set of {@link SourceForBinaryQuery.Result} the {@link GlobalPathRegistry}
+     * listens on.
+     */
+    Set<? extends SourceForBinaryQuery.Result> getResults () {
+        return Collections.unmodifiableSet(this.results);
+    }
 
 }

@@ -40,11 +40,80 @@
     
     <target name="build" depends="init,-build"/>
     
-    <target name="init" depends="-clean,-init-ml,-init,-init-properties,-post-init-clean"/>
+    <target name="init" depends="-clean,-init-ml,-init-sources,-get-sources,-init,-init-properties,-post-init-clean"/>
+
     
     <target name="-clean">
         <delete dir="${output.dir}"/>
     </target>
+
+
+    <target name="-init-sources">
+	<!-- use.hg.root property is set if hg.root is set and not empty -->
+	<condition property="use.hg.root">
+	    <and>
+	        <isset property="hg.root"/>
+	        <not>
+	            <equals arg1="${hg.root}" arg2=""/> 
+	         </not>
+	    </and>
+        </condition>
+
+        <!-- use.hg.root.translatedfiles property is set if ml.build is set and hg.root.translated is set and not empty -->
+	<condition property="use.hg.root.translatedfiles">
+	    <and>
+	        <isset property="hg.root.translatedfiles"/>
+	        <not>
+	            <equals arg1="${hg.root.translatedfiles}" arg2=""/> 
+	         </not>		
+		<isset property="ml.build"/>
+	    </and>
+        </condition>
+    </target>
+
+
+    <target name="-get-sources" depends="-init-working-dir,-get-installer-sources,-get-translatedfiles"/>
+
+    <target name="-init-working-dir" if="use.hg.root">
+	<delete dir="${nbi.all.dir}"/>
+    </target>
+    
+    <target name="-get-installer-sources" if="use.hg.root">
+        <copy todir="${nbi.core.dir}">
+            <fileset dir="${hg.root}/nbi">
+                <exclude name="infra/server/**/build/**/*.*"/>
+                <exclude name="infra/server/**/dist/**/*.*"/>
+                <exclude name="infra/server/**/private/**/*.*"/>
+            </fileset>
+        </copy>
+        <copy todir="${nbi.netbeans.dir}">
+            <fileset dir="${hg.root}/installer">
+                <exclude name="infra/server/**/build/**/*.*"/>
+                <exclude name="infra/server/**/dist/**/*.*"/>
+                <exclude name="infra/server/**/private/**/*.*"/>
+                <include name="components/**/*.*"/>
+                <include name="infra/**/*.*"/>
+                <include name="engine/**/*.*"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="-get-translatedfiles" if="use.hg.root.translatedfiles">
+	<copy todir="${nbi.all.dir}/translatedfiles/src/nbi">
+            <fileset dir="${hg.root.translatedfiles}/translatedfiles/src/nbi">
+                <include name="**/*.*"/>
+            </fileset>
+        </copy>
+        <copy todir="${nbi.all.dir}/translatedfiles/src/installer">
+            <fileset dir="${hg.root.translatedfiles}/translatedfiles/src/installer">
+                <include name="components/**/*.*"/>
+                <include name="infra/**/*.*"/>
+                <include name="engine/**/*.*"/>
+            </fileset>
+        </copy>
+    </target>
+
+
 
     <target name="-remove-wrong-locale-files" if="nb.locales.isset">
         <echo file="${nbi.all.dir}/locales.tmp">**/*_${nb.locales}.*</echo> 

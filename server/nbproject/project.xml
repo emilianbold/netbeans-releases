@@ -139,6 +139,7 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <public-packages>
+                <package>org.netbeans.api.server</package>
                 <!-- FUTURE
                 <package>org.netbeans.api.server.output</package>
                 <package>org.netbeans.api.server.properties</package> -->

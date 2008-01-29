@@ -636,22 +636,15 @@ public class JavaCodegen implements ICodeGenerator
                     }
                 }
 
+                boolean theSameSet = true;
+                int i = 0;
                 List<IElement> sourceFiles = classifier.getSourceFiles();
-                
-                if (sourceFiles != null)
+
+                if (sourceFiles == null || fmappings.size() != sourceFiles.size()) 
                 {
-                    for (IElement src : sourceFiles)
-                    {
-                        if (src instanceof ISourceFileArtifact)
-                        {
-                            classifier.removeSourceFile((
-                                (ISourceFileArtifact) src).getSourceFile());
-                        }
-                    }
+                    theSameSet = false;
                 }
-
-
-                for (FileMapping fmap : fmappings)
+                for (FileMapping fmap : fmappings)                    
                 {
                     if (genToTmp)
                     {
@@ -679,9 +672,49 @@ public class JavaCodegen implements ICodeGenerator
                             }
                         }
                     }
-                    classifier.addSourceFileNotDuplicate(fmap.targetFilePath);
+                    
+                    if (theSameSet) 
+                    {                        
+                        IElement src = sourceFiles.get(i);
+                        if (src instanceof ISourceFileArtifact)
+                        {
+                            String srcPath = ((ISourceFileArtifact) src).getFileName();
+                            if (! (new File(fmap.targetFilePath).getCanonicalPath()
+                                   .equals(new File(srcPath).getCanonicalPath()))) 
+                            {
+                                theSameSet = false;
+                            }
+                        }
+                        else 
+                        {
+                            theSameSet = false;
+                        }
+                    }
+                    i++;
                 }
                     
+                if (! theSameSet) 
+                {
+                    sourceFiles = classifier.getSourceFiles();
+                
+                    if (sourceFiles != null)
+                    {
+                        for (IElement src : sourceFiles)
+                        {
+                            if (src instanceof ISourceFileArtifact)
+                            {
+                                classifier.removeSourceFile((
+                                    (ISourceFileArtifact) src).getSourceFile());
+                            }
+                        }
+                    }
+
+                    for (FileMapping fmap : fmappings)
+                    {                                     
+                        classifier.addSourceFileNotDuplicate(fmap.targetFilePath);
+                    }
+                }
+
                 if (genToTmp) 
                 {
                     for (FileMapping fmap : fmappings)
