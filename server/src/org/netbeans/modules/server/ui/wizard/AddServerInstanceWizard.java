@@ -51,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.spi.server.ServerInstance;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.server.ServerWizardProvider;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;

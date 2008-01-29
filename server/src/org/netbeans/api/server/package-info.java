@@ -37,64 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.server;
-
-import javax.swing.JComponent;
-import org.netbeans.api.server.ServerInstance;
-import org.netbeans.spi.server.ServerInstanceFactory;
-import org.netbeans.spi.server.ServerInstanceImplementation;
-import org.openide.nodes.Node;
-
 /**
- *
- * @author Petr Hejl
+ * API providing the representation of the server instance.
  */
-public class TestInstance implements ServerInstanceImplementation {
-
-    private final TestInstanceProvider provider;
-
-    private ServerInstance apiInstance;
-    
-    private TestInstance(TestInstanceProvider provider) {
-        this.provider = provider;
-    }
-
-    public static TestInstance createInstance(TestInstanceProvider provider) {
-        TestInstance created = new TestInstance(provider);
-        created.apiInstance = ServerInstanceFactory.createServerInstance(created);
-        return created;
-    }
-    
-    public String getDisplayName() {
-        return "Test Instance"; // NOI18N
-    }
-
-    public String getServerDisplayName() {
-        return "Test Server"; // NOI18N
-    }
-
-    public Node getFullNode() {
-        return null;
-    }
-
-    public Node getBasicNode() {
-        return null;
-    }
-
-    public JComponent getCustomizer() {
-        return null;
-    }
-
-    public boolean isRemovable() {
-        return true;
-    }
-
-    public void remove() {
-        provider.removeInstance(apiInstance);
-    }
-
-    public ServerInstance getApiInstance() {
-        return apiInstance;
-    }
-    
-}
+package org.netbeans.api.server;

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,16 +31,15 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.server;
+package org.netbeans.api.server;
 
 import javax.swing.JComponent;
-import org.netbeans.api.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
@@ -49,52 +48,51 @@ import org.openide.nodes.Node;
  *
  * @author Petr Hejl
  */
-public class TestInstance implements ServerInstanceImplementation {
+public final class ServerInstance {
 
-    private final TestInstanceProvider provider;
-
-    private ServerInstance apiInstance;
-    
-    private TestInstance(TestInstanceProvider provider) {
-        this.provider = provider;
-    }
-
-    public static TestInstance createInstance(TestInstanceProvider provider) {
-        TestInstance created = new TestInstance(provider);
-        created.apiInstance = ServerInstanceFactory.createServerInstance(created);
-        return created;
+    static {
+        ServerInstanceFactory.Accessor.DEFAULT = new ServerInstanceFactory.Accessor() {
+            
+            @Override
+            public ServerInstance createServerInstance(ServerInstanceImplementation impl) {
+                return new ServerInstance(impl);
+            }
+        };
     }
     
+    private final ServerInstanceImplementation delegate;
+    
+    private ServerInstance(ServerInstanceImplementation delegate) {
+        this.delegate = delegate;
+    }
+
     public String getDisplayName() {
-        return "Test Instance"; // NOI18N
+        return delegate.getDisplayName();
     }
-
+    
     public String getServerDisplayName() {
-        return "Test Server"; // NOI18N
+        return delegate.getServerDisplayName();
     }
-
+    
     public Node getFullNode() {
-        return null;
-    }
+        return delegate.getFullNode();
+    }    
 
     public Node getBasicNode() {
-        return null;
+        return delegate.getBasicNode();
     }
+    
 
     public JComponent getCustomizer() {
-        return null;
+        return delegate.getCustomizer();
+    }
+    
+    public void remove() {
+        delegate.remove();
     }
 
     public boolean isRemovable() {
-        return true;
-    }
-
-    public void remove() {
-        provider.removeInstance(apiInstance);
-    }
-
-    public ServerInstance getApiInstance() {
-        return apiInstance;
+        return delegate.isRemovable();
     }
     
 }
