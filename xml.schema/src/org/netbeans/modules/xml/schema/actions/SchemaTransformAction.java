@@ -42,10 +42,6 @@
 package org.netbeans.modules.xml.schema.actions;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.StyledDocument;
 import org.netbeans.modules.xml.axi.AXIModel;
 import org.netbeans.modules.xml.axi.AXIModelFactory;
 import org.netbeans.modules.xml.schema.abe.wizard.SchemaTransformWizard;
@@ -53,7 +49,6 @@ import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.schema.SchemaEditorSupport;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.ui.basic.SchemaModelCookie;
-import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

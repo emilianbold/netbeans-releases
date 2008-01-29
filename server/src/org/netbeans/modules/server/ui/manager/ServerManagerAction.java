@@ -40,7 +40,7 @@
  */
 
 package org.netbeans.modules.server.ui.manager;
-import org.netbeans.spi.server.ServerManager;
+import org.netbeans.api.server.CommonServerUIs;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -58,7 +58,7 @@ public class ServerManagerAction extends CallableSystemAction {
     }
 
     public void performAction() {
-        ServerManager.showCustomizer(null);
+        CommonServerUIs.showCustomizer(null);
     }
 
     public String getName() {
