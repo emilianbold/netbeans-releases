@@ -56,6 +56,20 @@ import org.openide.util.Parameters;
  * responsive to interruption</i>. Otherwise the delay between the {@link #stop()}
  * call and actual finish of the processing can be significant.
  * <p>
+  * The simple example for processing the stream:
+ * <p>
+ * <pre>
+ *     InputStream&nbsp;is&nbsp;=&nbsp;...;<br>
+ *     Charset&nbsp;charset&nbsp;=&nbsp;...;<br>
+ *     LineProcessor&nbsp;myProcessor&nbsp;=&nbsp;...;<br>
+ *     <br>
+ *     ReaderManager&nbsp;manager&nbsp;=&nbsp;ReaderManager.newManager(<br>
+ *     &nbsp;&nbsp;&nbsp;&nbsp;LineReaders.forStream(is,&nbsp;charset),&nbsp;myProcessor);<br>
+ *     manager.start();<br>
+ *     ...<br>
+ *     manager.stop();<br>
+ * </pre> 
+ * <p>
  * This class is <i>ThreadSafe</i>.
  * 
  * @author Petr Hejl
@@ -63,7 +77,13 @@ import org.openide.util.Parameters;
 public final class ReaderManager {
 
     static {
-        ReaderThread.Accessor.DEFAULT = new AccessorImpl();
+        ReaderThread.Accessor.DEFAULT = new ReaderThread.Accessor() {
+
+            @Override
+            public void notifyFinished(ReaderManager manager, ReaderThread thread) {
+                manager.notifyFinished(thread);
+            }
+        };
     }
 
     private static final Logger LOGGER = Logger.getLogger(ReaderManager.class.getName());
@@ -194,14 +214,6 @@ public final class ReaderManager {
 
         private LineProcessor getProcessor() {
             return processor;
-        }
-
-    }
-
-    private static class AccessorImpl extends ReaderThread.Accessor {
-
-        public void notifyFinished(ReaderManager manager, ReaderThread thread) {
-            manager.notifyFinished(thread);
         }
 
     }
