@@ -103,8 +103,17 @@ public class ExportDiffAction extends AbstractAction {
         }
         final String revStr = ed.getSelectionRevision();
         final String outputFileName = ed.getOutputFileName();
-        File outputFile = new File(outputFileName);
-        HgModuleConfig.getDefault().setExportFolder(outputFile.getParent());
+        File destinationFile = new File(outputFileName);
+        if (destinationFile.exists()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Confirmation(NbBundle.getMessage(ExportDiffAction.class, "BK3005", destinationFile.getAbsolutePath()));
+            nd.setOptionType(NotifyDescriptor.YES_NO_OPTION);
+            DialogDisplayer.getDefault().notify(nd);
+            if (nd.getValue().equals(NotifyDescriptor.OK_OPTION) == false) {
+                return;
+            }
+        }
+
+        HgModuleConfig.getDefault().setExportFolder(destinationFile.getParent());
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
         HgProgressSupport support = new HgProgressSupport() {
             public void perform() {
