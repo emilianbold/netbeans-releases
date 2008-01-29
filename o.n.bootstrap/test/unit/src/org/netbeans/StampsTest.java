@@ -166,6 +166,62 @@ public class StampsTest extends NbTestCase {
         bb.clear();
     }
     
+    public void testAppendToCache() throws Exception {
+        final Stamps s = Stamps.getModulesJARs();
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+
+        class Up implements Stamps.Updater {
+
+            public void flushCaches(DataOutputStream os) throws IOException {
+                os.writeInt(1);
+                os.writeInt(2);
+                os.writeShort(2);
+            }
+
+            public void cacheReady() {
+                assertNotNull("stream can be obtained", s.asStream("mycache.dat"));
+            }
+            
+        }
+        Up updater = new Up();
+        
+        s.scheduleSave(updater, "mycache.dat", true);
+        
+        assertNull(s.asByteBuffer("mycache.dat"));
+        assertNull(s.asStream("mycache.dat"));
+        
+        s.waitFor(false);
+
+        {
+            ByteBuffer bb;
+            InputStream is;
+            assertNotNull(bb = s.asByteBuffer("mycache.dat"));
+            assertNotNull(is = s.asStream("mycache.dat"));
+
+            assertEquals("10 bytes", 10, bb.remaining());
+            assertEquals("10 bytes stream", 10, is.available());
+
+            is.close();
+            bb.clear();
+        }
+        
+        s.scheduleSave(updater, "mycache.dat", true);
+        
+        s.waitFor(false);
+
+        {
+            ByteBuffer bb;
+            assertNotNull(bb = s.asByteBuffer("mycache.dat"));
+
+            assertEquals("appened bytes", 20, bb.remaining());
+
+            bb.clear();
+        }
+        
+    }
+    
     public void testWriteToCacheWithError() {
         Stamps s = Stamps.getModulesJARs();
         

@@ -185,7 +185,7 @@ public class Folder {
             }
             if (!((Folder)o).isProjectFiles()) {
                 indexAt--;
-                break;
+                continue;
             }
             String name2 = ((Folder)o).getSortName();
             int compareRes = name1.compareTo(name2);
