@@ -68,7 +68,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellEditor;
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
 import org.netbeans.modules.sun.manager.jbi.util.StackTraceUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -116,7 +116,7 @@ public class TabularDataCellEditorFactory {
     }
     
     public static TableCellEditor getEditor(Class clazz, 
-            OldJBIComponentConfigurationDescriptor descriptor, boolean isWritable) {
+            JBIComponentConfigurationDescriptor descriptor, boolean isWritable) {
         if (clazz.equals(TabularData.class)) {
             return new TabularDataActionTableCellEditor(
                     new TabularDataCellEditor(), descriptor, isWritable);
@@ -404,7 +404,7 @@ abstract class AbstractActionTableCellEditorDecorator
 class TabularDataActionTableCellEditor 
         extends AbstractActionTableCellEditorDecorator {
     
-    private OldJBIComponentConfigurationDescriptor descriptor;
+    private JBIComponentConfigurationDescriptor descriptor;
     private boolean isWritable;
 
     public TabularDataActionTableCellEditor(TableCellEditor realEditor,
@@ -413,7 +413,7 @@ class TabularDataActionTableCellEditor
     }
     
     public TabularDataActionTableCellEditor(TableCellEditor realEditor,
-            OldJBIComponentConfigurationDescriptor descriptor,
+            JBIComponentConfigurationDescriptor descriptor,
             boolean isWritable) {
         super(realEditor);
         this.descriptor = descriptor;
