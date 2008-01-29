@@ -213,6 +213,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private JToolTip toolTip;
         private CompletionDocumentation documentation;
         private int anchorOffset;
+        private int toolTipOffset;
 
         private JTextComponent component;
 
@@ -318,7 +319,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     else if (newOffset - caretOffset > 0)
                         filterPrefix = component.getDocument().getText(caretOffset, newOffset - caretOffset);
                     else if (newOffset - caretOffset < 0)
-                        filterPrefix = component.getDocument().getText(newOffset, caretOffset - newOffset);
+                        filterPrefix = newOffset > toolTipOffset ? component.getDocument().getText(newOffset, caretOffset - newOffset) : null;
                 } catch (BadLocationException ex) {}
                 return (filterPrefix != null && filterPrefix.indexOf(',') == -1 && filterPrefix.indexOf('(') == -1 && filterPrefix.indexOf(')') == -1); // NOI18N
             }
@@ -449,7 +450,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (params != null)
                             toolTip = new MethodParamsTipPaintComponent(params, types.length, component);
                         startPos = (int)sourcePositions.getEndPosition(env.getRoot(), mi.getMethodSelect());
-                        anchorOffset = controller.getPositionConverter().getOriginalPosition(controller.getText().indexOf('(', startPos)); //NOI18N
+                        String text = controller.getText().substring(startPos, offset);
+                        anchorOffset = startPos + controller.getPositionConverter().getOriginalPosition(text.indexOf('(')); //NOI18N
+                        toolTipOffset = startPos + controller.getPositionConverter().getOriginalPosition(text.lastIndexOf(',')); //NOI18N
+                        if (toolTipOffset < anchorOffset)
+                            toolTipOffset = anchorOffset;
                         return;
                     }
                 } else if (tree.getKind() == Tree.Kind.NEW_CLASS) {
@@ -484,7 +489,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                             path = path.getParentPath();
                             pos = (int)sourcePositions.getStartPosition(root, path.getLeaf());
                         }
-                        anchorOffset = controller.getPositionConverter().getOriginalPosition(controller.getText().indexOf('(', pos)); //NOI18N
+                        String text = controller.getText().substring(pos, offset);
+                        anchorOffset = pos + controller.getPositionConverter().getOriginalPosition(text.indexOf('(')); //NOI18N
+                        toolTipOffset = pos + controller.getPositionConverter().getOriginalPosition(text.lastIndexOf(',')); //NOI18N
+                        if (toolTipOffset < anchorOffset)
+                            toolTipOffset = anchorOffset;
                         return;
                     }
                 }
