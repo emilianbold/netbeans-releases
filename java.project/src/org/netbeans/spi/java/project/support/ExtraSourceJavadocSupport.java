@@ -39,6 +39,7 @@
 
 package org.netbeans.spi.java.project.support;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.project.ExtraProjectSourceForBinaryQueryImpl;
 import org.netbeans.modules.java.project.ExtraProjectJavadocForBinaryQueryImpl;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -68,8 +69,8 @@ public class ExtraSourceJavadocSupport {
      * @param eval project's PropertyEvaluator instance
      * @return object to use in project's lookup.
      */
-    public static SourceForBinaryQueryImplementation createExtraSourceQueryImplementation (AntProjectHelper helper, PropertyEvaluator eval) {
-        return new ExtraProjectSourceForBinaryQueryImpl(helper, eval);
+    public static SourceForBinaryQueryImplementation createExtraSourceQueryImplementation (Project project, AntProjectHelper helper, PropertyEvaluator eval) {
+        return new ExtraProjectSourceForBinaryQueryImpl(project, helper, eval);
     }
     
     /**
@@ -79,8 +80,9 @@ public class ExtraSourceJavadocSupport {
      * @param eval project's PropertyEvaluator instance
      * @return object to use in project's lookup.
      */
-    public static JavadocForBinaryQueryImplementation createExtraJavadocQueryImplementation (AntProjectHelper helper, PropertyEvaluator eval) {
-        return new ExtraProjectJavadocForBinaryQueryImpl(helper, eval);
+    public static JavadocForBinaryQueryImplementation createExtraJavadocQueryImplementation (Project project, AntProjectHelper helper, PropertyEvaluator eval) {
+        return new ExtraProjectJavadocForBinaryQueryImpl(project, helper, eval);
     }
-    
+
+
 }

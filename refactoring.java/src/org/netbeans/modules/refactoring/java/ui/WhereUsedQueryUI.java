@@ -87,8 +87,13 @@ public class WhereUsedQueryUI implements RefactoringUI {
         this.query.getContext().add(info.getClasspathInfo());
         this.element = handle;
         Element el = handle.resolveElement(info);
-        name = UiUtils.getHeader(el, info, UiUtils.PrintPart.NAME);
-        kind = el.getKind();
+        if (el!=null) {
+            name = UiUtils.getHeader(el, info, UiUtils.PrintPart.NAME);
+            kind = el.getKind();
+        } else {
+            name = ""; //NOI18N
+            kind = ElementKind.OTHER;
+        }
     }
     
     public WhereUsedQueryUI(TreePathHandle jmiObject, String name, AbstractRefactoring delegate) {

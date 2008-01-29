@@ -57,7 +57,7 @@ public class SpringConfigModelTest extends NbTestCase {
     }
 
     public void testRunReadAction() throws Exception {
-        ConfigFileGroup fileGroup = new ConfigFileGroup();
+        ConfigFileGroup fileGroup = ConfigFileGroup.create();
         SpringConfigModel model = new SpringConfigModel(fileGroup);
         final boolean[] actionRun = { false };
         model.runReadAction(new Action<SpringBeans>() {
@@ -69,7 +69,7 @@ public class SpringConfigModelTest extends NbTestCase {
     }
 
     public void testExceptionPropagation() throws IOException {
-        ConfigFileGroup fileGroup = new ConfigFileGroup();
+        ConfigFileGroup fileGroup = ConfigFileGroup.create();
         SpringConfigModel model = new SpringConfigModel(fileGroup);
         try {
             model.runReadAction(new Action<SpringBeans>() {

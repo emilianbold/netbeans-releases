@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.beans;
 
+import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.openide.filesystems.FileObject;
@@ -61,7 +62,7 @@ public abstract class SpringScopeAccessor {
         }
     }
 
-    public abstract SpringScope createSpringScope();
+    public abstract SpringScope createSpringScope(ConfigFileManager manager);
 
     public abstract SpringConfigModel getConfigModel(SpringScope scope, FileObject fo);
 }

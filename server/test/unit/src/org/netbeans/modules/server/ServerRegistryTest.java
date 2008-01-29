@@ -45,8 +45,8 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.server.ServerInstance;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,22 +95,22 @@ public class ServerRegistryTest extends NbTestCase {
         TestInstanceProvider testProvider = (TestInstanceProvider) provider;
         testProvider.clean();
 
-        TestInstance instance1 = new TestInstance(testProvider);
-        TestInstance instance2 = new TestInstance(testProvider);
+        TestInstance instance1 = TestInstance.createInstance(testProvider);
+        TestInstance instance2 = TestInstance.createInstance(testProvider);
 
         List<ServerInstance> step1 = new ArrayList<ServerInstance>();
-        Collections.addAll(step1, instance1);
+        Collections.addAll(step1, instance1.getApiInstance());
         List<ServerInstance> step2 = new ArrayList<ServerInstance>();
-        Collections.addAll(step2, instance1, instance2);
+        Collections.addAll(step2, instance1.getApiInstance(), instance2.getApiInstance());
 
         InstanceListener listener = new InstanceListener(step1, step2,
                 step1, Collections.<ServerInstance>emptyList());
         ServerRegistry.getInstance().addChangeListener(listener);
 
-        testProvider.addInstance(instance1);
-        testProvider.addInstance(instance2);
-        testProvider.removeInstance(instance2);
-        testProvider.removeInstance(instance1);
+        testProvider.addInstance(instance1.getApiInstance());
+        testProvider.addInstance(instance2.getApiInstance());
+        testProvider.removeInstance(instance2.getApiInstance());
+        testProvider.removeInstance(instance1.getApiInstance());
     }
 
     private static class InstanceListener implements ChangeListener {
