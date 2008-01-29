@@ -678,8 +678,14 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
         public Void visitTypeCast(TypeCastTree tree, EnumSet<UseTypes> d) {
             Tree expr = tree.getExpression();
             
-            if (expr instanceof IdentifierTree) {
+            if (expr.getKind() == Kind.IDENTIFIER) {
                 handlePossibleIdentifier(new TreePath(getCurrentPath(), expr), EnumSet.of(UseTypes.READ));
+            }
+            
+            Tree cast = tree.getType();
+            
+            if (cast.getKind() == Kind.IDENTIFIER) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), cast), EnumSet.of(UseTypes.READ));
             }
             
             super.visitTypeCast(tree, d);

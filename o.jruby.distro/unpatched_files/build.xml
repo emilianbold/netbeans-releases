@@ -293,12 +293,17 @@
       <arg value="activesupport"/>
       <arg value="actionpack"/>
       <arg value="activerecord"/>
+      <!-- new in 2.0.2 -->
+      <arg value="activeresource"/>
       <!-- Renamed from activerecord-jdbc-adapter.gem because attempting a simple
         gem install activerecord-jdbc will find and use the ActiveRecord gem file
         instead -->
       <arg value="jdbc-activerecord-jdbc-adapter"/>
       <arg value="actionmailer"/>
+      <!-- 
+      removed from the  2.0.2 bundle 
       <arg value="actionwebservice"/>
+      -->
       <arg value="rails"/>
       <arg value="--env-shebang"/>
       <arg value="--no-rdoc"/>
