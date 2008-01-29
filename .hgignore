@@ -765,7 +765,3 @@
 ^xtest/server/logs$
 ^xtest/server/build-info$
 ^xtest/test/instance/results$
-\.orig$
-\.orig\..*$
-\.chg\..*$
-\.rej$
