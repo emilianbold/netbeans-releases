@@ -121,6 +121,8 @@ final class ProjectUtilities {
      * </ul>
      */
     public static void newProjectWizard(File workingDirectory) {
+        if(workingDirectory == null) return;
+        
         Action action = CommonProjectActions.newProjectAction();
         if (action != null) {
             File original = ProjectChooser.getProjectsFolder();
@@ -146,7 +148,7 @@ final class ProjectUtilities {
     }
 
     private static List<Project> scanForProjectsRecursively(FileObject scanRoot, int deep) {
-        if (deep <= 0) return Collections.emptyList();
+        if (scanRoot == null || deep <= 0) return Collections.emptyList();
         List<Project> projects = new LinkedList<Project>();
         ProjectManager projectManager = ProjectManager.getDefault();
         if (scanRoot.isFolder() && projectManager.isProject(scanRoot)) {

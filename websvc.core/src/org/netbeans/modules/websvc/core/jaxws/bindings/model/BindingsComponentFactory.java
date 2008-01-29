@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.core.jaxws.bindings.model;
 
 import org.netbeans.modules.xml.xam.dom.ComponentFactory;
@@ -47,12 +46,20 @@ import org.netbeans.modules.xml.xam.dom.ComponentFactory;
  *
  * @author Roderico Cruz
  */
-public interface BindingsComponentFactory extends 
-        ComponentFactory<BindingsComponent>{
+public interface BindingsComponentFactory extends
+        ComponentFactory<BindingsComponent> {
+
     GlobalBindings createGlobalBindings();
+
     DefinitionsBindings createDefinitionsBindings();
+
     BindingsHandlerChains createHandlerChains();
+
     BindingsHandlerChain createHandlerChain();
+
     BindingsHandler createHandler();
+
     BindingsHandlerClass createHandlerClass();
+
+    BindingsHandlerName createHandlerName();
 }

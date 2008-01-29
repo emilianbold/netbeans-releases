@@ -343,7 +343,7 @@ public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImpl
                     continue;
                 }
                 StringTokenizer st = new StringTokenizer(path, "/"); // NOI18N
-                if (st.countTokens() > ModuleList.DEPTH_NB_ALL) {
+                if (st.countTokens() > /*ModuleList.DEPTH_NB_ALL*/3) {
                     continue;
                 }
                 String name = path.substring(path.lastIndexOf('/') + 1, path.length());

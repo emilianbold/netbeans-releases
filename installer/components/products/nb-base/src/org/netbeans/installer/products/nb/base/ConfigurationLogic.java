@@ -209,7 +209,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             } catch (NativeException e) {
                 LogManager.unindent();
                 
-                throw new InstallationException(
+                LogManager.log(
                         getString("CL.install.error.desktop"), // NOI18N
                         e);
             }
@@ -253,7 +253,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         CURRENT_USER_PROPERTY_VALUE);
             }
         } catch (NativeException e) {
-            throw new InstallationException(
+            LogManager.log(
                     getString("CL.install.error.start.menu"), // NOI18N
                     e);
         }
@@ -367,7 +367,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         true);
             }
         } catch (NativeException e) {
-            throw new UninstallationException(
+            LogManager.log(
                     getString("CL.uninstall.error.start.menu"), // NOI18N
                     e);
         }
@@ -393,7 +393,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                             false);
                 }
             } catch (NativeException e) {
-                throw new UninstallationException(
+                LogManager.log(
                         getString("CL.uninstall.error.desktop"), // NOI18N
                         e);
             }

@@ -11,23 +11,11 @@ then
     fi
     dir=`dirname $0`/../..
     cd $dir
-elif [ `ant -f nbbuild/build.xml print-cvs-modules | perl -ne 'print sort qw(jemmy jellytools testtools xtest), split /[, ]/, $1 if /cvsmodules=\[(.+)\]/'` \!= `perl -e 'opendir D, "."; print sort grep {!/\.\.?/ && -d} readdir D; closedir D'` ]
-then
-    echo "Set of modules changed, getting fresh checkout..."
-    rm -rf `ls | fgrep -v nbbuild`
-    ant -f nbbuild/build.xml checkout cvs-clean || exit
 elif [ builds/`ls -1 ../builds | tail -2 | head -1` '!=' `readlink ../lastSuccessful` ] || fgrep -q StackTrace ../lastSuccessful/junitResult.xml
 then
     echo "Previous build failed, running clean build this time..."
-    ant -f nbbuild/build.xml cvs-clean || exit
+    ant -f nbbuild/build.xml hg-clean || exit
 fi
-
-for www in */www ; do
-    if [ \! -f $www/.IGNOREME ] ; then
-        rm -rf $www
-        cp -r nbbuild/dummy $www
-    fi
-done
 
 DIST=$PWD/nbbuild/dist
 rm -rf $DIST/

@@ -56,7 +56,7 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
-import org.netbeans.modules.sun.manager.jbi.management.model.ComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -77,7 +77,7 @@ public class SimpleTabularDataEditor extends PropertyEditorSupport
         
     private TabularType tabularType;
     
-    protected ComponentConfigurationDescriptor descriptor;
+    protected OldJBIComponentConfigurationDescriptor descriptor;
     
     protected SimpleTabularDataCustomEditor customEditor;
     
@@ -86,7 +86,7 @@ public class SimpleTabularDataEditor extends PropertyEditorSupport
     public SimpleTabularDataEditor(String tableLabelText,
             String tableLabelDescription,
             TabularType tabularType,
-            ComponentConfigurationDescriptor descriptor,
+            OldJBIComponentConfigurationDescriptor descriptor,
             boolean isWritable){
         this.tabularType = tabularType;
         this.tableLabelText = tableLabelText;

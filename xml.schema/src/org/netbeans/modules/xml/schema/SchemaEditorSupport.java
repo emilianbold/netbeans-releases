@@ -257,14 +257,14 @@ public class SchemaEditorSupport extends DataEditorSupport
         SchemaDataObject dobj = getEnv().getSchemaDataObject();
         FileObject fobj = dobj.getPrimaryFile();
         ModelSource modelSource = Utilities.getModelSource(fobj, true);
-        model = SchemaModelFactory.getDefault().getModel(modelSource);        
-//        boolean validModelSource = modelSource != null &&
-//                modelSource.getLookup().lookup(Document.class) != null;
-//        if (!validModelSource) {
-//            throw new IOException(
-//                    NbBundle.getMessage(SchemaEditorSupport.class,
-//                    "MSG_UnableToCreateModel"));
-//        }
+        boolean validModelSource = modelSource != null &&
+                modelSource.getLookup().lookup(Document.class) != null;
+        if (!validModelSource) {
+            throw new IOException(
+                    NbBundle.getMessage(SchemaEditorSupport.class,
+                    "MSG_UnableToCreateModel"));
+        }
+        model = SchemaModelFactory.getDefault().getModel(modelSource);
         return model;
     }
     

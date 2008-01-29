@@ -83,8 +83,7 @@ public class ComponentInformationParserTest {
         
         URI xmlURI = getClass().getResource("resources/BindingComponentInformation.xml").toURI();
         File xmlFile = new File(xmlURI);
-        JBIComponentDocument compDoc = ComponentInformationParser.parse(xmlFile);
-        List<JBIComponentStatus> compList = compDoc.getJbiComponentList();
+        List<JBIComponentStatus> compList = ComponentInformationParser.parse(xmlFile);
         assertEquals(5, compList.size());
         
         // check one BC
@@ -110,8 +109,7 @@ public class ComponentInformationParserTest {
         
         URI xmlURI = getClass().getResource("resources/ComponentInformation.xml").toURI();
         File xmlFile = new File(xmlURI);
-        JBIComponentDocument compDoc = ComponentInformationParser.parse(xmlFile);
-        List<JBIComponentStatus> compList = compDoc.getJbiComponentList();
+        List<JBIComponentStatus> compList = ComponentInformationParser.parse(xmlFile);
         assertEquals(11, compList.size());
         
         // check one SE

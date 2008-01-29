@@ -82,9 +82,6 @@ import org.xml.sax.InputSource;
  */
 final class ModuleListParser {
 
-    /** Synch with org.netbeans.modules.apisupport.project.ModuleList.DEPTH_NB_ALL */
-    private static final int DEPTH_NB_ALL = 3;
-    
     private static Map<File,Map<String,Entry>> SOURCE_SCAN_CACHE = new HashMap<File,Map<String,Entry>>();
     private static Map<File,Map<String,Entry>> SUITE_SCAN_CACHE = new HashMap<File,Map<String,Entry>>();
     private static Map<File,Entry> STANDALONE_SCAN_CACHE = new HashMap<File,Entry>();
@@ -98,6 +95,13 @@ final class ModuleListParser {
         BINARY_SCAN_CACHE.clear();
     }
     
+    /** Synch with org.netbeans.modules.apisupport.project.universe.ModuleList.FOREST: */
+    private static final String[] FOREST = {
+        /*root*/null,
+        "contrib",
+        // do not scan in misc; any real modules would have been put in contrib
+        // Will there be other subtrees in the future (not using suites)?
+    };
     /**
      * Find all NBM projects in a root, possibly from cache.
      */
@@ -204,9 +208,24 @@ final class ModuleListParser {
                     // Might be an extra module (e.g. something in contrib); need to scan everything.
                     if (project != null) {
                         project.log("Scanning for modules in " + root);
-                        project.log("Quick scan mode disabled since " + basedir + " not among standard modules of " + root + " which are " + standardModules, project.MSG_VERBOSE);
+                        project.log("Quick scan mode disabled since " + basedir + " not among standard modules of " + root + " which are " + standardModules, Project.MSG_VERBOSE);
                     }
-                    doScanNetBeansOrgSources(entries, root, DEPTH_NB_ALL, properties, null, project, timestampsAndSizes);
+                    for (String tree : FOREST) {
+                        File dir = tree == null ? root : new File(root, tree);
+                        File[] kids = dir.listFiles();
+                        if (kids == null) {
+                            continue;
+                        }
+                        for (File kid : kids) {
+                            if (!kid.isDirectory()) {
+                                continue;
+                            }
+                            String name = kid.getName();
+                            String path = tree == null ? name : tree + "/" + name;
+                            scanPossibleProject(kid, entries, properties, path, ParseProjectXml.TYPE_NB_ORG, project, timestampsAndSizes);
+                        }
+                        
+                    }
                 }
                 if (project != null) {
                     project.log("Found modules: " + entries.keySet(), Project.MSG_VERBOSE);
@@ -234,44 +253,6 @@ final class ModuleListParser {
     private static void registerTimestampAndSize(File f, Map<File,Long[]> timestampsAndSizes) {
         if (timestampsAndSizes != null) {
             timestampsAndSizes.put(f, new Long[] {f.lastModified(), f.length()});
-        }
-    }
-    
-    /** Borrowed from org.netbeans.modules.apisupport.project.universe.ModuleList; cf. #61579 */
-    private static final String[] EXCLUDED_DIR_NAMES = {
-        "CVS", // NOI18N
-        "nbproject", // NOI18N
-        "www", // NOI18N
-        "test", // NOI18N
-        "build", // NOI18N
-        "src", // NOI18N
-        "org", // NOI18N
-    };
-    /**
-     * Scan a root for all NBM projects.
-     */
-    private static void doScanNetBeansOrgSources(Map<String,Entry> entries, File dir, int depth, Hashtable<String,String> properties,
-            String pathPrefix, Project project, Map<File,Long[]> timestampsAndSizes) throws IOException {
-        if (depth == 0) {
-            return;
-        }
-        File[] kids = dir.listFiles();
-        if (kids == null) {
-            return;
-        }
-        KIDS: for (File kid : kids) {
-            if (!kid.isDirectory()) {
-                continue;
-            }
-            String name = kid.getName();
-            for (String n : EXCLUDED_DIR_NAMES) {
-                if (name.equals(n)) {
-                    continue KIDS;
-                }
-            }
-            String newPathPrefix = (pathPrefix != null) ? pathPrefix + "/" + name : name;
-            scanPossibleProject(kid, entries, properties, newPathPrefix, ParseProjectXml.TYPE_NB_ORG, project, timestampsAndSizes);
-            doScanNetBeansOrgSources(entries, kid, depth - 1, properties, newPathPrefix, project, timestampsAndSizes);
         }
     }
     

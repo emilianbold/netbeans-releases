@@ -93,7 +93,6 @@ public class SpringConfigModelController {
     }
 
     private void initialize() {
-        // XXX need to listen on the context, the list of files may change
         for (File configFile : configFileGroup.getConfigFiles()) {
             file2Controller.put(configFile, new SpringConfigFileModelController(configFile));
             FileChangeSupport.DEFAULT.addListener(listener, configFile);

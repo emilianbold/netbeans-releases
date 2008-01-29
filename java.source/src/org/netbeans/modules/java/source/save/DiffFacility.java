@@ -40,15 +40,11 @@
  */
 package org.netbeans.modules.java.source.save;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.GuardedDocument;
 import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 
 /**
@@ -192,47 +188,25 @@ class DiffFacility {
         TokenSequence<JavaTokenId> seq2 = TokenHierarchy.create(text2, JavaTokenId.language()).tokenSequence(JavaTokenId.language());
         List<Line> list1 = new ArrayList<Line>();
         List<Line> list2 = new ArrayList<Line>();
+        JavaTokenId lastId1 = null;
         while (seq1.moveNext()) {
             String data = seq1.token().text().toString();
+            lastId1 = seq1.token().id();
             list1.add(new Line(data, seq1.offset(), seq1.offset() + data.length()));
         }
+        JavaTokenId lastId2 = null;
         while (seq2.moveNext()) {
             String data = seq2.token().text().toString();
+            lastId2 = seq2.token().id();
             list2.add(new Line(data, seq2.offset(), seq2.offset() + data.length()));
+        }
+        if (lastId1 != null && lastId1 == lastId2 && lastId1 == JavaTokenId.LINE_COMMENT) {
+            list1.remove(list1.size() - 1);
+            list2.remove(list2.size() - 1);
         }
         Line[] lines1 = list1.toArray(new Line[list1.size()]);
         Line[] lines2 = list2.toArray(new Line[list2.size()]);
-        Comparator<Line> comparator = null;
-        // if the document is guarded, we need special comparator to ignore
-        // reformatting of redundant spaces. They shouldn't be changed.
-        try {
-            if (gdiff.workingCopy.getDocument() instanceof GuardedDocument) {
-
-                comparator = new Comparator<Line>() {
-
-                    public int compare(Line o1, Line o2) {
-                        if (o1.equals(o2)) 
-                            return 0;
-                        
-                        if (o1.data.startsWith("//") && o2.data.startsWith("//"))
-                            return 0;
-                        
-                        if (o1.data.trim().length() == 0 || o2.data.trim().length() == 0) {
-                            int sep = o1.data.indexOf('\n');
-                            if (sep > -1 && o2.data.indexOf('\n') > 0) {
-                                o2.data = o1.data.substring(0, sep) + o2.data.substring(o2.data.indexOf('\n'));
-                                o2.start += sep;
-                            }
-                        }
-
-                        return 100;
-                    }
-                };
-            }
-        } catch (IOException e) {
-            Logger.getLogger(DiffFacility.class.getName()).severe("Error!");
-        }
-        List<Difference> diffs = new ComputeDiff<Line>(lines1, lines2, comparator).diff();
+        List<Difference> diffs = new ComputeDiff<Line>(lines1, lines2).diff();
         for (Difference diff : diffs) {
             int delStart = diff.getDeletedStart();
             int delEnd   = diff.getDeletedEnd();

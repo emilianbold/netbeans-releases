@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.websvc.core.jaxws;
 
 import java.beans.PropertyChangeListener;
@@ -64,10 +63,14 @@ import org.netbeans.modules.xml.catalog.spi.CatalogListener;
  * @author Milan Kuchiak
  *
  */
-public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver  {
+public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
 
     public static final String SUN_JAXWS_ID = "http://java.sun.com/xml/ns/jax-ws/ri/runtime"; // NOI18N
     private static final String URL_SUN_JAXWS = "nbres:/org/netbeans/modules/websvc/core/resources/sun-jaxws.xsd"; // NOI18N
+    public static final String JAXWS_WSDL_BINDING_ID = "http://java.sun.com/xml/ns/jaxws"; // NOI18N
+    private static final String URL_JAXWS_WSDL_BINDING = "nbres:/org/netbeans/modules/websvc/core/resources/wsdl_customizationschema_2_0.xsd"; // NOI18N
+    public static final String JAXWS_HANDLER_CHAIN_ID = "http://java.sun.com/xml/ns/javaee"; // NOI18N
+    private static final String URL_JAXWS_HANDLER_CHAIN = "nbres:/org/netbeans/modules/websvc/core/resources/javaee_web_services_metadata_handler_2_0.xsd"; // NOI18N
 
     public WebServicesSchemaCatalog() {
     }
@@ -79,6 +82,8 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
     public Iterator<String> getPublicIDs() {
         List<String> list = new ArrayList<String>();
         list.add(SUN_JAXWS_ID);
+        list.add(JAXWS_WSDL_BINDING_ID);
+        list.add(JAXWS_HANDLER_CHAIN_ID);
         return list.listIterator();
     }
 
@@ -87,11 +92,15 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * @return null if not registered
      */
     public String getSystemID(String publicId) {
-        if(SUN_JAXWS_ID.equals(publicId)) {
+        if (SUN_JAXWS_ID.equals(publicId)) {
             return URL_SUN_JAXWS;
+        } else if (JAXWS_WSDL_BINDING_ID.equals(publicId)) {
+            return URL_JAXWS_WSDL_BINDING;
+        } else if (JAXWS_HANDLER_CHAIN_ID.equals(publicId)) {
+            return URL_JAXWS_HANDLER_CHAIN;
         } else {
-            return null;
         }
+        return null;
     }
 
     /**
@@ -138,7 +147,7 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * @return I18N short description
      */
     public String getShortDescription() {
-        return NbBundle.getMessage (WebServicesSchemaCatalog.class, "DESC_WSSchemaCatalog");
+        return NbBundle.getMessage(WebServicesSchemaCatalog.class, "DESC_WSSchemaCatalog");
     }
 
     /** Unregister the listener.
@@ -152,29 +161,43 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * @param systemId systemId for resolved entity
      * @return InputSource for
      */
-    public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+    public InputSource resolveEntity(
+            String publicId, String systemId) throws SAXException, IOException {
         if (SUN_JAXWS_ID.equals(publicId)) {
             return new InputSource(URL_SUN_JAXWS);
+        } else if (JAXWS_WSDL_BINDING_ID.equals(publicId)) {
+            return new InputSource(URL_JAXWS_WSDL_BINDING);
+        } else if (JAXWS_HANDLER_CHAIN_ID.equals(publicId)) {
+            return new InputSource(URL_JAXWS_HANDLER_CHAIN);
         } else {
             return null;
         }
+
     }
 
     /**
      * Get registered URI for the given name or null if not registered.
      * @return null if not registered
      */
-    public String resolveURI(String name) {
-        if(SUN_JAXWS_ID.equals(name)) {
+    public String resolveURI(
+            String name) {
+        if (SUN_JAXWS_ID.equals(name)) {
             return URL_SUN_JAXWS;
+        } else if (JAXWS_WSDL_BINDING_ID.equals(name)) {
+            return URL_JAXWS_WSDL_BINDING;
+        } else if (JAXWS_HANDLER_CHAIN_ID.equals(name)) {
+            return URL_JAXWS_HANDLER_CHAIN;
         }
+
         return null;
     }
+
     /**
      * Get registered URI for the given publicId or null if not registered.
      * @return null if not registered
      */
-    public String resolvePublic(String publicId) {
+    public String resolvePublic(
+            String publicId) {
         return null;
     }
 }

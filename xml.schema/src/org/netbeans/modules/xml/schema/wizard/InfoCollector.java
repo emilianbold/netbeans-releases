@@ -62,6 +62,7 @@ import org.netbeans.modules.xml.retriever.*;
 import org.netbeans.modules.xml.retriever.catalog.Utilities.DocumentTypesEnum;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 //import org.netbeans.modules.xml.retriever.impl.*;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -89,12 +90,12 @@ public class InfoCollector {
     
     List<File> goodFileList = new ArrayList<File>();
     
-    File root = null;
+    String root = null;
     
     DocumentTypesEnum docType;
     
     /** Creates a new instance of InfoCollector */
-    public InfoCollector(File root, DocumentTypesEnum type) {
+    public InfoCollector(String root, DocumentTypesEnum type) {
         this.root = root;
         this.docType=type;
         goCollect();
@@ -102,9 +103,37 @@ public class InfoCollector {
     
     public void goCollect(){
         //get all files starting from root dir
-        List<File> files = Utilities.getFilesWithExtension(root, docType.toString(), null);
+        List<File> infos = new ArrayList<File>();
+        String[] urls = root.split(",");
+            for (int i=0;i<urls.length;i++) {
+                String urlString = null;
+                try {
+                    urlString = urls[i].trim();
+                    if (urlString.length() == 0) {
+                        continue;
+                    }
+                    String url = null;
+                    File file = new File(new URI(urlString));
+                    List<File> files = Utilities.getFilesWithExtension(file, docType.toString(), null);
+                    infos.addAll(files);
+               } catch (URISyntaxException ex) {
+                   if(urlString != null) {
+                       File f = new File(urlString);
+                       List<File> files = Utilities.getFilesWithExtension(f, docType.toString(), null);
+                       infos.addAll(files);
+                   }
+                   continue;
+               } catch(IllegalArgumentException e){
+                   if(urlString != null) {
+                       File f = new File(urlString);
+                       List<File> files = Utilities.getFilesWithExtension(f, docType.toString(), null);
+                       infos.addAll(files);
+                   }
+               }
+               
+        }
         //for each schema/wsdl gather all external refs
-        Map<File,List<String>> file2Refs = getAllExternalRefs(files, docType);
+        Map<File,List<String>> file2Refs = getAllExternalRefs(infos, docType);
                 
         //analyse the result and retain
         analyzeResult(file2Refs);
@@ -187,7 +216,7 @@ public class InfoCollector {
     }
     
     public InfoEntry analyze(File file, String refStr) {
-        String rootURIStr = root.toURI().toString();
+        String rootURIStr = file.getParentFile().toURI().toString();
         URI fileURI = file.toURI();
         URI refURI = null;
         try {

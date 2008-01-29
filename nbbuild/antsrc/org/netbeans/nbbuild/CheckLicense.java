@@ -76,13 +76,6 @@ public class CheckLicense extends Task {
         filesets.add (fs);
     }
     
-    /** Add a file set of CVS-controlled source files to check.
-     * @param fs set of files to check licenses of
-     */
-    public void addCvsFileSet(CvsFileSet fs) {
-        filesets.add(fs);
-    }
-
     /** Set the fragment of license notice which is expected
      * to be found in each source file.
      * @param f the fragment

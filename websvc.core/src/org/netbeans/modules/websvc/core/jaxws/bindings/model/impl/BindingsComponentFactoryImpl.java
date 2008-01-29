@@ -47,6 +47,7 @@ import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandler;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChain;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerChains;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerClass;
+import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsHandlerName;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.BindingsModel;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.DefinitionsBindings;
 import org.netbeans.modules.websvc.core.jaxws.bindings.model.GlobalBindings;
@@ -93,11 +94,17 @@ public class BindingsComponentFactoryImpl
         else if (childQName.equals(BindingsQName.HANDLER_CLASS.getQName())){
             return new BindingsHandlerClassImpl(model, e);
         }
+        else if (childQName.equals(BindingsQName.HANDLER_NAME.getQName())){
+            return new BindingsHandlerNameImpl(model, e);
+        }
         return null;
     }
 
     public BindingsHandlerClass createHandlerClass() {
         return new BindingsHandlerClassImpl(model);
+    }
+    public BindingsHandlerName createHandlerName() {
+        return new BindingsHandlerNameImpl(model);
     }
 
     public BindingsHandlerChains createHandlerChains() {

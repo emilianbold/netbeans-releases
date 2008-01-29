@@ -41,7 +41,9 @@
 
 package org.netbeans.core.projects;
 
+import java.io.ByteArrayOutputStream;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -64,6 +66,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.core.startup.layers.LayerCacheManager;
 import org.netbeans.junit.NbTestCase;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
@@ -441,7 +444,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
     }
     
-    /* Disabled for now, needs to be updated to new cache infrastructure:
     public void testNoWarningsFromLayerParsing() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         assertNotNull ("In the IDE mode, there always should be a classloader", l);
@@ -475,15 +477,16 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
             cacheDir = new File(workDir, "layercache"+i);
             i++;
         } while (!cacheDir.mkdir());
+        System.setProperty("netbeans.user", cacheDir.getPath());
 
-        BinaryCacheManager bcm = new BinaryCacheManager(cacheDir);
+        LayerCacheManager bcm = LayerCacheManager.manager(true);
         Logger err = Logger.getLogger("org.netbeans.core.projects.cache");
         LayerParseHandler h = new LayerParseHandler();
         err.addHandler(h);
-        bcm.store(urls);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        bcm.store(bcm.createEmptyFileSystem(), urls, os);
         assertEquals("No errors or warnings during layer parsing: "+h.errors().toString(), 0, h.errors().size());
     }
-     */
     
     private static class LayerParseHandler extends Handler {
         List<String> errors = new ArrayList<String>();

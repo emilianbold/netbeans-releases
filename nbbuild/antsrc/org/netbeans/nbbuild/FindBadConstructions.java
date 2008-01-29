@@ -66,10 +66,6 @@ public class FindBadConstructions extends Task {
     public void addFileset(FileSet fs) {
         filesets.add(fs);
     }
-    /** Add a set of files to scan, according to CVS status. */
-    public void addCvsFileset(CvsFileSet fs) {
-        filesets.add(fs);
-    }
     /** Add a construction that is bad. */
     public Construction createConstruction() {
         Construction c = new Construction();

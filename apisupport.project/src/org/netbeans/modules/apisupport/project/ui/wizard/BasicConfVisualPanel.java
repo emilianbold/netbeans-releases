@@ -113,15 +113,14 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
     }
     
     private void checkCodeNameBase() {
-        if (!Util.isValidJavaFQN(getCodeNameBaseValue())) {
+        String dotName = getCodeNameBaseValue();
+        if (!Util.isValidJavaFQN(dotName)) {
             setError(getMessage("MSG_InvalidCNB"));
-        } else if (getData().isSuiteComponent() && cnbIsAlreadyInSuite(getData().getSuiteRoot(), getCodeNameBaseValue())) {
-            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite",
-                    getCodeNameBaseValue()));
+        } else if (getData().isSuiteComponent() && cnbIsAlreadyInSuite(getData().getSuiteRoot(), dotName)) {
+            setError(NbBundle.getMessage(BasicConfVisualPanel.class, "MSG_ComponentWithSuchCNBAlreadyInSuite", dotName));
         } else {
             markValid();
             // update layer and bundle from the cnb
-            String dotName = getCodeNameBaseValue();
             String slashName = dotName.replace('.', '/');
             if (!wasBundleUpdated) {
                 bundleValue.setText(slashName + "/Bundle.properties"); // NOI18N
@@ -131,7 +130,24 @@ final class BasicConfVisualPanel extends BasicVisualPanel.NewTemplatePanel {
                 layerValue.setText(slashName + "/layer.xml"); // NOI18N
                 wasLayerUpdated = false;
             }
+            if (getData().isNetBeansOrg()) {
+                // Ensure that official naming conventions are respected.
+                String cnbShort = abbreviate(dotName);
+                String name = getData().getProjectName();
+                if (!name.equals(cnbShort)) {
+                    setError(NbBundle.getMessage(BasicConfVisualPanel.class, "BasicConfVisualPanel_err_wrong_nborg_name", cnbShort));
+                }
+            }
         }
+    }
+    private static String abbreviate(String cnb) {
+        return cnb.replaceFirst("^org\\.netbeans\\.modules\\.", ""). // NOI18N
+                   replaceFirst("^org\\.netbeans\\.(libs|lib|api|spi|core)\\.", "$1."). // NOI18N
+                   replaceFirst("^org\\.netbeans\\.", "o.n."). // NOI18N
+                   replaceFirst("^org\\.openide\\.", "openide."). // NOI18N
+                   replaceFirst("^org\\.", "o."). // NOI18N
+                   replaceFirst("^com\\.sun\\.", "c.s."). // NOI18N
+                   replaceFirst("^com\\.", "c."); // NOI18N
     }
     
     private void checkBundle() {

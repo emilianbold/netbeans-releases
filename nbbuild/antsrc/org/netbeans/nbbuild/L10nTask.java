@@ -63,7 +63,6 @@ import org.apache.tools.ant.taskdefs.GZip;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.taskdefs.Tar;
 import org.apache.tools.ant.types.FileSet;
-import org.netbeans.nbbuild.utils.cvsutils.CvsEntries;
 
 /**
  * This task was created to create L10N kits.
@@ -127,7 +126,6 @@ public class L10nTask extends MatchingTask {
     private String buildDir;
     private String distDir;
     private Vector error = new Vector();
-    private Hashtable<String, CvsEntries> cvsEntriesCache=new Hashtable<String, CvsEntries>();
     private Hashtable<String, String> changed = new Hashtable<String, String>();
     private Hashtable<String, String> generatedFileHash = new Hashtable<String, String>();
     private Hashtable<String, String> fullPropHash = null ;
@@ -197,8 +195,6 @@ public class L10nTask extends MatchingTask {
         log("buildNumber: "+buildNumber,Project.MSG_INFO);
         
         
-        CvsEntries ce;
-        
         p=this.getProject();
         
         for (int i=0; i<topdirs.length; i++) {
@@ -257,6 +253,7 @@ public class L10nTask extends MatchingTask {
                         }
                     } // if localizableFiles is not null
                 } // while submodules
+                    /* XXX obsolete:
                 Iterator<String> it = localizableHash.iterator();
                 while (it.hasNext()) {
                     String oneLocalizableFile =it.next();
@@ -323,6 +320,7 @@ public class L10nTask extends MatchingTask {
                     }
                     
                 } //for localizable files
+                     */
                 
                 // PRINT TO "allfiles" list.
                 boolean success = false;

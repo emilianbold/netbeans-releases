@@ -31,12 +31,14 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreeScanner;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,6 +71,7 @@ import org.netbeans.spi.editor.guards.GuardedSectionsFactory;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditCookie;
@@ -109,6 +112,7 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         suite.addTest(new GuardedBlockTest("testAddMethodAfterVariables"));
         suite.addTest(new GuardedBlockTest("test119048"));
         suite.addTest(new GuardedBlockTest("test119962"));
+        suite.addTest(new GuardedBlockTest("testRenameTypeParameter125385"));
 //        suite.addTest(new GuardedBlockTest("test119345"));
         return suite;
     }
@@ -694,6 +698,62 @@ public class GuardedBlockTest extends GeneratorTestMDRCompat {
         src.runModificationTask(task).commit();
         editorCookie.saveDocument();
         String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRenameTypeParameter125385() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class MyList {\n" +
+            "    public <X, Y extends Class<X>> X makeObject() {\n" +
+            "        return null;\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class MyList {\n" +
+            "    public <A, Y extends Class<A>> A makeObject() {\n" +
+            "        return null;\n" +
+            "    }\n" +
+            "}\n";
+        
+        DataObject dataObject = DataObject.find(FileUtil.toFileObject(testFile));
+        EditorCookie editorCookie = ((GuardedDataObject) dataObject).getCookie(EditorCookie.class);
+        Document doc = editorCookie.openDocument();
+        JavaSource src = getJavaSource(testFile);
+        
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                final TreeMaker make = workingCopy.getTreeMaker();
+                new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitIdentifier(IdentifierTree node, Void p) {
+                        if ("X".equals(node.getName().toString())) {
+                            workingCopy.rewrite(node, make.setLabel(node, "A"));
+                        }
+                        return super.visitIdentifier(node, p);
+                    }
+                    @Override
+                    public Void visitTypeParameter(TypeParameterTree node, Void p) {
+                        if ("X".equals(node.getName().toString())) {
+                            workingCopy.rewrite(node, make.setLabel(node, "A"));
+                        }
+                        return super.visitTypeParameter(node, p);
+                    }
+                }.scan(cut, null);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = doc.getText(0, doc.getLength());
         System.err.println(res);
         assertEquals(golden, res);
     }

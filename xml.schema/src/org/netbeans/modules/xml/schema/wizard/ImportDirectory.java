@@ -71,7 +71,7 @@ import org.openide.windows.OutputWriter;
  */
 public final class ImportDirectory implements Runnable{
     
-    private File importRoot;
+    private String importRoot;
     
     private File toDir;
     
@@ -95,13 +95,13 @@ public final class ImportDirectory implements Runnable{
     }
     
     /** Creates a new instance of ImportDirectory */
-    public ImportDirectory(File importRoot, File toDir) {
+    public ImportDirectory(String importRoot, File toDir) {
         //default to schema
         this(importRoot, toDir, false, DocumentTypesEnum.schema);
     }
     
     /** Creates a new instance of ImportDirectory */
-    public ImportDirectory(File importRoot, File toDir, boolean overWriteFiles, DocumentTypesEnum type) {
+    public ImportDirectory(String importRoot, File toDir, boolean overWriteFiles, DocumentTypesEnum type) {
         this.importRoot = importRoot;
         this.toDir = toDir;
         this.overWriteFiles = overWriteFiles;
@@ -176,11 +176,13 @@ public final class ImportDirectory implements Runnable{
             //construct a file object
             FileObject source = FileUtil.toFileObject(FileUtil.normalizeFile(srcFile));
             
-            String impRootStr = this.importRoot.toURI().toString();
             String toDirStr = this.toDir.toURI().toString();
-            StringBuffer strBuff = new StringBuffer(srcFile.toURI().toString());
-            String destStr = strBuff.replace(0, impRootStr.length()-1, toDirStr).toString();
-            
+            StringBuffer sb = new StringBuffer(toDirStr);
+            String destStr = sb.append(srcFile.getName()).toString();
+          //  System.out.println("SRC NAME IS = " + srcFile.getName());
+        //    System.out.println("toDIR str is " + toDirStr);
+         //   System.out.println("DEST NAME IS = " + destStr);
+                    
             File destFile = null;
             try {
                 destFile = new File(new URI(destStr));

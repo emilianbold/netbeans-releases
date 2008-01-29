@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
         </condition>
 		<property name="dist" value="${basedir}/build"/>
 		<property name="main.class" value="org.netbeans.modules.php.docgen.DocIndexer"/>
-		<property name="gen.result" value="${basedir}/../src/org/netbeans/modules/php/doc/resources"/>
+		<property name="gen.result" value="${basedir}/../build/classes/org/netbeans/modules/php/doc/resources"/>
 	</target>
 
 	<target name="probe-proxy">

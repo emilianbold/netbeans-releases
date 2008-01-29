@@ -70,11 +70,11 @@ abstract class AbstractTabularPropertySupport
     private TabularType tabularType;
 
     AbstractTabularPropertySupport(
-            JBIComponentNode parent,
+            PropertySheetOwner propertySheetOwner,
             Attribute attr,
             MBeanAttributeInfo info,
             String[] keys) {
-        super(parent, TabularDataSupport.class, attr, info);
+        super(propertySheetOwner, TabularDataSupport.class, attr, info);
         this.keys = keys;
 
         TabularData tabularData = (TabularData) attr.getValue();

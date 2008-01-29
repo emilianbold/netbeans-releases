@@ -40,53 +40,10 @@
     
     <target name="build" depends="init,-build"/>
     
-    <target name="init" depends="-clean,-init-ml,-checkout,-init,-init-properties,-post-init-clean"/>
+    <target name="init" depends="-clean,-init-ml,-init,-init-properties,-post-init-clean"/>
     
     <target name="-clean">
         <delete dir="${output.dir}"/>
-        <delete dir="${nbi.all.dir}"/>
-    </target>
-
-    <target name="-checkout" depends="-checkout-installer,-checkout-translatedfiles"/>
-
-    <target name="-checkout-installer">
-        <!-- -->
-        <cvs 
-            command="checkout -P"
-            cvsroot="${cvs.root}" 
-            package="nbi/engine nbi/infra"
-            dest="${nbi.all.dir}"
-            date="${cvs.timestamp}"
-            tag="${cvs.branch}"
-            failonerror="true"
-        />
-        <cvs 
-            command="checkout -P"
-            cvsroot="${cvs.root}" 
-            package="installer/components installer/engine installer/infra"
-            dest="${nbi.all.dir}"
-            date="${cvs.timestamp}"
-            tag="${cvs.branch}"
-            failonerror="true"
-        />
-        <!-- -->
-        
-        <!--
-        <copy todir="${nbi.core.dir}">
-            <fileset dir="D:/work/src/trunk/nbi">
-                <exclude name="infra/server/**/build/**/*.*"/>
-                <exclude name="infra/server/**/dist/**/*.*"/>
-                <exclude name="infra/server/**/private/**/*.*"/>
-            </fileset>
-        </copy>
-        <copy todir="${nbi.netbeans.dir}">
-            <fileset dir="D:/work/src/trunk/installer">
-                <exclude name="infra/server/**/build/**/*.*"/>
-                <exclude name="infra/server/**/dist/**/*.*"/>
-                <exclude name="infra/server/**/private/**/*.*"/>
-            </fileset>
-        </copy>
-        -->
     </target>
 
     <target name="-remove-wrong-locale-files" if="nb.locales.isset">
@@ -104,28 +61,6 @@
             	<fileset dir="${nbi.all.dir}/translatedfiles" excludes="${locale.pattern.excludes}"/>
 	</delete>
     </target>
-
-    <target name="-checkout-translatedfiles" if="ml.build">
-	<cvs 
-            command="checkout -P"
-            cvsroot="${cvs.root}" 
-            package="translatedfiles/src/nbi"
-            dest="${nbi.all.dir}"
-            date="${cvs.timestamp}"
-            tag="${cvs.branch}"
-            failonerror="true"
-        />
-        <cvs 
-            command="checkout -P"
-            cvsroot="${cvs.root}" 
-            package="translatedfiles/src/installer/components translatedfiles/src/installer/engine translatedfiles/src/installer/infra"
-            dest="${nbi.all.dir}"
-            date="${cvs.timestamp}"
-            tag="${cvs.branch}"
-            failonerror="true"
-        />
-    </target>
-
 
     <target name="-init-ml">
         <condition property="ml.build">
@@ -378,8 +313,8 @@ engine.dist.file=${nbi.netbeans.dir}/infra/build/engine/dist/nbi-engine.jar
 release.url=http://${glassfish.host}:${glassfish.http.port}${context.path}/admin
 release.registry=NetBeans
 
-packaged.data.dir=${basedir}/cache/packaged
-downloads.cache.dir=${basedir}/cache/raw
+packaged.data.dir=${nbi.cache.dir}/packaged
+downloads.cache.dir=${nbi.cache.dir}/raw
 
 binary.cache.host=${binary.cache.host}
 nb.builds.host=${nb.builds.host}
@@ -506,9 +441,9 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
     
     <target name="-post-init-clean" depends="-remove-wrong-locale-files">
-        <delete dir="${basedir}/cache/raw" failonerror="false"/>
+        <delete dir="${nbi.cache.dir}/raw" failonerror="false"/>
         <delete failonerror="false">
-            <fileset dir="${basedir}/cache/packaged">
+            <fileset dir="${nbi.cache.dir}/packaged">
                 <!-- nb components -->
                 <exclude name="**/nb*${build.number}*"/>
                 
