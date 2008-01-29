@@ -51,6 +51,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -75,6 +77,8 @@ import org.w3c.dom.NodeList;
  * @author Andrei Badea
  */
 public class ConfigFileSpringBeanSource implements SpringBeanSource {
+
+    private static final Logger LOGGER = Logger.getLogger(ConfigFileSpringBeanSource.class.getName());
 
     public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
 
@@ -116,7 +120,8 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         try {
             doc.insertString(0, builder.toString(), null);
         } catch (BadLocationException e) {
-            // Should not happen.
+            // Unlikely to happen.
+            LOGGER.log(Level.FINE, null, e);
         }
         parse(file, doc);
     }
