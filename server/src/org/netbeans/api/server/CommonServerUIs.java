@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.spi.server;
+package org.netbeans.api.server;
 
 import java.awt.Dialog;
 import org.openide.DialogDescriptor;
@@ -46,17 +46,17 @@ import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import javax.swing.JButton;
-import org.netbeans.api.server.ServerInstance;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.server.ui.manager.ServerManagerPanel;
 
 /**
- * Class providing access to UI dialogs. Usable in spi implementation.
+ * Class providing access to UI dialogs managing instances.
  *
  * @author Petr Hejl
  */
-public final class ServerManager {
+public final class CommonServerUIs {
 
-    private ServerManager() {
+    private CommonServerUIs() {
         super();
     }
 
@@ -66,22 +66,23 @@ public final class ServerManager {
      * thread.
      *
      * @param instance server instance which should be preselected,
-     *             if <code>null</code> the first server instance will
-     *             be preselected
+     *             if <code>null</code> the first server instance will be preselected
      */
     public static void showCustomizer(ServerInstance instance) {
+        assert SwingUtilities.isEventDispatchThread() : "Invocation of the UI dialog outside of the EDT"; // NOI18N
+        
         ServerManagerPanel customizer = new ServerManagerPanel(instance);
 
-        JButton close = new JButton(NbBundle.getMessage(ServerManager.class, "CTL_Close"));
-        close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerManager.class, "AD_Close"));
+        JButton close = new JButton(NbBundle.getMessage(CommonServerUIs.class, "CTL_Close"));
+        close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CommonServerUIs.class, "AD_Close"));
 
         DialogDescriptor descriptor = new DialogDescriptor(customizer,
-                NbBundle.getMessage(ServerManager.class, "TXT_ServerManager"),
+                NbBundle.getMessage(CommonServerUIs.class, "TXT_ServerManager"),
                 true,
                 new Object[] {close},
                 close,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(ServerManager.class),
+                new HelpCtx(CommonServerUIs.class),
                 null);
 
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);

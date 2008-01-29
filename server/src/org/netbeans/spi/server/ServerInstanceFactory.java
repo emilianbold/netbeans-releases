@@ -42,6 +42,7 @@ package org.netbeans.spi.server;
 import org.netbeans.api.server.ServerInstance;
 
 /**
+ * Factory creating the API representation of the instance provided in SPI.
  *
  * @author Petr Hejl
  */
@@ -51,6 +52,12 @@ public final class ServerInstanceFactory {
         super();
     }
     
+    /**
+     * Creates the API representation of the provided SPI instance.
+     * 
+     * @param impl the SPI instance
+     * @return the API server instance representation
+     */
     public static ServerInstance createServerInstance(ServerInstanceImplementation impl) {
         return Accessor.DEFAULT.createServerInstance(impl);
     }

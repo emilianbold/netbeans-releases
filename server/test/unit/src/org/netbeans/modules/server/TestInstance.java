@@ -53,7 +53,7 @@ public class TestInstance implements ServerInstanceImplementation {
 
     private final TestInstanceProvider provider;
 
-    private ServerInstance apiInstance;
+    private ServerInstance commonInstance;
     
     private TestInstance(TestInstanceProvider provider) {
         this.provider = provider;
@@ -61,7 +61,7 @@ public class TestInstance implements ServerInstanceImplementation {
 
     public static TestInstance createInstance(TestInstanceProvider provider) {
         TestInstance created = new TestInstance(provider);
-        created.apiInstance = ServerInstanceFactory.createServerInstance(created);
+        created.commonInstance = ServerInstanceFactory.createServerInstance(created);
         return created;
     }
     
@@ -90,11 +90,11 @@ public class TestInstance implements ServerInstanceImplementation {
     }
 
     public void remove() {
-        provider.removeInstance(apiInstance);
+        provider.removeInstance(commonInstance);
     }
 
-    public ServerInstance getApiInstance() {
-        return apiInstance;
+    public ServerInstance getCommonInstance() {
+        return commonInstance;
     }
     
 }

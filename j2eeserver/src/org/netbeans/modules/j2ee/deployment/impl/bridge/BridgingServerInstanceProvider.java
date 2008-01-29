@@ -107,7 +107,7 @@ public class BridgingServerInstanceProvider implements org.netbeans.spi.server.S
         refreshCache();
         List<ServerInstance> instancesList = new  ArrayList<ServerInstance>(instances.size());
         for (BridgingServerInstance instance : instances.values()) {
-            instancesList.add(instance.getApiInstance());
+            instancesList.add(instance.getCommonInstance());
         }
         return instancesList;
     }
@@ -136,7 +136,7 @@ public class BridgingServerInstanceProvider implements org.netbeans.spi.server.S
 
     protected synchronized ServerInstance getBridge(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
         refreshCache();
-        return instances.get(instance).getApiInstance();
+        return instances.get(instance).getCommonInstance();
     }
 
     private synchronized void refreshCache() {
