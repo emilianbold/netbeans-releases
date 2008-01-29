@@ -1970,10 +1970,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         }
     }
         
-    private static CompilationInfoImpl createCurrentInfo (final JavaSource js, final PositionConverter binding, final JavacTaskImpl javac) throws IOException {        
-        if (js.files.size() == 1) {
-            System.out.println("Creating javac for: " + js.files.iterator().next().getURL());
-        }
+    private static CompilationInfoImpl createCurrentInfo (final JavaSource js, final PositionConverter binding, final JavacTaskImpl javac) throws IOException {                
         CompilationInfoImpl info = new CompilationInfoImpl(js, binding, javac);
         if (binding != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",
