@@ -57,7 +57,7 @@ public class DefaultLeftTreeCellRenderer extends DefaultTreeCellRenderer {
         Font newFont = context.getLeftFont(model, value, oldFont);
         if (newFont != oldFont) setFont(newFont);
         
-        setForeground(context.getLeftForeground(model, value));
+        setForeground(context.getLeftForeground(model, value, getForeground()));
         
         return this;
     }
