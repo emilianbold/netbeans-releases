@@ -47,6 +47,7 @@ made subject to such option by the copyright holder.
     <description>Builds and tests the project Creator JSF Components Library.</description>
     
     <import file="nbproject/build-impl.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
     
     <target name="-post-compile" depends="copy-metadata"/>
     
