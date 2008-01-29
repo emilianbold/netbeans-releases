@@ -44,6 +44,8 @@ package org.netbeans.api.java.source;
 import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.OutputStream;
+import java.security.Permission;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.TestUtil;
@@ -127,4 +129,52 @@ public class TreePathHandleTest extends NbTestCase {
         assertTrue(tp.getLeaf() == resolved.getLeaf());
     }
     
+    public void testTreePathIsNotParsing() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+        
+        writeIntoFile(file, "package test; public class test {}");
+        writeIntoFile(FileUtil.createData(sourceRoot, "test/test2.java"), "package test; public class test2 {}");
+        
+        JavaSource js = JavaSource.forFileObject(file);
+        
+        SourceUtilsTestUtil.compileRecursively(sourceRoot);
+        
+        js.runUserActionTask(new  Task<CompilationController>() {
+            public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+                
+                TypeElement string = parameter.getElements().getTypeElement("test.test2");
+                
+                SecurityManager old = System.getSecurityManager();
+                
+                System.setSecurityManager(new SecMan());
+                
+                TreePathHandle.create(string, parameter);
+                
+                System.setSecurityManager(old);
+            }
+        }, true);
+    }
+    
+    private static final class SecMan extends SecurityManager {
+
+        @Override
+        public void checkRead(String file) {
+            assertFalse(file.endsWith("test2.java"));
+        }
+
+        @Override
+        public void checkRead(String file, Object context) {
+            assertFalse(file.endsWith("test2.java"));
+        }
+        
+        @Override
+        public void checkPermission(Permission perm) {
+        }
+
+        @Override
+        public void checkPermission(Permission perm, Object context) {
+        }
+
+    }
 }
