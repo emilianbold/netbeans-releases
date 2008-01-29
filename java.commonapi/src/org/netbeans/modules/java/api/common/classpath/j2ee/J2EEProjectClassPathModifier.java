@@ -48,10 +48,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
@@ -83,44 +81,40 @@ import org.openide.util.WeakListeners;
  *@author Tomas Zezula, Tomas Mysik
  *
  */
-public class WebProjectClassPathModifier extends ProjectClassPathModifierImplementation
+public class J2EEProjectClassPathModifier extends ProjectClassPathModifierImplementation
         implements PropertyChangeListener {
 
     // XXX ok or not?
     private static final String JAVAC_CLASSPATH = "javac.classpath"; // NOI18N
-    private static final String WAR_CONTENT_ADDITIONAL = "war.content.additional"; // NOI18N
-    private static final String TAG_WEB_MODULE_LIBRARIES = "web-module-libraries"; // NOI18N
-    private static final String TAG_WEB_MODULE_ADDITIONAL_LIBRARIES = "web-module-additional-libraries"; // NOI18N
-    private static final String DEFAULT_WEB_MODULE_ELEMENT_NAME = WebClassPathSupport.TAG_WEB_MODULE_LIBRARIES;
+    private static final String ELEMENT_INCLUDED_LIBRARIES = "included-library"; // NOI18N
 
     private final Project project;
     private final UpdateHelper helper;
     private final PropertyEvaluator eval;
-    private final WebClassPathSupport classPathSupport;
-    private final ProjectClassPathModifierSupport<WebClassPathSupport.Item> classPathModifierSupport;
+    private final J2EEClassPathSupport classPathSupport;
+    private final ProjectClassPathModifierSupport<J2EEClassPathSupport.Item> classPathModifierSupport;
+    private final ClassPathItemProvider<J2EEClassPathSupport.Item> provider;
 
     private volatile boolean projectDeleted;
-
-    private boolean dontFireChange = false;
 
     private final PropertyChangeListener listener = WeakListeners.propertyChange(this, null);
 
     // XXX javadoc
-    public static WebProjectClassPathModifier create(Project project, UpdateHelper helper, PropertyEvaluator eval,
-            ReferenceHelper refHelper, WebClassPathSupport classPathSupport, SourceRoots sourceRoots,
+    public static J2EEProjectClassPathModifier create(Project project, UpdateHelper helper, PropertyEvaluator eval,
+            ReferenceHelper refHelper, J2EEClassPathSupport classPathSupport, SourceRoots sourceRoots,
             SourceRoots testSourceRoots, Properties properties) {
         Parameters.notNull("project", project);
         Parameters.notNull("helper", helper);
         Parameters.notNull("eval", eval);
         Parameters.notNull("classPathSupport", classPathSupport);
 
-        return new WebProjectClassPathModifier(project, helper, eval, refHelper, classPathSupport, sourceRoots,
+        return new J2EEProjectClassPathModifier(project, helper, eval, refHelper, classPathSupport, sourceRoots,
                 testSourceRoots, properties);
     }
 
-    WebProjectClassPathModifier(Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper,
-            WebClassPathSupport classPathSupport, SourceRoots sourceRoots, SourceRoots testSourceRoots,
-            Properties properties) {
+    J2EEProjectClassPathModifier(Project project, UpdateHelper helper, PropertyEvaluator eval,
+            ReferenceHelper refHelper, J2EEClassPathSupport classPathSupport, SourceRoots sourceRoots,
+            SourceRoots testSourceRoots, Properties properties) {
         assert project != null;
         assert helper != null;
         assert eval != null;
@@ -130,8 +124,9 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         this.helper = helper;
         this.eval = eval;
         this.classPathSupport = classPathSupport;
-        classPathModifierSupport = ProjectClassPathModifierSupport.<WebClassPathSupport.Item>create(project, helper,
+        classPathModifierSupport = ProjectClassPathModifierSupport.<J2EEClassPathSupport.Item>create(project, helper,
                 eval, refHelper, sourceRoots, testSourceRoots, properties);
+        provider = new J2EEClassPathItemProvider(ELEMENT_INCLUDED_LIBRARIES);
         //#56140
         eval.addPropertyChangeListener(listener); //listen for changes of libraries list
         ProjectManager.mutex().postWriteRequest(new Runnable() {
@@ -141,43 +136,35 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         });
     }
 
-    final class WebClassPathItemProvider implements ClassPathItemProvider<WebClassPathSupport.Item> {
+    final class J2EEClassPathItemProvider implements ClassPathItemProvider<J2EEClassPathSupport.Item> {
 
         private final String elementName;
 
-        public WebClassPathItemProvider(String elementName) {
+        public J2EEClassPathItemProvider(String elementName) {
             this.elementName = elementName;
         }
 
-        public WebClassPathSupport.Item createClassPathItem(File file, String property) {
-            String pathInWar = null;
-            if (file.isDirectory()) {
-                pathInWar = WebClassPathSupport.Item.PATH_IN_WAR_DIR;
-            } else {
-                pathInWar = WebClassPathSupport.Item.PATH_IN_WAR_LIB;
-            }
-            return WebClassPathSupport.Item.create(file, property, pathInWar);
+        public J2EEClassPathSupport.Item createClassPathItem(File file, String property) {
+            return J2EEClassPathSupport.Item.create(file, null, property != null);
         }
 
-        public WebClassPathSupport.Item createClassPathItem(AntArtifact antArtifact, URI antArtifactURI, String property) {
-            return WebClassPathSupport.Item.create(antArtifact, antArtifactURI, property,
-                    WebClassPathSupport.Item.PATH_IN_WAR_LIB);
+        public J2EEClassPathSupport.Item createClassPathItem(AntArtifact antArtifact, URI antArtifactURI, String property) {
+            return J2EEClassPathSupport.Item.create(antArtifact, antArtifactURI, null, property != null);
         }
 
-        public WebClassPathSupport.Item createClassPathItem(Library library, String property) {
-            // not used, handled by this class itself
-            throw new UnsupportedOperationException("This method is not supported");
+        public J2EEClassPathSupport.Item createClassPathItem(Library library, String property) {
+            return J2EEClassPathSupport.Item.create(library, null, property != null);
         }
 
-        public List<WebClassPathSupport.Item> getClassPathItems(String reference) {
+        public List<J2EEClassPathSupport.Item> getClassPathItems(String reference) {
             return classPathSupport.itemsList(reference, elementName);
         }
 
-        public String[] encodeToStrings(List<WebClassPathSupport.Item> items) {
+        public String[] encodeToStrings(List<J2EEClassPathSupport.Item> items) {
             return classPathSupport.encodeToStrings(items, elementName);
         }
 
-        public String getLibraryReference(WebClassPathSupport.Item item) {
+        public String getLibraryReference(J2EEClassPathSupport.Item item) {
             return classPathSupport.getLibraryReference(item);
         }
     }
@@ -196,23 +183,20 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     protected boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type)
             throws IOException, UnsupportedOperationException {
         String classPathProperty = classPathModifierSupport.getClassPathProperty(sourceGroup, type);
-        return classPathModifierSupport.handleRoots(classPathRoots, classPathProperty, Operation.REMOVE,
-                new WebClassPathItemProvider(getElementName(classPathProperty)));
+        return classPathModifierSupport.handleRoots(classPathRoots, classPathProperty, Operation.ADD, provider);
     }
 
     @Override
     protected boolean addRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type)
             throws IOException, UnsupportedOperationException {
         String classPathProperty = classPathModifierSupport.getClassPathProperty(sourceGroup, type);
-        return classPathModifierSupport.handleRoots(classPathRoots, classPathProperty, Operation.ADD,
-                new WebClassPathItemProvider(getElementName(classPathProperty)));
+        return classPathModifierSupport.handleRoots(classPathRoots, classPathProperty, Operation.ADD, provider);
     }
 
     // used by ClassPathExtender
     protected boolean handleRoots(URL[] classPathRoots, String classPathProperty, String elementName,
             Operation operation) throws IOException, UnsupportedOperationException {
-        return classPathModifierSupport.handleRoots(classPathRoots, classPathProperty, operation,
-                new WebClassPathItemProvider(elementName));
+        return classPathModifierSupport.handleRoots(classPathRoots, classPathProperty, operation, provider);
     }
 
     @Override
@@ -220,7 +204,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
             final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         String classPathProperty = classPathModifierSupport.getClassPathProperty(sourceGroup, type);
         return classPathModifierSupport.handleAntArtifacts(artifacts, artifactElements, classPathProperty,
-                Operation.REMOVE, new WebClassPathItemProvider(getElementName(classPathProperty)));
+                Operation.REMOVE, provider);
     }
 
     @Override
@@ -228,127 +212,101 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
             final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
         String classPathProperty = classPathModifierSupport.getClassPathProperty(sourceGroup, type);
         return classPathModifierSupport.handleAntArtifacts(artifacts, artifactElements, classPathProperty,
-                Operation.ADD, new WebClassPathItemProvider(getElementName(classPathProperty)));
+                Operation.ADD, provider);
     }
 
     @Override
     protected boolean removeLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type)
             throws IOException, UnsupportedOperationException {
         String classPathProperty = classPathModifierSupport.getClassPathProperty(sourceGroup, type);
-        return handleLibraries(libraries, classPathProperty, getElementName(classPathProperty), Operation.REMOVE);
+        return handleLibraries(libraries, classPathProperty, Operation.REMOVE, provider);
     }
 
     @Override
     protected boolean addLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type)
             throws IOException, UnsupportedOperationException {
         String classPathProperty = classPathModifierSupport.getClassPathProperty(sourceGroup, type);
-        return handleLibraries(libraries, classPathProperty, getElementName(classPathProperty), Operation.ADD);
+        return handleLibraries(libraries, classPathProperty, Operation.ADD, provider);
     }
 
-    protected boolean handleLibraries(final Library[] libraries, final String classPathProperty,
-            final String elementName, final Operation operation) throws IOException,
+    // XXX check this - see saving of private properties
+    public boolean handleLibraries(final Library[] libraries, final String classPathProperty, final Operation operation,
+            final ClassPathItemProvider<J2EEClassPathSupport.Item> provider) throws IOException,
             UnsupportedOperationException {
-        List<WebClassPathSupport.Item> items = new ArrayList<WebClassPathSupport.Item>(libraries.length);
-        for (Library library : libraries) {
-            items.add(WebClassPathSupport.Item.create(library, null, WebClassPathSupport.Item.PATH_IN_WAR_LIB));
-        }
-        return handleLibraryClassPathItems(items, classPathProperty, elementName, operation, true);
-    }
-
-    public boolean handleLibraryClassPathItems(final List<WebClassPathSupport.Item> items,
-            final String classPathProperty, final String elementName, final Operation operation,
-            final boolean saveProject) throws IOException {
-        assert items != null : "Libraries cannot be null";
+        assert libraries != null : "Libraries cannot be null";
         assert classPathProperty != null;
 
-        // if the caller doesn't wish to save the project, it is expected to do it later,
-        // in which case it must have PM.mutex() write access to avoid race conditions
-        assert saveProject || ProjectManager.mutex().isWriteAccess();
         try {
-            dontFireChange = true;
-            unregisterLibraryListeners();
             return ProjectManager.mutex().writeAccess(
-                new Mutex.ExceptionAction<Boolean>() {
-                    public Boolean run() throws IOException {
-                        EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                        String raw = props.getProperty(classPathProperty);
-                        List<WebClassPathSupport.Item> resources = classPathSupport.itemsList(raw,
-                                elementName);
-                        List<WebClassPathSupport.Item> changed = new ArrayList<WebClassPathSupport.Item>(items.size());
-                        for (WebClassPathSupport.Item item : items) {
-                            assert item != null;
-                            assert item.getType() == ClassPathItem.Type.LIBRARY;
+                    new Mutex.ExceptionAction<Boolean>() {
+                        public Boolean run() throws IOException {
+                            EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                            String raw = props.getProperty(classPathProperty);
+                            List<J2EEClassPathSupport.Item> resources = provider.getClassPathItems(raw);
+                            List<J2EEClassPathSupport.Item> changed = new ArrayList<J2EEClassPathSupport.Item>(
+                                    libraries.length);
+                            for (Library library : libraries) {
+                                assert library != null;
 
-                            if (operation == Operation.ADD && !resources.contains(item)) {
-                                resources.add(item);
-                                changed.add(item);
-                            } else if (operation == Operation.REMOVE && resources.contains(item)) {
-                                resources.remove(item);
-                                changed.add(item);
-                            }
-                        }
-                        if (!changed.isEmpty()) {
-                            String[] itemRefs = classPathSupport.encodeToStrings(resources, elementName);
-                            // PathParser may change the EditableProperties
-                            props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            props.setProperty(classPathProperty, itemRefs);
-                            if (operation == Operation.ADD) {
-                                for (WebClassPathSupport.Item item : changed) {
-                                    String prop = classPathSupport.getLibraryReference(item);
-                                    // XXX make a PropertyUtils method for this!
-                                    prop = prop.substring(2, prop.length() - 1);
-                                    ClassPathSupport.relativizeLibraryClassPath(props,
-                                            helper.getAntProjectHelper(), prop);
+                                J2EEClassPathSupport.Item item = provider.createClassPathItem(library, null);
+                                if (operation == Operation.ADD && !resources.contains(item)) {
+                                    resources.add(item);
+                                    changed.add(item);
+                                } else if (operation == Operation.REMOVE && resources.contains(item)) {
+                                    resources.remove(item);
+                                    changed.add(item);
                                 }
                             }
-                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                            // update lib references in private properties
-                            EditableProperties privateProps = helper.getProperties(
-                                    AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                            List<WebClassPathSupport.Item> l = new ArrayList<WebClassPathSupport.Item>();
-                            l.addAll(resources);
-                            l.addAll(classPathSupport.itemsList(props.getProperty(WAR_CONTENT_ADDITIONAL),
-                                    TAG_WEB_MODULE_ADDITIONAL_LIBRARIES));
-                            storeLibrariesLocations(l.iterator(), privateProps);
-                            helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
-                            if (saveProject) {
+                            if (!changed.isEmpty()) {
+                                String[] itemRefs = provider.encodeToStrings(resources);
+                                // PathParser may change the EditableProperties
+                                props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                props.setProperty(classPathProperty, itemRefs);
+                                if (operation == Operation.ADD) {
+                                    for (J2EEClassPathSupport.Item item : changed) {
+                                        String prop = provider.getLibraryReference(item);
+                                        // XXX make a PropertyUtils method for this!
+                                        prop = prop.substring(2, prop.length() - 1);
+                                        ClassPathSupport.relativizeLibraryClassPath(props, helper.getAntProjectHelper(),
+                                                prop);
+                                    }
+                                }
+                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+
+                                // XXX really needed? if not, ProjectClassPathModifierSupport could be used
+                                // update lib references in private properties
+                                EditableProperties privateProps = helper.getProperties(
+                                        AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                                List<J2EEClassPathSupport.Item> libs = new ArrayList<J2EEClassPathSupport.Item>();
+                                libs.addAll(resources);
+                                storeLibrariesLocations(libs.iterator(), privateProps);
+                                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+
                                 ProjectManager.getDefault().saveProject(project);
+                                return true;
                             }
-                            registerLibraryListeners(props);
-                            dontFireChange = false;
-                            return true;
+                            return false;
                         }
-                        return false;
                     }
-                }
             );
         } catch (MutexException e) {
             throw (IOException) e.getException();
         }
     }
 
-    private void unregisterLibraryListeners() {
-        Library[] libs = LibraryManager.getDefault().getLibraries();
-        for (Library library : libs) {
-            library.removePropertyChangeListener(listener);
-        }
-    }
-
     private void registerLibraryListeners() {
         // reread the properties, PathParser changes them
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        registerLibraryListeners(props);
-    }
-
-    private void registerLibraryListeners(EditableProperties props) {
-        unregisterLibraryListeners();
-        Set<WebClassPathSupport.Item> set = new HashSet<WebClassPathSupport.Item>();
-        set.addAll(classPathSupport.itemsList(props.getProperty(JAVAC_CLASSPATH), TAG_WEB_MODULE_LIBRARIES));
-        set.addAll(classPathSupport.itemsList(props.getProperty(WAR_CONTENT_ADDITIONAL),
-                TAG_WEB_MODULE_ADDITIONAL_LIBRARIES));
-        for (WebClassPathSupport.Item item : set) {
+        Library[] libs = LibraryManager.getDefault().getLibraries();
+        for (Library library : libs) {
+            library.removePropertyChangeListener(this);
+        }
+        Iterator<J2EEClassPathSupport.Item> i = classPathSupport.itemsIterator(props.getProperty(JAVAC_CLASSPATH),
+                ELEMENT_INCLUDED_LIBRARIES);
+        while (i.hasNext()) {
+            J2EEClassPathSupport.Item item = i.next();
             if (item.getType() == ClassPathItem.Type.LIBRARY && !item.isBroken()) {
-                item.getLibrary().addPropertyChangeListener(listener);
+                item.getLibrary().addPropertyChangeListener(this);
             }
         }
     }
@@ -357,20 +315,13 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         if (projectDeleted) {
             return;
         }
-        if (dontFireChange) {
-            return;
-        }
-
-        if (e.getSource().equals(eval) && (e.getPropertyName().equals(JAVAC_CLASSPATH)
-                || e.getPropertyName().equals(WAR_CONTENT_ADDITIONAL))) {
+        if (e.getSource().equals(eval) && (e.getPropertyName().equals(JAVAC_CLASSPATH))) {
             // reread the properties, PathParser changes them
             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String javacCp = props.getProperty(JAVAC_CLASSPATH);
             if (javacCp != null) {
-                registerLibraryListeners(props);
-                if (ProjectManager.getDefault().isValid(project)) {
-                    storeLibLocations();
-                }
+                registerLibraryListeners();
+                storeLibLocations();
             }
         } else if (e.getPropertyName().equals(Library.PROP_CONTENT)) {
             storeLibLocations();
@@ -385,18 +336,11 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                         // reread the properties, PathParser changes them
                         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                         // update lib references in private properties
-                        EditableProperties privateProps = helper.getProperties(
-                                AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                        List<WebClassPathSupport.Item> wmLibs = classPathSupport.itemsList(
-                                props.getProperty(JAVAC_CLASSPATH), TAG_WEB_MODULE_LIBRARIES);
-                        List<WebClassPathSupport.Item> additionalLibs = classPathSupport.itemsList(
-                                props.getProperty(WAR_CONTENT_ADDITIONAL), TAG_WEB_MODULE_ADDITIONAL_LIBRARIES);
-                        classPathSupport.encodeToStrings(wmLibs, TAG_WEB_MODULE_LIBRARIES);
-                        classPathSupport.encodeToStrings(additionalLibs, TAG_WEB_MODULE_ADDITIONAL_LIBRARIES);
-                        Set<WebClassPathSupport.Item> set = new HashSet<WebClassPathSupport.Item>();
-                        set.addAll(wmLibs);
-                        set.addAll(additionalLibs);
-                        storeLibrariesLocations(set.iterator(), privateProps);
+                        EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                        List<J2EEClassPathSupport.Item> wmLibs = classPathSupport.itemsList(
+                                props.getProperty(JAVAC_CLASSPATH), ELEMENT_INCLUDED_LIBRARIES);
+                        classPathSupport.encodeToStrings(wmLibs, ELEMENT_INCLUDED_LIBRARIES);
+                        storeLibrariesLocations(wmLibs.iterator(), privateProps);
                         helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
 
                         try {
@@ -412,19 +356,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
 
     public void notifyDeleting() {
         projectDeleted = true;
-        eval.removePropertyChangeListener(listener);
-    }
-
-    // #123223
-    /**
-     * We have to decide whether update project.xml file as well or not; project.xml file is updated if
-     * and only if the classpath property is "javac.classpath".
-     */
-    private String getElementName(String classpathProperty) {
-        if (JAVAC_CLASSPATH.equals(classpathProperty)) {
-            return DEFAULT_WEB_MODULE_ELEMENT_NAME;
-        }
-        return null;
+        eval.removePropertyChangeListener(this);
     }
 
     /** Store locations of libraries in the classpath param that have more the one
@@ -443,7 +375,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
      * It removes all properties that match this format that were in the {@link #properties}
      * but are not in the {@link #classpath}.
      */
-    public static void storeLibrariesLocations(Iterator<WebClassPathSupport.Item> classpath,
+    public static void storeLibrariesLocations(Iterator<J2EEClassPathSupport.Item> classpath,
             EditableProperties privateProps) {
         List<String> exLibs = new ArrayList<String>();
         for (String key : privateProps.keySet()) {
@@ -453,10 +385,10 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
             }
         }
         while (classpath.hasNext()) {
-            WebClassPathSupport.Item item = classpath.next();
+            J2EEClassPathSupport.Item item = classpath.next();
             List<File> files = new ArrayList<File>();
             List<File> dirs = new ArrayList<File>();
-            WebClassPathSupport.getFilesForItem(item, files, dirs);
+            J2EEClassPathSupport.getFilesForItem(item, files, dirs);
             String key;
             if (files.size() > 1 || (files.size() > 0 && dirs.size() > 0)) {
                 String ref = item.getType() == ClassPathItem.Type.LIBRARY ? item.getRaw() : item.getReference();
