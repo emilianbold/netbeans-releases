@@ -431,7 +431,9 @@ public final class Stamps {
             try {
                 LOG.log(Level.FINE, "Cleaning cache {0}", cacheFile);
                 
-                deleteCache(cacheFile);
+                if (!append) {
+                    deleteCache(cacheFile);
+                }
                 cacheFile.getParentFile().mkdirs();
 
                 LOG.log(Level.FINE, "Storing cache {0}", cacheFile);
