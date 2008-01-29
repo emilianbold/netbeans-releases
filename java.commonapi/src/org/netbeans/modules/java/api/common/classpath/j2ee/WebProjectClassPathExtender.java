@@ -48,6 +48,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.java.api.common.classpath.ProjectClassPathModifierSupport.Operation;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
 @Deprecated
@@ -70,7 +71,7 @@ public abstract class WebProjectClassPathExtender implements ProjectClassPathExt
     public boolean addLibraries(final String classPathId, final Library[] libraries, final String webModuleElementName)
             throws IOException {
         return delegate.handleLibraries(libraries, classPathId, webModuleElementName,
-                WebProjectClassPathModifier.Operation.ADD);
+                Operation.ADD);
     }
 
     public boolean addArchiveFile(final FileObject archiveFile) throws IOException {
@@ -88,7 +89,7 @@ public abstract class WebProjectClassPathExtender implements ProjectClassPathExt
         for (int i = 0; i < archiveFiles.length; i++) {
             archiveFileURLs[i] = archiveFiles[i].getURL();
         }
-        return delegate.handleRoots(archiveFileURLs, classPathId, webModuleElementName, WebProjectClassPathModifier.Operation.ADD);
+        return delegate.handleRoots(archiveFileURLs, classPathId, webModuleElementName, Operation.ADD);
     }
 
     // TODO: AB: AntArtifactItem should not be in LibrariesChooser
