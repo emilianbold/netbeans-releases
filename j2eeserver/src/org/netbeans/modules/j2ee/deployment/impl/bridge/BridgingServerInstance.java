@@ -42,13 +42,14 @@ package org.netbeans.modules.j2ee.deployment.impl.bridge;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstanceLookup;
 import org.netbeans.modules.j2ee.deployment.impl.ui.actions.CustomizerAction;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.spi.server.ServerInstanceFactory;
+import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerManager;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -61,26 +62,31 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Petr Hejl
  */
-public class BridgingServerInstance extends org.netbeans.spi.server.ServerInstance implements Node.Cookie {
+public class BridgingServerInstance implements ServerInstanceImplementation, Node.Cookie {
 
     private final org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance;
 
-    public BridgingServerInstance(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
+    private ServerInstance apiInstance;
+    
+    private BridgingServerInstance(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
         assert instance != null : "ServerInstance must not be null"; // NOI18N
         this.instance = instance;
     }
 
-    @Override
+    public static BridgingServerInstance createInstance(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
+        BridgingServerInstance created = new BridgingServerInstance(instance);
+        created.apiInstance = ServerInstanceFactory.createServerInstance(created);
+        return created;
+    }
+    
     public String getDisplayName() {
         return instance.getDisplayName();
     }
 
-    @Override
     public String getServerDisplayName() {
         return instance.getServer().getDisplayName();
     }
 
-    @Override
     public Node getFullNode() {
         Node childNode;
         StartServer startServer = instance.getStartServer();
@@ -96,7 +102,6 @@ public class BridgingServerInstance extends org.netbeans.spi.server.ServerInstan
         return new InstanceNode(childNode, this);
     }
 
-    @Override
     public Node getBasicNode() {
         Node j2eeNode = instance.getServer().getRegistryNodeFactory().getManagerNode(
                 new ServerInstanceLookup(instance, instance.getServer().getDeploymentFactory(), null));
@@ -104,7 +109,6 @@ public class BridgingServerInstance extends org.netbeans.spi.server.ServerInstan
         return new ManagerNode(j2eeNode, instance.getDisplayName());
     }
 
-    @Override
     public JComponent getCustomizer() {
         Node node = getBasicNode();
         if (node == null || !node.hasCustomizer()) {
@@ -118,15 +122,18 @@ public class BridgingServerInstance extends org.netbeans.spi.server.ServerInstan
         return (JComponent) customizer;
     }
 
-    @Override
     public boolean isRemovable() {
         return !instance.isRemoveForbidden();
     }
 
-    @Override
     public void remove() {
         instance.remove();
     }
+
+    public ServerInstance getApiInstance() {
+        return apiInstance;
+    }
+    
 
     @Override
     public boolean equals(Object obj) {
@@ -202,7 +209,7 @@ public class BridgingServerInstance extends org.netbeans.spi.server.ServerInstan
 
         public void performAction(Node[] nodes) {
             BridgingServerInstance instance = (BridgingServerInstance) nodes[0].getCookie(BridgingServerInstance.class);
-            ServerManager.showCustomizer(instance);
+            ServerManager.showCustomizer(instance.getApiInstance());
         }
 
         protected boolean enable(Node[] nodes) {
