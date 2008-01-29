@@ -87,10 +87,11 @@ public final class ProjectClassPathModifierSupport<T extends ClassPathItem> {
     private final Properties properties;
 
     // XXX javadoc
-    public static ProjectClassPathModifierSupport create(Project project, UpdateHelper helper, PropertyEvaluator eval,
-            ReferenceHelper refHelper, SourceRoots sourceRoots, SourceRoots testSourceRoots, Properties properties) {
+    public static <T extends ClassPathItem> ProjectClassPathModifierSupport<T> create(Project project,
+            UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper, SourceRoots sourceRoots,
+            SourceRoots testSourceRoots, Properties properties) {
 
-        return new ProjectClassPathModifierSupport(project, helper, eval, refHelper, sourceRoots, testSourceRoots,
+        return new ProjectClassPathModifierSupport<T>(project, helper, eval, refHelper, sourceRoots, testSourceRoots,
                 properties);
     }
 
@@ -127,8 +128,7 @@ public final class ProjectClassPathModifierSupport<T extends ClassPathItem> {
     }
 
     public boolean handleRoots(final URL[] classPathRoots, final String classPathProperty, final Operation operation,
-            final ClassPathItemProvider<T> provider) throws IOException,
-            UnsupportedOperationException {
+            final ClassPathItemProvider<T> provider) throws IOException, UnsupportedOperationException {
         assert classPathRoots != null : "The classPathRoots cannot be null";
         assert classPathProperty != null;
 
@@ -249,9 +249,8 @@ public final class ProjectClassPathModifierSupport<T extends ClassPathItem> {
         }
     }
 
-    public boolean handleLibraries(final Library[] libraries, final String classPathProperty, final String elementName,
-            final Operation operation, final ClassPathItemProvider<T> provider) throws IOException,
-            UnsupportedOperationException {
+    public boolean handleLibraries(final Library[] libraries, final String classPathProperty, final Operation operation,
+            final ClassPathItemProvider<T> provider) throws IOException, UnsupportedOperationException {
         assert libraries != null : "Libraries cannot be null";
         assert classPathProperty != null;
 

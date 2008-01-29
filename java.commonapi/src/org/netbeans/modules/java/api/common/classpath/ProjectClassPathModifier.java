@@ -53,6 +53,8 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.java.api.common.classpath.ProjectClassPathModifierSupport.ClassPathItemProvider;
+import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.util.Parameters;
@@ -60,14 +62,16 @@ import org.openide.util.Parameters;
 /**
  * @author Tomas Zezula, Tomas Mysik
  */
-public final class ProjectClassPathModifier extends BaseProjectClassPathModifier<ClassPathSupport.Item> {
+public final class ProjectClassPathModifier extends ProjectClassPathModifierImplementation {
 
-    private final ClassPathSupport classPathSupport;
+    final ClassPathSupport classPathSupport;
+    private final ProjectClassPathModifierSupport<Item> classPathModifierSupport;
+    private final ClassPathItemProvider<Item> classPathItemProvider;
 
     // XXX javadoc
     public static ProjectClassPathModifier create(Project project, UpdateHelper helper, PropertyEvaluator eval,
             ReferenceHelper refHelper, ClassPathSupport classPathSupport, SourceRoots sourceRoots,
-            SourceRoots testSourceRoots, Properties properties) {
+            SourceRoots testSourceRoots, ProjectClassPathModifierSupport.Properties properties) {
         Parameters.notNull("classPathSupport", classPathSupport);
 
         return new ProjectClassPathModifier(project, helper, eval, refHelper, classPathSupport, sourceRoots,
@@ -76,72 +80,96 @@ public final class ProjectClassPathModifier extends BaseProjectClassPathModifier
 
     ProjectClassPathModifier(Project project, UpdateHelper helper, PropertyEvaluator eval, ReferenceHelper refHelper,
             ClassPathSupport classPathSupport, SourceRoots sourceRoots, SourceRoots testSourceRoots,
-            Properties properties) {
-        super(project, helper, eval, refHelper, sourceRoots, testSourceRoots, properties);
+            ProjectClassPathModifierSupport.Properties properties) {
         assert classPathSupport != null;
 
         this.classPathSupport = classPathSupport;
+        classPathModifierSupport = ProjectClassPathModifierSupport.<Item>create(project, helper, eval, refHelper,
+                sourceRoots, testSourceRoots, properties);
+        classPathItemProvider = new DefaultClassPathItemProvider();
+    }
+
+    final class DefaultClassPathItemProvider implements ClassPathItemProvider<Item> {
+        public Item createClassPathItem(File file, String property) {
+            return ClassPathSupport.Item.create(file, property);
+        }
+
+        public Item createClassPathItem(AntArtifact antArtifact, URI antArtifactURI, String property) {
+            return ClassPathSupport.Item.create(antArtifact, antArtifactURI, property);
+        }
+
+        public Item createClassPathItem(Library library, String property) {
+            return ClassPathSupport.Item.create(library, property);
+        }
+
+        public List<Item> getClassPathItems(String reference) {
+            return classPathSupport.itemsList(reference);
+        }
+
+        public String[] encodeToStrings(List<Item> items) {
+            return classPathSupport.encodeToStrings(items);
+        }
+
+        public String getLibraryReference(Item item) {
+            return classPathSupport.getLibraryReference(item);
+        }
     }
 
     @Override
-    protected Item createClassPathItem(File file, String property) {
-        return ClassPathSupport.Item.create(file, property);
+    protected SourceGroup[] getExtensibleSourceGroups() {
+        return classPathModifierSupport.getExtensibleSourceGroups();
     }
 
     @Override
-    protected Item createClassPathItem(AntArtifact antArtifact, URI antArtifactURI, String property) {
-        return ClassPathSupport.Item.create(antArtifact, antArtifactURI, property);
+    protected String[] getExtensibleClassPathTypes(SourceGroup sourceGroup) {
+        return classPathModifierSupport.getExtensibleClassPathTypes(sourceGroup);
     }
 
     @Override
-    protected Item createClassPathItem(Library library, String property) {
-        return ClassPathSupport.Item.create(library, property);
-    }
-
-    @Override
-    protected List<Item> getClassPathItems(String reference, String elementName) {
-        return classPathSupport.itemsList(reference);
-    }
-
-    @Override
-    protected String[] encodeToStrings(List<Item> items, String elementName) {
-        return classPathSupport.encodeToStrings(items);
-    }
-
-    @Override
-    protected String getLibraryReference(Item item) {
-        return classPathSupport.getLibraryReference(item);
-    }
-
     protected boolean removeRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type)
             throws IOException, UnsupportedOperationException {
-        return handleRoots(classPathRoots, getClassPathProperty(sourceGroup, type), null, Operation.REMOVE);
+        return classPathModifierSupport.handleRoots(classPathRoots,
+                classPathModifierSupport.getClassPathProperty(sourceGroup, type),
+                ProjectClassPathModifierSupport.Operation.REMOVE, classPathItemProvider);
     }
 
+    @Override
     protected boolean addRoots(final URL[] classPathRoots, final SourceGroup sourceGroup, final String type)
             throws IOException, UnsupportedOperationException {
-        return handleRoots(classPathRoots, getClassPathProperty(sourceGroup, type), null, Operation.ADD);
+        return classPathModifierSupport.handleRoots(classPathRoots,
+                classPathModifierSupport.getClassPathProperty(sourceGroup, type),
+                ProjectClassPathModifierSupport.Operation.ADD, classPathItemProvider);
     }
 
+    @Override
     protected boolean removeAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements,
             final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        return handleAntArtifacts(artifacts, artifactElements, getClassPathProperty(sourceGroup, type), null,
-                Operation.REMOVE);
+        return classPathModifierSupport.handleAntArtifacts(artifacts, artifactElements,
+                classPathModifierSupport.getClassPathProperty(sourceGroup, type),
+                ProjectClassPathModifierSupport.Operation.REMOVE, classPathItemProvider);
     }
 
+    @Override
     protected boolean addAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements,
             final SourceGroup sourceGroup, final String type) throws IOException, UnsupportedOperationException {
-        return handleAntArtifacts(artifacts, artifactElements, getClassPathProperty(sourceGroup, type), null,
-                Operation.ADD);
+        return classPathModifierSupport.handleAntArtifacts(artifacts, artifactElements,
+                classPathModifierSupport.getClassPathProperty(sourceGroup, type),
+                ProjectClassPathModifierSupport.Operation.ADD, classPathItemProvider);
     }
 
+    @Override
     protected boolean removeLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type)
             throws IOException, UnsupportedOperationException {
-        return handleLibraries(libraries, getClassPathProperty(sourceGroup, type), null, Operation.REMOVE);
+        return classPathModifierSupport.handleLibraries(libraries,
+                classPathModifierSupport.getClassPathProperty(sourceGroup, type),
+                ProjectClassPathModifierSupport.Operation.REMOVE, classPathItemProvider);
     }
 
+    @Override
     protected boolean addLibraries(final Library[] libraries, final SourceGroup sourceGroup, final String type)
             throws IOException, UnsupportedOperationException {
-        return handleLibraries(libraries, getClassPathProperty(sourceGroup, type), null, Operation.ADD);
+        return classPathModifierSupport.handleLibraries(libraries,
+                classPathModifierSupport.getClassPathProperty(sourceGroup, type),
+                ProjectClassPathModifierSupport.Operation.ADD, classPathItemProvider);
     }
 }
