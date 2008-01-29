@@ -229,6 +229,13 @@ public class J2EEProjectClassPathModifier extends ProjectClassPathModifierImplem
         return handleLibraries(libraries, classPathProperty, Operation.ADD, provider);
     }
 
+    // used by ClassPathExtender
+    protected boolean handleLibraries(final Library[] libraries, final String classPathProperty,
+            final String elementName, final Operation operation) throws IOException,
+            UnsupportedOperationException {
+        return handleLibraries(libraries, classPathProperty, operation, new J2EEClassPathItemProvider(elementName));
+    }
+
     // XXX check this - see saving of private properties
     public boolean handleLibraries(final Library[] libraries, final String classPathProperty, final Operation operation,
             final ClassPathItemProvider<J2EEClassPathSupport.Item> provider) throws IOException,

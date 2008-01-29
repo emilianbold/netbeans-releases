@@ -52,33 +52,33 @@ import org.netbeans.modules.java.api.common.classpath.ProjectClassPathModifierSu
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
 @Deprecated
-public abstract class WebProjectClassPathExtender implements ProjectClassPathExtender {
+public abstract class J2EEProjectClassPathExtender implements ProjectClassPathExtender {
 
-    private static final String CP_CLASS_PATH = "javac.classpath"; // NOI18N
-    private static final String DEFAULT_WEB_MODULE_ELEMENT_NAME = WebClassPathSupport.TAG_WEB_MODULE_LIBRARIES;
+    private static final String DEFAULT_CLASS_PATH = "javac.classpath"; // NOI18N
+    private static final String DEFAULT_INCLUDED_LIBS_ELEMENT = WebClassPathSupport.TAG_WEB_MODULE_LIBRARIES;
 
-    private final WebProjectClassPathModifier delegate;
+    private final J2EEProjectClassPathModifier delegate;
 
-    public WebProjectClassPathExtender(final WebProjectClassPathModifier delegate) {
+    public J2EEProjectClassPathExtender(final J2EEProjectClassPathModifier delegate) {
         assert delegate != null;
         this.delegate = delegate;
     }
 
     public boolean addLibrary(final Library library) throws IOException {
-        return addLibraries(CP_CLASS_PATH, new Library[] { library }, DEFAULT_WEB_MODULE_ELEMENT_NAME);
+        return addLibraries(DEFAULT_CLASS_PATH, new Library[] { library }, DEFAULT_INCLUDED_LIBS_ELEMENT);
     }
 
-    public boolean addLibraries(final String classPathId, final Library[] libraries, final String webModuleElementName)
+    public boolean addLibraries(final String classPathId, final Library[] libraries, final String elementName)
             throws IOException {
-        return delegate.handleLibraries(libraries, classPathId, webModuleElementName, Operation.ADD);
+        return delegate.handleLibraries(libraries, classPathId, elementName, Operation.ADD);
     }
 
     public boolean addArchiveFile(final FileObject archiveFile) throws IOException {
-        return addArchiveFiles(CP_CLASS_PATH, new FileObject[] { archiveFile }, DEFAULT_WEB_MODULE_ELEMENT_NAME);
+        return addArchiveFiles(DEFAULT_CLASS_PATH, new FileObject[] { archiveFile }, DEFAULT_INCLUDED_LIBS_ELEMENT);
     }
 
-    public boolean addArchiveFiles(final String classPathId, FileObject[] archiveFiles,
-            final String webModuleElementName) throws IOException {
+    public boolean addArchiveFiles(final String classPathId, final FileObject[] archiveFiles,
+            final String elementName) throws IOException {
         for (int i = 0; i < archiveFiles.length; i++) {
             FileObject archiveFile = archiveFiles[i];
             if (FileUtil.isArchiveFile(archiveFile)) {
@@ -89,7 +89,7 @@ public abstract class WebProjectClassPathExtender implements ProjectClassPathExt
         for (int i = 0; i < archiveFiles.length; i++) {
             archiveFileURLs[i] = archiveFiles[i].getURL();
         }
-        return delegate.handleRoots(archiveFileURLs, classPathId, webModuleElementName, Operation.ADD);
+        return delegate.handleRoots(archiveFileURLs, classPathId, elementName, Operation.ADD);
     }
 
     // TODO: AB: AntArtifactItem should not be in LibrariesChooser
@@ -106,6 +106,6 @@ public abstract class WebProjectClassPathExtender implements ProjectClassPathExt
             artifacts[i] = artifactItems[i].getArtifact();
             artifactElements[i] = artifactItems[i].getArtifactURI();
         }
-        return delegate.handleAntArtifacts(artifacts, artifactElements, classPathId, webModuleElementName, WebProjectClassPathModifier.ADD);
+        return delegate.handleAntArtifacts(artifacts, artifactElements, classPathId, webModuleElementName, J2EEProjectClassPathModifier.ADD);
     }*/
 }
