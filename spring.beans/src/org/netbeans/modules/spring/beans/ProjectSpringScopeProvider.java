@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.beans;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.api.beans.SpringScope;
 
 /**
@@ -58,9 +59,9 @@ public class ProjectSpringScopeProvider {
     }
 
     public synchronized SpringScope getSpringScope() {
-        // XXX read the Spring scope from the project.
         if (springScope == null) {
-            springScope = SpringScopeAccessor.DEFAULT.createSpringScope();
+            ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new ProjectConfigFileManagerImpl(project));
+            springScope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
         }
         return springScope;
     }

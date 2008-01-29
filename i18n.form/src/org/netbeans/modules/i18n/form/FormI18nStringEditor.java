@@ -149,8 +149,9 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
      * @return text for the current value */
     public String getAsText() {
         Object value = getValue();
-        if (value instanceof String)
+        if (value instanceof String || value == null) {
             return (String) value;
+        }
 
         FormI18nString i18nString = (FormI18nString) value;
         return i18nString.getValue();
@@ -168,7 +169,11 @@ public class FormI18nStringEditor extends PropertyEditorSupport implements FormA
         Object value = getValue();
         // the value should always be FormI18nString, but for the case it is not...
         if (!(value instanceof FormI18nString)) {
-            return "\"" + FormI18nSupport.toAscii((String)value) + "\""; // NOI18N
+            if (value != null) {
+                return "\"" + FormI18nSupport.toAscii((String)value) + "\""; // NOI18N
+            } else {
+                return "null"; // NOI18N
+            }
         }
         FormI18nString i18nString = (FormI18nString) value;
         String javaString = i18nString.getReplaceString();
