@@ -43,27 +43,27 @@ import javax.swing.JComponent;
 import org.openide.nodes.Node;
 
 /**
- * The representation of the single server instance. Class describe the instance
- * and provides needed operations.
+ * The representation of the single server instance. Interface describes
+ * the instance and provides needed operations.
  *
  * @author Petr Hejl
  * @see ServerInstanceProvider
  */
-public abstract class ServerInstance {
+public interface ServerInstanceImplementation {
 
     /**
      * Returns the display name of the instance.
      *
      * @return the display name of the instance
      */
-    public abstract String getDisplayName();
+    String getDisplayName();
 
     /**
      * Returns the display name of the server type to which this instance belongs.
      *
      * @return the display name of the server type to which this instance belongs
      */
-    public abstract String getServerDisplayName();
+    String getServerDisplayName();
 
     /**
      * Returns the node representing the runtime instance. The node should
@@ -71,7 +71,7 @@ public abstract class ServerInstance {
      *
      * @return the node representing the instance, may return <code>null</code>
      */
-    public abstract Node getFullNode();
+    Node getFullNode();
 
     /**
      * Returns the node representing the instance while configuring it.
@@ -79,7 +79,7 @@ public abstract class ServerInstance {
      *
      * @return the node representing the instance, may return <code>null</code>
      */
-    public abstract Node getBasicNode();
+    Node getBasicNode();
 
     /**
      * Returns the component allowing the customization of the instance. May
@@ -90,13 +90,13 @@ public abstract class ServerInstance {
      * @return the component allowing the customization of the instance,
      *             may return <code>null</code>
      */
-    public abstract JComponent getCustomizer();
+    JComponent getCustomizer();
 
     /**
      * Removes the instance. No {@link ServerInstanceProvider} should return
      * this instance once it is removed.
      */
-    public abstract void remove();
+    void remove();
 
     /**
      * Returns <code>true</code> if the instance can be removed by
@@ -104,6 +104,6 @@ public abstract class ServerInstance {
      *
      * @return <code>true</code> if the instance can be removed
      */
-    public abstract boolean isRemovable();
+    boolean isRemovable();
 
 }

@@ -44,11 +44,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
-import org.netbeans.spi.server.ServerInstance;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -61,8 +61,8 @@ public class BridgingServerInstanceProvider implements org.netbeans.spi.server.S
 
     private final Server server;
 
-    private Map<org.netbeans.modules.j2ee.deployment.impl.ServerInstance, ServerInstance> instances =
-            new HashMap<org.netbeans.modules.j2ee.deployment.impl.ServerInstance, ServerInstance>();
+    private Map<org.netbeans.modules.j2ee.deployment.impl.ServerInstance, BridgingServerInstance> instances =
+            new HashMap<org.netbeans.modules.j2ee.deployment.impl.ServerInstance, BridgingServerInstance>();
 
     public BridgingServerInstanceProvider(Server server) {
         assert server != null : "Server must not be null"; // NOI18N
@@ -102,9 +102,14 @@ public class BridgingServerInstanceProvider implements org.netbeans.spi.server.S
         }
     }
 
+    // TODO we could slightly optimize this by cacheing
     public synchronized List<ServerInstance> getInstances() {
         refreshCache();
-        return new ArrayList<ServerInstance>(instances.values());
+        List<ServerInstance> instancesList = new  ArrayList<ServerInstance>(instances.size());
+        for (BridgingServerInstance instance : instances.values()) {
+            instancesList.add(instance.getApiInstance());
+        }
+        return instancesList;
     }
 
     @Override
@@ -131,7 +136,7 @@ public class BridgingServerInstanceProvider implements org.netbeans.spi.server.S
 
     protected synchronized ServerInstance getBridge(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
         refreshCache();
-        return instances.get(instance);
+        return instances.get(instance).getApiInstance();
     }
 
     private synchronized void refreshCache() {
@@ -140,7 +145,7 @@ public class BridgingServerInstanceProvider implements org.netbeans.spi.server.S
         for (org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance : ServerRegistry.getInstance().getServerInstances()) {
             if (instance.getServer().equals(server) && isRegisteredWithUI(instance.getInstanceProperties())) {
                 if (!instances.containsKey(instance)) {
-                    instances.put(instance, new org.netbeans.modules.j2ee.deployment.impl.bridge.BridgingServerInstance(instance));
+                    instances.put(instance, BridgingServerInstance.createInstance(instance));
                 } else {
                     toRemove.remove(instance);
                 }

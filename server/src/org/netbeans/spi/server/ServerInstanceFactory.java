@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,58 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.spi.server;
 
-import java.awt.Dialog;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import javax.swing.JButton;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.server.ui.manager.ServerManagerPanel;
 
 /**
- * Class providing access to UI dialogs. Usable in spi implementation.
  *
  * @author Petr Hejl
  */
-public final class ServerManager {
+public final class ServerInstanceFactory {
 
-    private ServerManager() {
+    private ServerInstanceFactory() {
         super();
     }
-
+    
+    public static ServerInstance createServerInstance(ServerInstanceImplementation impl) {
+        return Accessor.DEFAULT.createServerInstance(impl);
+    }
+    
     /**
-     * Displays the modal server manager dialog with the specified server instance
-     * preselected. This method must be called form the AWT event dispatch
-     * thread.
-     *
-     * @param instance server instance which should be preselected,
-     *             if <code>null</code> the first server instance will
-     *             be preselected
+     * The accessor pattern class.
      */
-    public static void showCustomizer(ServerInstance instance) {
-        ServerManagerPanel customizer = new ServerManagerPanel(instance);
+    public abstract static class Accessor {
 
-        JButton close = new JButton(NbBundle.getMessage(ServerManager.class, "CTL_Close"));
-        close.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ServerManager.class, "AD_Close"));
+        /** The default accessor. */
+        public static Accessor DEFAULT;
 
-        DialogDescriptor descriptor = new DialogDescriptor(customizer,
-                NbBundle.getMessage(ServerManager.class, "TXT_ServerManager"),
-                true,
-                new Object[] {close},
-                close,
-                DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(ServerManager.class),
-                null);
-
-        Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
-        try {
-            dlg.setVisible(true);
-        } finally {
-            dlg.dispose();
+        static {
+            // invokes static initializer of ReaderManager.class
+            // that will assign value to the DEFAULT field above
+            Class c = ServerInstance.class;
+            try {
+                Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException ex) {
+                assert false : ex;
+            }
         }
+
+
+        public abstract ServerInstance createServerInstance(ServerInstanceImplementation impl);
+
     }
 }
