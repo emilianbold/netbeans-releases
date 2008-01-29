@@ -46,6 +46,7 @@ made subject to such option by the copyright holder.
 <project name="appsrvbridge" default="default" basedir=".">
     <description>Builds, tests, and runs the project appsrvbridge.</description>
     <import file="nbproject/build-impl.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
     <!--
 
     There exist several targets which are by default empty and which can be 

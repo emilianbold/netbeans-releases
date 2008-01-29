@@ -274,7 +274,15 @@ public class FileBuilder
     public static void copyFile(File from, File to)
 	throws IOException
     {
+        if (from == null || ! from.exists() || to == null) 
+        {
+            return;
+        }
 	BufferedInputStream r = new BufferedInputStream(FileUtil.toFileObject(from).getInputStream());
+        if (!to.exists()) 
+        {
+            FileUtil.createData(to);
+        }            
 	BufferedOutputStream w = new BufferedOutputStream(FileUtil.toFileObject(to).getOutputStream());
 	byte[] buff = new byte[8192];
 	int l = r.read(buff);
