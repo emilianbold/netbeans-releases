@@ -74,97 +74,98 @@ import org.openide.util.NbBundle;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class WSDLExtensibilityElementsImpl implements WSDLExtensibilityElements {
-	
-	private static final Logger mLogger = Logger.getLogger(WSDLExtensibilityElementsImpl.class.getName());
-	
-	private DataFolder mRootFolder = null;
-	
-	private String rootFolderNamePrefix;
-	
-	private Map elementsMap = new HashMap();
-	
-	private Map<String, XMLSchemaFileInfo> schemasMap = new HashMap<String, XMLSchemaFileInfo>();
-	
-	public WSDLExtensibilityElementsImpl(DataFolder rootFolder) {
-		this.mRootFolder = rootFolder;
-		this.rootFolderNamePrefix = mRootFolder.getName() + "/";
-		readAllSchemas();
-	}
-	
-	public WSDLExtensibilityElement getWSDLExtensibilityElement(String name) {
-		WSDLExtensibilityElement element = (WSDLExtensibilityElement) elementsMap.get(name);
-		if(element != null) {
-			return element;
-		}
-		
-		FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(rootFolderNamePrefix + name);
-		DataFolder folder = DataFolder.findFolder(fo);
-		if (folder != null && folder.getName().equals(name)) {
-		    element = new WSDLExtensibilityElementImpl(folder, this);
-            elementsMap.put(name, element);
-		}
-		
-		return element;
-	}
-
-	public InputStream[] getAllExtensionSchemas() {
-		ArrayList extensionSchemas = new ArrayList();
-		DataObject[] dataObjects = this.mRootFolder.getChildren();
-		for(int i = 0; i < dataObjects.length; i++ ) {
-			DataObject dObj = dataObjects[i];
-			if(!(dObj instanceof DataFolder) && dObj.getPrimaryFile().hasExt(Constants.XSD_EXT)) {
-				InputStream in = null;
-				try {
-					in = dObj.getPrimaryFile().getInputStream();
-				} catch(Throwable t) {
-					mLogger.log(Level.SEVERE, NbBundle.getMessage(WSDLExtensibilityElementsImpl.class, "ERR_MSG_FAILED_TO_GET_SCHEMA", dObj.getPrimaryFile().getPath()));
-				}
-				
-				if(in != null) {
-					extensionSchemas.add(in);
-				}
-			}
-		}
-		
-		return (InputStream[]) extensionSchemas.toArray( new InputStream[] {});
-	}
-	
-	public XMLSchemaFileInfo getXMLSchemaFileInfoMatchingFileName(String fileName) {
-		XMLSchemaFileInfo schemaInfo =  this.schemasMap.get(fileName);
-		return schemaInfo;
-	}
-	
-	public XMLSchemaFileInfo getXMLSchemaFileInfo(String namespace) {
-	    XMLSchemaFileInfo schemaInfo = null;
-
-	    Iterator<XMLSchemaFileInfo> it = this.schemasMap.values().iterator();
-	    while(it.hasNext()) {
-	        XMLSchemaFileInfo info = it.next();
-            String ns = info.getSchema().getTargetNamespace();
-	        //String ns = info.getNamespace();
-	        if(ns != null && ns.equals(namespace)) {
-	            schemaInfo = info;
-	            break;
-	        }
-	    }
-
-	    return schemaInfo;
-	}
+    
+    private static final Logger mLogger = Logger.getLogger(WSDLExtensibilityElementsImpl.class.getName());
+    
+    private DataFolder mRootFolder = null;
+    
+    private String rootFolderNamePrefix;
+    
+    private Map elementsMap = new HashMap();
+    
+    private Map<String, XMLSchemaFileInfo> schemasMap = new HashMap<String, XMLSchemaFileInfo>();
+    
+    public WSDLExtensibilityElementsImpl(DataFolder rootFolder) {
+        this.mRootFolder = rootFolder;
+        this.rootFolderNamePrefix = mRootFolder.getName() + "/";
+        readAllSchemas();
+    }
+    
+    public WSDLExtensibilityElement getWSDLExtensibilityElement(String name) {
+        WSDLExtensibilityElement element = (WSDLExtensibilityElement) elementsMap.get(name);
+        if(element != null) {
+            return element;
+        }
         
-	private void readAllSchemas() {
-		DataObject[] dataObjects = this.mRootFolder.getChildren();
-		for(int i = 0; i < dataObjects.length; i++ ) {
-			DataObject dObj = dataObjects[i];
-			if(!(dObj instanceof DataFolder) && dObj.getPrimaryFile().hasExt(Constants.XSD_EXT)) {
-				XMLSchemaFileInfo schemaFileInfo = new XMLSchemaFileInfoImpl(dObj);
-				this.schemasMap.put(dObj.getName(), schemaFileInfo);
-			}
-		}
-	}
+        FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource(rootFolderNamePrefix + name);
+        if (fo != null) {
+            DataFolder folder = DataFolder.findFolder(fo);
+            if (folder != null && folder.getName().equals(name)) {
+                element = new WSDLExtensibilityElementImpl(folder, this);
+                elementsMap.put(name, element);
+            }
+        }
+        return element;
+    }
+
+    public InputStream[] getAllExtensionSchemas() {
+        ArrayList extensionSchemas = new ArrayList();
+        DataObject[] dataObjects = this.mRootFolder.getChildren();
+        for(int i = 0; i < dataObjects.length; i++ ) {
+            DataObject dObj = dataObjects[i];
+            if(!(dObj instanceof DataFolder) && dObj.getPrimaryFile().hasExt(Constants.XSD_EXT)) {
+                InputStream in = null;
+                try {
+                    in = dObj.getPrimaryFile().getInputStream();
+                } catch(Throwable t) {
+                    mLogger.log(Level.SEVERE, NbBundle.getMessage(WSDLExtensibilityElementsImpl.class, "ERR_MSG_FAILED_TO_GET_SCHEMA", dObj.getPrimaryFile().getPath()));
+                }
+                
+                if(in != null) {
+                    extensionSchemas.add(in);
+                }
+            }
+        }
+        
+        return (InputStream[]) extensionSchemas.toArray( new InputStream[] {});
+    }
+    
+    public XMLSchemaFileInfo getXMLSchemaFileInfoMatchingFileName(String fileName) {
+        XMLSchemaFileInfo schemaInfo =  this.schemasMap.get(fileName);
+        return schemaInfo;
+    }
+    
+    public XMLSchemaFileInfo getXMLSchemaFileInfo(String namespace) {
+        XMLSchemaFileInfo schemaInfo = null;
+
+        Iterator<XMLSchemaFileInfo> it = this.schemasMap.values().iterator();
+        while(it.hasNext()) {
+            XMLSchemaFileInfo info = it.next();
+            String ns = info.getSchema().getTargetNamespace();
+            //String ns = info.getNamespace();
+            if(ns != null && ns.equals(namespace)) {
+                schemaInfo = info;
+                break;
+            }
+        }
+
+        return schemaInfo;
+    }
+        
+    private void readAllSchemas() {
+        DataObject[] dataObjects = this.mRootFolder.getChildren();
+        for(int i = 0; i < dataObjects.length; i++ ) {
+            DataObject dObj = dataObjects[i];
+            if(!(dObj instanceof DataFolder) && dObj.getPrimaryFile().hasExt(Constants.XSD_EXT)) {
+                XMLSchemaFileInfo schemaFileInfo = new XMLSchemaFileInfoImpl(dObj);
+                this.schemasMap.put(dObj.getName(), schemaFileInfo);
+            }
+        }
+    }
 
     public XMLSchemaFileInfo[] getAllXMLSchemaFileInfos() {
         Collection<XMLSchemaFileInfo> infos = schemasMap.values();
         return infos.toArray(new XMLSchemaFileInfo[infos.size()]);
     }
-	
+    
 }
