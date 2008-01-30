@@ -44,12 +44,16 @@ package org.netbeans.modules.spring.beans.ui.customizer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.netbeans.modules.spring.beans.ui.customizer.ConfigFileGroupUIs.FileDisplayName;
+import org.netbeans.modules.spring.util.ConfigFiles;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
@@ -63,12 +67,16 @@ import org.openide.util.NbBundle;
 public class ConfigFileGroupsPanel extends javax.swing.JPanel {
 
     private final List<ConfigFileGroup> groups;
+    private final File basedir;
     private ConfigFileGroup currentGroup;
     private int currentGroupIndex;
 
-    public ConfigFileGroupsPanel(List<ConfigFileGroup> groups) {
+    public ConfigFileGroupsPanel(List<ConfigFileGroup> groups, File basedir) {
         initComponents();
         this.groups = groups;
+        this.basedir = basedir;
+        ConfigFileGroupUIs.setupGroupsList(groupsList);
+        ConfigFileGroupUIs.setupGroupFilesList(groupFilesList, new RelativeDisplayName());
         ConfigFileGroupUIs.connect(groups, groupsList);
         groupsList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
@@ -241,6 +249,7 @@ private void addFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setDialogTitle(NbBundle.getMessage(ConfigFileGroupsPanel.class, "LBL_ChooseFile"));
+        chooser.setCurrentDirectory(basedir);
         int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(groupFilesList));
         if (option == JFileChooser.APPROVE_OPTION) {
             List<File> files = currentGroup.getFiles();
@@ -287,4 +296,17 @@ private void removeFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JButton removeGroupButton;
     // End of variables declaration//GEN-END:variables
 
+    private final class RelativeDisplayName implements FileDisplayName {
+
+        private Map<File, String> abs2Rel = new HashMap<File, String>();
+
+        public String getDisplayName(File absolute) {
+            String relative = abs2Rel.get(absolute);
+            if (relative == null) {
+                relative = ConfigFiles.getRelativePath(basedir, absolute);
+                abs2Rel.put(absolute, relative);
+            }
+            return relative;
+        }
+    }
 }

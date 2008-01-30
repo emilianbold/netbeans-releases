@@ -43,6 +43,7 @@ package org.netbeans.modules.spring.beans.ui.customizer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -52,6 +53,7 @@ import org.netbeans.modules.spring.api.beans.ConfigFileManager;
 import org.netbeans.modules.spring.beans.ProjectSpringScopeProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -76,7 +78,8 @@ public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCa
         // projects for which we also extend the lookup with a ProjectSpringScopeProvider.
         assert scopeProvider != null;
         ConfigFileManager manager = scopeProvider.getSpringScope().getConfigFileManager();
-        ConfigFileGroupsPanel panel = new ConfigFileGroupsPanel(manager.getConfigFileGroups());
+        File projectDir = FileUtil.toFile(project.getProjectDirectory());
+        ConfigFileGroupsPanel panel = new ConfigFileGroupsPanel(manager.getConfigFileGroups(), projectDir);
         CategoryListener listener = new CategoryListener(manager, panel);
         category.setOkButtonListener(listener);
         category.setStoreListener(listener);

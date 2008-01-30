@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.beans.ui.customizer;
 
 import java.awt.Component;
+import java.io.File;
 import java.util.List;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -61,10 +62,18 @@ public class ConfigFileGroupUIs {
 
     private ConfigFileGroupUIs() {}
 
-    public static void connect(List<ConfigFileGroup> groups, JList list) {
-        list.setModel(new ConfigFileGroupListModel(groups));
+    public static void setupGroupsList(JList list) {
         list.setCellRenderer(new ConfigFileGroupRenderer());
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+
+    public static void setupGroupFilesList(JList list, FileDisplayName displayName) {
+        list.setCellRenderer(new ConfigFileRenderer(displayName));
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+
+    public static void connect(List<ConfigFileGroup> groups, JList list) {
+        list.setModel(new ConfigFileGroupListModel(groups));
     }
 
     public static void connect(ConfigFileGroup group, JList list) {
@@ -139,5 +148,27 @@ public class ConfigFileGroupUIs {
 
         public void removeListDataListener(ListDataListener l) {
         }
+    }
+
+    private static final class ConfigFileRenderer extends DefaultListCellRenderer {
+
+        private final FileDisplayName displayName;
+
+        public ConfigFileRenderer(FileDisplayName displayName) {
+            this.displayName = displayName;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel component = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            File file = (File)value;
+            component.setText(displayName.getDisplayName(file));
+            return component;
+        }
+    }
+
+    public interface FileDisplayName {
+
+        String getDisplayName(File file);
     }
 }
