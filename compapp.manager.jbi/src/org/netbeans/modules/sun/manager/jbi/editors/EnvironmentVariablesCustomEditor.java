@@ -52,7 +52,7 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 
@@ -71,7 +71,7 @@ public class EnvironmentVariablesCustomEditor extends SimpleTabularDataCustomEdi
             
     public EnvironmentVariablesCustomEditor(SimpleTabularDataEditor editor,
             String tableLabelText, String tableLabelDescription,
-            OldJBIComponentConfigurationDescriptor descriptor,
+            JBIComponentConfigurationDescriptor descriptor,
             boolean isWritable) {
         super(editor, tableLabelText, tableLabelDescription, 
                 descriptor, isWritable);

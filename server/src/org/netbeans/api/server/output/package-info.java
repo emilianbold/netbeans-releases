@@ -43,20 +43,6 @@
  * The support API for processing the growing streams or files. The API
  * provides classes for automated processing of such inputs. The processing
  * is line based.
- * <p>
- * The simple example for processing the stream:
- * <p>
- * <pre>
- *     InputStream&nbsp;is&nbsp;=&nbsp;...;<br>
- *     Charset&nbsp;charset&nbsp;=&nbsp;...;<br>
- *     LineProcessor&nbsp;myProcessor&nbsp;=&nbsp;...;<br>
- *     <br>
- *     ReaderManager&nbsp;manager&nbsp;=&nbsp;ReaderManager.newManager(<br>
- *     &nbsp;&nbsp;&nbsp;&nbsp;LineReaders.forStream(is,&nbsp;charset),&nbsp;myProcessor);<br>
- *     manager.start();<br>
- *     ...<br>
- *     manager.stop();<br>
- * </pre>
  *
  * @see org.netbeans.api.server.output.ReaderManager
  */

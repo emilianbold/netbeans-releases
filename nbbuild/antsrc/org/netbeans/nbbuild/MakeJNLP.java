@@ -307,7 +307,7 @@ public class MakeJNLP extends Task {
                         String clusterRootPrefix = jar.getParent() + File.separatorChar;
                         String absname = n.getAbsolutePath();
                         if (absname.startsWith(clusterRootPrefix)) {
-                            name = absname.substring(clusterRootPrefix.length()).replace('/', '-');
+                            name = absname.substring(clusterRootPrefix.length()).replace(File.separatorChar, '-');
                         }
                         File t = new File(new File(targetFile, dashcnb), name);
 

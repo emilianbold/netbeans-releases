@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.languages.parser;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,6 +68,7 @@ import org.netbeans.api.languages.ASTToken;
 import org.netbeans.modules.languages.Language;
 import org.netbeans.modules.languages.LanguagesManager;
 import org.netbeans.modules.languages.Rule;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -709,25 +711,34 @@ public class LLSyntaxAnalyser {
         if (message == null) {
             if (expectedToken != null) {
                 if (expectedToken.getIdentifier () != null)
-                    message = expectedToken.getIdentifier () + " expected";
+                    message = MessageFormat.format (
+                        NbBundle.getMessage (LLSyntaxAnalyser.class, "CTL_ID_expected"), 
+                        expectedToken.getIdentifier ()
+                    );
                 else {
                     String type = expectedToken.getTypeName ();
                     if (type.contains ("identifier"))
-                        message = "identifier expected";
+                        message = NbBundle.getMessage (LLSyntaxAnalyser.class, "CTL_Identifier_expected");
                     else
                     if (type.contains ("string"))
-                        message = "string expected";
+                        message = NbBundle.getMessage (LLSyntaxAnalyser.class, "CTL_String_expected");
                     else
                     if (type.contains ("keyword"))
-                        message = "keyword expected";
+                        message = NbBundle.getMessage (LLSyntaxAnalyser.class, "CTL_Keyword_expected");
                     else
-                        message = type + " expected";
+                        message = MessageFormat.format (
+                            NbBundle.getMessage (LLSyntaxAnalyser.class, "CTL_Type_expected"), 
+                            type
+                        );
                 }
             } else
             if (input.eof ())
-                message = "unexpected end of file";
+                message = NbBundle.getMessage (LLSyntaxAnalyser.class, "CTL_Unexpected_end_of_file");
             else
-                message = "unexpected token '" + input.next (1).getIdentifier () + "'";
+                message = MessageFormat.format (
+                    NbBundle.getMessage (LLSyntaxAnalyser.class, "CTL_Unexpected_token_ID"), 
+                    input.next (1).getIdentifier ()
+                );
         }
         syntaxErrors.add (new SyntaxError (item, message));
     }

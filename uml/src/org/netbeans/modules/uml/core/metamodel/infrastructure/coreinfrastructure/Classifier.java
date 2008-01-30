@@ -3508,8 +3508,11 @@ public class Classifier extends Namespace implements IClassifier,
             
             SourceFileArtifact curArt = (SourceFileArtifact)sfa;
             
-            sourcesStr.append(curArt.getLanguage().getName())
-                .append(':').append(curArt.getFileName());
+            if (curArt.getLanguage() != null) 
+            {
+                sourcesStr.append(curArt.getLanguage().getName()).append(':');
+            }
+            sourcesStr.append(curArt.getFileName());
         }
         
         return sourcesStr.toString();

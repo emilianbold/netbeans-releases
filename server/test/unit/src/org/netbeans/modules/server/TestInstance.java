@@ -40,53 +40,61 @@
 package org.netbeans.modules.server;
 
 import javax.swing.JComponent;
-import org.netbeans.spi.server.ServerInstance;
+import org.netbeans.api.server.ServerInstance;
+import org.netbeans.spi.server.ServerInstanceFactory;
+import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 
 /**
  *
  * @author Petr Hejl
  */
-public class TestInstance extends ServerInstance {
+public class TestInstance implements ServerInstanceImplementation {
 
     private final TestInstanceProvider provider;
 
-    public TestInstance(TestInstanceProvider provider) {
+    private ServerInstance commonInstance;
+    
+    private TestInstance(TestInstanceProvider provider) {
         this.provider = provider;
     }
 
-    @Override
+    public static TestInstance createInstance(TestInstanceProvider provider) {
+        TestInstance created = new TestInstance(provider);
+        created.commonInstance = ServerInstanceFactory.createServerInstance(created);
+        return created;
+    }
+    
     public String getDisplayName() {
-        return "Test"; // NOI18N
+        return "Test Instance"; // NOI18N
     }
 
-    @Override
     public String getServerDisplayName() {
-        return "Test"; // NOI18N
+        return "Test Server"; // NOI18N
     }
 
-    @Override
     public Node getFullNode() {
         return null;
     }
 
-    @Override
     public Node getBasicNode() {
         return null;
     }
 
-    @Override
     public JComponent getCustomizer() {
         return null;
     }
 
-    @Override
     public boolean isRemovable() {
         return true;
     }
 
-    @Override
     public void remove() {
-        provider.removeInstance(this);
+        provider.removeInstance(commonInstance);
     }
+
+    public ServerInstance getCommonInstance() {
+        return commonInstance;
+    }
+    
 }
