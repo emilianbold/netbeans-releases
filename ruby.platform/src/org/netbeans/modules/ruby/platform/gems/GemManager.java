@@ -84,6 +84,9 @@ public final class GemManager {
 
     private static final Logger LOGGER = Logger.getLogger(GemManager.class.getName());
     
+    /** Top level directories inside the Gem repository. */
+    private static final String[] TOP_LEVEL_REPO_DIRS = { "cache", "specifications", "gems", "doc" }; // NOI18N
+    
     /** Directory inside the GEM_HOME directory. */
     private static final String SPECIFICATIONS = "specifications"; // NOI18N
     
@@ -174,7 +177,14 @@ public final class GemManager {
         
         return null;
     }
-    
+
+    /** Initialize/creates empty Gem Repository. */
+    public static void initializeRepository(FileObject gemRepo) throws IOException {
+        for (String dir : TOP_LEVEL_REPO_DIRS) {
+            gemRepo.createFolder(dir);
+        }
+    }
+
     /** Returns main Gem repository path. */
     public String getGemHome() {
         return platform.getInfo().getGemHome();
@@ -403,8 +413,8 @@ public final class GemManager {
     }
 
     public void reset() {
-        installed = null;
-        remote = null;
+        resetRemote();
+        resetLocal();
         gemHomeUrl = null;
     }
     
@@ -978,8 +988,15 @@ public final class GemManager {
 
     static boolean isValidGemHome(final File gemHomeF) {
         Parameters.notNull("gemHomeF", gemHomeF);
-        return gemHomeF.isDirectory() && new File(gemHomeF, "gems").isDirectory()
-                && new File(gemHomeF, "specifications").isDirectory();
+        boolean valid = gemHomeF.isDirectory();
+        for (int i = 0; valid && i < TOP_LEVEL_REPO_DIRS.length; i++) {
+            String dir = TOP_LEVEL_REPO_DIRS[i];
+            File dirF = new File(gemHomeF, dir);
+            LOGGER.finest("Checking: " + dirF);
+            valid &= dirF.isDirectory();
+            LOGGER.finest("valid: " + valid);
+        }
+        return valid;
     }
 
     public static void adjustEnvironment(final RubyPlatform platform, final Map<String, String> env) {

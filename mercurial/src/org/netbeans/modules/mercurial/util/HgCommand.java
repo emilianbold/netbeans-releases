@@ -231,6 +231,7 @@ public class HgCommand {
     private static final String HG_CANNOT_RUN_ERR = "Cannot run program"; // NOI18N
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
     private static final String HG_ABORT_PUSH_ERR = "abort: push creates new remote branches!"; // NOI18N
+    private static final String HG_ABORT_NO_FILES_TO_COPY_ERR = "abort: no files to copy"; // NOI18N
     
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -1281,7 +1282,9 @@ public class HgCommand {
         List<String> list = exec(command);
         if (!list.isEmpty() &&
              isErrorAbort(list.get(list.size() -1))) {
-            handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_RENAME_FAILED"));
+            if (!bAfter || !isErrorAbortNoFilesToCopy(list.get(list.size() -1))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_RENAME_FAILED"));
+            }
         }
     }
     
@@ -2380,6 +2383,10 @@ public class HgCommand {
 
     public static boolean isErrorAbortPush(String msg) {
         return msg.indexOf(HG_ABORT_PUSH_ERR) > -1; // NOI18N
+    }
+
+    public static boolean isErrorAbortNoFilesToCopy(String msg) {
+        return msg.indexOf(HG_ABORT_NO_FILES_TO_COPY_ERR) > -1; // NOI18N
     }
 
     private static boolean isErrorNoChangeNeeded(String msg) {

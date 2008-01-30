@@ -49,6 +49,8 @@ import org.netbeans.api.ruby.platform.RubyTestBase;
 import org.netbeans.api.ruby.platform.RubyTestBase.IFL;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.junit.MockServices;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class GemManagerTest extends RubyTestBase {
 
@@ -123,6 +125,13 @@ public class GemManagerTest extends RubyTestBase {
         gemManager.removeRepository(dummyRepo);
         assertEquals("one repositories", 1, gemManager.getRepositories().size());
         assertTrue("one repositories in info's gempath", platform.getInfo().getGemPath().indexOf(File.pathSeparatorChar) == -1);
+    }
+    
+    public void testInitializeRepository() throws Exception {
+        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        GemManager.isValidGemHome(FileUtil.toFile(gemRepo));
     }
     
 }

@@ -433,11 +433,13 @@ public class BPELSourceMultiViewElement extends CloneableEditor
             editorPane.removeCaretListener(myCaretPositionListener);
         }
         
-        myCaretPositionListener = new CaretListener() {
-            public void caretUpdate(final CaretEvent e) {
-                selectElement();
-            }
-        };
+        if (myCaretPositionListener == null) {
+            myCaretPositionListener = new CaretListener() {
+                public void caretUpdate(final CaretEvent e) {
+                    selectElement();
+                }
+            };
+        }
         editorPane.addCaretListener(myCaretPositionListener);
         
         
@@ -448,14 +450,15 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                 model.removeEntityChangeListener(myBpelModelListener);
             }
 
-            myBpelModelListener = new ChangeEventListener() {
+            if (myBpelModelListener == null) {
+                myBpelModelListener = new ChangeEventListener() {
 
                 private void handleEvent(ChangeEvent event) {
                     if (event == null) {
                         return;
                     }
                     if (event.isLastInAtomic()) {
-                        selectElement();
+                        selectElement(0);
                     }
                 }
 
@@ -483,6 +486,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
                     handleEvent(event);
                 }
             };
+            }
 
             model.addEntityChangeListener(myBpelModelListener);
         }
@@ -563,6 +567,7 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         if (editorPane != null && myCaretPositionListener != null) {
             editorPane.removeCaretListener(myCaretPositionListener);
         }
+        myCaretPositionListener = null;
         
         BPELDataEditorSupport editorSupport = getDataObject().getEditorSupport();
         BpelModel model = editorSupport != null ? editorSupport.getBpelModel() : null;
@@ -570,6 +575,8 @@ public class BPELSourceMultiViewElement extends CloneableEditor
         if (myBpelModelListener != null && model != null) {
             model.removeEntityChangeListener(myBpelModelListener);
         }
+        
+        myBpelModelListener = null;
     }
 
     private void selectElement(int delay) {
