@@ -47,181 +47,6 @@
     <property name="netbeans.path" value="hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip"/>
     <property name="netbeans.dir" value=".netbeans/dev"/>
 
-    <property name="env.NB_USER" value="anoncvs"/>
-    <property name="sierra.dir"  value=".netbeans/sierra"/>
-
-    <property name="modules.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
-    <property name="modules.cvs.branch" value="-A"/>
-    <property name="modules.cvs.modules" value="
-      print
-      enterprise/bpel
-      enterprise/compapp
-      enterprise/dataintegrator/eTLEditor
-      enterprise/dataintegrator/etlpro
-      enterprise/iep
-      enterprise/libs
-      enterprise/openesbaddons/configextension
-      enterprise/openesbaddons/ftp
-      enterprise/openesbaddons/snmp
-      enterprise/soa
-      enterprise/sql
-      enterprise/wsdlextensions
-      enterprise/xslt
-    "/>
-    <property name="sources.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
-    <property name="sources.cvs.branch" value="-A"/>
-    <property name="sources.cvs.modules" value="
-        ant/browsetask/nbproject
-        ant/nbproject
-        ant/project/nbproject
-        apisupport/harness/external
-        classfile/nbproject
-        core/bootstrap/nbproject
-        core/javahelp/external
-        core/javahelp/nbproject
-        core/multiview/nbproject
-        core/navigator/nbproject
-        core/nbproject
-        core/options/keymap/nbproject
-        core/options/nbproject
-        core/palette/nbproject
-        core/progress/nbproject
-        core/settings/nbproject
-        core/startup/nbproject
-        core/swing/plaf/nbproject
-        core/swing/tabcontrol/nbproject
-        core/tasklist/api/nbproject
-        db/model/nbproject
-        db/nbproject
-        debuggercore/api/nbproject
-        debuggercore/nbproject
-        debuggercore/viewmodel/nbproject
-        debuggerjpda/ant/nbproject
-        debuggerjpda/api/nbproject
-        diff/nbproject
-        editor/codetemplates/nbproject
-        editor/completion/nbproject
-        editor/errorstripe/api/nbproject
-        editor/errorstripe/nbproject
-        editor/fold/nbproject
-        editor/guards/nbproject
-        editor/hints/highlights/nbproject
-        editor/hints/nbproject
-        editor/indent/nbproject
-        editor/lib/nbproject
-        editor/lib2/nbproject
-        editor/mimelookup/nbproject
-        editor/nbproject
-        editor/options/nbproject
-        editor/settings/nbproject
-        editor/settings/storage/nbproject
-        editor/util/nbproject
-        graph/lib/nbproject
-        j2ee/core/utilities/nbproject
-        j2ee/ddapi/nbproject
-        j2ee/ejbapi/nbproject
-        j2ee/metadata/nbproject
-        j2ee/metadata/support/nbproject
-        j2ee/persistenceapi/nbproject
-        j2ee/utilities/nbproject
-        j2eeserver/j2eeapis/external
-        j2eeserver/j2eeapis/nbproject
-        j2eeserver/nbproject
-        java/api/nbproject
-        java/editor/lib/nbproject
-        java/j2seproject/nbproject
-        java/lexer/nbproject
-        java/platform/nbproject
-        java/project/nbproject
-        java/source/javacapi/nbproject
-        java/source/javacimpl/nbproject
-        java/source/nbproject
-        java/source/preprocessorbridge/nbproject
-        java/sourceui/nbproject
-        junit
-        lexer/nbproject
-        libs/jsr223/nbproject
-        libs/lucene/nbproject
-        libs/resolver/external
-        libs/resolver/nbproject
-        libs/swing-layout/external
-        libs/swing-layout/nbproject
-        libs/xerces/external
-        libs/xerces/nbproject
-        openide/actions/nbproject
-        openide/awt/nbproject
-        openide/dialogs/nbproject
-        openide/execution/nbproject
-        openide/explorer/nbproject
-        openide/fs/nbproject
-        openide/io/nbproject
-        openide/loaders/nbproject
-        openide/masterfs/nbproject
-        openide/modules/nbproject
-        openide/nodes/nbproject
-        openide/options/nbproject
-        openide/templates/nbproject
-        openide/text/nbproject
-        openide/util/nbproject
-        openide/windows/nbproject
-        openidex/nbproject
-        performance/insanelibmodule
-        projects/libraries/nbproject
-        projects/projectapi/nbproject
-        projects/projectuiapi/nbproject
-        projects/queries/nbproject
-        refactoring/api/nbproject
-        schema2beans/rt/nbproject
-        serverplugins/server/nbproject
-        serverplugins/sun/appsrv/nbproject
-        serverplugins/sun/sunddapi/nbproject
-        utilities/gototest/nbproject
-        utilities/jumpto/nbproject
-        web/webapi/nbproject
-        websvc/clientapi/nbproject
-        websvc/core/nbproject
-        websvc/design/nbproject
-        websvc/jaxws21/jaxws21api/nbproject
-        websvc/jaxws21/nbproject
-        websvc/jaxwsapi/nbproject
-        websvc/jaxwsmodel/nbproject
-        websvc/utilities/nbproject
-        websvc/websvcapi/nbproject
-        websvc/websvcddapi/nbproject
-        websvc/wsitconf/nbproject
-        websvc/wsitmodelext/nbproject
-        xml/api/nbproject
-        xml/axi/nbproject
-        xml/catalog/nbproject
-        xml/catalogsupport/nbproject
-        xml/core/nbproject
-        xml/jxpath/nbproject
-        xml/lexer/nbproject
-        xml/libs/jxpath/nbproject
-        xml/multiview/nbproject
-        xml/nbprefuse/nbproject
-        xml/prefuse/nbproject
-        xml/refactoring/nbproject
-        xml/retriever/nbproject
-        xml/schema/api/nbproject
-        xml/schema/completion/nbproject
-        xml/schema/schemaui/nbproject
-        xml/tageditorsupport/nbproject
-        xml/text-edit/nbproject
-        xml/validation/nbproject
-        xml/wsdl/api/nbproject
-        xml/wsdl/refactoring/nbproject
-        xml/wsdlbindingsupport/api/nbproject
-        xml/wsdlbindingsupport/nbproject
-        xml/wsdlext/nbproject
-        xml/wsdlui/nbproject
-        xml/xam/nbproject
-        xml/xamui/nbproject
-        xml/xdm/nbproject
-        xml/xpath/ext/nbproject
-        xml/xpath/nbproject
-        xtest
-    "/>
     <property name="test.cvs.root" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
     <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>
     <property name="test.cvs.branch" value="-A"/>
@@ -262,14 +87,13 @@
         ${test.cvs.path}/xslt
     "/>
     <property name="home" value="../.."/>
-    <property name="cache" value="${home}/.cache"/>
+    <property name="cache" value="${home}/../cache"/>
     <property name="dist" value="${cache}/dist"/>
     <property name="lock" value="${cache}/lock"/>
     <property name="test" value="${cache}/test"/>
     <property name="jbi" location="${test}/${test.cvs.path}"/>
     <property name="latest" value="${cache}/latest"/>
     <property name="netbeans" value="${cache}/netbeans"/>
-    <property name="enterprise" value="${home}/enterprise"/>
-    <property name="soa" value="${home}/enterprise/bpel/samples/resources"/>
-    <property name="build.number" value="${home}/nbbuild/netbeans/platform7/build_number"/>
+    <property name="sierra.dir"  value=".netbeans/sierra"/>
+    <property name="build.number" value="${home}/nbbuild/netbeans/platform8/build_number"/>
 </project>
