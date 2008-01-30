@@ -135,6 +135,9 @@ public class WSDLSafeDeleteRefactoringPlugin extends WSDLRefactoringPlugin {
             return null;
      
         Model model = obj.getModel();
+        //Fix for NPE 125763
+        if(model == null)
+            return null;
         ErrorItem error = RefactoringUtil.precheckTarget(model, true);
         if (error != null ){
            return new Problem(isFatal(error), error.getMessage());
@@ -211,10 +214,13 @@ public class WSDLSafeDeleteRefactoringPlugin extends WSDLRefactoringPlugin {
        //add a faux refactoring element to represent the target/object being refactored
         //this element is to be added to the bag only as it will not participate in actual refactoring
         Model mod = SharedUtils.getModel(obj);
-        FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
-       if ( WSDL_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
-           refactoringElements.add(delete, new FauxRefactoringElement(obj, NbBundle.getMessage(WSDLSafeDeleteRefactoringPlugin.class, "LBL_Delete")));
-       } 
+        //Fix for NPE 125763
+        if(mod != null) {
+            FileObject fo = mod.getModelSource().getLookup().lookup(FileObject.class);
+            if ( WSDL_MIME_TYPE.equals(FileUtil.getMIMEType(fo))) {
+               refactoringElements.add(delete, new FauxRefactoringElement(obj, NbBundle.getMessage(WSDLSafeDeleteRefactoringPlugin.class, "LBL_Delete")));
+            }
+        }
        if(allErrors.size() > 0) {
             Problem problem = processErrors(allErrors, ui, inner);
             fireProgressListenerStop();
