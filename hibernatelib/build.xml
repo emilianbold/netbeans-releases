@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
                 <include name="hibernate-3.2.5-lib/asm-attrs.jar"/>
                 <include name="hibernate-3.2.5-lib/cglib-2.1.3.jar"/>
                 <include name="hibernate-3.2.5-lib/commons-collections-2.1.1.jar"/>
+                <include name="hibernate-3.2.5-lib/commons-logging-1.0.4.jar"/>
                 <include name="hibernate-3.2.5-lib/dom4j-1.6.1.jar"/>
                 <include name="hibernate-3.2.5-lib/ehcache-1.2.3.jar"/>
                 <include name="hibernate-3.2.5-lib/jdbc2_0-stdext.jar"/>
