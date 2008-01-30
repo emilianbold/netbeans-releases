@@ -54,8 +54,6 @@ import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 /**
  * Test groovy lexer
  * 
- * @todo ${...} inside strings
- * 
  * @author Martin Adamek
  */
 public class GroovyLexerBatchTest extends NbTestCase {
