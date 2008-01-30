@@ -110,6 +110,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         fldSecond.getDocument().addDocumentListener(docListener);
         //
         FocusListener fl = new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent e) {
                 inputDelayTimer.stop();
                 revalidate(true);
@@ -128,6 +129,7 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
         Util.activateInlineMnemonics(this);
     }
     
+    @Override
     public synchronized void init(
             PropertyEnv propertyEnv, PropertyEditor propertyEditor) {
         assert propertyEnv != null && propertyEditor != null : "Wrong params"; // NOI18N
@@ -257,34 +259,25 @@ public class DurationPropertyCustomizer extends ValidablePropertyCustomizer
             super(vsmProvider, ErrorMessagesBundle.class);
         }
         
-        public boolean doFastValidation() {
-            boolean result = true;
-            //
+        public void doFastValidation() {
             if ( !check(fldYear)) {
-                addReasonKey("ERR_INVALID_YEARS"); // NOI18N
-                result = false;
+                addReasonKey(Severity.ERROR, "ERR_INVALID_YEARS"); // NOI18N
             }
             if ( !check(fldMonth)) {
-                addReasonKey("ERR_INVALID_MONTHS"); // NOI18N
-                result = false;
+                addReasonKey(Severity.ERROR, "ERR_INVALID_MONTHS"); // NOI18N
             }
             if ( !check(fldDay)) {
-                addReasonKey("ERR_INVALID_DAYS"); // NOI18N
-                result = false;
+                addReasonKey(Severity.ERROR, "ERR_INVALID_DAYS"); // NOI18N
             }
             if ( !check(fldHour)) {
-                addReasonKey("ERR_INVALID_HOURS"); // NOI18N
-                result = false;
+                addReasonKey(Severity.ERROR, "ERR_INVALID_HOURS"); // NOI18N
             }
             if ( !check(fldMinute)) {
-                addReasonKey("ERR_INVALID_MINUTES"); // NOI18N
-                result = false;
+                addReasonKey(Severity.ERROR, "ERR_INVALID_MINUTES"); // NOI18N
             }
             if ( !check(fldSecond)) {
-                addReasonKey("ERR_INVALID_SECONDS"); // NOI18N
-                result = false;
+                addReasonKey(Severity.ERROR, "ERR_INVALID_SECONDS"); // NOI18N
             }
-            return result;
         }
         
         private boolean check(JTextField field) {
