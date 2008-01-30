@@ -69,7 +69,7 @@ class GemFilesParser {
     /**
      * The files to check for gems.
      */
-    private final File[] files;
+    private final File[] specFiles;
     
     /**
      * Key => gem name, value => (key => gem version, value => gem file).
@@ -79,9 +79,9 @@ class GemFilesParser {
     /**
      * Constructs a new GemFilesParser for the given <code>files</code>.
      */
-    public GemFilesParser(File... files) {
-        Parameters.notNull("files", files); //NOI18N
-        this.files = files;
+    public GemFilesParser(File... specFiles) {
+        Parameters.notNull("files", specFiles); //NOI18N
+        this.specFiles = specFiles;
     }
 
     /**
@@ -92,9 +92,9 @@ class GemFilesParser {
 
         resultMap = new HashMap<String, Map<String, File>>();
 
-        for (File f : files) {
+        for (File spec : specFiles) {
             // See if it looks like a gem
-            String fileName = f.getName();
+            String fileName = spec.getName();
             if (!fileName.endsWith(DOT_GEM_SPEC)) {
                 continue;
             }
@@ -112,7 +112,7 @@ class GemFilesParser {
             if (nameMap == null) {
                 nameMap = new HashMap<String, File>();
                 resultMap.put(gemInfo.getName(), nameMap);
-                nameMap.put(gemInfo.getVersion(), f);
+                nameMap.put(gemInfo.getVersion(), spec);
             } else {
                 // Decide whether this version is more recent than the one already there
                 String oldVersion = nameMap.keySet().iterator().next();
@@ -120,7 +120,7 @@ class GemFilesParser {
                 if (GemManager.compareGemVersions(gemInfo.getVersion(), oldVersion) > 0) {
                     // New version is higher
                     nameMap.clear();
-                    nameMap.put(gemInfo.getVersion(), f);
+                    nameMap.put(gemInfo.getVersion(), spec);
                 }
             }
         }

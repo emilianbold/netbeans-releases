@@ -41,6 +41,7 @@
 package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -128,10 +129,22 @@ public class GemManagerTest extends RubyTestBase {
     }
     
     public void testInitializeRepository() throws Exception {
-        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
         GemManager.initializeRepository(gemRepo);
         GemManager.isValidGemHome(FileUtil.toFile(gemRepo));
     }
     
+    public void testGetVersionForPlatform() throws IOException {
+        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+        installFakeGem("ruby-debug-base", "0.9.3", platform);
+        assertEquals("native fast debugger available", "0.9.3", gemManager.getVersion("ruby-debug-base"));
+        assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));
+        installFakeGem("ruby-debug-base", "0.9.3", "java", platform);
+        assertEquals("no jruby fast debugger available", "0.9.3", gemManager.getVersionForPlatform("ruby-debug-base"));
+    }
 }
