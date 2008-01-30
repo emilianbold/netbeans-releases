@@ -195,10 +195,11 @@ public final class LibrariesSupport {
                 throw new IllegalArgumentException("library location must be a file - "+libraryLocation.toExternalForm()); //NOI18N
             }
             File libBase = libLocation.getParentFile();
-            boolean archiveURL = false;
+            String jarFolder = null;
             if ("jar".equals(libraryEntry.getProtocol())) {
+                assert libraryEntry.toExternalForm().indexOf("!/") != -1 : libraryEntry.toExternalForm(); //NOI18N
+                jarFolder = libraryEntry.toExternalForm().substring(libraryEntry.toExternalForm().indexOf("!/")+2); //NOI18N
                 libraryEntry = FileUtil.getArchiveFile(libraryEntry);
-                archiveURL = true;
             }
             File f = convertURLToFile(libraryEntry);
             f = FileUtil.normalizeFile(new File(libBase, f.getPath()));
@@ -210,8 +211,13 @@ public final class LibrariesSupport {
                 y.initCause(ex);
                 throw y;
             }
-            if (archiveURL) {
+            if (jarFolder != null) {
                 u = FileUtil.getArchiveRoot(u);
+                try {
+                    u = new URL(u + jarFolder.replace('\\', '/')); //NOI18N
+                } catch (MalformedURLException e) {
+                    throw new AssertionError(e);
+                }
             }
             return u;
         }

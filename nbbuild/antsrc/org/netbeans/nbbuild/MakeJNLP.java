@@ -177,6 +177,10 @@ public class MakeJNLP extends Task {
         
         if (signJars) {
             getSignTask().setJar(from);
+            if (to != null) {
+                // #125970: might be .../modules/locale/something_ja.jar
+                to.getParentFile().mkdirs();
+            }
             getSignTask().setSignedjar(to);
             getSignTask().execute();
         } else if (to != null) {
@@ -303,7 +307,7 @@ public class MakeJNLP extends Task {
                         String clusterRootPrefix = jar.getParent() + File.separatorChar;
                         String absname = n.getAbsolutePath();
                         if (absname.startsWith(clusterRootPrefix)) {
-                            name = absname.substring(clusterRootPrefix.length()).replace('/', '-');
+                            name = absname.substring(clusterRootPrefix.length()).replace(File.separatorChar, '-');
                         }
                         File t = new File(new File(targetFile, dashcnb), name);
 

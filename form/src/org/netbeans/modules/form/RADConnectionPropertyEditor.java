@@ -506,6 +506,38 @@ public class RADConnectionPropertyEditor
 
         public Object getDesignValue(Object target) {
             return null;
+            // Return null because RADConnectionValue is not related to the
+            // bean on which this value is set (target). The related (source)
+            // bean is another component, represented by 'radComponent' field.
+            // That's why there is the getValueForBean method.
+        }
+
+        /**
+         * Returns represented value for specific bean instance. E.g. if this
+         * represents a "text" property, it tries to invoke getText() on the
+         * bean. The bean should be of the same type as the bean of the
+         * 'radComponent' field.
+         * @param target explicitly provided bean instance to get value from
+         * @return represented value obtained from given target bean
+         */
+        public Object getValueForBean(Object target) {
+            if (target != null) {
+                switch (type) {
+                case TYPE_PROPERTY:
+                    try {
+                        return getProperty().getReadMethod().invoke(target, new Object[0]);
+                    } catch (Exception e) {}
+                    break;
+                case TYPE_METHOD:
+                    try {
+                        return getMethod().getMethod().invoke(target, new Object[0]);
+                    } catch (Exception e) {}
+                    break;
+                case TYPE_BEAN:
+                    return target;
+                }
+            }
+            return null;
         }
 
         public String getDescription() {

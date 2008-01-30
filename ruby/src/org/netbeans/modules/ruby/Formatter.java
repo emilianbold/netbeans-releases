@@ -105,6 +105,7 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     }
     
     public void reindent(Document document, int startOffset, int endOffset, ParserResult result) {
+        // Make sure we're not reindenting HTML content
         reindent(document, startOffset, endOffset, result, true);
     }
 
@@ -457,10 +458,18 @@ public class Formatter implements org.netbeans.api.gsf.Formatter {
     private void reindent(Document document, int startOffset, int endOffset, ParserResult result,
         boolean indentOnly) {
         isRhtmlDocument = RubyUtils.isRhtmlDocument(document);
-
+        
         try {
             BaseDocument doc = (BaseDocument)document; // document.getText(0, document.getLength())
 
+            if (indentOnly && isRhtmlDocument) {
+                // Make sure we're not messing with indentation in HTML
+                Token<? extends RubyTokenId> token = LexUtilities.getToken(doc, startOffset);
+                if (token == null) {
+                    return;
+                }
+            }
+            
             syncOptions(doc, codeStyle);
 
             if (endOffset > doc.getLength()) {

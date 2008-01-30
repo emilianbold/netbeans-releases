@@ -59,7 +59,7 @@ public interface ServerWizardProvider {
 
     /**
      * Returns the iterator for adding the instance. {@link InstantiatingIterator#instantiate()}
-     * should return the {@link ServerInstance} created by the wizard.
+     * should return the {@link org.netbeans.api.server.ServerInstance} created by the wizard.
      * <p>
      * Note that if the instance created by the wizard should be mentioned by
      * the infrastructure (as you usually want this to happen),
@@ -67,7 +67,7 @@ public interface ServerWizardProvider {
      * listeners.
      * <p>
      * The {@link java.util.Set} returned by {@link InstantiatingIterator#instantiate()}
-     * should return the created {@link org.netbeans.spi.server.ServerInstance}.
+     * should return the created {@link org.netbeans.api.server.ServerInstance}.
      *
      * @return iterator for adding the server instance
      */

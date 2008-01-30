@@ -40,6 +40,7 @@
 package org.netbeans.nbbuild.extlibs;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -47,13 +48,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.ExecTask;
-import org.apache.tools.ant.util.FileUtils;
 
 /**
  * Registers external.py as a Mercurial encode/decode hook, if appropriate.
@@ -102,48 +103,67 @@ public class RegisterExternalHook extends Task {
         } catch (IOException x) {
             log("Could not verify Hg configuration: " + x, Project.MSG_WARN);
         }
-        File hookInstalled = new File(dotHg, hook.getName());
-        if (hookInstalled.isFile()) {
-            log(hookInstalled + " is already installed", Project.MSG_VERBOSE);
-            // XXX also verify that it is registered (in the correct place)
-            return;
-        }
-        try {
-            log("Installing " + hookInstalled);
-            FileUtils.getFileUtils().copyFile(hook, hookInstalled);
-            File[] repos = {
-                root,
-                new File(root, "contrib"),
-            };
-            for (File repo : repos) {
-                dotHg = new File(repo, ".hg");
-                if (!dotHg.isDirectory()) {
-                    log(repo + " is not a Mercurial repository", Project.MSG_VERBOSE);
-                    return;
-                }
+        File[] repos = {
+            root,
+            new File(root, "contrib"),
+        };
+        for (File repo : repos) {
+            dotHg = new File(repo, ".hg");
+            if (!dotHg.isDirectory()) {
+                log(repo + " is not a Mercurial repository", Project.MSG_VERBOSE);
+                continue;
+            }
+            try {
                 File hgrc = new File(dotHg, "hgrc");
-                log("Registering hook in " + hgrc);
-                OutputStream os = new FileOutputStream(hgrc, true);
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                if (hgrc.isFile()) {
+                    InputStream is = new FileInputStream(hgrc);
+                    try {
+                        byte[] buf = new byte[4096];
+                        int read;
+                        while ((read = is.read(buf)) != -1) {
+                            baos.write(buf, 0, read);
+                        }
+                    } finally {
+                        is.close();
+                    }
+                }
+                String config = baos.toString();
+                if (Pattern.compile("(?m)^external *= *" + Pattern.quote(hook.getAbsolutePath()) + "$").matcher(config).find()) {
+                    log("Hook already registered in " + hgrc, Project.MSG_VERBOSE);
+                    continue;
+                }
+                if (Pattern.compile("(?m)^external *=").matcher(config).find()) {
+                    log("Hook already registered in " + hgrc + " in wrong location, correcting...", Project.MSG_WARN);
+                    config = config.replaceFirst("(?m)^external *=.*$", "external = " + hook);
+                } else {
+                    log("Registering hook in " + hgrc);
+                    String nl = System.getProperty("line.separator");
+                    if (config.length() > 0) {
+                        config += nl;
+                    }
+                    config += "[extensions]" + nl + "external = " + hook + nl + "[encode]" + nl;
+                    Matcher m = Pattern.compile("https://[a-zA-Z0-9_]+(:[^@]+)?@hg.netbeans.org/").matcher(config);
+                    if (m.find()) {
+                        config += BINARIES + " = upload: " + m.group() + "binaries/upload" + nl;
+                    } else {
+                        config += "# To preauthenticate, use: https://jhacker:secret@hg.netbeans.org/binaries/upload" + nl +
+                                BINARIES + " = upload: https://hg.netbeans.org/binaries/upload" + nl;
+                    }
+                    config += "[decode]" + nl + BINARIES + " = download: http://hg.netbeans.org/binaries/" + nl;
+                }
+                OutputStream os = new FileOutputStream(hgrc);
                 try {
-                    PrintWriter pw = new PrintWriter(os);
-                    pw.println();
-                    pw.println("[extensions]");
-                    pw.println("external = " + hookInstalled);
-                    pw.println("[encode]");
-                    // XXX check for username/password in default push path and copy if found
-                    pw.println("# To preauthenticate, use: https://jhacker:secret@hg.netbeans.org/binaries/upload");
-                    pw.println(BINARIES + " = upload: https://hg.netbeans.org/binaries/upload");
-                    pw.println("[decode]");
-                    pw.println(BINARIES + " = download: http://hg.netbeans.org/binaries/");
-                    pw.flush();
-                    pw.close();
+                    os.write(config.getBytes());
                 } finally {
                     os.close();
                 }
+            } catch (IOException x) {
+                throw new BuildException(x, getLocation());
+            }
+            try {
                 log("Looking for external binaries in " + repo + " which need to be checked out again using decoder");
                 Process p = new ProcessBuilder("hg", "locate", BINARIES).directory(repo).start();
-                // XXX if this fails, provide instructions on how to correct manually!
-                // (or delete these files using Java code and leave failures to hg co)
                 BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 boolean doCheckout = false;
                 String binary;
@@ -185,10 +205,13 @@ public class RegisterExternalHook extends Task {
                     x.setLocation(getLocation());
                     x.execute();
                 }
+            } catch (IOException x) {
+                throw new BuildException(x + "; failed to run:\n" +
+                        "hg -R " + repo + " locate \"" + BINARIES + "\"\n" +
+                        "Please run this yourself, delete any matching files, then run:\n" +
+                        "hg -R " + repo + " checkout\n" +
+                        "and restart the build.", getLocation());
             }
-        } catch (IOException x) {
-            hookInstalled.delete(); // try again next time
-            throw new BuildException(x, getLocation());
         }
     }
 

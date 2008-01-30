@@ -177,7 +177,10 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         if (set == null || set.length() == 0) {
             return 0;
         }
-        return 70;
+        if (sizeComilationUnit(set) > 0) {
+            return 70;
+        }
+        return 0;
     }
     
     public List<Configuration> analyze(ProjectProxy project) {

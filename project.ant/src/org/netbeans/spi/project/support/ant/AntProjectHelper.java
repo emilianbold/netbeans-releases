@@ -430,7 +430,7 @@ public final class AntProjectHelper {
                 return null;
             }
         };
-        if (ProjectManager.mutex().isWriteAccess()) {
+        if (ProjectManager.mutex().isWriteAccess() || ProjectLibraryProvider.FIRE_CHANGES_SYNCH) {
             // Run it right now. postReadRequest would be too late.
             ProjectManager.mutex().readAccess(action);
         } else if (ProjectManager.mutex().isReadAccess()) {

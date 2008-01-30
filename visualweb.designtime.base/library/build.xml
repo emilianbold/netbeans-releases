@@ -44,6 +44,7 @@ made subject to such option by the copyright holder.
 <project name="Design-Time_Base_Implementations_Library" default="default" basedir=".">
     <description>Builds, tests, and runs the project Design-Time Base Implementations Library.</description>
     <import file="nbproject/build-impl.xml"/>
+    <import file="../../nbbuild/templates/projectized.xml"/>
     <!--
 
     There exist several targets which are by default empty and which can be 

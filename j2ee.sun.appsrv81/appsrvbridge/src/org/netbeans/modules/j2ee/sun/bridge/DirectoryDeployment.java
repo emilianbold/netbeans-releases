@@ -48,7 +48,6 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.status.DeploymentStatus;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
@@ -66,7 +65,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ContextRootConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
-import org.netbeans.modules.j2ee.sun.api.SunDeploymentConfigurationInterface;
 import org.netbeans.modules.j2ee.sun.api.SunDeploymentManagerInterface;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -193,6 +191,7 @@ public class DirectoryDeployment extends IncrementalDeployment {
      * @return its relative path within application archive, returns null by
      * default (for standalone module)
      */
+    @Override
     public String getModuleUrl(TargetModuleID module){        
         String retVal = AppServerBridge.getModuleUrl(module);
         if (!retVal.startsWith("/")) {
@@ -214,7 +213,7 @@ public class DirectoryDeployment extends IncrementalDeployment {
      * @param configuration server specific data for deployment
      * @param dir the destination directory for the given deploy app
      * @return the object for feedback on progress of deployment
-     */     
+     *     
     public ProgressObject initialDeploy(Target target, 
                 DeployableObject deployableObject,
                 DeploymentConfiguration deploymentConfiguration, 
@@ -238,7 +237,7 @@ public class DirectoryDeployment extends IncrementalDeployment {
         }
         return retVal;
     }
-
+*/
     private String computeModuleID(J2eeModule app, File dir) {
         String moduleID = null;
         File foo = app.getDeploymentConfigurationFile("application.xml"); // NOI18N
@@ -316,21 +315,23 @@ public class DirectoryDeployment extends IncrementalDeployment {
             }
         }
         if (null == moduleID || moduleID.trim().length() < 1) {
-            moduleID = getGoodDirNameFromContextRoot(dir.getParentFile().getParentFile().getName());
+            moduleID = simplifyModuleID(dir.getParentFile().getParentFile().getName());
+        } else {
+            moduleID = simplifyModuleID(moduleID);
         }
 
         return moduleID;
     }
     
-    private String getGoodDirNameFromContextRoot(String contextRoot){
+    private String simplifyModuleID(String candidateID){
         String   moduleID = null;
-        if (contextRoot==null){
+        if (candidateID==null){
             moduleID = "_default_"+this.hashCode() ;
-        } else if (contextRoot.equals("")){
+        } else if (candidateID.equals("")){
             moduleID =  "_default_"+this.hashCode();
         }
         if (null == moduleID) {
-            moduleID = contextRoot.replace(' ','_');
+            moduleID = candidateID.replace(' ','_');
             if (moduleID.startsWith("/")) {
                 moduleID = moduleID.substring(1);
             }
@@ -470,6 +471,7 @@ public class DirectoryDeployment extends IncrementalDeployment {
         return null;
     }
     
+    @Override
     public File getDirectoryForNewApplication(String deploymentName, Target target, ModuleConfiguration configuration) {
         File retValue;
         
@@ -507,6 +509,7 @@ public class DirectoryDeployment extends IncrementalDeployment {
         return s;
     }
     
+    @Override
     public void notifyDeployment(TargetModuleID module) {
         super.notifyDeployment(module);
     }

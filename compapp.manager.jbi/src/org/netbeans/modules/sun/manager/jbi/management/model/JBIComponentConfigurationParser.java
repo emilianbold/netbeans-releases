@@ -145,33 +145,104 @@ public class JBIComponentConfigurationParser {
                         !elementName.equals(APPLICATION_VARIABLE) &&
                         !elementName.equals(APPLICATION_CONFIGURATION)) {
                     continue;
-                }
+                }                
+                
+                JBIComponentConfigurationDescriptor childDescriptor;
+                
+                if (elementName.equals(APPLICATION_VARIABLE)) {
+                    childDescriptor = new ApplicationVariable();
+                } else if (elementName.equals(APPLICATION_CONFIGURATION)) {
+                    childDescriptor = new ApplicationConfiguration();                    
+                } else { // Property or Property Group
+                    childDescriptor = new JBIComponentConfigurationDescriptor();
+                    
+                    // The following are equired fields.
+                    childDescriptor.setName(childElement.getAttribute(NAME));
+                    childDescriptor.setDisplayName(childElement.getAttribute(DISPLAY_NAME));
+                    childDescriptor.setDescription(childElement.getAttribute(DISPLAY_DESCRIPTION));
+                    childDescriptor.setTypeQName(XmlUtil.getAttributeNSName(childElement, TYPE));
+                    childDescriptor.setPropertyType(elementName); // not really required, but mandatory
 
-                JBIComponentConfigurationDescriptor childDescriptor =
-                        new JBIComponentConfigurationDescriptor();
+                    // The following are not required.
+                    String required = childElement.getAttribute(REQUIRED);
+                    if (required.length() != 0) {
+                        childDescriptor.setRequired(Boolean.valueOf(required));
+                    }
+                    String showDisplay = childElement.getAttribute(SHOW_DISPLAY);
+                    if (showDisplay.length() != 0) {
+                        childDescriptor.setShowDisplay(showDisplay);
+                    }
+                    String encrypted = childElement.getAttribute(ENCRYPTED);
+                    if (encrypted.length() != 0) {
+                        childDescriptor.setEncrypted(Boolean.valueOf(encrypted));
+                    }
+                    /*
+                    String isApplicationRestartRequired =
+                            childElement.getAttribute(IS_APPLICATION_RESTART_REQUIRED);
+                    if (isApplicationRestartRequired.length() != 0) {
+                        childDescriptor.setApplicationRestartRequired(
+                                Boolean.valueOf(isApplicationRestartRequired));
+                    }
+                    String isComponentRestartRequired =
+                            childElement.getAttribute(IS_COMPONENT_RESTART_REQUIRED);
+                    if (isComponentRestartRequired.length() != 0) {
+                        childDescriptor.setComponentRestartRequired(
+                                Boolean.valueOf(isComponentRestartRequired));
+                    }
+                    String isServerRestartRequired =
+                            childElement.getAttribute(IS_SERVER_RESTART_REQUIRED);
+                    if (isServerRestartRequired.length() != 0) {
+                        childDescriptor.setServerRestartRequired(
+                                Boolean.valueOf(isServerRestartRequired));
+                    }
+                    */
 
-                // The following are equired fields.
-                childDescriptor.setName(childElement.getAttribute(NAME));
-                childDescriptor.setDisplayName(childElement.getAttribute(DISPLAY_NAME));
-                childDescriptor.setDescription(childElement.getAttribute(DISPLAY_DESCRIPTION));
-                childDescriptor.setTypeQName(XmlUtil.getAttributeNSName(childElement, TYPE));
-                childDescriptor.setPropertyType(elementName); // not really required, but mandatory
+                    String onChangeMessage = childElement.getAttribute(ON_CHANGE_MESSAGE);
+                    if (onChangeMessage.length() != 0) {
+                        childDescriptor.setOnChangeMessage(onChangeMessage);
+                    }
 
-                // The following are not required.
-                String required = childElement.getAttribute(REQUIRED);
-                if (required.length() != 0) {
-                    childDescriptor.setRequired(Boolean.valueOf(required));
+                    String defaultValue = childElement.getAttribute(DEFAULT_VALUE);
+                    if (defaultValue.length() != 0) {
+                        childDescriptor.setDefaultValue(defaultValue);
+                    }
+
+                    CompositeConstraint compositeConstraint = new CompositeConstraint();
+                    List<String> enumerationOptions = null;
+
+                    NodeList constraintNodes = childElement.getElementsByTagNameNS(
+                            CONFIGURATION_NAMESPACE, CONSTRAINT);
+
+                    for (int j = 0; j < constraintNodes.getLength(); j++) {
+                        Element constraintElement = (Element) constraintNodes.item(j);
+                        String facet = constraintElement.getAttribute(FACET);
+                        String facetValue = constraintElement.getAttribute(FACET_VALUE);
+                        if (facet.equals(JBIComponentConfigurationConstraintFactory.ENUMERATION)) {
+                            if (enumerationOptions == null) {
+                                enumerationOptions = new ArrayList<String>();
+                            }
+                            enumerationOptions.add(facetValue);
+                        } else {
+                            JBIComponentConfigurationConstraint constraint =
+                                    JBIComponentConfigurationConstraintFactory.newConstraint(
+                                    facet, facetValue);
+                            compositeConstraint.addConstraint(constraint);
+                        }
+                    }
+
+                    if (enumerationOptions != null) {
+                        JBIComponentConfigurationConstraint constraint =
+                                JBIComponentConfigurationConstraintFactory.newConstraint(
+                                JBIComponentConfigurationConstraintFactory.ENUMERATION,
+                                enumerationOptions);
+                        compositeConstraint.addConstraint(constraint);
+                    }
+
+                    childDescriptor.setConstraint(compositeConstraint);
                 }
-                String showDisplay = childElement.getAttribute(SHOW_DISPLAY);
-                if (showDisplay.length() != 0) {
-                    childDescriptor.setShowDisplay(showDisplay);
-                }
-                String encrypted = childElement.getAttribute(ENCRYPTED);
-                if (encrypted.length() != 0) {
-                    childDescriptor.setEncrypted(Boolean.valueOf(encrypted));
-                }
+                
                 String isApplicationRestartRequired =
-                        childElement.getAttribute(IS_APPLICATION_RESTART_REQUIRED);
+                            childElement.getAttribute(IS_APPLICATION_RESTART_REQUIRED);
                 if (isApplicationRestartRequired.length() != 0) {
                     childDescriptor.setApplicationRestartRequired(
                             Boolean.valueOf(isApplicationRestartRequired));
@@ -188,49 +259,6 @@ public class JBIComponentConfigurationParser {
                     childDescriptor.setServerRestartRequired(
                             Boolean.valueOf(isServerRestartRequired));
                 }
-
-                String onChangeMessage = childElement.getAttribute(ON_CHANGE_MESSAGE);
-                if (onChangeMessage.length() != 0) {
-                    childDescriptor.setOnChangeMessage(onChangeMessage);
-                }
-
-                String defaultValue = childElement.getAttribute(DEFAULT_VALUE);
-                if (defaultValue.length() != 0) {
-                    childDescriptor.setDefaultValue(defaultValue);
-                }
-
-                CompositeConstraint compositeConstraint = new CompositeConstraint();
-                List<String> enumerationOptions = null;
-
-                NodeList constraintNodes = childElement.getElementsByTagNameNS(
-                        CONFIGURATION_NAMESPACE, CONSTRAINT);
-
-                for (int j = 0; j < constraintNodes.getLength(); j++) {
-                    Element constraintElement = (Element) constraintNodes.item(j);
-                    String facet = constraintElement.getAttribute(FACET);
-                    String facetValue = constraintElement.getAttribute(FACET_VALUE);
-                    if (facet.equals(JBIComponentConfigurationConstraintFactory.ENUMERATION)) {
-                        if (enumerationOptions == null) {
-                            enumerationOptions = new ArrayList<String>();
-                        }
-                        enumerationOptions.add(facetValue);
-                    } else {
-                        JBIComponentConfigurationConstraint constraint =
-                                JBIComponentConfigurationConstraintFactory.newConstraint(
-                                facet, facetValue);
-                        compositeConstraint.addConstraint(constraint);
-                    }
-                }
-
-                if (enumerationOptions != null) {
-                    JBIComponentConfigurationConstraint constraint =
-                            JBIComponentConfigurationConstraintFactory.newConstraint(
-                            JBIComponentConfigurationConstraintFactory.ENUMERATION,
-                            enumerationOptions);
-                    compositeConstraint.addConstraint(constraint);
-                }
-
-                childDescriptor.setConstraint(compositeConstraint);
 
                 descriptor.addChild(childDescriptor);
 
