@@ -626,11 +626,13 @@ public class DefineCorrelationWizard implements WizardProperties {
                     Object[] messageValues = new Object[] {itemText, ((BpelEntity) value).getElementType().getSimpleName()};
                     if (itemText == null) {
                         if (value instanceof OnMessage) {
-                            String pickEntityName = ((BpelEntity) value).getParent().getAttribute(BpelAttributes.NAME),
-                                   operationName = ((BpelEntity) value).getAttribute(BpelAttributes.OPERATION);
-                            itemText = ((BpelEntity) value).getElementType().getSimpleName();
+                            OnMessageActivityCompositeName compositeName = 
+                                new OnMessageActivityCompositeName((OnMessage) value);
+                            String pickName = compositeName.getPickName(),
+                                   operationName = compositeName.getOperationName();
+                            itemText = compositeName.getActivitySimpleName();
                             messagePattern = NbBundle.getMessage(ComboBoxRenderer.class, "LBL_ComboBox_OnMessage_Name_Pattern");
-                            messageValues = new Object[] {itemText, pickEntityName, operationName};
+                            messageValues = new Object[] {itemText, pickName, operationName};
                         }
                     }
                     ((JLabel) component).setText(MessageFormat.format(messagePattern, messageValues));
@@ -975,8 +977,22 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         
         private String getUniqueCorrelationSetName(BaseScope scopeEntity) {
-            String baseCorrelationSetName = CORRELATION_SET_NAME_PREFIX + 
-                mainBpelEntity.getAttribute(BpelAttributes.NAME);
+            String baseCorrelationSetName = CORRELATION_SET_NAME_PREFIX;
+            if (mainBpelEntity instanceof OnMessage) {
+                OnMessageActivityCompositeName compositeName = 
+                    new OnMessageActivityCompositeName((OnMessage) mainBpelEntity);
+                String 
+                    activityName = compositeName.getActivitySimpleName(),
+                    pickName = compositeName.getPickName(),
+                    operationName = compositeName.getOperationName();
+                String
+                    namePattern = NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Correlation_Set_Name_OnMessage_Pattern");
+                    baseCorrelationSetName += MessageFormat.format(namePattern, 
+                        new Object[] {activityName, pickName, operationName});
+            } else {
+                baseCorrelationSetName += 
+                    mainBpelEntity.getAttribute(BpelAttributes.NAME);
+            }
             CorrelationSetContainer container = scopeEntity.getCorrelationSetContainer();
             if (container == null) return baseCorrelationSetName;
             CorrelationSet[] correlationSets = container.getCorrelationSets();
@@ -1495,10 +1511,12 @@ public class DefineCorrelationWizard implements WizardProperties {
                 try {
                     if (userObj instanceof BpelEntity) {
                         if (userObj instanceof OnMessage) {
-                            String pickEntityName = ((BpelEntity) userObj).getParent().getAttribute(BpelAttributes.NAME),
-                                   operationName = ((BpelEntity) userObj).getAttribute(BpelAttributes.OPERATION);
-                            userObjectName = ((BpelEntity) userObj).getElementType().getSimpleName();
-                            patternValues = new Object[] {userObjectName, pickEntityName, operationName};
+                            OnMessageActivityCompositeName compositeName = 
+                                new OnMessageActivityCompositeName((OnMessage) userObj);
+                            userObjectName = compositeName.getActivitySimpleName();
+                            String pickName = compositeName.getPickName(),
+                                   operationName = compositeName.getOperationName();
+                            patternValues = new Object[] {userObjectName, pickName, operationName};
                         } else {
                             userObjectName = ((BpelEntity) userObj).getAttribute(BpelAttributes.NAME);
                             patternValues = new Object[] {userObjectName, ((BpelEntity) userObj).getElementType().getSimpleName()};
@@ -1910,8 +1928,8 @@ class WizardUtils {
     }
 }
 //============================================================================//
-enum SchemaAttribute implements org.netbeans.modules.xml.xam.dom.Attribute {
-    BASE(Constants.SCHEMA_COMPONENT_ATTRIBUTE_BASE);
+enum SchemaAttribute implements org.netbeans.modules.xml.xam.dom.Attribute, Constants {
+    BASE(SCHEMA_COMPONENT_ATTRIBUTE_BASE);
     
     private String name;
     private Class type, subtype;
@@ -1933,6 +1951,19 @@ enum SchemaAttribute implements org.netbeans.modules.xml.xam.dom.Attribute {
     public String toString() {return getName();}
     public Class getType() {return type;}
     public Class getMemberType() {return subtype;}
+}
+//============================================================================//
+class OnMessageActivityCompositeName {
+    private String activitySimpleName = "", pickName = "", operationName = "";
+
+    public OnMessageActivityCompositeName(OnMessage onMessageEntity) {
+        activitySimpleName = ((BpelEntity) onMessageEntity).getElementType().getSimpleName();
+        pickName = ((BpelEntity) onMessageEntity).getParent().getAttribute(BpelAttributes.NAME);
+        operationName = ((BpelEntity) onMessageEntity).getAttribute(BpelAttributes.OPERATION);
+    }
+    public String getActivitySimpleName() {return activitySimpleName;}
+    public String getOperationName() {return operationName;}
+    public String getPickName() {return pickName;}
 }
 //============================================================================//
 interface Constants {
