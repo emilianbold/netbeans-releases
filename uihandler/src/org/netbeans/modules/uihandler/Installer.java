@@ -429,7 +429,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (selectedExcParams[0] instanceof String){
                 message = (String)selectedExcParams[0];
             }
-            if (selectedExcParams[1] instanceof StringBuffer){
+            if (selectedExcParams[1] instanceof String){
                 firstLine = (String)selectedExcParams[1];
             }
         }
@@ -971,7 +971,10 @@ public class Installer extends ModuleInstall implements Runnable {
                 final List<LogRecord> recs = getLogs();
                 saveUserName();
                 LogRecord userData = getUserData(true);
-                recs.add(getThrownLog());//exception selected by user
+                LogRecord thrownLog = getThrownLog();
+                if (thrownLog != null){
+                    recs.add(thrownLog);//exception selected by user
+                }
                 recs.add(TimeToFailure.logFailure());
                 recs.add(userData);
                 if ((report)&&!(reportPanel.asAGuest())){

@@ -1692,8 +1692,11 @@ public class Element extends BaseElement implements IElement
                ISourceFileArtifact sfa = (ISourceFileArtifact) element;
                String fileName = sfa.getFileName();
 
-               if (fileName != null && fileName.length() > 0)
+               if (fileName != null && fileName.length() > 0 
+                   && fileName.equals(filename))
+               {
                    return (IElement)sfa;
+               }
            }
        }
        

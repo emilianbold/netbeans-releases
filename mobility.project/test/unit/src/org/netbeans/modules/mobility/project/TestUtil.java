@@ -154,8 +154,9 @@ public class TestUtil extends ProxyLookup {
         ((SystemFileSystem)Repository.getDefault().getDefaultFileSystem()).setLayers(layers.toArray(new FileSystem[layers.size()]));
         /**************/
         
-        final String rootIDE=File.separator+"netbeans"+File.separator+"ide8";
-        final String rootAnt=File.separator+"java1"+File.separator+"ant";
+        // XXX please use MODULENAME.dir properties instead of hardcoding cluster names!
+        final String rootIDE=File.separator+"netbeans"+File.separator+"ide9";
+        final String rootAnt=File.separator+"java2"+File.separator+"ant";
         /* Hack to get ant directories */
         String classPath=System.getProperty("java.class.path");
         int index=classPath.indexOf(rootIDE);

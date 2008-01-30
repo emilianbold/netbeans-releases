@@ -132,6 +132,11 @@ public class InnerToOuterRefactoringPlugin extends JavaRefactoringPlugin {
         // #1 - check if the class is an inner class
         //            RefObject declCls = (RefObject) sourceType.refImmediateComposite();
         if (el instanceof TypeElement) {
+            if (((TypeElement)el).getNestingKind() == NestingKind.ANONYMOUS) {
+                // fatal error -> return
+                preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_Anonymous")); // NOI18N
+                return preCheckProblem;
+            }
             if (!((TypeElement)el).getNestingKind().isNested()) {
                 // fatal error -> return
                 preCheckProblem = new Problem(true, NbBundle.getMessage(InnerToOuterRefactoringPlugin.class, "ERR_InnerToOuter_MustBeInnerClass")); // NOI18N

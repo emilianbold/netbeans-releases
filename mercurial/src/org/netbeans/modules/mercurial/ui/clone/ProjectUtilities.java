@@ -75,6 +75,7 @@ final class ProjectUtilities {
     private static final String ProjectTab_ID_LOGICAL = "projectTabLogical_tc"; // NOI18N
 
     public static void selectAndExpandProject( final Project p ) {
+        if (p == null) return;
 
         // invoke later to select the being opened project if the focus is outside ProjectTab
         SwingUtilities.invokeLater (new Runnable () {

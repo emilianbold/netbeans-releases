@@ -40,9 +40,8 @@
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
-import com.sun.source.tree.AnnotationTree;
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -52,24 +51,27 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.prefs.Preferences;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import javax.management.AttributeValueExp;
 import javax.swing.text.Document;
+import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.MarkBlockChain;
-import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
 import org.netbeans.modules.java.hints.options.HintsSettings;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.TreeRule;
@@ -81,13 +83,17 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Lahoda
  */
-public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
+public class HintsTask implements CancellableTask<CompilationInfo> {
     
-    public HintsTask() {
-    }
+    private AtomicBoolean cancel = new AtomicBoolean();
+    private List<ErrorDescription> currentHints = new LinkedList<ErrorDescription>();
+    
+    public HintsTask() {}
     
     public void run(CompilationInfo info) throws Exception {
-        resume();
+        cancel.set(false);
+        
+        long startTime = System.currentTimeMillis();
         
         Map<Kind, List<TreeRule>> hints = RulesManager.getInstance().getHints(false);
         
@@ -96,14 +102,55 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
             return ;
         }
         
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        TreePath changedMethod = info.getChangedTree();
         
-        scan(new ScannerImpl(info, hints), info.getCompilationUnit(), result);
+        if (changedMethod != null) {
+            MethodTree method = (MethodTree) changedMethod.getLeaf();
+            BlockTree block = method.getBody();
+            int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), block);
+            int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), block);
+            List<ErrorDescription> errors = new LinkedList<ErrorDescription>(currentHints);
+
+            for (Iterator<ErrorDescription> it = errors.iterator(); it.hasNext();) {
+                ErrorDescription ed = it.next();
+                int edStart = ed.getRange().getBegin().getOffset();
+                int edEnd = ed.getRange().getEnd().getOffset();
+
+                if (edStart >= start && edEnd <= end) {
+                    it.remove();
+                }
+            }
+
+            new ScannerImpl(info, cancel, hints).scan(changedMethod, errors);
+
+            if (cancel.get()) {
+                return;
+            }
+            
+            currentHints = errors;
+
+            HintsController.setErrors(info.getFileObject(), HintsTask.class.getName(), errors);
+        } else {
+            List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+
+            new ScannerImpl(info, cancel, hints).scan(info.getCompilationUnit(), result);
+
+            if (cancel.get()) {
+                return;
+            }
+
+            currentHints = result;
+
+            HintsController.setErrors(info.getFileObject(), HintsTask.class.getName(), result);
+        }
         
-        if (isCancelled())
-            return ;
+        long endTime = System.currentTimeMillis();
         
-        HintsController.setErrors(info.getFileObject(), HintsTask.class.getName(), result);
+        Logger.getLogger("TIMER").log(Level.FINE, "HintsTask", new Object[] {info.getFileObject(), endTime - startTime});
+    }
+    
+    public void cancel() {
+        cancel.set(true);
     }
     
     private static final class ScannerImpl extends CancellableTreePathScanner<Void, List<ErrorDescription>> {
@@ -112,7 +159,8 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
         private CompilationInfo info;
         private Map<Kind, List<TreeRule>> hints;
         
-        public ScannerImpl(CompilationInfo info, Map<Kind, List<TreeRule>> hints) {
+        public ScannerImpl(CompilationInfo info, AtomicBoolean cancel, Map<Kind, List<TreeRule>> hints) {
+            super(cancel);
             this.info = info;
             this.hints = hints;
         }

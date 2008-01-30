@@ -115,18 +115,22 @@ is the proper place.
         <author login="mkleint"/>
         <compatibility addition="yes"/>
         <description>
-            2 new utility classes to allow attaching javadoc/source to existing jar dependencies of an Ant-based project.
+            3 new utility classes to allow attaching javadoc/source to existing jar dependencies of an Ant-based project.
             These classes are for use by project type owners. Specifically
             <ul>
                 <li><code>ExtraSourceJavadocSupport.createExtraSourceQueryImplementation()</code> and 
                 <code>ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation()</code> 
                 create instances to be added to project's Lookup.</li>
+                <li><code>LookupMergerSupport.createSFBLookupMerger()</code> and <code>LookupMergerSupport.createJFBLookupMerger()</code>
+                provide simple implementations of lookup mergers for respective query implementations. 
+                A typical project implementation will put the lookup merger and the Extra*Support's instance in the project's lookup.</li>
                 <li><code>EditJarSupport.showEditDialog()</code> is a facotry method for creating editing UI. To be added to Project's properties dialog
                 preferably the "Libraries" panel. Client code (project type owner) is assumed to write down the ant properties
                source.reference.__name__ and javadoc.reference.__name__ in the same manner as file.reference.__name__ is persisted.</li>
             </ul>
         </description>
         <class package="org.netbeans.spi.java.project.support" name="ExtraSourceJavadocSupport"/>
+        <class package="org.netbeans.spi.java.project.support" name="LookupMergerSupport"/>
         <class package="org.netbeans.spi.java.project.support.ui" name="EditJarSupport"/>
         <issue number="70497"/>
     </change>
