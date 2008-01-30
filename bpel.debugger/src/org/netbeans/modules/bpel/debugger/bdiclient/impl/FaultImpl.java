@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.debugger.bdiclient.impl;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.debugger.api.Fault;
 import org.netbeans.modules.bpel.debugger.api.variables.Variable;
 
@@ -28,12 +29,12 @@ import org.netbeans.modules.bpel.debugger.api.variables.Variable;
  */
 public class FaultImpl implements Fault {
     
-    private String myQName;
+    private QName myQName;
     private String myXPath;
     private Variable myVariable;
     
     public FaultImpl(
-            final String qName, 
+            final QName qName, 
             final String xPath,
             final Variable variable) {
         myQName = qName;
@@ -41,7 +42,7 @@ public class FaultImpl implements Fault {
         myVariable = variable;
     }
 
-    public String getQName() {
+    public QName getQName() {
         return myQName;
     }
 
