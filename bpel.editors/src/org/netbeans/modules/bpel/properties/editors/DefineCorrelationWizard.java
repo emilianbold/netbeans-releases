@@ -925,13 +925,13 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
 
         private CorrelationSet createCorrelationSet(List<CorrelationLinker> linkerList) {
-            BaseScope scopeEntity = (BaseScope) getTopParentEntity(mainBpelEntity);
+            BpelModel bpelModel = mainBpelEntity.getBpelModel();
+            BaseScope scopeEntity = bpelModel.getProcess();
             if (scopeEntity == null) {
                 return null;
             }
             String correlationSetName = getUniqueCorrelationSetName(scopeEntity);
 
-            BpelModel bpelModel = mainBpelEntity.getBpelModel();
             BPELElementsBuilder elementBuilder = bpelModel.getBuilder();
             CorrelationSet correlationSet = elementBuilder.createCorrelationSet();
             try {

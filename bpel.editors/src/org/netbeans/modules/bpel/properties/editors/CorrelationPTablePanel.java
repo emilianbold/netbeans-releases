@@ -554,17 +554,17 @@ public class CorrelationPTablePanel extends BaseTablePanel
             super(vsmProvider, ErrorMessagesBundle.class);
         }
         
-        public boolean doFastValidation() {
-            return true;
+        public void doFastValidation() {
         }
         
-        public boolean doDetailedValidation() {
+        public void doDetailedValidation() {
             List<PatternedCorrelationLocal> pCorrLocalList = tableModel.getRowsList();
             if (pCorrLocalList != null && pCorrLocalList.size() != 0) {
                 for (PatternedCorrelationLocal pCorrLocal : pCorrLocalList) {
                     CorrelationSet cSet = pCorrLocal.getSet();
                     if (cSet == null) {
-                        addReasonKey("ERR_INVALID_REF_CORR_TO_SET"); //NOI18N
+                        addReasonKey(Severity.ERROR,
+                                "ERR_INVALID_REF_CORR_TO_SET"); //NOI18N
                         break;
                     }
                 }
@@ -582,8 +582,6 @@ public class CorrelationPTablePanel extends BaseTablePanel
                 // all correlation sets depend on type of operation
                 checkPatterns(isOneWayOperation);
             }
-            //
-            return isReasonsListEmpty();
         }
         
         /**
@@ -600,12 +598,14 @@ public class CorrelationPTablePanel extends BaseTablePanel
                 Pattern pattern = cs.getPattern();
                 if (isOneWayOperation &&
                         !(pattern == null || pattern == Pattern.NOT_SPECIFIED)) {
-                    addReasonKey("ERR_CORR_SET_PATTERN_DISALLOWED"); // NOI18N
+                    addReasonKey(Severity.ERROR,
+                            "ERR_CORR_SET_PATTERN_DISALLOWED"); // NOI18N
                     break;
                 }
                 if (!isOneWayOperation &&
                         (pattern == null || pattern == Pattern.NOT_SPECIFIED)) {
-                    addReasonKey("ERR_CORR_SET_PATTERN_REQUIRED"); // NOI18N
+                    addReasonKey(Severity.ERROR,
+                            "ERR_CORR_SET_PATTERN_REQUIRED"); // NOI18N
                     break;
                 }
             }
@@ -657,7 +657,8 @@ public class CorrelationPTablePanel extends BaseTablePanel
                         } else {
                             // Another combination of patterns is considered as duplication
                             String csName = cs1.getName();
-                            addReasonKey("ERR_NOT_UNIQUE_PATTERNED_CORR_SET",
+                            addReasonKey(Severity.ERROR, 
+                                    "ERR_NOT_UNIQUE_PATTERNED_CORR_SET",
                                     csName); // NOI18N
                             //
                             return;
