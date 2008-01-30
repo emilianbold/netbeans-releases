@@ -55,12 +55,12 @@ public class MapperDivider extends JPanel {
         g.drawLine(x1, 0, x1, y2);
         g.drawLine(x2, 0, x2, y2);
 
-        x1++;
-        x2--;
-        
-        g.setColor(innerLine);
-        g.drawLine(x1, 0, x1, y2);
-        g.drawLine(x2, 0, x2, y2);
+//        x1++;
+//        x2--;
+//        
+//        g.setColor(innerLine);
+//        g.drawLine(x1, 0, x1, y2);
+//        g.drawLine(x2, 0, x2, y2);
     }
     
     

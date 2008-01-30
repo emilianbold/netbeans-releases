@@ -238,6 +238,7 @@
         <!-- xslt -->
         <antcall target="do-test-jbi"><param name="dir" value="xslt/DoXslTransformBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutBP"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutXSLT"/></antcall>
     </target>
 
     <target name="test-4">
@@ -310,7 +311,6 @@
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/JavaEEToBPProj"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/ProdMngmntSamples/CreditApplicationProcessorBusinessProcess"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/TwoWayEjbToBP/TwoWay"/></antcall>
 
         <!-- misc -->
