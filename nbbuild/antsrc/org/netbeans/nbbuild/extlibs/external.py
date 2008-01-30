@@ -1,4 +1,4 @@
-# XXX check compatibility; seems to be OK on Python 2.4.4
+# XXX check compatibility; seems to be OK on Python 2.4.4, but not 2.4.2
 
 import os, re, urllib2, sha, inspect
 
@@ -90,6 +90,7 @@ def upload(s, cmd, filename=None, ui=None, repo=None, **kwargs):
         handle = open(cachefile, 'wb')
         handle.write(s)
         handle.close()
+        # XXX check if file exists on server; if so, don't try to upload it again
         url = cmd
         pm = httprepo.passwordmgr(ui)
         m = re.match(r'(https?://)(([^:@]+)(:([^@]+))?@)?(.+)', url)
