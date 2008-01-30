@@ -129,8 +129,6 @@ public class MoveDownCanvasAction extends MapperKeyboardAction {
             // veretex is select
             if (sVertexeces != null && sVertexeces.size() > 0) {
                 Vertex vertex = sVertexeces.get(0);
-                if (vertex.getItemCount() < 1) { return; }
-                
                 selectionModel.setSelected(treePath, vertex.getItem(0));
                 return;
             }
