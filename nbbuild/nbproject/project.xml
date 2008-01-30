@@ -43,6 +43,9 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>NetBeans Build System</name>
+        </general-data>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <name>NetBeans Build System</name>
             <properties>
@@ -58,10 +61,10 @@ made subject to such option by the copyright holder.
                     <label>Ant Tasks</label>
                     <location>antsrc</location>
                 </source-folder>
-		<source-folder>
+                <source-folder>
                     <label>AU Ant Tasks</label>
                     <location>ausrc</location>
-		</source-folder>
+                </source-folder>
                 <source-folder>
                     <label>Tests for Ant Tasks</label>
                     <location>test/unit/src</location>
@@ -126,9 +129,28 @@ made subject to such option by the copyright holder.
                 </action>
             </ide-actions>
             <export>
+                <type>folder</type>
+                <location>build/antclasses</location>
+                <build-target>bootstrap</build-target>
+            </export>
+            <export>
                 <type>jar</type>
                 <location>nbantext.jar</location>
-                <script>${ant.script}</script>
+                <build-target>bootstrap</build-target>
+            </export>
+            <export>
+                <type>folder</type>
+                <location>build/auclasses</location>
+                <build-target>bootstrap</build-target>
+            </export>
+            <export>
+                <type>jar</type>
+                <location>nbauext.jar</location>
+                <build-target>bootstrap</build-target>
+            </export>
+            <export>
+                <type>folder</type>
+                <location>build/test/unit/classes</location>
                 <build-target>bootstrap</build-target>
             </export>
             <view>
@@ -138,10 +160,6 @@ made subject to such option by the copyright holder.
                         <location>antsrc</location>
                     </source-folder>
                     <source-folder style="packages">
-		        <label>AU Ant Tasks</label>
-		        <location>ausrc</location>
-		    </source-folder>
-		    <source-folder style="packages">
                         <label>Tests for Ant Tasks</label>
                         <location>test/unit/src</location>
                     </source-folder>

@@ -240,18 +240,16 @@ public abstract class AbstractTreeChooserPanel<T> extends JPanel
             return "ERR_INCORRECT_TREE_SELECTION"; // NOI18N
         }
         
-        public boolean doFastValidation() {
-            boolean result = true;
-            //
+        public void doFastValidation() {
             Node selectedNode = getSelectedNode();
             if (selectedNode == null) {
-                addReasonKey(getIncorrectNodeSelectionReasonKey());
-                return false;
+                addReasonKey(Severity.ERROR, getIncorrectNodeSelectionReasonKey());
+                return;
             }
             NodesTreeParams treeParams =
                     (NodesTreeParams)getLookup().lookup(NodesTreeParams.class);
             if (treeParams == null) {
-                return true;
+                return;
             }
             //
             Class selectedNodeClass = selectedNode.getClass();
@@ -265,8 +263,7 @@ public abstract class AbstractTreeChooserPanel<T> extends JPanel
             }
             //
             if (!isTargetNode) {
-                addReasonKey(getIncorrectNodeSelectionReasonKey());
-                result = false;
+                addReasonKey(Severity.ERROR, getIncorrectNodeSelectionReasonKey());
             }
             //
             // Process extended validator if it is specified. 
@@ -275,22 +272,18 @@ public abstract class AbstractTreeChooserPanel<T> extends JPanel
             if (extension != null) {
                 Validator extValidator = extension.getExtensionValidator();
                 if (extValidator != null) {
-                    if (extValidator.doFastValidation() != true) {
-                        result = false;
-                        addReasons(extValidator.getReasons());
+                    extValidator.doFastValidation();
+                    if (extValidator.hasReasons(Severity.ERROR)) {
+                        addReasons(extValidator.getReasons(Severity.ERROR));
                     }
                 }
             }
-            //
-            return result;
         }
 
-        public boolean doDetailedValidation() {
-            boolean result = true;
+        @Override
+        public void doDetailedValidation() {
             //
-            if (super.doDetailedValidation() != true) {
-                result = false;
-            }
+            super.doDetailedValidation();
             //
             // Process extended validator if it is specified. 
             ValidationExtension extension = (ValidationExtension)getLookup().
@@ -298,14 +291,12 @@ public abstract class AbstractTreeChooserPanel<T> extends JPanel
             if (extension != null) {
                 Validator extValidator = extension.getExtensionValidator();
                 if (extValidator != null) {
-                    if (extValidator.doDetailedValidation() != true) {
-                        result = false;
+                    extValidator.doDetailedValidation();
+                    if (extValidator.hasReasons(null)) {
                         addReasons(extValidator.getReasons());
                     }
                 }
             }
-            //
-            return result;
         }
         
     }

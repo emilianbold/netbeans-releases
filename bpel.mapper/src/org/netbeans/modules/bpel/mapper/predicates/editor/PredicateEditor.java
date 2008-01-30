@@ -23,23 +23,33 @@ import java.awt.Dialog;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JPanel;
 import javax.swing.JTree;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.GraphExpandProcessor;
+import org.netbeans.modules.bpel.mapper.model.GraphInfoCollector;
 import org.netbeans.modules.bpel.mapper.palette.Palette;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.search.FinderListBuilder;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemFinder;
 import org.netbeans.modules.soa.mappercore.Mapper;
+import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
+import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.ui.SoaUiUtil;
 import org.netbeans.modules.soa.ui.form.EditorLifeCycleAdapter;
 import org.netbeans.modules.soa.ui.form.valid.DefaultDialogDescriptor;
+import org.netbeans.modules.soa.ui.form.valid.DefaultValidStateManager;
+import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
+import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
+import org.netbeans.modules.soa.ui.form.valid.Validator;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
 import org.openide.util.NbBundle;
 
@@ -47,13 +57,17 @@ import org.openide.util.NbBundle;
  *
  * @author  nk160297
  */
-public class PredicateEditor extends EditorLifeCycleAdapter {
+public class PredicateEditor extends EditorLifeCycleAdapter 
+        implements Validator.Provider, ValidStateManager.Provider {
     
     private Mapper mMapper;
     private MapperModel mMapperModel;
     private XPathSchemaContext mSContext;
     private AbstractPredicate mPred;
     private String mDlgTitle;
+    
+    private DefaultValidator mValidator;
+    private ValidStateManager mVSM;
         
     public PredicateEditor(XPathSchemaContext sContext, 
             AbstractPredicate pred, MapperModel mapperModel) {
@@ -154,6 +168,67 @@ public class PredicateEditor extends EditorLifeCycleAdapter {
        
     }
     
+    public ValidStateManager getValidStateManager(boolean isFast) {
+        if (isFast) {
+            // Only detailed validation is supported here
+            return null;
+        }
+        if (mVSM == null) {
+            mVSM = new DefaultValidStateManager();
+        }
+        return mVSM;
+    }
+
+    public Validator getValidator() {
+        if (mValidator == null) {
+            mValidator = new DefaultValidator(
+                    (ValidStateManager.Provider)PredicateEditor.this, 
+                    PredicateEditor.class) {
+                
+                public void doFastValidation() {
+                }
+                
+                @Override
+                public void doDetailedValidation() {
+                    //
+                    assert mMapperModel instanceof BpelMapperModel;
+                    Map<TreePath, Graph> notEmptyGraphs = 
+                            ((BpelMapperModel)mMapperModel).getGraphsInside(null);
+                    //
+                    int unconnectedGraphs = 0; // Graphs without connection to the right tree
+                    int incompleteGraphs = 0; // Graphs with unconnected vertices (group of vertices)
+                    //
+                    for (Graph graph : notEmptyGraphs.values()) {
+                        GraphInfoCollector graphInfo = new GraphInfoCollector(graph);
+                        if (graphInfo.noLinksAtAll()) {
+                            unconnectedGraphs++;
+                        }
+                        ArrayList<Vertex> sRoots = graphInfo.getSecondryRoots();
+                        if (sRoots != null && !sRoots.isEmpty()) {
+                            incompleteGraphs++;
+                        }
+                    }
+                    //
+                    if (unconnectedGraphs > 0) {
+                        if (notEmptyGraphs.size() == unconnectedGraphs) {
+                            addReasonKey(Severity.WARNING, 
+                                    "WARN_THERE_ARENT_ANY_CONNECTED_GRAPH"); //NOI18N
+                        } else {
+                            addReasonKey(Severity.WARNING, 
+                                    "WARN_THERE_ARE_UNCONNECTED_GRAPHS"); //NOI18N
+                        }
+                    }
+                    if (incompleteGraphs > 0) {
+                        addReasonKey(Severity.WARNING, 
+                                "WARN_THERE_ARE_INCOMPLETE_GRAPHS"); //NOI18N
+                    }
+                }
+                
+            };
+        }
+        return mValidator;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -217,5 +292,5 @@ public class PredicateEditor extends EditorLifeCycleAdapter {
     private javax.swing.JLabel lblContext;
     private javax.swing.JPanel pnlMenu;
     // End of variables declaration//GEN-END:variables
-    
+
 }

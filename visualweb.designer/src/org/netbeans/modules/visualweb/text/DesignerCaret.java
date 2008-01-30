@@ -1608,6 +1608,11 @@ import org.w3c.dom.Node;
         }
         
         public void componentMoved(DomDocumentEvent evt) {
+            // XXX 126234 Possible NPE.
+            if (component == null) {
+                return;
+            }
+            
             if (component.hasCaret()) {
                 DomPosition pos = ModelViewMapper.getFirstDocumentPosition(component.getWebForm(), false);
 //                webform.getPane().getCaret().setDot(pos);
