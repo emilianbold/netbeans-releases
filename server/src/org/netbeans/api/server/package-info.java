@@ -38,6 +38,6 @@
  */
 
 /**
- * API providing the representation of the server instance.
+ * API providing the common server instances.
  */
 package org.netbeans.api.server;

@@ -45,7 +45,12 @@ import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.nodes.Node;
 
 /**
- *
+ * The API representation of the single server instance. Class describes
+ * the instance and provides needed operations.
+ * <p>
+ * Currently this class is not reachable through API methods. This can change
+ * in future if we'll need to provide API in common server.
+ * 
  * @author Petr Hejl
  */
 public final class ServerInstance {
@@ -66,31 +71,71 @@ public final class ServerInstance {
         this.delegate = delegate;
     }
 
+    /**
+     * Returns the display name of the instance.
+     *
+     * @return the display name of the instance
+     */    
     public String getDisplayName() {
         return delegate.getDisplayName();
     }
     
+    /**
+     * Returns the display name of the server type to which this instance belongs.
+     *
+     * @return the display name of the server type to which this instance belongs
+     */    
     public String getServerDisplayName() {
         return delegate.getServerDisplayName();
     }
     
+    /**
+     * Returns the node representing the runtime instance. The node should
+     * display instance status and provide actions to manage the server.
+     *
+     * @return the node representing the instance, may return <code>null</code>
+     */    
     public Node getFullNode() {
         return delegate.getFullNode();
     }    
 
+    /**
+     * Returns the node representing the instance while configuring it.
+     * The node should not display any status, actions or children.
+     *
+     * @return the node representing the instance, may return <code>null</code>
+     */    
     public Node getBasicNode() {
         return delegate.getBasicNode();
     }
     
-
+    /**
+     * Returns the component allowing the customization of the instance. May
+     * return <code>null</code>.
+     * <p>
+     * Always called from Event Dispatch Thread.
+     *
+     * @return the component allowing the customization of the instance,
+     *             may return <code>null</code>
+     */
     public JComponent getCustomizer() {
         return delegate.getCustomizer();
     }
     
+    /**
+     * Removes the instance. No {@link org.netbeans.spi.server.ServerInstanceProvider}
+     * should return this instance once it is removed.
+     */    
     public void remove() {
         delegate.remove();
     }
 
+    /**
+     * Returns <code>true</code> if the instance can be removed by
+     * {@link #remove()}. Otherwise returns <code>false</code>.
+     *
+     * @return <code>true</code> if the instance can be removed
+     */    
     public boolean isRemovable() {
         return delegate.isRemovable();
     }

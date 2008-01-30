@@ -43,14 +43,14 @@ made subject to such option by the copyright holder.
     <property file="${basedir}/build.properties"/>
     
     <!-- Name of tested module -->
-    <property name="xtest.module" value="uml4"/>
+    <property name="xtest.module" value="uml5"/>
     
-    <property name="module.name" value="uml4"/>
+    <property name="module.name" value="uml5"/>
     
     <!-- this property should be defined in the nbbuild/netbeans/moduleCluster.properties,
     but it is not there at the moment of writing this -->
     <property name="netbeans.dest.dir" location="../../nbbuild/netbeans/"/>
-    <property name="uml.dir" location="${netbeans.dest.dir}/uml4"/>
+    <property name="uml.dir" location="${netbeans.dest.dir}/uml5"/>
     <property name="uml.modules.dir" location="${uml.dir}/modules"/>
     <property name="nbjunit.dir" location="../../nbbuild/netbeans/testtools"/>
     
@@ -76,19 +76,19 @@ made subject to such option by the copyright holder.
             <fileset dir="${uml.modules.dir}">
                 <include name="**/org-netbeans-modules-uml*.jar"/>
             </fileset>
-            <pathelement location="${netbeans.dest.dir}/platform7/modules/org-openide-nodes.jar"/>
-            <pathelement location="${netbeans.dest.dir}/platform7/modules/org-openide-windows.jar"/>            
+            <pathelement location="${openide.nodes.dir}/modules/org-openide-nodes.jar"/>
+            <pathelement location="${openide.windows.dir}/modules/org-openide-windows.jar"/>            
             <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
             <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
             <pathelement location="${xtest.home}/lib/junit.jar"/>                    
             <pathelement location="${xtest.home}/lib/nbjunit.jar"/>                                   
-            <pathelement location="${netbeans.dest.dir}/platform7/lib/org-openide-util.jar"/>
-            <pathelement location="${netbeans.dest.dir}/platform7/modules/org-netbeans-core.jar"/>
-            <pathelement location="${netbeans.dest.dir}/platform7/modules/org-netbeans-core-windows.jar"/>
-            <pathelement location="${netbeans.dest.dir}/platform7/modules/org-netbeans-swing-tabcontrol.jar"/>
-            <pathelement location="${netbeans.dest.dir}/java1/modules/org-netbeans-modules-java-j2seproject.jar"/>
-            <pathelement location="${netbeans.dest.dir}/java1/modules/org-netbeans-modules-project-ant.jar"/> 
-            <pathelement location="${netbeans.dest.dir}/ide8/modules/org-netbeans-modules-projectapi.jar"/> 
+            <pathelement location="${openide.util.dir}/lib/org-openide-util.jar"/>
+            <pathelement location="${o.n.core.dir}/modules/org-netbeans-core.jar"/>
+            <pathelement location="${core.windows.dir}/modules/org-netbeans-core-windows.jar"/>
+            <pathelement location="${o.n.swing.tabcontrol.dir}/modules/org-netbeans-swing-tabcontrol.jar"/>
+            <pathelement location="${java.j2seproject.dir}/modules/org-netbeans-modules-java-j2seproject.jar"/>
+            <pathelement location="${project.ant.dir}/modules/org-netbeans-modules-project-ant.jar"/> 
+            <pathelement location="${projectapi.dir}/modules/org-netbeans-modules-projectapi.jar"/> 
             <!--pathelement location="ext/junit-3.8.1.jar"/>                    
             <pathelement location="ext/nbjunit.jar"/-->                                   
         </path>

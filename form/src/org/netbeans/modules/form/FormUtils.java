@@ -855,11 +855,8 @@ public class FormUtils
                 if (relativeProperties != null) {
                     Object value = prop.getValue();
                     if (value instanceof RADComponent
-                        || value instanceof RADComponent.ComponentReference
-                        || (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue
-                            && (((RADConnectionPropertyEditor.RADConnectionDesignValue)value).type
-                                == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN)))
-                    {
+                            || value instanceof RADComponent.ComponentReference
+                            || isRelativeConnectionValue(value)) {
                         relativeProperties.add(prop);
                         continue;
                     }
@@ -890,6 +887,17 @@ public class FormUtils
                 LOGGER.log(Level.INFO, null, ex); // NOI18N
             }
         }
+    }
+
+    static boolean isRelativeConnectionValue(Object value) {
+        if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
+            RADConnectionPropertyEditor.RADConnectionDesignValue conValue
+                = (RADConnectionPropertyEditor.RADConnectionDesignValue) value;
+            return conValue.type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN
+                    || conValue.type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_METHOD
+                    || conValue.type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_PROPERTY;
+        }
+        return false;
     }
 
     public static Method getPropertyWriteMethod(RADProperty property, Class targetClass) {
