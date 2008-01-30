@@ -38,8 +38,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.wsdl.ui.extensibility.model;
+
 import java.util.List;
 import javax.xml.namespace.QName;
 import junit.framework.*;
@@ -62,17 +62,17 @@ import org.openide.util.NbBundle;
  * @author radval
  */
 public class WSDLExtensibilityElementsFactoryTest extends TestCase {
-    
+
     static {
         try {
-           System.setProperty("org.openide.util.Lookup", TestLookup.class.getName());
-           Lookup l = Lookup.getDefault();
-           if(l instanceof TestLookup) {
-               XMLFileSystem x = new XMLFileSystem(WSDLExtensibilityElementsFactoryTest.class.getResource("/org/netbeans/modules/wsdlextensions/dummy/resources/layer.xml"));
-              
-               ((TestLookup) l).setup(x);
-           }
-        } catch(Exception ex) {
+            System.setProperty("org.openide.util.Lookup", TestLookup.class.getName());
+            Lookup l = Lookup.getDefault();
+            if (l instanceof TestLookup) {
+                XMLFileSystem x = new XMLFileSystem(WSDLExtensibilityElementsFactoryTest.class.getResource("/org/netbeans/modules/wsdlextensions/dummy/resources/layer.xml"));
+
+                ((TestLookup) l).setup(x);
+            }
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
@@ -92,7 +92,7 @@ public class WSDLExtensibilityElementsFactoryTest extends TestCase {
      */
     public void testGetInstance() throws Exception {
         System.out.println("getInstance");
-        
+
         WSDLExtensibilityElementsFactory result = WSDLExtensibilityElementsFactory.getInstance();
         assertNotNull(result);
 
@@ -103,68 +103,82 @@ public class WSDLExtensibilityElementsFactoryTest extends TestCase {
      */
     public void testGetWSDLExtensibilityElements() throws Exception {
         System.out.println("getWSDLExtensibilityElements");
-        
+
         WSDLExtensibilityElementsFactory instance = WSDLExtensibilityElementsFactory.getInstance();
         WSDLExtensibilityElements result = instance.getWSDLExtensibilityElements();
         assertNotNull(result);
-        
+
         assertNotNull(result.getAllExtensionSchemas());
         assertNotNull(result.getAllExtensionSchemas().length == 0);
     }
-    
+
     public void testBinding() throws Exception {
         WSDLExtensibilityElementsFactory instance = WSDLExtensibilityElementsFactory.getInstance();
         WSDLExtensibilityElements result = instance.getWSDLExtensibilityElements();
-        
+
         //binding
         WSDLExtensibilityElement bindingElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_BINDING);
         assertNull(bindingElement);
     }
-    
+
     public void testBindingOperation() throws Exception {
         WSDLExtensibilityElementsFactory instance = WSDLExtensibilityElementsFactory.getInstance();
         WSDLExtensibilityElements result = instance.getWSDLExtensibilityElements();
-        
+
         //binding operation
         WSDLExtensibilityElement bindingOperationElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_BINDING_OPERATION);
         assertNull(bindingOperationElement);
     }
-    
+
     public void testBindingOpearationInput() throws Exception {
         WSDLExtensibilityElementsFactory instance = WSDLExtensibilityElementsFactory.getInstance();
         WSDLExtensibilityElements result = instance.getWSDLExtensibilityElements();
-        
+
         //binding operation input
         WSDLExtensibilityElement bindingOperationInputElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_BINDING_OPERATION_INPUT);
         assertNull(bindingOperationInputElement);
     }
-    
+
     public void testBindingOperationOutput() throws Exception {
         WSDLExtensibilityElementsFactory instance = WSDLExtensibilityElementsFactory.getInstance();
         WSDLExtensibilityElements result = instance.getWSDLExtensibilityElements();
-        
+
         //binding operation output
         WSDLExtensibilityElement bindingOperationOutputElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_BINDING_OPERATION_OUTPUT);
         assertNull(bindingOperationOutputElement);
     }
-    
+
     public void testBindingOperationFault() throws Exception {
         WSDLExtensibilityElementsFactory instance = WSDLExtensibilityElementsFactory.getInstance();
         WSDLExtensibilityElements result = instance.getWSDLExtensibilityElements();
-        
+
         //binding operation fault
         WSDLExtensibilityElement bindingOperationFaultElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_BINDING_OPERATION_FAULT);
         assertNull(bindingOperationFaultElement);
 
     }
-    
+
     public void testServicePort() throws Exception {
         WSDLExtensibilityElementsFactory instance = WSDLExtensibilityElementsFactory.getInstance();
         WSDLExtensibilityElements result = instance.getWSDLExtensibilityElements();
-        
+
         //binding operation output
         WSDLExtensibilityElement servicePortElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_SERVICE_PORT);
         assertNull(servicePortElement);
-        
+
+    }
+
+    public void testUndefinedExtensibilityElements126150() throws Exception {
+        WSDLExtensibilityElementsFactory instance = WSDLExtensibilityElementsFactory.getInstance();
+        WSDLExtensibilityElements result = instance.getWSDLExtensibilityElements();
+
+        WSDLExtensibilityElement messageElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_MESSAGE);
+        assertNull(messageElement);
+
+        WSDLExtensibilityElement definitionsElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_DEFINITIONS);
+        assertNull(definitionsElement);
+
+        WSDLExtensibilityElement portTypeOperationElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_PORTTYPE_OPERATION);
+        assertNull(portTypeOperationElement);
     }
 }

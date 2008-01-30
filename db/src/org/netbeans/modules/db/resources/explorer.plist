@@ -1071,10 +1071,13 @@
 				name = "ViewData";
 				class = org.netbeans.modules.db.explorer.actions.ViewDataAction;
 			},
+/* Issue 12617: Disable until we can commit resources to improve it.  Still accessible
+   via visualweb rowset query edit command
 			{
 				name = "DesignQuery";
 				class = org.netbeans.modules.db.explorer.actions.DesignQueryAction;
 			},
+*/
 			delimiter,
 			{
 				name = "AddColumn";

@@ -64,6 +64,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JSeparator;
@@ -443,6 +444,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private void updateAnnotationFiles() {
             HashSet set = new HashSet();
             // Add project directory
+            if (project.getProjectDirectory() == null) {
+                // See IZ 125880
+                Logger.getLogger("cnd.makeproject").warning("project.getProjectDirectory() == null - " + project);
+            }
             set.add(project.getProjectDirectory());
             // Add buildfolder from makefile projects to sources. See IZ 90190.
             Configuration[] confs = getMakeConfigurationDescriptor().getConfs().getConfs();
@@ -931,7 +936,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
         
         public void setName(String newName) {
-            String oldName = folder.getName();
+            String oldName = folder.getDisplayName();
             if (folder.getParent() != null && folder.getParent().findFolderByDisplayName(newName) != null) {
                 String msg = NbBundle.getMessage(MakeLogicalViewProvider.class, "CANNOT_RENAME", oldName, newName); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));

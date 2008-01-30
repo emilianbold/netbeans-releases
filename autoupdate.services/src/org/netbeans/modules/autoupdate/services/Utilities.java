@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.text.ParseException;
+import java.util.jar.JarEntry;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import java.io.ByteArrayInputStream;
@@ -64,6 +65,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Module;
@@ -79,6 +81,7 @@ import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.updater.ModuleDeactivator;
 import org.netbeans.updater.ModuleUpdater;
 import org.netbeans.updater.UpdateTracking;
+import org.netbeans.updater.UpdaterDispatcher;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.InstalledFileLocator;
@@ -376,6 +379,48 @@ public class Utilities {
         return res;
     }
     
+    static void writeUpdateOfUpdaterJar (JarEntry updaterJarEntry, JarFile updaterJar, File targetCluster) {
+        File dest = new File (targetCluster, UpdaterDispatcher.UPDATE_DIR + // updater
+                                UpdateTracking.FILE_SEPARATOR + UpdaterDispatcher.NEW_UPDATER_DIR + // new_updater
+                                UpdateTracking.FILE_SEPARATOR + ModuleUpdater.UPDATER_JAR
+                                );
+        
+        dest.getParentFile ().mkdirs ();
+        assert dest.getParentFile ().exists () && dest.getParentFile ().isDirectory () : "Parent of " + dest + " exists and is directory.";
+        InputStream is = null;
+        OutputStream fos = null;            
+        
+        try {
+            try {
+                fos = new FileOutputStream (dest);
+                is = updaterJar.getInputStream (updaterJarEntry);
+                FileUtil.copy (is, fos);
+            } finally {
+                if (is != null) is.close();
+                if (fos != null) fos.close();
+            }                
+        } catch (java.io.FileNotFoundException fnfe) {
+            getLogger ().log (Level.INFO, fnfe.getLocalizedMessage (), fnfe);
+        } catch (java.io.IOException ioe) {
+            getLogger ().log (Level.INFO, ioe.getLocalizedMessage (), ioe);
+        }
+    }
+    
+    static void cleanUpdateOfUpdaterJar () {
+        // loop for all clusters and clean if needed
+        List<File> clusters = UpdateTracking.clusters (true);
+        assert clusters != null : "Clusters cannot be empty."; // NOI18N
+        for (File cluster : clusters) {
+            File updaterDir = new File (cluster, UpdaterDispatcher.UPDATE_DIR + UpdateTracking.FILE_SEPARATOR + UpdaterDispatcher.NEW_UPDATER_DIR);
+            if (updaterDir.exists () && updaterDir.isDirectory ()) {
+                for (File f : updaterDir.listFiles ()) {
+                    f.delete ();
+                }
+                updaterDir.delete ();
+            }
+        }
+    }
+
     static Module toModule(UpdateUnit uUnit) {
         return getModuleInstance(uUnit.getCodeName(), null); // XXX
     }

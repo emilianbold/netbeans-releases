@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.xtest.examples/1
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xtest/examples/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/xtest/examples/resources/mf-layer.xml
