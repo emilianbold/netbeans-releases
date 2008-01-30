@@ -157,6 +157,13 @@ public abstract class RubyTestBase extends NbTestCase {
         return FileUtil.toFile(interpreter);
     }
 
+    protected void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
+        FileObject gemHome = platform.getGemManager().getGemHomeFO();
+        FileUtil.createData(gemHome, "specifications/ruby-debug-base-0.9.3.gemspec");
+        FileUtil.createData(gemHome, "specifications/ruby-debug-ide-0.1.9.gemspec");
+        platform.getGemManager().reset();
+    }
+
     protected FileObject getTestFile(String relFilePath) {
         File wholeInputFile = new File(getDataDir(), relFilePath);
         if (!wholeInputFile.exists()) {

@@ -413,8 +413,8 @@ public final class GemManager {
     }
 
     public void reset() {
-        installed = null;
-        remote = null;
+        resetRemote();
+        resetLocal();
         gemHomeUrl = null;
     }
     
