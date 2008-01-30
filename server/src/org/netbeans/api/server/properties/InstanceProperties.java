@@ -40,6 +40,7 @@
 package org.netbeans.api.server.properties;
 
 /**
+ * The set of persisted properties.
  *
  * @author Petr Hejl
  */
@@ -47,16 +48,26 @@ public abstract class InstanceProperties {
 
     private final String id;
 
+    /**
+     * Creates the new InstanceProperties.
+     *
+     * @param id id of the properties, unique in the scope of the namespace
+     * @see InstancePropertiesManager
+     */
     public InstanceProperties(String id) {
         this.id = id;
     }
 
     /**
      * Returns unique id of these properties. It is guaranteed that this id is
-     * unique in the scope of single property set used in manager (however it
+     * unique in the scope of single namespace used in manager (however it
      * is not related directly to it).
+     * <p>
+     * Client may use it for its own purposes (don't have to), but client
+     * can't influence the actual value of id in any way.
      *
      * @return id of the properties unique in the scope of the property set
+     * @see InstancePropertiesManager
      * @see InstancePropertiesManager#createProperties(String)
      */
     public final String getId() {
