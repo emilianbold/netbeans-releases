@@ -999,7 +999,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             String checkedName) {
             for (CorrelationSet correlationSet : correlationSets) {
                 String correlationSetName = correlationSet.getName();
-                if (Utils.ignoreNamespace(correlationSetName).equals(checkedName)) {
+                if (WizardUtils.ignoreNamespace(correlationSetName).equals(checkedName)) {
                     return true;
                 }
             }
@@ -1095,9 +1095,10 @@ public class DefineCorrelationWizard implements WizardProperties {
                 if (typeRef != null) {
                     correlationProperty.setType(typeRef);
                 }                
+                assert (typeRef != null);
                 if (Util.isUniquePropertyName(wizardWsdlModel, propertyName)) {
-                    Utils.importWsdlIntoWsdl(wizardWsdlModel, source.getWSDLModel());
-                    Utils.importWsdlIntoWsdl(wizardWsdlModel, target.getWSDLModel());
+                    WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, source.getWSDLModel());
+                    WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, target.getWSDLModel());
                     try {
                         wizardWsdlModel.startTransaction();
                         wizardWsdlModel.addChildComponent(wizardWsdlModel.getRootComponent(), 
@@ -1237,7 +1238,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
             
             public void createPropertyAlias(WSDLModel wizardWsdlModel, CorrelationProperty correlationProperty) {
-                if (! Utils.wsdlContainsPropertyAlias(wizardWsdlModel, correlationProperty, message, part)) {
+                if (! WizardUtils.wsdlContainsPropertyAlias(wizardWsdlModel, correlationProperty, message, part)) {
                     PropertyAlias propertyAlias = (PropertyAlias) wizardWsdlModel.getFactory().create(
                         wizardWsdlModel.getDefinitions(), BPELQName.PROPERTY_ALIAS.getQName());
 
@@ -1265,11 +1266,12 @@ public class DefineCorrelationWizard implements WizardProperties {
                 String typeName = getTypeNameIgnoreNamespace();
 
                 Collection<GlobalSimpleType> 
-                    globalSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes(),
                     primitiveSimpleTypes = SchemaModelFactory.getDefault().getPrimitiveTypesModel().getSchema().getSimpleTypes();
-                List<GlobalSimpleType> simpleTypeList = new ArrayList<GlobalSimpleType>(globalSimpleTypes);
-                simpleTypeList.addAll(primitiveSimpleTypes);
-                NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(typeName, simpleTypeList);
+                NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(typeName, 
+                    primitiveSimpleTypes);
+                if (typeRef == null) {
+                    typeRef = resolveSimpleType(typeName, primitiveSimpleTypes);
+                }
                 if (typeRef != null) return typeRef;
                 
                 String errMsg = MessageFormat.format(NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
@@ -1278,6 +1280,52 @@ public class DefineCorrelationWizard implements WizardProperties {
                 throw new WizardValidationException(wizardPanel, errMsg, errMsg);
             }
 
+            private NamedComponentReference<GlobalType> resolveSimpleType(String typeName,
+                Collection<GlobalSimpleType> primitiveSimpleTypes) {
+                Collection<GlobalSimpleType> 
+                    globalSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes();
+                GlobalSimpleType simpleType = null;
+                for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
+                    if (globalSimpleType.toString().equals(typeName)) {
+                        simpleType = globalSimpleType;
+                        break;
+                    }
+                }
+                if (simpleType != null) {
+                    List<SchemaComponent> children = simpleType.getChildren();
+                    typeName = getBaseSimpleTypeName(children, primitiveSimpleTypes, globalSimpleTypes);
+                    if (typeName != null) {
+                        NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(typeName, 
+                            primitiveSimpleTypes);
+                        return typeRef;
+                    }
+                }
+                return null;
+            }
+            
+            private String getBaseSimpleTypeName(List<SchemaComponent> componentList,
+                Collection<GlobalSimpleType> primitiveSimpleTypes,
+                Collection<GlobalSimpleType> globalSimpleTypes) {
+                if ((componentList == null) || (primitiveSimpleTypes == null) || 
+                    (globalSimpleTypes == null)) return null;
+                
+                for (SchemaComponent component : componentList) {
+                    String baseTypeName = component.getAttribute(SchemaAttribute.BASE);
+                    if (baseTypeName != null) {
+                        baseTypeName = WizardUtils.ignoreNamespace(baseTypeName);
+                        NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(baseTypeName, 
+                            primitiveSimpleTypes);
+                        if (typeRef != null) return baseTypeName;
+                        typeRef = findGlobalSimpleType(baseTypeName, globalSimpleTypes);
+                        if (typeRef != null) {
+                            return getBaseSimpleTypeName(component.getChildren(), primitiveSimpleTypes, globalSimpleTypes);
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+                return null;
+            }            
             private NamedComponentReference<GlobalType> findGlobalSimpleType(String typeName,
                 Collection<GlobalSimpleType> globalSimpleTypes) {
                 NamedComponentReference<GlobalType> typeRef = null;
@@ -1292,7 +1340,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             
             public String getTypeNameIgnoreNamespace() {
                 String typeName = WizardDefineCorrelationPanel.this.getSchemaComponentTypeName(schemaComponent);
-                return Utils.ignoreNamespace(typeName);
+                return WizardUtils.ignoreNamespace(typeName);
             }
             
             @Override
@@ -1799,7 +1847,7 @@ class CorrelationWizardWSDLWrapper {
     }
 }
 //============================================================================//
-class Utils {
+class WizardUtils {
     public static String ignoreNamespace(String dataWithNamespace) {
         int index = dataWithNamespace.indexOf(":");
         if ((index > -1) && (index < dataWithNamespace.length() - 1)) {
@@ -1860,6 +1908,35 @@ class Utils {
         }
         return false;
     }
+}
+//============================================================================//
+enum SchemaAttribute implements org.netbeans.modules.xml.xam.dom.Attribute {
+    BASE(Constants.SCHEMA_COMPONENT_ATTRIBUTE_BASE);
+    
+    private String name;
+    private Class type, subtype;
+    
+    SchemaAttribute(String name) {
+        this(name, String.class);
+    }
+    SchemaAttribute(String name, Class type) {
+        this(name, type, null);
+    }
+    SchemaAttribute(String name, Class type, Class subtype) {
+        this.name = name;
+        this.type = type;
+        this.subtype = subtype;
+    }
+    
+    public String getName() {return name;}
+    @Override
+    public String toString() {return getName();}
+    public Class getType() {return type;}
+    public Class getMemberType() {return subtype;}
+}
+//============================================================================//
+interface Constants {
+    String SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base";
 }
 //============================================================================//
 interface WizardProperties {
