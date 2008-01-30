@@ -50,7 +50,18 @@ import org.openide.util.NbPreferences;
 
 /**
  * This class acts as a manager of the properties. It manages the set
- * of persisted properties grouped by the property set identifier.
+ * of properties and they persistence.
+ * <p>
+ * Single InstanceProperties instance created by the manager usually serves
+ * to persist properties of single server instance. By definition many
+ * InstanceProperties can be created in the same namespace. <i>For common
+ * use case client module will use one namespace with several
+ * InstanceProperties.</i>
+ * <p>
+ * The <code>namespace</code> used in both non-static methods is just
+ * the symbolic name for the InstanceProperties logically connected
+ * (like instances of the same server type for example) and retrievable
+ * by calling {@link #getProperties(String)} respectively.
  * <p>
  * Typical use case:<p>
  * <pre>
@@ -98,20 +109,20 @@ public final class InstancePropertiesManager {
     }
 
     /**
-     * Creates and returns properties in the given property set. It is
-     * perfectly legal to call this method multiple times with the same property
-     * set as parameter - it will always create new instance of Properties.
-     * Returned properties should serve for persistence of the single server
-     * instance.
+     * Creates and returns properties in the given namespace. It is
+     * perfectly legal to call this method multiple times with the same
+     * namespace as a parameter - it will always create new instance
+     * of InstanceProperties. Returned properties should serve for persistence
+     * of the single server instance.
      *
-     * @param propertySetId string identifying the set of properties
-     * @return new Properties logically placed in the given set
+     * @param namespace string identifying the namespace of created InstanceProperties
+     * @return new InstanceProperties logically placed in the given namespace
      */
-    public InstanceProperties createProperties(String propertySetId) {
+    public InstanceProperties createProperties(String namespace) {
         Preferences prefs = NbPreferences.forModule(InstancePropertiesManager.class);
 
         try {
-            prefs = prefs.node(propertySetId);
+            prefs = prefs.node(namespace);
 
             boolean next = true;
             String id = null;
@@ -131,16 +142,16 @@ public final class InstancePropertiesManager {
     }
 
     /**
-     * Returns all existing properties created in the given property set.
+     * Returns all existing properties created in the given namespace.
      *
-     * @param propertySetId string identifying the set of properties
-     * @return list of all existing properties created in the given set
+     * @param namespace string identifying the namespace
+     * @return list of all existing properties created in the given namespace
      */
-    public List<InstanceProperties> getProperties(String propertySetId) {
+    public List<InstanceProperties> getProperties(String namespace) {
         Preferences prefs = NbPreferences.forModule(InstancePropertiesManager.class);
 
         try {
-            prefs = prefs.node(propertySetId);
+            prefs = prefs.node(namespace);
             prefs.flush();
 
             List<InstanceProperties> props = new ArrayList<InstanceProperties>();

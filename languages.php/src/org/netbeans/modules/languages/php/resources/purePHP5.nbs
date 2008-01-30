@@ -284,7 +284,7 @@ ANDExp = LogicalANDExpression;
 AssignmentExpression = LogicalORExpression [ AssignmentOperator AssExp ];
 AssExp= AssignmentExpression;
 AssignmentOperator = "=" | "+=" | "-=" | "*=" | "/=" | ".=" | "%=" | "&=" | "|=" | "^=" | "~=" | "<<=" | ">>=";
-ConditionalExpression = LogicalORORExpression [ "?" LogicalORORExpression ":" LogicalORORExpression ];
+ConditionalExpression = LogicalORORExpression [ "?" Expression ":" Expression ];
 LogicalORORExpression = LogicalANDANDExpression [ "||" ORORExp ];
 ORORExp = LogicalORORExpression;
 LogicalANDANDExpression = BitwiseORExpression [ "&&" ANDANDExp ];
