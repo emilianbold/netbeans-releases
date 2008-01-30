@@ -50,21 +50,26 @@ import org.openide.util.NbPreferences;
 
 /**
  * This class acts as a manager of the properties. It manages the set
- * of persisted properties grouped by the plugin identifier.
+ * of persisted properties grouped by the property set identifier.
  * <p>
  * Typical use case:<p>
  * <pre>
  *     // we have some instance to persist
  *     InstancePropertiesManager manager = InstancePropertiesManager.getInstance();
- *     InstanceProperties props = manager.createProperties("myspace");
- *     props.put("property", "value");
+ *     InstanceProperties props1 = manager.createProperties("myspace");
+ *     props1.put("property", "value");
+ *
+ *     // we want to persist yet another instance
+ *     InstanceProperties props2 = manager.createProperties("myspace");
+ *     props2.put("property", "value");
  *
  *     // we want to retrieve all InstanceProperties from "myspace"
+ *     // the list will have two elements
  *     List&lt;InstanceProperties&gt; props = manager.getInstanceProperties("myspace");
  * </pre>
- *
- *
+ * <p>
  * This class is <i>ThreadSafe</i>.
+ *
  * @author Petr Hejl
  */
 public final class InstancePropertiesManager {
@@ -93,19 +98,20 @@ public final class InstancePropertiesManager {
     }
 
     /**
-     * Creates and returns properties for the given server plugin. It is
-     * perfectly legal to call this method multiple times with the same plugin - it
-     * will always create new instance of Properties. Returned properties
-     * should serve for persistence of the single server instance.
+     * Creates and returns properties in the given property set. It is
+     * perfectly legal to call this method multiple times with the same property
+     * set as parameter - it will always create new instance of Properties.
+     * Returned properties should serve for persistence of the single server
+     * instance.
      *
-     * @param plugin string identifying plugin
-     * @return new Properties for the given plugin
+     * @param propertySetId string identifying the set of properties
+     * @return new Properties logically placed in the given set
      */
-    public InstanceProperties createProperties(String plugin) {
+    public InstanceProperties createProperties(String propertySetId) {
         Preferences prefs = NbPreferences.forModule(InstancePropertiesManager.class);
 
         try {
-            prefs = prefs.node(plugin);
+            prefs = prefs.node(propertySetId);
 
             boolean next = true;
             String id = null;
@@ -125,16 +131,16 @@ public final class InstancePropertiesManager {
     }
 
     /**
-     * Returns all existing properties created by the given plugin.
+     * Returns all existing properties created in the given property set.
      *
-     * @param plugin string identifying plugin
-     * @return list of all existing properties created by the given plugin
+     * @param propertySetId string identifying the set of properties
+     * @return list of all existing properties created in the given set
      */
-    public List<InstanceProperties> getProperties(String plugin) {
+    public List<InstanceProperties> getProperties(String propertySetId) {
         Preferences prefs = NbPreferences.forModule(InstancePropertiesManager.class);
 
         try {
-            prefs = prefs.node(plugin);
+            prefs = prefs.node(propertySetId);
             prefs.flush();
 
             List<InstanceProperties> props = new ArrayList<InstanceProperties>();

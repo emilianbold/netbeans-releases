@@ -18,6 +18,7 @@
  */
 package org.netbeans.modules.bpel.design.model;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
@@ -34,14 +35,12 @@ import org.netbeans.modules.bpel.design.model.patterns.CollapsedPattern;
 
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.Invoke;
 import org.netbeans.modules.bpel.model.api.OnEvent;
 import org.netbeans.modules.bpel.model.api.OnMessage;
 import org.netbeans.modules.bpel.model.api.OperationReference;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.PartnerLinkReference;
 import org.netbeans.modules.bpel.model.api.Receive;
-import org.netbeans.modules.bpel.model.api.Reply;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.design.model.connections.Connection;
@@ -69,12 +68,14 @@ import org.netbeans.modules.xml.xam.Model;
 import org.openide.ErrorManager;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.xml.retriever.catalog.CatalogEntry;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModel;
 import org.netbeans.modules.xml.retriever.catalog.CatalogWriteModelFactory;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
+import org.openide.filesystems.FileUtil;
 
 /**
  * @author Alexey Yarmolenko
@@ -595,15 +596,20 @@ public class PartnerLinkHelper {
         }
     }
 
-    private WSDLModel getWSDLModel(FileObject fo) {
+    public static WSDLModel getWSDLModel(FileObject fo) {
+        WSDLModel wsdlModel = null;
+
         try {
-            return model.getView().getProcessHelper().getWSDLModelFromUri(fo.getURL().toURI());
-        } catch (FileStateInvalidException ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        } catch (URISyntaxException ex) {
+            File file = new File(fo.getURL().toURI());
+            ModelSource modelSource = Utilities.getModelSource(FileUtil
+                    .toFileObject(file), true);
+            wsdlModel = org.netbeans.modules.xml.wsdl.model.WSDLModelFactory
+                    .getDefault().getModel(modelSource);
+        }
+        catch (Exception ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        return null;
+        return wsdlModel;
     }
     private static final String PARTNERS_FOLDER = "Partners";
 }

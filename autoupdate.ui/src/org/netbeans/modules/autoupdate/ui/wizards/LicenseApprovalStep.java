@@ -83,7 +83,7 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
 
     public Component getComponent() {
         if (component == null) {
-            JPanel tmp = new LicenseApprovalPanel (null);
+            JPanel tmp = new LicenseApprovalPanel (null, isApproved);
             component = new PanelBodyContainer (getBundle (HEAD), getBundle (CONTENT), tmp);
             component.setPreferredSize (OperationWizardModel.PREFFERED_DIMENSION);
             if (wd != null) {
@@ -98,7 +98,7 @@ public class LicenseApprovalStep implements WizardDescriptor.FinishablePanel<Wiz
     private void appendLoadingLazy () {
         lazyLoadingTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
-                panel = new LicenseApprovalPanel (model);
+                panel = new LicenseApprovalPanel (model, isApproved);
                 panel.addPropertyChangeListener (LicenseApprovalPanel.LICENSE_APPROVED, new PropertyChangeListener () {
                         public void propertyChange (PropertyChangeEvent arg0) {
                             isApproved = panel.isApproved ();

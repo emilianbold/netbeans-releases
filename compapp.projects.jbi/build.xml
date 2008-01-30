@@ -42,7 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="projectsjbi" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    
+
     <target name="ant-extra">
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">
