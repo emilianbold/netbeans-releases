@@ -667,7 +667,7 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
     
-    public void done() {
+    public void dragDone() {
         if (!isActive()) return;
         reset();
         getMapper().repaint();
