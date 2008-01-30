@@ -95,6 +95,6 @@
     <property name="latest" value="${cache}/latest"/>
     <property name="netbeans" value="${cache}/netbeans"/>
     <property name="sierra.dir"  value=".netbeans/sierra"/>
-    <property name="soa" value="${home}/bpel.samples/resources"/>
+    <property name="samples" value="${home}/bpel.samples/resources"/>
     <property name="build.number" value="${home}/nbbuild/netbeans/platform8/build_number"/>
 </project>
