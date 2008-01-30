@@ -105,7 +105,7 @@ public class SpringScopeTest extends ConfigFileTestCase {
         list.add(configFile);
         list.add(configFile2);
         ConfigFileGroup group = ConfigFileGroup.create(list);
-        ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new DefaultConfigFileManagerImpl(group));
+        final ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new DefaultConfigFileManagerImpl(group));
         SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
 
         FileObject configFO = FileUtil.toFileObject(configFile);
@@ -140,7 +140,11 @@ public class SpringScopeTest extends ConfigFileTestCase {
         anotherModel = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO2);
         assertSame(model, anotherModel);
 
-        manager.putConfigFileGroups(Collections.<ConfigFileGroup>emptyList());
+        manager.mutex().writeAccess(new Runnable() {
+            public void run() {
+                manager.putConfigFileGroups(Collections.<ConfigFileGroup>emptyList());
+            }
+        });
         assertEquals(0, scope.group2Model.size());
     }
 }

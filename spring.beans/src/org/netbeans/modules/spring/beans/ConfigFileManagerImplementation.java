@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.spring.beans;
 
+import java.io.IOException;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
@@ -60,6 +61,8 @@ public interface ConfigFileManagerImplementation {
     List<ConfigFileGroup> getConfigFileGroups();
 
     void putConfigFileGroups(List<ConfigFileGroup> groups);
+
+    void save() throws IOException;
 
     void addChangeListener(ChangeListener listener);
 }

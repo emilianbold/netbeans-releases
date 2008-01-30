@@ -40,10 +40,12 @@
  *
  * Portions Copyrighted 2008 Craig MacKay.
  */
+
 package org.netbeans.modules.spring.webmvc;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,9 +53,12 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -69,6 +74,9 @@ import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
+import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
+import org.netbeans.modules.spring.api.beans.ConfigFileManager;
+import org.netbeans.modules.spring.api.beans.SpringScope;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
@@ -80,6 +88,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  * The WebModuleExtender implementation for Spring Web MVC.
@@ -87,6 +96,8 @@ import org.openide.util.HelpCtx;
  * @author Craig MacKay
  */
 public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {  
+    
+    private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
     
     private SpringConfigPanelVisual frameworkPanelVisual;
     private final SpringWebFrameworkProvider framework;
@@ -229,8 +240,35 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             // COPY TEMPLATE SPRING RESOURCES (JSP, XML, PROPERTIES)
             copyResource("index.jsp", FileUtil.createData(jsp, "index.jsp")); // NOI18N
             copyResource("jdbc.properties", FileUtil.createData(webInf, "jdbc.properties")); // NOI18N
-            addFileToOpen(copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml"))); // NOI18N
-            addFileToOpen(copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, getComponent().getDispatcherName() + "-servlet.xml"))); // NOI18N
+            final List<File> configFiles = new ArrayList<File>(2);
+            FileObject configFile;
+            configFile = copyResource("applicationContext.xml", FileUtil.createData(webInf, "applicationContext.xml")); // NOI18N
+            addFileToOpen(configFile);
+            configFiles.add(FileUtil.toFile(configFile));
+            configFile = copyResource("dispatcher-servlet.xml", FileUtil.createData(webInf, getComponent().getDispatcherName() + "-servlet.xml")); // NOI18N
+            addFileToOpen(configFile);
+            configFiles.add(FileUtil.toFile(configFile));
+
+            SpringScope scope = SpringScope.getSpringScope(configFile);
+            if (scope != null) {
+                final ConfigFileManager manager = scope.getConfigFileManager();
+                manager.mutex().writeAccess(new Runnable() {
+                    public void run() {
+                        List<ConfigFileGroup> groups = manager.getConfigFileGroups();
+                        String groupName = NbBundle.getMessage(SpringWebModuleExtender.class, "LBL_DefaultGroup");
+                        ConfigFileGroup newGroup = ConfigFileGroup.create(groupName, configFiles);
+                        groups.add(newGroup);
+                        manager.putConfigFileGroups(groups);
+                        try {
+                            manager.save();
+                        } catch (IOException e) {
+                            Exceptions.printStackTrace(e);
+                        }
+                    }
+                });
+            } else {
+                LOGGER.log(Level.WARNING, "Could not find a SpringScope for file {0}", configFile);
+            }
 
             // MODIFY EXISTING INDEX.JSP
             FileObject documentBase = webModule.getDocumentBase();

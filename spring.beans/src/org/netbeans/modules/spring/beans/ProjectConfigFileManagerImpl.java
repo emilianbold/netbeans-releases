@@ -42,10 +42,10 @@
 package org.netbeans.modules.spring.beans;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -144,13 +144,16 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
      *         write access.
      */
     public void putConfigFileGroups(List<ConfigFileGroup> newGroups) {
-        if (!mutex().isWriteAccess()) {
-            throw new IllegalStateException("The putConfigFileGroups() method should be called under mutex() write access");
-        }
+        assert mutex().isWriteAccess();
         writeGroups(newGroups);
         groups = new ArrayList<ConfigFileGroup>(newGroups.size());
         groups.addAll(newGroups);
         changeSupport.fireChange();
+    }
+
+    public void save() throws IOException {
+        assert mutex().isWriteAccess();
+        ProjectManager.getDefault().saveProject(project);
     }
 
     public void addChangeListener(ChangeListener listener) {
