@@ -562,44 +562,43 @@ public class VisualReplicator {
 
         try {
             Object value = property.getValue();
-            
+            RADComponent valueComp;
             if (value instanceof RADComponent.ComponentReference) {
-                value = ((RADComponent.ComponentReference)value).getComponent();
+                valueComp = ((RADComponent.ComponentReference)value).getComponent();
+            } else if (FormUtils.isRelativeConnectionValue(value)) {
+                valueComp = ((RADConnectionPropertyEditor.RADConnectionDesignValue)value).getRADComponent();
+            } else {
+                valueComp = null;
             }
             
-            if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue
-                && (((RADConnectionPropertyEditor.RADConnectionDesignValue)value).type
-                == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN)) {
-                value = ((RADConnectionPropertyEditor.RADConnectionDesignValue)value).getRADComponent();
-            }
-
-            if (value instanceof RADComponent) {
-                // the value is another component (relative property )
-                Object propertyComp =
-                    getClonedComponent((RADComponent)value);
-                if (propertyComp == null) // there's no cloned instance yet
-                    propertyComp = createClone((RADComponent)value);
-
-                value = propertyComp;
-            }
-            else {
-                Object newValue = null;
-                if (value instanceof FormDesignValue) {
-                    newValue = ((FormDesignValue)value).getDesignValue(targetComp);
+            Object clonedValue;
+            if (valueComp != null) {
+                // the value is another component (relative property)
+                Object clonedComp = getClonedComponent(valueComp);
+                if (clonedComp == null) { // there's no cloned instance yet
+                    clonedComp = createClone(valueComp);
                 }
-                if (newValue == null) {
-                    value = property.getRealValue();
-
-                    if (value == FormDesignValue.IGNORED_VALUE)
-                        return; // ignore the value, as it is not a real value
-
-                    value = FormUtils.cloneObject(value, property.getPropertyContext().getFormModel());
+                if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
+                    clonedValue = ((RADConnectionPropertyEditor.RADConnectionDesignValue)value)
+                            .getValueForBean(clonedComp);
                 } else {
-                    value = newValue;
+                    clonedValue = clonedComp;
+                }
+            } else { // this is not a relative property (another component)
+                clonedValue = null;
+                if (value instanceof FormDesignValue) {
+                    clonedValue = ((FormDesignValue)value).getDesignValue(targetComp);
+                }
+                if (clonedValue == null) {
+                    Object realValue = property.getRealValue();
+                    if (realValue == FormDesignValue.IGNORED_VALUE) {
+                        return; // ignore the value, as it is not a real value
+                    }
+                    clonedValue = FormUtils.cloneObject(realValue, property.getPropertyContext().getFormModel());
                 }
             }
 
-            writeMethod.invoke(targetComp, new Object[] { value });
+            writeMethod.invoke(targetComp, new Object[] { clonedValue });
 
             if (targetComp instanceof Component) {
                 ((Component)targetComp).invalidate();
@@ -898,24 +897,28 @@ public class VisualReplicator {
             RADProperty property = relativeProperties.get(i);
             try {
                 Object value = property.getValue();
-                if (value instanceof RADComponent.ComponentReference)
-                    value =
-                        ((RADComponent.ComponentReference)value).getComponent();
-
-                if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
-                    RADConnectionPropertyEditor.RADConnectionDesignValue connection =
-                        (RADConnectionPropertyEditor.RADConnectionDesignValue)value;
-                    assert connection.type == RADConnectionPropertyEditor.RADConnectionDesignValue.TYPE_BEAN;
-                    value = connection.getRADComponent();
+                RADComponent valueComp;
+                if (value instanceof RADComponent.ComponentReference) {
+                    valueComp = ((RADComponent.ComponentReference)value).getComponent();
+                } else if (FormUtils.isRelativeConnectionValue(value)) {
+                    valueComp = ((RADConnectionPropertyEditor.RADConnectionDesignValue)value).getRADComponent();
+                } else {
+                    valueComp = null;
                 }
 
-                if (value instanceof RADComponent) {
-                    // the value is another component (relative property )
-                    Object propertyComp =
-                        getClonedComponent((RADComponent)value);
-                    if (propertyComp == null) // there's no cloned instance yet
-                        propertyComp = cloneComponent((RADComponent)value,
-                                                      relativeProperties);
+                if (valueComp != null) {
+                    // the value is another component (relative property)
+                    Object clonedComp = getClonedComponent(valueComp);
+                    if (clonedComp == null) { // there's no cloned instance yet
+                        clonedComp = cloneComponent(valueComp, relativeProperties);
+                    }
+                    Object clonedValue;
+                    if (value instanceof RADConnectionPropertyEditor.RADConnectionDesignValue) {
+                        clonedValue = ((RADConnectionPropertyEditor.RADConnectionDesignValue)value)
+                            .getValueForBean(clonedComp);
+                    } else {
+                        clonedValue = clonedComp;
+                    }
 
                     // target component of the property
                     Object targetComp =
@@ -924,13 +927,13 @@ public class VisualReplicator {
                     Method writeMethod = FormUtils.getPropertyWriteMethod(property, targetComp.getClass());
                     if (writeMethod != null) {
                         writeMethod.invoke(targetComp,
-                                           new Object[] { propertyComp });
+                                           new Object[] { clonedValue });
                     }
-                    else if (propertyComp instanceof ButtonGroup
+                    else if (clonedValue instanceof ButtonGroup
                              && targetComp instanceof AbstractButton)
                     {   // special case - add button to button group
-                        ((ButtonGroup)propertyComp).remove((AbstractButton)targetComp);
-                        ((ButtonGroup)propertyComp).add((AbstractButton)targetComp);
+                        ((ButtonGroup)clonedValue).remove((AbstractButton)targetComp);
+                        ((ButtonGroup)clonedValue).add((AbstractButton)targetComp);
                     }
                 }
             }

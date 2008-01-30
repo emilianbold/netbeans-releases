@@ -55,10 +55,13 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Comparator;
@@ -202,7 +205,7 @@ public class FileObjects {
      * @return {@link JavaFileObject}, never returns null
      * @exception {@link IOException} may be thrown
      */
-    public static JavaFileObject nbFileObject (final FileObject file, final FileObject root) throws IOException {
+    public static SourceFileObject nbFileObject (final FileObject file, final FileObject root) throws IOException {
         return nbFileObject (file, root, null, false);
     }
     
@@ -216,7 +219,7 @@ public class FileObjects {
      * @return {@link JavaFileObject}, never returns null
      * @exception {@link IOException} may be thrown
      */
-    public static JavaFileObject nbFileObject (final FileObject file, final FileObject root, JavaFileFilterImplementation filter, boolean renderNow) throws IOException {
+    public static SourceFileObject nbFileObject (final FileObject file, final FileObject root, JavaFileFilterImplementation filter, boolean renderNow) throws IOException {
         assert file != null;
         if (!file.isValid() || file.isVirtual()) {
             throw new InvalidFileException (file);
@@ -833,7 +836,35 @@ public class FileObjects {
         
         public final URI toUri () {
             URI  zdirURI = this.getArchiveURI();
-            return URI.create ("jar:"+zdirURI.toString()+"!/"+resName);  //NOI18N
+            try {
+                //Optimistic try and see
+                return new URI ("jar:"+zdirURI.toString()+"!/"+resName);  //NOI18N
+            } catch (URISyntaxException e) {
+                //Need to encode the resName part (slower)
+                final StringBuilder sb = new StringBuilder ();
+                final String[] elements = resName.split("/");                 //NOI18N
+                try {
+                    for (int i = 0; i< elements.length; i++) {
+                        String element = elements[i];
+                        element = URLEncoder.encode(element, "UTF-8");       //NOI18N
+                        element = element.replace("+", "%20");               //NOI18N
+                        sb.append(element);
+                        if (i< elements.length - 1) {
+                            sb.append('/');
+                        }
+                    }
+                    return new URI("jar:"+zdirURI.toString()+"!/"+sb.toString());    //NOI18N
+                } catch (final UnsupportedEncodingException e2) {
+                    final IllegalStateException ne = new IllegalStateException ();
+                    ne.initCause(e2);
+                    throw ne;
+                }
+                catch (final URISyntaxException e2) {
+                    final IllegalStateException ne = new IllegalStateException ();
+                    ne.initCause(e2);
+                    throw ne;
+                }
+            }
         }
         
         @Override

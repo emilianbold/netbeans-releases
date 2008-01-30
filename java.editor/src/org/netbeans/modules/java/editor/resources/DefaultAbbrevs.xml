@@ -238,8 +238,8 @@ made subject to such option by the copyright holder.
         
     <codetemplate abbreviation="psvm">
         <code>
-<![CDATA[public static void main(String[] args) { 
-   ${cursor} 
+<![CDATA[public static void main(String[] args) {
+   ${cursor}
 }
 ]]>
         </code>

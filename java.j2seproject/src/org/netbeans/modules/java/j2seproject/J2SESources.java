@@ -43,6 +43,7 @@ package org.netbeans.modules.java.j2seproject;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -52,10 +53,14 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  * Implementation of {@link Sources} interface for J2SEProject.
@@ -107,16 +112,45 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
                     }
                     _delegate = delegate;
                 }
-                return _delegate.getSourceGroups(type);
+                SourceGroup[] groups = _delegate.getSourceGroups(type);
+                if (type.equals(Sources.TYPE_GENERIC)) {
+                    FileObject libLoc = getSharedLibraryFolderLocation();
+                    if (libLoc != null) {
+                        SourceGroup[] grps = new SourceGroup[groups.length + 1];
+                        System.arraycopy(groups, 0, grps, 0, groups.length);
+                        grps[grps.length - 1] = GenericSources.group(null, libLoc, 
+                                "sharedlibraries", // NOI18N
+                                NbBundle.getMessage(J2SESources.class, "LibrarySourceGroup_DisplayName"), 
+                                null, null);
+                        return grps;
+                    }
+                }
+                return groups;
             }
         });
     }
-
-    private Sources initSources() {        
+    
+    private FileObject getSharedLibraryFolderLocation() {
+        String libLoc = helper.getLibrariesLocation();
+        if (libLoc != null) {
+            String libLocEval = evaluator.evaluate(libLoc);
+            File file = null;
+            if (libLocEval != null) {
+                file = helper.resolveFile(libLocEval);
+            }
+            FileObject libLocFO = FileUtil.toFileObject(file);
+            FileObject libLocParent = libLocFO.getParent();
+            return libLocParent;
+        } else {
+            return null;
+        }
+    }
+    
+    private Sources initSources() {
         this.sourcesHelper = new SourcesHelper(helper, evaluator);   //Safe to pass APH        
         register(sourceRoots);
         register(testRoots);
-        this.sourcesHelper.addNonSourceRoot (BUILD_DIR_PROP);
+        this.sourcesHelper.addNonSourceRoot(BUILD_DIR_PROP);
         this.sourcesHelper.addNonSourceRoot(DIST_DIR_PROP);
         externalRootsRegistered = false;
         ProjectManager.mutex().postWriteRequest(new Runnable() {

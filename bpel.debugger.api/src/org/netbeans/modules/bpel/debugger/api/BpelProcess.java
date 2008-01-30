@@ -31,4 +31,6 @@ public interface BpelProcess {
     String getTargetNamespace();
     QName getQName();
     ProcessStaticModel getProcessStaticModel();
+    
+    WaitingCorrelatedMessage[] getWaitingCorrelatedEvents();
 }

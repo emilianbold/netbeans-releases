@@ -64,7 +64,7 @@ import java.util.prefs.Preferences;
  * @author Maros Sandor
  */
 public class Mercurial {
-    public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_MainMenu"); // NOI18N
+    public static final String MERCURIAL_OUTPUT_TAB_TITLE = org.openide.util.NbBundle.getMessage(Mercurial.class, "CTL_Mercurial_DisplayName"); // NOI18N
     public static final String CHANGESET_STR = "changeset:"; // NOI18N
 
     static final String PROP_ANNOTATIONS_CHANGED = "annotationsChanged"; // NOI18N
@@ -83,8 +83,9 @@ public class Mercurial {
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY |
             FileInformation.STATUS_VERSIONED_MODIFIEDINREPOSITORY;
 
-    private static final String MERCURIAL_GOOD_VERSION = "0.9.3"; // NOI18N
-    private static final String MERCURIAL_BETTER_VERSION = "0.9.4"; // NOI18N
+    private static final String MERCURIAL_SUPPORTED_VERSION_093 = "0.9.3"; // NOI18N
+    private static final String MERCURIAL_SUPPORTED_VERSION_094 = "0.9.4"; // NOI18N
+    private static final String MERCURIAL_SUPPORTED_VERSION_095 = "0.9.5"; // NOI18N
     private static Mercurial instance;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
@@ -139,8 +140,9 @@ public class Mercurial {
         version = HgCommand.getHgVersion();
         LOG.log(Level.FINE, "version: {0}", version); // NOI18N
         if (version != null) {
-            goodVersion = version.startsWith(MERCURIAL_GOOD_VERSION) ||
-                          version.startsWith(MERCURIAL_BETTER_VERSION);
+            goodVersion = version.startsWith(MERCURIAL_SUPPORTED_VERSION_093) ||
+                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_094) ||
+                          version.startsWith(MERCURIAL_SUPPORTED_VERSION_095);
             if (!goodVersion){
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
                 runVersion = prefs.get(HgModuleConfig.PROP_RUN_VERSION, null);
@@ -158,7 +160,7 @@ public class Mercurial {
              if (runVersion == null || !runVersion.equals(version)) {
                 Preferences prefs = HgModuleConfig.getDefault().getPreferences();
                 int response = JOptionPane.showOptionDialog(null,
-                        NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM_QUERY", version, MERCURIAL_BETTER_VERSION), // NOI18N
+                        NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM_QUERY", version), // NOI18N
                         NbBundle.getMessage(Mercurial.class, "MSG_VERSION_CONFIRM"), // NOI18N
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
                 if (response == JOptionPane.YES_OPTION) {

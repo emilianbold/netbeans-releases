@@ -90,13 +90,11 @@ class AnnotatedNode extends AbstractNode implements Runnable, FileStatusListener
         if (files.size() == 0) {
             return;
         }
-        // FIXUP: gross hack 
-        // The logic in this file doesn't work if there is only one file in a folder!
-        // Add an extra file to work aroud this ...
-//        if (files.size() == 1) {
-//            files.add(((FileObject)files.iterator().next()).getParent());
-//        }
         FileObject fo = (FileObject) files.iterator().next();
+        if (fo == null) {
+            // See IZ 125880
+            return;
+        }
         try {
             fs = fo.getFileSystem();
             fsl = FileUtil.weakFileStatusListener(this, fs);

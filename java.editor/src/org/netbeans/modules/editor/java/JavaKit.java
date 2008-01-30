@@ -718,6 +718,8 @@ public class JavaKit extends NbEditorKit {
     
     private static class JavaGoToDeclarationAction extends GotoDeclarationAction {
         public @Override boolean gotoDeclaration(JTextComponent target) {
+            if (!(target.getDocument() instanceof BaseDocument)) // Fixed #113062
+                return false;
             GoToSupport.goTo((BaseDocument) target.getDocument(), target.getCaretPosition(), false);
             return true;
         }
@@ -736,7 +738,7 @@ public class JavaKit extends NbEditorKit {
         }
 
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            if (target != null) {
+            if (target != null && (target.getDocument() instanceof BaseDocument)) {
                 GoToSupport.goTo((BaseDocument) target.getDocument(), target.getCaretPosition(), true);
             }
         }

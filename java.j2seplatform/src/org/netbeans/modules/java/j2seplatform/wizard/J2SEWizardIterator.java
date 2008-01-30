@@ -168,7 +168,7 @@ public class J2SEWizardIterator implements WizardDescriptor.InstantiatingIterato
     }
 
     public void removeChangeListener(ChangeListener l) {
-        listeners.add(l);
+        listeners.remove(l);
     }
 
     public void uninitialize(WizardDescriptor wiz) {
