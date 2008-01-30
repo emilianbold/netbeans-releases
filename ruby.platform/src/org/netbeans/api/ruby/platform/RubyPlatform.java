@@ -571,22 +571,25 @@ public final class RubyPlatform {
      * @return whether everything needed for fast debugging is installed
      */
     public boolean hasFastDebuggerInstalled() {
-        return gemManager != null && getFastDebuggerProblems() == null;
+        return gemManager != null && getFastDebuggerProblemsInHTML() == null;
     }
 
     /**
      * @return null if everthing is OK or errors in String
      */
-    public String getFastDebuggerProblems() {
+    public String getFastDebuggerProblemsInHTML() {
         assert gemManager != null : "has gemManager when asking whether Fast Debugger is installed";
         StringBuilder errors = new StringBuilder();
-        if (!gemManager.isGemInstalled(RUBY_DEBUG_IDE_NAME, RDEBUG_IDE_VERSION)) {
-            errors.append("<b>" + RUBY_DEBUG_IDE_NAME + "</b> in version <b>" + RDEBUG_IDE_VERSION + "</b> is not installed").append('\n'); // XXX NOI18N
-        }
-        if (!gemManager.isGemInstalled(RUBY_DEBUG_BASE_NAME, RDEBUG_BASE_VERSION)) {
-            errors.append("<b>" + RUBY_DEBUG_BASE_NAME + "</b> in version <b>" + RDEBUG_BASE_VERSION + "</b> is not installed"); // XXX NOI18N
-        }
+        checkAndReport(RUBY_DEBUG_IDE_NAME, RDEBUG_IDE_VERSION, errors);
+        checkAndReport(RUBY_DEBUG_BASE_NAME, RDEBUG_BASE_VERSION, errors);
         return errors.length() == 0 ? null : errors.toString();
+    }
+
+    private void checkAndReport(final String gemName, final String gemVersion, final StringBuilder errors) {
+        if (!gemManager.isGemInstalled(gemName, gemVersion)) {
+            errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion));
+            errors.append("<br>"); // NOI18N
+        }
     }
 
     public boolean installFastDebugger() {

@@ -139,6 +139,8 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
                 }
             } else {
                 int c = read(true);
+                // if read of the first char caused skipping escaped line
+                // do we need to backup and create escaped lines first?
                 switch (c) {
                     case '"': {
                         Token<CppTokenId> out = finishDblQuote();

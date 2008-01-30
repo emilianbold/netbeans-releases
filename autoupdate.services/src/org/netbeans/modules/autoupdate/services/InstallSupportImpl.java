@@ -84,6 +84,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.updater.ModuleDeactivator;
+import org.netbeans.updater.ModuleUpdater;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -105,6 +106,9 @@ public class InstallSupportImpl {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
     public static final String NBM_EXTENTSION = ".nbm";
+    
+    private static final String AUTOUPDATE_SERVICES_MODULE = "org.netbeans.modules.autoupdate.services"; // NOI18N
+    
     private Map<UpdateElementImpl, File> element2Clusters = null;
     private Set<File> downloadedFiles = null;
     private boolean isGlobal;
@@ -295,6 +299,9 @@ public class InstallSupportImpl {
                 }
                 
                 boolean needsRestart = false;
+                JarEntry updaterJarEntry = null;
+                JarFile updaterJarFile = null;
+                File targetCluster = null;
                 for (ModuleUpdateElementImpl moduleImpl : affectedModuleImpls) {
                     synchronized(this) {
                         if (currentStep == STEP.CANCEL) {
@@ -310,7 +317,7 @@ public class InstallSupportImpl {
                     
                     // find target dir
                     UpdateElement installed = moduleImpl.getUpdateUnit ().getInstalled ();
-                    File targetCluster = getTargetCluster (installed, moduleImpl, isGlobal);
+                    targetCluster = getTargetCluster (installed, moduleImpl, isGlobal);
                     
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
                     err.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
@@ -318,6 +325,28 @@ public class InstallSupportImpl {
                     boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(NBM_EXTENTSION.toLowerCase(Locale.US));
                     
                     File dest = getDestination(targetCluster, moduleImpl.getCodeName(), isNbmFile);
+                    assert dest != null : "Destination file exists for " + moduleImpl + " in " + targetCluster;
+                    
+                    // check if 'updater.jar' is being installed
+                    if (AUTOUPDATE_SERVICES_MODULE.equals (moduleImpl.getCodeName ())) {
+                        err.log (Level.FINEST, AUTOUPDATE_SERVICES_MODULE + " is being installed, check if contains " + ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH);
+                        JarFile jf = new JarFile (dest);
+                        try {
+                            for (JarEntry entry : Collections.list (jf.entries ())) {
+                                if (ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.toString ())) {
+                                    err.log (Level.FINE, ModuleUpdater.AUTOUPDATE_UPDATER_JAR_PATH + " is being installed from " + moduleImpl.getCodeName ());
+                                    updaterJarEntry = entry;
+                                    updaterJarFile = jf;
+                                    needsRestart = true;
+                                    break;
+                                }
+                            }
+                        } finally {
+                            if (jf != null && ! jf.equals (updaterJarFile)) {
+                                jf.close ();
+                            }
+                        }
+                    }
                     
                     needsRestart |= needsRestart(installed != null, moduleImpl, dest);
                 }
@@ -325,6 +354,9 @@ public class InstallSupportImpl {
                 try {
                     // store source of installed files
                     Utilities.writeAdditionalInformation (getElement2Clusters ());
+                    if (updaterJarFile != null) {
+                        Utilities.writeUpdateOfUpdaterJar (updaterJarEntry, updaterJarFile, targetCluster);
+                    }
 
                     if (! needsRestart) {
                         synchronized(this) {
@@ -532,6 +564,7 @@ public class InstallSupportImpl {
             }
         }
         getDownloadedFiles ().clear ();
+        Utilities.cleanUpdateOfUpdaterJar ();
         if (affectedFeatureImpls != null) affectedFeatureImpls = null;
         if (affectedModuleImpls != null) affectedModuleImpls = null;
         

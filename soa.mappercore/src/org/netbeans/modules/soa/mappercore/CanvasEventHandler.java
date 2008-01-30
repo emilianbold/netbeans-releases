@@ -115,6 +115,8 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             Transferable transferable = null;
             CanvasSearchResult result = getCanvas().find(initialEvent.getX(), initialEvent.getY());
 
+            if (result == null) { reset(); return; }
+            
             if (result.getPinItem() instanceof Vertex) {
                 Vertex vertex = (Vertex) result.getPinItem();
                 Link link = vertex.getOutgoingLink();

@@ -142,7 +142,7 @@ public final class Util {
         if (!platform.hasRubyGemsInstalled()) {
             return false;
         }
-        String problems = platform.getFastDebuggerProblems();
+        String problems = platform.getFastDebuggerProblemsInHTML();
         if (problems == null) {
             turnOnRubyDebugOptions(platform);
             return true;

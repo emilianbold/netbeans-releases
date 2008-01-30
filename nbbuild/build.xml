@@ -1427,6 +1427,18 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <antcall target="real-clean"/>
   </target>
   <target name="hg-clean" depends="-hg-clean-alternative" if="can.hg.clean">
+    <exec executable="hg" failonerror="yes" dir=".." outputproperty="hg.unknown.files">
+      <arg value="status"/>
+      <arg value="--unknown"/>
+      <arg value="--no-status"/>
+    </exec>
+    <fail message="Will not run clean; checkout contains unknown and not ignored files (did you forget to hg add?):&#10;${hg.unknown.files}">
+        <condition>
+            <not>
+                <equals arg1="${hg.unknown.files}" arg2=""/>
+            </not>
+        </condition>
+    </fail>
     <exec executable="hg" failonerror="yes" dir="..">
       <arg value="--config"/>
       <arg value="extensions.purge="/>

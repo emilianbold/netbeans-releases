@@ -1,3 +1,4 @@
+~$
 /build$
 /nbproject/private$
 /test/(coverage|lib|results|work)$
@@ -240,8 +241,6 @@
 ^j2ee.dd/test/unit/data/invalid/web\.xml$
 ^j2ee.earproject/src/org/netbeans/modules/j2ee/earproject/ui/wizards/dd/\.ApplicationXmlVisualPanel1\.java\.swp$
 ^j2ee.ejbcore/src/org/netbeans/modules/j2ee/ejbcore/ejb/wizard/gen$
-^j2ee.kit/test/qa-functional/src/org/netbeans/test/j2ee/multiview/\.Utils\.java\.swp$
-^j2ee.kit/test/qa-functional/src/org/netbeans/test/j2ee/persistence/\.PersistenceUnitTest\.java\.swp$
 ^j2ee.persistence/src/org/netbeans/modules/j2ee/persistence/dd/orm/model_1_0$
 ^j2ee.persistence/src/org/netbeans/modules/j2ee/persistence/dd/orm/impl/model_1_0$
 ^j2ee.persistence/src/org/netbeans/modules/j2ee/persistence/dd/persistence/model_1_0$
