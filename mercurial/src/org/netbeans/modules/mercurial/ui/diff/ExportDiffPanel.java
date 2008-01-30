@@ -155,8 +155,13 @@ public class ExportDiffPanel extends javax.swing.JPanel implements ActionListene
      */
     private void setupModels() {
         // XXX attach Cancelable hook
-        final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(ExportDiffPanel.class, "MSG_Refreshing_Revisions")); // NOI18N
+        final ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(ExportDiffPanel.class, "MSG_Fetching_Revisions")); // NOI18N
         try {
+            Set<String>  initislRevsSet = new LinkedHashSet<String>();
+
+            initislRevsSet.add(NbBundle.getMessage(ExportDiffPanel.class, "MSG_Fetching_Revisions")); // NOI18N
+            ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(initislRevsSet));
+            revisionsComboBox.setModel(targetsModel);
             refreshViewThread = Thread.currentThread();
             Thread.interrupted();  // clear interupted status
             ph.start();
