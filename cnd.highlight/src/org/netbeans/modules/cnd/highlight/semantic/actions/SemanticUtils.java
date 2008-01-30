@@ -48,9 +48,11 @@ import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
@@ -58,6 +60,51 @@ import org.openide.windows.TopComponent;
  * @author Sergey Grinev
  */
 public class SemanticUtils {
+
+    @SuppressWarnings("empty-statement")
+    private static int findOccurrencePosition(boolean directionForward, Document doc, int curPos) {
+        OffsetsBag bag = MarkOccurrencesHighlighter.getHighlightsBag(doc);
+        HighlightsSequence hs = bag.getHighlights(0, doc.getLength());
+        
+        if (hs.moveNext()) {
+            if (directionForward) {
+                int firstStart = hs.getStartOffset(), firstEnd = hs.getEndOffset();
+                
+                while (hs.getStartOffset() <= curPos && hs.moveNext());
+                
+                if (hs.getStartOffset() > curPos) {
+                    // we found next occurrence
+                    return hs.getStartOffset();
+                } else if (!(firstEnd >= curPos && firstStart <= curPos)) {
+                    // cyclic jump to first occurrence unless we already there
+                    return firstStart;
+                }
+            } else {
+                int current = hs.getStartOffset(), last;
+                boolean stuck = false;
+                do {
+                    last = current;
+                    current = hs.getStartOffset();
+                } while (hs.getEndOffset() < curPos && (stuck = hs.moveNext()));
+
+                if (last == current) {
+                    // we got no options to jump, cyclic jump to last in file unless we already there
+                    while (hs.moveNext());
+                    if (!(hs.getEndOffset() >= curPos && hs.getStartOffset() <= curPos)) {
+                        return hs.getStartOffset();
+                    }
+                } else if (stuck) {
+                    // just move to previous occurence
+                    return last;
+                } else {
+                    // it was last occurence in the file
+                    return current;
+                }
+            }
+        }
+        return -1;
+    }
+
     /*package*/ static void navigateToOccurence(boolean next) {
         final Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
         // check whether current file is C++ Source file
@@ -72,35 +119,11 @@ public class SemanticUtils {
             Document doc = ec.getDocument();
 
             int position = CaretAwareCsmFileTaskFactory.getLastPosition(dobj.getPrimaryFile());
-
-            OffsetsBag bag = MarkOccurrencesHighlighter.getHighlightsBag(doc);
-
-//            HighlightsSequence hs0 = bag.getHighlights(0, doc.getLength());
-//            System.err.println("position = " + position);
-//            int i =1; while(hs0.moveNext()) {
-//                System.err.println("bag " + i++ + " " + hs0.getStartOffset() + ":" + hs0.getEndOffset());
-//            }
-
-            if (next) {
-                HighlightsSequence hs = bag.getHighlights(position, doc.getLength());
-                if (hs.moveNext() && hs.getStartOffset() > position || hs.moveNext()) {
-                    panes[0].setCaretPosition(hs.getStartOffset());
-                }
+            int goTo = findOccurrencePosition(next, doc, position);
+            if (goTo > 0) {
+                panes[0].setCaretPosition(goTo);
             } else {
-                HighlightsSequence hs = bag.getHighlights(0, position);
-                if (hs.moveNext()) {
-                    int current = hs.getStartOffset(), last;
-                    do {
-                        last = current;
-                        current = hs.getStartOffset();
-                    } while (hs.moveNext());
-
-                    if (hs.getEndOffset() < position) {
-                        panes[0].setCaretPosition(hs.getStartOffset());
-                    } else if (last != current) {
-                        panes[0].setCaretPosition(last);
-                    } // else there in nothing to jump on
-                }
+                StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SemanticUtils.class, "cpp-no-marked-occurrence"));
             }
         }
 
