@@ -6,6 +6,7 @@ package org.netbeans.modules.bpel.design.selection.placeholders;
 
 import java.awt.Cursor;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.Callable;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -23,9 +24,12 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
+import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.websvc.core.WebServiceReference;
+import org.netbeans.modules.xml.wsdl.model.WSDLModel;
+import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -36,7 +40,7 @@ public class PartnerlinkPlaceholder extends PlaceHolder {
 
     private DiagramView diagramView;
     private BpelEntity insertAfter;
-    
+
     public PartnerlinkPlaceholder(DiagramView diagramView, BpelEntity insertAfter, Pattern dndPattern, double x, double y) {
         super(null, dndPattern, x, y);
         this.diagramView = diagramView;
@@ -171,33 +175,67 @@ public class PartnerlinkPlaceholder extends PlaceHolder {
                                     isPlContainerCreated = true;
                                 }
 
+
                                 plc.insertPartnerLink(pLink, getIndex(plc));
                                 
-                                PartnerLinkHelper.setPartnerlinkRole(pLink, 
+                                //lets check if we acception DnD of wsdl which already have 1 PLT inside, 
+                                //so we can just assign roles, based on which swimlane it was droped on and dont 
+                                //show customizer dialog
+                                PartnerLinkType plt = getFirstPLT();
+                                if (plt != null){
+                                    WSDLReference<PartnerLinkType> plt_ref = 
+                                            pLink.createWSDLReference(plt, PartnerLinkType.class);
+                                    
+                                    pLink.setPartnerLinkType(plt_ref);
+                                }
+
+                                PartnerLinkHelper.setPartnerlinkRole(pLink,
                                         ((PartnerlinksView) diagramView).getMode());
-                                
-                                if (pLink.getPartnerLinkType() == null){
+
+                                if (pLink.getPartnerLinkType() == null) {
                                     if (!diagramView.getDesignView().showCustomEditor(
-                                        pattern, CustomNodeEditor.EditingMode.CREATE_NEW_INSTANCE)) {
-                                            plc.remove(pLink);
+                                            pattern, CustomNodeEditor.EditingMode.CREATE_NEW_INSTANCE)) {
+                                        plc.remove(pLink);
                                         if (isPlContainerCreated) {
                                             process.removePartnerLinkContainer();
                                         }
                                     }
-                                } 
-                                
-                                 
+                                }
+
+
                                 return null;
                             }
 
+                            private PartnerLinkType getFirstPLT() {
+                                FileObject fo = (FileObject) pLink.getCookie(DnDHandler.class);
+
+                                if (fo == null) {
+                                    return null;
+                                }
+
+                                WSDLModel model = PartnerLinkHelper.getWSDLModel(fo);
+                                if (model == null || model.getDefinitions() == null) {
+                                    return null;
+                                }
+
+                                List<PartnerLinkType> plts = model.getDefinitions().getExtensibilityElements(PartnerLinkType.class);
+
+                                if (plts == null || plts.size() != 1) {
+                                    return null;
+                                }
+
+                                return plts.get(0);
+
+                            }
+
                             private int getIndex(PartnerLinkContainer plc) {
-                                
+
 
                                 if (insertAfter != null) {
                                     PartnerLink pls[] = plc.getPartnerLinks();
                                     for (int n = 0; n < pls.length; n++) {
                                         if (pls[n] == insertAfter) {
-                                            return  n + 1;
+                                            return n + 1;
                                         }
                                     }
                                 }

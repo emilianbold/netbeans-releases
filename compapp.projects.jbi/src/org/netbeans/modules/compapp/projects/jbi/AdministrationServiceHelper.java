@@ -99,6 +99,13 @@ public class AdministrationServiceHelper {
         return mgmtClient.getDeploymentService();
     }
     
+    public static ConfigurationService getConfigurationService(
+            ServerInstance serverInstance) throws ManagementRemoteException {
+        MBeanServerConnection connection = getMBeanServerConnection(serverInstance);
+        ManagementClient mgmtClient = getManagementClient(connection);
+        return mgmtClient.getConfigurationService();
+    }
+    
 //    static RuntimeManagementService getRuntimeManagementServiceWrapper(String serverInstance) 
 //            throws ManagementRemoteException {
 //        ManagementClient mgmtClient = getManagementClient(serverInstance);

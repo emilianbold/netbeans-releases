@@ -202,7 +202,7 @@ public class FileObjects {
      * @return {@link JavaFileObject}, never returns null
      * @exception {@link IOException} may be thrown
      */
-    public static JavaFileObject nbFileObject (final FileObject file, final FileObject root) throws IOException {
+    public static SourceFileObject nbFileObject (final FileObject file, final FileObject root) throws IOException {
         return nbFileObject (file, root, null, false);
     }
     
@@ -216,7 +216,7 @@ public class FileObjects {
      * @return {@link JavaFileObject}, never returns null
      * @exception {@link IOException} may be thrown
      */
-    public static JavaFileObject nbFileObject (final FileObject file, final FileObject root, JavaFileFilterImplementation filter, boolean renderNow) throws IOException {
+    public static SourceFileObject nbFileObject (final FileObject file, final FileObject root, JavaFileFilterImplementation filter, boolean renderNow) throws IOException {
         assert file != null;
         if (!file.isValid() || file.isVirtual()) {
             throw new InvalidFileException (file);

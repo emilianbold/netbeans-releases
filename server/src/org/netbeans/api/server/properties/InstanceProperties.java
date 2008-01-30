@@ -53,9 +53,10 @@ public abstract class InstanceProperties {
 
     /**
      * Returns unique id of these properties. It is guaranteed that this id is
-     * unique in the scope of single plugin (plugin identifier) used in manager.
+     * unique in the scope of single property set used in manager (however it
+     * is not related directly to it).
      *
-     * @return id of the properties unique in the scope of the single plugin
+     * @return id of the properties unique in the scope of the property set
      * @see InstancePropertiesManager#createProperties(String)
      */
     public final String getId() {

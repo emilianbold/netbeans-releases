@@ -91,6 +91,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Utilities;
@@ -216,13 +217,21 @@ public class HgUtils {
      * @return boolean true - ignore, false - not ignored
      */
     public static boolean isIgnored(File file){
-        if (file == null) return true;
+        if (file == null) return false;
         String name = file.getPath();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
         
         // We assume that the toplevel directory should not be ignored.
         if (topFile == null || topFile.equals(file)) {
             return false;
+        }
+        
+        // We assume that the Project should not be ignored.
+        if(file.isDirectory()){
+            ProjectManager projectManager = ProjectManager.getDefault();
+            if (projectManager.isProject(FileUtil.toFileObject(file))) {
+                return false;
+            }
         }
 
         Set<Pattern> patterns = new HashSet<Pattern>(5);

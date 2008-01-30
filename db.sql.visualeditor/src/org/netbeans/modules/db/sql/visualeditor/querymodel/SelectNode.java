@@ -68,7 +68,7 @@ public class SelectNode implements Select {
     }
 
     public SelectNode(ArrayList columnList) {
-        this(columnList, "ALL");  // NOI18N
+        this(columnList, "");  // NOI18N
     }
 
 
@@ -79,8 +79,7 @@ public class SelectNode implements Select {
         String res_select_quantifier = "";  // NOI18N
 
         if (_selectItemList.size() > 0) {
-
-            res_select_quantifier  = "SELECT " + _quantifier + " " ;
+            res_select_quantifier = (_quantifier.length() == 0) ? "SELECT " : "SELECT " + _quantifier + " " ; // NOI18N
             res = res_select_quantifier
 		+ ((ColumnItem)_selectItemList.get(0)).genText(quoter, true);  // NOI18N
 
