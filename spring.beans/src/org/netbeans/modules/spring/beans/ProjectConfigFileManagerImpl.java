@@ -191,7 +191,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
         if (projectDir == null) {
             return null;
         }
-        return resolveFile(projectDir, path);
+        return ConfigFiles.resolveFile(projectDir, path);
     }
 
     private void writeGroups(List<ConfigFileGroup> groups) {
@@ -223,42 +223,5 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
             }
             configFileGroupsEl.appendChild(configFileGroupEl);
         }
-    }
-
-    // XXX copied from PropertyUtils.
-    private static final Pattern RELATIVE_SLASH_SEPARATED_PATH = Pattern.compile("[^:/\\\\.][^:/\\\\]*(/[^:/\\\\.][^:/\\\\]*)*"); // NOI18N
-
-    /**
-     * Find an absolute file path from a possibly relative path.
-     * @param basedir base file for relative filename resolving; must be an absolute path
-     * @param filename a pathname which may be relative or absolute and may
-     *                 use / or \ as the path separator
-     * @return an absolute file corresponding to it
-     * @throws IllegalArgumentException if basedir is not absolute
-     */
-    private static File resolveFile(File basedir, String filename) throws IllegalArgumentException {
-        if (basedir == null) {
-            throw new NullPointerException("null basedir passed to resolveFile"); // NOI18N
-        }
-        if (filename == null) {
-            throw new NullPointerException("null filename passed to resolveFile"); // NOI18N
-        }
-        if (!basedir.isAbsolute()) {
-            throw new IllegalArgumentException("nonabsolute basedir passed to resolveFile: " + basedir); // NOI18N
-        }
-        File f;
-        if (RELATIVE_SLASH_SEPARATED_PATH.matcher(filename).matches()) {
-            // Shortcut - simple relative path. Potentially faster.
-            f = new File(basedir, filename.replace('/', File.separatorChar));
-        } else {
-            // All other cases.
-            String machinePath = filename.replace('/', File.separatorChar).replace('\\', File.separatorChar);
-            f = new File(machinePath);
-            if (!f.isAbsolute()) {
-                f = new File(basedir, machinePath);
-            }
-            assert f.isAbsolute();
-        }
-        return FileUtil.normalizeFile(f);
     }
 }
