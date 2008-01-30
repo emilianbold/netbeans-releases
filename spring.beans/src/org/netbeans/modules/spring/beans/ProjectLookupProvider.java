@@ -55,7 +55,7 @@ public class ProjectLookupProvider implements LookupProvider {
     public Lookup createAdditionalLookup(Lookup baseContext) {
         Project project = baseContext.lookup(Project.class);
         if (project == null) {
-            throw new IllegalStateException("Could not find a project in lookup " + baseContext);
+            throw new IllegalStateException("Lookup " + baseContext + " does not contain a Project");
         }
         return Lookups.singleton(new ProjectSpringScopeProvider(project));
     }

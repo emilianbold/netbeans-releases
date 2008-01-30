@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.api.beans;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
@@ -179,7 +180,7 @@ public final class SpringScope {
             // The file is not valid.
             return null;
         }
-        ConfigFileGroup adHocFileGroup = ConfigFileGroup.create(configFile);
+        ConfigFileGroup adHocFileGroup = ConfigFileGroup.create(Collections.singletonList(configFile));
         adHocModel = new SpringConfigModel(adHocFileGroup);
         file2AdHocModel.put(configFO, adHocModel);
 

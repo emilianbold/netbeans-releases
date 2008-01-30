@@ -101,7 +101,10 @@ public class SpringScopeTest extends ConfigFileTestCase {
         TestUtils.copyStringToFile(TestUtils.createXMLConfigText("<bean id='foo' class='org.example.Foo'/>"), configFile);
         final File configFile2 = createConfigFileName("anotherContext.xml");
         TestUtils.copyStringToFile(TestUtils.createXMLConfigText("<bean id='bar' class='org.example.Bar'/>"), configFile2);
-        ConfigFileGroup group = ConfigFileGroup.create(configFile, configFile2);
+        List<File> list = new ArrayList<File>();
+        list.add(configFile);
+        list.add(configFile2);
+        ConfigFileGroup group = ConfigFileGroup.create(list);
         ConfigFileManager manager = ConfigFileManagerAccessor.DEFAULT.createConfigFileManager(new DefaultConfigFileManagerImpl(group));
         SpringScope scope = SpringScopeAccessor.DEFAULT.createSpringScope(manager);
 

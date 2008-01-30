@@ -38,6 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+
 package org.netbeans.modules.spring.beans;
 
 import java.io.File;
@@ -170,10 +171,10 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
             Element configFileGroupEl = (Element)configFileGroupEls.item(i);
             String name = configFileGroupEl.getAttribute(NAME);
             NodeList configFileEls = configFileGroupEl.getElementsByTagNameNS(SPRING_CONFIG_NS, CONFIG_FILE);
-            File[] configFiles = new File[configFileEls.getLength()];
+            List<File> configFiles = new ArrayList<File>(configFileEls.getLength());
             for (int j = 0; j < configFileEls.getLength(); j++) {
                 Element configFileEl = (Element)configFileEls.item(j);
-                configFiles[j] = getAbsoluteFile(configFileEl.getTextContent());
+                configFiles.add(getAbsoluteFile(configFileEl.getTextContent()));
             }
             groups.add(ConfigFileGroup.create(name, configFiles));
         }
