@@ -201,6 +201,7 @@ public class HgCommand {
     private static final String HG_OUTGOING_CMD = "outgoing"; // NOI18N
     private static final String HG_VIEW_CMD = "view"; // NOI18N
     private static final String HG_VERBOSE_CMD = "-v"; // NOI18N
+    private static final String HG_FETCH_CMD = "fetch"; // NOI18N
     
     private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
@@ -595,7 +596,32 @@ public class HgCommand {
         } 
         return list;
     }
+    
+    /**
+     * Run the fetch extension for the specified repository
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static List<String> doFetch(File repository) throws HgException {
+        if (repository == null) return null;
+        List<String> command = new ArrayList<String>();
 
+        command.add(getHgCommand());
+        command.add(HG_FETCH_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        
+        List<String> list;
+        list = exec(command);
+
+        if (!list.isEmpty()) {
+            if (isErrorAbort(list.get(list.size() -1))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
+            }
+        } 
+        return list;
+    }
 
     public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files, String fromRevision, String toRevision) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  

@@ -72,6 +72,7 @@ import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
+import org.netbeans.modules.mercurial.ui.pull.FetchAction;
 import org.netbeans.modules.mercurial.ui.pull.PullAction;
 import org.netbeans.modules.mercurial.ui.pull.PullOtherAction;
 import org.netbeans.modules.mercurial.ui.push.PushAction;
@@ -363,6 +364,8 @@ public class MercurialAnnotator extends VCSAnnotator {
             actions.add(new PullOtherAction(loc.getString("CTL_PopupMenuItem_PullOther"), ctx)); // NOI18N
             actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
             actions.add(null);
+            actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
+            actions.add(null);
             AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx); // NOI18N
             if (tempA.visible(nodes)) {
                 tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_HideAnnotations"), ctx); // NOI18N
@@ -398,6 +401,9 @@ public class MercurialAnnotator extends VCSAnnotator {
                         "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
                 actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, 
                         "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
+                actions.add(null);                
+                actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, 
+                        "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
                 actions.add(null);                
 
                 if (!onlyFolders) {
