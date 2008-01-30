@@ -145,12 +145,11 @@ public abstract class RubyTestBase extends NbTestCase {
         props.put(Info.RUBY_PLATFORM, "abcd");
         if (withGems) {
             // Build a fake rubygems repository
-            FileObject gemsVer = FileUtil.createFolder(libRuby, "gems/" + RubyPlatform.DEFAULT_RUBY_RELEASE);
-            gemsVer.createFolder("gems");
-            gemsVer.createFolder("specifications");
-            gemsVer.createFolder("bin");
-            props.put(Info.GEM_HOME, FileUtil.toFile(gemsVer).getAbsolutePath());
-            props.put(Info.GEM_PATH, "/a/b/c");
+            FileObject gemRepo = FileUtil.createFolder(libRuby, "gems/" + RubyPlatform.DEFAULT_RUBY_RELEASE);
+            GemManager.initializeRepository(gemRepo);
+            gemRepo.createFolder("bin");
+            props.put(Info.GEM_HOME, FileUtil.toFile(gemRepo).getAbsolutePath());
+            props.put(Info.GEM_PATH, "/tmp/a/b/c");
             props.put(Info.GEM_VERSION, "0.2");
         }
 
