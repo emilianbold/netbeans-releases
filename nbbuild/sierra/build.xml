@@ -42,9 +42,12 @@
 <project name="sierra" default="all" basedir=".">
     <import file="build.pro"/>
     
-    <target name="all" depends="init,get-modules,get-sources,get-netbeans,build-xtest,clean,build-and-create"/>
-    <target name="hudson" depends="run-daily,all"/>
+    <target name="all" depends="init,get-netbeans,build-xtest,clean,build-and-create"/>
     <target name="build-and-create" depends="build-fcs,create-zip-init,create-zip,create-zip-fcs,build-dev,create-zip-dev"/>
+    <target name="hudson" depends="run-daily,all"/>
+
+    <target name="unit-test" depends="test"/>
+    <target name="bpel-test" depends="test-0,test-1,test-2,test-3,test-4,test-5,test-6,test-7,test-8,test-9"/>
     
     <target name="init">
         <property name="env.BUILD_NUMBER" value=""/>
@@ -73,14 +76,6 @@
         <echo file="${build.number}" message="netbeans hudson build: ${netbeans.file}${line.separator}" append="true"/>
     </target>
 
-    <target name="get-modules">
-        <cvs package="${modules.cvs.modules}" cvsRoot="${modules.cvs.root}" dest="${home}" command="-q co -P ${modules.cvs.branch}" failonerror="true"/>
-    </target>
-
-    <target name="get-sources">
-        <cvs package="${sources.cvs.modules}" cvsRoot="${sources.cvs.root}" dest="${home}" command="-q co -P ${sources.cvs.branch}" failonerror="true"/>
-    </target>
-
     <target name="build-xtest">
         <ant dir="${home}/xtest" target="clean"/>
         <ant dir="${home}/xtest" target="netbeans"/>
@@ -106,16 +101,16 @@
         <zip destfile="${dist}/sierra_${env.BUILD_NUMBER}_${short_stamp}.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/bin/**"/>
-                <include name="netbeans/enterprise4/**"/>
+                <include name="netbeans/enterprise5/**"/>
                 <include name="netbeans/etc/**"/>
                 <include name="netbeans/harness/**"/>
-                <include name="netbeans/ide8/**"/>
-                <include name="netbeans/java1/**"/>
-                <include name="netbeans/nb6.0/**"/>
-                <include name="netbeans/platform7/**"/>
-                <include name="netbeans/soa1/**"/>
-                <include name="netbeans/xml1/**"/>
-                <exclude name="netbeans/soa1/**/*-etl-*"/>
+                <include name="netbeans/ide9/**"/>
+                <include name="netbeans/java2/**"/>
+                <include name="netbeans/nb6.1/**"/>
+                <include name="netbeans/platform8/**"/>
+                <include name="netbeans/soa2/**"/>
+                <include name="netbeans/xml2/**"/>
+                <exclude name="netbeans/soa2/**/*-etl-*"/>
             </zipfileset>
         </zip>
     </target>
@@ -124,7 +119,7 @@
         <zip destfile="${latest}/sierra.zip">
             <zipfileset dir="${home}/nbbuild">
                 <include name="netbeans/**"/>
-                <exclude name="netbeans/soa1/**/*-xslt-*"/>
+                <exclude name="netbeans/soa2/**/*-xslt-*"/>
             </zipfileset>
         </zip>
 
@@ -384,8 +379,8 @@
     <target name="build-fcs" depends="build-print,build-libs,build-compapp,build-soa,build-bpel, build-dataintegrator, build-xslt"/>
     <target name="clean-fcs" depends="build-print,clean-libs,clean-compapp,clean-soa,clean-bpel, clean-dataintegrator, clean-xslt"/>
 
-    <target name="build-dev" depends="build-iep,build-openesbaddons,build-sql,build-wsdlextensions"/>
-    <target name="clean-dev" depends="clean-iep,clean-openesbaddons,clean-sql,clean-wsdlextensions"/>
+    <target name="build-dev" depends="build-iep,build-sql,build-wsdlextensions"/>
+    <target name="clean-dev" depends="clean-iep,clean-sql,clean-wsdlextensions"/>
 
     <!-- print -->
     <target name="build-print"><antcall target="do-print"><param name="action" value="netbeans"/></antcall></target>
@@ -401,25 +396,26 @@
     <target name="clean-libs"><antcall target="do-libs"><param name="action" value="clean"/></antcall></target>
     <target name="do-libs">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/libs/httpunit/build.xml"/>
-            <buildpath location="${enterprise}/libs/jbiadmincommon/build.xml"/>
-            <buildpath location="${enterprise}/libs/jgo/build.xml"/>
-            <buildpath location="${enterprise}/libs/wsdl4j/build.xml"/>
-            <buildpath location="${enterprise}/libs/xmlbeans/build.xml"/>
+            <buildpath location="${home}/o.n.soa.libs.httpunit/build.xml"/>
+            <buildpath location="${home}/o.n.soa.libs.jbiadmincommon/build.xml"/>
+            <buildpath location="${home}/o.n.soa.libs.jgo/build.xml"/>
+            <buildpath location="${home}/o.n.soa.libs.wsdl4j/build.xml"/>
+            <buildpath location="${home}/o.n.soa.libs.xmlbeans/build.xml"/>
         </subant>
     </target>
-    
+        
     <!-- compapp -->
     <target name="build-compapp"><antcall target="do-compapp"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-compapp"><antcall target="do-compapp"><param name="action" value="clean"/></antcall></target>
     <target name="do-compapp">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/compapp/capshelp/build.xml"/>
-            <buildpath location="${enterprise}/compapp/jbimanager/build.xml"/>
-            <buildpath location="${enterprise}/compapp/projectjbi/build.xml"/>
-            <buildpath location="${enterprise}/compapp/casaeditor/build.xml"/>
-            <buildpath location="${enterprise}/compapp/projectbase/build.xml"/>
-            <buildpath location="${enterprise}/compapp/projectwizard/build.xml"/>
+            <buildpath location="${home}/compapp.help/build.xml"/>
+            <buildpath location="${home}/compapp.manager.jbi/build.xml"/>
+            <buildpath location="${home}/compapp.projects.jbi/build.xml"/>
+            <buildpath location="${home}/compapp.casaeditor/build.xml"/>
+            <buildpath location="${home}/compapp.projects.base/build.xml"/>
+            <buildpath location="${home}/compapp.projects.wizard/build.xml"/>
+            <buildpath location="${home}/compapp.configextension/build.xml"/>
         </subant>
     </target>
 
@@ -428,10 +424,10 @@
     <target name="clean-soa"><antcall target="do-soa"><param name="action" value="clean"/></antcall></target>
     <target name="do-soa">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/soa/ui/build.xml"/>
-            <buildpath location="${enterprise}/soa/mappercore/build.xml"/>
-            <buildpath location="${enterprise}/soa/mapper/build.xml"/>
-            <buildpath location="${enterprise}/soa/reportgenerator/build.xml"/>
+            <buildpath location="${home}/soa.ui/build.xml"/>
+            <buildpath location="${home}/soa.mappercore/build.xml"/>
+            <buildpath location="${home}/soa.mapper/build.xml"/>
+            <buildpath location="${home}/soa.reportgenerator/build.xml"/>
         </subant>
     </target>
 
@@ -440,21 +436,21 @@
     <target name="clean-bpel"><antcall target="do-bpel"><param name="action" value="clean"/></antcall></target>
     <target name="do-bpel">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/bpel/help/build.xml"/>
-            <buildpath location="${enterprise}/bpel/model/build.xml"/>
-            <buildpath location="${enterprise}/bpel/editorsapi/build.xml"/>
-            <buildpath location="${enterprise}/bpel/debuggerapi/build.xml"/>
-            <buildpath location="${enterprise}/bpel/project/build.xml"/>
-            <buildpath location="${enterprise}/bpel/core/build.xml"/>
-            <buildpath location="${enterprise}/bpel/debuggerbdi/build.xml"/>
-            <buildpath location="${enterprise}/bpel/debugger/build.xml"/>
-            <buildpath location="${enterprise}/bpel/debuggerui/build.xml"/>
-            <buildpath location="${enterprise}/bpel/mapper/build.xml"/>
-            <buildpath location="${enterprise}/bpel/search/build.xml"/>
-            <buildpath location="${enterprise}/bpel/editors/build.xml"/>
-            <buildpath location="${enterprise}/bpel/refactoring/build.xml"/>
-            <buildpath location="${enterprise}/bpel/samples/build.xml"/>
-            <buildpath location="${enterprise}/bpel/validation/build.xml"/>
+            <buildpath location="${home}/bpel.help/build.xml"/>
+            <buildpath location="${home}/bpel.model/build.xml"/>
+            <buildpath location="${home}/bpel.editors.api/build.xml"/>
+            <buildpath location="${home}/bpel.debugger.api/build.xml"/>
+            <buildpath location="${home}/bpel.project/build.xml"/>
+            <buildpath location="${home}/bpel.core/build.xml"/>
+            <buildpath location="${home}/bpel.debugger.bdi/build.xml"/>
+            <buildpath location="${home}/bpel.debugger/build.xml"/>
+            <buildpath location="${home}/bpel.debugger.ui/build.xml"/>
+            <buildpath location="${home}/bpel.mapper/build.xml"/>
+            <buildpath location="${home}/bpel.search/build.xml"/>
+            <buildpath location="${home}/bpel.editors/build.xml"/>
+            <buildpath location="${home}/bpel.refactoring/build.xml"/>
+            <buildpath location="${home}/bpel.samples/build.xml"/>
+            <buildpath location="${home}/bpel.validation/build.xml"/>
         </subant>
     </target>
 
@@ -463,8 +459,8 @@
     <target name="clean-dataintegrator"><antcall target="do-dataintegrator"><param name="action" value="clean"/></antcall></target>
     <target name="do-dataintegrator">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/dataintegrator/eTLEditor/build.xml"/>
-            <buildpath location="${enterprise}/dataintegrator/etlpro/build.xml"/>
+            <buildpath location="${home}/etl.editor/build.xml"/>
+            <buildpath location="${home}/etl.project/build.xml"/>
         </subant>
     </target>
 
@@ -473,32 +469,21 @@
     <target name="clean-iep"><antcall target="do-iep"><param name="action" value="clean"/></antcall></target>
     <target name="do-iep">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/iep/model/build.xml"/>
-            <buildpath location="${enterprise}/iep/editor/build.xml"/>
-            <buildpath location="${enterprise}/iep/help/build.xml"/>
-            <buildpath location="${enterprise}/iep/project/build.xml"/>
+            <buildpath location="${home}/iep.model/build.xml"/>
+            <buildpath location="${home}/iep.editor/build.xml"/>
+            <buildpath location="${home}/iep.help/build.xml"/>
+            <buildpath location="${home}/iep.project/build.xml"/>
         </subant>
     </target>
 
-    <!-- openesbaddons -->
-    <target name="build-openesbaddons"><antcall target="do-openesbaddons"><param name="action" value="netbeans"/></antcall></target>
-    <target name="clean-openesbaddons"><antcall target="do-openesbaddons"><param name="action" value="clean"/></antcall></target>
-    <target name="do-openesbaddons">
-        <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/openesbaddons/ftp/build.xml"/>
-            <buildpath location="${enterprise}/openesbaddons/snmp/build.xml"/>
-            <buildpath location="${enterprise}/openesbaddons/configextension/build.xml"/>
-        </subant>
-    </target>
-    
     <!-- sql -->
     <target name="build-sql"><antcall target="do-sql"><param name="action" value="netbeans"/></antcall></target>
     <target name="clean-sql"><antcall target="do-sql"><param name="action" value="clean"/></antcall></target>
     <target name="do-sql">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/sql/jdbchelp/build.xml"/>
-            <buildpath location="${enterprise}/sql/jdbcwizard/build.xml"/>
-            <buildpath location="${enterprise}/sql/project/build.xml"/>
+            <buildpath location="${home}/sql.help/build.xml"/>
+            <buildpath location="${home}/sql.project/build.xml"/>
+            <buildpath location="${home}/sql.wizard/build.xml"/>
         </subant>
     </target>
   
@@ -507,8 +492,10 @@
     <target name="clean-wsdlextensions"><antcall target="do-wsdlextensions"><param name="action" value="clean"/></antcall></target>
     <target name="do-wsdlextensions">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/wsdlextensions/file/build.xml"/>
-            <buildpath location="${enterprise}/wsdlextensions/jms/build.xml"/>
+            <buildpath location="${home}/wsdlextensions.ftp/build.xml"/>
+            <buildpath location="${home}/wsdlextensions.snmp/build.xml"/>
+            <buildpath location="${home}/wsdlextensions.file/build.xml"/>
+            <buildpath location="${home}/wsdlextensions.jms/build.xml"/>
         </subant>
     </target>
   
@@ -517,12 +504,12 @@
     <target name="clean-xslt"><antcall target="do-xslt"><param name="action" value="clean"/></antcall></target>
     <target name="do-xslt">
         <subant target="${action}" inheritAll="false">
-            <buildpath location="${enterprise}/xslt/model/build.xml"/>
-            <buildpath location="${enterprise}/xslt/mapper/build.xml"/>
-            <buildpath location="${enterprise}/xslt/tmap/build.xml"/>
-            <buildpath location="${enterprise}/xslt/project/build.xml"/>
-            <buildpath location="${enterprise}/xslt/core/build.xml"/>
-            <buildpath location="${enterprise}/xslt/help/build.xml"/>
+            <buildpath location="${home}/xslt.model/build.xml"/>
+            <buildpath location="${home}/xslt.mapper/build.xml"/>
+            <buildpath location="${home}/xslt.tmap/build.xml"/>
+            <buildpath location="${home}/xslt.project/build.xml"/>
+            <buildpath location="${home}/xslt.core/build.xml"/>
+            <buildpath location="${home}/xslt.help/build.xml"/>
         </subant>
     </target>
 </project>
