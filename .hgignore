@@ -1,3 +1,4 @@
+~$
 /build$
 /nbproject/private$
 /test/(coverage|lib|results|work)$
@@ -765,7 +766,3 @@
 ^xtest/server/logs$
 ^xtest/server/build-info$
 ^xtest/test/instance/results$
-\.orig$
-\.orig\..*$
-\.chg\..*$
-\.rej$
