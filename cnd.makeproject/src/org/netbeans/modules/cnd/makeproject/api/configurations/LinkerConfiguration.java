@@ -299,6 +299,9 @@ public class LinkerConfiguration implements AllOptionsProvider {
         CompilerSet cs = CompilerSetManager.getDefault().getCompilerSet(getMakeConfiguration().getCompilerSet().getValue());
         if (cs.isSunCompiler()) {
             dynSearchPrefix = "-R"; // NOI18N
+        }
+        else if (cs.isGnuCompiler() && (getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL || getMakeConfiguration().getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC)) {
+            dynSearchPrefix = "-R"; // NOI18N
         } else if (cs.isGnuCompiler()) {
             dynSearchPrefix = "-Wl,-rpath "; // NOI18N
         } else {
