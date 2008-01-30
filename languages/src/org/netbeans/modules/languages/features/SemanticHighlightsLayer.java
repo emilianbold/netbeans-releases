@@ -54,7 +54,7 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
 
     private static Map<Document,List<WeakReference<SemanticHighlightsLayer>>> cache = new WeakHashMap<Document,List<WeakReference<SemanticHighlightsLayer>>> ();
 
-    static void addHighlight (
+    static synchronized void addHighlight (
         Document document, 
         int startOffset,
         int endOffset,
@@ -86,7 +86,7 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
             cache.put (document, newLayers);
     }
     
-    static void update (Document document) {
+    static synchronized void update (Document document) {
         List<WeakReference<SemanticHighlightsLayer>> layers = cache.get (document);
         boolean remove = true;
         if (layers != null) {
@@ -124,12 +124,14 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
         ContextASTEvaluator.register (document);
         UsagesASTEvaluator.register (document);
         
-        List<WeakReference<SemanticHighlightsLayer>> layers = cache.get (document);
-        if (layers == null) {
-            layers = new ArrayList<WeakReference<SemanticHighlightsLayer>> ();
-            cache.put (document, layers);
+        synchronized(SemanticHighlightsLayer.class) {
+            List<WeakReference<SemanticHighlightsLayer>> layers = cache.get (document);
+            if (layers == null) {
+                layers = new ArrayList<WeakReference<SemanticHighlightsLayer>> ();
+                cache.put (document, layers);
+            }
+            layers.add (new WeakReference<SemanticHighlightsLayer> (this));
         }
-        layers.add (new WeakReference<SemanticHighlightsLayer> (this));
     }
     
     public HighlightsSequence getHighlights (int startOffset, int endOffset) {
