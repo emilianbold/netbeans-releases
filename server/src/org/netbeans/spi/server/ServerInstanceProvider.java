@@ -41,6 +41,7 @@ package org.netbeans.spi.server;
 
 import java.util.List;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.server.ServerInstance;
 
 /**
  * Provides the known server instances. Any registered listener must be

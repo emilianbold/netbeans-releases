@@ -257,6 +257,9 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
         if (fob != null) {
             if (!fob.isFolder())
                 return false;
+            if (!RetoucheUtils.isOnSourceClasspath(fob)) 
+                return false;
+            
             FileObject fo = dob.getPrimaryFile();
             if (RetoucheUtils.isRefactorable(fo)) { //NOI18N
                 return true;

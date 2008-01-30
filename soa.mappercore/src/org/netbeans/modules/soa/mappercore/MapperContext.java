@@ -38,7 +38,7 @@ public interface MapperContext {
     public String getRightToolTipText(MapperModel mode, Object value);
 
     public String getLeftDysplayText(MapperModel model, Object value);
-    public Color getLeftForeground(MapperModel model, Object value);
+    public Color getLeftForeground(MapperModel model, Object value, Color defaultColor);
     public Icon getLeftIcon(MapperModel model, Object value, Icon defaultIcon);
     public Font getLeftFont(MapperModel model, Object value, Font defaultFont);
     public JPopupMenu getLeftPopupMenu(MapperModel model, Object value);

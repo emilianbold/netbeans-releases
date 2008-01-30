@@ -95,6 +95,9 @@ public final class ModuleUpdater extends Thread {
     
     private static final String TEMP_FILE_NAME = "temporary";
     
+    public static final String UPDATER_JAR = "updater.jar"; // NOI18N
+    public static final String AUTOUPDATE_UPDATER_JAR_PATH = "netbeans/modules/ext/" + UPDATER_JAR; // NOI18N
+    
     /** files that are supposed to be installed (when running inside the ide) */
     private Collection<File> forInstall;
     private Map<File, Collection<File>> files2clustersForInstall;
@@ -356,6 +359,11 @@ public final class ModuleUpdater extends Thread {
                         checkStop();
                         if ( entry.getName().startsWith( UPDATE_NETBEANS_DIR ) ) {
                             if (! entry.isDirectory ()) {
+                                if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ())) {
+                                    // skip updater.jar
+                                    System.out.println ("######## SKIP ENTRY " + entry);
+                                    continue;
+                                }
                                 String pathTo = entry.getName ().substring (UPDATE_NETBEANS_DIR.length () + 1);
                                 // path without netbeans prefix
                                 if ( mu.isL10n() )
