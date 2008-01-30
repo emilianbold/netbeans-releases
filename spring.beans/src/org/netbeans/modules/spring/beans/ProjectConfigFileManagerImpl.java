@@ -69,12 +69,12 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
 
     private static final Logger LOGGER = Logger.getLogger(ProjectConfigFileManagerImpl.class.getName());
 
-    private static final String SPRING_CONFIG = "spring-config"; // NOI18N
+    private static final String SPRING_DATA = "spring-data"; // NOI18N
     private static final String CONFIG_FILE_GROUPS = "config-file-groups"; // NOI18N
     private static final String CONFIG_FILE_GROUP = "config-file-group"; // NOI18N
     private static final String NAME = "name"; // NOI18N
     private static final String CONFIG_FILE = "config-file"; // NOI18N
-    private static final String SPRING_CONFIG_NS = "http://www.netbeans.org/ns/spring-config/1"; // NOI18N
+    private static final String SPRING_DATA_NS = "http://www.netbeans.org/ns/spring-data/1"; // NOI18N
 
     private final Project project;
     private final AuxiliaryConfiguration auxConfig;
@@ -160,12 +160,12 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
     List<ConfigFileGroup> readGroups() {
         assert mutex().isReadAccess();
         List<ConfigFileGroup> result = new ArrayList<ConfigFileGroup>();
-        Element springConfigEl = auxConfig.getConfigurationFragment(SPRING_CONFIG, SPRING_CONFIG_NS, true);
+        Element springConfigEl = auxConfig.getConfigurationFragment(SPRING_DATA, SPRING_DATA_NS, true);
         if (springConfigEl != null) {
-            NodeList list = springConfigEl.getElementsByTagNameNS(SPRING_CONFIG_NS, CONFIG_FILE_GROUPS);
+            NodeList list = springConfigEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE_GROUPS);
             if (list.getLength() > 0) {
                 Element configFileGroupsEl = (Element)list.item(0);
-                list = configFileGroupsEl.getElementsByTagNameNS(SPRING_CONFIG_NS, CONFIG_FILE_GROUP);
+                list = configFileGroupsEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE_GROUP);
                 readGroups(list, result);
             }
         }
@@ -176,7 +176,7 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
         for (int i = 0; i < configFileGroupEls.getLength(); i++) {
             Element configFileGroupEl = (Element)configFileGroupEls.item(i);
             String name = configFileGroupEl.getAttribute(NAME);
-            NodeList configFileEls = configFileGroupEl.getElementsByTagNameNS(SPRING_CONFIG_NS, CONFIG_FILE);
+            NodeList configFileEls = configFileGroupEl.getElementsByTagNameNS(SPRING_DATA_NS, CONFIG_FILE);
             List<File> configFiles = new ArrayList<File>(configFileEls.getLength());
             for (int j = 0; j < configFileEls.getLength(); j++) {
                 Element configFileEl = (Element)configFileEls.item(j);
@@ -201,9 +201,9 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
             LOGGER.warning("The directory of project "+ project + "is null");
             return;
         }
-        Document doc = XMLUtil.createDocument(SPRING_CONFIG, SPRING_CONFIG_NS, null, null);
+        Document doc = XMLUtil.createDocument(SPRING_DATA, SPRING_DATA_NS, null, null);
         Element springConfigEl = doc.getDocumentElement();
-        Element configFileGroupsEl = springConfigEl.getOwnerDocument().createElementNS(SPRING_CONFIG_NS, CONFIG_FILE_GROUPS);
+        Element configFileGroupsEl = springConfigEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILE_GROUPS);
         springConfigEl.appendChild(configFileGroupsEl);
         writeGroups(groups, projectDir, configFileGroupsEl);
         auxConfig.putConfigurationFragment(springConfigEl, true);
@@ -211,13 +211,13 @@ public class ProjectConfigFileManagerImpl implements ConfigFileManagerImplementa
 
     private void writeGroups(List<ConfigFileGroup> groups, File basedir, Element configFileGroupsEl) {
         for (ConfigFileGroup group : groups) {
-            Element configFileGroupEl = configFileGroupsEl.getOwnerDocument().createElementNS(SPRING_CONFIG_NS, CONFIG_FILE_GROUP);
+            Element configFileGroupEl = configFileGroupsEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILE_GROUP);
             String name = group.getName();
             if (name != null && name.length() > 0) {
                 configFileGroupEl.setAttribute(NAME, name);
             }
             for (File file : group.getFiles()) {
-                Element configFileEl = configFileGroupEl.getOwnerDocument().createElementNS(SPRING_CONFIG_NS, CONFIG_FILE);
+                Element configFileEl = configFileGroupEl.getOwnerDocument().createElementNS(SPRING_DATA_NS, CONFIG_FILE);
                 configFileEl.appendChild(configFileEl.getOwnerDocument().createTextNode(ConfigFiles.getRelativePath(basedir, file)));
                 configFileGroupEl.appendChild(configFileEl);
             }
