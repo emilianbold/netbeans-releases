@@ -220,7 +220,7 @@ function omniture_download_link() {
         s_linkType = "d";
         s_linkName = s_siteid + option_id;
         s_events   = "event7";
-        s_products = "Downloaded Products;NetBeans IDE";
+        s_products = "Downloaded Products;NetBeans IDE | " + platform_id + " | " + option_id;
         s_eVar3    = "netbeans";
         s_eVar8    = option_id;
         s_prop19   = platform_id;
