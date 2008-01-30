@@ -79,6 +79,9 @@ public class CustomizerCategoryProvider implements ProjectCustomizer.CompositeCa
         assert scopeProvider != null;
         ConfigFileManager manager = scopeProvider.getSpringScope().getConfigFileManager();
         File projectDir = FileUtil.toFile(project.getProjectDirectory());
+        if (projectDir == null) {
+            throw new IllegalStateException("The directory of project " + project + " is null");
+        }
         ConfigFileGroupsPanel panel = new ConfigFileGroupsPanel(manager.getConfigFileGroups(), projectDir);
         CategoryListener listener = new CategoryListener(manager, panel);
         category.setOkButtonListener(listener);
