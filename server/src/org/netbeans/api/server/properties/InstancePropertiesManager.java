@@ -50,21 +50,37 @@ import org.openide.util.NbPreferences;
 
 /**
  * This class acts as a manager of the properties. It manages the set
- * of persisted properties grouped by the plugin identifier.
+ * of properties and they persistence.
+ * <p>
+ * Single InstanceProperties instance created by the manager usually serves
+ * to persist properties of single server instance. By definition many
+ * InstanceProperties can be created in the same namespace. <i>For common
+ * use case client module will use one namespace with several
+ * InstanceProperties.</i>
+ * <p>
+ * The <code>namespace</code> used in both non-static methods is just
+ * the symbolic name for the InstanceProperties logically connected
+ * (like instances of the same server type for example) and retrievable
+ * by calling {@link #getProperties(String)} respectively.
  * <p>
  * Typical use case:<p>
  * <pre>
  *     // we have some instance to persist
  *     InstancePropertiesManager manager = InstancePropertiesManager.getInstance();
- *     InstanceProperties props = manager.createProperties("myspace");
- *     props.put("property", "value");
+ *     InstanceProperties props1 = manager.createProperties("myspace");
+ *     props1.put("property", "value");
+ *
+ *     // we want to persist yet another instance
+ *     InstanceProperties props2 = manager.createProperties("myspace");
+ *     props2.put("property", "value");
  *
  *     // we want to retrieve all InstanceProperties from "myspace"
+ *     // the list will have two elements
  *     List&lt;InstanceProperties&gt; props = manager.getInstanceProperties("myspace");
  * </pre>
- *
- *
+ * <p>
  * This class is <i>ThreadSafe</i>.
+ *
  * @author Petr Hejl
  */
 public final class InstancePropertiesManager {
@@ -93,19 +109,20 @@ public final class InstancePropertiesManager {
     }
 
     /**
-     * Creates and returns properties for the given server plugin. It is
-     * perfectly legal to call this method multiple times with the same plugin - it
-     * will always create new instance of Properties. Returned properties
-     * should serve for persistence of the single server instance.
+     * Creates and returns properties in the given namespace. It is
+     * perfectly legal to call this method multiple times with the same
+     * namespace as a parameter - it will always create new instance
+     * of InstanceProperties. Returned properties should serve for persistence
+     * of the single server instance.
      *
-     * @param plugin string identifying plugin
-     * @return new Properties for the given plugin
+     * @param namespace string identifying the namespace of created InstanceProperties
+     * @return new InstanceProperties logically placed in the given namespace
      */
-    public InstanceProperties createProperties(String plugin) {
+    public InstanceProperties createProperties(String namespace) {
         Preferences prefs = NbPreferences.forModule(InstancePropertiesManager.class);
 
         try {
-            prefs = prefs.node(plugin);
+            prefs = prefs.node(namespace);
 
             boolean next = true;
             String id = null;
@@ -125,16 +142,16 @@ public final class InstancePropertiesManager {
     }
 
     /**
-     * Returns all existing properties created by the given plugin.
+     * Returns all existing properties created in the given namespace.
      *
-     * @param plugin string identifying plugin
-     * @return list of all existing properties created by the given plugin
+     * @param namespace string identifying the namespace
+     * @return list of all existing properties created in the given namespace
      */
-    public List<InstanceProperties> getProperties(String plugin) {
+    public List<InstanceProperties> getProperties(String namespace) {
         Preferences prefs = NbPreferences.forModule(InstancePropertiesManager.class);
 
         try {
-            prefs = prefs.node(plugin);
+            prefs = prefs.node(namespace);
             prefs.flush();
 
             List<InstanceProperties> props = new ArrayList<InstanceProperties>();

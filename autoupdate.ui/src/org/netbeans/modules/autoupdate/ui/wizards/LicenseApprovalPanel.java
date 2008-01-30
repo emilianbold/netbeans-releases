@@ -59,9 +59,9 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
     private Map<String, Set<String>> license4plugins;
     
     /** Creates new form LicenseApprovalPanel */
-    public LicenseApprovalPanel (InstallUnitWizardModel model) {
+    public LicenseApprovalPanel (InstallUnitWizardModel model, boolean isApproved) {
         initComponents ();
-        cbAccept.setSelected (false);
+        cbAccept.setSelected (isApproved);
         if (model != null) {
             writeLicenses(model);
         } else {

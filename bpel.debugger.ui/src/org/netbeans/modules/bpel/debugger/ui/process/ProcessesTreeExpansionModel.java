@@ -20,6 +20,7 @@ package org.netbeans.modules.bpel.debugger.ui.process;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
 import org.netbeans.spi.viewmodel.TreeExpansionModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
@@ -35,18 +36,26 @@ public class ProcessesTreeExpansionModel implements TreeExpansionModel {
     /**{@inheritDoc}*/
     public synchronized boolean isExpanded(
             final Object object) throws UnknownTypeException {
-        return myExpandedNodes.contains(object);
+        return myExpandedNodes.contains(getKey(object));
     }
     
     /**{@inheritDoc}*/
     public synchronized void nodeExpanded(
             final Object object) {
-        myExpandedNodes.add(object);
+        myExpandedNodes.add(getKey(object));
     }
     
     /**{@inheritDoc}*/
     public synchronized void nodeCollapsed(
             final Object object) {
-        myExpandedNodes.remove(object);
+        myExpandedNodes.remove(getKey(object));
+    }
+    
+    private Object getKey(Object node) {
+        if (node instanceof CorrelationSet) {
+            return ((CorrelationSet) node).getId();
+        }
+        
+        return node;
     }
 }
