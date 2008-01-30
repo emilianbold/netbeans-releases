@@ -159,13 +159,21 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
         if (evaluators == null) {
             evaluators = new HashMap<String,Set<ASTEvaluator>> ();
             ColorsASTEvaluator colorsASTEvaluator = ColorsASTEvaluator.get (document);
-            evaluators.put (colorsASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (colorsASTEvaluator));
+            if (colorsASTEvaluator != null) {
+                evaluators.put (colorsASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (colorsASTEvaluator));
+            }
             UsagesASTEvaluator usagesASTEvaluator = UsagesASTEvaluator.get (document);
-            evaluators.put (usagesASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (usagesASTEvaluator));
+            if (usagesASTEvaluator != null) {
+                evaluators.put (usagesASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (usagesASTEvaluator));
+            }
             DeclarationASTEvaluator declarationASTEvaluator = DeclarationASTEvaluator.get (document);
-            evaluators.put (declarationASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (declarationASTEvaluator));
+            if (declarationASTEvaluator != null) {
+                evaluators.put (declarationASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (declarationASTEvaluator));
+            }    
             ContextASTEvaluator contextASTEvaluator = ContextASTEvaluator.get (document);
-            evaluators.put (contextASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (contextASTEvaluator));
+            if (contextASTEvaluator != null) {
+                evaluators.put (contextASTEvaluator.getFeatureName (), Collections.<ASTEvaluator>singleton (contextASTEvaluator));
+            }
         }
         return evaluators;
     }
