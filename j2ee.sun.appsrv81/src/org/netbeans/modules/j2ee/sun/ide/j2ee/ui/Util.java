@@ -179,6 +179,10 @@ public class Util {
         File[] noneRegisterable = new File[0];
         Asenv asenvContent = new Asenv(location);
         String defDomainsDirName = asenvContent.get(Asenv.AS_DEF_DOMAINS_PATH);
+        if (defDomainsDirName == null || defDomainsDirName.trim().length() < 1) {
+            Logger.getLogger(Util.class.getName()).finer("defDomainsDirName was bad for location: " + location.getAbsolutePath());
+            return noneRegisterable;
+        }
         File domainsDir  = new File(defDomainsDirName);//NOI18N
         if (!domainsDir.exists() && location.getAbsolutePath().startsWith("/opt/SUNWappserver")) {
             domainsDir = new File("/var/opt/SUNWappserver/domains");
