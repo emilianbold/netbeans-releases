@@ -218,12 +218,14 @@ public class RetrieverTask {
             if("http".equalsIgnoreCase(curUri.getScheme()) || "https".equalsIgnoreCase(curUri.getScheme())) { //NOI18N
                 //treat URLs differently
                 result = getSaveFileForURL(curUri);
-            } else{
+            } else {
                 URI temp = new URI(rent.getCurrentAddress());
                 if(temp.isAbsolute())
                     result = new File(new URI(retEngine.getFixedSaveRootFolder().toURI().toString()+"/"+curFileName));
-                else
+                else if(rent.getLocalBaseFile() == null)
                     result = new File(new URI(retEngine.getFixedSaveRootFolder().toURI().toString()+"/"+temp.toString()));
+                else
+                    result = new File(new URI(rent.getLocalBaseFile().getParentFile().toURI().toString()+"/"+temp.toString()));
             }
         }else{
             File newFile = new File(new URI(rent.getLocalBaseFile().getParentFile().toURI().normalize().toString()+"/"+rent.getCurrentAddress())).getCanonicalFile();

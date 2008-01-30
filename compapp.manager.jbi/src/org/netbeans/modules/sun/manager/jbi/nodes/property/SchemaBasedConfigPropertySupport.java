@@ -47,7 +47,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
-import org.netbeans.modules.sun.manager.jbi.management.OldConfigurationMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationMBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtNode;
 import org.netbeans.modules.sun.manager.jbi.util.DoNotShowAgainMessage;
@@ -129,13 +129,11 @@ class SchemaBasedConfigPropertySupport<T>
         }           
         
         try {
-            if (validate(newValue)) {
-                if (propertySheetOwner != null) {                    
-                    attr = propertySheetOwner.setSheetProperty(getName(), newValue);
-                } else {
-                    attr = componentNode.setSheetProperty(getName(), newValue);
-                }
-                if (componentNode != null) {
+            if (validate(newValue)) {                  
+                attr = propertySheetOwner.setSheetProperty(getName(), newValue);
+                
+                if (componentNode != null &&
+                        info instanceof JBIComponentConfigurationMBeanAttributeInfo) {
                     checkForPromptToRestart();
                 }
             }
@@ -157,55 +155,53 @@ class SchemaBasedConfigPropertySupport<T>
         
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if (info instanceof OldConfigurationMBeanAttributeInfo) {
 
-                    OldConfigurationMBeanAttributeInfo myInfo =
-                            (OldConfigurationMBeanAttributeInfo)info;
+                JBIComponentConfigurationMBeanAttributeInfo myInfo =
+                        (JBIComponentConfigurationMBeanAttributeInfo)info;
 
-                    DoNotShowAgainMessage d;
+                DoNotShowAgainMessage d;
 
-                    if (myInfo.isApplicationRestartRequired() && 
-                            promptForApplicationRestart) {
-                        String compName = componentNode.getName();
-                        
-                        try {
-                            RuntimeManagementServiceWrapper adminService = 
-                                    componentNode.getAppserverJBIMgmtController().
-                                    getRuntimeManagementServiceWrapper();
-                            List<String> saNames = 
-                                    adminService.getServiceAssemblyNames(
-                                    compName, AppserverJBIMgmtController.SERVER_TARGET);
-                            if (saNames.size() > 0) {
-                                d = promptForRestart("MSG_NEEDS_APPLICATION_RESTART", 
-                                        saNames.toString());
-                                if (d.getDoNotShowAgain()) {
-                                    promptForApplicationRestart = false;
-                                }
+                if (myInfo.isApplicationRestartRequired() && 
+                        promptForApplicationRestart) {
+                    String compName = componentNode.getName();
+
+                    try {
+                        RuntimeManagementServiceWrapper adminService = 
+                                componentNode.getAppserverJBIMgmtController().
+                                getRuntimeManagementServiceWrapper();
+                        List<String> saNames = 
+                                adminService.getServiceAssemblyNames(
+                                compName, AppserverJBIMgmtController.SERVER_TARGET);
+                        if (saNames.size() > 0) {
+                            d = promptForRestart("MSG_NEEDS_APPLICATION_RESTART", 
+                                    saNames.toString());
+                            if (d.getDoNotShowAgain()) {
+                                promptForApplicationRestart = false;
                             }
-                        } catch (ManagementRemoteException e) {
-                            NotifyDescriptor nd = new NotifyDescriptor.Message(
-                                    e.getMessage(),
-                                    NotifyDescriptor.ERROR_MESSAGE);
-                            DialogDisplayer.getDefault().notify(nd);
                         }
+                    } catch (ManagementRemoteException e) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message(
+                                e.getMessage(),
+                                NotifyDescriptor.ERROR_MESSAGE);
+                        DialogDisplayer.getDefault().notify(nd);
                     }
+                }
 
-                    if (myInfo.isComponentRestartRequired() &&
-                            promptForComponentRestart) {
-                        d = promptForRestart("MSG_NEEDS_COMPONENT_RESTART");
-                        if (d.getDoNotShowAgain()) {
-                            promptForComponentRestart = false;
-                        }
+                if (myInfo.isComponentRestartRequired() &&
+                        promptForComponentRestart) {
+                    d = promptForRestart("MSG_NEEDS_COMPONENT_RESTART");
+                    if (d.getDoNotShowAgain()) {
+                        promptForComponentRestart = false;
                     }
+                }
 
-                    if (myInfo.isServerRestartRequired() &&
-                            promptForServerRestart) {
-                        d = promptForRestart("MSG_NEEDS_SERVER_RESTART");
-                        if (d.getDoNotShowAgain()) {
-                            promptForServerRestart = false;
-                        }
+                if (myInfo.isServerRestartRequired() &&
+                        promptForServerRestart) {
+                    d = promptForRestart("MSG_NEEDS_SERVER_RESTART");
+                    if (d.getDoNotShowAgain()) {
+                        promptForServerRestart = false;
                     }
-                }            
+                }         
             }
         });
     }

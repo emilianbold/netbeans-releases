@@ -176,6 +176,7 @@ public class JBIComponentConfigurationParser {
                     if (encrypted.length() != 0) {
                         childDescriptor.setEncrypted(Boolean.valueOf(encrypted));
                     }
+                    /*
                     String isApplicationRestartRequired =
                             childElement.getAttribute(IS_APPLICATION_RESTART_REQUIRED);
                     if (isApplicationRestartRequired.length() != 0) {
@@ -194,6 +195,7 @@ public class JBIComponentConfigurationParser {
                         childDescriptor.setServerRestartRequired(
                                 Boolean.valueOf(isServerRestartRequired));
                     }
+                    */
 
                     String onChangeMessage = childElement.getAttribute(ON_CHANGE_MESSAGE);
                     if (onChangeMessage.length() != 0) {
@@ -237,6 +239,25 @@ public class JBIComponentConfigurationParser {
                     }
 
                     childDescriptor.setConstraint(compositeConstraint);
+                }
+                
+                String isApplicationRestartRequired =
+                            childElement.getAttribute(IS_APPLICATION_RESTART_REQUIRED);
+                if (isApplicationRestartRequired.length() != 0) {
+                    childDescriptor.setApplicationRestartRequired(
+                            Boolean.valueOf(isApplicationRestartRequired));
+                }
+                String isComponentRestartRequired =
+                        childElement.getAttribute(IS_COMPONENT_RESTART_REQUIRED);
+                if (isComponentRestartRequired.length() != 0) {
+                    childDescriptor.setComponentRestartRequired(
+                            Boolean.valueOf(isComponentRestartRequired));
+                }
+                String isServerRestartRequired =
+                        childElement.getAttribute(IS_SERVER_RESTART_REQUIRED);
+                if (isServerRestartRequired.length() != 0) {
+                    childDescriptor.setServerRestartRequired(
+                            Boolean.valueOf(isServerRestartRequired));
                 }
 
                 descriptor.addChild(childDescriptor);
