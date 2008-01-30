@@ -40,6 +40,7 @@
 package org.netbeans.modules.j2ee.deployment.impl.bridge;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +137,8 @@ public class BridgingServerInstanceProvider implements org.netbeans.spi.server.S
 
     protected synchronized ServerInstance getBridge(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
         refreshCache();
-        return instances.get(instance).getCommonInstance();
+        BridgingServerInstance bridgingInstance = instances.get(instance);
+        return bridgingInstance == null ? null : bridgingInstance.getCommonInstance();
     }
 
     private synchronized void refreshCache() {
