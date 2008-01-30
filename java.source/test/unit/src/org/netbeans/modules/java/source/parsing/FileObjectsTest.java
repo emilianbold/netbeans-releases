@@ -43,16 +43,19 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
+import java.net.URI;
 import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.event.ChangeListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.netbeans.modules.masterfs.filebasedfs.naming.FileName;
 
 /**
  *
@@ -101,6 +104,24 @@ public class FileObjectsTest extends NbTestCase {
         expectedData = PAD + DATA+"\n";
         assertTrue (expectedData.contentEquals(content));
         assertEquals(EnumSet.of(Call.READER), f.calls);        
+    }
+    
+    public void testZipBaseToUri() {
+        final TestZipFileObject test1 = new TestZipFileObject("file:/tmp/00/foo.jar",  //NOI18N
+                                                             "a/b/c",              //NOI18N
+                                                             "Foo.java",     //NOI18N
+                                                             0L);
+        final URI uri1 = test1.toUri();
+        assertNotNull(uri1);
+        assertEquals("jar:file:/tmp/00/foo.jar!/a/b/c/Foo.java", uri1.toString());      //NOI18N
+        
+        final TestZipFileObject test2 = new TestZipFileObject("file:/tmp/00/foo.jar",  //NOI18N
+                                                             "a/b/c",              //NOI18N
+                                                             "SIAPI query syntax.html",     //NOI18N
+                                                             0L);
+        final URI uri2 = test2.toUri();
+        assertNotNull(uri2);
+        assertEquals("jar:file:/tmp/00/foo.jar!/a/b/c/SIAPI%20query%20syntax.html", uri2.toString());   //NOI18N
     }
     
     private static enum Call {
@@ -177,6 +198,31 @@ public class FileObjectsTest extends NbTestCase {
             for (Reader r : rds) {
                 r.close();
             }
+        }
+        
+    }
+    
+    private static class TestZipFileObject extends FileObjects.ZipFileBase {
+        
+        private final String archiveURI;
+        
+        public TestZipFileObject (final String archiveUri, final String folderName, final String fileName, final long mtime) {
+            super(folderName,fileName,mtime);
+            this.archiveURI = archiveUri;
+        }
+
+        @Override
+        protected URI getArchiveURI() {
+            return URI.create(this.archiveURI);
+        }
+
+        @Override
+        protected long getSize() throws IOException {
+            return 0;
+        }
+
+        public InputStream openInputStream() throws IOException {
+            throw new UnsupportedOperationException("Not supported.");      //NOI18N
         }
         
     }
