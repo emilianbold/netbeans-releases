@@ -597,6 +597,8 @@ made subject to such option by the copyright holder.
                 <mkdir dir="${{test.results.dir}}"/>
                 <path id="unit.test.classpath">
                     <pathelement path="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-compapp-manager-jbi.jar"/>
+                    <pathelement path="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-compapp-projects-jbi.jar"/>
+                    <pathelement path="${{netbeans.home}}/../soa2/modules/ext/jbi/jbi-admin-common.jar"/>
                     <pathelement path="${{netbeans.home}}/../soa2/modules/ext/jbi/catd.jar"/>
                     <pathelement path="${{netbeans.home}}/../java2/modules/ext/junit-3.8.2.jar"/>                        
                     <pathelement path="${{netbeans.home}}/../java2/modules/ext/jaxws21/api/saaj-api.jar"/>
