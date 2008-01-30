@@ -235,6 +235,11 @@ public class MercurialInterceptor extends VCSInterceptor {
         Runnable moveImpl = new Runnable() {
             public void run() {
                 try {
+                    if (srcFile.isDirectory()) {
+                        srcFile.renameTo(dstFile);
+                        HgCommand.doRenameAfter(root, srcFile, dstFile);
+                        return;
+                    }
                     int status = hg.getFileStatusCache().getStatus(srcFile).getStatus();
                     if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
                         srcFile.renameTo(dstFile);
@@ -334,6 +339,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         HgProgressSupport supportCreate = new HgProgressSupport() {
             public void perform() {
+                Mercurial.LOG.log(Level.FINE, "fileChangedImpl(): File: {0}", file); // NOI18N
                 cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
         };

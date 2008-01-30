@@ -38,7 +38,7 @@ Microsystems, Inc. All Rights Reserved.
         <buildTests srcDir="qa-functional/src" compileExcludes="**/data/**">
             <classpath>
                 <pathelement location="${soa.mapper.dir}/modules/org-netbeans-modules-soa-mapper.jar"/>
-                <fileset dir="${soa.libs.jgo.dir}/modules/ext/jgo">
+                <fileset dir="${o.n.soa.libs.jgo.dir}/modules/ext/jgo">
                     <include name="*.jar"/>
                 </fileset>
                 <pathelement location="../../jemmy/builds/jemmy.jar"/>                    

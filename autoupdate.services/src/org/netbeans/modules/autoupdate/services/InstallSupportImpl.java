@@ -354,7 +354,9 @@ public class InstallSupportImpl {
                 try {
                     // store source of installed files
                     Utilities.writeAdditionalInformation (getElement2Clusters ());
-                    Utilities.writeUpdateOfUpdaterJar (updaterJarEntry, updaterJarFile, targetCluster);
+                    if (updaterJarFile != null) {
+                        Utilities.writeUpdateOfUpdaterJar (updaterJarEntry, updaterJarFile, targetCluster);
+                    }
 
                     if (! needsRestart) {
                         synchronized(this) {

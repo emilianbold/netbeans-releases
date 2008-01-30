@@ -25,18 +25,15 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.MissingResourceException;
-import java.util.concurrent.Callable;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.Reply;
-import org.netbeans.modules.bpel.model.api.Variable;
 import org.netbeans.modules.bpel.model.api.VariableDeclaration;
 import org.netbeans.modules.bpel.model.api.events.VetoException;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
-import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.nodes.VariableNode;
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.PropertyType;
@@ -47,12 +44,10 @@ import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.bpel.properties.choosers.VariableChooserPanel;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
-import org.netbeans.modules.soa.ui.form.CustomNodeEditor.EditingMode;
 import org.netbeans.modules.soa.ui.form.EditorLifeCycleAdapter;
 import org.netbeans.modules.bpel.properties.editors.controls.MessageConfigurationController;
 import org.netbeans.modules.bpel.properties.editors.controls.MessageExchangeController;
 import org.netbeans.modules.soa.ui.nodes.NodesTreeParams;
-import org.netbeans.modules.bpel.properties.editors.controls.SimpleCustomEditor;
 import org.netbeans.modules.bpel.properties.editors.controls.TreeNodeChooser;
 import org.netbeans.modules.bpel.properties.editors.controls.filter.PreferredFaultFilter;
 import org.netbeans.modules.bpel.properties.editors.controls.filter.VariableTypeFilter;
@@ -60,7 +55,6 @@ import org.netbeans.modules.bpel.model.api.support.VisibilityScope;
 import org.netbeans.modules.soa.ui.form.valid.SoaDialogDisplayer;
 import org.netbeans.modules.soa.ui.form.valid.DefaultValidator;
 import org.netbeans.modules.bpel.editors.api.ui.valid.ErrorMessagesBundle;
-import org.netbeans.modules.bpel.editors.api.ui.valid.NodeEditorDescriptor;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
@@ -103,6 +97,7 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
         createContent();
     }
     
+    @Override
     public void createContent() {
         mcc = new MessageConfigurationController(myEditor);
         mcc.createContent();
@@ -196,6 +191,7 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                 CustomNodeEditor.PROPERTY_BINDER, PropertyType.NAME);
     }
     
+    @Override
     public boolean initControls() {
         Reply reply = myEditor.getEditedObject();
         if (reply != null) {
@@ -230,18 +226,21 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
         return true;
     }
     
+    @Override
     public boolean subscribeListeners() {
         mcc.subscribeListeners();
         mec.subscribeListeners();
         return true;
     }
     
+    @Override
     public boolean unsubscribeListeners() {
         mcc.unsubscribeListeners();
         mec.unsubscribeListeners();
         return true;
     }
-    
+
+    @Override
     public boolean applyNewValues() throws VetoException {
         mcc.applyNewValues();
         mec.applyNewValues();
@@ -268,6 +267,7 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
         return true;
     }
     
+    @Override
     public boolean afterClose() {
         mcc.afterClose();
         mec.afterClose();
@@ -547,29 +547,27 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
         if (myValidator == null) {
             myValidator = new DefaultValidator(myEditor, ErrorMessagesBundle.class) {
                 
-                public boolean doFastValidation() {
-                    
+                public void doFastValidation() {
                     if (rbtnNormalResponse.isSelected()){
                         Object item = cbxOperation.getSelectedItem();
                         if (item instanceof Operation &&
                                 ((Operation) item).getOutput() == null) {
-                            addReasonKey("ERR_OPERATION_NO_OUTPUT",
-                                    ((Operation) item).getName());
-                            return false;
+                            addReasonKey(Severity.ERROR, 
+                                    "ERR_OPERATION_NO_OUTPUT",
+                                    ((Operation) item).getName()); // NOI18N
                         }
                     }
-                    return true;
                 }
                 
-                public boolean doDetailedValidation() {
+                @Override
+                public void doDetailedValidation() {
                     if (rbtnFaultResponse.isSelected()) {
                         if (myFaultName == null) {
-                            addReasonKey("ERR_FAULT_NAME_EMPTY"); //NOI18N
+                            addReasonKey(Severity.ERROR, "ERR_FAULT_NAME_EMPTY"); //NOI18N
                         }
                         //
                         isCorrectFaultType(currFaultVar);
                     }
-                    return isReasonsListEmpty();
                 }
                 
                 /**
@@ -585,14 +583,16 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
                             varMsg = vcc.getType().getMessage();
                         }
                         if (varMsg == null) {
-                            addReasonKey("ERR_FAULT_VAR_EMPTY"); //NOI18N
+                            addReasonKey(Severity.ERROR, "ERR_FAULT_VAR_EMPTY"); //NOI18N
                             return false;
                         } else if (!requiredMessageRef.get().equals(varMsg)) {
                             String required = ResolverUtility.
                                     qName2DisplayText(requiredMessageRef.getQName());
                             String current = ResolverUtility.
                                     qName2DisplayText(vcc.getType().getTypeQName());
-                            addReasonKey("ERR_FAULT_VAR_WRONG_TYPE", required, current); //NOI18N
+                            addReasonKey(Severity.ERROR, 
+                                    "ERR_FAULT_VAR_WRONG_TYPE", 
+                                    required, current); //NOI18N
                             return false;
                         }
                     }

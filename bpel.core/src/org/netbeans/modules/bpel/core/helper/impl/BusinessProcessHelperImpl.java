@@ -122,20 +122,10 @@ public class BusinessProcessHelperImpl extends Object implements
     }
 
     /** {@inheritDoc} */
+    @Deprecated
     public WSDLModel getWSDLModelFromUri( URI uri ) {
-        WSDLModel wsdlModel = null;
-
-        try {
-            File file = new File(uri);
-            ModelSource modelSource = Utilities.getModelSource(FileUtil
-                    .toFileObject(file), true);
-            wsdlModel = org.netbeans.modules.xml.wsdl.model.WSDLModelFactory
-                    .getDefault().getModel(modelSource);
-        }
-        catch (Exception ex) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-        }
-        return wsdlModel;
+        //deprecated
+        return null;
     }
 
     /** {@inheritDoc} */

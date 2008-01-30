@@ -174,8 +174,28 @@ public class Reformatter implements ReformatTask {
             if (startOffset > end || endOffset < start || embeddingOffset >= start)
                 continue;
             if (startOffset > start) {
-                if (text != null && text.length() > 0)
-                    text = startOffset - start >= text.length() ? null : text.substring(startOffset - start);
+                if (text != null && text.length() > 0) {
+                    TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                    if (ts != null) {
+                        ts.move(startOffset);
+                        if (ts.moveNext()) {
+                            if (ts.token().id() == WHITESPACE) {
+                                String t = ts.token().text().toString();
+                                t = t.substring(0, startOffset - ts.offset());
+                                int idx1, idx2;
+                                while ((idx1 = t.indexOf('\n')) >=0 && (idx2 = text.indexOf('\n')) >= 0) { //NOI18N
+                                    t = t.substring(idx1 + 1);
+                                    text = text.substring(idx2 + 1);
+                                }
+                                if ((idx1 = t.lastIndexOf('\n')) >= 0) //NOI18N
+                                    t = t.substring(idx1 + 1);
+                                if ((idx2 = text.lastIndexOf('\n')) >= 0) //NOI18N
+                                    text = text.substring(idx1 + 1);
+                                text = text.length() > t.length() ? text.substring(t.length()) : null;
+                            }
+                        }
+                    }
+                }
                 start = startOffset;
             }
             if (endOffset < end) {
