@@ -330,7 +330,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                     wsdlFileWasSpecified = true;
                 } else if (cookieObj != null && cookieObj instanceof FileObject){
                     resultWsdlFile = (FileObject)cookieObj;
-                    wsdlModel = getWsdlModel(resultWsdlFile);
+                    wsdlModel = PartnerLinkHelper.getWSDLModel(resultWsdlFile);
                     wsdlFileWasSpecified = true;
                 }
             }
@@ -584,7 +584,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     // vlv
     private WSDLModel getCurrentWsdlModel(boolean isWsdlWrapperSet, boolean isCreate) {
         FileObject currentFile = getCurrentWsdlFile();
-        WSDLModel currentModel = getWsdlModel(currentFile);
+        WSDLModel currentModel = PartnerLinkHelper.getWSDLModel(currentFile);
         
         if (isWsdlWrapperSet) {
             WsdlWrapper wsdlWrapper =
@@ -783,20 +783,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         return plType;
     }
     
-    private WSDLModel getWsdlModel(FileObject wsdlFile) {
-        if (wsdlFile != null) {
-            ModelSource modelSource = Utilities.getModelSource(wsdlFile, true);
-            if (modelSource != null) {
-                WSDLModel wsdlModel =
-                        WSDLModelFactory.getDefault().getModel(modelSource);
-                if (wsdlModel.getState() != Model.State.NOT_WELL_FORMED) {
-                    return wsdlModel;
-                }
-            }
-        }
-        //
-        return null;
-    }
+
     
     private PartnerLinkType tuneForExistingPLT(final PartnerLink pLink) {
         PartnerLinkType plType =

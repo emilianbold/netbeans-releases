@@ -50,7 +50,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.actions.CustomizerAction;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
-import org.netbeans.spi.server.ServerManager;
+import org.netbeans.api.server.CommonServerUIs;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -66,7 +66,7 @@ public class BridgingServerInstance implements ServerInstanceImplementation, Nod
 
     private final org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance;
 
-    private ServerInstance apiInstance;
+    private ServerInstance commonInstance;
     
     private BridgingServerInstance(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
         assert instance != null : "ServerInstance must not be null"; // NOI18N
@@ -75,7 +75,7 @@ public class BridgingServerInstance implements ServerInstanceImplementation, Nod
 
     public static BridgingServerInstance createInstance(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
         BridgingServerInstance created = new BridgingServerInstance(instance);
-        created.apiInstance = ServerInstanceFactory.createServerInstance(created);
+        created.commonInstance = ServerInstanceFactory.createServerInstance(created);
         return created;
     }
     
@@ -130,8 +130,8 @@ public class BridgingServerInstance implements ServerInstanceImplementation, Nod
         instance.remove();
     }
 
-    public ServerInstance getApiInstance() {
-        return apiInstance;
+    public ServerInstance getCommonInstance() {
+        return commonInstance;
     }
     
 
@@ -209,7 +209,7 @@ public class BridgingServerInstance implements ServerInstanceImplementation, Nod
 
         public void performAction(Node[] nodes) {
             BridgingServerInstance instance = (BridgingServerInstance) nodes[0].getCookie(BridgingServerInstance.class);
-            ServerManager.showCustomizer(instance.getApiInstance());
+            CommonServerUIs.showCustomizer(instance.getCommonInstance());
         }
 
         protected boolean enable(Node[] nodes) {

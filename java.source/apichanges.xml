@@ -105,6 +105,18 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="PartialReparseAPI">
+            <api name="general"/>
+            <summary>Added CompilationInfo.getChangedTree method returning the reparsed subtree</summary>
+            <version major="0" minor="31"/>
+            <date day="25" month="1" year="2008"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                Added method to return the reparsed subtree of the CompilationUnit tree, the result of this method should be used as a hint
+                for the registered tasks to update model only for the changed subtree rather than for the whole CompilationUnit tree.
+            </description>
+        </change>
         <change id="CancellableScannerAtomicBoolean">
             <api name="general"/>
             <summary>Added CancellableTreePathScanner(AtomicBoolean) and CancellableTreeScanner(AtomicBoolean)</summary>

@@ -877,14 +877,13 @@ public class FormDesigner extends TopComponent implements MultiViewElement
     }
 
     Node[] getSelectedComponentNodes() {
-        Node[] selectedNodes = new Node[selectedComponents.size()];
-        Iterator iter = selectedComponents.iterator();
-        int i = 0;
-        while (iter.hasNext()) {
-            RADComponent metacomp = (RADComponent) iter.next();
-            selectedNodes[i++] = metacomp.getNodeReference();
+        List<Node> selectedNodes = new ArrayList<Node>(selectedComponents.size());
+        for (RADComponent c : selectedComponents) {
+            if (c.getNodeReference() != null) { // issue 126192 workaround
+                selectedNodes.add(c.getNodeReference());
+            }
         }
-        return selectedNodes;
+        return selectedNodes.toArray(new Node[selectedNodes.size()]);
     }
     
     java.util.List<RADComponent> getSelectedLayoutComponents() {

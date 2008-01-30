@@ -29,6 +29,8 @@ package org.netbeans.modules.languages.features;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 import javax.swing.text.SimpleAttributeSet;
@@ -53,8 +55,18 @@ class TokenHighlightsLayer extends AbstractHighlightsContainer {
     private TokenHierarchy          hierarchy;
     private Document                document;
     private final PropertyChangeListener listener = new PropertyChangeListener () {
+        private Timer timer;
+        
         public void propertyChange (final PropertyChangeEvent evt) {
-            fireHighlightsChange ((Integer) evt.getOldValue (), (Integer) evt.getNewValue ());
+            if (timer != null)
+                timer.cancel ();
+            timer = new Timer ();
+            timer.schedule (new TimerTask () {
+                public void run () {
+                    fireHighlightsChange ((Integer) evt.getOldValue (), (Integer) evt.getNewValue ());
+                    timer = null;
+                }
+            }, 200);
         }
     };
     
