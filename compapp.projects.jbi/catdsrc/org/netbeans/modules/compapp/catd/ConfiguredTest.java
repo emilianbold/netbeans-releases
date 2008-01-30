@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.compapp.catd;
 
-//import com.sun.esb.management.api.administration.AdministrationService;
-//import com.sun.esb.management.api.configuration.ConfigurationService;
+import com.sun.esb.management.api.administration.AdministrationService;
+import com.sun.esb.management.api.configuration.ConfigurationService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -113,7 +113,7 @@ import javax.swing.text.BadLocationException;
 //import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.compapp.catd.util.EditableProperties;
 
-//import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
+import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
 
@@ -1958,7 +1958,6 @@ public class ConfiguredTest extends TestCase {
             start = System.currentTimeMillis();
         }
         
-        /*
         // Currently only deal with http soap bc because soap binding is the 
         // only supported binding type in test driver.
         if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
@@ -2057,7 +2056,7 @@ public class ConfiguredTest extends TestCase {
 //                throw ex;
 //            }
         }
-        */
+        
         boolean httpSuccess = true;
         try {
             reply = mConnection.call(message, destination);

@@ -98,6 +98,7 @@ public class VariableChooserPanel
         super(lookup);
     }
     
+    @Override
     public void createContent() {
         initComponents();
         //
@@ -158,6 +159,7 @@ public class VariableChooserPanel
         updateButtonState();
     }
     
+    @Override
     public boolean initControls() {
         super.initControls();
         //
@@ -214,6 +216,7 @@ public class VariableChooserPanel
         }
     }
     
+    @Override
     public void setLookup(Lookup lookup) {
         //
         // Tune up the lookup first
@@ -240,6 +243,7 @@ public class VariableChooserPanel
         //
     }
     
+    @Override
     protected Node constructRootNode() {
         Node result = null;
         //
@@ -253,10 +257,12 @@ public class VariableChooserPanel
         return result;
     }
     
+    @Override
     protected Validator createValidator() {
         return new MyValidator();
     }
     
+    @Override
     public boolean subscribeListeners() {
         if (modelListener == null) {
             modelListener = new MyModelListener();
@@ -265,6 +271,7 @@ public class VariableChooserPanel
         return true;
     }
     
+    @Override
     public boolean unsubscribeListeners() {
         if (modelListener != null) {
             getModel().removeEntityChangeListener(modelListener);
@@ -414,18 +421,22 @@ public class VariableChooserPanel
     }
     
     private class MyModelListener extends ChangeEventListenerAdapter {
+        @Override
         public void notifyEntityInserted(EntityInsertEvent event) {
             tryUpdateVarContainer(event.getParent(), event.getValue());
         }
         
+        @Override
         public void notifyEntityRemoved( EntityRemoveEvent event ) {
             tryUpdateVarContainer(event.getParent(), event.getOutOfModelEntity());
         }
         
+        @Override
         public void notifyEntityUpdated( EntityUpdateEvent event ) {
             tryUpdateVarContainer(event.getParent(), event.getNewValue());
         }
         
+        @Override
         public void notifyPropertyUpdated(PropertyUpdateEvent event) {
             BpelEntity propertyParent = event.getParent();
             if (NamedElement.NAME.equals(event.getName())) {
@@ -441,6 +452,7 @@ public class VariableChooserPanel
             }
         }
         
+        @Override
         public void notifyArrayUpdated( ArrayUpdateEvent event ) {
         }
         
@@ -500,8 +512,10 @@ public class VariableChooserPanel
     }
     
     private class MyValidator extends DefaultChooserValidator {
-        public boolean doFastValidation() {
-            boolean result = super.doFastValidation();
+        @Override
+        public void doFastValidation() {
+            super.doFastValidation();
+            boolean result = !hasReasons(Severity.ERROR);
             //
             if (result == true) {
                 VariableTypeFilter typeFilter = (VariableTypeFilter)getLookup().
@@ -514,16 +528,16 @@ public class VariableChooserPanel
                     result = typeFilter.isTypeAllowed(
                             (VariableTypeInfoProvider)selectedNode);
                     if (!result) {
-                        addReasonKey("ERR_INCORRECT_MESSAGE_TYPE"); // NOI18N
+                        addReasonKey(Severity.ERROR, 
+                                "ERR_INCORRECT_MESSAGE_TYPE"); // NOI18N
                     }
                 }
             }
-            //
-            return result;
         }
         
-        public boolean doDetailedValidation() {
-            boolean result = super.doDetailedValidation();
+        @Override
+        public void doDetailedValidation() {
+            super.doDetailedValidation();
             //
             VisibilityScope varVisScope = (VisibilityScope)getLookup().
                     lookup(VisibilityScope.class);
@@ -549,8 +563,8 @@ public class VariableChooserPanel
                         }
                         //
                         if (!varInScope.equals(selectedVar)) {
-                            addReasonKey("ERR_SELECTED_VARIABLE_IS_OVERRIDDEN"); // NOI18N
-                            result = false;
+                            addReasonKey(Severity.ERROR,
+                                    "ERR_SELECTED_VARIABLE_IS_OVERRIDDEN"); // NOI18N
                             //
                             SwingUtilities.invokeLater(new Runnable() {
                                 public void run() {
@@ -562,8 +576,6 @@ public class VariableChooserPanel
                     }
                 }
             }
-            //
-            return result;
         }
         
         private VariableDeclaration findVariableByNameInScope(
