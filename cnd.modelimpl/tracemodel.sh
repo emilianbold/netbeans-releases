@@ -45,8 +45,8 @@ QUITE=""
 
 function classpath() {
 
-    local nbdist=${NBDIST-"../../nbbuild/netbeans/"}
-    local cnddist=${CNDDIST-"../../nbbuild/netbeans/cnd1/"}
+    local nbdist=${NBDIST-"../nbbuild/netbeans/"}
+    local cnddist=${CNDDIST-"../nbbuild/netbeans/cnd2/"}
 
     CP=""
 
@@ -59,10 +59,14 @@ function classpath() {
 	else 
 	    if [ -d "${nbdist}/ide8" ]; then
 		ide="${nbdist}/ide8"
-	    else 
-		echo "Can not find ide subdirectory in Netbeans"
-		return
-	    fi
+            else 
+                if [ -d "${nbdist}/ide9" ]; then
+                    ide="${nbdist}/ide9"
+                else
+                    echo "Can not find ide subdirectory in Netbeans"
+                    return
+                fi
+            fi
 	fi
     fi
 
@@ -73,8 +77,12 @@ function classpath() {
 	if [ -d "${nbdist}/platform7" ]; then
 	    platform="${nbdist}/platform7"
 	else
-	    echo "Can not find platform subdirectory in Netbeans"
-	    return
+            if [ -d "${nbdist}/platform8" ]; then
+                platform="${nbdist}/platform8"
+            else
+                echo "Can not find platform subdirectory in Netbeans"
+                return
+            fi
 	fi
     fi
     
