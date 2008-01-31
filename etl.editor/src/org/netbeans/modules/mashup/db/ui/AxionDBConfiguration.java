@@ -93,7 +93,7 @@ public class AxionDBConfiguration {
         } else {
             // Check for mashup driver under soa cluster.
             String nbHomeDir = System.getProperty("netbeans.home") + File.separator +
-                    ".." + File.separator + "soa1" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
+                    ".." + File.separator + "soa2" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
             File driver = new File(nbHomeDir);
             if (!driver.exists()) {
 
