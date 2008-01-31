@@ -354,22 +354,20 @@ public class DocumentationScrollPane extends JScrollPane {
         KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyEvent.ALT_MASK | KeyEvent.CTRL_MASK),
         null, component);
         
-        // Register movement keystrokes to be reachable through Shift+<orig-keystroke>
-        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0));
-        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0));
-        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0));
-        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0));
-        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_HOME, KeyEvent.CTRL_MASK));
-        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_END, KeyEvent.CTRL_MASK));
-        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
-        mapWithShift(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
+        // Register movement keystrokes to be reachable through Ctrl+<orig-keystroke>
+        mapWithCtrl(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0));
+        mapWithCtrl(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0));
+        mapWithCtrl(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0));
+        mapWithCtrl(KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0));
+        mapWithCtrl(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 0));
+        mapWithCtrl(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0));
     }        
     
-    private void mapWithShift(KeyStroke key) {
+    private void mapWithCtrl(KeyStroke key) {
         InputMap inputMap = getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         Object actionKey = inputMap.get(key);
         if (actionKey != null) {
-            key = KeyStroke.getKeyStroke(key.getKeyCode(), key.getModifiers() | InputEvent.SHIFT_MASK);
+            key = KeyStroke.getKeyStroke(key.getKeyCode(), key.getModifiers() | InputEvent.CTRL_MASK);
             getInputMap().put(key, actionKey);
         }
     }
