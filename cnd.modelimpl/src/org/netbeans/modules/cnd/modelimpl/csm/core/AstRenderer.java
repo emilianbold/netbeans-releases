@@ -61,8 +61,6 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 public class AstRenderer {
 
     private FileImpl file;
-    //private Collection<FunctionImpl> staticFunctions;
-    //private StringBuilder currName
     
     public AstRenderer(FileImpl fileImpl) {
         this.file = fileImpl;

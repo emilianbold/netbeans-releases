@@ -104,9 +104,22 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
         
+        name = QualifiedNameCache.getManager().getString(initName(ast));
+        rawName = AstUtil.getRawNameInChildren(ast);
+
         assert ast.getFirstChild() != null;
         setStatic(ast.getFirstChild().getType() == CPPTokenTypes.LITERAL_static);
-
+        if (!isStatic()) {
+            for( CsmFunction fu : ((FileImpl) file).getStaticFunctionDeclarations() ) {
+                if( name.equals(fu.getName()) ) {
+                    // we don't check signature here since file-level statics
+                    // is C-style construct
+                    setStatic(true); 
+                    break;
+                }
+            }
+        }
+        
         if( isStatic() ) {
             scope = file;
         }
@@ -116,9 +129,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         assert (this.scopeUID != null || scope == null);
         this.scopeRef = null;
         
-        name = QualifiedNameCache.getManager().getString(initName(ast));
-        rawName = AstUtil.getRawNameInChildren(ast);
-	
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
 	
         _const = initConst(ast);
@@ -395,6 +405,19 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
      * @return definition
      */
     public CsmFunctionDefinition getDefinition() {
+        if( isCStyleStatic() ) {
+            for( CsmDeclaration decl : getContainingFile().getDeclarations() ) {
+                if( CsmKindUtilities.isFunctionDefinition(decl) ) {
+                    if( getName().equals(decl.getName()) ) {
+                        CsmFunctionDefinition fun = (CsmFunctionDefinition) decl;
+                        if( getSignature().equals(fun.getSignature())) {
+                            return fun;
+                        }
+                    }
+                }
+            }
+            return null;
+        }
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         CsmProject prj = getContainingFile().getProject();
         CsmFunctionDefinition def = findDefinition(prj, uname);
