@@ -88,8 +88,10 @@ public abstract class DiagramView extends JPanel {
     }
 
     protected void paintComponent(Graphics g) {
+       // long start = System.currentTimeMillis();
         super.paintComponent(g);
         paintContent(g, getDesignView().getCorrectedZoom(), false);
+       // System.out.println("Paint (" + (System.currentTimeMillis() - start) + " ms):" + this );
     }
 
    

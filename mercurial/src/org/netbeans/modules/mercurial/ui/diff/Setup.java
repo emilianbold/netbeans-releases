@@ -120,7 +120,6 @@ public final class Setup {
     private final String    firstRevision;
     private final String    secondRevision;
     private FileInformation info;
-    private String          changeSetId;
 
     private DiffStreamSource    firstSource;
     private DiffStreamSource    secondSource;
@@ -140,17 +139,6 @@ public final class Setup {
         String firstTitle;
         String secondTitle;
 
-        try {
-            File repository = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
-            changeSetId = HgCommand.getLastChangeSetId(repository, baseFile);
-            if (changeSetId == null) {
-                changeSetId = org.openide.util.NbBundle.getMessage(org.netbeans.modules.mercurial.ui.diff.Setup.class, "CTL_Setup_NotCommitted"); // NOI18N
-            }
-        } catch (HgException ex) {
-            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-            DialogDisplayer.getDefault().notifyLater(e);
-        }
-
         // the first source
 
         switch (type) {
@@ -169,10 +157,10 @@ public final class Setup {
                 } else if (match(status, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY
                 | FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY)) {
                     firstRevision = REVISION_BASE;
-                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { changeSetId }); // NOI18N
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision }); // NOI18N
                 } else {
                     firstRevision = REVISION_BASE;
-                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { changeSetId }); // NOI18N
+                    firstTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_BaseRevision"), new Object [] { firstRevision }); // NOI18N
                 }
 
                 break;
@@ -191,7 +179,7 @@ public final class Setup {
 
                 if (match(status, FileInformation.STATUS_VERSIONED_CONFLICT)) {
                     secondRevision = REVISION_CURRENT;
-                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalConflict"), new Object [] { changeSetId }); // NOI18N
+                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalConflict"), new Object [] { secondRevision }); // NOI18N
                 } else if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
                 | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
                     secondRevision = REVISION_CURRENT;
@@ -205,7 +193,7 @@ public final class Setup {
                     secondTitle = loc.getString("MSG_DiffPanel_LocalDeleted"); // NOI18N
                 } else {
                     secondRevision = REVISION_CURRENT;
-                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalModified"), new Object [] { changeSetId }); // NOI18N
+                    secondTitle = MessageFormat.format(loc.getString("MSG_DiffPanel_LocalModified"), new Object [] { secondRevision }); // NOI18N
                 }
                 break;
 

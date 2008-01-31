@@ -71,6 +71,7 @@ public class CorrelationPropertyMainPanel extends EditorLifeCycleAdapter
         fldPropertyName.putClientProperty(CustomNodeEditor.PROPERTY_BINDER, NAME);
     }
     
+    @Override
     public boolean initControls() {
         try {
             //
@@ -103,6 +104,7 @@ public class CorrelationPropertyMainPanel extends EditorLifeCycleAdapter
         return true;
     }
     
+    @Override
     public void createContent() {
         initComponents();
         bindControls2PropertyNames();
@@ -123,6 +125,7 @@ public class CorrelationPropertyMainPanel extends EditorLifeCycleAdapter
         });
     }
     
+    @Override
     public boolean applyNewValues() {
         try {
             CorrelationProperty corrProp = myEditor.getEditedObject();
@@ -184,14 +187,14 @@ public class CorrelationPropertyMainPanel extends EditorLifeCycleAdapter
         if (myValidator == null) {
             myValidator = new DefaultValidator(myEditor, ErrorMessagesBundle.class) {
                 
-                public boolean doFastValidation() {
+                public void doFastValidation() {
                     String propName = fldPropertyName.getText();
                     if (propName == null || propName.length() == 0) {
-                        addReasonKey("ERR_PROP_NAME_EMPTY"); //NOI18N
+                        addReasonKey(Severity.ERROR, "ERR_PROP_NAME_EMPTY"); //NOI18N
                     } else {
                         boolean isCorrectName = Util.isNCName(propName);
                         if (!isCorrectName) {
-                            addReasonKey("ERR_PROP_NAME_INVALID"); //NOI18N;
+                            addReasonKey(Severity.ERROR, "ERR_PROP_NAME_INVALID"); //NOI18N;
                         }
                         
                         if (isCorrectName) {
@@ -211,23 +214,18 @@ public class CorrelationPropertyMainPanel extends EditorLifeCycleAdapter
                         }
                         
                         if (!isCorrectName) {
-                            addReasonKey("ERR_PROP_NAME_NOT_UNIQUE"); //NOI18N;
+                            addReasonKey(Severity.ERROR, 
+                                    "ERR_PROP_NAME_NOT_UNIQUE"); //NOI18N;
                         }
                     }
-                    //
-                    
-                    return isReasonsListEmpty();
                 }
                 
-                public boolean doDetailedValidation() {
-                    boolean isValid = super.doDetailedValidation();
-                    //
-                    // Check that the property name is unique
-                    
-                    
-                    //
-                    return isValid;
-                }
+//                @Override
+//                public void doDetailedValidation() {
+//                    super.doDetailedValidation();
+//                    //
+//                    // Check that the property name is unique
+//                }
                 
             };
         }

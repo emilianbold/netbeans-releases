@@ -432,23 +432,32 @@ public class ProcessInstanceImpl implements ProcessInstance {
         }
         
         synchronized (mySyncLock) {
+            final QName faultQName;
+            if ((strFaultQName == null) || strFaultQName.trim().equals("")) {
+                faultQName = null;
+            } else {
+                final String[] temp = strFaultQName.split("\n");
+                
+                faultQName = new QName(temp[0], temp[2], temp[1]);
+            }
+            
             // add the fault to the list, so it can be displayed by the 
             // processes view
             if (faultData.isWSDLMessage()) {
                 myFaults.add(new FaultImpl(
-                        strFaultQName, 
+                        faultQName, 
                         position.getXpath(), 
                         new WsdlMessageVariableImpl(
                                 "faultData", position, faultData)));
             } else if (faultData.isSimpleType()) {
                 myFaults.add(new FaultImpl(
-                        strFaultQName, 
+                        faultQName, 
                         position.getXpath(), 
                         new SimpleVariableImpl(
                                 "faultData", position, faultData)));
             } else {
                 myFaults.add(new FaultImpl(
-                        strFaultQName, 
+                        faultQName, 
                         position.getXpath(), 
                         new XmlElementVariableImpl(
                                 "faultData", position, faultData)));
@@ -465,13 +474,6 @@ public class ProcessInstanceImpl implements ProcessInstance {
             //breakpoints
             final Breakpoint[] nbBreakpoints =
                     DebuggerManager.getDebuggerManager().getBreakpoints();
-            
-            final QName faultQName;
-            if ((strFaultQName == null) || strFaultQName.trim().equals("")) {
-                faultQName = null;
-            } else {
-                faultQName = QName.valueOf(strFaultQName);
-            }
             
             boolean foundfb = false;
             for (Breakpoint nbBreakpoint : nbBreakpoints) {

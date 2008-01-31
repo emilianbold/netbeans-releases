@@ -63,6 +63,7 @@ public class AddPropertyAction extends BpelNodeAction {
     protected void performAction(BpelEntity[] bpelEntities) {
     }
     
+    @Override
     public void performAction(Node[] nodes) {
         final CorrelationSet correlationSet =
                 (CorrelationSet) ((CorrelationSetNode)nodes[0]).getReference();
@@ -103,6 +104,7 @@ public class AddPropertyAction extends BpelNodeAction {
         correlationSet.setProperties(newCorrPropRefList);
     }
     
+    @Override
     protected boolean enable(BpelEntity[] bpelEntities) {
         if (!super.enable(bpelEntities)) {
             return false;
@@ -148,11 +150,11 @@ public class AddPropertyAction extends BpelNodeAction {
             public Validator getExtensionValidator() {
                 Validator validator = new DefaultValidator(
                         propChooser, ErrorMessagesBundle.class) {
-                    public boolean doFastValidation() {
-                        return true;
+                    public void doFastValidation() {
                     }
                     
-                    public boolean doDetailedValidation() {
+                    @Override
+                    public void doDetailedValidation() {
                         Set<CorrelationProperty> newCpSet =
                                 propChooser.getSelectedValue();
                         //
@@ -162,12 +164,11 @@ public class AddPropertyAction extends BpelNodeAction {
                             }
                             //
                             if (currCpList.contains(newCp)) {
-                                addReasonKey("ERR_NOT_UNIQUE_CORR_PROP", newCp.getName()); // NOI18N
-                                return false;
+                                addReasonKey(Severity.ERROR, 
+                                        "ERR_NOT_UNIQUE_CORR_PROP", 
+                                        newCp.getName()); // NOI18N
                             }
                         }
-                        //
-                        return true;
                     }
                     
                 };

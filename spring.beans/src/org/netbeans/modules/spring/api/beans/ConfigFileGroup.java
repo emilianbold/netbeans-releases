@@ -44,6 +44,7 @@ package org.netbeans.modules.spring.api.beans;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.util.Parameters;
 
 /**
  * Encapsulates a group of Spring config files.
@@ -54,7 +55,7 @@ public final class ConfigFileGroup {
 
     private final String name;
     // This needs to be a list to ensure the order is maintained.
-    private final List<File> configFiles;
+    private final List<File> files;
 
     /**
      * Creates an unnamed group.
@@ -62,7 +63,7 @@ public final class ConfigFileGroup {
      * @param  files the files to be put into this group.
      * @return a new group; never null.
      */
-    public static ConfigFileGroup create(File... files) {
+    public static ConfigFileGroup create(List<File> files) {
         return create(null, files);
     }
 
@@ -73,16 +74,15 @@ public final class ConfigFileGroup {
      * @param  files the files to be put into this group.
      * @return a new group; never null.
      */
-    public static ConfigFileGroup create(String name, File... files) {
+    public static ConfigFileGroup create(String name, List<File> files) {
         return new ConfigFileGroup(name, files);
     }
 
-    private ConfigFileGroup(String name, File... files) {
+    private ConfigFileGroup(String name, List<File> files) {
+        Parameters.notNull("files", files);
         this.name = name;
-        configFiles = new ArrayList<File>(files.length);
-        for (File file : files) {
-            configFiles.add(file);
-        }
+        this.files = new ArrayList<File>(files.size());
+        this.files.addAll(files);
     }
 
     /**
@@ -95,19 +95,25 @@ public final class ConfigFileGroup {
     }
 
     /**
-     * Returns the set of beans configuration files in this group.
+     * Returns the list of config files in this group. The list
+     * is modifiable and not live.
      *
      * @return the set of beans configuration files; never null.
      */
-    public List<File> getConfigFiles() {
-        List<File> result = new ArrayList<File>(configFiles.size());
-        result.addAll(configFiles);
+    public List<File> getFiles() {
+        List<File> result = new ArrayList<File>(files.size());
+        result.addAll(files);
         return result;
     }
 
     public boolean containsFile(File file) {
         // Linear search, but we will hopefully only have a couple of
         // files in the group.
-        return configFiles.contains(file);
+        return files.contains(file);
+    }
+
+    @Override
+    public String toString() {
+        return "ConfigFileGroup[name='" + name + "',files=" + files + "]"; // NOI18N
     }
 }

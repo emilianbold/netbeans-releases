@@ -55,7 +55,7 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.websvc.saas.WsdlServiceProxyDescriptor;
-import org.netbeans.modules.websvc.saas.model.SaasServices;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
