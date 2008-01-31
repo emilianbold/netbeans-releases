@@ -1539,7 +1539,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <antcall target="cleanall" inheritAll="false">
       <param name="allmodules" value="${nb.cluster.visualweb}"/>
     </antcall>
-<!--    <delete dir="netbeans/visualweb1"/>-->
   </target>
 
 

@@ -7,11 +7,11 @@ unset GEM_HOME
 # if not changing the schema (just updating the bits to be indexed)
 # remove previous index files:
 
-  cd ~/netbeans/work/nbbuild/netbeans/ruby1;  rm `find . -name "netbeans-index*.zip"`
+  cd ~/netbeans/work/nbbuild/netbeans/ruby2;  rm `find . -name "netbeans-index*.zip"`
 
 # Remove the old preindex files:
 
-    rm -rf ~/netbeans/work/nbbuild/netbeans/ruby1/preindexed/lib
+    rm -rf ~/netbeans/work/nbbuild/netbeans/ruby2/preindexed/lib
 
 # Enable extra indexing by editing RubyIndexerHelper ant changing AVAILABLE from false to true
 # and recompiling ruby/editing
@@ -27,8 +27,8 @@ unset GEM_HOME
 # Repeat the above for the a native Ruby installation (such as Ruby 1.8.5) which also contains
 # popular gems like mongrel, zentest, etc.
 
-# cd {netbeans}/ruby1
-cd ~/netbeans/work/nbbuild/netbeans/ruby1
+# cd {netbeans}/ruby2
+cd ~/netbeans/work/nbbuild/netbeans/ruby2
     
 # Leave Rails alone, only include JRuby libraries and ActiveRecord-JDBC
 zip -r preindexed-jruby.zip `find . -name "netbeans-index*" | egrep -v "action|active|rails"`
@@ -46,7 +46,7 @@ rm -f /tmp/native.zip
 zip -r /tmp/native.zip `find . -name "netbeans*.zip"` 
 
 # Go to the Ruby install tree, unpack the gem data, and store it in ruby/platform/release/preindexed-native.zip
-cd ~/netbeans/work/nbbuild/netbeans/ruby1/
+cd ~/netbeans/work/nbbuild/netbeans/ruby2/
 rm -rf preindexed
 mkdir preindexed
 cd preindexed

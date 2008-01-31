@@ -142,16 +142,16 @@ is divided into following sections:
   
             <target name="init-taskdefs" if="from.commandline">
                 <path id="ant.task.classpath.models">          
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-xslt-project.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-core.jar"/>
-                    <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-xslt-tmap.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/>
-                    <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-projectapi.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform7/core/org-openide-filesystems.jar"/>
-                    <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-xslt-project.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa2/ant/nblib/org-netbeans-modules-xslt-project.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-xslt-core.jar"/>
+                    <pathelement location="${{netbeans.home}}/../soa2/modules/org-netbeans-modules-xslt-tmap.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-xam.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-xml-retriever.jar"/>
+                    <pathelement location="${{netbeans.home}}/../ide9/modules/org-netbeans-modules-projectapi.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform8/modules/org-openide-loaders.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform8/core/org-openide-filesystems.jar"/>
+                    <pathelement location="${{netbeans.home}}/../platform8/lib/org-openide-util.jar"/>
 
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
                     <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
