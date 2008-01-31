@@ -43,6 +43,8 @@ package org.netbeans.modules.web.jsf.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.WeakHashMap;
+import java.util.Map;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
@@ -65,6 +67,11 @@ import org.openide.util.Exceptions;
  */
 public class ConfigurationUtils {
     
+    // We can override equals() and hashcode() methods here for accepting 2 keys in HashMap
+    // However due to the performance issue and clear codes, use 2 HashMap here will be better
+    private static final Map<FileObject,JSFConfigModel> configModelsEditable = new WeakHashMap();
+    private static final Map<FileObject,JSFConfigModel> configModelsNonEditable = new WeakHashMap();
+
     /**
      * This methods returns the model source for the faces config file.
      * @param confFile - the faces config file
@@ -75,9 +82,16 @@ public class ConfigurationUtils {
     public static JSFConfigModel getConfigModel(FileObject confFile, boolean editable) {
         JSFConfigModel configModel = null;
         if (confFile != null && confFile.isValid()) {
+            Map<FileObject,JSFConfigModel> configModels = editable ? configModelsEditable : configModelsNonEditable;
+            configModel = configModels.get(confFile);
+            if (configModel != null) {
+                return configModel;
+            }
+
             try {
                 ModelSource modelSource = Utilities.createModelSource(confFile,editable);
                 configModel = JSFConfigModelFactory.getInstance().getModel(modelSource);
+                configModels.put(confFile, configModel);
             } catch (CatalogModelException ex) {
                 java.util.logging.Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
                         ex.getMessage(), ex);

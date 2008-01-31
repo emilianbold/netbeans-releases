@@ -172,14 +172,14 @@
         <!-- samples -->
         <subant target="default" inheritAll="false">
             <property name="caps.netbeans.home" location="${home}/nbbuild/netbeans"/>
-            <buildpath location="${soa}/BluePrint1/BluePrint1/build.xml"/>
-            <buildpath location="${soa}/BluePrint2/BluePrint2/build.xml"/>
-            <buildpath location="${soa}/BluePrint3/BluePrint3/build.xml"/>
-            <buildpath location="${soa}/BluePrint4/BluePrint4/build.xml"/>
-            <buildpath location="${soa}/BluePrint5/BluePrint5/build.xml"/>
-            <buildpath location="${soa}/AsynchronousSample/AsynchronousSample/build.xml"/>
-            <buildpath location="${soa}/SynchronousSample/SynchronousSample/build.xml"/>
-            <buildpath location="${soa}/TravelReservationService/TravelReservationService/build.xml"/>
+            <buildpath location="${samples}/BluePrint1/BluePrint1/build.xml"/>
+            <buildpath location="${samples}/BluePrint2/BluePrint2/build.xml"/>
+            <buildpath location="${samples}/BluePrint3/BluePrint3/build.xml"/>
+            <buildpath location="${samples}/BluePrint4/BluePrint4/build.xml"/>
+            <buildpath location="${samples}/BluePrint5/BluePrint5/build.xml"/>
+            <buildpath location="${samples}/AsynchronousSample/AsynchronousSample/build.xml"/>
+            <buildpath location="${samples}/SynchronousSample/SynchronousSample/build.xml"/>
+            <buildpath location="${samples}/TravelReservationService/TravelReservationService/build.xml"/>
         </subant>
     </target>
 
@@ -238,7 +238,6 @@
         <!-- xslt -->
         <antcall target="do-test-jbi"><param name="dir" value="xslt/DoXslTransformBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutBP"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutXSLT"/></antcall>
     </target>
 
     <target name="test-4">
@@ -311,8 +310,6 @@
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/JavaEEToBPProj"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/ProdMngmntSamples/CreditApplicationProcessorBusinessProcess"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/TwoWayEjbToBP/TwoWay"/></antcall>
 
         <!-- misc -->
         <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
@@ -333,13 +330,6 @@
         <antcall target="do-test-jbi"><param name="dir" value="samples/EndToEndScenario"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/samplesBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
-
-        <!-- scenarios -->
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CandidateSelection/SelectionProcessor"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CatalogTemplate"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CatalogWildcard"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CDCatalog"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/PurchaseOrder/OrderTransformer"/></antcall>
     </target>
 
     <target name="test-9">

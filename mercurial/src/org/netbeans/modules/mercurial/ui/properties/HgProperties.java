@@ -45,8 +45,6 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -62,8 +60,11 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.text.Document;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgProgressSupport;
@@ -80,9 +81,9 @@ import org.openide.NotifyDescriptor;
 
 /**
  *
- * @author Peter Pis
+ * @author Padraig O'Briain
  */
-public class HgProperties implements ActionListener, DocumentListener {
+public class HgProperties implements ListSelectionListener {
     
     private static final String HGPROPNAME_USERNAME = "username"; // NOI18N
     private static final String HGPROPNAME_DEFAULT_PULL = "default-pull"; // NOI18N
@@ -100,14 +101,10 @@ public class HgProperties implements ActionListener, DocumentListener {
         this.panel = panel;
         this.propTable = propTable;
         this.root = root;
-        panel.txtAreaValue.getDocument().addDocumentListener(this);
-        ((JTextField) panel.comboName.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
-        propTable.getTable().addMouseListener(new TableMouseListener());
-        panel.btnAdd.addActionListener(this);
-        panel.btnRemove.addActionListener(this);
-        initPropertyNameCbx();
-        refreshProperties();
+        propTable.getTable().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        propTable.getTable().getSelectionModel().addListSelectionListener(this);
         
+        refreshProperties();
     }
     
     public PropertiesPanel getPropertiesPanel() {
@@ -126,37 +123,8 @@ public class HgProperties implements ActionListener, DocumentListener {
         this.root = root;
     }
     
-    public void actionPerformed(ActionEvent event) {
-        Object source = event.getSource();
-        
-        if (source.equals(panel.btnAdd)) {
-            addProperty();
-        }
-        
-        if (source.equals(panel.btnRemove)) {
-            removeProperties();
-        }
-        
-    }
-    
-    protected void initPropertyNameCbx() {
-        List<String> lstName = new ArrayList<String>(8);
-
-        lstName.add(HGPROPNAME_DEFAULT_PULL);
-        lstName.add(HGPROPNAME_DEFAULT_PUSH);
-        lstName.add(HGPROPNAME_USERNAME);
-
-        ComboBoxModel comboModel = new DefaultComboBoxModel(new Vector<String>(lstName));
-        panel.comboName.setModel(comboModel);
-        panel.comboName.setSelectedIndex(0);
-    }
-    
     protected String getPropertyValue() {
         return panel.txtAreaValue.getText();
-    }
-    
-    protected String getPropertyName() {
-        return ((String)panel.comboName.getSelectedItem()).trim();
     }
     
     protected void refreshProperties() {        
@@ -184,46 +152,6 @@ public class HgProperties implements ActionListener, DocumentListener {
         }
     }
     
-    private boolean addProperty(String name, String value) {
-        if (name.equals(HGPROPNAME_USERNAME)) {
-            if (!HgModuleConfig.getDefault().isUserNameValid(value)) {
-                try {
-                    JOptionPane.showMessageDialog(null, 
-                        NbBundle.getMessage(HgProperties.class, "MSG_PROPERTIES_INVALID_MESSAGE", value, name),  // NOI18N
-                        NbBundle.getMessage(HgProperties.class, "MSG_PROPERTIES_INVALID_TITLE"), JOptionPane.ERROR_MESSAGE); // NOI18N
-                } catch (Exception ex) {
-                    NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
-                    DialogDisplayer.getDefault().notifyLater(e);
-                }
-                return false;
-            }
-        }
-        
-        HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
-        for (int i = 0; i < hgPropertiesNodes.length; i++) {
-            String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(i)].getName(); 
-            if (hgPropertyName.equals(name)) {
-                hgPropertiesNodes[propTable.getModelIndex(i)].setValue(value); 
-                propTable.setNodes(hgPropertiesNodes);
-                return true;
-            } 
-        }
-        HgPropertiesNode[] hgProps = new HgPropertiesNode[hgPropertiesNodes.length + 1];
-        for (int i = 0; i < hgPropertiesNodes.length; i++) {
-            hgProps[i] = hgPropertiesNodes[i];
-        }
-        hgProps[hgPropertiesNodes.length] = new HgPropertiesNode(name, value);
-        propTable.setNodes(hgProps); 
-        return true;
-    }
-
-    public void addProperty() {
-        if (addProperty(getPropertyName(), getPropertyValue())) {
-            panel.comboName.getEditor().setItem(""); // NOI18N
-            panel.txtAreaValue.setText(""); // NOI18N
-        }
-    }
-    
     public void setProperties() {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(root.getAbsolutePath());
         try {
@@ -233,9 +161,11 @@ public class HgProperties implements ActionListener, DocumentListener {
                     HgModuleConfig.getDefault().removeProperty(root, "ui", HGPROPNAME_USERNAME); // NOI18N
                     HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
                     for (int i = 0; i < hgPropertiesNodes.length; i++) {
-                        String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(i)].getName();
-                        String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(i)].getValue();
-                        HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
+                        String hgPropertyName = hgPropertiesNodes[i].getName();
+                        String hgPropertyValue = hgPropertiesNodes[i].getValue();
+                        if (hgPropertyValue.trim().length() > 0 ) {
+                            HgModuleConfig.getDefault().setProperty(root, hgPropertyName, hgPropertyValue);
+                        }
                     }
                     HgRepositoryContextCache.resetPullDefault();
                     HgRepositoryContextCache.resetPushDefault();
@@ -247,67 +177,20 @@ public class HgProperties implements ActionListener, DocumentListener {
         }
     }
 
-    public void removeProperties() {
-        final int[] rows = propTable.getSelectedItems();
-        if (rows.length == 0) return;
+    private int lastIndex = -1;
+
+    public void valueChanged (ListSelectionEvent e) {
+        int index = propTable.getTable().getSelectedRow();
+        if (index < 0) {
+            lastIndex = -1;
+            return;
+        }
         HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
-        HgPropertiesNode[] hgProps = new HgPropertiesNode[hgPropertiesNodes.length - rows.length];
-        int j = 0;
-        int k = 0;
-        for (int i = 0; i < hgPropertiesNodes.length; i++) {
-            if (i != rows[j]) {
-                hgProps[k++] = hgPropertiesNodes[propTable.getModelIndex(i)];
-            } else {
-                if (j < rows.length - 1) j++;
-            }
+        if (lastIndex >= 0) {
+            hgPropertiesNodes[lastIndex].setValue(getPropertyValue());
+            propTable.setNodes(hgPropertiesNodes);
         }
-        propTable.setNodes(hgProps);
-    }
-    
-    public void insertUpdate(DocumentEvent event) {
-        validateUserInput(event);
-    }
-
-    public void removeUpdate(DocumentEvent event) {
-        validateUserInput(event);
-    }
-
-    public void changedUpdate(DocumentEvent event) {
-        validateUserInput(event);
-    }
-    
-    private void validateUserInput(DocumentEvent event) {
-        
-        Document doc = event.getDocument();
-        String name = ((String)panel.comboName.getSelectedItem()).trim();
-        String value = panel.txtAreaValue.getText().trim();
-        
-        if (name.length() == 0 || value.length() == 0 || name.indexOf(" ") > 0) { // NOI18N
-            panel.btnAdd.setEnabled(false);
-        } else {
-            panel.btnAdd.setEnabled(true);
-        }
-    }    
-    
-    public class TableMouseListener extends MouseAdapter {
-        
-        @Override
-        public void mouseClicked(MouseEvent event) {
-            //super.mouseClicked(arg0);
-            if (event.getClickCount() == 2) {
-                int[] rows = propTable.getSelectedItems();
-                HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
-                if (hgPropertiesNodes == null)
-                    return;
-                final String hgPropertyName = hgPropertiesNodes[propTable.getModelIndex(rows[0])].getName(); 
-                final String hgPropertyValue = hgPropertiesNodes[propTable.getModelIndex(rows[0])].getValue(); 
-                EventQueue.invokeLater(new Runnable() {
-                    public void run() {
-                        panel.comboName.setSelectedItem(hgPropertyName);
-                        panel.txtAreaValue.setText(hgPropertyValue);
-                    }
-                });
-            }
-        }
+        panel.txtAreaValue.setText(hgPropertiesNodes[index].getValue());
+        lastIndex = index;
     }
 }
