@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -240,6 +240,7 @@ public class JavaKit extends NbEditorKit {
                                    new JavaGenerateGoToPopupAction(),
 				   new JavaInsertBreakAction(),
 				   new JavaDeleteCharAction(deletePrevCharAction, false),
+				   new JavaDeleteCharAction(deleteNextCharAction, true),
                                    new ExpandAllJavadocFolds(),
                                    new CollapseAllJavadocFolds(),
                                    new ExpandAllCodeBlockFolds(),
@@ -639,6 +640,21 @@ public class JavaKit extends NbEditorKit {
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
         throws BadLocationException {
             BracketCompletion.charBackspaced(doc, dotPos, caret, ch);
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+            target.putClientProperty(JavaDeleteCharAction.class, this);
+            
+            try {
+                super.actionPerformed(evt, target);
+            } finally {
+                target.putClientProperty(JavaDeleteCharAction.class, null);
+            }
+        }
+        
+        public boolean getNextChar() {
+            return nextChar;
         }
     }
     

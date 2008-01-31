@@ -114,6 +114,7 @@
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
                 <package>org.netbeans.modules.websvc.saas</package>
                 <package>org.netbeans.modules.websvc.saas.model</package>
+                <package>org.netbeans.modules.websvc.saas.model.jaxb</package>
                 <package>org.netbeans.modules.websvc.saas.spi</package>
                 <package>org.netbeans.modules.websvc.saas.util</package>
             </friend-packages>

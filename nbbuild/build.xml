@@ -123,7 +123,7 @@ made subject to such option by the copyright holder.
             </not>
         </condition>
         You have stray *.class files in ${basedir}/antsrc which you must remove.
-        Probably you failed to clean your sources before updating them from CVS.
+        Probably you failed to clean your sources before updating. Try: ant hg-clean
     </fail>
     <!-- OK, continue: -->
     <available property="have.javahelp" file="../apisupport.harness/external" type="dir"/>
@@ -1642,10 +1642,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="check-commit-validation">
     <condition property="run.validation" >
         <and>
-          <available file="../ide.kit/test/build.xml" />
-          <available file="../jemmy/build.xml" />
-          <available file="../jellytools/build.xml" />
-          <available file="../xtest/build.xml" />
           <or>
             <not>
               <isset property="nb.run.validation"/>
@@ -1706,8 +1702,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="no-commit-validation" depends="check-commit-validation" unless="run.validation">
     <echo>
         *** WARNING ***
-        You do not seem to have the modules needed to run the commit validation test suite. 
-        You may not commit any changes into the CVS repository without running these tests.
+        You may not commit any changes into the repository without running the commit validation test suite.
         For more information: http://www.netbeans.org/community/guidelines/commit.html
     </echo>
   </target>
@@ -1756,6 +1751,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <resolve name="cluster-modules" value="${cluster.name}"/>
     <resolve name="harness-modules" value="nb.cluster.harness"/>
     <mkdir dir="${netbeans.build.dir}"/>
+    <!-- XXX should this target be deleted, or rewritten to Hg? -->
     <taskdef name="definefileset" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
     <definefileset modules="${cluster-modules}" id="source-modules" dir=".."/>
     <definefileset modules="${harness-modules}" id="harness-source-modules" dir=".."/>
@@ -1777,6 +1773,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <resolve name="harness-modules" value="nb.cluster.harness"/>
     <mkdir dir="${netbeans.build.dir}"/>
     <property name="source.zip.filename" location="${netbeans.build.dir}/${cluster.config}-src-${buildnum}.zip"/>
+    <!-- XXX should this target be deleted, or rewritten to Hg? -->
     <taskdef name="definefileset" classname="org.netbeans.nbbuild.PrintCvsModules" classpath="nbantext.jar"/>
     <definefileset modules="${modules.for.checkout.list}" id="source-modules" dir=".."/>
     <definefileset modules="${harness-modules}" id="harness-source-modules" dir=".."/>

@@ -10546,7 +10546,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
             File realTOM = new File(realTOMFile);
             File realPRS = new File(realPRSFile);
 
-            if (tempETL.exists() && tempETLP.exists())
+            if (tempETL.exists() && tempETLP.exists()) 
             {
                 try
                 {
@@ -10575,9 +10575,9 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
                                         payload);
                             }
                         }
-                    } else
-                    {
-                        //ASSERT(0 && "could not find commit temporary files");
+                    } else {
+                        assert rename1 : "failed to rename "+tempETLFile;
+                        assert rename2 : "failed to rename "+tempETLPFile;
                     }
                 } catch (Exception e)
                 {
@@ -10586,7 +10586,7 @@ public class ADDrawingAreaControl extends ApplicationView implements IDrawingPro
                 }
             } else
             {
-                //ASSERT(0 && "could not find commit temporary files");
+                assert false : "could not find commit temporary files " + tempETLFile +" or/and "+ tempETLPFile;
             }
         }
     }

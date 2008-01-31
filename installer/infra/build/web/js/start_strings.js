@@ -63,7 +63,7 @@ var LEGAL_INFO_HEADER = "Important Legal Information:";
 var CDDL_GPLV2_LINK = "http://www.netbeans.org/cddl-gplv2.html";
 var LICENSE_DETAILS_LINK = "http://www.netbeans.org/about/legal/code_dependency_matrix.html";
 
-var LEGAL_INFO_MESSAGE = "The majority of the NetBeans IDE {build.display.version} code is available under a <a href=\"{0}\">dual license consisting of the Common Development and Distribution License (CDDL) v1.0 and the GNU General Public License (GPL) v2</a>. See <a href=\"{1}\">details about the components in NetBeans</a> and the licenses under which they are covered.<br><br>Read the <a href=\"{2}\">License Notice</a>.";
+var LEGAL_INFO_MESSAGE = "The majority of the NetBeans IDE {build.display.version.short} code is available under a <a href=\"{0}\">dual license consisting of the Common Development and Distribution License (CDDL) v1.0 and the GNU General Public License (GPL) v2</a>. See <a href=\"{1}\">details about the components in NetBeans</a> and the licenses under which they are covered.<br><br>Read the <a href=\"{2}\">License Notice</a>.";
 
 // $PRODUCT_NAME $TYPE (Installer for $PLATFORM/Zip)/$Language ($Language_ID) $filename ($SIZE) MD5: $MD5
 var INFO_MESSAGE = "{0}{1} {2}/{3} ({4})<br>{5} ({6} MB)<br>MD5: {7}";
