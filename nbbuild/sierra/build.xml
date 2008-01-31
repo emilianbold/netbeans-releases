@@ -332,7 +332,6 @@
         <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
 
         <!-- scenarios -->
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CandidateSelection/SelectionProcessor"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CatalogTemplate"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CatalogWildcard"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CDCatalog"/></antcall>
