@@ -41,8 +41,7 @@
 
 package org.netbeans.modules.websvc.saas.ui.actions;
 
-import org.netbeans.modules.websvc.saas.model.Group;
-import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
+import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.*;
 import org.openide.DialogDisplayer;

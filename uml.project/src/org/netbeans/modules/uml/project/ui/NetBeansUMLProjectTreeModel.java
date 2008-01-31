@@ -51,11 +51,9 @@ import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
 
-import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IProxyDiagram;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.ui.products.ad.projecttreedefaultengine.FilteredItemManager;
-import org.netbeans.modules.uml.ui.support.diagramsupport.ProxyDiagramManager;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeDiagram;
 import org.netbeans.modules.uml.ui.support.projecttreesupport.ITreeFolder;
 import org.netbeans.modules.uml.ui.swing.drawingarea.DrawingAreaEventsAdapter;
@@ -489,6 +487,15 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 		return getModelRootNode(parent);
 	}
 	
+        public UMLDiagramsRootNode getDiagramsRootNode(IProject project)
+	{
+            return (project != null ?  mDiagramsNodeMap.get(project.getXMIID()) : null);
+	}
+        
+        public boolean isDiagramsRootNode(ITreeItem node) 
+        {
+            return (node instanceof UMLDiagramsRootNode);
+        }
 	
 	/**
 	 * Remove all instances of the model element from the model.
@@ -695,7 +702,7 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
 					// cvc - 6272973
 					// the above method for getting the Diagrams root node was
 					// failing because the project was always null
-					removeFromDiagramsRootNode(diagramNode);
+					// removeFromDiagramsRootNode(diagramNode);
 				} // if diagram !null
 			} // if node instanceof ITreeDiagram
 		} // if node !null
@@ -866,37 +873,39 @@ public class NetBeansUMLProjectTreeModel extends ProjectTreeModelAdapter
                     IDrawingAreaControl pDiagramControl,
                     IResultCell cell)
             {
-                if (pDiagramControl != null)
-                {
-                    final IDrawingAreaControl control = pDiagramControl;
-                    IDiagram diagram = control.getDiagram();
-                    
-                    if (diagram != null)
-                    {
-                        IProject project = diagram.getProject();
-                        if (project != null)
-                        {
-                            UMLDiagramsRootNode diagramsNode =
-                                    mDiagramsNodeMap.get(project.getXMIID());
-                            
-                            if (diagramsNode != null)
-                            {
-                                NBNodeFactory factory = new NBNodeFactory();
-                                
-                                IProxyDiagram proxy = ProxyDiagramManager
-                                        .instance().getDiagram(diagram);
-                                
-                                ITreeDiagram node =
-                                        factory.createDiagramNode(proxy);
-                                String diagramName = proxy.getNameWithAlias();
-                                LOG.info("*** DrawingAreaSink.onDrawingAreaPostCreated: diagramNameWithAlias = "+ diagramName);
-                                node.setDisplayedName(diagramName, false);
-                                node.setName(diagramName);
-                                addItem(diagramsNode, node);
-                            }
-                        }
-                    }
-                }
+                // Moved the logic to create a diagram node under 
+                // Diagrams root node to ADProjectTreeEngine.addDiagramNode()
+//                if (pDiagramControl != null)
+//                {
+//                    final IDrawingAreaControl control = pDiagramControl;
+//                    IDiagram diagram = control.getDiagram();
+//                    
+//                    if (diagram != null)
+//                    {
+//                        IProject project = diagram.getProject();
+//                        if (project != null)
+//                        {
+//                            UMLDiagramsRootNode diagramsNode =
+//                                    mDiagramsNodeMap.get(project.getXMIID());
+//                            
+//                            if (diagramsNode != null)
+//                            {
+//                                NBNodeFactory factory = new NBNodeFactory();
+//                                
+//                                IProxyDiagram proxy = ProxyDiagramManager
+//                                        .instance().getDiagram(diagram);
+//                                
+//                                ITreeDiagram node =
+//                                        factory.createDiagramNode(proxy);
+//                                String diagramName = proxy.getNameWithAlias();
+//                                LOG.info("*** DrawingAreaSink.onDrawingAreaPostCreated: diagramNameWithAlias = "+ diagramName);
+//                                node.setDisplayedName(diagramName, false);
+//                                node.setName(diagramName);
+//                                addItem(diagramsNode, node);
+//                            }
+//                        }
+//                    }
+//                }
             }
         }
         

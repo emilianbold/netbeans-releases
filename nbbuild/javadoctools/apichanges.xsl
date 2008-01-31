@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 <!--
 This DOCTYPE assumes that the pseudo-DTD given at the end of the
 XSLT specification is present in the named location. It cannot be
-committed to CVS for legal reasons. You need to download it:
+committed to the repository for legal reasons. You need to download it:
 <!DOCTYPE xsl:stylesheet [
 <!ENTITY % result-elements "
 | a | abbr | acronym | address | area

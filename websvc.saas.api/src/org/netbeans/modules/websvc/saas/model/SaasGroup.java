@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import org.netbeans.modules.websvc.saas.model.jaxb.GroupType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,20 +49,20 @@ import java.util.List;
  * @author nam
  */
 public class SaasGroup {
-    private final Group delegate;
+    private final GroupType delegate;
     private final SaasGroup parent;
     private boolean userDefined;
     private List<Saas> services;
     private List<SaasGroup> children;
     
-    public SaasGroup(SaasGroup parent, Group group) {
+    public SaasGroup(SaasGroup parent, GroupType group) {
         this.parent = parent;
         this.delegate = group;
         services = Collections.synchronizedList(new ArrayList<Saas>());
         children = Collections.synchronizedList(new ArrayList<SaasGroup>());
     }
 
-    public Group getDelegate() {
+    public GroupType getDelegate() {
         return delegate;
     }
 

@@ -134,8 +134,18 @@ class SearchExecutor implements Runnable {
     }
 
     private void search(String rootUrl, Set<File> files, String fromRevision, String toRevision, HgProgressSupport progressSupport) {
-            HgLogMessage[] messages = HgCommand.getLogMessages(rootUrl, files, fromRevision, toRevision);
-            appendResults(rootUrl, messages);
+        if (progressSupport.isCanceled()) {
+            searchCanceled = true;
+            return;
+        }
+        
+        HgLogMessage[] messages;
+        if (master.isOutSearch()) {
+            messages = HgCommand.getOutMessages(rootUrl);
+        } else {
+            messages = HgCommand.getLogMessages(rootUrl, files, fromRevision, toRevision);
+        }
+        appendResults(rootUrl, messages);
     }
   
     
@@ -178,6 +188,8 @@ class SearchExecutor implements Runnable {
             }
             results.add(rev);
         }
+        if(results.isEmpty()) results = null;
+        
         checkFinished();
     }
 

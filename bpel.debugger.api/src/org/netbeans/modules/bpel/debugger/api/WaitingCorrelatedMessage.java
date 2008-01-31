@@ -19,6 +19,8 @@
 
 package org.netbeans.modules.bpel.debugger.api;
 
+import javax.xml.namespace.QName;
+
 /**
  *
  * @author Kirill Sorokin
@@ -26,5 +28,6 @@ package org.netbeans.modules.bpel.debugger.api;
 public interface WaitingCorrelatedMessage {
     
     String getName();
-    
+
+    CorrelationSet[] getCorrelationSets();
 }

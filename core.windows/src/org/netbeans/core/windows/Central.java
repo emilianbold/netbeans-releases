@@ -978,7 +978,7 @@ final class Central implements ControllerHandler {
      * @param closedTc TopComponent which is being closed in the given mode.
      * @return TopComponent to select or null (e.g. the mode will be empty after close)
      */
-    private TopComponent getRecentTopComponent( ModeImpl editorMode, TopComponent closedTc ) {
+    TopComponent getRecentTopComponent( ModeImpl editorMode, TopComponent closedTc ) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent[] documents = wm.getRecentViewList();
         

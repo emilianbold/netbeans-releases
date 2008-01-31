@@ -108,6 +108,21 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>Added getFiles() method to VCSContext</summary>
+            <version major="1" minor="6"/>
+            <date day="25" month="1" year="2008"/>
+            <author login="msandor"/>
+            <compatibility addition="yes"/>
+            <description>
+                This new method provides access to all files and folders that the user originally selected in the IDE. Current
+                getRootFiles() method removes files from the context if their ancestors are already in the context.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSContext"/>
+            <issue number="125853"/>
+        </change>
+
+        <change>
+            <api name="versioning_spi"/>
             <summary>Added beforeEdit method to VCSInterceptor</summary>
             <version major="1" minor="5"/>
             <date day="15" month="6" year="2007"/>

@@ -48,6 +48,7 @@ import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -89,8 +90,6 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
     public static final String SELECTED_INDEX = "WizardPanel_contentSelectedIndex"; // NOI18N
     // steps
     public static final String STEP_PROJECT = "LBL_ProjectTitleName"; // NOI18N
-    public static final String STEP_SOURCES = "LBL_ProjectSourcesName"; // NOI18N
-    public static final String STEP_PHP_LANGUAGE = "LBL_ProjectPhpLanguage"; // NOI18N
     public static final String STEP_WEB_SERVER = "LBL_ProjectWebServer"; // NOI18N
     // properties
     public static final String PROJECT_DIR = "projdir"; // NOI18N
@@ -105,41 +104,12 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
     public static final String VERSION = "version"; // NOI18N
     public static final String SOURCE_ENCODING = PhpProject.SOURCE_ENCODING;
     
-    /**
-     * default source root to be set for empty project
-     */
-    public static final String DEFAULT_SOURCE_ROOT_DIR = "DefaultSourceRootDirectory"; // NOI18N
-    /**
-     * default php language version to store in project config
-     */
-    public static final String DEFAULT_PHP_VERSION = "DefaultPhpVersion"; // NOI18N
-
-    /**
-     * type of the wizard.
-     */
-    public enum WizardType {
-
-        /**
-         * New project creation from scratch
-         */
-        EMPTY /**
-         * Project with existing sources creation
-         */
-        , EXISTING
-    }
-
+    // constants
+    public static final String CURRENT_FOLDER_PATTERN = "."; // NOI18N
+    
     /** invokes <code>this(NewPhpProjectWizardIterator.PROJECT_TYPE_NEW)<code>
      */
     public NewPhpProjectWizardIterator() {
-        this(WizardType.EMPTY);
-    }
-
-    public NewPhpProjectWizardIterator(WizardType projectType) {
-        this.myType = projectType;
-    }
-
-    public static NewPhpProjectWizardIterator existing() {
-        return new NewPhpProjectWizardIterator(WizardType.EXISTING);
     }
 
     /* (non-Javadoc)
@@ -173,35 +143,28 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
         File dir = FileUtil.normalizeFile((File) getDescriptor().getProperty(PROJECT_DIR));
         String name = (String) getDescriptor().getProperty(NAME);
 
-
         AntProjectHelper helper = createProject(dir, name);
 
+        // add Project to created objects set
         FileObject fileObject = FileUtil.toFileObject(dir);
-
         resultSet.add(fileObject);
 
-        switch (myType) {
-            case EXISTING:
-                Object obj = getDescriptor().getProperty(SOURCE_ROOT);
-                if (obj != null && obj instanceof File) {
-                    FileObject sourceDir = FileUtil.toFileObject((File) obj);
-                    if (sourceDir != null) {
-                        resultSet.add(sourceDir);
-                    }
-                }
-                break;
-            default:
-                //EMPTY:
-                Boolean createIndexFile = (Boolean) getDescriptor().
-                        getProperty(INDEX_FILE_CREATE);
-                if (createIndexFile != null && createIndexFile.booleanValue()) {
-                    FileObject template = Templates.getTemplate(getDescriptor());
-                    DataObject dObject = createIndexFile(template, fileObject, helper);
-                    if (dObject != null) {
-                        resultSet.add(dObject.getPrimaryFile());
-                    }
-                }
-                break;
+        // add sources to created objects set
+        File src = createSourceRoot(dir);
+        FileObject sourceDir = FileUtil.toFileObject(src);
+        if (sourceDir != null) {
+            resultSet.add(sourceDir);
+        }
+
+        // add to created objects set
+        Boolean createIndexFile = (Boolean) getDescriptor().
+                getProperty(INDEX_FILE_CREATE);
+        if (createIndexFile != null && createIndexFile.booleanValue()) {
+            FileObject template = Templates.getTemplate(getDescriptor());
+            DataObject dObject = createIndexFile(template, src);
+            if (dObject != null) {
+                resultSet.add(dObject.getPrimaryFile());
+            }
         }
 
         // Returning set of FileObject of project diretory.
@@ -209,14 +172,50 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
         return resultSet;
     }
 
+    
+    private File createSourceRoot(File projectDir) throws IOException{
+        Object obj = getDescriptor().getProperty(SOURCE_ROOT);
+        File src = null;
+        if (obj != null && obj instanceof File) {
+            src = (File) obj;
+            if (isParentOf(projectDir, src) && !src.exists() ){
+                createSourceFolder(src);
+            }
+        }
+        return src;
+    }
+    
+    private void createSourceFolder(File src) throws IOException{
+        if (!src.mkdirs()) {
+            throw new IOException("Can not create source folder."); // NOI18N
+        }
+    }
+    
+    private boolean isParentOf(File folder, File f){
+        String folderPath = folder.getAbsolutePath();
+        String filePath = f.getAbsolutePath();
+        if (filePath.startsWith(folderPath) 
+                && !filePath.equals(folderPath))
+        {
+            return true;
+        }
+        return false;
+    }
     /* (non-Javadoc)
      * @see org.openide.WizardDescriptor.InstantiatingIterator#uninitialize(org.openide.WizardDescriptor)
      */
     public void uninitialize(WizardDescriptor descriptor) {
         descriptor.putProperty(PROJECT_DIR, null);
         descriptor.putProperty(NAME, null);
+        descriptor.putProperty(SOURCE_ROOT, null);
+        descriptor.putProperty(SET_AS_MAIN, null);
+        descriptor.putProperty(INDEX_FILE_NAME, null);
+        descriptor.putProperty(INDEX_FILE_CREATE, null);
         descriptor.putProperty(HOST, null);
         descriptor.putProperty(COMMAND_LINE, null);
+        descriptor.putProperty(VERSION, null);
+        descriptor.putProperty(SOURCE_ENCODING, null);
+        
         myPanels = null;
         myDescriptor = null;
     }
@@ -310,34 +309,26 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
         }
         return name;
     }
-    private DataObject createIndexFile(FileObject template, FileObject project, 
-            AntProjectHelper helper) throws IOException 
+    private DataObject createIndexFile(FileObject template, File sourceDir) 
+            throws IOException 
     {
-        //EditableProperties properties 
-        //        = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String indexFileName = getIndexFileName(template.getExt());
         if (indexFileName == null) {
             return null;
         }
         
+        
         DataFolder dataFolder 
-                = DataFolder.findFolder(getSrc(project, helper, PhpProject.SRC));
+                = DataFolder.findFolder(getSourceFileObject(sourceDir));
         DataObject dTemplate = DataObject.find(template);
         return dTemplate.createFromTemplate(dataFolder, indexFileName);
     }
 
-    private FileObject getSrc(FileObject project, AntProjectHelper helper, 
-            String srcPropertyName) 
-    {
-        EditableProperties properties 
-                = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        String src = properties.getProperty(srcPropertyName);
-
-        File file = null;
-        String projectPath = FileUtil.toFile(project).getAbsolutePath();
-        file = new File(projectPath + File.separator + src);
-        file = FileUtil.normalizeFile(file);
-        return FileUtil.toFileObject(file);
+    private FileObject getSourceFileObject(File sourceDir) throws IOException {
+        if (!sourceDir.exists()){
+            createSourceFolder(sourceDir);
+        }
+        return FileUtil.createData(sourceDir);
     }
 
     /**
@@ -345,38 +336,14 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
      * actually. It exists for possible future change quantity of steps in wizard.
      */
     private String[] createSteps() {
-        String[] steps = null;
-        switch (myType) {
-            case EXISTING:
-                myPanels = new WizardDescriptor.Panel[]{
-                    new PhpProjectConfigurePanel(myType), 
-                    new PhpSourcesConfigurePanel(myType), 
-                    new ProviderSpecificPanel()
-                };
-                steps = new String[]{
-                    NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(STEP_PROJECT), 
-                    NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(STEP_SOURCES), 
-                    NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(STEP_WEB_SERVER)
-                };
-                break;
-            default:
-                //WizardType.EMPTY
-                /*
-                 * PhpSourcesConfigurePanel contains only php version 
-                 * for this wizard type now. 
-                 * while we support only php v5, this step is commented.
-                 */
-                myPanels = new WizardDescriptor.Panel[]{
-                    new PhpProjectConfigurePanel(myType), 
-                    //new PhpSourcesConfigurePanel(myType), 
-                    new ProviderSpecificPanel()
-                };
-                steps = new String[]{
-                    NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(STEP_PROJECT), 
-                    //NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(STEP_PHP_LANGUAGE), 
-                    NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(STEP_WEB_SERVER)
-                };
-        }
+        myPanels = new WizardDescriptor.Panel[]{
+            new PhpProjectConfigurePanel(),
+            new ProviderSpecificPanel()
+        };
+        String[] steps = new String[]{
+            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(STEP_PROJECT),
+            NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(STEP_WEB_SERVER)
+        };
         return steps;
     }
 
@@ -420,8 +387,8 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
          */
         // version selection was removed from wizard. It will be available in customizer
         //properties.setProperty(PhpProject.VERSION, getDescriptor().getProperty(VERSION).toString());
-        String defaultVersion = NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(DEFAULT_PHP_VERSION);
-        properties.setProperty(PhpProject.VERSION, defaultVersion);
+        //String defaultVersion = NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(DEFAULT_PHP_VERSION);
+        //properties.setProperty(PhpProject.VERSION, defaultVersion);
 
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
 
@@ -439,21 +406,22 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
 
 
     private void configureSources(AntProjectHelper helper, EditableProperties properties) {
-        switch (myType) {
-            case EXISTING:
-                Object obj = getDescriptor().getProperty(SOURCE_ROOT);
-                if (obj != null && obj instanceof File) {
-                    FileObject sourceDir = FileUtil.toFileObject((File) obj);
-                    FileObject projectDir = helper.getProjectDirectory();
+        String sourcePath = null;
+        
+        Object obj = getDescriptor().getProperty(SOURCE_ROOT);
+        Logger.getLogger(getClass().getName()).info(">>>>> SRC ROOT "+obj);
+        if (obj != null && obj instanceof File) {
+            File sourceDir = (File) obj;
+            File projectDir = FileUtil.toFile( helper.getProjectDirectory() );
 
-                    String srcRelated = getRelatedSourcePath(sourceDir, projectDir);
-                    properties.setProperty(PhpProject.SRC, srcRelated);
-                }
-                break;
-            default:
-                String defaultRoot = NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(DEFAULT_SOURCE_ROOT_DIR);
-                properties.setProperty(PhpProject.SRC, defaultRoot);
+            sourcePath = getRelatedSourcePath(sourceDir, projectDir);
+            // do not store anything if no reasonable src specified
+        //} else {
+        //    sourcePath = NbBundle.getBundle(NewPhpProjectWizardIterator.class)
+        //            .getString(DEFAULT_SOURCE_ROOT_DIR);
         }
+        properties.setProperty(PhpProject.SRC, sourcePath);
+        
     }
 
     private void configureEncoding(EditableProperties properties) {
@@ -470,16 +438,17 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
         properties.setProperty(PhpProject.SOURCE_ENCODING, encoding);
     }
 
-    private String getRelatedSourcePath(FileObject sourceFolder, FileObject projectFolder) {
-
-        if (FileUtil.isParentOf(projectFolder, sourceFolder)) {
-            return FileUtil.getRelativePath(projectFolder, sourceFolder);
-        } else if (projectFolder.equals(sourceFolder)) {
-            String defaultRoot = NbBundle.getBundle(NewPhpProjectWizardIterator.class).getString(DEFAULT_SOURCE_ROOT_DIR);
-            return defaultRoot;
+    private String getRelatedSourcePath(File sourceFolder, File projectFolder) {
+        String sourcePath = sourceFolder.getAbsolutePath();
+        String projectPath = projectFolder.getAbsolutePath();
+        
+        if (projectPath.equalsIgnoreCase(sourcePath)) {
+            return CURRENT_FOLDER_PATTERN;
+        } else if (sourcePath.startsWith(projectPath + File.separator)) {
+            String name = sourcePath.substring(projectPath.length() + 1);
+            return name;
         } else {
-            String sourceFullPath = FileUtil.toFile(sourceFolder).getAbsolutePath();
-            return sourceFullPath;
+            return sourcePath;
         }
     }
 
@@ -533,5 +502,4 @@ public final class NewPhpProjectWizardIterator implements InstantiatingIterator 
 
     private int myIndex;
 
-    private WizardType myType;
 }

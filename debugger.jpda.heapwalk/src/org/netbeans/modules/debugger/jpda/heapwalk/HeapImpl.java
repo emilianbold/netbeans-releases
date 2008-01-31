@@ -63,12 +63,10 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 public class HeapImpl implements Heap {
     
     private JPDADebugger debugger;
-    private InstanceNumberCollector instanceNumberCollector;
     
     /** Creates a new instance of HeapImpl */
     public HeapImpl(JPDADebugger debugger) {
         this.debugger = debugger;
-        this.instanceNumberCollector = new InstanceNumberCollector();
     }
     
     public JPDADebugger getDebugger() {
@@ -119,10 +117,6 @@ public class HeapImpl implements Heap {
         return null;
     }
 
-    public InstanceNumberCollector getInstanceNumberCollector() {
-        return instanceNumberCollector;
-    }
-    
     private static final class DebuggerHeapSummary implements HeapSummary {
         
         private JPDADebugger debugger;

@@ -40,8 +40,10 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.util.List;
-import org.netbeans.modules.websvc.saas.model.SaasServices.Header;
-import org.netbeans.modules.websvc.saas.model.SaasServices.SaasMetadata;
+import org.netbeans.modules.websvc.saas.model.jaxb.MethodType;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServicesType;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServicesType.Header;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadataType;
 
 /**
  *
@@ -49,32 +51,19 @@ import org.netbeans.modules.websvc.saas.model.SaasServices.SaasMetadata;
  */
 public class Saas {
     public static final String PROP_PARENT_GROUP = "parentGroup";
-    private static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
-    private static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
+    public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
+    public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
     
-    public static enum Type {
-        WSDL, WADL, CUSTOM
-    }
-    
-    private SaasServices delegate;
+    private SaasServicesType delegate;
     private SaasGroup parentGroup;
-    private Type type;
         
-    public Saas(SaasServices services, SaasGroup parentGroup) {
+    public Saas(SaasServicesType services, SaasGroup parentGroup) {
         this.delegate = services;
         this.parentGroup = parentGroup;
-        String ns = delegate.getType();
-        if (NS_WSDL.equals(ns)) {
-            type = Type.WSDL;
-        } else if (NS_WADL.equals(ns)) {
-            type = Type.WADL;
-        } else {
-            type = Type.CUSTOM;
-        }
     }
 
-    public SaasServices getDelegate() {
+    public SaasServicesType getDelegate() {
         return delegate;
     }
 
@@ -90,15 +79,11 @@ public class Saas {
         return delegate.getUrl();
     }
 
-    public Type getType() {
-        return type;
-    }
-
-    public SaasMetadata getSaasMetadata() {
+    public SaasMetadataType getSaasMetadata() {
         return delegate.getSaasMetadata();
     }
 
-    public List<Method> getMethods() {
+    public List<MethodType> getMethods() {
         return delegate.getMethods().getMethod();
     }
 
@@ -117,6 +102,4 @@ public class Saas {
     public String getApiDoc() {
         return delegate.getApiDoc();
     }
-
-    
 }

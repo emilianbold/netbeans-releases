@@ -95,10 +95,32 @@ public class SearchHistoryAction extends AbstractAction {
                 tc.setDisplayName(title);
                 tc.open();
                 tc.requestActive();
+                /* Stub out for now - on Large Repositories this initial search of the whole
+                 * repo can take some time, better for user to initiate search
                 File [] files = context.getRootFiles().toArray(new File[0]);
                 if (files != null && files.length > 0) {
                     tc.search();
-                }
+                }*/
+            }
+        });
+    }
+    /**
+     * Opens the Seach History panel to view Mercurial Out Changesets that will be sent on next Push to remote repo
+     * using: hg out - to get the data
+     * 
+     * @param title title of the search
+     * @param commitMessage commit message to search for
+     * @param username user name to search for
+     * @param date date of the change in question
+     */ 
+    public static void openOut(final VCSContext context, final String title) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
+                tc.setDisplayName(title);
+                tc.open();
+                tc.requestActive();
+                tc.searchOut();
             }
         });
     }

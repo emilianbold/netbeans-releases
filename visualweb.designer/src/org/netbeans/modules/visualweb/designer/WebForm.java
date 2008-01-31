@@ -157,7 +157,7 @@ public class WebForm implements Designer {
     
 //    /** Maps elements to css boxes. */
 //    private final Map<Element, CssBox> element2cssBox = new WeakHashMap<Element, CssBox>();
-    private static final String KEY_CSS_BOX_MAP = "vwpCssBoxMap"; // NOI18N
+//    private static final String KEY_CSS_BOX_MAP = "vwpCssBoxMap"; // NOI18N
     
 //    // XXX Suspicious listener, it should be removed.
 //    private JspDataObjectListener jspDataObjectListener;
@@ -608,7 +608,8 @@ public class WebForm implements Designer {
 //        }
         // #106433 There needs to be 1:N mapping for  element : box.
         // TODO Revise potential memory leak, boxes linked to the elements!
-        Map<WebForm, WeakReference<CssBox>> webform2box = (Map<WebForm, WeakReference<CssBox>>)element.getUserData(KEY_CSS_BOX_MAP);
+//        Map<WebForm, WeakReference<CssBox>> webform2box = (Map<WebForm, WeakReference<CssBox>>)element.getUserData(KEY_CSS_BOX_MAP);
+        Map<WebForm, WeakReference<CssBox>> webform2box = element2webformMap.get(element);
         if (webform2box == null) {
             // #123003 Avoiding possible leak, the insync FacesModel
             // is not garbaged unless the project is closed.
