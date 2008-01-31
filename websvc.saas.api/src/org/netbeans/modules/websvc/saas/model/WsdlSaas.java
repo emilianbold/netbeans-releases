@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServicesType;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 
 /**
@@ -49,7 +49,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 public class WsdlSaas extends Saas {
     private WsdlModel wsdlModel;
 
-    public WsdlSaas(SaasServices services, SaasGroup parentGroup) {
+    public WsdlSaas(SaasServicesType services, SaasGroup parentGroup) {
         super(services, parentGroup);
     }
     

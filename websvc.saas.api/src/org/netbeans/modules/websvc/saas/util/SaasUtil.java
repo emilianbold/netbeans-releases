@@ -41,13 +41,10 @@
 package org.netbeans.modules.websvc.saas.util;
 
 import com.sun.tools.ws.processor.model.java.JavaMethod;
-import java.io.FileInputStream;
 import java.net.URL;
 import java.util.*;
-import java.text.*;
 import java.io.*;
 
-import org.w3c.dom.*;
 
 import com.sun.tools.ws.processor.model.java.JavaParameter;
 import com.sun.tools.ws.processor.model.java.JavaType;

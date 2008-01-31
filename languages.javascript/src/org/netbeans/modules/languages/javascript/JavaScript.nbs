@@ -354,7 +354,7 @@ SYNTAX_ERROR:Statement: {
 }
 
 AST {
-    #removeSimple:"!FormalParameterList,FunctionBody,FunctionDeclaration,Statement,VariableDeclaration,Parameter,VariableName,PropertyName,PropertyNameAndValue,Initializer,Error,FunctionName,AssignmentExpressionInitial,AssignmentOperator";
+    removeSimple:"!FormalParameterList,FunctionBody,FunctionDeclaration,Statement,VariableDeclaration,Parameter,VariableName,PropertyName,PropertyNameAndValue,Initializer,Error,FunctionName,AssignmentExpressionInitial,AssignmentOperator";
 }
 
 ########### colors #############################################################

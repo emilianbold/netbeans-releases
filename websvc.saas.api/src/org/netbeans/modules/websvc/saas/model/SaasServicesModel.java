@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import org.netbeans.modules.websvc.saas.model.jaxb.Group;
+import org.netbeans.modules.websvc.saas.model.jaxb.GroupType;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
@@ -70,7 +70,7 @@ public class SaasServicesModel {
     }
 
     public SaasServicesModel() {
-        rootGroup = new SaasGroup(null, new Group());
+        rootGroup = new SaasGroup(null, new GroupType());
         init();
     }
     

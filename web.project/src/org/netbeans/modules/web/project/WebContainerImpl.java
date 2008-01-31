@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.project;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,6 +50,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -75,9 +77,6 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
-import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -160,18 +159,13 @@ class WebContainerImpl implements EnterpriseReferenceContainer {
             } catch (ClassNotFoundException ex){}
         }
         
-        WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) webProject.getLookup().lookup(WebProjectClassPathExtender.class);
-        if (cpExtender != null) {
+        if (moduleJarTarget != null) {
             try {
-                AntArtifactChooser.ArtifactItem artifactItems[] = new AntArtifactChooser.ArtifactItem [1];
-                artifactItems[0] = new AntArtifactChooser.ArtifactItem(moduleJarTarget, moduleJarTarget.getArtifactLocations()[0]);
-                cpExtender.addAntArtifacts(WebProjectProperties.JAVAC_CLASSPATH, artifactItems, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES);
+                ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{moduleJarTarget},
+                        new URI[]{moduleJarTarget.getArtifactLocations()[0]}, webProject.getSourceRoots().getRoots()[0], ClassPath.COMPILE);
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
-        } else {
-            Logger.getLogger("global").log(Level.INFO,
-                    "WebProjectClassPathExtender not found in the project lookup of project: " + webProject.getProjectDirectory().getPath());    //NOI18N
         }
         
         writeDD(referencingFile, referencingClass);
