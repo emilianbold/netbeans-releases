@@ -53,19 +53,19 @@ import org.openide.util.NbBundle;
  * 
  * @author John Rice
  */
-public class LogAction extends AbstractAction {
+public class OutAction extends AbstractAction {
     
     private final VCSContext context;
     
-    public LogAction(String name, VCSContext context) {
+    public OutAction(String name, VCSContext context) {
         this.context = context;
         putValue(Action.NAME, name);
     }
     
     public void actionPerformed(ActionEvent e) {
         if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
-        SearchHistoryAction.openHistory(context,
-                NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
+        SearchHistoryAction.openOut(context,
+                NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
     }
         
     public boolean isEnabled() {

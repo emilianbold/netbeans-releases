@@ -70,6 +70,7 @@ import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
+import org.netbeans.modules.mercurial.ui.log.OutAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
 import org.netbeans.modules.mercurial.ui.pull.FetchAction;
@@ -358,13 +359,15 @@ public class MercurialAnnotator extends VCSAnnotator {
                         root.getName()), ctx));
             }
             actions.add(new CloneExternalAction(loc.getString("CTL_PopupMenuItem_CloneOther"), ctx));     // NOI18N        
+            actions.add(null);
+            actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
+            actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
+            actions.add(null);
             actions.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushLocal"), ctx)); // NOI18N
             actions.add(new PushOtherAction(loc.getString("CTL_PopupMenuItem_PushOther"), ctx)); // NOI18N
             actions.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
             actions.add(new PullOtherAction(loc.getString("CTL_PopupMenuItem_PullOther"), ctx)); // NOI18N
             actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
-            actions.add(null);
-            actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
             actions.add(null);
             AnnotateAction tempA = new AnnotateAction(loc.getString("CTL_PopupMenuItem_ShowAnnotations"), ctx); // NOI18N
             if (tempA.visible(nodes)) {
@@ -395,15 +398,17 @@ public class MercurialAnnotator extends VCSAnnotator {
                             root.getName()), ctx));
                 }
 
+                actions.add(null);                
+                actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
+                actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, 
+                        "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
+                actions.add(null);                
                 actions.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, 
                         "CTL_PopupMenuItem_PushLocal"), ctx)); // NOI18N
                 actions.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, 
                         "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
                 actions.add(new MergeAction(NbBundle.getMessage(MercurialAnnotator.class, 
                         "CTL_PopupMenuItem_Merge"), ctx)); // NOI18N
-                actions.add(null);                
-                actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, 
-                        "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
                 actions.add(null);                
 
                 if (!onlyFolders) {

@@ -133,6 +133,7 @@ public class HgCommand {
     private static final String HG_REMOVE_FLAG_FORCE_CMD = "--force"; // NOI18N
     
     private static final String HG_LOG_CMD = "log"; // NOI18N
+    private static final String HG_OUT_CMD = "out"; // NOI18N
     private static final String HG_LOG_LIMIT_ONE_CMD = "-l 1"; // NOI18N
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
     private static final String HG_LOG_TEMPLATE_SHORT_CMD = "--template={rev}\\n{desc|firstline}\\n{date|hgdate}\\n{node|short}\\n"; // NOI18N
@@ -622,11 +623,68 @@ public class HgCommand {
         } 
         return list;
     }
+    
+    private static List<HgLogMessage> processLogMessages(List<String> list, final List<HgLogMessage> messages) {
+        String rev, author, desc, date, id, fm, fa, fd, fc;
+        if (list != null && !list.isEmpty()) {
+            rev = author = desc = date = id = fm = fa = fd = fc = null;
+            boolean bEnd = false;
+            for (String s : list) {
+                if (s.indexOf(HG_LOG_REVISION_OUT) == 0) {
+                    rev = s.substring(HG_LOG_REVISION_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_AUTHOR_OUT) == 0) {
+                    author = s.substring(HG_LOG_AUTHOR_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_DESCRIPTION_OUT) == 0) {
+                    desc = s.substring(HG_LOG_DESCRIPTION_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_DATE_OUT) == 0) {
+                    date = s.substring(HG_LOG_DATE_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_ID_OUT) == 0) {
+                    id = s.substring(HG_LOG_ID_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_FILEMODS_OUT) == 0) {
+                    fm = s.substring(HG_LOG_FILEMODS_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_FILEADDS_OUT) == 0) {
+                    fa = s.substring(HG_LOG_FILEADDS_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_FILEDELS_OUT) == 0) {
+                    fd = s.substring(HG_LOG_FILEDELS_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_FILECOPIESS_OUT) == 0) {
+                    fc = s.substring(HG_LOG_FILECOPIESS_OUT.length()).trim();
+                } else if (s.indexOf(HG_LOG_ENDCS_OUT) == 0) {
+                    bEnd = true;
+                } else {
+                    // Ignore all other lines
+                }
 
+                if (rev != null & bEnd) {
+                    messages.add(new HgLogMessage(rev, author, desc, date, id, fm, fa, fd, fc));
+                    rev = author = desc = date = id = fm = fa = fd = fc = null;
+                    bEnd = false;
+                }
+            }
+        }
+        return messages;
+    }
+    
+    public static HgLogMessage[] getOutMessages(final String rootUrl) {
+        final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
+        final File root = new File(rootUrl);
+        
+        try {
+
+            List<String> list = new LinkedList<String>();
+            list = HgCommand.doOut(root);
+            processLogMessages(list, messages);
+
+        } catch (HgException ex) {
+            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+            DialogDisplayer.getDefault().notifyLater(e);
+        }
+        
+        return messages.toArray(new HgLogMessage[0]);
+    }       
+   
     public static HgLogMessage[] getLogMessages(final String rootUrl, final Set<File> files, String fromRevision, String toRevision) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
-        String rev, author, desc, date, id, fm, fa, fd, fc;
         
         try {
             String headRev = HgCommand.getLastRevision(root, null);
@@ -638,42 +696,8 @@ public class HgCommand {
             list = HgCommand.doLogForHistory(root, 
                     files != null ? new ArrayList<File>(files) : null,
                     fromRevision, toRevision, headRev);
-
-            if (list != null && !list.isEmpty()) {
-                rev = author = desc = date = id = fm = fa = fd = fc = null;
-                boolean bEnd = false;
-                for (String s : list) {
-                    if (s.indexOf(HG_LOG_REVISION_OUT) == 0) {
-                        rev = s.substring(HG_LOG_REVISION_OUT.length()).trim();
-                    } else if (s.indexOf(HG_LOG_AUTHOR_OUT) == 0) {
-                        author = s.substring(HG_LOG_AUTHOR_OUT.length()).trim();
-                    } else if (s.indexOf(HG_LOG_DESCRIPTION_OUT) == 0) {
-                        desc = s.substring(HG_LOG_DESCRIPTION_OUT.length()).trim();
-                    } else if (s.indexOf(HG_LOG_DATE_OUT) == 0) {
-                        date = s.substring(HG_LOG_DATE_OUT.length()).trim();
-                    } else if (s.indexOf(HG_LOG_ID_OUT) == 0) {
-                        id = s.substring(HG_LOG_ID_OUT.length()).trim();
-                    } else if (s.indexOf(HG_LOG_FILEMODS_OUT) == 0) {
-                        fm = s.substring(HG_LOG_FILEMODS_OUT.length()).trim();
-                    } else if (s.indexOf(HG_LOG_FILEADDS_OUT) == 0) {
-                        fa = s.substring(HG_LOG_FILEADDS_OUT.length()).trim();
-                    } else if (s.indexOf(HG_LOG_FILEDELS_OUT) == 0) {
-                        fd = s.substring(HG_LOG_FILEDELS_OUT.length()).trim();
-                    } else if (s.indexOf(HG_LOG_FILECOPIESS_OUT) == 0) {
-                        fc = s.substring(HG_LOG_FILECOPIESS_OUT.length()).trim();
-                    } else if (s.indexOf(HG_LOG_ENDCS_OUT) == 0) {
-                        bEnd = true;
-                    } else {
-                        // Ignore empty lines
-                    }
-                    
-                    if (rev != null & bEnd) {
-                        messages.add(new HgLogMessage(rev, author, desc, date, id, fm, fa, fd, fc));
-                        rev = author = desc = date = id = fm = fa = fd = fc = null;
-                        bEnd = false;
-                    }
-                }
-            }
+            processLogMessages(list, messages);
+            
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -952,6 +976,37 @@ public class HgCommand {
                 command.add(f.getAbsolutePath());
             }
         }  
+        List<String> list = exec(command);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
+             }
+        }
+        return list;
+    }
+    
+    /**
+     * Retrives the Out information for the specified repository
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @return List<String> list of the out entries for the specified repo.
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static List<String> doOut(File repository) throws HgException {
+        if (repository == null ) return null;
+        
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_OUT_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_LOG_DEBUG_CMD);
+        
+        command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
+
         List<String> list = exec(command);
         if (!list.isEmpty()) {
             if (isErrorNoRepository(list.get(0))) {
