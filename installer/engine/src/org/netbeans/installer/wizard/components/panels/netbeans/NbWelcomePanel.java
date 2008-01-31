@@ -587,15 +587,20 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             leftImagePanel = new NbiPanel();
             int width = 0;
             int height = 0;
-            if(ResourceUtils.getResource(WELCOME_PAGE_LEFT_TOP_IMAGE)!=null) {
-                leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_TOP_IMAGE_RESOURCE,
-                        ANCHOR_TOP_LEFT);
+            final String topLeftImage = SystemUtils.resolveString(
+                    System.getProperty(
+                    WELCOME_PAGE_LEFT_TOP_IMAGE_PROPERTY));
+            final String bottomLeftImage = SystemUtils.resolveString(
+                    System.getProperty(
+                    WELCOME_PAGE_LEFT_BOTTOM_IMAGE_PROPERTY));
+            
+            if(topLeftImage!=null) {
+                leftImagePanel.setBackgroundImage(topLeftImage,ANCHOR_TOP_LEFT);
                 width   = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconWidth();
                 height += leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_TOP_LEFT).getIconHeight();
             }
-            if(ResourceUtils.getResource(WELCOME_PAGE_LEFT_BOTTOM_IMAGE)!=null) {
-                leftImagePanel.setBackgroundImage(WELCOME_PAGE_LEFT_BOTTOM_IMAGE_RESOURCE,
-                        ANCHOR_BOTTOM_LEFT);
+            if(bottomLeftImage!=null) {
+                leftImagePanel.setBackgroundImage(bottomLeftImage,ANCHOR_BOTTOM_LEFT);
                 width   = leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconWidth();
                 height += leftImagePanel.getBackgroundImage(NbiPanel.ANCHOR_BOTTOM_LEFT).getIconHeight();
             }
@@ -989,16 +994,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             "cancel.button.text"; // NOI18N
     public static final String DEFAULT_COMPONENT_DESCRIPTION_PROPERTY =
             "default.component.description";
-    public static final String WELCOME_PAGE_LEFT_TOP_IMAGE =
-            "org/netbeans/installer/wizard/components/panels/netbeans/resources/welcome-left-top.png";
-    public static final String WELCOME_PAGE_LEFT_TOP_IMAGE_RESOURCE =
-            FileProxy.RESOURCE_SCHEME_PREFIX +
-            WELCOME_PAGE_LEFT_TOP_IMAGE;
-    public static final String WELCOME_PAGE_LEFT_BOTTOM_IMAGE =
-            "org/netbeans/installer/wizard/components/panels/netbeans/resources/welcome-left-bottom.png";
-    public static final String WELCOME_PAGE_LEFT_BOTTOM_IMAGE_RESOURCE =
-            FileProxy.RESOURCE_SCHEME_PREFIX +
-            WELCOME_PAGE_LEFT_BOTTOM_IMAGE;
+    public static final String WELCOME_PAGE_LEFT_TOP_IMAGE_PROPERTY =
+            "nbi.wizard.ui.swing.welcome.left.top.image";//NOI18N
+    public static final String WELCOME_PAGE_LEFT_BOTTOM_IMAGE_PROPERTY =
+            "nbi.wizard.ui.swing.welcome.left.bottom.image";//NOI18N
     public static final String DEFAULT_CUSTOMIZE_TITLE =
             ResourceUtils.getString(NbWelcomePanel.class,
             "NWP.customize.title"); // NOI18N

@@ -53,10 +53,10 @@ import org.openide.util.NbBundle;
 
 public class PanelOptionsVisual extends SettingsPanel implements ActionListener, PropertyChangeListener {
     
-    private static boolean lastMainClassCheck = true; // XXX Store somewhere
+//    private static boolean lastMainClassCheck = true; // XXX Store somewhere
     
     private PanelConfigureProject panel;
-    private boolean valid;
+//    private boolean valid;
     private String javaDb;
     private String otherJdbc;
     public static final String JAVA_DB = "javadb"; // NOI18N
@@ -180,6 +180,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
 
         org.openide.awt.Mnemonics.setLocalizedText(warCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "WarFile")); // NOI18N
 
+        rubyPlatformLabel.setLabelFor(platforms);
         org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyPlatformLabel")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyHomeBrowse")); // NOI18N
@@ -207,7 +208,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jdbcCheckBox)))
-                .addContainerGap(228, Short.MAX_VALUE))
+                .addContainerGap(237, Short.MAX_VALUE))
             .add(layout.createSequentialGroup()
                 .add(rubyPlatformLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -215,7 +216,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(manageButton)
                 .addContainerGap())
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 630, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 639, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
