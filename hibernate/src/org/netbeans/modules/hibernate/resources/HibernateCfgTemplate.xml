@@ -4,15 +4,6 @@
         "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
   <session-factory>
-    <!-- Data Source Name -->
-    
-    <!-- SQL dialect -->
-    
-    <!-- Debug logging of SQL statements -->
-    
-    <!-- Enable Hibernate's automatic session context management -->
-    
-    <!-- Mapping Files -->
-    
+      
   </session-factory>
 </hibernate-configuration>
