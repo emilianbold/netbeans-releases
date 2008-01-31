@@ -41,9 +41,14 @@
 
 package org.netbeans.modules.spring.beans.model;
 
-import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
+import javax.swing.text.Document;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -55,31 +60,18 @@ import org.openide.util.Exceptions;
  */
 public class SpringConfigFileModelController {
 
-    private final File configFile;
+    private static final Logger LOGGER = Logger.getLogger(SpringConfigFileModelController.class.getName());
+
     private final ConfigFileSpringBeanSource beanSource = new ConfigFileSpringBeanSource();
+    private final File file;
+
+    // XXX better to use a sliding task to avoid creating an instance on every
+    // notifyChange().
     private Updater updater;
     private volatile boolean parsedAtLeastOnce = false;
 
     public SpringConfigFileModelController(File file) {
-        this.configFile = file;
-    }
-
-    /**
-     * Makes the beans up to date, that is, if there has previously been
-     * an external change and the config file hasn't been parsed yet,
-     * it is parsed now. This method needs to be called under exclusive
-     * access.
-     */
-    public void makeUpToDate() throws IOException {
-        assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-        synchronized (this) {
-            if (updater == null && parsedAtLeastOnce) {
-                // Already up to date.
-                return;
-            }
-            updater = null;
-        }
-        parse();
+        this.file = file;
     }
 
     /**
@@ -95,25 +87,57 @@ public class SpringConfigFileModelController {
     }
 
     /**
-     * Notifies the controller that the config file has changed. This
-     * method can be called in any thread.
+     * Makes the beans up to date, that is, if there has previously been
+     * an external change and the config file hasn't been parsed yet,
+     * it is parsed now. This method needs to be called under exclusive
+     * access.
      */
-    public void notifyChange() {
+    public void makeUpToDate() throws IOException {
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         synchronized (this) {
-            updater = new Updater();
+            if (updater == null && parsedAtLeastOnce) {
+                // Already up to date.
+                return;
+            }
+            // XXX we need to use the data from the update, since it could
+            // have been a document-based updater.
+            updater = null;
+        }
+        FileObject configFO = FileUtil.toFileObject(file);
+        if (configFO != null) {
+            parse(configFO, null);
+        }
+    }
+
+    public void notifyChange(FileObject configFO, Document document) {
+        if (document != null) {
+            LOGGER.log(Level.FINE, "Notified of document change to {0}", configFO);
+        } else {
+            LOGGER.log(Level.FINE, "Notified of document to {0}", configFO);
+        }
+        synchronized (this) {
+            updater = new Updater(configFO, document);
             ExclusiveAccess.getInstance().postTask(updater);
         }
     }
 
-    private void parse() throws IOException {
+    private void parse(FileObject configFO, Document document) throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         if (!parsedAtLeastOnce) {
             parsedAtLeastOnce = true;
         }
-        beanSource.parse(configFile);
+        beanSource.parse(configFO, document);
     }
 
     private final class Updater implements Runnable {
+
+        private final FileObject configFile;
+        private final Document document;
+
+        public Updater(FileObject configFile, Document document) {
+            this.configFile = configFile;
+            this.document = document;
+        }
 
         public void run() {
             assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
@@ -129,7 +153,7 @@ public class SpringConfigFileModelController {
                 updater = null;
             }
             try {
-                parse();
+                parse(configFile, document);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
