@@ -19,6 +19,8 @@
 package org.netbeans.modules.soa.ui.form.valid;
 
 import java.util.List;
+import org.netbeans.modules.soa.ui.form.valid.Validator.Reason;
+import org.netbeans.modules.soa.ui.form.valid.Validator.Severity;
 
 /**
  *
@@ -28,10 +30,8 @@ public interface ValidStateManager {
 
     boolean isValid();
 
-    void setValid(Validator validator, boolean flag);
-    void setValid(Validator validator, boolean flag, String reason);
-    void setValid(Validator validator, boolean flag, List<String> reasons);
-
+    void processValidationResults(Validator validator);
+    
     /**
      * Allow to include/exclude the validator to ignore list. 
      * The validators in the ignore list are not taken into consideration.
@@ -42,8 +42,21 @@ public interface ValidStateManager {
     
     void clearReasons();
 
-    String getReason();
-    List<String> getReasons();
+    /**
+     * If severity isn't specified (null value) then the reason with 
+     * any severity is returned.
+     * @param severity
+     * @return
+     */
+    Reason getFistReason(Severity severity);
+    
+    /**
+     * If severity isn't specified (null value) then the reasons with 
+     * any severity are returned.
+     * @param severity
+     * @return
+     */
+    List<Reason> getReasons(Severity severity);
 
     public String getHtmlReasons();
 

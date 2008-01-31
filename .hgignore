@@ -708,6 +708,8 @@
 ^websvc.restkit/nbms$
 ^websvc.restkit/nbms/.*\.nbm$
 ^websvc.rest.samples/src/org/netbeans/modules/websvc/rest/samples/resources/.*\.zip$
+^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/jaxb$
+^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl$
 ^websvc.utilities/test/unit/data/JavaApp/dist$
 ^j2ee.dd.webservice/src/org/netbeans/modules/j2ee/dd/impl/webservices/model_1_1$
 ^j2ee.dd.webservice/src/org/netbeans/modules/j2ee/dd/impl/webservices/model_1_2$
