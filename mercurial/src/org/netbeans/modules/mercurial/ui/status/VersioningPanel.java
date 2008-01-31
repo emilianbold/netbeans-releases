@@ -136,38 +136,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         }
     }    
     
-    public void refreshUpdateTargets(File repository) {
-        if( repository == null) return;
-        
-        java.util.List<String> targetRevsList = HgCommand.getRevisions(repository, HG_UPDATE_TARGET_LIMIT);
-        Set<String>  targetRevsSet = new LinkedHashSet<String>();
-        
-        int size;
-        if( targetRevsList == null){
-            size = 0;
-            targetRevsSet.add(NbBundle.getMessage(VersioningPanel.class, "MSG_Update_Target_Default")); // NOI18N
-        }else{
-            size = targetRevsList.size();
-            int i = 0 ;
-            while(i < size){
-                targetRevsSet.add(targetRevsList.get(i));
-                i++;
-            }
-        }
-        
-        // TODO: need to add action handle so when Otehr is selected a 
-        // dialog is brought up to select revision
-        //if(size > HG_UPDATE_TARGET_LIMIT){
-        //    targetRevsSet.add(NbBundle.getMessage(VersioningPanel.class, "MSG_Target_Other")); // NOI18N
-        //}
-        
-        ComboBoxModel targetsModel = new DefaultComboBoxModel(new Vector<String>(targetRevsSet));                        
-        updateTargetComboBox.setModel(targetsModel);
-        
-        if (targetRevsSet.size() > 0 ) {         
-            updateTargetComboBox.setSelectedIndex(0);       
-        }                 
-    }
         
     public void propertyChange(PropertyChangeEvent evt) {
 
@@ -261,13 +229,13 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                 public void run() {
                     syncTable.setTableModel(new SyncFileNode[0]);
                     File root = HgUtils.getRootFile(HgUtils.getCurrentContext(null));
-                    if (root != null) {
+                    /* #126311: Optimize UI for Large repos
+                     if (root != null) {
                         String[] info = getRepositoryBranchInfo(root);
                         String rev = info != null ? info[1] : null;
                         String changeset = info != null ? info[2] : null;
                         setRepositoryBranchInfo(rev, changeset);
-                        refreshUpdateTargets(root);                
-                    }
+                    }*/
                  }
             });
             return;
@@ -290,6 +258,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
             if (files == null || files.length == 0) return;
 
+            /* #126311: Optimize UI for Large repos
             File root = mercurial.getTopmostManagedParent(files[0]);
             String[] info = getRepositoryBranchInfo(root);
             String branchName = info != null ? info[0] : null;
@@ -299,7 +268,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
                 branchTitle = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_BranchTitle", branchName); // NOI18N
             } else {
                 branchTitle = NbBundle.getMessage(VersioningPanel.class, "CTL_VersioningView_UnnamedBranchTitle"); // NOI18N
-            }
+            }*/
             if (nodes.length > 0) {
                 boolean stickyCommon = false;
                 for (int i = 1; i < nodes.length; i++) {
@@ -312,16 +281,17 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
             } else {
                 tableColumns = null;
             }
+            /* #126311: Optimize UI for Large repos
             setRepositoryBranchInfo(rev, changeset);                
-            refreshUpdateTargets(root);                
-            
+            */
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     if (nodes.length > 0) {
                         syncTable.setColumns(tableColumns);
                         setVersioningComponent(syncTable.getComponent());
                     } else {
-                        parentTopComponent.setBranchTitle(branchTitle);
+                        /* #126311: Optimize UI for Large repos
+                        parentTopComponent.setBranchTitle(branchTitle); */
                         setVersioningComponent(noContentComponent);
                     }
                     syncTable.setTableModel(nodes);
@@ -397,14 +367,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
      * Performs the "cvs update" command on all diplayed roots. // NOI18N
      */
     private void onUpdateAction() {
-        int index = updateTargetComboBox.getSelectedIndex();
-        if(index == 0){
-            UpdateAction.update(context, null);
-        }else{
-            String revStr = (String) updateTargetComboBox.getSelectedItem();
-            revStr = revStr.substring(0, revStr.indexOf(" ")); // NOI18N
-            UpdateAction.update(context, revStr);
-        }
+        UpdateAction.update(context, null);
         parentTopComponent.contentRefreshed();
     }
     
@@ -730,8 +693,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         btnUpdate = new javax.swing.JButton();
         btnCommit = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        updateTargetComboBox = new javax.swing.JComboBox();
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
@@ -797,12 +758,6 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         jPanel5.setOpaque(false);
         jPanel2.add(jPanel5);
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(VersioningPanel.class, "CTL_Versioning_Status_Update_Target")); // NOI18N
-        jPanel2.add(jLabel1);
-
-        updateTargetComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default - tip>" }));
-        jPanel2.add(updateTargetComboBox);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -823,11 +778,11 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         else if (evt.getSource() == btnDiff) {
             VersioningPanel.this.btnDiffActionPerformed(evt);
         }
-        else if (evt.getSource() == btnCommit) {
-            VersioningPanel.this.btnCommitActionPerformed(evt);
-        }
         else if (evt.getSource() == btnUpdate) {
             VersioningPanel.this.btnUpdateActionPerformed(evt);
+        }
+        else if (evt.getSource() == btnCommit) {
+            VersioningPanel.this.btnCommitActionPerformed(evt);
         }
     }// </editor-fold>//GEN-END:initComponents
 
@@ -854,7 +809,6 @@ private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JToolBar jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -863,7 +817,6 @@ private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel statusLabel;
-    private javax.swing.JComboBox updateTargetComboBox;
     // End of variables declaration//GEN-END:variables
     
 }

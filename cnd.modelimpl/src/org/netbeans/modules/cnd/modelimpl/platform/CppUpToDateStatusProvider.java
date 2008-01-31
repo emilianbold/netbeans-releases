@@ -63,6 +63,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
         return current;
     }
 
+    // PhaseRunner
     public void run(Phase phase) {
         UpToDateStatus status;
         switch (phase) {
@@ -75,6 +76,10 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
             firePropertyChange(PROP_UP_TO_DATE, current, status);
             current = status;
         }
+    }
+
+    public boolean isValid() {
+        return true;
     }
     
     public static synchronized CppUpToDateStatusProvider get(BaseDocument doc) {
@@ -90,4 +95,5 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider implements
 
         return provider;
     }
+
 }

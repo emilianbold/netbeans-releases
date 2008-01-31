@@ -54,6 +54,7 @@ import org.netbeans.modules.bpel.model.api.BaseScope;
 import org.netbeans.modules.bpel.model.api.BpelContainer;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.Branches;
+import org.netbeans.modules.bpel.model.api.CompletionCondition;
 import org.netbeans.modules.bpel.model.api.Correlation;
 import org.netbeans.modules.bpel.model.api.CorrelationContainer;
 import org.netbeans.modules.bpel.model.api.CorrelationsHolder;
@@ -63,6 +64,7 @@ import org.netbeans.modules.bpel.model.api.ElseIf;
 import org.netbeans.modules.bpel.model.api.EventHandlers;
 import org.netbeans.modules.bpel.model.api.FaultHandlers;
 import org.netbeans.modules.bpel.model.api.Flow;
+import org.netbeans.modules.bpel.model.api.ForEach;
 import org.netbeans.modules.bpel.model.api.If;
 import org.netbeans.modules.bpel.model.api.OnAlarmEvent;
 import org.netbeans.modules.bpel.model.api.OnEvent;
@@ -78,7 +80,7 @@ import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.model.api.references.BpelReference;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
 import org.netbeans.modules.bpel.model.api.support.Initiate;
-import org.netbeans.modules.bpel.model.impl.FindHelperImpl;
+import org.netbeans.modules.bpel.model.impl.services.ExpressionUpdater;
 import org.netbeans.modules.xml.wsdl.model.Operation;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.RequestResponseOperation;
@@ -95,6 +97,45 @@ import static org.netbeans.modules.soa.ui.util.UI.*;
  * @version 2007.05.03
  */
 public final class Validator extends org.netbeans.modules.bpel.validation.util.Validator {
+
+    @Override
+    public void visit(ForEach forEach) {
+//out();
+//out("forEach: " + forEach);
+//out("forEach.getCounterName: " + forEach.getCounterName());
+      String counter = forEach.getCounterName();
+
+      if (counter == null) {
+        return;
+      }
+      CompletionCondition completionCondition = forEach.getCompletionCondition();
+
+      if (completionCondition == null) {
+        return;
+      }
+      Branches branches = completionCondition.getBranches();
+
+      if (branches == null) {
+        return;
+      }
+      String expression = branches.getContent();
+
+      if (expression == null) {
+        return;
+      }
+      Collection<String> variables = ExpressionUpdater.getInstance().getUsedVariables(expression);
+
+      if (variables == null) {
+        return;
+      }
+//out("variables: " + variables);
+//out();
+      for (String variable : variables) {
+        if (variable.equals(counter)) {
+          addError("FIX_Branches_Cant_Use_Counter", branches, counter); // NOI18N
+        }
+      }
+    }
 
     @Override
     public void visit(EventHandlers handlers) {
@@ -160,8 +201,8 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
         samePortType(receive1, receive2) &&
         sameOperation(receive1, receive2))
       {
-        addWarning("FIX_Receives_in_OnEventOnAlarm", receive1);
-        addWarning("FIX_Receives_in_OnEventOnAlarm", receive2);
+        addWarning("FIX_Receives_in_OnEventOnAlarm", receive1); // NOI18N
+        addWarning("FIX_Receives_in_OnEventOnAlarm", receive2); // NOI18N
       }
     }
 
@@ -271,8 +312,8 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
       content = content.toLowerCase();
 
       if (
-        content.contains("true") || content.contains("false")) {
-        addError("FIX_Branches", branches); // NOI18N
+        content.contains("true") || content.contains("false")) { // NOI18N
+        addError("FIX_Branches_Must_Be_Integer", branches); // NOI18N
       }
     }
 
@@ -285,9 +326,6 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
       checkReplies(replies);
       // # 109412
       checkHolders(holders);
-
-      // # 109677
-      // checkUniqueImaOperationUsage(process);
     }
 
     private void visitEntities(List<BpelEntity> entities, List<Reply> replies, List<CorrelationsHolder> holders) {
@@ -526,240 +564,13 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
         }
     }
 
-    private void addError(String bundleKey, Collection<Component> collection, Object... values) {
-        String str = i18n(getClass(), bundleKey);
-
-        if (values != null && values.length > 0) {
-            str = MessageFormat.format(str, values);
-        }
-        for(Component component: collection) {
-            ResultItem resultItem = new ResultItem(this, ResultType.ERROR, component, str);
-            getResultItems().add(resultItem);
-        }
-    }
-
-//    @Override
-//    public void visit(Receive receive) {
-//      // # 109677
-//      collectImaOperationUsage(receive);
-//    }
-//
-//    @Override
-//    public void visit(OnEvent onEvent) {
-//      // # 109677
-//      collectImaOperationUsage(onEvent);
-//    }
-//    
-//    @Override
-//    public void visit(OnMessage onMessage) {
-//      // # 109677
-//      collectImaOperationUsage(onMessage);
-//    }
-//    
-//    /**
-//     * Collects usages of WSDL operations by inbound message activities (IMA).
-//     * It is intended to fix the issue #109677
-//     * 
-//     * It is implied that only operation makes sense because of the 
-//     * reference to single operation is used instead of an operation name.
-//     */ 
-//    private void collectImaOperationUsage(OperationReference ima) {
-//        BpelEntity imaEntity = (BpelEntity)ima;
-//        WSDLReference<Operation> operRef = ima.getOperation();
-//        if (operRef != null) {
-//            Operation operation = operRef.get();
-//            if (operation != null) {
-//                // Register the operation in the map
-//                List<BpelEntity> imaList = operationToImaListMap.get(operation);
-//                if (imaList == null) {
-//                    imaList = new ArrayList<BpelEntity>();
-//                    operationToImaListMap.put(operation, imaList);
-//                }
-//                imaList.add((BpelEntity)ima);
-//            }
-//        }
-//    }
-//
-//    /**
-//     * Checks that a WSDL operation is used only once per BPEL process.
-//     * It has to be applied to inbound message activities (IMA) only.
-//     * It is intended to fix the issue #109677
-//     * 
-//     * It is implied that only operation makes sense because of the 
-//     * reference to single operation is used instead of an operation name.
-//     */ 
-//    private void checkUniqueImaOperationUsage(Process process) {
-//        ResultItem resultItem;
-//        Set<Operation> operSet = operationToImaListMap.keySet();
-//        for (Operation operation : operSet) {
-//            List<BpelEntity> imaList = operationToImaListMap.get(operation);
-//            if (imaList == null || imaList.size() < 2) {
-//                // Skip operation if it is used less then once
-//                continue;
-//            }
-//            //
-//            // Here is an unsupported case - the operation is used more then once!
-//            // Now it's necessary to decide if it an error or warning has to be shown.
-//            // Check is there a couple of IMAs, which can be executed concurrently.
-//            //
-//            // Prepare location path for each IMA
-//            class ImaPath {
-//                BpelEntity mIma;
-//                List<BpelContainer> mLocationPath;
-//                
-//                ImaPath(BpelEntity ima) {
-//                    mIma = ima;
-//                    mLocationPath = FindHelperImpl.getObjectPathTo(ima);
-//                }
-//            }
-//            ArrayList<ImaPath> imaPathList = new ArrayList<ImaPath>();
-//            for (BpelEntity ima : imaList) {
-//                ImaPath newImaPath = new ImaPath(ima);
-//                imaPathList.add(newImaPath);
-//            }
-//            //
-//            for (int index1 = 0; index1 < imaPathList.size(); index1++) {
-//                for (int index2 = index1 + 1; index2 < imaPathList.size(); index2++) {
-//                    //
-//                    ImaPath imaPath1 = imaPathList.get(index1);
-//                    ImaPath imaPath2 = imaPathList.get(index2);
-//                    //
-//                    // Compare location paths
-//                    int commonParentDepthIndex = -1; // the index of the common parent in both location paths
-//                    BpelContainer commonParent = null; // The closest common parent
-//                    Iterator<BpelContainer> itr1 = imaPath1.mLocationPath.iterator();
-//                    Iterator<BpelContainer> itr2 = imaPath2.mLocationPath.iterator();
-//                    while (itr1.hasNext() && itr2.hasNext()) {
-//                        //
-//                        BpelContainer bpelCont1 = itr1.next();
-//                        BpelContainer bpelCont2 = itr2.next();
-//                        if (bpelCont1.equals(bpelCont2)) {
-//                            commonParent = bpelCont1;
-//                            commonParentDepthIndex++;
-//                        } else {
-//                            // The previous parent was the last common parent.
-//                            break;
-//                        }
-//                    }
-//                    //
-//                    int nextIndex = commonParentDepthIndex + 1;
-//                    BpelEntity nextToCommon1 = null;
-//                    if (imaPath1.mLocationPath.size() <= nextIndex) {
-//                        nextToCommon1 = imaPath1.mIma;
-//                    } else {
-//                        nextToCommon1 = imaPath1.mLocationPath.get(nextIndex);
-//                    }
-//                    //
-//                    BpelEntity nextToCommon2 = null;
-//                    if (imaPath2.mLocationPath.size() <= nextIndex) {
-//                        nextToCommon2 = imaPath2.mIma;
-//                    } else {
-//                        nextToCommon2 = imaPath2.mLocationPath.get(nextIndex);
-//                    }
-//                    //
-//                    // Check if the common parent is the FLow activity
-//                    if (commonParent instanceof Flow) {
-//                        String message = i18n(getClass(), "FIX_ConcurrentFlowImaToOperationConnection"); // NOI18N
-//                        addDoubleResultItem(ResultType.ERROR, imaPath1.mIma, imaPath2.mIma, message);
-//                    }
-//                    //
-//                    // Check if the common parent is the Pick activity
-//                    // and both entity is the OnMessage and they are 
-//                    // the direct children of the Pick.
-//                    if (commonParent instanceof Pick && 
-//                            imaPath1.mIma instanceof OnMessage && 
-//                            imaPath2.mIma instanceof OnMessage && 
-//                            imaPath1.mIma == nextToCommon1 && 
-//                            imaPath2.mIma == nextToCommon2) {
-//                        String message = i18n(getClass(), "FIX_AmbiguousOnMessageToOperationConnection"); // NOI18N
-//                        addDoubleResultItem(ResultType.ERROR, imaPath1.mIma, imaPath2.mIma, message);
-//                    }
-//                    //
-//                    // Check if the common parent is the EventHandlers activity
-//                    if (commonParent instanceof EventHandlers) { 
-//                        // If both entity is the OnEvent and they are 
-//                        // the direct children of the EventHandler
-//                        if (imaPath1.mIma instanceof OnEvent && 
-//                            imaPath2.mIma instanceof OnEvent && 
-//                            imaPath1.mIma == nextToCommon1 && 
-//                            imaPath2.mIma == nextToCommon2) {
-//                            //
-//                            String message = i18n(getClass(), "FIX_AmbiguousOnEventToOperationConnection"); // NOI18N
-//                            addDoubleResultItem(ResultType.ERROR, imaPath1.mIma, imaPath2.mIma, message);
-//                        }
-//                        else { 
-//                            // 2 IMA in different OnEvent or OnAlarm branches 
-//                            String message = i18n(getClass(), "FIX_ConcurrentEventImaToOperationConnection"); // NOI18N
-//                            addDoubleResultItem(ResultType.ERROR, imaPath1.mIma, imaPath2.mIma, message);
-//                        }
-//                    } 
-//                    //
-//                    // Check if the common parent is the Process or Scope and one of the 
-//                    // location path go through an EventHandler
-//                    if (commonParent instanceof BaseScope && (
-//                            nextToCommon1 instanceof EventHandlers ||
-//                            nextToCommon2 instanceof EventHandlers)) {
-//                        String message = i18n(getClass(), "FIX_ConcurrentOutEventImaToOperationConnection"); // NOI18N
-//                        addDoubleResultItem(ResultType.ERROR, imaPath1.mIma, imaPath2.mIma, message);
-//                    }
-//                }
-//            }
-//            //
-//            // Show the BPEL SE warning
-//            String message = i18n(getClass(), "FIX_AmbiguousImaToOperationConnection", operation.getName(), "" + imaList.size()); // NOI18N
-//            List<PartnerLink> relatedPLinks = lookForPLinks(process, operation);
-//
-//            for (PartnerLink pl : relatedPLinks) {
-//                resultItem = new ResultItem(this, ResultType.WARNING, pl, message);
-//                getResultItems().add(resultItem);
-//            }
-//        }
-//    }
-//    
-//    private List<PartnerLink> lookForPLinks(Process process, Operation operation) {
-//        List<PartnerLink> result = new ArrayList<PartnerLink>();
-//        PartnerLinkContainer plc = process.getPartnerLinkContainer();
-//
-//        if (plc != null) {
-//            for (PartnerLink pl : plc.getPartnerLinks()) {
-//                WSDLReference<Role> myRoleRef = pl.getMyRole();
-//                if (myRoleRef != null) {
-//                    Role myRole = myRoleRef.get();
-//                    if (myRole != null) {
-//                        NamedComponentReference<PortType> portTypeRef = 
-//                                myRole.getPortType();
-//                        if (portTypeRef != null) {
-//                            PortType portType = portTypeRef.get();
-//                            if (portType != null) {
-//                                Collection<Operation> operations = 
-//                                        portType.getOperations();
-//                                if (operations != null && operations.contains(operation)) {
-//                                    result.add(pl);
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        return result;
-//    }
-//
-//    private void addDoubleResultItem(ResultType resultType, Component comp1, Component comp2, String message) {
-//        ResultItem resultItem;
-//        resultItem = new ResultItem(this, resultType, comp1, message);
-//        getResultItems().add(resultItem);
-//        resultItem = new ResultItem(this, resultType, comp2, message);
-//        getResultItems().add(resultItem);
-//    }
-
     @Override
     public void visit(Import imp) {
         Model model = getModel(imp);
 
         if (model == null) {
-            addInvalidImportModelError(imp);
-            return;
+          addError("FIX_NotWellFormedImport", imp); // NOI18N
+          return;
         }
         validate(model);
     }
@@ -772,11 +583,4 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
         }
         return ImportHelper.getSchemaModel(imp, false);
     }
-
-    private void addInvalidImportModelError(BpelEntity bpelEntity) {
-        ResultItem resultItem = new ResultItem(this, ResultType.WARNING, bpelEntity, i18n(getClass(), "FIX_NotWellFormedImport")); // NOI18N
-        getResultItems().add(resultItem);
-    }
-
-//    private HashMap<Operation, List<BpelEntity>> operationToImaListMap = new HashMap<Operation, List<BpelEntity>>();
 }

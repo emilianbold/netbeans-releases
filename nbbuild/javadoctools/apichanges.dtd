@@ -189,7 +189,7 @@ details of compatibility or possibility of workarounds.
 
 <!--
 Optional note about the person(s) committing the change.
-Note that authors of changes are specified by (CVS)
+Note that authors of changes are specified by (netbeans.org)
 login ID, not full name.
 -->
 <!ELEMENT author EMPTY>

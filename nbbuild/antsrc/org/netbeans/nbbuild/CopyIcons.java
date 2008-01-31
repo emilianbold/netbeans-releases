@@ -78,7 +78,7 @@ import org.apache.tools.ant.types.FileSet;
  * not listed by default, they can be shown by setting attribute 'showempty' to true.
  * 
  * Required attributes are:
- *   nbsrcroot ... root of NetBeans CVS checkout
+ *   nbsrcroot ... root of NetBeans Hg checkout
  *   destdir   ... dir for copying icons
  * 
  * @author Milan Kubec
@@ -99,9 +99,9 @@ public class CopyIcons extends MatchingTask {
         destDir = f;
     }
     
-    int userDepth = 4;
-    public void setDepth(String s) {
-        userDepth = Integer.parseInt(s);
+    int userDepth = 2;
+    public void setDepth(int n) {
+        userDepth = n;
     }
     
     String iconIncludes = "src/**/*.png,src/**/*.gif";

@@ -373,11 +373,14 @@ public class Mapper extends JPanel {
 
             invalidateNodes();
             repaintNodes();
+            
+            revalidate();
+            repaint();
 
             firePropertyChange(MODEL_PROPERTY, oldModel, model);
         }
     }
-
+    
     public MapperModel getModel() {
         return model;
     }
@@ -793,6 +796,18 @@ public class Mapper extends JPanel {
 
             validNodes = true;
         }
+    }
+    
+    @Override
+    public void doLayout() {
+        validateNodes();
+        super.doLayout();
+    }
+   
+    @Override
+    public Dimension getPreferredSize() {
+        validateNodes();
+        return super.getPreferredSize();
     }
 
     Dimension getPreferredTreeSize() {

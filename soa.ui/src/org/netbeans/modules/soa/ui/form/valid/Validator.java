@@ -29,13 +29,60 @@ public interface Validator {
     void revalidate(boolean fast);
     void clearReasons();
 
-    boolean doFastValidation();
-    boolean doDetailedValidation();
+    void doFastValidation();
+    void doDetailedValidation();
+    void doValidation(boolean fast);
 
-    String getReason();
-    List<String> getReasons();
+    Reason getReason();
+    List<Reason> getReasons();
+    List<Reason> getReasons(Severity severity);
+    
+    /**
+     * If severity isn't specified (null value) then the reasons with 
+     * any severity are teken into consideration.
+     * @param severity
+     * @return
+     */
+    boolean hasReasons(Severity severity);
 
     interface Provider {
         Validator getValidator();
+    }
+    
+    final class Reason {
+        private Severity mSeverity;
+        private String mText;
+        
+        public Reason(Severity severity, String text) {
+            assert text != null && severity != null;
+            mSeverity = severity;
+            mText = text;
+        }
+        
+        public Severity getSeverity() {
+            return mSeverity;
+        }
+        
+        public String getText() {
+            return mText;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Reason) {
+                return ((Reason)obj).mSeverity == mSeverity &&
+                ((Reason)obj).mText.equals(mText);
+            }
+            return false;
+        }
+        
+        @Override
+        public String toString() {
+            return "Severity: " + mSeverity + " Text: " + mText;
+        }
+    }
+    
+    enum Severity {
+        ERROR, WARNING;
     }
 }

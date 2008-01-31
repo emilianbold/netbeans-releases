@@ -1990,7 +1990,10 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
         protected void addNotify() {
             assert Trace.trace("insync.live", "LBN.addNotify");
             super.addNotify();
-            parent.getDesignContext().addDesignContextListener(this);
+            // Bug Fix# 125961 Use weak listener
+            DesignContextListener weakDesignContextListener = 
+            	WeakListeners.create(DesignContextListener.class, this, parent.getDesignContext());
+            parent.getDesignContext().addDesignContextListener(weakDesignContextListener);
             refreshKeys();
         }
         
@@ -1999,7 +2002,6 @@ public class DesignBeanNode extends AbstractNode implements DesignBeanListener {
          */
         protected void removeNotify() {
             assert Trace.trace("insync.live", "LBN.removeNotify");
-            parent.getDesignContext().removeDesignContextListener(this);
             setKeys(Collections.EMPTY_SET);
             super.removeNotify();
         }

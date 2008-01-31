@@ -42,6 +42,7 @@
 package org.netbeans.modules.spring.api.beans;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.spring.beans.ConfigFileManagerAccessor;
@@ -111,11 +112,29 @@ public final class ConfigFileManager {
      * Modifies the list of config file groups. This method needs to be called
      * under {@code mutex()} write access.
      *
+     * @param  groups the groups to add; never null.
      * @throws IllegalStateException if the called does not hold {@code mutex()}
      *         write access.
      */
     public void putConfigFileGroups(List<ConfigFileGroup> groups) {
+        Parameters.notNull("groups", groups);
+        if (!mutex().isWriteAccess()) {
+            throw new IllegalStateException("The putConfigFileGroups() method should be called under mutex() write access");
+        }
         impl.putConfigFileGroups(groups);
+    }
+
+    /**
+     * Saves the list of config file groups, for example to a persistent storage.
+     * This method needs to be called under {@code mutex()} write access.
+     *
+     * @throws IOException if an error occured.
+     */
+    public void save() throws IOException {
+        if (!mutex().isWriteAccess()) {
+            throw new IllegalStateException("The save() method should be called under mutex() write access");
+        }
+        impl.save();
     }
 
     /**

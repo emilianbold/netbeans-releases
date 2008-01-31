@@ -27,7 +27,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -51,7 +50,6 @@ import org.netbeans.modules.bpel.properties.ImportRegistrationHelper;
 import org.netbeans.modules.bpel.properties.Util;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
-import org.netbeans.modules.xml.wsdl.model.WSDLModelFactory;
 import org.openide.ErrorManager;
 import static org.netbeans.modules.bpel.properties.PropertyType.*;
 import org.netbeans.modules.soa.ui.form.EditorLifeCycleAdapter;
@@ -63,7 +61,6 @@ import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListen
 import org.netbeans.modules.bpel.properties.Constants;
 import org.netbeans.modules.bpel.properties.ResolverUtility;
 import org.netbeans.modules.bpel.properties.editors.controls.EmptyComboBoxModel;
-import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.wsdl.model.Definitions;
 import org.netbeans.modules.xml.wsdl.model.PortType;
 import org.netbeans.modules.xml.wsdl.model.Import;
@@ -73,12 +70,9 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PartnerLinkType;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.Role;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLUtilities;
 import org.netbeans.modules.xml.wsdl.model.visitor.WSDLModelVisitor;
-import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.bpel.properties.importchooser.WSDLFileImportDialog;
 import org.netbeans.modules.xml.catalogsupport.util.ProjectUtilities;
@@ -86,7 +80,6 @@ import org.netbeans.modules.xml.catalogsupport.util.ProjectWSDL;
 import org.netbeans.modules.xml.schema.ui.basic.UIUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileUtil;
 
 /**
  * @author nk160297
@@ -121,6 +114,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
       return FileOwnerQuery.getOwner(((DataObject) myEditor.getLookup().lookup(DataObject.class)).getPrimaryFile());
     }
     
+    @Override
     public void createContent() {
         initComponents();
         bindControls2PropertyNames();
@@ -147,6 +141,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         //
         cbxPartnerLinkType.setRenderer(new DefaultListCellRenderer() {
             static final long serialVersionUID = 1L;
+            @Override
             public Component getListCellRendererComponent(
                     JList list, Object value, int index,
                     boolean isSelected, boolean cellHasFocus) {
@@ -232,6 +227,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         fldNewPLTName.getDocument().addDocumentListener(docListener);
         //
         FocusListener fl = new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent e) {
                 inputDelayTimer.stop();
                 getValidator().revalidate(true);
@@ -297,7 +293,8 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
             }
         }
     }
-    
+
+    @Override
     public boolean initControls() {
         try {
             // remove selection to guarantee that selection will always send event
@@ -369,6 +366,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         // vlv
         setWrapper(getCurrentWsdlFile());
         myWsdlWrapperName.addFocusListener(new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent e) {
                 getValidator().revalidate(true);
             }
@@ -559,7 +557,8 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         }
         getValidator().revalidate(true);
     }
-    
+
+    @Override
     public boolean applyNewValues() {
         try {
             PartnerLink pLink = myEditor.getEditedObject();
@@ -818,7 +817,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
         if (myValidator == null) {
             myValidator = new DefaultValidator(myEditor, ErrorMessagesBundle.class) {
                 
-                public boolean doFastValidation() {
+                public void doFastValidation() {
                     // vlv
                     WsdlWrapper wrapper =
                        new WsdlWrapper(
@@ -828,35 +827,41 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                     FileObject file = wrapper.getFile();
 
                     if (file != null && !file.canWrite()) {
-                        addReasonKey("ERR_FILE_IS_READ_ONLY", myWsdlWrapperName.getText()); //NOI18N
+                        addReasonKey(Severity.ERROR, 
+                                "ERR_FILE_IS_READ_ONLY", 
+                                myWsdlWrapperName.getText()); //NOI18N
                     }
 
                     String plName = fldPartnerLinkName.getText();
                     //
                     if (plName == null || plName.length() == 0) {
-                        addReasonKey("ERR_NAME_EMPTY"); //NOI18N
+                        addReasonKey(Severity.ERROR, "ERR_NAME_EMPTY"); //NOI18N
                     }
                     //
                     if (cbxWsdlFile.getSelectedIndex() == -1) {
-                        addReasonKey("ERR_WSDL_FILE_NOT_SPECIFIED"); //NOI18N
+                        addReasonKey(Severity.ERROR, 
+                                "ERR_WSDL_FILE_NOT_SPECIFIED"); //NOI18N
                     }
                     //
                     if (rbtnUseExistingPLT.isSelected()) {
                         if (cbxPartnerLinkType.getSelectedIndex() == -1) {
-                            addReasonKey("ERR_PL_TYPE_NOT_SPECIFIED"); //NOI18N
+                            addReasonKey(Severity.ERROR, 
+                                    "ERR_PL_TYPE_NOT_SPECIFIED"); //NOI18N
                         }
                         //
                         if (myRole == null && partnerRole == null) {
-                            addReasonKey("ERR_PL_TYPE_WITHOUT_ROLES"); //NOI18N
+                            addReasonKey(Severity.ERROR, 
+                                    "ERR_PL_TYPE_WITHOUT_ROLES"); //NOI18N
                         }
                     } else {
                         String pltName = fldNewPLTName.getText();
                         if (pltName == null || pltName.length() == 0) {
-                            addReasonKey("ERR_PLT_NAME_EMPTY"); //NOI18N
+                            addReasonKey(Severity.ERROR, "ERR_PLT_NAME_EMPTY"); //NOI18N
                         } else {
                             boolean isCorrectPLTName = Util.isNCName(pltName);
                             if (!isCorrectPLTName) {
-                                addReasonKey("ERR_PLT_NAME_INVALID"); //NOI18N
+                                addReasonKey(Severity.ERROR, 
+                                        "ERR_PLT_NAME_INVALID"); //NOI18N
                             } else {
                                 // vlv
                                 WSDLModel wsdlModel = getCurrentWsdlModel(true, false);
@@ -864,7 +869,8 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                                 if (wsdlModel != null) {
                                     isCorrectPLTName = Util.isUniquePartnerLinkTypeName(wsdlModel, pltName);
                                     if (!isCorrectPLTName) {
-                                        addReasonKey("ERR_PLT_NAME_NOT_UNIQUE"); //NOI18N
+                                        addReasonKey(Severity.ERROR, 
+                                                "ERR_PLT_NAME_NOT_UNIQUE"); //NOI18N
                                     }
                                 }
                             }
@@ -872,42 +878,49 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                         //
                         if (!chbxProcessWillImplement.isSelected() &&
                                 !chbxPartnerWillImpement.isSelected()) {
-                            addReasonKey("ERR_NEW_PLT_ROLES_NOT_SPECIFIED"); //NOI18N
+                            addReasonKey(Severity.ERROR, 
+                                    "ERR_NEW_PLT_ROLES_NOT_SPECIFIED"); //NOI18N
                         }
                         //
                         if (chbxProcessWillImplement.isSelected()) {
                             String myRoleName = fldProcessRoleName.getText();
                             if (myRoleName == null || myRoleName.length() == 0) {
-                                addReasonKey("ERR_PLT_MY_ROLE_NAME_EMPTY"); //NOI18N
+                                addReasonKey(Severity.ERROR, 
+                                        "ERR_PLT_MY_ROLE_NAME_EMPTY"); //NOI18N
                             } else {
                                 boolean isCorrectMyRoleName = Util.isNCName(myRoleName);
                                 if (!isCorrectMyRoleName) {
-                                    addReasonKey("ERR_PLT_MY_ROLE_NAME_INVALID"); //NOI18N
+                                    addReasonKey(Severity.ERROR, 
+                                            "ERR_PLT_MY_ROLE_NAME_INVALID"); //NOI18N
                                 }
                             }
                             //
                             int processPortTypeIndex =
                                     cbxProcessPortType.getSelectedIndex();
                             if (processPortTypeIndex == -1) {
-                                addReasonKey("ERR_PLT_MY_ROLE_PORT_TYPE_EMPTY"); //NOI18N
+                                addReasonKey(Severity.ERROR, 
+                                        "ERR_PLT_MY_ROLE_PORT_TYPE_EMPTY"); //NOI18N
                             }
                         }
                         //
                         if (chbxPartnerWillImpement.isSelected()) {
                             String myRoleName = fldPartnerRoleName.getText();
                             if (myRoleName == null || myRoleName.length() == 0) {
-                                addReasonKey("ERR_PLT_PARTNER_ROLE_NAME_EMPTY"); //NOI18N
+                                addReasonKey(Severity.ERROR, 
+                                        "ERR_PLT_PARTNER_ROLE_NAME_EMPTY"); //NOI18N
                             } else {
                                 boolean isCorrectPartnerRoleName = Util.isNCName(myRoleName);
                                 if (!isCorrectPartnerRoleName) {
-                                    addReasonKey("ERR_PLT_PARTNER_ROLE_NAME_INVALID"); //NOI18N
+                                    addReasonKey(Severity.ERROR, 
+                                            "ERR_PLT_PARTNER_ROLE_NAME_INVALID"); //NOI18N
                                 }
                             }
                             //
                             int partnerPortTypeIndex =
                                     cbxPartnerPortType.getSelectedIndex();
                             if (partnerPortTypeIndex == -1) {
-                                addReasonKey("ERR_PLT_PARTNER_ROLE_PORT_TYPE_EMPTY"); //NOI18N
+                                addReasonKey(Severity.ERROR, 
+                                        "ERR_PLT_PARTNER_ROLE_PORT_TYPE_EMPTY"); //NOI18N
                             }
                         }
                         //
@@ -918,15 +931,12 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
                             if (myRoleName != null
                                     && myRoleName.length() > 0
                                     && myRoleName.equals(partnerRoleName)) {
-                                addReasonKey("ERR_PLT_ROLES_NOT_UNIQUE"); //NOI18N
+                                addReasonKey(Severity.ERROR, 
+                                        "ERR_PLT_ROLES_NOT_UNIQUE"); //NOI18N
                             }
                         }
                     }
-                    //
-                    //
-                    return isReasonsListEmpty();
                 }
-                
             };
         }
         return myValidator;
@@ -946,6 +956,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
             setIcon(new ImageIcon(NodeType.WSDL_FILE.getImage()));
         }
         
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
@@ -959,6 +970,7 @@ public class PartnerLinkMainPanel extends EditorLifeCycleAdapter
     private class PortTypeRenderer extends DefaultListCellRenderer {
         static final long serialVersionUID = 1L;
         
+        @Override
         public Component getListCellRendererComponent(
                 JList list, Object value, int index,
                 boolean isSelected, boolean cellHasFocus) {
