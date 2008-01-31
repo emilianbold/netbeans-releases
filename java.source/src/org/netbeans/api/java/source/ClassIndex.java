@@ -663,7 +663,7 @@ public final class ClassIndex {
 
                             public void run(CompilationInfo _null) throws Exception {
                                 for (ClassIndexListener l : listeners) {
-                                    l.rootsRemoved(e);
+                                    l.rootsAdded(e);
                                 }                        
                             }
                         }, JavaSource.Priority.MAX);                        
