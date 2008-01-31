@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hibernate.loaders.mapping;
 
-import java.io.IOException;
+package org.netbeans.modules.hibernate.loaders.cfg;
+
+import java.util.Map;
+import java.util.WeakHashMap;
+import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Dongmei Cao
  */
-
-public class HibernateMappingDataLoader extends UniFileLoader {
-
-    public static final String REQUIRED_MIME = "text/x-hibernate-mapping+xml";
-    private static final long serialVersionUID = 1L;
-
-    public HibernateMappingDataLoader() {
-        super("org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject");
+public class HibernateCfgMetadata {
+    private static final HibernateCfgMetadata DEFAULT = new HibernateCfgMetadata();
+    private Map ddMap;
+    
+    private HibernateCfgMetadata() {
+        ddMap = new WeakHashMap(5);
+    }
+    
+    /**
+     * Use this to get singleton instance of provider
+     *
+     * @return singleton instance
+     */
+    public static HibernateCfgMetadata getDefault() {
+        return DEFAULT;
+    }
+    
+    /**
+     * Provides root element as defined in hibernate-configuration-3.0.dtd
+     * 
+     * @param fo FileObject represnting Hibernate configuration file
+     * It can be retrieved from {@link PersistenceProvider} for any file
+     * @throws java.io.IOException 
+     * @return root element of schema or null if it doesn't exist for provided 
+     * persistence.xml deployment descriptor
+     * @see PersistenceProvider
+     */
+    public HibernateConfiguration getRoot(FileObject fo) throws java.io.IOException {
+        if (fo == null) {
+            return null;
+        }
+        HibernateConfiguration configuration = null;
+        synchronized (ddMap) {
+            configuration = (HibernateConfiguration) ddMap.get(fo);
+            if (configuration == null) {
+                configuration = HibernateConfiguration.createGraph(fo.getInputStream());
+                ddMap.put(fo, configuration);
+            }
+        }
+        return configuration;
     }
 
-    @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(HibernateMappingDataLoader.class, "LBL_HibernateMapping_loader_name");
-    }
-
-    @Override
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME);
-    }
-
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new HibernateMappingDataObject(primaryFile, this);
-    }
-
-    @Override
-    protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions";
-    }
 }

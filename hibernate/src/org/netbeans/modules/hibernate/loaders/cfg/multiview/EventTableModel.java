@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,89 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.hibernate.loaders.mapping;
+package org.netbeans.modules.hibernate.loaders.cfg.multiview;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiDataObject;
-import org.openide.loaders.UniFileLoader;
+import javax.swing.table.AbstractTableModel;
+import org.netbeans.modules.hibernate.cfg.model.Event;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * 
  * @author Dongmei Cao
  */
+public class EventTableModel extends AbstractTableModel {
 
-public class HibernateMappingDataLoader extends UniFileLoader {
+    private static final String[] columnNames = {
+        NbBundle.getMessage(EventTableModel.class, "LBL_Class")
+    ,
+        };
+    // Matches the attribute name used in org.netbeans.modules.hibernate.cfg.model.Event
+    private static final String attrName = "Class";
+    private Event event;
 
-    public static final String REQUIRED_MIME = "text/x-hibernate-mapping+xml";
-    private static final long serialVersionUID = 1L;
-
-    public HibernateMappingDataLoader() {
-        super("org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject");
+    public EventTableModel(Event event) {
+        this.event = event;
     }
 
     @Override
-    protected String defaultDisplayName() {
-        return NbBundle.getMessage(HibernateMappingDataLoader.class, "LBL_HibernateMapping_loader_name");
+    public String getColumnName(int column) {
+        return columnNames[column];
     }
 
     @Override
-    protected void initialize() {
-        super.initialize();
-        getExtensions().addMimeType(REQUIRED_MIME);
+    public void setValueAt(Object value, int row, int column) {
+    // TODO
     }
 
-    protected MultiDataObject createMultiObject(FileObject primaryFile) throws DataObjectExistsException, IOException {
-        return new HibernateMappingDataObject(primaryFile, this);
+    public Object getValueAt(int row, int column) {
+
+        if (event == null) {
+            return null;
+        } else {
+            String attrValue = event.getAttributeValue(Event.LISTENER, row, attrName);
+            return attrValue;
+        }
+    }
+
+    public int getRowCount() {
+        if (event == null) {
+            return 0;
+        } else {
+            return event.sizeListener();
+        }
+    }
+
+    public int getColumnCount() {
+        return columnNames.length;
     }
 
     @Override
-    protected String actionsContext() {
-        return "Loaders/" + REQUIRED_MIME + "/Actions";
+    public boolean isCellEditable(int row, int column) {
+        return (false);
+    }
+
+    public void addRow(String listenerClass) {
+        
+        int index = event.addListener(true);
+        event.setAttributeValue(Event.LISTENER, index, attrName, listenerClass);
+
+        fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
+    }
+
+    public void editRow(int row, String listenerClass) {
+        event.setAttributeValue(Event.LISTENER, row, attrName, listenerClass);
+
+        fireTableRowsUpdated(row, row);
+    }
+
+    public void removeRow(int row) {
+        event.removeListener(row);
+
+        fireTableRowsDeleted(row, row);
     }
 }
