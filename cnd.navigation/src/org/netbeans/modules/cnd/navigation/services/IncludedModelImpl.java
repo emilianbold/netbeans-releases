@@ -59,10 +59,12 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
     private Map<CsmFile,Set<CsmFile>> map;
     private Action[] actions;
     private Action close;
+    private boolean direction;
        
     /** Creates a new instance of IncludedModel */
     public IncludedModelImpl(CsmFile file, Action[] actions, boolean whoIncludes, boolean plain, boolean recursive) {
         this.actions = actions;
+        direction = whoIncludes;
         if (whoIncludes) {
             map = buildWhoIncludes(file);
         } else {
@@ -99,6 +101,10 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
     
     public Map<CsmFile,Set<CsmFile>> getModel(){
         return map;
+    }
+
+    public boolean isDownDirection() {
+        return !direction;
     }
     
     private Map<CsmFile,Set<CsmFile>> buildWhoIncludes(CsmFile file){
@@ -172,4 +178,5 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
     public void setCloseWindowAction(Action close) {
         this.close = close;
     }
+
 }

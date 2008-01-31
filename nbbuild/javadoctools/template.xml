@@ -91,7 +91,7 @@ cause it to fail.
         <!-- Source files: -->
         <property name="javadoc.src" location="${javadoc.base}/src"/>
         <!-- Extra HTML files, normally in **/doc-files/*.html: -->
-        <property name="javadoc.docfiles" location="../dummy"/>
+        <property name="javadoc.docfiles" location="no-doc-files"/>
         <condition property="javadoc.overview.generate.generic">
             <not>
                 <isset property="javadoc.overview" />

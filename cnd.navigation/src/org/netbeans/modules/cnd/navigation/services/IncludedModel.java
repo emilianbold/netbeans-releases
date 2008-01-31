@@ -37,6 +37,6 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
  */
 public interface IncludedModel extends HierarchyActions {
 
-    public Map<CsmFile, Set<CsmFile>> getModel();
-
+    Map<CsmFile, Set<CsmFile>> getModel();
+    boolean isDownDirection();
 }
