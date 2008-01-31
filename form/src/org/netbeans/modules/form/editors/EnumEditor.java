@@ -61,8 +61,18 @@ public class EnumEditor extends PropertyEditorSupport
     private Object[] enumerationValues;
 
     public EnumEditor(Object[] enumerationValues) {
-        translateEnumLabels(enumerationValues);
+        this(enumerationValues, true);
+    }
+
+    public EnumEditor(Object[] enumerationValues, boolean translate) {
+        if (translate) {
+            translateEnumLabels(enumerationValues);
+        }
         this.enumerationValues = enumerationValues;
+    }
+    
+    protected Object[] getEnumerationValues() {
+        return enumerationValues;
     }
 
     // --------

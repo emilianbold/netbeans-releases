@@ -1,3 +1,4 @@
+~$
 /build$
 /nbproject/private$
 /test/(coverage|lib|results|work)$
@@ -278,9 +279,6 @@
 ^jellytools/test/qa-functional/data/SampleProject/nbproject/genfiles\.properties$
 ^jemmy/dist$
 ^jemmy/run$
-^jemmy/target$
-^jemmy/velocity\.log$
-^jemmy/xdocs$
 ^junit/manifest-subst\.mf$
 ^junit/test/qa-functional/data/projects/JunitTestProject/dist$
 ^lexer/gen/netbeans$
@@ -707,6 +705,8 @@
 ^websvc.restkit/nbms$
 ^websvc.restkit/nbms/.*\.nbm$
 ^websvc.rest.samples/src/org/netbeans/modules/websvc/rest/samples/resources/.*\.zip$
+^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/jaxb$
+^websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl$
 ^websvc.utilities/test/unit/data/JavaApp/dist$
 ^j2ee.dd.webservice/src/org/netbeans/modules/j2ee/dd/impl/webservices/model_1_1$
 ^j2ee.dd.webservice/src/org/netbeans/modules/j2ee/dd/impl/webservices/model_1_2$
@@ -765,7 +765,3 @@
 ^xtest/server/logs$
 ^xtest/server/build-info$
 ^xtest/test/instance/results$
-\.orig$
-\.orig\..*$
-\.chg\..*$
-\.rej$

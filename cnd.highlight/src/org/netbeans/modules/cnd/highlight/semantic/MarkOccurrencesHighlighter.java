@@ -131,13 +131,16 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
 
     public static final Color ES_COLOR = new Color( 175, 172, 102 ); 
 
-    // Runnable
+    private boolean valid = true;
+    // PhaseRunner
     public void run(Phase phase) {
+        if (!SemanticHighlightingOptions.getEnableMarkOccurences()) {
+            clean();
+            valid = false;
+            return;
+        }
+        
         if (phase == Phase.PARSED || phase == Phase.INIT /*&& getCsmFile().isParsed()*/) {
-            if (!SemanticHighlightingOptions.getEnableMarkOccurences()) {
-                clean();
-                return;
-            }
             Collection<CsmReference> out = getOccurences();
             if (out == null) {
                 if (SemanticHighlightingOptions.getKeepMarks()) {
@@ -159,6 +162,10 @@ public class MarkOccurrencesHighlighter extends HighlighterBase {
         } else if (phase == Phase.CLEANUP) {
             clean();
         } 
+    }
+    
+    public boolean isValid() {
+        return valid;
     }
     
     private Collection<CsmReference> getOccurences() {

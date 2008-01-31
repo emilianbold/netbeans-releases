@@ -150,19 +150,24 @@ public final class ServerRegistry implements java.io.Serializable {
         init();
         return instances;
     }
-    private synchronized void addPlugin(FileObject fo) {
+    private void addPlugin(FileObject fo) {
         String name = ""; //NOI18N
         try {
             if (fo.isFolder()) {
                 name = fo.getName();
-                if (serversMap().containsKey(name)) {
-                    return;
-                }
-                Server server = new Server(fo);
-                serversMap().put(name, server);
+                Server server = null;
+                synchronized (this) {
+                    if (serversMap().containsKey(name)) {
+                        return;
+                    }
+                    server = new Server(fo);
+                    serversMap().put(name, server);
 
-                fetchInstances(server);
-                firePluginListeners(server, true);
+                    fetchInstances(server);
+                }
+                if (server != null) {
+                    firePluginListeners(server, true);
+                }
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "Plugin " + name + " installation failed"); //NOI18N
@@ -171,10 +176,12 @@ public final class ServerRegistry implements java.io.Serializable {
     }
 
     // PENDING should be private
-    synchronized void removePlugin(FileObject fo) {
-        String name = fo.getName();
-        if(serversMap().containsKey(name)) {
-            Server server = (Server) serversMap().get(name);
+    void removePlugin(FileObject fo) {
+        Server server = null;
+        synchronized (this) {
+            String name = fo.getName();
+
+            server = (Server) serversMap().get(name);
             if (server != null) {
                 // remove all registered server instances of the given server type
                 ServerInstance[] instances = getServerInstances();
@@ -186,7 +193,9 @@ public final class ServerRegistry implements java.io.Serializable {
                 }
             }
             serversMap().remove(name);
-            firePluginListeners(server,false);
+        }
+        if (server != null) {
+            firePluginListeners(server, false);
         }
     }
 
@@ -266,7 +275,7 @@ public final class ServerRegistry implements java.io.Serializable {
         return (ServerInstance) instancesMap().get(url);
     }
 
-    public synchronized void removeServerInstance(String url) {
+    public void removeServerInstance(String url) {
         if (url == null)
             return;
 
@@ -276,7 +285,10 @@ public final class ServerRegistry implements java.io.Serializable {
             defaultInstance = null;
         }
 
-        ServerInstance instance = (ServerInstance) instancesMap().remove(url);
+        ServerInstance instance = null;
+        synchronized (this) {
+            instance = (ServerInstance) instancesMap().remove(url);
+        }
         if (instance != null) {
             fireInstanceListeners(url, false);
             removeInstanceFromFile(url);
@@ -413,6 +425,7 @@ public final class ServerRegistry implements java.io.Serializable {
                     }
 
                     DeploymentManager manager = server.getDisconnectedDeploymentManager(url);
+                    // FIXME this shouldn't be called in synchronized block
                     if (manager != null) {
                         fireInstanceListeners(url, true);
                         return true;
