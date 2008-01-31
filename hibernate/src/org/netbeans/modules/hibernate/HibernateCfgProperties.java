@@ -49,6 +49,30 @@ import org.hibernate.cfg.Environment;
  * @author Dongmei Cao
  */
 public class HibernateCfgProperties {
+    
+    public static final String[] dialects = new String[]{
+        "org.hibernate.dialect.DB2Dialect",
+        "org.hibernate.dialect.DB2400Dialect",
+        "org.hibernate.dialect.DB2390Dialect",
+        "org.hibernate.dialect.PostgreSQLDialect",
+        "org.hibernate.dialect.MySQLDialect",
+        "org.hibernate.dialect.MySQLInnoDBDialect",
+        "org.hibernate.dialect.MySQLMyISAMDialect",
+        "org.hibernate.dialect.OracleDialect",
+        "org.hibernate.dialect.Oracle9Dialect",
+        "org.hibernate.dialect.SybaseDialect",
+        "org.hibernate.dialect.SybaseAnywhereDialect",
+        "org.hibernate.dialect.SQLServerDialect",
+        "org.hibernate.dialect.SAPDBDialect",
+        "org.hibernate.dialect.InformixDialect",
+        "org.hibernate.dialect.HSQLDialect",
+        "org.hibernate.dialect.IngresDialect",
+        "org.hibernate.dialect.ProgressDialect",
+        "org.hibernate.dialect.MckoiDialect",
+        "org.hibernate.dialect.InterbaseDialect",
+        "org.hibernate.dialect.PointbaseDialect",
+        "org.hibernate.dialect.FirebirdDialect"
+    };
 
     public final static String[] jdbcProps = new String[] {
         Environment.DRIVER,
@@ -146,7 +170,7 @@ public class HibernateCfgProperties {
         possiblePropertyValues.put(Environment.USER, null);
         possiblePropertyValues.put(Environment.PASS, null);
 
-        possiblePropertyValues.put(Environment.DIALECT, HibernateDialects.dialects);
+        possiblePropertyValues.put(Environment.DIALECT, dialects);
         possiblePropertyValues.put(Environment.SHOW_SQL, TRUE_FALSE);
         possiblePropertyValues.put(Environment.FORMAT_SQL, TRUE_FALSE);
         possiblePropertyValues.put(Environment.DEFAULT_SCHEMA, null);
