@@ -44,6 +44,7 @@ package org.netbeans.modules.uml.integration.netbeans.actions;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -105,7 +106,7 @@ public final class ReverseEngineerAction extends AbstractAction
         
 {
     ArrayList<String> sourceFiles;
-    Project sourceProject = null;
+    WeakReference<Project> sourceProjectRef = null;
     boolean projectSelected = false;
     IProject umlIProject;
     
@@ -125,8 +126,9 @@ public final class ReverseEngineerAction extends AbstractAction
     private boolean enable(Lookup context)
     {
         projectSelected = false;
-        sourceProject = null;
-        
+        sourceProjectRef = null;
+        Project srcProject = null;
+
         Collection c = context.lookupAll(Project.class);
         if (c.size() > 1)
             return false;
@@ -134,29 +136,32 @@ public final class ReverseEngineerAction extends AbstractAction
         if (c.size() == 1)
         {
             projectSelected = true;
-            sourceProject = (Project)c.toArray()[0];
-            if (!hasSourceGroups(sourceProject))
+            srcProject = (Project)c.toArray()[0];
+            if (!hasSourceGroups(srcProject))
                 return false;
             
-            sourceProject = (Project)c.toArray()[0];
+            srcProject = (Project)c.toArray()[0];
         }
         
         for(DataObject dobj: context.lookupAll(DataObject.class))
         {
-            if (sourceProject == null)
+            if (srcProject == null)
             {
-                sourceProject = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
-                if (sourceProject ==  null)
+                srcProject = FileOwnerQuery.getOwner(dobj.getPrimaryFile());
+                if (srcProject ==  null)
                     return false;
             }
             
-            if (sourceProject != FileOwnerQuery.getOwner(dobj.getPrimaryFile()))
+            if (srcProject != FileOwnerQuery.getOwner(dobj.getPrimaryFile()))
                 return false;
             
-            if (projectSelected && sourceProject != null)
+            if (projectSelected && srcProject != null) 
+            {
+                sourceProjectRef = new WeakReference(srcProject);
                 return true;
+            }
             
-            Sources sources = (Sources)sourceProject
+            Sources sources = (Sources)srcProject
                     .getLookup().lookup(Sources.class);
             if (sources == null)
                 return false;
@@ -184,9 +189,10 @@ public final class ReverseEngineerAction extends AbstractAction
             
         }
         
-        if (sourceProject == null)
+        if (srcProject == null)
             return false;
         
+        sourceProjectRef = new WeakReference(srcProject);
         return true;
     }
     
@@ -269,7 +275,8 @@ public final class ReverseEngineerAction extends AbstractAction
         
         public void actionPerformed(ActionEvent e)
         {
-            perform(sourceProject, projectSelected, context);
+            if (sourceProjectRef != null) 
+                perform(sourceProjectRef.get(), projectSelected, context);
         }
         
         
