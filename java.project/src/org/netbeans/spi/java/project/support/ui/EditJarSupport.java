@@ -78,40 +78,40 @@ public final class EditJarSupport {
      * 
      */
     public static final class Item {
-        private File jarFile;
-        private File sourceFile;
-        private File javadocFile;
+        private String jarFile;
+        private String sourceFile;
+        private String javadocFile;
 
         /**
          * classpath file location, can be relative or absolute path (relative to project basedir)
          */
-        public File getJarFile() {
+        public String getJarFile() {
             return jarFile;
         }
 
-        public void setJarFile(File jarFile) {
+        public void setJarFile(String jarFile) {
             this.jarFile = jarFile;
         }
 
         /**
          * source file location, can be relative or absolute path (relative to project basedir)
          */
-        public File getSourceFile() {
+        public String getSourceFile() {
             return sourceFile;
         }
 
-        public void setSourceFile(File sourceFile) {
+        public void setSourceFile(String sourceFile) {
             this.sourceFile = sourceFile;
         }
 
         /**
          * javadoc file location, can be relative or absolute path (relative to project basedir)
          */
-        public File getJavadocFile() {
+        public String getJavadocFile() {
             return javadocFile;
         }
 
-        public void setJavadocFile(File javadocFile) {
+        public void setJavadocFile(String javadocFile) {
             this.javadocFile = javadocFile;
         }
     }

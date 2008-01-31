@@ -76,18 +76,18 @@ public class FileChooserAccessory extends javax.swing.JPanel
     private final File sharedLibrariesFolder;
     private boolean copyAllowed;
     private JFileChooser chooser;
-    private List<File> copiedRelativeFiles = null;
+    private List<String> copiedRelativeFiles = null;
     /** In RelativizeFilePathCustomizer scenario this property holds preselected file */
     private File usetThisFileInsteadOfOneFromChooser = null;
 
     /**
      * Constructor for usage from RelativizeFilePathCustomizer.
      */
-    public FileChooserAccessory(File baseFolder, File sharedLibrariesFolder, boolean copyAllowed, File selectedFile) {
+    public FileChooserAccessory(File baseFolder, File sharedLibrariesFolder, boolean copyAllowed, String selectedFile) {
         this(null, baseFolder, sharedLibrariesFolder, copyAllowed);
-        usetThisFileInsteadOfOneFromChooser = selectedFile;
+        usetThisFileInsteadOfOneFromChooser = PropertyUtils.resolveFile(baseFolder, selectedFile); //TODO is this correct, David?
         enableAccessory(true);
-        update(Collections.singletonList(selectedFile));
+        update(Collections.singletonList(usetThisFileInsteadOfOneFromChooser));
     }
     
     /**
@@ -122,14 +122,14 @@ public class FileChooserAccessory extends javax.swing.JPanel
         enableAccessory(false);
     }
 
-    public File[] getFiles() {
+    public String[] getFiles() {
         assert isRelative();
         if (isCopy()) {
-            return copiedRelativeFiles.toArray(new File[copiedRelativeFiles.size()]);
+            return copiedRelativeFiles.toArray(new String[copiedRelativeFiles.size()]);
         } else {
             List<File> files = Arrays.asList(getSelectedFiles());
-            List<File> l = getRelativeFiles(files);
-            return l.toArray(new File[l.size()]);
+            List<String> l = getRelativeFiles(files);
+            return l.toArray(new String[l.size()]);
         }
     }
     
@@ -277,12 +277,12 @@ public class FileChooserAccessory extends javax.swing.JPanel
         absolutePath.setToolTipText(absolute.toString());
     }
 
-    private List<File> getRelativeFiles(List<File> files) {
-        List<File> fs = new ArrayList<File>();
+    private List<String> getRelativeFiles(List<File> files) {
+        List<String> fs = new ArrayList<String>();
         for (File file : files) {
             String s = PropertyUtils.relativizeFile(baseFolder, file);
             if (s != null) {
-                fs.add(new File(s));
+                fs.add(s);
             }
         }
         return fs;

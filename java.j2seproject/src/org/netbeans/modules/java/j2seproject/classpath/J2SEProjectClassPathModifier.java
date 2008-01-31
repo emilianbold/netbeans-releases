@@ -144,12 +144,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 if (toAdd == null) {
                                     toAdd = classPathRoots[i];
                                 }
-                                final File f;
-                                if (LibrariesSupport.isAbsoluteURL(toAdd)) {
-                                    f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
-                                } else {
-                                    f = LibrariesSupport.convertURLToFile(toAdd);
-                                }
+                                final String f = LibrariesSupport.convertURLToFile(toAdd);
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }

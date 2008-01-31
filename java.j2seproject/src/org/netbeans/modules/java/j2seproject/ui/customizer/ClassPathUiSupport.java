@@ -241,7 +241,7 @@ public class ClassPathUiSupport {
         return indexes;        
     }
 
-    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, File files[] ) {
+    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, String[] files ) {
         
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[files.length];

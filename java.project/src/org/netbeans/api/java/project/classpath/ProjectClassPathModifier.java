@@ -163,7 +163,7 @@ public class ProjectClassPathModifier {
                     if (LibrariesSupport.isAbsoluteURL(urlToAdd)) {
                         fo = URLMapper.findFileObject(urlToAdd);
                     } else {
-                        File f = PropertyUtils.resolveFile(projectFolderFile, LibrariesSupport.convertURLToFile(urlToAdd).getPath());
+                        File f = PropertyUtils.resolveFile(projectFolderFile, LibrariesSupport.convertURLToFile(urlToAdd));
                         fo = FileUtil.toFileObject(f);
                     }
                     if (fo == null) {
