@@ -231,12 +231,18 @@ public class HgModuleConfig {
             name = getUserName();
         if (name.length() > 0) 
             props.setProperty("username", name); // NOI18N
+        else
+            props.setProperty("username", ""); // NOI18N
         name = hgconfig.getDefaultPull(false);
         if (name.length() > 0) 
             props.setProperty("default-pull", name); // NOI18N
+        else
+            props.setProperty("default-pull", ""); // NOI18N
         name = hgconfig.getDefaultPush(false);
         if (name.length() > 0) 
             props.setProperty("default-push", name); // NOI18N
+        else
+            props.setProperty("default-push", ""); // NOI18N
         return props;
     }
 
