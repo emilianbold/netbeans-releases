@@ -42,12 +42,16 @@
 package org.netbeans.modules.groovy.editor.test;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.CharBuffer;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
@@ -83,6 +87,11 @@ public class GroovyTestBase extends NbTestCase {
         assertNotNull(fo);
 
         return fo;
+    }
+
+    protected TestCompilationInfo getInfo(String file) throws Exception {
+        FileObject fileObject = getTestFile(file);
+        return getInfo(fileObject);
     }
 
     public TestCompilationInfo getInfo(FileObject fileObject) throws IOException {
@@ -175,6 +184,95 @@ public class GroovyTestBase extends NbTestCase {
         } finally {
             os.close();
         }
+    }
+
+    protected void assertDescriptionMatches(String relFilePath,
+            String description, boolean includeTestName, String ext) throws Exception {
+        File groovyFile = getDataFile(relFilePath);
+        if (!groovyFile.exists()) {
+            NbTestCase.fail("File " + groovyFile + " not found.");
+        }
+
+        File goldenFile = getDataFile(relFilePath + (includeTestName ? ("." + getName()) : "") + ext);
+        
+        if (!goldenFile.exists()) {
+            if (!goldenFile.createNewFile()) {
+                NbTestCase.fail("Cannot create file " + goldenFile);
+            }
+            FileWriter fw = new FileWriter(goldenFile);
+            try {
+                fw.write(description);
+            }
+            finally{
+                fw.close();
+            }
+            NbTestCase.fail("Created generated golden file " + goldenFile + "\nPlease re-run the test.");
+        }
+
+        String expected = readFile(goldenFile);
+
+        // Because the unit test differ is so bad...
+        if (false) { // disabled
+            if (!expected.equals(description)) {
+                BufferedWriter fw = new BufferedWriter(new FileWriter("/tmp/expected.txt"));
+                fw.write(expected);
+                fw.close();
+                fw = new BufferedWriter(new FileWriter("/tmp/actual.txt"));
+                fw.write(description);
+                fw.close();
+            }
+        }
+
+        assertEquals(expected.trim(), description.trim());
+    }
+
+    protected File getDataSourceDir() {
+        // Check whether token dump file exists
+        // Try to remove "/build/" from the dump file name if it exists.
+        // Otherwise give a warning.
+        File inputFile = getDataDir();
+        String inputFilePath = inputFile.getAbsolutePath();
+        boolean replaced = false;
+        if (inputFilePath.indexOf(pathJoin("build", "test")) != -1) {
+            inputFilePath = inputFilePath.replace(pathJoin("build", "test"), pathJoin("test"));
+            replaced = true;
+        }
+        if (!replaced && inputFilePath.indexOf(pathJoin("test", "work", "sys")) != -1) {
+            inputFilePath = inputFilePath.replace(pathJoin("test", "work", "sys"), pathJoin("test", "unit"));
+            replaced = true;
+        }
+        if (!replaced) {
+            System.err.println("Warning: Attempt to use dump file " +
+                    "from sources instead of the generated test files failed.\n" +
+                    "Patterns '/build/test/' or '/test/work/sys/' not found in " + inputFilePath
+            );
+        }
+        inputFile = new File(inputFilePath);
+        assertTrue(inputFile.exists());
+        
+        return inputFile;
+    }
+
+    protected File getDataFile(String relFilePath) {
+        File inputFile = new File(getDataSourceDir(), relFilePath);
+        return inputFile;
+    }
+
+    private static String pathJoin(String... chunks) {
+        StringBuilder result = new StringBuilder(File.separator);
+        for (String chunk : chunks) {
+            result.append(chunk).append(File.separatorChar);            
+        }
+        return result.toString();
+    }
+    
+    public static String readFile(File f) throws Exception {
+        FileReader r = new FileReader(f);
+        int fileLen = (int)f.length();
+        CharBuffer cb = CharBuffer.allocate(fileLen);
+        r.read(cb);
+        cb.rewind();
+        return cb.toString();
     }
 
 }

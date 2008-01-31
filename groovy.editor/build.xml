@@ -5,17 +5,5 @@
 <project name="org.netbeans.modules.groovy.editor" default="netbeans" basedir=".">
     <description>Builds, tests, and runs the project org.netbeans.modules.groovy.editor</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
-    
-    <taskdef name="groovyc"
-             classpath="external/groovy-all-1.5.0.jar" 
-             classname="org.codehaus.groovy.ant.Groovyc"/>
 
-    <target name="do-test-build" depends="projectized-common.do-test-build">
-        <antcall target="projectized-common.do-test-build"/>
-        <groovyc verbose="true" srcdir="${test.unit.src.dir}" destdir="${build.test.unit.classes.dir}">
-            <classpath refid="test.unit.cp"/>
-            <classpath path="${build.test.unit.classes.dir}" />
-        </groovyc>
-    </target>
-    
 </project>
