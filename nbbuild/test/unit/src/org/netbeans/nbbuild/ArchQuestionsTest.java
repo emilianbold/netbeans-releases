@@ -375,8 +375,8 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
 "</p>\n" +
 "<h1>Introduction</h1>\n" +
 "<h2>What do the Dates Mean?</h2>\n" +
-"<p>The supplied dates indicate when the API change was made, on the CVS\n" +
-"bug fix; this ought to be marked in this list.</p>\n" +
+"<p>The supplied dates indicate when the API change was made, on the\n" +
+"bug fix in version control; this ought to be marked in this list.</p>\n" +
 "<ul>\n" +
 "<li>The <code>release41</code> branch was made on Apr 03 '05 for use in the NetBeans 4.1 release.\n" +
 "Specification versions: 6.0 begins after this point.</li>\n" +
@@ -726,118 +726,6 @@ public class ArchQuestionsTest extends NbTestCase implements EntityResolver {
     }
 
     
-    public void testReadNbDepsFromProjectXMLGeneratesCVSLocation () throws Exception {
-        String[] txt = new String[1];
-        java.io.File answers = PublicPackagesInProjectizedXMLTest.extractString (
-"<?xml version='1.0' encoding='UTF-8'?>\n" +
-"<!--\n" +
-                "CDDL Notice\n" +
-"-->\n" +
-            // "<!DOCTYPE api-answers PUBLIC '-//NetBeans//DTD Arch Answers//EN' '../../nbbuild/antsrc/org/netbeans/nbbuild/Arch.dtd' [\n" +
-            // The following lines needs to be commented out as we do not have the right relative locations!
-            // instead there is a part of Arch-api-questions directly inserted into the document bellow
-            //  "<!ENTITY api-questions SYSTEM '../../nbbuild/antsrc/org/netbeans/nbbuild/Arch-api-questions.xml'>\n" +
-            //"]>\n" +
-"\n" +
-"<api-answers\n" +
-  "question-version='1.25'\n" +
-  "module='Input/Output System'\n" +
-  "author='jglick@netbeans.org'\n" +
-">\n" +
-"\n" +
-  // "&api-questions;\n" +
-  // replaced by part of api-questions entity            
-"<api-questions version='1.25'>\n" +
-    "<category id='arch' name='Architecture'>\n" +
-        "<question id='arch-where' when='init' >\n" +
-            "What other nb project this one depends on?\n" +
-            "<hint>\n" +
-            "Please provide here a few lines describing the project, \n" +
-            "what problem it should solve, provide links to documentation, \n" +
-            "specifications, etc.\n" +
-            "</hint>\n" +
-        "</question>\n" +
-    "</category>\n" +
-"</api-questions>                \n" +
-// end of Arch-api-questionx.xmls            
-"\n" +
-"\n" +
-"<answer id='arch-where'>\n" +
-            "<defaultanswer generate='here' /> \n" + 
-"</answer>\n" +
-"\n" +
-"</api-answers>    \n"
-        );
-        
-        java.io.File project = PublicPackagesInProjectizedXMLTest.extractString(
-"<?xml version='1.0' encoding='UTF-8'?>\n" +
-"<!--\n" +
-                "CDDL Notice\n" +
-"-->\n" +
-"<project xmlns='http://www.netbeans.org/ns/project/1'>\n" +
-    "<type>org.netbeans.modules.apisupport.project</type>\n" +
-    "<configuration>\n" +
-        "<data xmlns='http://www.netbeans.org/ns/nb-module-project/2'>\n" +
-            "<code-name-base>org.openide.loaders</code-name-base>\n" +
-            "<module-dependencies>\n" +
-            "</module-dependencies>\n" +
-            "<public-packages>\n" +
-                "<package>org.openide.awt</package>\n" +
-            "</public-packages>\n" +
-        "</data>\n" +
-    "</configuration>\n" +
-"</project>\n" +
-"");        
-        
-        
-        java.io.File output = PublicPackagesInProjectizedXMLTest.extractString("");
-        assertTrue("File can be deleted: " + output, output.delete());
-
-        java.io.File xsl = PublicPackagesInProjectizedXMLTest.extractString(
-"<?xml version='1.0' encoding='UTF-8' ?>\n" +
-"<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>\n" +
-    "<xsl:output method='xml'/>\n" +
-    "<!-- Format random HTML elements as is: -->\n" +
-    "<xsl:template match='@*|node()'>\n" +
-        "<xsl:copy>\n" +
-            "<xsl:apply-templates select='@*|node()'/>\n" +
-        "</xsl:copy>\n" +
-    "</xsl:template>\n" +
-"</xsl:stylesheet> \n"
-        );
-        
-        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
-            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
-            "  <taskdef name=\"arch\" classname=\"org.netbeans.nbbuild.Arch\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
-            "  <arch answers=\"" + answers + "\" output='" + output + "'" +
-            "     project='" + project + "' \n" +
-            "     xsl='" + xsl + "' \n" + 
-            "   />\n" +
-            "<target name=\"all\" >" +
-            "  " +
-            "</target>" +
-            "</project>"
-
-        );
-        // happy hacking first of the txt argument is used to pass args to the execution script
-        txt[0] = "-Darch.private.disable.validation.for.test.purposes=true";
-        PublicPackagesInProjectizedXMLTest.execute (f, txt);
-
-        assertTrue ("Answers still exists", answers.exists ());
-        assertTrue ("Output file generated", output.exists ());
-
-        // happy hacking2: and now it is used to return back the result of the execution ;-)
-        txt[0] = PublicPackagesInProjectizedXMLTest.readFile(output);
-
-        org.w3c.dom.Document dom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(output);
-        
-        
-        if (txt[0].indexOf("http://www.netbeans.org/source/browse/") == -1) {
-            fail ("reference to CVS location should be in output: " + txt[0]);
-        }
-    }
-	
     public void testGenerateArchInExternalDir () throws Exception {
         java.io.File answers = java.io.File.createTempFile("arch", ".xml", new java.io.File (System.getProperty("user.home")));
         answers.delete();
