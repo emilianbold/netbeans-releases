@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,23 +31,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.hibernate;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.hibernate.cfg.Environment;
 
 /**
  * This class contains all the properties in the Hibernate configuration file
- * 
+ *
  * @author Dongmei Cao
  */
 public class HibernateCfgProperties {
-    
+
     public final static String[] jdbcProps = new String[] {
         Environment.DRIVER,
         Environment.URL,
@@ -55,7 +57,7 @@ public class HibernateCfgProperties {
         Environment.PASS,
         Environment.POOL_SIZE
     };
-    
+
     public final static String[] datasourceProps = new String[] {
         Environment.DATASOURCE,
         Environment.JNDI_URL,
@@ -63,7 +65,7 @@ public class HibernateCfgProperties {
         Environment.USER,
         Environment.PASS
     };
-    
+
     public final static String[] optionalConfigProps = new String[] {
         Environment.DIALECT,
         Environment.SHOW_SQL,
@@ -79,7 +81,7 @@ public class HibernateCfgProperties {
         Environment.USE_IDENTIFIER_ROLLBACK,
         Environment.USE_SQL_COMMENTS
     };
-    
+
     public final static String[] optionalJdbcConnProps = new String[] {
         Environment.STATEMENT_FETCH_SIZE,
         Environment.STATEMENT_BATCH_SIZE,
@@ -93,7 +95,7 @@ public class HibernateCfgProperties {
         Environment.AUTOCOMMIT,
         Environment.RELEASE_CONNECTIONS
     };
-    
+
     public final static String[] optionalCacheProps = new String[] {
         Environment.CACHE_PROVIDER,
         Environment.USE_MINIMAL_PUTS,
@@ -103,7 +105,7 @@ public class HibernateCfgProperties {
         Environment.CACHE_REGION_PREFIX,
         Environment.USE_STRUCTURED_CACHE
     };
-    
+
     public final static String[] optionalTransactionProps = new String[] {
         Environment.TRANSACTION_STRATEGY,
         Environment.USER_TRANSACTION,
@@ -111,7 +113,7 @@ public class HibernateCfgProperties {
         Environment.FLUSH_BEFORE_COMPLETION,
         Environment.AUTO_CLOSE_SESSION
     };
-    
+
     public final static String[] optionalMiscProps = new String[] {
         Environment.CURRENT_SESSION_CONTEXT_CLASS,
         Environment.QUERY_TRANSLATOR,
@@ -120,4 +122,78 @@ public class HibernateCfgProperties {
         Environment.USE_REFLECTION_OPTIMIZER
     };
 
+    // A map to hint the possible values for all the Hibernate properties:
+    // null for no hint
+    // String[] for selecting one of the values
+    private final static String[] TRUE_FALSE = new String[] {"true", "false" }; // NOI18N
+    private final static String[] RELEASE_MODES = new String[] {"auto", "on_close", "after_transaction", "after_statement"}; // NOI18N
+    private final static String[] SESSION_CONTEXT = new String[] {"jta", "thread", "managed", "<Enter custom class>"}; // TODO: Custom.class
+    private final static String[] QUERY_FACTORY_CLASS = new String[] {"org.hibernate.hql.ast.ASTQueryTranslatorFactory",
+    "org.hibernate.hql.classic.ClassicQueryTransactionFactory"}; // NOI18N
+    private final static String[] HBM2DDL_AUTO = new String[] {"validate", "update", "create", "create-drop" }; // NOI18N
+
+    private static Map<String, Object> possiblePropertyValues = new HashMap<String, Object>();
+    static {
+        possiblePropertyValues.put(Environment.DRIVER, null);
+        possiblePropertyValues.put(Environment.URL, null);
+        possiblePropertyValues.put(Environment.USER, null);
+        possiblePropertyValues.put(Environment.PASS, null);
+        possiblePropertyValues.put(Environment.POOL_SIZE, null);
+
+        possiblePropertyValues.put(Environment.DATASOURCE, null);
+        possiblePropertyValues.put(Environment.JNDI_URL, null);
+        possiblePropertyValues.put(Environment.JNDI_CLASS, null);
+        possiblePropertyValues.put(Environment.USER, null);
+        possiblePropertyValues.put(Environment.PASS, null);
+
+        possiblePropertyValues.put(Environment.DIALECT, HibernateDialects.dialects);
+        possiblePropertyValues.put(Environment.SHOW_SQL, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.FORMAT_SQL, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.DEFAULT_SCHEMA, null);
+        possiblePropertyValues.put(Environment.DEFAULT_CATALOG, null);
+        possiblePropertyValues.put(Environment.SESSION_FACTORY_NAME, null);
+        possiblePropertyValues.put(Environment.MAX_FETCH_DEPTH, null);
+        possiblePropertyValues.put(Environment.DEFAULT_BATCH_FETCH_SIZE, null);
+        possiblePropertyValues.put(Environment.DEFAULT_ENTITY_MODE, null);
+        possiblePropertyValues.put(Environment.ORDER_UPDATES, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.GENERATE_STATISTICS, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.USE_IDENTIFIER_ROLLBACK, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.USE_SQL_COMMENTS, TRUE_FALSE);
+
+        possiblePropertyValues.put(Environment.STATEMENT_FETCH_SIZE, null);
+        possiblePropertyValues.put(Environment.STATEMENT_BATCH_SIZE, null);
+        possiblePropertyValues.put(Environment.BATCH_VERSIONED_DATA, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.BATCH_STRATEGY, null );
+        possiblePropertyValues.put(Environment.USE_SCROLLABLE_RESULTSET, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.USE_STREAMS_FOR_BINARY, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.USE_GET_GENERATED_KEYS, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.CONNECTION_PROVIDER, null);
+        possiblePropertyValues.put(Environment.ISOLATION, null);
+        possiblePropertyValues.put(Environment.AUTOCOMMIT, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.RELEASE_CONNECTIONS, RELEASE_MODES );
+
+        possiblePropertyValues.put(Environment.CACHE_PROVIDER, null);
+        possiblePropertyValues.put(Environment.USE_MINIMAL_PUTS, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.USE_QUERY_CACHE, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.USE_SECOND_LEVEL_CACHE, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.QUERY_CACHE_FACTORY, null);
+        possiblePropertyValues.put(Environment.CACHE_REGION_PREFIX, null);
+        possiblePropertyValues.put(Environment.USE_STRUCTURED_CACHE, TRUE_FALSE);
+
+        possiblePropertyValues.put(Environment.TRANSACTION_STRATEGY, null);
+        possiblePropertyValues.put(Environment.USER_TRANSACTION, null);
+        possiblePropertyValues.put(Environment.TRANSACTION_MANAGER_STRATEGY, null);
+        possiblePropertyValues.put(Environment.FLUSH_BEFORE_COMPLETION, TRUE_FALSE);
+        possiblePropertyValues.put(Environment.AUTO_CLOSE_SESSION, TRUE_FALSE);
+
+        possiblePropertyValues.put(Environment.CURRENT_SESSION_CONTEXT_CLASS, SESSION_CONTEXT);
+        possiblePropertyValues.put(Environment.QUERY_TRANSLATOR, QUERY_FACTORY_CLASS);
+        possiblePropertyValues.put(Environment.QUERY_SUBSTITUTIONS, null);
+        possiblePropertyValues.put(Environment.HBM2DDL_AUTO, HBM2DDL_AUTO);
+        possiblePropertyValues.put(Environment.USE_REFLECTION_OPTIMIZER, TRUE_FALSE);
+    };
+
+    public static Object  getPossiblePropertyValue( String propName ) {
+        return possiblePropertyValues.get( propName );
+    }
 }
