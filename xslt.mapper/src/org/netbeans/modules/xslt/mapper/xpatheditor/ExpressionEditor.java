@@ -126,6 +126,7 @@ public class ExpressionEditor extends JPanel
         treeFunctions.setShowsRootHandles(true);
         //
         treeSchema.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 /**&& e.isAltDown() */) {
                     TreePath tp = treeSchema.getSelectionPath();
@@ -142,6 +143,7 @@ public class ExpressionEditor extends JPanel
         });
         //
         treeFunctions.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
                     TreePath tp = treeFunctions.getSelectionPath();
@@ -370,14 +372,16 @@ public class ExpressionEditor extends JPanel
         if (myValidator == null) {
             myValidator = new DefaultValidator(this, ExpressionEditor.class) {
                 
-                public boolean doFastValidation() {
-                    return true;
+                public void doFastValidation() {
                 }
                 
-                public boolean doDetailedValidation() {
+                @Override
+                public void doDetailedValidation() {
                     super.doDetailedValidation();
                     //
-                    return checkSyntax();
+                    if (!checkSyntax()) {
+                        addReason(new Reason(Severity.ERROR, "Wrong XPath syntax")); // NOI18N
+                    }
                 }
                 
             };

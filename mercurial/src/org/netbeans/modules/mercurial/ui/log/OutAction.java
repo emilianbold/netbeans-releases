@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,57 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.mercurial.ui.log;
 
-package org.netbeans.modules.debugger.jpda.heapwalk;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.netbeans.api.debugger.jpda.JPDAClassType;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author Martin Entlicher
+ * Log action for mercurial: 
+ * hg log - show revision history of entire repository or files
+ * 
+ * @author John Rice
  */
-public class InstanceNumberCollector {
+public class OutAction extends AbstractAction {
     
-    private Map<JPDAClassType, long[]> classes = new HashMap<JPDAClassType, long[]>();
+    private final VCSContext context;
     
-    /** Creates a new instance of InstanceNumberCollector */
-    public InstanceNumberCollector() {
+    public OutAction(String name, VCSContext context) {
+        this.context = context;
+        putValue(Action.NAME, name);
     }
     
-    public int getInstanceNumber(ObjectVariable var) {
-        JPDAClassType type = var.getClassType();
-        if (type == null) {
-            return 0;
-        }
-        long id = var.getUniqueID();
-        if (id == 0L) {
-            return 0;
-        }
-        long[] instancesID;
-        synchronized (this) {
-            instancesID = classes.get(type);
-            if (instancesID == null) {
-                List<ObjectVariable> instances = type.getInstances(0);
-                int n = instances.size();
-                instancesID = new long[n];
-                for (int i = 0; i < n; i++) {
-                    instancesID[i] = instances.get(i).getUniqueID();
-                }
-                classes.put(type, instancesID);
-            }
-        }
-        int i;
-        for (i = 0; i < instancesID.length; i++) {
-            if (id == instancesID[i]) {
-                break;
-            }
-        }
-        return i + 1;
+    public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        SearchHistoryAction.openOut(context,
+                NbBundle.getMessage(OutAction.class, "MSG_Out_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
     }
-    
-}
+        
+    public boolean isEnabled() {
+        return HgUtils.getRootFile(context) != null;
+    } 
+}    

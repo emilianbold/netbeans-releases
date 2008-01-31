@@ -66,6 +66,7 @@ public class VariableMainPanel extends EditorLifeCycleAdapter
         fldVariableName.putClientProperty(CustomNodeEditor.PROPERTY_BINDER, NAME);
     }
     
+    @Override
     public boolean initControls() {
         try {
             //
@@ -88,6 +89,7 @@ public class VariableMainPanel extends EditorLifeCycleAdapter
         return true;
     }
     
+    @Override
     public void createContent() {
         initComponents();
         bindControls2PropertyNames();
@@ -108,6 +110,7 @@ public class VariableMainPanel extends EditorLifeCycleAdapter
         });
     }
     
+    @Override
     public boolean applyNewValues() {
         try {
             Variable var = myEditor.getEditedObject();
@@ -166,17 +169,15 @@ public class VariableMainPanel extends EditorLifeCycleAdapter
         if (myValidator == null) {
             myValidator = new DefaultValidator(myEditor, ErrorMessagesBundle.class) {
                 
-                public boolean doFastValidation() {
-                    //
+                public void doFastValidation() {
                     String varName = fldVariableName.getText();
                     if (varName == null || varName.length() == 0) {
-                        addReasonKey("ERR_NAME_EMPTY"); //NOI18N
+                        addReasonKey(Severity.ERROR, "ERR_NAME_EMPTY"); //NOI18N
                     }
-                    //
-                    return isReasonsListEmpty();
                 }
                 
-                public boolean doDetailedValidation() {
+                @Override
+                public void doDetailedValidation() {
                     super.doDetailedValidation();
                     //
                     // Check that the variable name is unique
@@ -205,13 +206,12 @@ public class VariableMainPanel extends EditorLifeCycleAdapter
                             Variable[] variables = vc.getVariables();
                             for (Variable variable : variables) {
                                 if (varName.equals( variable.getName())){
-                                    addReasonKey("ERR_NOT_UNIQUE_VARIABLE_NAME"); //NOI18N
+                                    addReasonKey(Severity.ERROR, 
+                                            "ERR_NOT_UNIQUE_VARIABLE_NAME"); //NOI18N
                                 }
                             }
                         }
                     }
-                    //
-                    return isReasonsListEmpty();
                 }
                 
             };

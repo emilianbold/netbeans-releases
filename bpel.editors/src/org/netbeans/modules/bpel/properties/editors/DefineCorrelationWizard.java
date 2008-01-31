@@ -626,11 +626,13 @@ public class DefineCorrelationWizard implements WizardProperties {
                     Object[] messageValues = new Object[] {itemText, ((BpelEntity) value).getElementType().getSimpleName()};
                     if (itemText == null) {
                         if (value instanceof OnMessage) {
-                            String pickEntityName = ((BpelEntity) value).getParent().getAttribute(BpelAttributes.NAME),
-                                   operationName = ((BpelEntity) value).getAttribute(BpelAttributes.OPERATION);
-                            itemText = ((BpelEntity) value).getElementType().getSimpleName();
+                            OnMessageActivityCompositeName compositeName = 
+                                new OnMessageActivityCompositeName((OnMessage) value);
+                            String pickName = compositeName.getPickName(),
+                                   operationName = compositeName.getOperationName();
+                            itemText = compositeName.getActivitySimpleName();
                             messagePattern = NbBundle.getMessage(ComboBoxRenderer.class, "LBL_ComboBox_OnMessage_Name_Pattern");
-                            messageValues = new Object[] {itemText, pickEntityName, operationName};
+                            messageValues = new Object[] {itemText, pickName, operationName};
                         }
                     }
                     ((JLabel) component).setText(MessageFormat.format(messagePattern, messageValues));
@@ -923,13 +925,13 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
 
         private CorrelationSet createCorrelationSet(List<CorrelationLinker> linkerList) {
-            BaseScope scopeEntity = (BaseScope) getTopParentEntity(mainBpelEntity);
+            BpelModel bpelModel = mainBpelEntity.getBpelModel();
+            BaseScope scopeEntity = bpelModel.getProcess();
             if (scopeEntity == null) {
                 return null;
             }
             String correlationSetName = getUniqueCorrelationSetName(scopeEntity);
 
-            BpelModel bpelModel = mainBpelEntity.getBpelModel();
             BPELElementsBuilder elementBuilder = bpelModel.getBuilder();
             CorrelationSet correlationSet = elementBuilder.createCorrelationSet();
             try {
@@ -975,8 +977,22 @@ public class DefineCorrelationWizard implements WizardProperties {
         }
         
         private String getUniqueCorrelationSetName(BaseScope scopeEntity) {
-            String baseCorrelationSetName = CORRELATION_SET_NAME_PREFIX + 
-                mainBpelEntity.getAttribute(BpelAttributes.NAME);
+            String baseCorrelationSetName = CORRELATION_SET_NAME_PREFIX;
+            if (mainBpelEntity instanceof OnMessage) {
+                OnMessageActivityCompositeName compositeName = 
+                    new OnMessageActivityCompositeName((OnMessage) mainBpelEntity);
+                String 
+                    activityName = compositeName.getActivitySimpleName(),
+                    pickName = compositeName.getPickName(),
+                    operationName = compositeName.getOperationName();
+                String
+                    namePattern = NbBundle.getMessage(DefineCorrelationWizard.class, "LBL_Correlation_Set_Name_OnMessage_Pattern");
+                    baseCorrelationSetName += MessageFormat.format(namePattern, 
+                        new Object[] {activityName, pickName, operationName});
+            } else {
+                baseCorrelationSetName += 
+                    mainBpelEntity.getAttribute(BpelAttributes.NAME);
+            }
             CorrelationSetContainer container = scopeEntity.getCorrelationSetContainer();
             if (container == null) return baseCorrelationSetName;
             CorrelationSet[] correlationSets = container.getCorrelationSets();
@@ -999,7 +1015,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             String checkedName) {
             for (CorrelationSet correlationSet : correlationSets) {
                 String correlationSetName = correlationSet.getName();
-                if (Utils.ignoreNamespace(correlationSetName).equals(checkedName)) {
+                if (WizardUtils.ignoreNamespace(correlationSetName).equals(checkedName)) {
                     return true;
                 }
             }
@@ -1095,9 +1111,10 @@ public class DefineCorrelationWizard implements WizardProperties {
                 if (typeRef != null) {
                     correlationProperty.setType(typeRef);
                 }                
+                assert (typeRef != null);
                 if (Util.isUniquePropertyName(wizardWsdlModel, propertyName)) {
-                    Utils.importWsdlIntoWsdl(wizardWsdlModel, source.getWSDLModel());
-                    Utils.importWsdlIntoWsdl(wizardWsdlModel, target.getWSDLModel());
+                    WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, source.getWSDLModel());
+                    WizardUtils.importWsdlIntoWsdl(wizardWsdlModel, target.getWSDLModel());
                     try {
                         wizardWsdlModel.startTransaction();
                         wizardWsdlModel.addChildComponent(wizardWsdlModel.getRootComponent(), 
@@ -1237,7 +1254,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             }
             
             public void createPropertyAlias(WSDLModel wizardWsdlModel, CorrelationProperty correlationProperty) {
-                if (! Utils.wsdlContainsPropertyAlias(wizardWsdlModel, correlationProperty, message, part)) {
+                if (! WizardUtils.wsdlContainsPropertyAlias(wizardWsdlModel, correlationProperty, message, part)) {
                     PropertyAlias propertyAlias = (PropertyAlias) wizardWsdlModel.getFactory().create(
                         wizardWsdlModel.getDefinitions(), BPELQName.PROPERTY_ALIAS.getQName());
 
@@ -1265,11 +1282,12 @@ public class DefineCorrelationWizard implements WizardProperties {
                 String typeName = getTypeNameIgnoreNamespace();
 
                 Collection<GlobalSimpleType> 
-                    globalSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes(),
                     primitiveSimpleTypes = SchemaModelFactory.getDefault().getPrimitiveTypesModel().getSchema().getSimpleTypes();
-                List<GlobalSimpleType> simpleTypeList = new ArrayList<GlobalSimpleType>(globalSimpleTypes);
-                simpleTypeList.addAll(primitiveSimpleTypes);
-                NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(typeName, simpleTypeList);
+                NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(typeName, 
+                    primitiveSimpleTypes);
+                if (typeRef == null) {
+                    typeRef = resolveSimpleType(typeName, primitiveSimpleTypes);
+                }
                 if (typeRef != null) return typeRef;
                 
                 String errMsg = MessageFormat.format(NbBundle.getMessage(WizardDefineCorrelationPanel.class, 
@@ -1278,6 +1296,52 @@ public class DefineCorrelationWizard implements WizardProperties {
                 throw new WizardValidationException(wizardPanel, errMsg, errMsg);
             }
 
+            private NamedComponentReference<GlobalType> resolveSimpleType(String typeName,
+                Collection<GlobalSimpleType> primitiveSimpleTypes) {
+                Collection<GlobalSimpleType> 
+                    globalSimpleTypes = schemaComponent.getModel().getSchema().getSimpleTypes();
+                GlobalSimpleType simpleType = null;
+                for (GlobalSimpleType globalSimpleType : globalSimpleTypes) {
+                    if (globalSimpleType.toString().equals(typeName)) {
+                        simpleType = globalSimpleType;
+                        break;
+                    }
+                }
+                if (simpleType != null) {
+                    List<SchemaComponent> children = simpleType.getChildren();
+                    typeName = getBaseSimpleTypeName(children, primitiveSimpleTypes, globalSimpleTypes);
+                    if (typeName != null) {
+                        NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(typeName, 
+                            primitiveSimpleTypes);
+                        return typeRef;
+                    }
+                }
+                return null;
+            }
+            
+            private String getBaseSimpleTypeName(List<SchemaComponent> componentList,
+                Collection<GlobalSimpleType> primitiveSimpleTypes,
+                Collection<GlobalSimpleType> globalSimpleTypes) {
+                if ((componentList == null) || (primitiveSimpleTypes == null) || 
+                    (globalSimpleTypes == null)) return null;
+                
+                for (SchemaComponent component : componentList) {
+                    String baseTypeName = component.getAttribute(SchemaAttribute.BASE);
+                    if (baseTypeName != null) {
+                        baseTypeName = WizardUtils.ignoreNamespace(baseTypeName);
+                        NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(baseTypeName, 
+                            primitiveSimpleTypes);
+                        if (typeRef != null) return baseTypeName;
+                        typeRef = findGlobalSimpleType(baseTypeName, globalSimpleTypes);
+                        if (typeRef != null) {
+                            return getBaseSimpleTypeName(component.getChildren(), primitiveSimpleTypes, globalSimpleTypes);
+                        } else {
+                            return null;
+                        }
+                    }
+                }
+                return null;
+            }            
             private NamedComponentReference<GlobalType> findGlobalSimpleType(String typeName,
                 Collection<GlobalSimpleType> globalSimpleTypes) {
                 NamedComponentReference<GlobalType> typeRef = null;
@@ -1292,7 +1356,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             
             public String getTypeNameIgnoreNamespace() {
                 String typeName = WizardDefineCorrelationPanel.this.getSchemaComponentTypeName(schemaComponent);
-                return Utils.ignoreNamespace(typeName);
+                return WizardUtils.ignoreNamespace(typeName);
             }
             
             @Override
@@ -1447,10 +1511,12 @@ public class DefineCorrelationWizard implements WizardProperties {
                 try {
                     if (userObj instanceof BpelEntity) {
                         if (userObj instanceof OnMessage) {
-                            String pickEntityName = ((BpelEntity) userObj).getParent().getAttribute(BpelAttributes.NAME),
-                                   operationName = ((BpelEntity) userObj).getAttribute(BpelAttributes.OPERATION);
-                            userObjectName = ((BpelEntity) userObj).getElementType().getSimpleName();
-                            patternValues = new Object[] {userObjectName, pickEntityName, operationName};
+                            OnMessageActivityCompositeName compositeName = 
+                                new OnMessageActivityCompositeName((OnMessage) userObj);
+                            userObjectName = compositeName.getActivitySimpleName();
+                            String pickName = compositeName.getPickName(),
+                                   operationName = compositeName.getOperationName();
+                            patternValues = new Object[] {userObjectName, pickName, operationName};
                         } else {
                             userObjectName = ((BpelEntity) userObj).getAttribute(BpelAttributes.NAME);
                             patternValues = new Object[] {userObjectName, ((BpelEntity) userObj).getElementType().getSimpleName()};
@@ -1799,7 +1865,7 @@ class CorrelationWizardWSDLWrapper {
     }
 }
 //============================================================================//
-class Utils {
+class WizardUtils {
     public static String ignoreNamespace(String dataWithNamespace) {
         int index = dataWithNamespace.indexOf(":");
         if ((index > -1) && (index < dataWithNamespace.length() - 1)) {
@@ -1860,6 +1926,48 @@ class Utils {
         }
         return false;
     }
+}
+//============================================================================//
+enum SchemaAttribute implements org.netbeans.modules.xml.xam.dom.Attribute, Constants {
+    BASE(SCHEMA_COMPONENT_ATTRIBUTE_BASE);
+    
+    private String name;
+    private Class type, subtype;
+    
+    SchemaAttribute(String name) {
+        this(name, String.class);
+    }
+    SchemaAttribute(String name, Class type) {
+        this(name, type, null);
+    }
+    SchemaAttribute(String name, Class type, Class subtype) {
+        this.name = name;
+        this.type = type;
+        this.subtype = subtype;
+    }
+    
+    public String getName() {return name;}
+    @Override
+    public String toString() {return getName();}
+    public Class getType() {return type;}
+    public Class getMemberType() {return subtype;}
+}
+//============================================================================//
+class OnMessageActivityCompositeName {
+    private String activitySimpleName = "", pickName = "", operationName = "";
+
+    public OnMessageActivityCompositeName(OnMessage onMessageEntity) {
+        activitySimpleName = ((BpelEntity) onMessageEntity).getElementType().getSimpleName();
+        pickName = ((BpelEntity) onMessageEntity).getParent().getAttribute(BpelAttributes.NAME);
+        operationName = ((BpelEntity) onMessageEntity).getAttribute(BpelAttributes.OPERATION);
+    }
+    public String getActivitySimpleName() {return activitySimpleName;}
+    public String getOperationName() {return operationName;}
+    public String getPickName() {return pickName;}
+}
+//============================================================================//
+interface Constants {
+    String SCHEMA_COMPONENT_ATTRIBUTE_BASE = "base";
 }
 //============================================================================//
 interface WizardProperties {
