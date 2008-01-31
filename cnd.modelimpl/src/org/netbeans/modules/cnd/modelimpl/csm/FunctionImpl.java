@@ -74,7 +74,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private CharSequence name;
     private final CsmType returnType;
     private final List<CsmUID<CsmParameter>>  parameters;
-    private final boolean isVoidParameterList;
     private CharSequence signature;
     
     // only one of scopeRef/scopeAccessor must be used 
@@ -90,15 +89,28 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     private CharSequence templateSuffix;
     protected CharSequence classTemplateSuffix;
     
+    private static final byte FLAGS_VOID_PARMLIST = 1;
+    private static final byte FLAGS_STATIC = 2;
+    private byte flags;
     
     public FunctionImpl(AST ast, CsmFile file, CsmScope scope) {
         this(ast, file, scope, true);
     }
     
     private static final boolean CHECK_SCOPE = false;
+    
     protected FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) {
+        
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
+        
+        assert ast.getFirstChild() != null;
+        setStatic(ast.getFirstChild().getType() == CPPTokenTypes.LITERAL_static);
+
+        if( isStatic() ) {
+            scope = file;
+        }
+        
         // set scope, do it in constructor to have final fields
         this.scopeUID = UIDCsmConverter.scopeToUID(scope);
         assert (this.scopeUID != null || scope == null);
@@ -121,9 +133,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             this.parameters = RepositoryUtils.put(params);
         }
         if (params == null || params.size() == 0) {
-            isVoidParameterList = isVoidParameter(ast);
+            setFlags(FLAGS_VOID_PARMLIST, isVoidParameter(ast));
         } else {
-            isVoidParameterList = false;
+            setFlags(FLAGS_VOID_PARMLIST, false);
         }
         
         if( name == null ) {
@@ -134,6 +146,26 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
     }
 
+    private boolean hasFlags(byte mask) {
+        return (flags & mask) == mask;
+    }
+    
+    private void setFlags(byte mask, boolean value) {
+        if (value) {
+            flags |= mask;
+        } else {
+            flags &= ~mask; 
+        }
+    }
+
+    public boolean isStatic() {
+        return hasFlags(FLAGS_STATIC);
+    }
+    
+    protected void setStatic(boolean value) {
+        setFlags(FLAGS_STATIC, value);
+    }
+    
     private AST findParameterNode(AST node) {
         AST ast = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_PARMLIST);
         if (ast != null) {
@@ -245,7 +277,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     }    
     
     public boolean isVoidParameterList(){
-        return isVoidParameterList;
+        return hasFlags(FLAGS_VOID_PARMLIST);
     }
     
     private static String extractName(AST token){
@@ -290,7 +322,15 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         return "";
     }
     
+    protected boolean isCStyleStatic() {
+        return isStatic() && CsmKindUtilities.isFile(getScope());
+    }
+    
     protected void registerInProject() {
+        if (isCStyleStatic()) {
+            // do NOT register in project C-style static funcions!
+            return;
+        }
         CsmProject project = getContainingFile().getProject();
         if( project instanceof ProjectBase ) {
 	    // implicitely calls RepositoryUtils.put()
@@ -603,7 +643,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
         
         PersistentUtils.writeUTF(this.signature, output);
-        output.writeBoolean(isVoidParameterList);
+        output.writeByte(flags);
         output.writeUTF(this.getScopeSuffix().toString());
         output.writeBoolean(this.template);
         if (this.template) {
@@ -636,7 +676,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         if (this.signature != null) {
             this.signature = QualifiedNameCache.getManager().getString(this.signature);
         }
-        this.isVoidParameterList = input.readBoolean();
+        this.flags = input.readByte();
         this.classTemplateSuffix = NameCache.getManager().getString(input.readUTF());
         this.template = input.readBoolean();
         if (this.template) {
