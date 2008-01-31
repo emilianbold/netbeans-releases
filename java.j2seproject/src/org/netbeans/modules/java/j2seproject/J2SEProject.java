@@ -81,6 +81,7 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.modules.java.j2seproject.queries.J2SEProjectEncodingQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -283,8 +284,10 @@ public final class J2SEProject implements Project, AntProjectListener {
             new J2SEProjectEncodingQueryImpl (evaluator()),
             new J2SEPropertyEvaluatorImpl(evaluator()),
             new J2SETemplateAttributesProvider(this.helper),
-            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(helper, eval),
-            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(helper, eval),
+            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
+            LookupMergerSupport.createSFBLookupMerger(),
+            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
+            LookupMergerSupport.createJFBLookupMerger(),
             new BinaryForSourceQueryImpl(this.sourceRoots, this.testRoots, this.helper, this.eval) //Does not use APH to get/put properties/cfgdata
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N

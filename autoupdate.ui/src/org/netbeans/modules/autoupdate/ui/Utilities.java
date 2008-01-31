@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -99,6 +100,11 @@ public class Utilities {
     static final String LIBRARIES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Libraries_Category");
     static final String BRIDGES_CATEGORY = NbBundle.getMessage (Utilities.class, "Utilities_Bridges_Category");
     
+    private static final String FIRST_CLASS_MODULES = "org.netbeans.modules.autoupdate.services, org.netbeans.modules.autoupdate.ui"; // NOI18N
+    private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
+    
+    private static Collection<String> first_class_modules = null;
+    
     @SuppressWarnings ("deprecation")
     public static List<UnitCategory> makeInstalledCategories (List<UpdateUnit> units) {
         //units = filterUneditable(units);
@@ -125,6 +131,12 @@ public class Utilities {
         };
 
     public static List<UnitCategory> makeUpdateCategories (final List<UpdateUnit> units, boolean isNbms) {
+        if (! isNbms) {
+            List<UnitCategory> fcCats = makeFirstClassUpdateCategories ();
+            if (! fcCats.isEmpty ()) {
+                return fcCats;
+            }
+        }
         List<UnitCategory> res = new ArrayList<UnitCategory> ();
         List<String> names = new ArrayList<String> ();
         for (UpdateUnit u : units) {
@@ -149,6 +161,35 @@ public class Utilities {
         logger.log(Level.FINER, "makeUpdateCategories (" + units.size () + ") returns " + res.size ());
         return res;
     };
+    
+    private static List<UnitCategory> makeFirstClassUpdateCategories () {
+        Collection<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
+        List<UnitCategory> res = new ArrayList<UnitCategory> ();
+        List<String> names = new ArrayList<String> ();
+        for (UpdateUnit u : units) {
+            UpdateElement el = u.getInstalled ();
+            if (! u.isPending() && el != null) {
+                List<UpdateElement> updates = u.getAvailableUpdates ();
+                if (updates.isEmpty()) {
+                    continue;
+                }
+                if (getFirstClassModules ().contains (el.getCodeName ())) {
+                    String catName = el.getCategory();
+                    if (names.contains (catName)) {
+                        UnitCategory cat = res.get (names.indexOf (catName));
+                        cat.addUnit (new Unit.Update (u, false, catName));
+                    } else {
+                        UnitCategory cat = new UnitCategory (catName);
+                        cat.addUnit (new Unit.Update (u, false, catName));
+                        res.add (cat);
+                        names.add (catName);
+                    }
+                }
+            }
+        }
+        logger.log(Level.FINER, "makeFirstClassUpdateCategories (" + units.size () + ") returns " + res.size ());
+        return res;
+    }
 
     public static List<UnitCategory> makeAvailableCategories (final List<UpdateUnit> units, boolean isNbms) {
         List<UnitCategory> res = new ArrayList<UnitCategory> ();
@@ -366,6 +407,26 @@ public class Utilities {
     
     public static String getCustomCheckIntervalInMinutes () {
         return System.getProperty (PLUGIN_MANAGER_CHECK_INTERVAL);
+    }
+    
+    private static String getCustomFirstClassModules () {
+        return System.getProperty (PLUGIN_MANAGER_FIRST_CLASS_MODULES);
+    }
+    
+    private static Collection<String> getFirstClassModules () {
+        if (first_class_modules != null) {
+            return first_class_modules;
+        }
+        String names = getCustomFirstClassModules ();
+        if (names == null || names.length () == 0) {
+            names = FIRST_CLASS_MODULES;
+        }
+        first_class_modules = new HashSet<String> ();
+        StringTokenizer en = new StringTokenizer (names, ","); // NOI18N
+        while (en.hasMoreTokens ()) {
+            first_class_modules.add (en.nextToken ().trim ());
+        }
+        return first_class_modules;
     }
 
     /** Do auto-check for available new plugins a while after startup.

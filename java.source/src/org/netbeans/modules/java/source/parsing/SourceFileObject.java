@@ -111,6 +111,12 @@ public class SourceFileObject implements JavaFileObject, DocumentProvider {
     }
 
     
+    public void update () throws IOException {
+        if (this.kind != Kind.CLASS) {
+            getCharContentImpl(true);
+        }
+    }
+    
 
     public boolean isNameCompatible (String simplename, JavaFileObject.Kind kind) {
         assert simplename != null;

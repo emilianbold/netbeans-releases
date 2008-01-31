@@ -104,7 +104,7 @@ public class BridgingServerWizardProvider implements org.netbeans.spi.server.Ser
                     url = ((InstanceProperties) value).getProperty(InstanceProperties.URL_ATTR);
                 }
                 if (url != null) {
-                    org.netbeans.spi.server.ServerInstance instance =
+                    org.netbeans.api.server.ServerInstance instance =
                             getBridge(ServerRegistry.getInstance().getServerInstance(url));
                     if (instance != null) {
                         objects = new HashSet();
@@ -151,11 +151,11 @@ public class BridgingServerWizardProvider implements org.netbeans.spi.server.Ser
             iterator.addChangeListener(l);
         }
 
-        private org.netbeans.spi.server.ServerInstance getBridge(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
+        private org.netbeans.api.server.ServerInstance getBridge(org.netbeans.modules.j2ee.deployment.impl.ServerInstance instance) {
             Collection<? extends org.netbeans.spi.server.ServerInstanceProvider> providers = ServerInstanceProviderLookup.getInstance().lookupAll(org.netbeans.spi.server.ServerInstanceProvider.class);
             for (org.netbeans.spi.server.ServerInstanceProvider provider : providers) {
                 if (provider instanceof BridgingServerInstanceProvider) {
-                    org.netbeans.spi.server.ServerInstance bridgingInstance = ((BridgingServerInstanceProvider) provider).getBridge(instance);
+                    org.netbeans.api.server.ServerInstance bridgingInstance = ((BridgingServerInstanceProvider) provider).getBridge(instance);
                     if (bridgingInstance != null) {
                         return bridgingInstance;
                     }

@@ -38,7 +38,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.api.project.Project;
@@ -110,7 +109,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
     public void testLibraryLoadingBasic() throws Exception {
         writeProperties("libs/my libraries.properties",
                 "libs.jgraph.classpath=${base}/jgraph.jar:${base}/../extra libs/jgraph-extras.jar",
-                "libs.jgraph.javadoc=${base}/api/jgraph-docs",
+                "libs.jgraph.javadoc=${base}/api/jgraph-docs:${base}/api/jgraph-docs.zip!/docs/api/",
                 "irrelevant=stuff");
         storeDefs(project, "../libs/my libraries.properties");
         Library lib = LibraryManager.forLocation(new URL(base, "libs/my%20libraries.properties")).getLibrary("jgraph");
@@ -120,7 +119,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertNull(lib.getDescription());
         assertEquals("j2se", lib.getType());
         assertEquals(Arrays.asList(new URL("jar:file:jgraph.jar!/"), new URL("jar:file:../extra%20libs/jgraph-extras.jar!/")), lib.getContent("classpath"));
-        assertEquals(Collections.singletonList(new URL("file:api/jgraph-docs/")), lib.getContent("javadoc"));
+        assertEquals(Arrays.asList(new URL("file:api/jgraph-docs/"), new URL("jar:file:api/jgraph-docs.zip!/docs/api/")), lib.getContent("javadoc"));
         assertEquals(Collections.emptyList(), lib.getContent("src"));
     }
 
@@ -154,13 +153,14 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         Library lib = LibraryManager.forLocation(new URL(base, "libs/libraries.properties")).getLibrary("jgraph");
         setLibraryContent(lib, "classpath", new URL("jar:file:jgraph.jar!/"), new URL("jar:file:../extra%20libs/jgraph-extras.jar!/"));
         setLibraryContent(lib, "src", new URL(base, "separate/jgraph-src/"), new URL(base, "jgraph-other-src/"));
-        setLibraryContent(lib, "javadoc", new URL("jar:" + base + "separate/jgraph-api.zip!/"));
+        setLibraryContent(lib, "javadoc", new URL("jar:" + base + "separate/jgraph-api.zip!/"), new URL("jar:file:../separate/jgraph-api.zip!/docs/api/"));
         Map<String,String> m = new HashMap<String,String>();
         File separate = new File(getWorkDir(), "separate");
         m.put("libs.jgraph.classpath", "${base}/jgraph.jar"+File.pathSeparatorChar+"${base}/../extra libs/jgraph-extras.jar");
         m.put("libs.jgraph.src", new File(separate, "jgraph-src").getAbsolutePath().replace('\\', '/') + File.pathSeparator + 
                 new File(getWorkDir(), "jgraph-other-src").getAbsolutePath().replace('\\', '/'));
-        m.put("libs.jgraph.javadoc", new File(separate, "jgraph-api.zip").getAbsolutePath().replace('\\', '/'));
+        m.put("libs.jgraph.javadoc", new File(separate, "jgraph-api.zip").getAbsolutePath().replace('\\', '/') + File.pathSeparator + 
+                "${base}/../separate/jgraph-api.zip!/docs/api/");
         assertEquals(m, loadProperties("libs/libraries.properties"));
     }
 
@@ -222,7 +222,8 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         storeDefs(project, "../others.properties");
         contentlist.assertEventCount(0);
         liblist.assertEventCount(0);
-        pplist.assertEventCount(1);
+        // storeDefs() fires configurationXmlChanged twice - after put() and after save()
+        pplist.assertEventCount(2);
         assertEquals(("{libs.jrcs.classpath=}").replace('/', File.separatorChar),
                 new TreeMap<String,String>(pp.getProperties()).toString());
     }

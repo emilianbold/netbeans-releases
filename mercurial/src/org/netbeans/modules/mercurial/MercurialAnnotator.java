@@ -558,20 +558,23 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
     
     private String annotateFolderNameHtml(String name, FileInformation mostImportantInfo, File mostImportantFile) {
-        String project = HgProjectUtils.getProjectName(mostImportantFile);
-        String fileName = mostImportantFile.getName();
-        if (project == null || fileName.equals(name)) {
-            fileName = null;
-        } else {
-            File repo = Mercurial.getInstance().getTopmostManagedParent(mostImportantFile);
-            if (!repo.equals(mostImportantFile)) {
-                fileName = repo.getName();
-            }
-        }
-
-        name = htmlEncode(name);
+        String nameHtml = htmlEncode(name);
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
-            return excludedFormat.format(new Object [] { name, ""}); // NOI18N
+            return excludedFormat.format(new Object [] { nameHtml, ""}); // NOI18N
+        }
+        String fileName = mostImportantFile.getName();
+        if (fileName.equals(name)){
+            return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
+        }
+        
+        // Label top level repository nodes with a repository name label when:
+        // Display Name (name) is different from its repo name (repo.getName())
+        fileName = null;
+        File repo = Mercurial.getInstance().getTopmostManagedParent(mostImportantFile);
+        if(repo != null && repo.equals(mostImportantFile)){
+            if (!repo.getName().equals(name)){
+                fileName = repo.getName();
+            }          
         }
         if (fileName != null)
             return uptodateFormat.format(new Object [] { name, " [" + fileName + "]" }); // NOI18N

@@ -44,6 +44,7 @@ package org.netbeans.modules.languages;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -53,6 +54,7 @@ import java.util.Set;
 import java.util.List;
 
 import javax.swing.event.EventListenerList;
+import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.lexer.TokenId;
@@ -257,6 +259,20 @@ public class LanguageImpl extends Language {
         read ();
     }
     
+    private Object INIT_LOCK = new Object ();
+    
+    public ASTNode parse (InputStream is) throws IOException, ParseException {
+        synchronized (INIT_LOCK) {
+            if (tokenTypeToID == null) {
+                try {
+                    INIT_LOCK.wait ();
+                } catch (InterruptedException ex) {
+                }
+            }
+            return super.parse (is);
+        }
+    }
+    
     public void read () throws ParseException, IOException {
         try {
             tokenTypeToID = new HashMap<String, Integer> ();
@@ -300,6 +316,9 @@ public class LanguageImpl extends Language {
                 this, rules, skipTokenIDs
             );
             fire ();
+            synchronized (INIT_LOCK) {
+                INIT_LOCK.notifyAll ();
+            }
         } finally {
             reader = null;
         }

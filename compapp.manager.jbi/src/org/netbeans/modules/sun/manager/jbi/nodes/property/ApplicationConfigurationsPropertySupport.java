@@ -42,7 +42,6 @@ package org.netbeans.modules.sun.manager.jbi.nodes.property;
 
 import com.sun.esb.management.api.configuration.ConfigurationService;
 import com.sun.esb.management.common.ManagementRemoteException;
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
 import java.beans.PropertyEditor;
 import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
@@ -51,8 +50,9 @@ import javax.management.openmbean.TabularData;
 import org.netbeans.modules.sun.manager.jbi.editors.ApplicationConfigurationsEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.EnvironmentVariablesEditor;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
-import org.netbeans.modules.sun.manager.jbi.management.OldConfigurationMBeanAttributeInfo;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationMBeanAttributeInfo;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,9 +81,9 @@ class ApplicationConfigurationsPropertySupport extends AbstractTabularPropertySu
                 EnvironmentVariablesEditor.class,
                 "ACS_APPLICATION_CONFIGURATIONS_TABLE"); // NOI18N
 
-        OldJBIComponentConfigurationDescriptor descriptor =
-                (info instanceof OldConfigurationMBeanAttributeInfo) ? 
-                    ((OldConfigurationMBeanAttributeInfo) info).getDescriptor() : null;
+        JBIComponentConfigurationDescriptor descriptor =
+                (info instanceof JBIComponentConfigurationMBeanAttributeInfo) ? 
+                    ((JBIComponentConfigurationMBeanAttributeInfo) info).getDescriptor() : null;
 
         return new ApplicationConfigurationsEditor(
                 tableLabelText, tableLabelDescription, getTabularType(),
