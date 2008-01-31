@@ -64,14 +64,14 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
         #copy the bits back
         mkdir -p $DIST/bundles
         scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/dist/* $DIST/bundles
-        EXIT_CODE=$?
+        ERROR_CODE=$?
         if [ $ERROR_CODE != 0 ]; then
             echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
             exit $ERROR_CODE;
         fi    
 	if [ 1 -eq $ML_BUILD ] ; then
 		scp $NATIVE_MAC_MACHINE:$MAC_PATH/dist/* $DIST/ml/bundles
-                EXIT_CODE=$?
+                ERROR_CODE=$?
                 if [ $ERROR_CODE != 0 ]; then
                     echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
                     exit $ERROR_CODE;
