@@ -42,6 +42,8 @@ package org.netbeans.api.ruby.platform;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class RubyPlatformTest extends RubyTestBase {
     
@@ -109,6 +111,16 @@ public class RubyPlatformTest extends RubyTestBase {
         File f = new File(dir, path);
         f.createNewFile();
         return f.getAbsolutePath();
+    }
+
+    public void testHasFastDebuggerInstalled() throws IOException {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+        assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
+        installFakeFastRubyDebugger(jruby);
+        assertTrue("does have fast debugger", jruby.hasFastDebuggerInstalled());
     }
 
 }

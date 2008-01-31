@@ -41,7 +41,6 @@
 package org.netbeans.modules.versioning;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
-import org.openide.nodes.Node;
 
 import java.io.File;
 import java.util.*;

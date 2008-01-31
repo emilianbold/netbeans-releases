@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,58 +31,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.debugger.jpda.heapwalk;
+package org.netbeans.modules.websvc.saas.model;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.netbeans.api.debugger.jpda.JPDAClassType;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 
 /**
  *
- * @author Martin Entlicher
+ * @author nam
  */
-public class InstanceNumberCollector {
-    
-    private Map<JPDAClassType, long[]> classes = new HashMap<JPDAClassType, long[]>();
-    
-    /** Creates a new instance of InstanceNumberCollector */
-    public InstanceNumberCollector() {
-    }
-    
-    public int getInstanceNumber(ObjectVariable var) {
-        JPDAClassType type = var.getClassType();
-        if (type == null) {
-            return 0;
-        }
-        long id = var.getUniqueID();
-        if (id == 0L) {
-            return 0;
-        }
-        long[] instancesID;
-        synchronized (this) {
-            instancesID = classes.get(type);
-            if (instancesID == null) {
-                List<ObjectVariable> instances = type.getInstances(0);
-                int n = instances.size();
-                instancesID = new long[n];
-                for (int i = 0; i < n; i++) {
-                    instancesID[i] = instances.get(i).getUniqueID();
-                }
-                classes.put(type, instancesID);
-            }
-        }
-        int i;
-        for (i = 0; i < instancesID.length; i++) {
-            if (id == instancesID[i]) {
-                break;
-            }
-        }
-        return i + 1;
+public class WsdlSaas extends Saas {
+    private WsdlModel wsdlModel;
+
+    public WsdlSaas(SaasServices services, SaasGroup parentGroup) {
+        super(services, parentGroup);
     }
     
 }

@@ -42,7 +42,6 @@ package org.netbeans.modules.mercurial.ui.log;
 
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -65,18 +64,6 @@ public class LogAction extends AbstractAction {
     
     public void actionPerformed(ActionEvent e) {
         if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
-        if(!HgRepositoryContextCache.hasHistory(context)){
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(LogAction.class,
-                    "MSG_Log_Title")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(LogAction.class,
-                    "MSG_Log_Title_Sep")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(LogAction.class, "MSG_Log_Nothing")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(LogAction.class, "MSG_Log_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            return;
-        }
         SearchHistoryAction.openHistory(context,
                 NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
     }

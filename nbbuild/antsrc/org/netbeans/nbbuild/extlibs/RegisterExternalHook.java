@@ -245,7 +245,7 @@ begin
 <title>Uploaded #{name}</title>
 </head>
 <body>
-<p>Uploaded. Add to your manifest:</p>
+<p>Uploaded as:</p>
 <pre>#{sha1} #{name}</pre>
 </body>
 </html>

@@ -19,6 +19,7 @@
 
 package org.netbeans.modules.bpel.debugger.api;
 
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.debugger.api.variables.Variable;
 
 /**
@@ -27,7 +28,7 @@ import org.netbeans.modules.bpel.debugger.api.variables.Variable;
  */
 public interface Fault {
     
-    String getQName();
+    QName getQName();
     
     String getXPath();
     

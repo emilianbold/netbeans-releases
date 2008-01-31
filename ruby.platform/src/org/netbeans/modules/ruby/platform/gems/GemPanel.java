@@ -1056,7 +1056,6 @@ public final class GemPanel extends JPanel implements Runnable {
         File gemHomeF = chooseGemRepository(parent);
         if (gemHomeF != null) {
             platform.setGemHome(gemHomeF);
-            platform.getGemManager().reset();
             return true;
         }
         return false;
