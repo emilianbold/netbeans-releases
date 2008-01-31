@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,56 +39,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.debugger.jpda.heapwalk;
+package org.netbeans.modules.ruby.debugger;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import junit.framework.TestCase;
 
-import org.netbeans.api.debugger.jpda.JPDAClassType;
-import org.netbeans.api.debugger.jpda.ObjectVariable;
+public class ToolTipAnnotationTest extends TestCase {
 
-/**
- *
- * @author Martin Entlicher
- */
-public class InstanceNumberCollector {
-    
-    private Map<JPDAClassType, long[]> classes = new HashMap<JPDAClassType, long[]>();
-    
-    /** Creates a new instance of InstanceNumberCollector */
-    public InstanceNumberCollector() {
+    public ToolTipAnnotationTest(String testName) {
+        super(testName);
     }
-    
-    public int getInstanceNumber(ObjectVariable var) {
-        JPDAClassType type = var.getClassType();
-        if (type == null) {
-            return 0;
-        }
-        long id = var.getUniqueID();
-        if (id == 0L) {
-            return 0;
-        }
-        long[] instancesID;
-        synchronized (this) {
-            instancesID = classes.get(type);
-            if (instancesID == null) {
-                List<ObjectVariable> instances = type.getInstances(0);
-                int n = instances.size();
-                instancesID = new long[n];
-                for (int i = 0; i < n; i++) {
-                    instancesID[i] = instances.get(i).getUniqueID();
-                }
-                classes.put(type, instancesID);
-            }
-        }
-        int i;
-        for (i = 0; i < instancesID.length; i++) {
-            if (id == instancesID[i]) {
-                break;
-            }
-        }
-        return i + 1;
+
+    public void testGetExpressionToEvaluate() {
+        String line = "    @a1, @a1_gem = util_gem 'a', '1' do |s| s.executables << 'a_bin' end\n";
+        assertEquals("variable parsed", "@a1_gem", ToolTipAnnotation.getExpressionToEvaluate(line, 13));
     }
-    
+
+    public void testIsRubyIdentifier() {
+        assertTrue("@ is identifier", ToolTipAnnotation.isRubyIdentifier('@'));
+    }
 }

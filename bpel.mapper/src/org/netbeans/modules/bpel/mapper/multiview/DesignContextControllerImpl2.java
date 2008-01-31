@@ -210,7 +210,7 @@ public class DesignContextControllerImpl2
         if (mapper != null) {
             mapper.setVisible(true);
         }
-        setContextImpl();
+        setContextImpl(true);
     }
 
     public void hideMapper() {
@@ -272,6 +272,10 @@ public class DesignContextControllerImpl2
     
     // TODO m correct behaviour if just selectedEntity changes
     private void setContextImpl() {
+        setContextImpl(false);
+    }
+
+    private void setContextImpl(boolean forceReload) {
         // Copy the context to a new local variable at first.
         BpelDesignContext newContext = mNewContext;
         //        
@@ -297,8 +301,8 @@ public class DesignContextControllerImpl2
         } 
         //
         
-        if (!newContext.equals(mContext)) {
-            if (!newContextEntity.equals(oldContextEntity)) {
+        if (forceReload || !newContext.equals(mContext)) {
+            if (forceReload || !newContextEntity.equals(oldContextEntity)) {
                 myMapperStateManager.storeOldEntityContext(mContext);
                 //
                 MapperModel newMapperModel = new BpelMapperModelFactory().

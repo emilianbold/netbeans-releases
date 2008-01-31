@@ -100,7 +100,7 @@ public class JavaClassImpl implements JavaClass {
 
     public Instance getClassLoader() {
         if (classType != null) {
-            return InstanceImpl.createInstance(heap, classType.getClassLoader(), -1);
+            return InstanceImpl.createInstance(heap, classType.getClassLoader());
         } else {
             return null;
         }
@@ -170,9 +170,8 @@ public class JavaClassImpl implements JavaClass {
         }
         List<ObjectVariable> typeInstances = classType.getInstances(0);
         List<Instance> instances = new ArrayList<Instance>(typeInstances.size());
-        int i = 1;
         for (ObjectVariable inst : typeInstances) {
-            Instance instance = InstanceImpl.createInstance(heap, inst, i++);
+            Instance instance = InstanceImpl.createInstance(heap, inst);
             instances.add(instance);
         }
         return instances;

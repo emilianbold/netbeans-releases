@@ -1197,27 +1197,20 @@ public class CasaBuilder {
                 Node attrNode = attrs.item(i);
                 String attrName = attrNode.getNodeName();
                 String attrValue = attrNode.getNodeValue();
-
-                /*
-                // side effect: updating target document's namespaces
+          
                 if (!attrName.equals("xmlns") && attrValue.indexOf(":") != -1) {
-                    //System.out.println("deep cloning " + value);
-                    String valuePrefix = attrValue.substring(0, attrValue.indexOf(":"));
-                    String valueLocal = attrValue.substring(attrValue.indexOf(":") + 1);
-                    String oldNamespaceURI = XmlUtil.getNamespaceURI((Element)node, valuePrefix); // REFACTOR ME
-
-                    String newNamespaceURI = targetDocument.getDocumentElement().getAttribute("xmlns:" + valuePrefix);
-                    //System.out.println("  getMyNamespace: " + valuePrefix + " => oldNamespace=" + oldNamespace + "  newNamespace=" + newNamespace);
-
-                    if (newNamespaceURI == null || newNamespaceURI.equals("")) {
-                        targetDocument.getDocumentElement().setAttribute("xmlns:" + valuePrefix, oldNamespaceURI);
-                    } else if (newNamespaceURI.equals(oldNamespaceURI)) {
-                        ;
-                    } else {
-                        System.out.println("throw new RuntimeException(not implemented...)");
+                    String oldValuePrefix = 
+                            attrValue.substring(0, attrValue.indexOf(":"));
+                    String oldNamespaceURI = 
+                            XmlUtil.getNamespaceURI((Element)node, oldValuePrefix); // REFACTOR ME
+                    
+                    // We don't really know if the attr value is a QName or not.
+                    if (!oldNamespaceURI.equals("")) {
+                        // Add the namespace definition to the cloned node.
+                        ((Element)clonedNode).setAttribute(
+                                "xmlns:" + oldValuePrefix, oldNamespaceURI);
                     }
                 }
-                */
 
                 ((Element)clonedNode).setAttribute(attrName, attrValue);
             }
