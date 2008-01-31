@@ -46,7 +46,7 @@ QUITE=""
 function classpath() {
 
     local nbdist=${NBDIST-"../../nbbuild/netbeans/"}
-    local cnddist=${CNDDIST-"../../nbbuild/netbeans/cnd1/"}
+    local cnddist=${CNDDIST-"../../nbbuild/netbeans/cnd2/"}
 
     CP=""
 
