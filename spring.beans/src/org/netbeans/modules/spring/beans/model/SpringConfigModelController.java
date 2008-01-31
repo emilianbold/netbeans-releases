@@ -93,7 +93,7 @@ public class SpringConfigModelController {
     }
 
     private void initialize() {
-        for (File configFile : configFileGroup.getConfigFiles()) {
+        for (File configFile : configFileGroup.getFiles()) {
             file2Controller.put(configFile, new SpringConfigFileModelController(configFile));
             FileChangeSupport.DEFAULT.addListener(listener, configFile);
         }

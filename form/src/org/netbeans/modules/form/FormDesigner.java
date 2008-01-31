@@ -1279,12 +1279,10 @@ public class FormDesigner extends TopComponent implements MultiViewElement
             // Align actions
             designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.LEADING, false));
             designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.TRAILING, false));
-            designerActions.add(new AlignAction(LayoutConstants.HORIZONTAL, LayoutConstants.CENTER, false));
             designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.LEADING, false));
             designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.TRAILING, false));
-            designerActions.add(new AlignAction(LayoutConstants.VERTICAL, LayoutConstants.CENTER, false));
         }
-        return forToolbar ? designerActions.subList(0, designerActions.size()/2) : designerActions;
+        return forToolbar ? designerActions.subList(0, 6) : designerActions;
     }
 
     public Collection<Action> getResizabilityActions() {

@@ -299,6 +299,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
         caseSensitiveFilterCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
+                JavaMembersAndHierarchyOptions.setCaseSensitive(caseSensitiveFilterCheckBox.isSelected());
                 if (filterTextField.getText().trim().length() > 0) {
                     // apply filters again only if there is some filter text
                     selectMatchingRow();
@@ -560,6 +561,7 @@ public class JavaHierarchyPanel extends javax.swing.JPanel {
 
     private void selectMatchingRow() {
         filterTextField.setForeground(UIManager.getColor("TextField.foreground"));
+        javaHierarchyTree.setSelectionRow(-1);
         // select first matching
         for (int row = 0; row < javaHierarchyTree.getRowCount(); row++) {
             Object o = javaHierarchyTree.getPathForRow(row).getLastPathComponent();

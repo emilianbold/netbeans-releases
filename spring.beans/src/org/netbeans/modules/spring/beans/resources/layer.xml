@@ -140,6 +140,9 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
+                <folder name="CompletionProviders">
+                    <file name="org-netbeans-modules-spring-beans-completion-SpringXMLConfigCompletionProvider.instance"/>
+                </folder>
             </folder>
         </folder>
     </folder>
@@ -160,6 +163,11 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
+            <folder name="Customizer">
+                <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
+                    <attr name="position" intvalue="250"/>
+                </file>
+            </folder>
             <folder name="Lookup">
                 <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance"/>
             </folder>

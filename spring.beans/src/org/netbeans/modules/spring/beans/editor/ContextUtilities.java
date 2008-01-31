@@ -55,6 +55,9 @@ import org.netbeans.modules.xml.text.syntax.dom.Tag;
  */
 public final class ContextUtilities {
 
+    private ContextUtilities() {
+    }
+    
     public static boolean isValueToken(TokenItem currentToken) {
         if(currentToken != null) {
             if (currentToken.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) {
@@ -84,8 +87,23 @@ public final class ContextUtilities {
         
         return false;
     }
-
-    private ContextUtilities() {
+    
+    public static TokenItem getAttributeToken(TokenItem currentToken) {
+        if(isValueToken(currentToken)) {
+            TokenItem equalsToken = currentToken.getPrevious();
+            while(equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
+                equalsToken = equalsToken.getPrevious();
+            }
+        
+            TokenItem argumentToken = equalsToken.getPrevious();
+            while(argumentToken.getTokenID().getNumericID() != XMLDefaultTokenContext.ARGUMENT_ID) {
+                argumentToken = argumentToken.getPrevious();
+            }
+        
+            return argumentToken;
+        }
+        
+        return null;
     }
   
     public static Tag getCurrentTagElement(DocumentContext context) {
