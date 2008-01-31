@@ -59,7 +59,7 @@ public class HierarchyFactory {
             Collection<CsmFile> list = CsmIncludeHierarchyResolver.getDefault().getFiles(file);
             final Map<CsmFile, Set<CsmFile>> map = new HashMap<CsmFile, Set<CsmFile>>();
             map.put(file, new HashSet<CsmFile>(list));
-            return new IncludedModelAdapter(actions, map);
+            return new IncludedModelAdapter(actions, map, whoIncludes);
         }
         return new IncludedModelImpl(file, actions, whoIncludes, plain, recursive);
     }
@@ -68,9 +68,11 @@ public class HierarchyFactory {
         private Map<CsmFile, Set<CsmFile>> map;
         private Action[] actions;
         private Action close;
-        public IncludedModelAdapter(Action[] actions, Map<CsmFile, Set<CsmFile>> map){
+        private boolean direction;
+        public IncludedModelAdapter(Action[] actions, Map<CsmFile, Set<CsmFile>> map, boolean whoIncludes){
             this.map = map;
             this.actions = actions;
+            direction = whoIncludes;
         }
         public Map<CsmFile, Set<CsmFile>> getModel() {
             return map;
@@ -86,6 +88,10 @@ public class HierarchyFactory {
 
         public void setCloseWindowAction(Action close) {
             this.close = close;
+        }
+
+        public boolean isDownDirection() {
+            return !direction;
         }
     }
 }
