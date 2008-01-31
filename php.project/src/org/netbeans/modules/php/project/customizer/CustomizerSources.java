@@ -171,8 +171,8 @@ class CustomizerSources extends JPanel {
 
         if (FileUtil.isParentOf(projectFolder, sourceFolder)) {
             mySourceFolder.setText(FileUtil.getRelativePath(projectFolder, sourceFolder));
-        } else if (projectFolder.equals(sourceFolder)) {
-            mySourceFolder.setText("."); // NOI18N
+        //} else if (projectFolder.equals(sourceFolder)) {
+        //    mySourceFolder.setText("."); // NOI18N
         } else {
             mySourceFolder.setText(sourceFullPath);
         }
