@@ -22,6 +22,7 @@ package org.netbeans.modules.bpel.debugger.bdiclient.impl;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.debugger.BpelDebuggerImpl;
 import org.netbeans.modules.bpel.debugger.api.BpelProcess;
+import org.netbeans.modules.bpel.debugger.api.WaitingCorrelatedMessage;
 import org.netbeans.modules.bpel.debugger.api.psm.ProcessStaticModel;
 import org.netbeans.modules.bpel.debugger.psm.ProcessStaticModelImpl;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessRef;
@@ -67,5 +68,19 @@ public class BpelProcessImpl implements BpelProcess {
     
     public BPELProcessRef getProcessRef() {
         return myProcessRef;
+    }
+    
+    public WaitingCorrelatedMessage[] getWaitingCorrelatedEvents() {
+        final long[] ids = myProcessRef.getWaitingCorrelatedEventIds();
+        final WaitingCorrelatedMessage[] messages = 
+                new WaitingCorrelatedMessage[ids.length];
+        
+        for (int i = 0; i < ids.length; i++) {
+            messages[i] = new WaitingCorrelatedMessageImpl(
+                    this, 
+                    myProcessRef.getWaitingCorrelatedEvent(ids[i]));
+        }
+        
+        return messages;
     }
 }

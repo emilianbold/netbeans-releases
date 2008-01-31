@@ -24,6 +24,7 @@ import org.netbeans.modules.soa.ui.form.valid.DefaultValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
 import org.netbeans.modules.soa.ui.form.valid.Validator;
+import org.netbeans.modules.soa.ui.form.valid.Validator.Severity;
 import org.openide.explorer.propertysheet.PropertyEnv;
 
 /**
@@ -65,9 +66,8 @@ public abstract class ValidablePropertyCustomizer extends JPanel
         Validator validator = getValidator();
         // vsm.clearReasons();
         validator.clearReasons();
-        boolean isValid = isFast ?
-            validator.doFastValidation() : validator.doDetailedValidation();
-        vsm.setValid(validator, isValid);
+        validator.doValidation(isFast);
+        vsm.processValidationResults(validator);
     }
     
     public ValidStateManager getValidStateManager(boolean isFast) {

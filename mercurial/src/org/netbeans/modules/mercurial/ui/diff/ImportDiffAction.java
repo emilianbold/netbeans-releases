@@ -79,18 +79,6 @@ public class ImportDiffAction extends AbstractAction {
     
     public void actionPerformed(ActionEvent e) {
         if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
-        if(!HgRepositoryContextCache.hasHistory(context)){
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(ImportDiffAction.class,
-                    "MSG_IMPORT_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(ImportDiffAction.class,
-                    "MSG_IMPORT_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_NOTHING")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            return;
-        }
         importDiff(context);
     }
     

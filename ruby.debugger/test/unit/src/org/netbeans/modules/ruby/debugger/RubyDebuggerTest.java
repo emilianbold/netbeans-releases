@@ -42,14 +42,19 @@
 package org.netbeans.modules.ruby.debugger;
 
 import java.io.File;
+import java.io.IOException;
+import junit.framework.AssertionFailedError;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.junit.MockServices;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
+import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -349,10 +354,27 @@ public final class RubyDebuggerTest extends TestBase {
 //        p.waitFor();
 //    }
     
-    public void testCheckAndTuneSettings() {
-        ExecutionDescriptor descriptor = new ExecutionDescriptor(RubyPlatformManager.getDefaultPlatform());
+    public void testCheckAndTuneSettings() throws IOException {
+        MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        ExecutionDescriptor descriptor = new ExecutionDescriptor(jruby);
         // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
         assertTrue("default setting OK with JRuby", RubyDebugger.checkAndTuneSettings(descriptor));
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+        assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
+        
+        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
+        prefs.setUseClassicDebugger(jruby, false);
+        try {
+            assertTrue("fail when no fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
+        } catch (AssertionFailedError afe) {
+            // OK, expected
+        }
+        
+        installFakeFastRubyDebugger(jruby);
+        assertTrue("succeed when fast debugger available", RubyDebugger.checkAndTuneSettings(descriptor));
     }
 
     private DebuggerEngine getEngineManager() {

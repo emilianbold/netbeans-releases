@@ -47,13 +47,9 @@ import java.io.FileReader;
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.Properties;
-import java.util.StringTokenizer;
-import java.util.prefs.Preferences;
 import java.util.logging.Level;
 import org.ini4j.Ini;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -69,6 +65,14 @@ import org.openide.util.Utilities;
 public class HgConfigFiles {    
     public static final String HG_EXTENSIONS = "extensions";  // NOI18N
     public static final String HG_EXTENSIONS_HGK = "hgext.hgk";  // NOI18N
+    public static final String HG_EXTENSIONS_FETCH = "fetch";  // NOI18N
+    public static final String HG_UI_SECTION = "ui";  // NOI18N
+    public static final String HG_USERNAME = "username";  // NOI18N
+    public static final String HG_PATHS_SECTION = "paths";  // NOI18N
+    public static final String HG_DEFAULT_PUSH = "default-push";  // NOI18N
+    public static final String HG_DEFAULT_PUSH_VALUE = "default-push";  // NOI18N
+    public static final String HG_DEFAULT_PULL = "default-pull";  // NOI18N
+    public static final String HG_DEFAULT_PULL_VALUE = "default";  // NOI18N
 
     /** The HgConfigFiles instance for user and system defaults */
     private static HgConfigFiles instance;
@@ -79,17 +83,18 @@ public class HgConfigFiles {
     
     /** The repository directory if this instance is for a repository */
     private File dir;
-    private static final String UNIX_CONFIG_DIR = ".hg/";                                                                       // NOI18N
     private static final String WINDOWS_USER_APPDATA = getAPPDATA();
     private static final String WINDOWS_CONFIG_DIR = WINDOWS_USER_APPDATA + "\\Mercurial";                                      // NOI18N
     private static final String WINDOWS_GLOBAL_CONFIG_DIR = getGlobalAPPDATA() + "\\Mercurial";                                 // NOI18N
+    private static final String HG_RC_FILE = "hgrc";                                                                       // NOI18N
+    private static final String HG_REPO_DIR = ".hg";                                                                       // NOI18N
     
     /**
      * Creates a new instance
      */
     private HgConfigFiles() {      
         // get the system hgrc file 
-        hgrc = loadFile("hgrc");                                           // NOI18N  
+        hgrc = loadFile(HG_RC_FILE);                                           
     }
     
     /**
@@ -106,22 +111,28 @@ public class HgConfigFiles {
 
     public HgConfigFiles(File file) {
         dir = file;
-        hgrc = loadFile(file, "hgrc");                                              // NOI18N
+        hgrc = loadFile(file, HG_RC_FILE);                                             
     }
-    
+ 
     public void setProperty(String name, String value) {
-        if (name.equals("username")) { // NOI18N
-            setProperty("ui", "username", value); // NOI18N
-        } else if (name.equals("default-push")) { // NOI18N
-            setProperty("paths", "default-push", value); // NOI18N
-        } else if (name.equals("default-pull")) { // NOI18N
-            setProperty("paths", "default", value); // NOI18N
-        } else if (name.equals("hgext.hgk")) { // NOI18N
+        if (name.equals(HG_USERNAME)) { 
+            setProperty(HG_UI_SECTION, HG_USERNAME, value); 
+        } else if (name.equals(HG_DEFAULT_PUSH)) { 
+            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PUSH_VALUE, value); 
+        } else if (name.equals(HG_DEFAULT_PULL)) { 
+            setProperty(HG_PATHS_SECTION, HG_DEFAULT_PULL_VALUE, value); 
+        } else if (name.equals(HG_EXTENSIONS_HGK)) { 
             // Allow hgext.hgk to be set to some other user defined value if required
-            if(getProperty("extensions", "hgext.hgk").equals("")){ // NOI18N
-                setProperty("extensions", "hgext.hgk", value, true); // NOI18N
+            if(getProperty(HG_EXTENSIONS, HG_EXTENSIONS_HGK).equals("")){
+                setProperty(HG_EXTENSIONS, HG_EXTENSIONS_HGK, value, true); 
+            }
+        } else if (name.equals(HG_EXTENSIONS_FETCH)) { 
+            // Allow fetch to be set to some other user defined value if required
+            if(getProperty(HG_EXTENSIONS, HG_EXTENSIONS_FETCH).equals("")){ 
+                setProperty(HG_EXTENSIONS, HG_EXTENSIONS_FETCH, value, true);
             }
         }
+
     }
  
     public void setProperty(String section, String name, String value, boolean allowEmpty) {
@@ -136,7 +147,7 @@ public class HgConfigFiles {
             Ini.Section inisection = getSection(hgrc, section, true);
             inisection.put(name, value);
         }
-        storeIni(hgrc, "hgrc"); // NOI18N
+        storeIni(hgrc, HG_RC_FILE); 
     }
 
     public void setProperty(String section, String name, String value) {
@@ -144,7 +155,7 @@ public class HgConfigFiles {
     }
 
     public void setUserName(String value) {
-        setProperty("ui", "username", value); // NOI18N
+        setProperty(HG_UI_SECTION, HG_USERNAME, value); 
     }
 
     public String getUserName() {
@@ -167,7 +178,7 @@ public class HgConfigFiles {
         Ini.Section inisection = getSection(hgrc, section, false);
         if (inisection != null) {
              inisection.clear();
-             storeIni(hgrc, "hgrc"); // NOI18N 
+             storeIni(hgrc, HG_RC_FILE); 
          }
     }
 
@@ -175,7 +186,7 @@ public class HgConfigFiles {
         Ini.Section inisection = getSection(hgrc, section, false);
         if (inisection != null) {
              inisection.remove(name);
-             storeIni(hgrc, "hgrc"); // NOI18N 
+             storeIni(hgrc, HG_RC_FILE); 
          }
     }
 
@@ -183,16 +194,16 @@ public class HgConfigFiles {
         if (reload) {
             doReload();
         }
-        return getProperty("paths", "default"); // NOI18N
+        return getProperty(HG_PATHS_SECTION, HG_DEFAULT_PULL_VALUE); 
     }
 
     public String getDefaultPush(Boolean reload) {
         if (reload) {
             doReload();
         }
-        String value = getProperty("paths", "default-push"); // NOI18N
+        String value = getProperty(HG_PATHS_SECTION, HG_DEFAULT_PUSH); 
         if (value.length() == 0) {
-            value = getProperty("paths", "default"); // NOI18N
+            value = getProperty(HG_PATHS_SECTION, HG_DEFAULT_PULL_VALUE); 
         }
         return value;
     }
@@ -201,7 +212,7 @@ public class HgConfigFiles {
         if (reload) {
             doReload();
         }
-        return getProperty("ui", "username");                                              // NOI18N
+        return getProperty(HG_UI_SECTION, HG_USERNAME);                                              
     }
 
     public String getProperty(String section, String name) {
@@ -217,9 +228,9 @@ public class HgConfigFiles {
 
     private void doReload () {
         if (dir == null) {
-            hgrc = loadFile("hgrc");                                            // NOI18N  
+            hgrc = loadFile(HG_RC_FILE);                                            
         } else {
-            hgrc = loadFile(dir, "hgrc");                                       // NOI18N  
+            hgrc = loadFile(dir, HG_RC_FILE);                                      
         }
     }
 
@@ -235,7 +246,7 @@ public class HgConfigFiles {
         try {
             String filePath;
             if (dir != null) {
-                filePath = dir.getAbsolutePath() + File.separator + ".hg" + File.separator + iniFile; // NOI18N 
+                filePath = dir.getAbsolutePath() + File.separator + HG_REPO_DIR + File.separator + iniFile; // NOI18N 
             } else {
                 filePath =  getUserConfigPath() + iniFile;
             }
@@ -264,7 +275,7 @@ public class HgConfigFiles {
     }
 
     private Ini loadFile(File dir, String fileName) {
-        String filePath = dir.getAbsolutePath() + File.separator + ".hg" + File.separator + fileName; // NOI18N 
+        String filePath = dir.getAbsolutePath() + File.separator + HG_REPO_DIR + File.separator + fileName; // NOI18N 
         File file = FileUtil.normalizeFile(new File(filePath));
         Ini system = null;
         try {            
