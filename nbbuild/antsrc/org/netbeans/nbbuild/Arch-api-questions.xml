@@ -125,8 +125,8 @@ and commits any changes to openide/www/tutorial/questions.html.
         <question id="arch-where" when="impl">
             Where one can find sources for your module?
             <hint>
-                Please provide link to the CVS web client at
-                http://www.netbeans.org/download/source_browse.html
+                Please provide link to the Hg web client at
+                http://hg.netbeans.org/
                 or just use tag defaultanswer generate='here'
             </hint>
         </question>
