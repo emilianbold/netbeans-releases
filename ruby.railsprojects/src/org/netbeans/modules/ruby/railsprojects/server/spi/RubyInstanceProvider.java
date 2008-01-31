@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.ruby.railsprojects.server.spi;
 
-import java.io.File;
 import java.util.List;
+import javax.swing.event.ChangeListener;
 
 /**
- * Encapsulates the root of a Spring config model. It provides access to the
- * list of bean definitions and useful methods for retrieving beans
- * by id, etc.
  *
- * @author Andrei Badea
+ * @author Peter Williams
  */
-public interface SpringBeans {
-
-    // XXX aliases.
+public interface RubyInstanceProvider {
 
     /**
-     * Finds a bean by its id.
+     * Returns the list of known server instances.
      *
-     * @param  beanId the bean id; never null.
-     * @return the bean with the specified id or {@code null}.
+     * @return the list of known server instances
      */
-    SpringBean findBean(String beanId);
+    List<? extends RubyInstance> getInstances();
 
     /**
-     * Returns the list of beans in the specified beans config file.
+     * Returns the server instance corresponding with the specified URI.
      *
-     * @param  file the beans config file.
-     * @return the list of beans; never {@code null}.
+     * @return server instance for this URI or null if not found
      */
-    List<SpringBean> getBeans(File file);
+    RubyInstance getInstance(String uri);
+    
+    /**
+     * Adds a change listener to the provider. The listener must be notified
+     * any time instance is added or removed.
+     *
+     * @param listener listener to add, <code>null</code> is allowed (but it si noop then)
+     */
+    void addChangeListener(ChangeListener listener);
 
     /**
-     * Returns the list of beans in the Spring config model.
+     * Removes the previously added listener. No more events will be fired on
+     * the listener.
      *
-     * @return the list of beans; never {@code null}.
+     * @param listener listener to remove, <code>null</code> is allowed (but it si noop then)
      */
-    List<SpringBean> getBeans();
+    void removeChangeListener(ChangeListener listener);
+    
 }

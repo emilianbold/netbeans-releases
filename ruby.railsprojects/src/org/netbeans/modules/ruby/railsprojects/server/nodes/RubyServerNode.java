@@ -38,43 +38,32 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.ruby.railsprojects.server.nodes;
 
-package org.netbeans.modules.spring.api.beans.model;
-
-import java.io.File;
-import java.util.List;
+import org.netbeans.modules.ruby.railsprojects.server.*;
+import javax.swing.Action;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 
 /**
- * Encapsulates the root of a Spring config model. It provides access to the
- * list of bean definitions and useful methods for retrieving beans
- * by id, etc.
+ * A node for displaying <code>RubyServer<code>s under the servers node.
  *
- * @author Andrei Badea
+ * @author Erno Mononen
  */
-public interface SpringBeans {
+public class RubyServerNode extends AbstractNode {
+    
+    private final RubyServer server;
 
-    // XXX aliases.
+    public RubyServerNode(RubyServer server) {
+        super(Children.create(RailsAppChildrenFactory.create(server), false));
+        this.server = server;
+        setDisplayName(server.getDisplayName());
+        setIconBaseWithExtension("org/netbeans/modules/ruby/railsprojects/ui/resources/rails.png");
+    }
 
-    /**
-     * Finds a bean by its id.
-     *
-     * @param  beanId the bean id; never null.
-     * @return the bean with the specified id or {@code null}.
-     */
-    SpringBean findBean(String beanId);
-
-    /**
-     * Returns the list of beans in the specified beans config file.
-     *
-     * @param  file the beans config file.
-     * @return the list of beans; never {@code null}.
-     */
-    List<SpringBean> getBeans(File file);
-
-    /**
-     * Returns the list of beans in the Spring config model.
-     *
-     * @return the list of beans; never {@code null}.
-     */
-    List<SpringBean> getBeans();
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{};
+    }
+    
 }

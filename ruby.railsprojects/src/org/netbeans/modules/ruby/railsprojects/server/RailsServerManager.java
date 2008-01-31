@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.ruby.railsprojects.server;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,19 +52,23 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
+import javax.swing.AbstractListModel;
+import javax.swing.ComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -76,9 +81,11 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ChangeSupport;
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -92,15 +99,13 @@ import org.openide.NotifyDescriptor;
  * @todo Rewrite the WEBrick error message which says to press Ctrl-C to cancel the process;
  *   tell the user to use the Stop button in the margin instead (somebody on nbusers asked about this)
  * 
- * @author Tor Norbye, Pavel Buzek
+ * @author Tor Norbye, Pavel Buzek, Erno Mononen
  */
-public final class RailsServer {
+public final class RailsServerManager {
     
-    enum ServerType { MONGREL, LIGHTTPD, WEBRICK; }
-
     enum ServerStatus { NOT_STARTED, STARTING, RUNNING; }
 
-    private static final Logger LOGGER = Logger.getLogger(RailsServer.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RailsServerManager.class.getName());
     
     /** Set of currently active - in use; ports. */
     private static final Set<Integer> IN_USE_PORTS = new HashSet<Integer>();;
@@ -111,7 +116,7 @@ public final class RailsServer {
     private static final int SERVER_STARTUP_TIMEOUT = 120; 
     
     private ServerStatus status = ServerStatus.NOT_STARTED;
-    private ServerType serverType;
+    private RubyServer server;
     
     /** True if server failed to start due to port conflict. */
     private boolean portConflict;
@@ -129,8 +134,8 @@ public final class RailsServer {
     private boolean switchToDebugMode;
     
     private Semaphore debugSemaphore;
-
-    public RailsServer(RailsProject project) {
+    
+    public RailsServerManager(RailsProject project) {
         this.project = project;
         dir = FileUtil.toFile(project.getProjectDirectory());
     }
@@ -143,7 +148,7 @@ public final class RailsServer {
     }
     
     private void ensureRunning() {
-        synchronized (RailsServer.this) {
+        synchronized (RailsServerManager.this) {
             if (status == ServerStatus.STARTING) {
                 return;
             } else if (status == ServerStatus.RUNNING) {
@@ -151,9 +156,6 @@ public final class RailsServer {
                     assert debugSemaphore == null : "startSemaphor supposed to be null";
                     debugSemaphore = new Semaphore(0);
                     switchToDebugMode = false;
-                } else if (serverType == ServerType.MONGREL) {
-                    // isPortInUse doesn't work for Mongrel
-                    return;
                 } else if (isPortInUse(port)) {
                     // Simply assume it is still the same server running
                     return;
@@ -174,8 +176,9 @@ public final class RailsServer {
         Runnable finishedAction =
             new Runnable() {
                 public void run() {
-                    synchronized (RailsServer.this) {
+                    synchronized (RailsServerManager.this) {
                         status = ServerStatus.NOT_STARTED;
+                        server.removeApplication(port);
                         IN_USE_PORTS.remove(port);
                         if (portConflict) {
                             // Failed to start due to port conflict - notify user.
@@ -191,7 +194,7 @@ public final class RailsServer {
             };
 
         // Start the server
-        synchronized (RailsServer.this) {
+        synchronized (RailsServerManager.this) {
             status = ServerStatus.STARTING;
         }
 
@@ -211,16 +214,26 @@ public final class RailsServer {
         }
         String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
-        serverType = getServerType();
-        String displayName = getServerTabName(serverType, projectName, port);
-        LOGGER.fine("Got display name [" + displayName + "] for server  [" + serverType + "]");
-        String serverPath = "script" + File.separator + "server"; // NOI18N
+        String serverId = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE);
+        RubyInstance instance = ServerRegistry.getServer(serverId, RubyPlatform.platformFor(project));
+        if (!(instance instanceof RubyServer)){
+            //XXX: handle glassfish..
+            RequestProcessor.getDefault().post(finishedAction);
+            return;
+        }
+        server = (RubyServer) instance;
+        String displayName = getServerTabName(server, projectName, port);
+        String serverPath = server.getServerPath();
         ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, dir, serverPath);
-        desc.additionalArgs("--port", Integer.toString(port)); // NOI18N
+        if (server.getStartupParam() != null){
+            desc.additionalArgs(server.getStartupParam(), "--port", Integer.toString(port)); // NOI18N
+        } else {
+            desc.additionalArgs("--port", Integer.toString(port)); // NOI18N
+        }
         desc.postBuild(finishedAction);
         desc.classPath(classPath);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new RailsServerRecognizer(getStartedMessagePattern(serverType)));
+        desc.addOutputRecognizer(new RailsServerRecognizer(server));
         desc.frontWindow(false);
         desc.debug(debug);
         desc.fastDebugRequired(debug);
@@ -233,62 +246,13 @@ public final class RailsServer {
         execution.run();
     }
     
-    private static String getServerTabName(ServerType serverType, String projectName, int port) {
-        switch (serverType) {
-            case MONGREL: return NbBundle.getMessage(RailsServer.class, "MongrelTab", projectName, Integer.toString(port));
-            case LIGHTTPD: return NbBundle.getMessage(RailsServer.class, "LighttpdTab", projectName, Integer.toString(port));
-            case WEBRICK: 
-            default:
-                return NbBundle.getMessage(RailsServer.class, "WEBrickTab", projectName, Integer.toString(port));
-        }
-    }
-    
-    /**
-     * Gets the regex pattern representing the message that the server identified
-     * by the given <code>serverType</code> outputs when it is started.
-     * 
-     * @param serverType
-     * @return the pattern for the server started message of the given <code>serverType</code>.
-     */
-    static Pattern getStartedMessagePattern(ServerType serverType) {
-        switch (serverType) {
-            case MONGREL: return Pattern.compile("\\bMongrel.+available at.+", Pattern.DOTALL); // NOI18N
-            //case LIGHTTPD: return "=> Rails application starting on ";
-            case WEBRICK: 
-            default:
-                return Pattern.compile("\\bRails application started on.+", Pattern.DOTALL); // NOI18N
-        }
-        
-    }
-
-    String getServerName() {
-        switch (getServerType()) {
-            case MONGREL: return NbBundle.getMessage(RailsServer.class, "Mongrel");
-            case LIGHTTPD: return NbBundle.getMessage(RailsServer.class, "Lighttpd");
-            case WEBRICK: 
-            default:
-                return NbBundle.getMessage(RailsServer.class, "WEBrick");
-        }
-    }
-    
-    /** Figure out which server we're using */
-    private ServerType getServerType() {
-        GemManager gemManager = RubyPlatform.gemManagerFor(project);
-        LOGGER.fine("Got GemManager [" + gemManager.getGemHome() + "] for project [" + project + "]");
-        ServerType result = null;
-        if (gemManager.getVersion("mongrel") != null) { // NOI18N
-            result = ServerType.MONGREL;
-        } else if (gemManager.getVersion("lighttpd") != null) { // NOI18N
-            result = ServerType.LIGHTTPD;
-        } else {
-            result = ServerType.WEBRICK;
-        }
-        LOGGER.fine("Returning ServerType [" + result + "]");
-        return result;
+    private static String getServerTabName(RubyServer server, String projectName, int port) {
+        return NbBundle.getMessage(RailsServerManager.class, 
+                "LBL_ServerTab" , server.getName(), projectName, String.valueOf(port));
     }
     
     private void notifyPortConflict() {
-        String message = NbBundle.getMessage(RailsServer.class, "Conflict", Integer.toString(originalPort));
+        String message = NbBundle.getMessage(RailsServerManager.class, "Conflict", Integer.toString(originalPort));
         NotifyDescriptor nd =
             new NotifyDescriptor.Message(message, 
             NotifyDescriptor.Message.ERROR_MESSAGE);
@@ -300,15 +264,15 @@ public final class RailsServer {
      * @param relativeUrl the resulting url will be for example: http://localhost:{port}/{relativeUrl}
      */
     public void showUrl(final String relativeUrl) {
-        synchronized (RailsServer.this) {
+        synchronized (RailsServerManager.this) {
             if (!switchToDebugMode && status == ServerStatus.RUNNING && isPortInUse(port)) {
-                RailsServer.showURL(relativeUrl, port);
+                RailsServerManager.showURL(relativeUrl, port);
                 return;
             }
         }
         ensureRunning();
 
-        String displayName = NbBundle.getMessage(RailsServer.class, "ServerStartup");
+        String displayName = NbBundle.getMessage(RailsServerManager.class, "ServerStartup");
         final ProgressHandle handle =
             ProgressHandleFactory.createHandle(displayName,new Cancellable() {
                     public boolean cancel() {
@@ -337,25 +301,25 @@ public final class RailsServer {
                             // Don't worry about it
                         }
 
-                        synchronized (RailsServer.this) {
+                        synchronized (RailsServerManager.this) {
                             if (status == ServerStatus.RUNNING) {
-                                LOGGER.fine("Server " + serverType + " started in " + i + " seconds.");
-                                RailsServer.showURL(relativeUrl, port);
+                                LOGGER.fine("Server " + server + " started in " + i + " seconds.");
+                                RailsServerManager.showURL(relativeUrl, port);
                                 return;
                             }
 
                             if (status == ServerStatus.NOT_STARTED) {
-                               LOGGER.fine("Server starup failed, server type is: " + serverType);
+                               LOGGER.fine("Server starup failed, server type is: " + server);
                                 // Server startup somehow failed...
                                 break;
                             }
                         }
                     }
 
-                    LOGGER.fine("Could not start " + serverType + " in " + i +
+                    LOGGER.fine("Could not start " + server + " in " + i +
                             " seconds, current server status is " + status);
                     
-                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RailsServer.class,
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(RailsServerManager.class,
                                 "NoServerFound", "http://localhost:" + port + "/" + relativeUrl));
                 } finally {
                     handle.finish();
@@ -425,10 +389,10 @@ public final class RailsServer {
     
     private class RailsServerRecognizer extends OutputRecognizer {
 
-        private final Pattern pattern;
+        private final RubyServer server;
         
-        RailsServerRecognizer(Pattern pattern) {
-            this.pattern = pattern;
+        RailsServerRecognizer(RubyServer server) {
+            this.server = server;
         }
 
         @Override
@@ -443,11 +407,12 @@ public final class RailsServer {
             // This is ugly, but my attempts to use URLConnection on the URL repeatedly
             // and check for connection.getResponseCode()==HttpURLConnection.HTTP_OK didn't
             // work - try that again later
-            Matcher matcher = pattern.matcher(outputLine);
-            if (matcher.find()) {
-                synchronized (RailsServer.this) {
-                    LOGGER.fine("Identified " + serverType + " as running");
+            if (server.isStartupMsg(outputLine)) {
+                synchronized (RailsServerManager.this) {
+                    LOGGER.fine("Identified " + server + " as running");
                     status = ServerStatus.RUNNING;
+                    String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
+                    server.addApplication(new RailsApplication(projectName, port, execution));
                 }
             } else if (isAddressInUseMsg(outputLine)) {
                 LOGGER.fine("Detected port conflict: " + outputLine);
@@ -462,4 +427,61 @@ public final class RailsServer {
         }
     }
 
+    public static JComboBox getServerComboBox(RubyPlatform platform) {
+        JComboBox result = new JComboBox();
+        result.setModel(new ServerListModel(platform));
+        result.setRenderer(new ServerListCellRendered());
+        return result;
+    }
+
+    public static class ServerListModel extends AbstractListModel implements ComboBoxModel {
+
+        private final List<? extends RubyInstance> servers;
+        private Object selected;
+
+        public ServerListModel(RubyPlatform platform) {
+            this.servers = ServerRegistry.getServers(platform);
+            this.selected = servers.get(0);
+        }
+
+        public int getSize() {
+            return servers.size();
+        }
+
+        public Object getElementAt(int index) {
+            return servers.get(index);
+        }
+
+        public void setSelectedItem(Object server) {
+            if (selected != server) {
+                this.selected = server;
+                fireContentsChanged(this, -1, -1);
+            }
+        }
+
+        public Object getSelectedItem() {
+            return selected;
+        }
+        
+    }
+
+    private static class ServerListCellRendered extends JLabel implements ListCellRenderer {
+
+        public ServerListCellRendered() {
+            setOpaque(true);
+        }
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+
+            RubyInstance server = (RubyInstance) value;
+
+            setText(server.getDisplayName());
+            setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+            setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+
+            return this;
+        }
+    }
+
+    
 }

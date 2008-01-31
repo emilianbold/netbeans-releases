@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,44 +31,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.spring.api.beans.model;
+package org.netbeans.modules.ruby.railsprojects.server.nodes;
 
-import java.io.File;
-import java.util.List;
+import org.openide.nodes.Node;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.NodeAction;
 
 /**
- * Encapsulates the root of a Spring config model. It provides access to the
- * list of bean definitions and useful methods for retrieving beans
- * by id, etc.
+ * A node action for stopping a Rails application.
  *
- * @author Andrei Badea
+ * @author Erno Mononen
  */
-public interface SpringBeans {
+public class StopAction extends NodeAction {
 
-    // XXX aliases.
+    public StopAction() {
+    }
+    
+    @Override
+    protected void performAction(Node[] activatedNodes) {
+        for (Node each : activatedNodes) {
+            RailsAppNode.RailsAppCookie cookie = each.getCookie(RailsAppNode.RailsAppCookie.class);
+            if (cookie != null) {
+                cookie.getApplication().stop();
+            }
+        }
+    }
 
-    /**
-     * Finds a bean by its id.
-     *
-     * @param  beanId the bean id; never null.
-     * @return the bean with the specified id or {@code null}.
-     */
-    SpringBean findBean(String beanId);
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        return true;
+    }
 
-    /**
-     * Returns the list of beans in the specified beans config file.
-     *
-     * @param  file the beans config file.
-     * @return the list of beans; never {@code null}.
-     */
-    List<SpringBean> getBeans(File file);
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(StopAction.class, "LBL_StopAction");
+    }
 
-    /**
-     * Returns the list of beans in the Spring config model.
-     *
-     * @return the list of beans; never {@code null}.
-     */
-    List<SpringBean> getBeans();
+    @Override
+    public HelpCtx getHelpCtx() {
+        return null;
+    }
+
 }

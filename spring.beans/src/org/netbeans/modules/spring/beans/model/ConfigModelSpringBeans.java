@@ -42,6 +42,8 @@
 package org.netbeans.modules.spring.beans.model;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -77,5 +79,15 @@ public class ConfigModelSpringBeans implements SpringBeans {
             return beanSource.getBeans();
         }
         return null;
+    }
+
+    public List<SpringBean> getBeans() {
+        assert modelAccess.isValid() : "The SpringBeans instance has escaped the Action.run() method";
+        List<SpringBeanSource> beanSources = modelAccess.getBeanSources();
+        List<SpringBean> result = new ArrayList<SpringBean>(beanSources.size() * 20);
+        for (SpringBeanSource beanSource : beanSources) {
+            result.addAll(beanSource.getBeans());
+        }
+        return Collections.unmodifiableList(result);
     }
 }
