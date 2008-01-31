@@ -303,8 +303,10 @@ public class ClassIndexTest extends NbTestCase {
     
     private static void deleteFile (final String path) throws IOException {
         assert srcRoot != null && srcRoot.isValid();
-        final FileObject data  = srcRoot.getFileObject(path);
+        final FileObject data  = srcRoot.getFileObject(path);        
         if (data != null) {
+            //Workaround of issue #126367
+            final FileObject parent = data.getParent();
             data.delete();
         }
     }
