@@ -652,10 +652,10 @@ public class RubyPlatformCustomizer extends JPanel {
         
         boolean isJRuby = platform.isJRuby();
         boolean fdInstalled = platform.hasFastDebuggerInstalled();
-        rubyDebugEngine.setEnabled(!isJRuby && fdInstalled);
+        rubyDebugEngine.setEnabled(fdInstalled);
         installFastDebugger.setEnabled(!isJRuby && platform.hasRubyGemsInstalled());
         installFastDebugger.setVisible(!isJRuby && !fdInstalled);
-        if (isJRuby || !fdInstalled || prefs.isUseClassicDebugger(platform)) {
+        if (!fdInstalled || prefs.isUseClassicDebugger(platform)) {
             classicDebuggerEngine.setSelected(true);
         } else {
             rubyDebugEngine.setSelected(true);
