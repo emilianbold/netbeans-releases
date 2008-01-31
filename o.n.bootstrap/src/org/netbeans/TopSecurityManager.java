@@ -63,6 +63,7 @@ import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 
 /** NetBeans security manager implementation.
@@ -81,6 +82,7 @@ public class TopSecurityManager extends SecurityManager {
     private static final Class URLClass = URL.class;
     private static final Class runtimePermissionClass = RuntimePermission.class;
     private static final Class accessControllerClass = AccessController.class;
+    private static SecurityManager scm;
 
     private static List<SecurityManager> delegates = new ArrayList<SecurityManager>();
     /** Register a delegate security manager that can handle some checks for us.
@@ -105,6 +107,13 @@ public class TopSecurityManager extends SecurityManager {
         synchronized (delegates) {
             if (delegates.contains(sm)) throw new SecurityException();
             delegates.add(sm);
+            if (scm == null) {
+                Lookup.Item<SecurityManager> it = Lookup.getDefault().lookupItem(new Lookup.Template(SecurityManager.class));
+                if (it != null) {//NOI18N
+                    assert "org.netbeans.modules.masterfs.filebasedfs.utils.FileCachedBroker".equals(it.getId());
+                    scm = it.getInstance();
+                }
+            }            
         }
     }
     /** Unregister a delegate security manager.
@@ -144,7 +153,29 @@ public class TopSecurityManager extends SecurityManager {
         PrivilegedCheck.checkExit(status, this);
     }
 
+    SecurityManager getSecurityManager() {
+        if (scm == null) {
+            synchronized (delegates) {
+                return scm;
+            }        
+        }
+        return scm;
+    }
+    
+    private void notifyDelete(String file) {
+        SecurityManager s = getSecurityManager();
+        if (s != null) {
+            s.checkDelete(file);
+        }
+    }
 
+    private void notifyWrite(String file) {
+        SecurityManager s = getSecurityManager();
+        if (s != null) {
+            s.checkWrite(file);
+        }
+    }
+    
     private static boolean officialExit = false;
     /** Can be called from core classes to exit the system.
      * Direct calls to System.exit will not be honored, for safety.
@@ -280,6 +311,7 @@ public class TopSecurityManager extends SecurityManager {
 
     /** The method has awful performance in super class */
     public @Override void checkDelete(String file) {
+        notifyDelete(file);
         prepareForWarning(file);
         try {
             checkPermission(allPermission);
@@ -324,6 +356,7 @@ public class TopSecurityManager extends SecurityManager {
     
     /** The method has awful performance in super class */
     public @Override void checkWrite(String file) {
+        notifyWrite(file);
         prepareForWarning(file);
         try {
             checkPermission(allPermission);
