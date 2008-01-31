@@ -49,7 +49,6 @@ import org.netbeans.lib.profiler.heap.Value;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.netbeans.api.debugger.jpda.JPDAArrayType;
@@ -64,44 +63,27 @@ import org.netbeans.api.debugger.jpda.Variable;
 public class InstanceImpl implements Instance {
     
     private ObjectVariable var;
-    private int instanceNo;
     protected HeapImpl heap;
     
     /** Creates a new instance of InstanceImpl */
-    protected InstanceImpl(HeapImpl heap, ObjectVariable var, int instanceNo) {
-        this.var = var;
-        this.instanceNo = instanceNo;
-        this.heap = heap;
-    }
-    
     protected InstanceImpl(HeapImpl heap, ObjectVariable var) {
         this.var = var;
-        this.instanceNo = -1;
         this.heap = heap;
     }
     
     public static Instance createInstance(HeapImpl heap, ObjectVariable var) {
-        JPDAClassType classType = var.getClassType();
-        if (classType == null) {
-            return createInstance(heap, var, 0);
-        } else {
-            return createInstance(heap, var, -1);
-        }
-    }
-    
-    public static Instance createInstance(HeapImpl heap, ObjectVariable var, int instanceNo) {
         Instance instance;
         JPDAClassType type = var.getClassType();
         if (type instanceof JPDAArrayType) {
             boolean isPrimitiveArray = false;
             isPrimitiveArray = !(((JPDAArrayType) type).getComponentType() instanceof JPDAClassType);
             if (isPrimitiveArray) {
-                instance = new PrimitiveArrayInstanceImpl(heap, var, instanceNo);
+                instance = new PrimitiveArrayInstanceImpl(heap, var);
             } else {
-                instance = new ObjectArrayInstanceImpl(heap, var, instanceNo);
+                instance = new ObjectArrayInstanceImpl(heap, var);
             }
         } else {
-            instance = new InstanceImpl(heap, var, instanceNo);
+            instance = new InstanceImpl(heap, var);
         }
         return instance;
     }
@@ -119,11 +101,8 @@ public class InstanceImpl implements Instance {
         return var.getUniqueID();
     }
 
-    public synchronized int getInstanceNumber() {
-        if (instanceNo < 0) {
-            instanceNo = heap.getInstanceNumberCollector().getInstanceNumber(var);
-        }
-        return instanceNo;
+    public int getInstanceNumber() {
+        return (int) var.getUniqueID();
     }
 
     /*private int computeInstanceNumber() {
