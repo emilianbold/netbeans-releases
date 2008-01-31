@@ -149,6 +149,7 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
         org.openide.awt.Mnemonics.setLocalizedText(createMainCheckBox, org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_createMainCheckBox")); // NOI18N
         createMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
+        rubyPlatformLabel.setLabelFor(platforms);
         org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyPlatformLabel")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "RubyHomeBrowse")); // NOI18N
@@ -176,7 +177,7 @@ public final class PanelOptionsVisual extends SettingsPanel implements ActionLis
                     .add(layout.createSequentialGroup()
                         .add(createMainCheckBox)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)))
+                        .add(mainClassTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 419, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
