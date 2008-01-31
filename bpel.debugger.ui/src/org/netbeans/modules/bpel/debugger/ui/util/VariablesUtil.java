@@ -222,28 +222,42 @@ public class VariablesUtil {
     // Type ////////////////////////////////////////////////////////////////////
     public String getType(
             final Object object) {
+        String type = null;
+        
         if (object instanceof NamedValueHost) {
             if (object instanceof WsdlMessageVariable) {
-                return " " + getType((WsdlMessageVariable) object) + " ";
+                type = getType((WsdlMessageVariable) object);
             }
-
+            
             if (object instanceof WsdlMessageValue.Part) {
-                return " " + getType((WsdlMessageValue.Part) object) + " ";
+                type = getType((WsdlMessageValue.Part) object);
             }
-
+            
             if (object instanceof XmlElementVariable) {
-                return " " + getType((XmlElementVariable) object) + " ";
+                type = getType((XmlElementVariable) object);
             }
-
+            
             if (object instanceof SimpleVariable) {
-                return " " + getType((SimpleVariable) object) + " ";
+                type = getType((SimpleVariable) object);
+            }
+            
+            if (type == null) {
+                return "";
+            } else {
+                return " " + type + " ";
             }
         }
-
+        
         if (object instanceof Node) {
-            return " " + getType((Node) object) + " ";
+            type = getType((Node) object);
+            
+            if (type == null) {
+                return "";
+            } else {
+                return " " + type + " ";
+            }
         }
-
+        
         return NbBundle.getMessage(
                 VariablesUtil.class, "VU_CannotResolveType", object); // NOI18N
     }
@@ -819,6 +833,12 @@ public class VariablesUtil {
         }
         
         if (object instanceof Node) {
+            final Node node = (Node) object;
+            
+            if ((node instanceof Element) && !XmlUtil.isTextOnlyNode(node)) {
+                return XmlUtil.toString(node);
+            }
+            
             return ((Node) object).getTextContent();
         }
         
@@ -853,6 +873,12 @@ public class VariablesUtil {
         }
         
         if (object instanceof Node) {
+            final Node node = (Node) object;
+            
+            if ((node instanceof Element) && !XmlUtil.isTextOnlyNode(node)) {
+                return "text/xml";
+            }
+            
             return "text/plain"; // NOI18N
         }
         

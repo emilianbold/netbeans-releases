@@ -325,6 +325,9 @@ made subject to such option by the copyright holder.
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.projectui</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.java.source</code-name-base>
                         <recursive/>
                         <compile-dependency/>

@@ -447,7 +447,8 @@ public class JBIFrameworkService implements Serializable {
      * @return Returns the jbiFrameworkEnabled.
      */
     public boolean isJbiFrameworkEnabled() {
-        return this.jbiFrameworkEnabled && this.isUIMBeanRegistered && this.isEnabled();
+        return this.jbiFrameworkEnabled && //this.isUIMBeanRegistered && 
+                this.isEnabled();
     }
 
     /**

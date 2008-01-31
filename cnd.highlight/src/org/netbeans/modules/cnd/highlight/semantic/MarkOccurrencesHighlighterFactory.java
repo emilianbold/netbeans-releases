@@ -70,6 +70,15 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
                 Exceptions.printStackTrace(ex);
             }
         }
-        return ph != null ? ph : lazyRunner();
+        return ph != null ? ph :new PhaseRunner() {
+
+            public void run(Phase phase) {
+                // rest
+            }
+
+            public boolean isValid() {
+                return !SemanticHighlightingOptions.getEnableMarkOccurences();
+            }
+        };
     }
 }

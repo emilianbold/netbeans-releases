@@ -2630,7 +2630,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     if (!((CompilationInfoImpl.DiagnosticListenerImpl)dl).hasPartialReparseErrors()) {
                         TreePath tp = TreePath.getPath(cu, orig);       //todo: store treepath in changed method => improve speed
                         Tree t = tp.getParentPath().getLeaf();
-                        task.reflowMethodBody(cu, (ClassTree) t, orig, block);
+                        task.reflowMethodBody(cu, (ClassTree) t, orig);
                     }
                 }
                 ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);

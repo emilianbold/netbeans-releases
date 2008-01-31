@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,13 +52,16 @@ import java.util.List;
 import javax.swing.JEditorPane;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -66,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -182,6 +187,7 @@ public class TraceXRef extends TraceModel {
         return super.getProject().findFile(new File(path).getAbsolutePath());
     }
     
+    @Override
     protected boolean processFlag(String flag) {
         String xRef = "xref"; // NOI18N
         if (flag.startsWith(xRef)) {
@@ -211,6 +217,17 @@ public class TraceXRef extends TraceModel {
 	    return true;
         }
         return false;
+    }
+    
+    public static void traceProjectRefsStatistics(NativeProject prj, PrintWriter out) {
+        try {
+            CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
+            out.println("analyzing project " + prj.getProjectDisplayName() + "...");
+            Thread.sleep(10000);
+            out.println("finished");
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public static void traceRefs(Collection<CsmReference> out, CsmObject target, PrintStream streamOut) {
