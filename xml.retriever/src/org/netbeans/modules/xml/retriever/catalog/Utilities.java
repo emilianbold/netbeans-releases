@@ -632,10 +632,7 @@ public class Utilities {
             public Lookup getLookup() {
                 Document document = null;
                 try {
-                    long start = System.currentTimeMillis();
                     document = _getDocument(dobj);
-                    long end = System.currentTimeMillis();
-                    System.out.println("Time taken to open doc: " + (end-start));
                     if (document != null) {
                         return Lookups.fixed(new Object[] {
                             dobj.getPrimaryFile(),
