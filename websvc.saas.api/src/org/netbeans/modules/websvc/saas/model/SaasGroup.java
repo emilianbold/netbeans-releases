@@ -43,6 +43,8 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  *
@@ -51,23 +53,26 @@ import java.util.List;
 public class SaasGroup {
     private final Group delegate;
     private final SaasGroup parent;
-    private boolean userDefined;
-    private List<Saas> services;
-    private List<SaasGroup> children;
+    private boolean userDefined = true; //once set to false, remain false.
+    private SortedMap<String, Saas> services;
+    private SortedMap<String, SaasGroup> children;
     
     public SaasGroup(SaasGroup parent, Group group) {
         this.parent = parent;
         this.delegate = group;
-        services = Collections.synchronizedList(new ArrayList<Saas>());
-        children = Collections.synchronizedList(new ArrayList<SaasGroup>());
+        services = Collections.synchronizedSortedMap(new TreeMap<String, Saas>());
     }
 
+    public SaasGroup getParent() {
+        return parent;
+    }
+    
     public Group getDelegate() {
         return delegate;
     }
 
     public List<Saas> getServices() {
-        return Collections.unmodifiableList(services);
+        return Collections.unmodifiableList(new ArrayList<Saas>(services.values()));
     }
 
     /**
@@ -77,10 +82,9 @@ public class SaasGroup {
      * @param service saas service
      */
     public void addService(Saas service) {
-        synchronized(services) {
-            services.add(service);
-        }
+        services.put(service.getDisplayName(), service);
     }
+    
     /**
      * If this is part of model mutation, caller is responsible to ensure 
      * SaasServices persists with proper Group information.
@@ -88,13 +92,15 @@ public class SaasGroup {
      * @param service saas service to remove
      */
     public boolean removeService(Saas service) {
-        synchronized(services) {
-            return services.remove(service);
-        }
+        return services.remove(service.getDisplayName()) != null;
     }
 
     public void setName(String value) {
-        delegate.setName(value);
+        if (! isUserDefined()) {
+            getParent().removeChildGroup(this);
+            delegate.setName(value);
+            getParent().addChildGroup(this);
+        }
     }
 
     public String getName() {
@@ -106,11 +112,20 @@ public class SaasGroup {
     }
 
     public void setUserDefined(boolean v) {
-        userDefined = v;
+        if (userDefined) {
+            userDefined = v;
+        }
     }
 
     public List<SaasGroup> getChildrenGroups() {
-        return Collections.unmodifiableList(children);
+        if (children == null) {
+            children = Collections.synchronizedSortedMap(new TreeMap<String,SaasGroup>());
+            for (Group g : delegate.getGroup()) {
+                SaasGroup sg = new SaasGroup(this, g);
+                children.put(sg.getName(), sg);
+            }
+        }
+        return Collections.unmodifiableList(new ArrayList<SaasGroup>(children.values()));
     }
 
     /**
@@ -120,9 +135,10 @@ public class SaasGroup {
      * @param group saas group to remove
      */
     public boolean removeChildGroup(SaasGroup group) {
-        synchronized(children) {
-            return children.remove(group);
+        if (! group.isUserDefined()) {
+            return false;
         }
+        return children.remove(group.getName()) != null;
     }
 
     /**
@@ -132,8 +148,6 @@ public class SaasGroup {
      * @param group saas group to add
      */
     public void addChildGroup(SaasGroup group) {
-        synchronized(children) {
-            children.add(group);
-        }
+        children.put(group.getName(), group);
     }
 }
