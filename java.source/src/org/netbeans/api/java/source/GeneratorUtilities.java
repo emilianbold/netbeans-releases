@@ -70,6 +70,7 @@ import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -251,10 +252,17 @@ public final class GeneratorUtilities {
         List<StatementTree> statements = new ArrayList<StatementTree>();
         ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));        
         if (constructor != null && !constructor.getParameters().isEmpty()) {
+            ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
             List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
-            for (VariableElement ve : constructor.getParameters()) {
-                parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
-                arguments.add(make.Identifier(ve.getSimpleName())); //NOI18N
+            Iterator<? extends VariableElement> parameterElements = constructor.getParameters().iterator();
+            Iterator<? extends TypeMirror> parameterTypes = constructorType != null ? constructorType.getParameterTypes().iterator() : null;
+            while (parameterElements.hasNext()) {
+                VariableElement ve = parameterElements.next();
+                Name simpleName = ve.getSimpleName();
+                TypeMirror type = parameterTypes != null ? parameterTypes.next() : ve.asType();
+                
+                parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
+                arguments.add(make.Identifier(simpleName));
             }
             statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
         }
