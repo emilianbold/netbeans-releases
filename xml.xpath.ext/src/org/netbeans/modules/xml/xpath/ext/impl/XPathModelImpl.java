@@ -461,10 +461,10 @@ public class XPathModelImpl implements XPathModel {
                                 ResultType.ERROR, 
                                 XPathProblem.UNKNOWN_ELEMENT, name);
                     } else {
-                        mValidationContext.addResultItem(getRootExpression(), 
-                                ResultType.ERROR, 
-                                XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, 
-                                name, nsUri);
+//                        mValidationContext.addResultItem(getRootExpression(), 
+//                                ResultType.ERROR, 
+//                                XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, 
+//                                name, nsUri);
                     }
                 }
             }
