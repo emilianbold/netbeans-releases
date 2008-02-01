@@ -66,11 +66,6 @@
     
     <xsd:complexType name="SaasServicesType">
         <xsd:sequence>
-            <xsd:element name="include" minOccurs="0" maxOccurs="unbounded">
-                <xsd:complexType>
-                    <xsd:attribute name="url" type="xsd:string"/>
-                </xsd:complexType>
-            </xsd:element>
             <xsd:element name="description">
                 <xsd:simpleType>
                     <xsd:restriction base="xsd:string"/>
@@ -79,7 +74,7 @@
             <xsd:element name="display-name" minOccurs="0" maxOccurs="1"/>
             <xsd:element ref="saas:saas-metadata" maxOccurs="1">
             </xsd:element>
-            <xsd:element name="header">
+            <xsd:element name="header" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:sequence>
                         <xsd:element name="params" type="saas:ParamsType"/>
@@ -108,7 +103,7 @@
             </xsd:element>
             <xsd:element name="authentication" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
-                    <xsd:sequence>
+                    <xsd:choice>
                         <xsd:element name="http-basic"/>
                         <xsd:element name="api-key">
                             <xsd:complexType>
@@ -116,7 +111,7 @@
                             </xsd:complexType>
                         </xsd:element>
                         <xsd:element name="custom"/>
-                    </xsd:sequence>
+                    </xsd:choice>
                     <xsd:attribute name="profile" type="xsd:string" default="Templates/WebServices/profile.properties"/>
                 </xsd:complexType>
             </xsd:element>
