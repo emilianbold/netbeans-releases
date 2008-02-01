@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -76,7 +75,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * An implementation of {@link SpringBeanSource} delegating to
- * a file.
+ * a file or a its document in the editor.
  *
  * @author Andrei Badea
  */
@@ -95,20 +94,35 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
      *
      * @param  document the document to parse.
      */
-    public void parse(FileObject fo, Document document) throws IOException {
-        if (document != null) {
-            LOGGER.log(Level.FINE, "Parsing document for file {0}", fo);
-        } else {
-            LOGGER.log(Level.FINE, "Parsing file {0}", fo);
-            document = getAsDocument(fo);
-        }
+    public void parse(FileObject fo) throws IOException {
+        LOGGER.log(Level.FINE, "Parsing {0}", fo);
         File file = FileUtil.toFile(fo);
         if (file == null) {
-            LOGGER.log(Level.WARNING, "FileObject {0} resolves to a null File, aborting", fo);
+            LOGGER.log(Level.WARNING, "{0} resolves to a null File, aborting", fo);
             return;
         }
-        parse(file, document);
+        BaseDocument doc = getOpenedDocument(fo);
+        if (doc != null) {
+            LOGGER.log(Level.FINE, "Parsing editor document for {0}", fo);
+        } else {
+            doc = getAsDocument(fo);
+            LOGGER.log(Level.FINE, "Creating fake BaseDocument for {0}", fo);
+        }
+        parse(file, doc);
         LOGGER.log(Level.FINE, "Parsed {0}", fo);
+    }
+
+    private BaseDocument getOpenedDocument(FileObject fo) throws DataObjectNotFoundException {
+        DataObject dataObject = DataObject.find(fo);
+        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
+        Document doc = ec.getDocument();
+        if (doc instanceof BaseDocument) {
+            return (BaseDocument)doc;
+        }
+        return null;
     }
 
     // XXX This is just a very very ugly hack. We should be able to parse

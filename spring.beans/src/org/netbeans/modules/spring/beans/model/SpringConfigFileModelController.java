@@ -42,11 +42,9 @@
 package org.netbeans.modules.spring.beans.model;
 
 import java.io.File;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
-import javax.swing.text.Document;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -105,38 +103,31 @@ public class SpringConfigFileModelController {
         }
         FileObject configFO = FileUtil.toFileObject(file);
         if (configFO != null) {
-            parse(configFO, null);
+            parse(configFO);
         }
     }
 
-    public void notifyChange(FileObject configFO, Document document) {
-        if (document != null) {
-            LOGGER.log(Level.FINE, "Notified of document change to {0}", configFO);
-        } else {
-            LOGGER.log(Level.FINE, "Notified of document to {0}", configFO);
-        }
+    public void notifyChange(FileObject configFO) {
         synchronized (this) {
-            updater = new Updater(configFO, document);
+            updater = new Updater(configFO);
             ExclusiveAccess.getInstance().postTask(updater);
         }
     }
 
-    private void parse(FileObject configFO, Document document) throws IOException {
+    private void parse(FileObject configFO) throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         if (!parsedAtLeastOnce) {
             parsedAtLeastOnce = true;
         }
-        beanSource.parse(configFO, document);
+        beanSource.parse(configFO);
     }
 
     private final class Updater implements Runnable {
 
         private final FileObject configFile;
-        private final Document document;
 
-        public Updater(FileObject configFile, Document document) {
+        public Updater(FileObject configFile) {
             this.configFile = configFile;
-            this.document = document;
         }
 
         public void run() {
@@ -153,7 +144,7 @@ public class SpringConfigFileModelController {
                 updater = null;
             }
             try {
-                parse(configFile, document);
+                parse(configFile);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }

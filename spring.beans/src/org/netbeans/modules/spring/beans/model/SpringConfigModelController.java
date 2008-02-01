@@ -162,7 +162,7 @@ public class SpringConfigModelController {
         }
         SpringConfigFileModelController fileController = file2Controller.get(file);
         if (fileController != null) {
-            fileController.notifyChange(fo, null);
+            fileController.notifyChange(fo);
         }
     }
 
@@ -171,14 +171,14 @@ public class SpringConfigModelController {
         // the controller under exclusive access
     }
 
-    private void notifyFileChanged(FileObject fo, Document document) {
+    private void notifyFileChanged(FileObject fo) {
         File file = FileUtil.toFile(fo);
         if (file == null) {
             return;
         }
         SpringConfigFileModelController fileController = file2Controller.get(file);
         if (file2Controller != null) {
-            fileController.notifyChange(fo, document);
+            fileController.notifyChange(fo);
         }
     }
 
@@ -285,7 +285,7 @@ public class SpringConfigModelController {
             }
             // XXX sending events for all files, perhaps should check MIME type.
             // Or perhaps use a sliding task.
-            notifyFileChanged(fo, document);
+            notifyFileChanged(fo);
         }
     }
 }
