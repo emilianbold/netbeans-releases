@@ -41,6 +41,25 @@
  made subject to such option by the copyright holder.
 -->
 
-<saas-services>
+<saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
+               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/youtube"
+               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
+               xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
+               type="http://research.sun.com/wadl/2006/10"
+               api-doc="http://youtube.com/dev_api_ref"
+               url="nbres:/org/netbeans/modules/websvc/saas/services/resources/YouTubeVideosWadl.xml">
+
+    <description>YouTube Video Service</description>
+    
+    <display-name>YouTubeVideos</display-name>
+    
+    <xi:include url="YouTubeVideosMetaData.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+    <methods>
+        <method name="ListByTag" href="//resource[@path='api2_rest']/method[@id='youtube.listByTag']"/>
+        <method name="ListFeatured" href="//resource[@path='api2_rest']/method[@id='youtube.listFeatured']"/>
+        <method name="ListPopular" href="//resource[@path='api2_rest']/method[@id='youtube.listPopular']"/>
+    </methods>
 
 </saas-services>
