@@ -42,11 +42,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.openide.WizardDescriptor;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 import org.openide.util.HelpCtx;
 
 /**
@@ -57,8 +54,7 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
 
     private HibernateConfigurationWizardPanel panel;
     private WizardDescriptor wizardDescriptor;
-    private Project project;
-    private static String ERROR_MSG_KEY = "WizardPanel_errorMessage";
+    private Project project;    
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public HibernateConfigurationWizardDescriptor(Project project) {
@@ -90,28 +86,12 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
     }
 
     public boolean isValid() {
-        if (wizardDescriptor == null) {
-            return true;
-        }
-        if (panel != null && !panel.isValidPanel()) {
-            try {
-                
-                if (!panel.isNameUnique()) {
-                    wizardDescriptor.putProperty(ERROR_MSG_KEY,
-                            NbBundle.getMessage(HibernateConfigurationWizard.class, "ERR_HibernateConfigurationNameNotUnique"));
-                }
-            } catch (Exception e) {
-                wizardDescriptor.putProperty(ERROR_MSG_KEY,
-                        NbBundle.getMessage(HibernateConfigurationWizard.class, "ERR_InvalidConfigurationXml"));
-            }
-            return false;
-        }
-        wizardDescriptor.putProperty(ERROR_MSG_KEY, " "); //NOI18N
         return true;
     }
 
     public void storeSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;       
+        wizardDescriptor = (WizardDescriptor) settings;
+        panel = (HibernateConfigurationWizardPanel) getComponent();
         if (WizardDescriptor.PREVIOUS_OPTION.equals(wizardDescriptor.getValue())) {
             return;
         }
@@ -119,24 +99,6 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
     }
 
     public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        project = Templates.getProject(wizardDescriptor);
-        if (panel == null) {
-            panel = (HibernateConfigurationWizardPanel) getComponent();
-        }
-
-        // Try to preselect a folder
-        FileObject preSelectedTarget = Templates.getTargetFolder(wizardDescriptor);
-        // Try to preserve already entered target name
-        String targetName = Templates.getTargetName(wizardDescriptor);
-        // Init values
-        panel.initValues(Templates.getTemplate(wizardDescriptor), preSelectedTarget, targetName);
-
-        wizardDescriptor.putProperty("WizardPanel_contentData", new String[]{
-            NbBundle.getBundle(HibernateConfigurationWizardDescriptor.class).getString("LBL_TemplatesPanel_Name"), // NOI18N
-            NbBundle.getBundle(HibernateConfigurationWizardDescriptor.class).getString("LBL_HibernateConfigurationPanel_Name")
-        }); // NOI18N       
-
     }
 
     public HelpCtx getHelp() {
@@ -145,10 +107,6 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
 
     Project getProject() {
         return project;
-    }
-
-    String getHibernateConfName() {
-        return panel.getConfigurationFileName();
     }
 
     String getDialectName() {

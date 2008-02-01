@@ -11,8 +11,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -30,32 +30,14 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
         cmbDialect.setModel(new javax.swing.DefaultComboBoxModel(Util.getDialectCodes()));
         cmbDriver.setModel(new javax.swing.DefaultComboBoxModel(new String[0]));
         cmbURL.setModel(new javax.swing.DefaultComboBoxModel(new String[0]));
-        txtConf.getDocument().addDocumentListener(this);
-        txtConf.selectAll();
     }
 
-    public boolean isValidPanel() {
-        if (!isNameValid()) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Checks whether name of the configuration file is valid, i.e. it's not
-     * empty and it's unique.
-     */
-    private boolean isNameValid() {
-        return Util.isEmpty(getConfigurationFileName()) ? false : isNameUnique();
-    }
-
-    public final boolean isNameUnique() {
-        return true;
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name");
     }
 
     private void fillCombos() {
-//        int index = cmbDialect.getSelectedIndex();        
-//        String strIndex = Integer.toString(index);     
         String strIndex = cmbDialect.getSelectedItem().toString();
         String drivers = Util.getSelectedDriver(strIndex);
         String urlConnection = Util.getSelectedURLConnection(strIndex);
@@ -64,27 +46,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
 
     }
 
-    public void initValues(FileObject template, FileObject preSelectedFolder, String documentName) {
-        if (template != null) {
-            if (documentName == null) {
-                final String baseName = template.getName();
-                documentName = baseName;
-                if (preSelectedFolder != null) {
-                    int index = 0;
-                    while (true) {
-                        FileObject _tmp = preSelectedFolder.getFileObject(documentName, template.getExt());
-                        if (_tmp == null) {
-                            break;
-                        }
-                        documentName = baseName + ++index;
-                    }
-                }
-            }
-            txtConf.setText(documentName);
-            txtConf.selectAll();
-        }
-
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -94,8 +55,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel2 = new javax.swing.JLabel();
-        txtConf = new javax.swing.JTextField();
         jLabel4 = new javax.swing.JLabel();
         cmbDialect = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
@@ -104,11 +63,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
         cmbURL = new javax.swing.JComboBox();
 
         setName(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "LBL_HibernateConfigurationPanel_Name")); // NOI18N
-
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel2.text")); // NOI18N
-
-        txtConf.setColumns(40);
-        txtConf.setName(""); // NOI18N
 
         jLabel4.setText(org.openide.util.NbBundle.getMessage(HibernateConfigurationWizardPanel.class, "HibernateConfigurationWizardPanel.jLabel4.text")); // NOI18N
 
@@ -135,42 +89,37 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(jLabel6, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                    .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(jLabel2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(cmbURL, 0, 483, Short.MAX_VALUE)
-                    .add(cmbDriver, 0, 483, Short.MAX_VALUE)
-                    .add(cmbDialect, 0, 483, Short.MAX_VALUE)
-                    .add(txtConf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 483, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(layout.createSequentialGroup()
+                        .add(10, 10, 10)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel5, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                            .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(jLabel6)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, cmbDriver, 0, 488, Short.MAX_VALUE)
+                    .add(cmbDialect, 0, 488, Short.MAX_VALUE)
+                    .add(cmbURL, 0, 488, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(24, 24, 24)
+                .add(19, 19, 19)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
-                    .add(txtConf, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(cmbDialect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel4))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(jLabel4)
-                    .add(cmbDialect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(14, 14, 14)
-                        .add(jLabel5))
-                    .add(layout.createSequentialGroup()
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(cmbDriver, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .add(10, 10, 10)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel6)
-                    .add(cmbURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(cmbDriver, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel5))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(cmbURL, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel6))
                 .add(50, 50, 50))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -182,11 +131,9 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
     private javax.swing.JComboBox cmbDialect;
     private javax.swing.JComboBox cmbDriver;
     private javax.swing.JComboBox cmbURL;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JTextField txtConf;
     // End of variables declaration//GEN-END:variables
     /**
      * Document listener that invokes <code>checkValidity</code> when
@@ -213,10 +160,6 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
 
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
-    }
-
-    public String getConfigurationFileName() {
-        return txtConf.getText();
     }
 
     public String getSelectedDialect() {

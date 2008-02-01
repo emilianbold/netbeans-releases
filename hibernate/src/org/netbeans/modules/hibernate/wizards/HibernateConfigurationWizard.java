@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.hibernate.wizards;
 
+import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
@@ -45,6 +46,9 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
@@ -68,9 +72,50 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     private final String dialect = "hibernate.dialect";
     private final String driver = "hibernate.connection.driver_class";
     private final String url = "hibernate.connection.url";
-   
+
     public static HibernateConfigurationWizard create() {
         return new HibernateConfigurationWizard();
+    }
+
+    /**
+     * Initialize panels representing individual wizard's steps and sets
+     * various properties for them influencing wizard appearance.
+     */
+    private WizardDescriptor.Panel[] getPanels() {
+        if (panels == null) {
+            Project p = Templates.getProject(wizard);
+            SourceGroup[] groups = ProjectUtils.getSources(p).getSourceGroups(Sources.TYPE_GENERIC);
+            WizardDescriptor.Panel targetChooser = Templates.createSimpleTargetChooser(p, groups);
+
+            panels = new WizardDescriptor.Panel[]{
+                targetChooser,
+                descriptor
+            };
+            String[] steps = createSteps();
+            for (int i = 0; i < panels.length; i++) {
+                Component c = panels[i].getComponent();
+                if (steps[i] == null) {
+                    // Default step name to component name of panel. Mainly
+                    // useful for getting the name of the target chooser to
+                    // appear in the list of steps.
+                    steps[i] = c.getName();
+                }
+                if (c instanceof JComponent) { // assume Swing components
+                    JComponent jc = (JComponent) c;
+                    // Sets step number of a component
+                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
+                    // Sets steps names for a panel
+                    jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
+                    // Turn on subtitle creation on each step
+                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE); // NOI18N
+                    // Show steps on the left side with the image on the background
+                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE); // NOI18N
+                    // Turn on numbering of all steps
+                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); // NOI18N
+                }
+            }
+        }
+        return panels;
     }
 
     public String name() {
@@ -82,11 +127,11 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     }
 
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return index < getPanels().length - 1;
     }
 
     public WizardDescriptor.Panel current() {
-        return panels[index];
+        return getPanels()[index];
     }
 
     public void previousPanel() {
@@ -100,6 +145,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
+        index++;
     }
 
     public void removeChangeListener(ChangeListener l) {
@@ -108,57 +154,32 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     public void addChangeListener(ChangeListener l) {
     }
 
-    private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
-        int diff = 0;
-        if (before == null) {
-            before = new String[0];
-        } else if (before.length > 0) {
-            diff = ("...".equals(before[before.length - 1])) ? 1 : 0; // NOI18N
-        }
-        String[] res = new String[(before.length - diff) + panels.length];
-        for (int i = 0; i < res.length; i++) {
-            if (i < (before.length - diff)) {
-                res[i] = before[i];
-            } else {
-                res[i] = panels[i - before.length + diff].getComponent().getName();
-            }
+    private String[] createSteps() {
+        String[] beforeSteps = null;
+        Object prop = wizard.getProperty("WizardPanel_contentData"); // NOI18N
+        if (prop != null && prop instanceof String[]) {
+            beforeSteps = (String[]) prop;
         }
 
+        if (beforeSteps == null) {
+            beforeSteps = new String[0];
+        }
+
+        String[] res = new String[(beforeSteps.length - 1) + panels.length];
+        for (int i = 0; i < res.length; i++) {
+            if (i < (beforeSteps.length - 1)) {
+                res[i] = beforeSteps[i];
+            } else {
+                res[i] = panels[i - beforeSteps.length + 1].getComponent().getName();
+            }
+        }
         return res;
     }
 
     public void initialize(WizardDescriptor wizard) {
-        // obtaining target folder
         this.wizard = wizard;
         project = Templates.getProject(wizard);
-        FileObject fileObject = Templates.getTargetFolder(wizard); 
-        
-        if (fileObject == null) {
-            FileObject targetFolder = Util.getSourceRoot(project);
-            Templates.setTargetFolder(wizard, targetFolder);          
-        }  
-
         descriptor = new HibernateConfigurationWizardDescriptor(project);
-        panels = new WizardDescriptor.Panel[]{descriptor};
-        wizard.putProperty("NewFileWizard_Title",
-                NbBundle.getMessage(HibernateConfigurationWizard.class, "Templates/Hibernate/HibernateCfgTemplate.xml"));
-
-        // Creating steps.
-        Object prop = wizard.getProperty("WizardPanel_contentData");
-        String[] beforeSteps = null;
-        if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[]) prop;
-        }
-        String[] steps = createSteps(beforeSteps, panels);
-
-        for (int i = 0; i < panels.length; i++) {
-            JComponent jc = (JComponent) panels[i].getComponent();
-            if (steps[i] == null) {
-                steps[i] = jc.getName();
-            }
-            jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i)); // NOI18N
-            jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
-        }
     }
 
     public void uninitialize(WizardDescriptor wizard) {
@@ -166,39 +187,38 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     }
 
     public Set instantiate() throws IOException {
-        FileObject targetFolder = Templates.getTargetFolder(wizard);        
-        DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);        
-        String targetName = Templates.getTargetName(wizard);        
+        FileObject targetFolder = Templates.getTargetFolder(wizard);
+        DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
+        String targetName = Templates.getTargetName(wizard);
         FileObject templateFileObject = Templates.getTemplate(wizard);
-        DataObject templateDataObject = DataObject.find(templateFileObject);               
-        
-        DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);     
-        
-        SessionFactory sFactory = new SessionFactory();        
-        if (descriptor.getDialectName() != null && !"".equals(descriptor.getDialectName())) {              
+        DataObject templateDataObject = DataObject.find(templateFileObject);
+
+        DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
+
+        SessionFactory sFactory = new SessionFactory();
+        if (descriptor.getDialectName() != null && !"".equals(descriptor.getDialectName())) {
             int row = sFactory.addProperty2(descriptor.getDialectName());
             sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", dialect);
         }
-        
-        if (descriptor.getDriver() != null && !"".equals(descriptor.getDriver())) {            
+
+        if (descriptor.getDriver() != null && !"".equals(descriptor.getDriver())) {
             int row = sFactory.addProperty2(descriptor.getDriver());
             sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", driver);
-        }  
-        if (descriptor.getURL() != null && !"".equals(descriptor.getURL())) {            
+        }
+        if (descriptor.getURL() != null && !"".equals(descriptor.getURL())) {
             int row = sFactory.addProperty2(descriptor.getURL());
             sFactory.setAttributeValue(SessionFactory.PROPERTY2, row, "name", url);
         }
         try {
-            HibernateCfgDataObject hdo = (HibernateCfgDataObject) newOne; 
+            HibernateCfgDataObject hdo = (HibernateCfgDataObject) newOne;
             hdo.addSessionFactory(sFactory);
             hdo.save();
             return Collections.singleton(hdo.getPrimaryFile());
 
         } catch (Exception e) {
-            return Collections.EMPTY_SET; 
+            return Collections.EMPTY_SET;
         }
 
 
     }
-    
 }
