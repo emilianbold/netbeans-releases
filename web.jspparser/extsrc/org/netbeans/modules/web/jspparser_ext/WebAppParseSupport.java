@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -228,8 +229,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // Looking for jars in WEB-INF/lib is mainly for tests. Can a user create a lib dir in the document base
         // and put here a jar?
         
-        Hashtable tomcatTable = new Hashtable();
-        Hashtable loadingTable = new Hashtable();
+        Hashtable<URL, URL> tomcatTable = new Hashtable<URL, URL>();
+        Hashtable<URL, URL> loadingTable = new Hashtable<URL, URL>();
         FileObject libDir = ContextUtil.findRelativeFileObject(webInf, "lib");  //NOI18N
         URL helpurl;
         
@@ -288,18 +289,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             registerTimeStamp(classesDir, false);
         }
         
-        Iterator iter = loadingTable.values().iterator();
-        URL loadingURLs[] = new URL[loadingTable.size()];
-        int index = 0;
-        while (iter.hasNext())
-            loadingURLs[index++] = (URL)iter.next();
-        
-        URL tomcatURLs[] = new URL[tomcatTable.size()];
-        iter = tomcatTable.values().iterator();
-        index = 0;
-        while (iter.hasNext())
-            tomcatURLs[index++] = (URL)iter.next();        
-        
+        URL loadingURLs[] = loadingTable.values().toArray(new URL[0]);
+        URL tomcatURLs[] = tomcatTable.values().toArray(new URL[0]);
         
         // Put extra jars on the classpath. Usually these jars are offered by target server        
         File[] files =  wm.getExtraClasspathEntries();
@@ -328,7 +319,17 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             }
         }
         // fallback
-        return URLMapper.findURL(fo,  URLMapper.EXTERNAL);
+        URL u = URLMapper.findURL(fo,  URLMapper.EXTERNAL);
+        String extForm = u.toExternalForm();
+        if (extForm.startsWith("jar:")
+                && extForm.endsWith("!/")) {
+            try {
+                return new URL(extForm.substring(4, extForm.length() - 2));
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return u;
     }
     
     private void registerTimeStamp(FileObject fo, boolean recursive) {
