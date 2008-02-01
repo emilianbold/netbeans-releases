@@ -69,7 +69,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -78,8 +77,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.queries.FileEncodingQuery;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -91,7 +88,6 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
-import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
@@ -524,13 +520,15 @@ public class WebProjectUtilities {
             //add libraries from the specified folder in the import wizard
             if (libFolder.isFolder()) {
                 FileObject children [] = libFolder.getChildren();
-                List<URL> libs = new LinkedList<URL>();
+                List libs = new LinkedList();
                 for (int i = 0; i < children.length; i++) {
-                    if (FileUtil.isArchiveFile(children[i])) {
-                        libs.add(URLMapper.findURL(FileUtil.getArchiveRoot(children[i]), URLMapper.EXTERNAL));
-                    }
+                    if (FileUtil.isArchiveFile(children[i]))
+                        libs.add(children[i]);
                 }
-                ProjectClassPathModifier.addRoots(libs.toArray(new URL[libs.size()]), p.getSourceRoots().getRoots()[0], ClassPath.COMPILE);
+                FileObject[] libsArray = new FileObject[libs.size()];
+                libs.toArray(libsArray);
+                WebProjectClassPathExtender classPathExtender = (WebProjectClassPathExtender) p.getLookup().lookup(WebProjectClassPathExtender.class);
+                classPathExtender.addArchiveFiles(WebProjectProperties.JAVAC_CLASSPATH, libsArray, ClassPathSupport.TAG_WEB_MODULE_LIBRARIES);
                 //do we really need to add the listener? commenting it out
                 //libFolder.addFileChangeListener(p);
             }

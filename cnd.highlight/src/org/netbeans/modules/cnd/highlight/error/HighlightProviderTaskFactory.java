@@ -72,9 +72,6 @@ public class HighlightProviderTaskFactory extends EditorAwareCsmFileTaskFactory 
                             HighlightProvider.getInstance().clear(file, doc);
                         }
                     }
-                    public boolean isValid() {
-                        return true;
-                    }
                 };
             }
         } catch (DataObjectNotFoundException ex)  {

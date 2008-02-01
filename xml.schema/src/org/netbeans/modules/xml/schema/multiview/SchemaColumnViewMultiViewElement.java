@@ -146,12 +146,12 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
 
     private void initialize() throws IOException {
         SchemaEditorSupport editor = schemaDataObject.getSchemaEditorSupport();
-        manager = new ExplorerManager();
+    manager = new ExplorerManager();
         // Install our own actions.
         CallbackSystemAction globalFindAction =
                 (CallbackSystemAction) SystemAction.get(FindAction.class);
         Object mapKey = globalFindAction.getActionMapKey();
-        ActionMap map = getActionMap();
+    ActionMap map = getActionMap();
         map.put(mapKey, new ColumnViewFindAction());
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
@@ -204,7 +204,7 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         addPropertyChangeListener("activatedNodes", nodesMediator);
         addPropertyChangeListener("activatedNodes", cpl);
         setLayout(new BorderLayout());
-//        initUI(true);
+        initUI(true);
     }
 
     public ExplorerManager getExplorerManager() {
@@ -261,7 +261,6 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         return schemaModel;
     }
 
-    @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
     }
@@ -290,9 +289,9 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     private boolean isSchemaValid() {
         SchemaEditorSupport editor = schemaDataObject.getSchemaEditorSupport();
         try {
-            SchemaModel sm = editor.getModel();
-            if (sm != null &&
-                    sm.getState() == SchemaModel.State.VALID) {
+            SchemaModel schemaModel = editor.getModel();
+            if (schemaModel != null &&
+                    schemaModel.getState() == SchemaModel.State.VALID) {
                 return true;
             }
         } catch (IOException io) {
@@ -307,9 +306,22 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
      * error message.
      */
     private void initUI() {
-        if (isSchemaValid()) {
+        initUI(false);
+    }
+
+    private void initUI(boolean reloadOnModelInvalid) {
+        SchemaModel model = getSchemaModel();
+        if (model != null && model.getState() == SchemaModel.State.VALID) {
             recreateUI();
             return;
+        }
+
+        if (model != null && reloadOnModelInvalid) {
+            forceResetDocument(model);
+            if (model.getState() == SchemaModel.State.VALID) {
+                recreateUI();
+                return;
+            }
         }
 
         // If it comes here, either the schema is not well-formed or invalid.
@@ -394,30 +406,25 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         }
     }
     
-    @Override
     public void componentActivated() {
         super.componentActivated();
         addUndoManager();
         ExplorerUtils.activateActions(manager, true);
     }
 
-    @Override
     public void componentDeactivated() {
         super.componentDeactivated();
     ExplorerUtils.activateActions(manager, false);
     }
 
-    @Override
     public void componentOpened() {
         super.componentOpened();
     }
 
-    @Override
     public void componentClosed() {
         super.componentClosed();
     }
 
-    @Override
     public void componentShowing() {
         super.componentShowing();
         initUI();
@@ -430,7 +437,6 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         }
     }
 
-    @Override
     public void componentHidden() {
         super.componentHidden();
         if (categoryPane != null) {
@@ -442,7 +448,6 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     }
 
     @SuppressWarnings("deprecation")
-    @Override
     public void requestFocus() {
         super.requestFocus();
         // For Help to work properly, need to take focus.
@@ -452,7 +457,6 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
     }
 
     @SuppressWarnings("deprecation")
-    @Override
     public boolean requestFocusInWindow() {
         boolean retVal = super.requestFocusInWindow();
         // For Help to work properly, need to take focus.
@@ -476,11 +480,11 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
                         categoryPane.populateToolbar(toolbar);
                     }
                     // vlv: search
-                    SearchManager sm = SearchManager.getDefault();
+                    SearchManager manager = SearchManager.getDefault();
 
-                    if (sm != null) {
+                    if (manager != null) {
                       toolbar.addSeparator();
-                      toolbar.add(sm.getSearchAction());
+                      toolbar.add(manager.getSearchAction());
                     }
                     toolbar.addSeparator();
                     JButton validateButton = toolbar.add(new ValidateAction(model));
@@ -494,18 +498,16 @@ public class SchemaColumnViewMultiViewElement extends TopComponent
         return toolbar;
     }
 
-    @Override
     public UndoRedo getUndoRedo() {
-        return schemaDataObject.getSchemaEditorSupport().getUndoManager();
+    return schemaDataObject.getSchemaEditorSupport().getUndoManager();
     }
 
     public JComponent getVisualRepresentation() {
         return this;
     }
     
-    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(SchemaColumnViewMultiViewDesc.class);
+    return new HelpCtx(SchemaColumnViewMultiViewDesc.class);
     }
 
     private class ColumnViewFindAction extends AbstractAction {

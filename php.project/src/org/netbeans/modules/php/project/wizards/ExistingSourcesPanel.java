@@ -7,11 +7,8 @@
 package org.netbeans.modules.php.project.wizards;
 
 import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.text.MessageFormat;
-import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -25,18 +22,14 @@ import org.openide.util.NbBundle;
  *
  * @author  avk
  */
-public class ExistingSourcesPanel extends javax.swing.JPanel 
-        implements PropertyChangeListener
-{
+public class ExistingSourcesPanel extends javax.swing.JPanel {
 
     private static final String TIP_FULL_SOURCE_PATH = "TIP_SourcePath"; // NOI18N
     private static final String LBL_SELECT_SOURCE_FOLDER = "LBL_Select_Source_Folder_Title"; // NOI18N
     private static final String BROWSE = "BROWSE"; // NOI18N
 
-    public static final String PROP_SOURCE_ROOT  = "sourceRootDir";    // NOI18N
-    
     /** Creates new form SourcesPanelVisual */
-    ExistingSourcesPanel(PhpProjectConfigurePanel panel) {
+    ExistingSourcesPanel(PhpSourcesConfigurePanel panel) {
         myPanel = panel;
 
         initComponents();
@@ -44,15 +37,6 @@ public class ExistingSourcesPanel extends javax.swing.JPanel
         init(panel);
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(PanelProjectLocationVisual.PROP_PROJECT_DIR)){
-            String oldDir = (String)evt.getOldValue();
-            String newDir = (String)evt.getNewValue();
-            File srcRoot = getSourceRootWithProjectChange(oldDir, newDir);
-            viewSourcesRoot(srcRoot);
-        }
-    }
-    
     boolean dataIsValid(WizardDescriptor wizardDescriptor) {
         return validate(wizardDescriptor);
     }
@@ -64,20 +48,16 @@ public class ExistingSourcesPanel extends javax.swing.JPanel
     }
 
     void read(WizardDescriptor settings) {
-        
-        myProjectDir = getProjectDir(settings);
-        
-        File srcRoot = (File) settings.getProperty(NewPhpProjectWizardIterator.SOURCE_ROOT);
-        if (srcRoot == null){
-            srcRoot = getDefaultSourceRoot(myProjectDir);
-        }
+        File root = (File) settings.getProperty(NewPhpProjectWizardIterator.SOURCE_ROOT);
 
-        viewSourcesRoot(srcRoot);
+        myProjectLocation = (File) settings.
+                getProperty(NewPhpProjectWizardIterator.PROJECT_DIR);
+
+        viewSourcesRoot(root);
     }
 
-    private void init(PhpProjectConfigurePanel panel) {
+    private void init(PhpSourcesConfigurePanel panel) {
         myPanel = panel;
-        
         // Register listener on the textFields to make the automatic updates
         myListener = new Listener();
         mySourceFolder.getDocument().addDocumentListener(myListener);
@@ -101,93 +81,30 @@ public class ExistingSourcesPanel extends javax.swing.JPanel
         return true;
     }
 
-    PhpProjectConfigurePanel getPanel() {
+    PhpSourcesConfigurePanel getPanel() {
         return myPanel;
     }
-    
-    private File getDefaultSourceRoot(File projectDir){
-        String srcPath = getPanel().getDefaultSourceRoot();
-        File src = new File(srcPath);
-        if (src.isAbsolute()){
-            return src;
-        } else if (srcPath.equals(NewPhpProjectWizardIterator.CURRENT_FOLDER_PATTERN)){
-            return projectDir;
-        } else {
-            return new File(projectDir, srcPath);
-        }
-    }
 
-    private File getSourceRootWithProjectChange(
-            String oldProjectDir, String newProjectDir)
-    {
-        
-        String oldSourceDir = null;
-        if (myLastUsedSourceDir != null){
-            oldSourceDir = myLastUsedSourceDir.getAbsolutePath();
-        }
-        
-        if (oldSourceDir == null) {
-            return new File(newProjectDir);
-        } 
-        else if (oldSourceDir.equals(oldProjectDir)) {
-            return new File(newProjectDir);
-        } 
-        else if (oldSourceDir.startsWith(oldProjectDir)) {
-            File oldProject = new File(oldProjectDir);
-            String oldDir = oldProject.getAbsolutePath();
-            
-            String relativeSourceDir = oldSourceDir.substring(oldDir.length()+1);
-            File newProject = new File(newProjectDir);
-            
-            return new File(newProject, relativeSourceDir);
-        }
-        return myLastUsedSourceDir;
-        
-    }
-    
-    private File getProjectDir(WizardDescriptor settings) {
-        File projectDir = (File) settings.
-                getProperty(NewPhpProjectWizardIterator.PROJECT_DIR);
-        if (projectDir == null) {
-            File projectLocation = getPanel().getProjectLocation(settings);
-            String projectName = getPanel().getProjectName(settings);
-            projectDir = new File(projectLocation, projectName);
-        }
-        return projectDir;
-    }
-    
     private void viewSourcesRoot(File sourceRoot) {
-        
-        File oldSourceDir = myLastUsedSourceDir;
-        myLastUsedSourceDir = sourceRoot;
-        
         if (sourceRoot == null) {
             mySourceFolder.setText("");
             return;
         }
+        String projectPath = myProjectLocation.getAbsolutePath();
         String sourcePath = sourceRoot.getAbsolutePath();
 
-        
-            mySourceFolder.setText(sourcePath);
-            /*
         if (projectPath.equalsIgnoreCase(sourcePath)) {
-            mySourceFolder.setText(sourcePath);
-            //mySourceFolder.setText("."); // NOI18N
+            mySourceFolder.setText("."); // NOI18N
         } else if (sourcePath.startsWith(projectPath + File.separator)) {
             String name = sourcePath.substring(projectPath.length() + 1);
             mySourceFolder.setText(name);
         } else {
             mySourceFolder.setText(sourcePath);
         }
-             */
 
         String message = NbBundle.getMessage(ExistingSourcesPanel.class, TIP_FULL_SOURCE_PATH);
         String tip = MessageFormat.format(message, sourcePath);
         mySourceFolder.setToolTipText(tip);
-        
-        Logger.getLogger(getClass().getName()).info("SRC change: "+oldSourceDir+" -> "+myLastUsedSourceDir);
-        firePropertyChange(PROP_SOURCE_ROOT, oldSourceDir, myLastUsedSourceDir);
-        
     }
 
     private String getMessage(String key, Object... args) {
@@ -231,12 +148,14 @@ public class ExistingSourcesPanel extends javax.swing.JPanel
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         mySourceFolderLabel = new javax.swing.JLabel();
         mySourceFolder = new javax.swing.JTextField();
         myBrowse = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
 
         mySourceFolderLabel.setLabelFor(mySourceFolder);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/php/project/wizards/Bundle"); // NOI18N
@@ -252,26 +171,37 @@ public class ExistingSourcesPanel extends javax.swing.JPanel
             }
         });
 
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(ExistingSourcesPanel.class, "ExistingSourcesPanel.jLabel1.text")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(mySourceFolderLabel)
-                .add(18, 18, 18)
-                .add(mySourceFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 243, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(myBrowse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 91, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .add(mySourceFolderLabel)
+                        .add(19, 19, 19)
+                        .add(mySourceFolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 242, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(myBrowse, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 81, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 428, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(jLabel1)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(mySourceFolderLabel)
                     .add(mySourceFolder, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(myBrowse))
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         mySourceFolderLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ExistingSourcesPanel.class, "A11_Source_Folder_Lbl")); // NOI18N
@@ -288,7 +218,7 @@ public class ExistingSourcesPanel extends javax.swing.JPanel
             chooser.setDialogTitle(getMessage(LBL_SELECT_SOURCE_FOLDER));
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-        File projectDir = myProjectDir;
+        File projectDir = myProjectLocation;
         File curDir = null;
         if (myLastUsedSourceDir != null) {
             curDir = myLastUsedSourceDir;
@@ -306,7 +236,8 @@ public class ExistingSourcesPanel extends javax.swing.JPanel
                 File normSourceDir = FileUtil.normalizeFile(sourceDir);
                 File normProjectDir = FileUtil.normalizeFile(projectDir);
                 if (SourceRootsUi.isRootNotOccupied(normSourceDir, normProjectDir)) {
-                    viewSourcesRoot(normSourceDir);
+                    this.myLastUsedSourceDir = normSourceDir;
+                    viewSourcesRoot(myLastUsedSourceDir);
                 } else {
                     SourceRootsUi.showSourceUsedDialog(normSourceDir);
                 }
@@ -320,13 +251,14 @@ public class ExistingSourcesPanel extends javax.swing.JPanel
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JButton myBrowse;
     private javax.swing.JTextField mySourceFolder;
     private javax.swing.JLabel mySourceFolderLabel;
     // End of variables declaration//GEN-END:variables
-    private PhpProjectConfigurePanel myPanel;
+    private PhpSourcesConfigurePanel myPanel;
     private DocumentListener myListener;
-    private File myProjectDir;
+    private File myProjectLocation;
     private File myLastUsedSourceDir;
-
 }

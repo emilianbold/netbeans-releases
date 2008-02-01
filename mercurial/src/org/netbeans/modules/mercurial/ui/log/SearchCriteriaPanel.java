@@ -45,7 +45,6 @@ import javax.swing.*;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -63,20 +62,12 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         this.roots = roots;
         this.url = null;
         initComponents();
-
-        String todaysDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); // NOI18N
-        tfFrom.setText(todaysDate);
-        tfTo.setText(todaysDate);
     }
 
     public SearchCriteriaPanel(String url) {
         this.url = url;
         this.roots = null;
         initComponents();
-
-        String todaysDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date()); // NOI18N
-        tfFrom.setText(todaysDate);
-        tfTo.setText(todaysDate);
     }
     
     public String getFrom() {

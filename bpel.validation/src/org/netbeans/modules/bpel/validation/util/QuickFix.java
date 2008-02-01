@@ -46,9 +46,8 @@ package org.netbeans.modules.bpel.validation.util;
  */
 public interface QuickFix {
 
-  boolean canFix();
   void doFix();
-  String getDescription();
+  String getFixDescription();
 
   // ------------------------------------------------
   public abstract class Adapter implements QuickFix {

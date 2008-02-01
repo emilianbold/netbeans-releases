@@ -91,11 +91,11 @@ public abstract class HgProgressSupport implements Runnable, Cancellable {
 
     protected void performIntern() {
         try {
-            Mercurial.LOG.log(Level.FINE, "Start - {0}", displayName); // NOI18N
+            Mercurial.LOG.log(Level.FINE, "Start - ", displayName); // NOI18N
             if(!canceled) {
                 perform();
             }
-            Mercurial.LOG.log(Level.FINE, "End - {0}", displayName); // NOI18N
+            Mercurial.LOG.log(Level.FINE, "End - ", displayName); // NOI18N
         } finally {            
             finnishProgress();
         }

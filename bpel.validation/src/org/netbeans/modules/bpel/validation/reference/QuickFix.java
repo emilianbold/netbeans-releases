@@ -86,31 +86,25 @@ class QuickFix {
       myName = name;
     }
 
-    public boolean canFix() {
-      myVariables = getAppropriateVariables();
-
-      if (myVariables == null) {
-        return false;
-      }
-      if (myVariables.length == 0) {
-        return false;
-      }
-      if (myVariables.length != 1) { // todo r
-        return false;
-      }
-      return true;
-    }
-
     public void doFix() {
-      Variable variable = myVariables [0];
+      Variable [] variables = getAppropriateVariables();
 
-      myDescription = i18n(QuickFix.class, "QUICK_FIX_Change_varibale_name", variable.getName()); // NOI18N
-
-      myReference.setVariable(
-        ((ReferenceCollection) myReference).createReference(variable, VariableDeclaration.class));
+      if (variables == null || variables.length == 0) {
+        myDescription = "No suggestions."; // NOI18N // todo
+      }
+      else if (variables.length == 1) {
+        myDescription = "Find ONE variable to: " + variables [0].getName(); // NOI18N // todo
+        // tdoo
+        myReference.setVariable(
+          ((ReferenceCollection) myReference).createReference(variables [0], VariableDeclaration.class));
+      }
+      else {
+        myDescription = "Find variables: " + variables.length; // NOI18N // todo
+        // todo
+      }
     }
 
-    public String getDescription() {
+    public String getFixDescription() {
       return myDescription; 
     }
 
@@ -146,7 +140,6 @@ class QuickFix {
 
     private String myName;
     private String myDescription;
-    private Variable [] myVariables;
     private VariableReference myReference;
   }
 }

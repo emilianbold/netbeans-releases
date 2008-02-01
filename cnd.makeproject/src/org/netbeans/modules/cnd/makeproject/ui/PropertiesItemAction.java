@@ -95,7 +95,6 @@ public class PropertiesItemAction extends NodeAction {
         return null;
     }
     
-    @Override
     protected boolean asynchronous() {
         return false;
     }

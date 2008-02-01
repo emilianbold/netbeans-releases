@@ -48,6 +48,7 @@ import antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 import org.netbeans.modules.cnd.modelimpl.csm.*;
@@ -61,6 +62,8 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 public class AstRenderer {
 
     private FileImpl file;
+
+    //private StringBuilder currName
     
     public AstRenderer(FileImpl fileImpl) {
         this.file = fileImpl;
@@ -112,10 +115,9 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST:
                     FunctionImpl fi = new FunctionImpl(token, file, currentNamespace);
+                    //fi.setScope(currentNamespace);
                     container.addDeclaration(fi);
-                    if (!fi.isStatic()) {
-                        currentNamespace.addDeclaration(fi);
-                    }
+                    currentNamespace.addDeclaration(fi);
                     break;
                 case CPPTokenTypes.CSM_CTOR_DEFINITION:
                 case CPPTokenTypes.CSM_CTOR_TEMPLATE_DEFINITION:
@@ -136,9 +138,7 @@ public class AstRenderer {
                         FunctionDDImpl fddi = new FunctionDDImpl(token, file, currentNamespace);
 			//fddi.setScope(currentNamespace);
                         container.addDeclaration(fddi);
-                        if (!fddi.isStatic()) {
-                            currentNamespace.addDeclaration(fddi);
-                        }
+                        currentNamespace.addDeclaration(fddi);
                     }
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
@@ -155,9 +155,7 @@ public class AstRenderer {
 			else {
 			    FunctionImpl funct = new FunctionImpl(token, file, currentNamespace);
 			    container.addDeclaration(funct);
-                            if (!funct.isStatic()) {
-                                currentNamespace.addDeclaration(funct);
-                            }
+			    currentNamespace.addDeclaration(funct);
 			}
                     }
                     break; 
@@ -167,9 +165,7 @@ public class AstRenderer {
                     } else {
                         FunctionDDImpl fddit = new FunctionDDImpl(token, file, currentNamespace);
                         container.addDeclaration(fddit);
-                        if (!fddit.isStatic()) {
-                            currentNamespace.addDeclaration(fddit);
-                        }
+                        currentNamespace.addDeclaration(fddit);
                     }
                     break;
                 case CPPTokenTypes.CSM_NAMESPACE_ALIAS:

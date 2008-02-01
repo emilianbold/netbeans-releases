@@ -188,6 +188,7 @@ public class HgProperties implements ListSelectionListener {
         HgPropertiesNode[] hgPropertiesNodes = propTable.getNodes();
         if (lastIndex >= 0) {
             hgPropertiesNodes[lastIndex].setValue(getPropertyValue());
+            propTable.setNodes(hgPropertiesNodes);
         }
         panel.txtAreaValue.setText(hgPropertiesNodes[index].getValue());
         lastIndex = index;

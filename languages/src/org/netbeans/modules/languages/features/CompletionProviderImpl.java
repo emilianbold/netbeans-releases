@@ -211,7 +211,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                     tokenHierarchy,
                     offset
                 );
-                Token token = tokenSequence != null ? tokenSequence.token () : null;
+                Token token = tokenSequence.token ();
                 if (token != null) {
                     String start = token.text ().toString ();
                     String completionType = getCompletionType (null, token.id ().name ());
@@ -256,8 +256,7 @@ public class CompletionProviderImpl implements CompletionProvider {
                     tokenHierarchy,
                     component.getCaret ().getDot ()
                 );
-                if (tokenSequence == null || 
-                        (!tokenSequence.isEmpty() && tokenSequence.offset () > offset)) {
+                if (!tokenSequence.isEmpty() && tokenSequence.offset () > offset) {
                     // border of embedded language
                     // [HACK] borders should be represented by some tokens!!!
                     return;

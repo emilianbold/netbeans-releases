@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -229,8 +228,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         // Looking for jars in WEB-INF/lib is mainly for tests. Can a user create a lib dir in the document base
         // and put here a jar?
         
-        Hashtable<URL, URL> tomcatTable = new Hashtable<URL, URL>();
-        Hashtable<URL, URL> loadingTable = new Hashtable<URL, URL>();
+        Hashtable tomcatTable = new Hashtable();
+        Hashtable loadingTable = new Hashtable();
         FileObject libDir = ContextUtil.findRelativeFileObject(webInf, "lib");  //NOI18N
         URL helpurl;
         
@@ -289,8 +288,18 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             registerTimeStamp(classesDir, false);
         }
         
-        URL loadingURLs[] = loadingTable.values().toArray(new URL[0]);
-        URL tomcatURLs[] = tomcatTable.values().toArray(new URL[0]);
+        Iterator iter = loadingTable.values().iterator();
+        URL loadingURLs[] = new URL[loadingTable.size()];
+        int index = 0;
+        while (iter.hasNext())
+            loadingURLs[index++] = (URL)iter.next();
+        
+        URL tomcatURLs[] = new URL[tomcatTable.size()];
+        iter = tomcatTable.values().iterator();
+        index = 0;
+        while (iter.hasNext())
+            tomcatURLs[index++] = (URL)iter.next();        
+        
         
         // Put extra jars on the classpath. Usually these jars are offered by target server        
         File[] files =  wm.getExtraClasspathEntries();
@@ -319,17 +328,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             }
         }
         // fallback
-        URL u = URLMapper.findURL(fo,  URLMapper.EXTERNAL);
-        String extForm = u.toExternalForm();
-        if (extForm.startsWith("jar:")
-                && extForm.endsWith("!/")) {
-            try {
-                return new URL(extForm.substring(4, extForm.length() - 2));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        return u;
+        return URLMapper.findURL(fo,  URLMapper.EXTERNAL);
     }
     
     private void registerTimeStamp(FileObject fo, boolean recursive) {
@@ -463,7 +462,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             Enumeration en = webInf.getChildren(true);
             while (en.hasMoreElements()){
                 fo = (FileObject)en.nextElement();
-                if (fo.getExt().startsWith("tld")){ // NOI18N
+                if (fo.getExt().equals("tld")){
                     String path;
                     if (ContextUtil.isInSubTree(wmRoot, fo)) {
                         path = "/" + ContextUtil.findRelativePath(wmRoot, fo);
@@ -514,7 +513,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             Enumeration en = webInf.getChildren(true);
             while (en.hasMoreElements()){
                 fo = (FileObject)en.nextElement();
-                if (fo.getExt().startsWith("tld")){ // NOI18N
+                if (fo.getExt().equals("tld")){                                    //NOI18N 
                     file = FileUtil.toFile(fo);
                     checkedFiles.put (file, new Long(file.lastModified()));
                 }
@@ -534,7 +533,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             if (map != null) {
                 map.clear();
             }
-            map = (ConcurrentHashMap) diskContext.getAttribute("com.sun.jsp.taglibraryCache");
+            map = (ConcurrentHashMap)editorContext.getAttribute("com.sun.jsp.taglibraryCache");
             if (map != null) {
                 map.clear();
             }

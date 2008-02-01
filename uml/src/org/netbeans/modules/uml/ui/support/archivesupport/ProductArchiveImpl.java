@@ -40,6 +40,8 @@
  */
 
 
+
+
 package org.netbeans.modules.uml.ui.support.archivesupport;
 
 import java.io.IOException;
@@ -52,6 +54,7 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 
 import org.netbeans.modules.uml.common.generics.ETPairT;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 import org.netbeans.modules.uml.core.support.umlutils.ETArrayList;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;

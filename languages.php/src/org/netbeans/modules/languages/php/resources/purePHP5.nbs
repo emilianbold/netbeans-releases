@@ -69,7 +69,6 @@ TOKEN:php_keyword:(
     "switch" |
     "throw" |
     "try" |
-    "var" |
     "while" |
     "xor"
 )
@@ -430,12 +429,10 @@ FOLD:ClassBody: {
     expand_type_action_name:"Expand Classes";
     collapse_type_action_name:"Collapse Classes";
 }
-
-FOLD:FunctionDefinition.Block: {
+FOLD:FunctionDeclaration: {
     expand_type_action_name:"Expand Methods";
     collapse_type_action_name:"Collapse Methods";
 }
-
 FOLD:InterfaceBody: {
     expand_type_action_name:"Expand Classes";
     collapse_type_action_name:"Collapse Classes";

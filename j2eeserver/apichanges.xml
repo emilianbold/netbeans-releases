@@ -111,34 +111,10 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-        <change id="isCommonUIRequired">
-	    <api name="plugins"/>
-	    <summary>
-                OptionalDeploymentManagerFactory declares whether j2eeserver
-                should provide common UI (like wizard for example).
-	    </summary>
-	    <version major="1" minor="38"/>
-	    <date day="1" month="2" year="2008"/>
-	    <author login="phejl"/>
-	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
-	    <description>
-                <p>
-                    OptionalDeploymentManagerFactory declares whether j2eeserver
-                    should provide common UI (like wizard for example). This
-                    should be done with Common Server API for every new plugin.
-                    InstantiatingIterator from OptionalDeploymentManagerFactory
-                    will serve only to j2eeserver specific purposes if
-                    isCommonUIRequired will return the false (the true is the default).
-                </p>
-	    </description>
-	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="OptionalDeploymentManagerFactory"/>
-	    <issue number="126010"/>
-	</change>        
         <change id="createInstancePropertiesWithoutUI">
 	    <api name="j2eeserver"/>
 	    <summary>
-                Provides a way how can plugin register instance to j2eeserver
-                without any UI.
+                Provides a way how can plugin register to j2eeserver without any UI.
 	    </summary>
 	    <version major="1" minor="37"/>
 	    <date day="11" month="1" year="2008"/>
@@ -146,9 +122,8 @@ is the proper place.
 	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
 	    <description>
                 <p>
-                    Provides a way how can plugin register instance to j2eeserver
-                    without any UI. SPI provided by Common Server should be used
-                    for UI integration.
+                    Provides a way how can plugin register to j2eeserver without any UI.
+                    SPI provided by Common Server should be used for UI integration.
                 </p>
 	    </description>
 	    <class package="org.netbeans.modules.j2ee.deployment.plugins.api" name="InstanceProperties"/>
