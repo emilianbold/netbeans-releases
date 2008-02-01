@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
     </target>
             
     <target name="init-cp" depends="init,build-jellytools">
-        <!-- Used built jar preferably. If not available use the latest from CVS. -->
+        <!-- Used built jar preferably. If not available use the latest. -->
         <available file="${nb_all}/jellytools/jelly2-nb.jar" property="jelly.jar" value="${nb_all}/jellytools/jelly2-nb.jar"/>
         <property name="jelly.jar" location="${nb_all}/jellytools/builds/jelly2-nb.jar"/>
         <!-- This is a hack for Mac. There is special jemmy-mac.jar which works on Mac,

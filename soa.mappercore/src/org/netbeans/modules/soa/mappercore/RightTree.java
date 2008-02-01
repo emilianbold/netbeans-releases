@@ -55,8 +55,6 @@ import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.soa.mappercore.model.SourcePin;
-import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.utils.ScrollPaneWrapper;
 
@@ -152,15 +150,22 @@ public class RightTree extends MapperPanel implements
                 KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-right"); 
         aMap.put("auto-scroll-right", new AutoScrollRight());
         
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_L, 
-                KeyEvent.CTRL_DOWN_MASK), "link-connect"); 
-        aMap.put("link-connect", new LinkConnectRightTreeAction());
-        
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), 
-                "link-connection-done"); 
-        aMap.put("link-connection-done", new LinkConnectDone());
     }
     
+    public void registrAction(MapperKeyboardAction action) {
+        InputMap iMap = getInputMap();
+        ActionMap aMap = getActionMap();
+
+        String actionKey = action.getActionKey();
+        aMap.put(actionKey, action);
+
+        KeyStroke[] shortcuts = action.getShortcuts();
+        if (shortcuts != null) {
+            for (KeyStroke s : shortcuts) {
+                iMap.put(s, actionKey);
+            }
+        }
+    }
     
     @Override
     public String getToolTipText(MouseEvent event) {
@@ -493,7 +498,7 @@ public class RightTree extends MapperPanel implements
     public void focusLost(FocusEvent e) {
         repaint();
     }
-
+    
     private class RowHeader extends JPanel implements MouseListener {
 
         public RowHeader() {
@@ -915,34 +920,4 @@ public class RightTree extends MapperPanel implements
             RightTree.this.scrollRectToVisible(r);
         }
     }
-    
-    private class LinkConnectRightTreeAction extends AbstractAction {
-        public void actionPerformed(ActionEvent event) {
-            LinkTool linkTool = RightTree.this.getLinkTool();
-            TreePath treePath = RightTree.this.getSelectionModel().getSelectedPath();
-          
-            if (!linkTool.isActive()) {
-                Graph graph = RightTree.this.getMapper().getNode(treePath, true).getGraph();
-                linkTool.activateIngoing(treePath, graph, null);
-                return;
-            }
-            
-            MapperModel mapperModel = RightTree.this.getMapperModel();
-            SourcePin source = linkTool.getSourcePin();
-            TargetPin target = linkTool.getTargetPin();
-            if (mapperModel.canConnect(treePath, source, target, null, null)) {
-                mapperModel.connect(treePath, source, target, null, null);
-            }
-            linkTool.done();
-        }
-    }
-    
-    private class LinkConnectDone extends AbstractAction {
-        public void actionPerformed(ActionEvent event) {
-            LinkTool linkTool = RightTree.this.getLinkTool();
-            if (linkTool == null) return;
-            linkTool.done();
-        }
-    }
-    
 }

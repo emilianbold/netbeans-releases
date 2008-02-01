@@ -28,6 +28,8 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import org.netbeans.modules.soa.ui.form.CommonUiBundle;
 import org.netbeans.modules.soa.ui.form.FormLifeCycle;
+import org.netbeans.modules.soa.ui.form.valid.Validator.Reason;
+import org.netbeans.modules.soa.ui.form.valid.Validator.Severity;
 import org.openide.DialogDescriptor;
 import org.openide.util.NbBundle;
 
@@ -99,6 +101,7 @@ public abstract class AbstractDialogDescriptor extends DialogDescriptor
         return myVsmProvider.getValidStateManager(isFast);
     }
     
+    @Override
     public Object getDefaultValue() {
         return btnOk;
     }
@@ -116,6 +119,7 @@ public abstract class AbstractDialogDescriptor extends DialogDescriptor
     
     public abstract void processWindowClose();
     
+    @Override
     public void setMessage(Object innerPane) {
         assert innerPane != null;
         assert innerPane instanceof Container;
@@ -162,7 +166,10 @@ public abstract class AbstractDialogDescriptor extends DialogDescriptor
             btnOk.setToolTipText(null);
         } else {
             btnOk.setEnabled(false);
-            btnOk.setToolTipText(validStateManager.getReason());
+            Reason reason = validStateManager.getFistReason(Severity.ERROR);
+            if (reason != null) {
+                btnOk.setToolTipText(reason.getText());
+            }
         }
     }
     

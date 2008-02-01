@@ -119,6 +119,7 @@ public class MoveRightCanvasAction extends MapperKeyboardAction {
                     }
                     return;
                 }
+
                 selectionModel.setSelected(treePath, link);
                 return;
             }

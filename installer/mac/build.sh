@@ -36,7 +36,7 @@
 # holder.
 # 
 
-set -e 
+set -x -e
 
 if [ -z "$1" ] || [ -z "$2" ] ; then
     echo "usage: $0 zipdir basename"

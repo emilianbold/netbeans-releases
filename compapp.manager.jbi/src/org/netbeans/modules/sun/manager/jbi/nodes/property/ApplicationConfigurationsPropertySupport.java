@@ -47,6 +47,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
+import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.editors.ApplicationConfigurationsEditor;
 import org.netbeans.modules.sun.manager.jbi.editors.EnvironmentVariablesEditor;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
@@ -101,21 +102,33 @@ class ApplicationConfigurationsPropertySupport extends AbstractTabularPropertySu
                 compName, AppserverJBIMgmtController.SERVER_TARGET);
     }
 
-    protected void deleteCompositeData(CompositeData cd)
+    protected String deleteCompositeData(CompositeData cd)
             throws ManagementRemoteException {
-        ((JBIComponentNode)componentNode).deleteApplicationConfiguration(
+        return ((JBIComponentNode)componentNode).deleteApplicationConfiguration(
                 (String) cd.get(APPLICATION_CONFIGURATION_NAME));
     }
 
-    protected void addCompositeData(CompositeData cd)
+    protected String addCompositeData(CompositeData cd)
             throws ManagementRemoteException {
-        ((JBIComponentNode)componentNode).addApplicationConfiguration(
+        return ((JBIComponentNode)componentNode).addApplicationConfiguration(
                 (String) cd.get(APPLICATION_CONFIGURATION_NAME), cd);
     }
 
-    protected void setCompositeData(CompositeData cd)
+    protected String setCompositeData(CompositeData cd)
             throws ManagementRemoteException {
-        ((JBIComponentNode)componentNode).setApplicationConfiguration(
+        return ((JBIComponentNode)componentNode).setApplicationConfiguration(
                 (String) cd.get(APPLICATION_CONFIGURATION_NAME), cd);
+    }
+    
+    protected String getAddCompositeDataOperationName() {
+        return GenericConstants.ADD_APPLICATION_CONFIGURATION_NAME;
+    }
+    
+    protected String getDeleteCompositeDataOperationName() {
+        return GenericConstants.DELETE_APPLICATION_CONFIGURATION_NAME;
+    }
+    
+    protected String getSetCompositeDataOperationName() {
+        return GenericConstants.SET_APPLICATION_CONFIGURATION_NAME;
     }
 }

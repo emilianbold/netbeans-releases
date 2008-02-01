@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
@@ -187,13 +186,12 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         
         if ( project != null ) {
             
-            List/*<AntArtifact>*/ artifacts = new ArrayList ();
+            List<AntArtifact> artifacts = new ArrayList<AntArtifact>();
             for (int i=0; i<artifactTypes.length; i++) {
                 artifacts.addAll (Arrays.asList(AntArtifactQuery.findArtifactsByType(project, artifactTypes[i])));
             }
             
-            for( Iterator it = artifacts.iterator(); it.hasNext();) {
-                AntArtifact artifact = (AntArtifact) it.next();
+            for(AntArtifact artifact : artifacts) {
                 URI uris[] = artifact.getArtifactLocations();
                 for( int y = 0; y < uris.length; y++ ) {
                     model.addElement( new ArtifactItem(artifact, uris[y]));

@@ -255,6 +255,10 @@ public class FileModelTest extends TraceModelTestBase {
     public void testFunctionsAndVariables() throws Exception {
         performTest("functions_and_variables.cc"); // NOI18N
     }
+
+    public void testStaticFunction() throws Exception {
+        performTest("static_function.cc"); // NOI18N
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

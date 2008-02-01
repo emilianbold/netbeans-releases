@@ -56,7 +56,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.ruby.platform.RubyPlatformProvider;
 import org.netbeans.modules.ruby.railsprojects.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.ruby.railsprojects.queries.RailsProjectEncodingQueryImpl;
-import org.netbeans.modules.ruby.railsprojects.server.RailsServer;
+import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.railsprojects.ui.RailsLogicalViewProvider;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -228,7 +228,7 @@ public class RailsProject implements Project, RakeProjectListener {
             LookupProviderSupport.createSourcesMerger(),
             new RailsProjectEncodingQueryImpl(evaluator()),
             evaluator(),
-            new RailsServer(this),
+            new RailsServerManager(this),
             new RailsFileLocator(null, this),
             new RubyPlatformProvider(evaluator())
         });

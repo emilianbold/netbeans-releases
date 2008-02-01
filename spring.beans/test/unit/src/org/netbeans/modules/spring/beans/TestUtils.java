@@ -46,7 +46,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.openide.filesystems.FileUtil;
+import org.openide.text.CloneableEditorSupport;
 
 /**
  *
@@ -65,6 +68,14 @@ public class TestUtils {
                 "       http://www.springframework.org/schema/beans/spring-beans-2.5.xsd'>" +
                 snippet +
                 "</beans>";
+    }
+    
+    public static BaseDocument createSpringXMLConfigDocument(String content) throws Exception {
+        Class<?> kitClass = CloneableEditorSupport.getEditorKit(
+                SpringXMLConfigDataLoader.REQUIRED_MIME).getClass();
+        BaseDocument doc = new BaseDocument(kitClass, false);
+        doc.insertString(0, content, null);
+        return doc;
     }
 
     public static void copyStringToFile(String string, File path) throws IOException {
