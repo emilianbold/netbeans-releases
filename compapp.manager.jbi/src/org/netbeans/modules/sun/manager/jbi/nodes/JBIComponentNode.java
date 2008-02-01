@@ -49,9 +49,7 @@ import com.sun.jbi.ui.common.JBIComponentInfo;
 import com.sun.jbi.ui.common.ServiceAssemblyInfo;
 import java.io.IOException;
 import java.awt.Image;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -88,8 +86,6 @@ import org.netbeans.modules.sun.manager.jbi.actions.UpgradeAction;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.OldSchemaBasedConfigPropertySupportFactory;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentActionDescriptor;
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
-import org.netbeans.modules.sun.manager.jbi.management.OldConfigurationMBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationMBeanAttributeInfo;
@@ -223,15 +219,11 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             }
 
             Map<Attribute, ? extends MBeanAttributeInfo> configPropertyMap =
-//                  getOldConfigurationSheetSetProperties();
                     getConfigurationSheetSetProperties();
 
             Sheet.Set sheetSet = null;
-//            if (configSchema != null && configSchema.trim().length() > 0) {
             if (rootConfigDescriptor != null) {
                 PropertySupport[] propertySupports =
-//                        oldCreatePropertySupportArrayWithSchema(
-//                        configPropertyMap);
                         createPropertySupportArrayWithSchema(
                         (Map<Attribute, JBIComponentConfigurationMBeanAttributeInfo>)configPropertyMap);
                 sheetSet = createSheetSet(CONFIGURATION_SHEET_SET_NAME,
@@ -446,124 +438,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
      * all the attributes will be sorted based on the sequence definition
      * in the schema.
      * 
-     * @deprecated to be removed
-     * @return
-     */
-    private Map<Attribute, ? extends MBeanAttributeInfo> getOldConfigurationSheetSetProperties()
-            throws ManagementRemoteException {
-
-        Map<Attribute, MBeanAttributeInfo> ret =
-                new LinkedHashMap<Attribute, MBeanAttributeInfo>();
-
-        ConfigurationService configService = getConfigurationService();
-        String compName = getName();
-
-        Map<String, Object> configMap =
-                configService.getComponentConfigurationAsMap(
-                compName, SERVER_TARGET);
-
-        try {
-            String configXmlData = configService.retrieveConfigurationDisplayData(
-                    compName, SERVER_TARGET);
-
-            OldJBIComponentConfigurationDescriptor rootDescriptor =
-                    OldJBIComponentConfigurationDescriptor.parse(configXmlData);
-
-            if (rootDescriptor == null) {
-                // Fallback on regular attributes if the component does not have 
-                // configuration schema defined yet.
-                List<String> keys = new ArrayList<String>();
-                keys.addAll(configMap.keySet());
-                Collections.sort(keys);
-
-                for (String key : keys) {
-                    Object value = configMap.get(key);
-                    Attribute attr = new Attribute(key, value);
-                    MBeanAttributeInfo attrInfo = new MBeanAttributeInfo(
-                            key,
-                            value.getClass().getName(),
-                            key, // need acess to MBeanAttributeInfo
-                            true, true, false);
-                    ret.put(attr, attrInfo);
-                }
-
-                try {
-                    TabularData appVars =
-                            configService.getApplicationVariablesAsTabularData(
-                            getName(), SERVER_TARGET);
-                    Attribute attr =
-                            new Attribute(APPLICATION_VARIABLES_NAME, appVars);
-                    MBeanAttributeInfo attrInfo =
-                            new MBeanAttributeInfo(APPLICATION_VARIABLES_NAME,
-                            "javax.management.openmbean.TabularData", // NOI18N
-                            "Application variables",
-                            true, true, false);
-                    ret.put(attr, attrInfo);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                try {
-                    TabularData appConfigs =
-                            configService.getApplicationConfigurationsAsTabularData(
-                            getName(), SERVER_TARGET);
-                    Attribute attr =
-                            new Attribute(APPLICATION_CONFIGURATIONS_NAME, appConfigs);
-                    MBeanAttributeInfo attrInfo =
-                            new MBeanAttributeInfo(APPLICATION_CONFIGURATIONS_NAME,
-                            "javax.management.openmbean.TabularData", // NOI18N
-                            "Application configurations",
-                            true, true, false);
-                    ret.put(attr, attrInfo);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            } else {
-                // Attributes are ordered based on schema definition.
-                for (String name : rootDescriptor.getChildNames()) {
-                    Object value = configMap.get(name);
-
-                    if (value == null) {
-                        if (name.equals(APPLICATION_CONFIGURATIONS_NAME)) {
-                            value = configService.getApplicationConfigurationsAsTabularData(
-                                    getName(), SERVER_TARGET);
-                        } else if (name.equals(APPLICATION_VARIABLES_NAME)) {
-                            value = configService.getApplicationVariablesAsTabularData(
-                                    getName(), SERVER_TARGET);
-                        }
-                    }
-
-                    Attribute attr = new Attribute(name, value);
-
-                    OldJBIComponentConfigurationDescriptor childDescriptor =
-                            rootDescriptor.getChild(name);
-                    MBeanAttributeInfo attrInfo =
-                            new OldConfigurationMBeanAttributeInfo(
-                            childDescriptor,
-                            value.getClass().getName(),
-                            true, true, false);
-
-                    ret.put(attr, attrInfo);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return ret;
-    }
-
-    /**
-     * Gets the property map mapping from Attribute to MBeanAttributeInfo.
-     * 
-     * If there is no schema defined for the component configurations, then
-     * all the attributes will be sorted based on their names (not display names).
-     * 
-     * If there is a schema defined for the component configurations, then
-     * all the attributes will be sorted based on the sequence definition
-     * in the schema.
-     * 
      * @return
      */
     private Map<Attribute, ? extends MBeanAttributeInfo> getConfigurationSheetSetProperties()
@@ -573,7 +447,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 new LinkedHashMap<Attribute, MBeanAttributeInfo>();
 
         ConfigurationService configService = getConfigurationService();
-        AdministrationService adminService = getAdministrationService();
         String compName = getName();
 
         Map<String, Object> configMap =
@@ -581,15 +454,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 compName, SERVER_TARGET);
 
         try {
-//            String jbiXML = adminService.getComponentInstallationDescriptor(
-//                    SERVER_TARGET);
-//            // TMP
-//            File tmpJbiFile = new File("C:\\Temp\\sun-http-binding-jbi.xml");
-//            jbiXML = getContent(tmpJbiFile);
-//
-//            JBIComponentConfigurationDescriptor rootDescriptor =
-//                    JBIComponentConfigurationParser.parse(jbiXML);
-
             if (rootConfigDescriptor == null) {
                 // Fallback on regular attributes if the component does not have 
                 // configuration schema defined yet.
@@ -609,33 +473,37 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 }
 
                 try {
-                    TabularData appVars =
-                            configService.getApplicationVariablesAsTabularData(
-                            getName(), SERVER_TARGET);
-                    Attribute attr =
-                            new Attribute(APPLICATION_VARIABLES_NAME, appVars);
-                    MBeanAttributeInfo attrInfo =
-                            new MBeanAttributeInfo(APPLICATION_VARIABLES_NAME,
-                            "javax.management.openmbean.TabularData", // NOI18N
-                            "Application variables",
-                            true, true, false);
-                    ret.put(attr, attrInfo);
+                    if (configService.isAppVarsSupported(compName, SERVER_TARGET)) {
+                        TabularData appVars =
+                                configService.getApplicationVariablesAsTabularData(
+                                compName, SERVER_TARGET);
+                        Attribute attr =
+                                new Attribute(APPLICATION_VARIABLES_NAME, appVars);
+                        MBeanAttributeInfo attrInfo =
+                                new MBeanAttributeInfo(APPLICATION_VARIABLES_NAME,
+                                "javax.management.openmbean.TabularData", // NOI18N
+                                "Application variables",
+                                true, true, false);
+                        ret.put(attr, attrInfo);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
 
                 try {
-                    TabularData appConfigs =
-                            configService.getApplicationConfigurationsAsTabularData(
-                            getName(), SERVER_TARGET);
-                    Attribute attr =
-                            new Attribute(APPLICATION_CONFIGURATIONS_NAME, appConfigs);
-                    MBeanAttributeInfo attrInfo =
-                            new MBeanAttributeInfo(APPLICATION_CONFIGURATIONS_NAME,
-                            "javax.management.openmbean.TabularData", // NOI18N
-                            "Application configurations",
-                            true, true, false);
-                    ret.put(attr, attrInfo);
+                    if (configService.isAppConfigSupported(compName, SERVER_TARGET)) {
+                        TabularData appConfigs =
+                                configService.getApplicationConfigurationsAsTabularData(
+                                compName, SERVER_TARGET);
+                        Attribute attr =
+                                new Attribute(APPLICATION_CONFIGURATIONS_NAME, appConfigs);
+                        MBeanAttributeInfo attrInfo =
+                                new MBeanAttributeInfo(APPLICATION_CONFIGURATIONS_NAME,
+                                "javax.management.openmbean.TabularData", // NOI18N
+                                "Application configurations",
+                                true, true, false);
+                        ret.put(attr, attrInfo);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -654,7 +522,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     private void addProperty(Map<Attribute, MBeanAttributeInfo> attrMap,
             JBIComponentConfigurationDescriptor configDescriptor,
             ConfigurationService configService,
-            Map<String, Object> configMap) throws ManagementRemoteException {
+            Map<String, Object> configMap) 
+            throws ManagementRemoteException {
 
         String name = configDescriptor.getName();
         Object value = null;
@@ -689,30 +558,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
     }
 
-    private String getContent(File file) {
-        String ret = "";
-
-        BufferedReader is = null;
-        try {
-            is = new BufferedReader(new FileReader(file));
-            String inputLine;
-            while ((inputLine = is.readLine()) != null) {
-                ret += inputLine;
-            }
-        } catch (IOException e) {
-            System.out.println("IOException: " + e);
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Exception e) {
-                }
-            }
-        }
-
-        return ret;
-    }
-
     /**
      * Gets the logger properties to be displayed for this JBI Component.
      *
@@ -733,7 +578,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         for (String loggerCustomName : loggerMap.keySet()) {
             Level logLevel = loggerMap.get(loggerCustomName);
             int lastDotIndex = loggerCustomName.lastIndexOf("."); // NOI18N
-            String shortName = lastDotIndex == -1 ? loggerCustomName : loggerCustomName.substring(lastDotIndex + 1);
+            String shortName = lastDotIndex == -1 ? loggerCustomName : 
+                loggerCustomName.substring(lastDotIndex + 1);
 
             Attribute attr = new Attribute(loggerCustomName, logLevel);
             MBeanAttributeInfo info = new MBeanAttributeInfo(
@@ -761,6 +607,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     public Attribute setSheetProperty(String attrName, Object value) {
 
         if (StackTraceUtil.isCalledBy(
+                //PropertyDialogManager.class.getCanonicalName(),
                 "org.openide.explorer.propertysheet.PropertyDialogManager", // NOI18N
                 "cancelValue")) { // NOI18N
             return new Attribute(attrName, value);
@@ -1175,7 +1022,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             if (d.getDoNotShowAgain()) {
                 confirmComponentUninstallation = false;
             }
-        }
+        }        
         
         // Make sure no service assembly is deployed before stop-shutdown-uninstall.
         if (!undeploy(force)) { // undeployment cancelled or failed
@@ -1381,7 +1228,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 
                 String msg;
                 if (StackTraceUtil.isCalledBy(
-                        "org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode", // NOI18N
+                        JBIComponentNode.this.getClass().getCanonicalName(),
                         "uninstall")) { // NOI18N
                     msg = NbBundle.getMessage(JBIComponentNode.class,
                         "MSG_UNDEPLOY_DURING_UNINSTALL_CONFIRMATION", // NOI18N
