@@ -80,6 +80,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -204,7 +205,8 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         }
         
         if (getter != null) {
-            if (field.asType() != getter.getReturnType()) {
+            Types types = javac.getTypes();
+            if (!types.isSameType(field.asType(), getter.getReturnType())) {
                 p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongGetter", null));
             }
             if (getter.getEnclosingElement() != field.getEnclosingElement()) {
