@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.FileCacheImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
@@ -78,6 +79,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
@@ -148,6 +150,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     
     /** Cache the hash code */
     private int hash; // Default to 0
+    
+    /** 
+     * Stores the UIDs of the static functions declarations (not definitions) 
+     * This is necessary for finding definitions/declarations 
+     * since file-level static functions (i.e. c-style static functions) aren't registered in project
+     */
+    private Collection<CsmUID<CsmFunction>> staticFunctionDeclarationUIDs;
     
     /** For test purposes only */
     public interface Hook {
@@ -812,6 +821,32 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 		v.setScope(this);
 	    }
 	}
+        if( CsmKindUtilities.isFunctionDeclaration(decl) ) {
+            FunctionImpl fi = (FunctionImpl) decl;
+            if( fi.isStatic() ) {
+                addStaticFunctionDeclaration(fi);
+            }
+        }
+    }
+    
+    private void addStaticFunctionDeclaration(FunctionImpl func) {
+        if( staticFunctionDeclarationUIDs == null ) {
+            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>();
+        }
+        staticFunctionDeclarationUIDs.add(func.getUID());
+    }
+
+    /** 
+     * Gets the list of the static functions declarations (not definitions) 
+     * This is necessary for finding definitions/declarations 
+     * since file-level static functions (i.e. c-style static functions) aren't registered in project
+     */
+    public Collection<CsmFunction> getStaticFunctionDeclarations() {
+        if( staticFunctionDeclarationUIDs == null ) {
+            return Collections.<CsmFunction>emptyList();
+        } else {
+            return new LazyCsmCollection<CsmFunction>(new ArrayList<CsmUID<CsmFunction>>(staticFunctionDeclarationUIDs), true);
+        }
     }
     
     public static boolean isOfFileScope(VariableImpl v) {

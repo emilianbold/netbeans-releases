@@ -46,6 +46,7 @@
 
 package org.netbeans.modules.visualweb.ejb.ui;
 
+import javax.swing.event.DocumentEvent;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbContainerVendor;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
@@ -54,6 +55,8 @@ import java.util.*;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFileChooser;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import org.openide.util.NbBundle;
 import org.openide.modules.InstalledFileLocator;
@@ -69,6 +72,7 @@ public class EjbGroupPanel extends javax.swing.JPanel
     private static File DEFAULT_CURRENT_JAR_DIR_FILE = InstalledFileLocator.getDefault().locate("samples/ejb/client-jars", null, false ); // NOI18N
     
     private boolean isNewCreation = true;
+    private final ArrayList<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     public EjbGroupPanel(EjbGroup group)
     {
@@ -77,6 +81,28 @@ public class EjbGroupPanel extends javax.swing.JPanel
         
         containerTypeCombo.setModel( new javax.swing.DefaultComboBoxModel( EjbContainerVendor.getContainerTypeNames() ) );
         ClientJarFileListModel listModel = new ClientJarFileListModel();
+        
+        groupNameTextField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                for (ChangeListener listener : listeners) {
+                    listener.stateChanged(new ChangeEvent(EjbGroupPanel.this));
+                }
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                for (ChangeListener listener : listeners) {
+                    listener.stateChanged(new ChangeEvent(EjbGroupPanel.this));
+                }
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                for (ChangeListener listener : listeners) {
+                    listener.stateChanged(new ChangeEvent(EjbGroupPanel.this));
+                }
+            }
+            
+        });
         
         if( group == null )
         {
@@ -113,6 +139,10 @@ public class EjbGroupPanel extends javax.swing.JPanel
     public String getGroupName()
     {
         return groupNameTextField.getText().trim();
+    }
+    
+    public void addChangeListener(ChangeListener listener) {
+        listeners.add(listener);
     }
     
     public ArrayList getClientJars()

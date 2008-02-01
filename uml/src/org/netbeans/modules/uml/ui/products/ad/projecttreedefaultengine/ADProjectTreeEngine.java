@@ -3168,37 +3168,57 @@ public class ADProjectTreeEngine
     * the proxy diagram and the namespace that contains the daigram.
     *
     * @param diagramLocation The location of the diagram.
-    */
+    */  
    public void addDiagramNode(String diagramLocation)
    {
       if ((diagramLocation != null) && (diagramLocation.length() > 0))
       {
          IProxyDiagramManager manager = ProxyDiagramManager.instance();
          IProxyDiagram proxy = manager.getDiagram(diagramLocation);
-         
          ProjectTreeNodeFactory factory = getNodeFactory();
+         
          if ((proxy != null) && (factory != null))
-         {            
-            String diagramName = proxy.getNameWithAlias();
-            LOG.info( "*** addDiagramNode: diagramNameWithAlias = "+ diagramName);
-            ITreeDiagram newItem = factory.createDiagramNode(proxy);
-            newItem.setDisplayedName(diagramName);
-            newItem.setName(diagramName);
+         {  
+            ITreeDiagram node = null;
+            IProject project = proxy.getProject();
             IElement namespace = proxy.getNamespace();
-			
+            IProjectTreeModel treeModel = getTreeModel();
+            String diagramName = proxy.getNameWithAlias();
+            
+            // 1st, add the diagram node under Diagrams root node if the node 
+            // exists and has been initialized (expanded)
+            ITreeItem diagramsRootNode = treeModel.getDiagramsRootNode(project);
+            if (diagramsRootNode != null) 
+            {
+                node = factory.createDiagramNode(proxy);
+                node.setDisplayedName(diagramName, false);
+                node.setName(diagramName);
+                node.setSortPriority(m_TreeBuilder.getSortPriority(proxy.getDiagramKindName()));
+                addDiagram(diagramsRootNode, node);
+            }
+            
+            // 2nd, add the diagram node under its namespace if the namespace 
+            // has been initialized (i.e. expanded)
             if (namespace != null)
             {
-               ETList<ITreeItem> items = getTreeModel().findNodes(namespace);
-			   
-               for (Iterator < ITreeItem > iter = items.iterator();
-                    iter.hasNext();)
+               ETList<ITreeItem> items = treeModel.findNodes(namespace);
+               if (items != null && items.size() > 0)
                {
-                  ITreeItem curItem = iter.next();
-                  if (curItem.isInitalized())
-                  {
-                     addDiagram(curItem, newItem);
-                     getTreeModel().sortChildren(curItem);
-                  }
+                   node = factory.createDiagramNode(proxy);
+                   node.setDisplayedName(diagramName);
+                   node.setName(diagramName);
+                   node.setSortPriority(m_TreeBuilder.getSortPriority(proxy.getDiagramKindName()));
+                   
+                   for (Iterator < ITreeItem > iter = items.iterator();
+                        iter.hasNext();)
+                   {
+                      ITreeItem curItem = iter.next();
+                      if (curItem.isInitalized())
+                      {
+                         addDiagram(curItem, node);
+                         treeModel.sortChildren(curItem);
+                      }
+                   }
                }
             }
          }
@@ -4025,12 +4045,15 @@ public class ADProjectTreeEngine
          }
          else if(nPropertyKindChanged == IDrawingAreaPropertyKind.DAPK_NAMESPACE)
          {
-//             IProjectTreeModel model = getTreeModel();
-//             ETList < ITreeItem > items = model.findDiagramNodes(pProxyDiagram.getFilename());    
-//             for(ITreeItem item : items)
-//             {
-//                getTreeModel().removeNodeFromParent(item);
-//             }
+             // Fixed P2 IZ=125889
+             // The name space of the diagram has been changed,, so delete the diagram
+             // under its current namespace and and later add the diagram to the new namespace.
+             IProjectTreeModel model = getTreeModel();
+             ETList < ITreeItem > items = model.findDiagramNodes(pProxyDiagram.getFilename());    
+             for(ITreeItem item : items)
+             {
+                model.removeNodeFromParent(item);
+             }
              
              SwingUtilities.invokeLater(new Runnable()
              {

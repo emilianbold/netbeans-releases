@@ -46,11 +46,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.WebModule;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.junit.*;
-import org.netbeans.junit.ide.ProjectSupport;
+import org.netbeans.api.project.ProjectManager;
+
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
@@ -58,140 +58,147 @@ import org.openide.filesystems.FileUtil;
 
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.junit.NbTestCase;
 
-/** JUnit test suite with Jemmy support
- *
+/**
  * @author pj97932
  * @version 1.0
  */
 public class ParseTest extends NbTestCase {
-    
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
     public ParseTest(String testName) {
         super(testName);
     }
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        clearWorkDir();
+        TestUtil.setup(this);
+    }
+
+    public void testAnalysisBasicJspx() throws Exception {
+        parserTestInProject("project2", "/web/basic.jspx");
+    }
+
     public void testAnalysisMain() throws Exception {
-        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/main.jsp");
+        parserTestInProject("project2", "/web/main.jsp");
     }
-    
+
     public void testAnalysisBean() throws Exception {
-        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/more_for_test/bean.jsp");
+        parserTestInProject("project2", "/web/more_for_test/bean.jsp");
     }
-    
+
     public void testAnalysisTagLinkList() throws Exception {
-        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/WEB-INF/tags/linklist.tag");
+        parserTestInProject("project2", "/web/WEB-INF/tags/linklist.tag");
     }
-    
+
     public void testAnalysisFaulty() throws Exception {
-        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/faulty.jsp");
+        parserTestInProject("project2", "/web/faulty.jsp");
     }
-    
+
     public void testAnalysisOutsideWM() throws Exception {
-        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/outside/outsidewm.jsp");
+        parserTestInProject("project2", "/outside/outsidewm.jsp");
     }
-        
+
     public void testAnalysisFunction() throws Exception {
-        parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/el/functions.jsp");
+        parserTestInProject("project3", "/web/jsp2/el/functions.jsp");
     }
-        
+
     public void testAnalysisXMLTextRotate_1_6() throws Exception {
-        String javaVersion = System.getProperty("java.version"); //NOI18N
-        
-        if (javaVersion.startsWith("1.6")){ //NOI18N
-            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx"); //NOI18N
+        String javaVersion = System.getProperty("java.version");
+
+        if (javaVersion.startsWith("1.6")){
+            parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
         }
     }
-    
+
     public void testAnalysisXMLTextRotate_1_5() throws Exception {
-        String javaVersion = System.getProperty("java.version"); //NOI18N
-        
-        if (javaVersion.startsWith("1.5")){ //NOI18N
-            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx"); //NOI18N
+        String javaVersion = System.getProperty("java.version");
+
+        if (javaVersion.startsWith("1.5")){
+            parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
         }
-        
+
     }
-    
+
     public void testAnalysisXMLTextRotate_1_4() throws Exception {
-        String javaVersion = System.getProperty("java.version"); //NOI18N
-        
-        if (javaVersion.startsWith("1.4")){ //NOI18N
-            parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/jsp2/jspx/textRotate.jspx"); //NOI18N
+        String javaVersion = System.getProperty("java.version");
+
+        if (javaVersion.startsWith("1.4")){
+            parserTestInProject("project3", "/web/jsp2/jspx/textRotate.jspx");
         }
     }
-    
+
     public void testAnalysisTagLibFromTagFiles() throws Exception {
-        String javaVersion = System.getProperty("java.version"); //NOI18N
-        if (!javaVersion.startsWith("1.6")){ //NOI18N
-            parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/testTagLibs.jsp");
+        String javaVersion = System.getProperty("java.version");
+        if (!javaVersion.startsWith("1.6")){
+            parserTestInProject("project2", "/web/testTagLibs.jsp");
         }
     }
 
     public void testAnalysisTagLibFromTagFiles_1_6() throws Exception {
-        String javaVersion = System.getProperty("java.version"); //NOI18N
-        if (javaVersion.startsWith("1.6")){ //NOI18N
-            parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/testTagLibs.jsp");
+        String javaVersion = System.getProperty("java.version");
+        if (javaVersion.startsWith("1.6")){
+            parserTestInProject("project2", "/web/testTagLibs.jsp");
         }
     }
-    
+
     public void testJSPInclude() throws Exception {
-        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/jspInclude.jsp");
+        parserTestInProject("project2", "/web/jspInclude.jsp");
     }
-    
+
     public void testInclude() throws Exception {
-        parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/include.jsp");
-    
+        parserTestInProject("project2", "/web/include.jsp");
+
     }
-    
+
     public void testIncludePreludeCoda() throws Exception {
-        JspParserAPI.ParseResult result = parserTestInProject("project2", Manager.getWorkDirPath() + "/project2/web/includePreludeCoda.jsp");
+        JspParserAPI.ParseResult result = parserTestInProject("project2", "/web/includePreludeCoda.jsp");
         log("Prelude: " + result.getPageInfo().getIncludePrelude());
-        log("Coda: " + result.getPageInfo().getIncludeCoda());        
+        log("Coda: " + result.getPageInfo().getIncludeCoda());
     }
-    
+
      public void testTagFileAttribute() throws Exception {
-        parserTestInProject("project3", Manager.getWorkDirPath() + "/project3/web/WEB-INF/tags/displayProducts.tag");
+        parserTestInProject("project3", "/web/WEB-INF/tags/displayProducts.tag");
+        parserTestInProject("project3", "/web/WEB-INF/tags/displayProducts.tag");
     }
-     
+
     // test for issue #70426
     public void testGetTagLibMap70426() throws Exception{
-        Object o = ProjectSupport.openProject(Manager.getWorkDirPath()+"/emptyWebProject");
-        Project project = (Project)o;
-        File f = new File(Manager.getWorkDirPath() + "/emptyWebProject/web/index.jsp");
-        FileObject jspFo = FileUtil.fromFile(f)[0];
+        File projectFile = new File(getDataDir(), "emptyWebProject");
+        Project project = ProjectManager.getDefault().findProject(FileUtil.toFileObject(projectFile));
+        FileObject jspFo = project.getProjectDirectory().getFileObject("web/index.jsp");
         JspParserAPI.WebModule wm = TestUtil.getWebModule(jspFo);
         Map library = JspParserFactory.getJspParser().getTaglibMap(wm);
         System.out.println("map->" + library);
         Library jstlLibrary = LibraryManager.getDefault().getLibrary("jstl11");
-        ProjectClassPathExtender cpExtender = (ProjectClassPathExtender) project.getLookup().lookup(ProjectClassPathExtender.class);
+        assertNotNull("Library has to be found", jstlLibrary);
+        ProjectClassPathExtender cpExtender = project.getLookup().lookup(ProjectClassPathExtender.class);
         cpExtender.addLibrary(jstlLibrary);
         library = JspParserFactory.getJspParser().getTaglibMap(wm);
         System.out.println("map->" + library);
         assertTrue("The JSTL/core library was not returned.", (library.get("http://java.sun.com/jsp/jstl/core")) != null);
     }
-    
+
     public JspParserAPI.ParseResult parserTestInProject(String projectFolderName, String pagePath) throws Exception{
         log("Parsing test of page  " + pagePath + " in project " + projectFolderName + " started.");
-        String projectPath = Manager.getWorkDirPath() + "/" + projectFolderName;
-        Object o = ProjectSupport.openProject(projectPath);
-        if ( o != null)
-            log("Project " + projectPath + " opened.");
-        else
-            log("Project " + projectPath + " was not opened.");
-        Project project = (Project)o;
-        File f = new File(pagePath);
-        FileObject jspFo = FileUtil.fromFile(f)[0];
-        if (jspFo == null) 
-            log (pagePath + " not found.");
+        FileObject projectPath = FileUtil.toFileObject(new File(getDataDir(), projectFolderName));
+        Project project = ProjectManager.getDefault().findProject(projectPath);
+        assertNotNull("Project should exist", project);
+        FileObject jspFo = projectPath.getFileObject(pagePath);
+        assertNotNull("JSP file should exist", jspFo);
         log("Parsing page " + pagePath);
 
-        JspParserAPI.ParseResult result = JspParserFactory.getJspParser()
-                    .analyzePage(jspFo, TestUtil.getWebModule(jspFo), JspParserAPI.ERROR_IGNORE);        
-        if (ProjectSupport.closeProject(ProjectUtils.getInformation(project).getName()))
-            log ("Project closed.");
-        assertFalse("The result from the parser was not obtained.", result == null);
+        WebModule webModule = TestUtil.getWebModule(jspFo);
+        JspParserAPI jspParser = JspParserFactory.getJspParser();
+        JspParserAPI.ParseResult result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
+        assertNotNull("The result from the parser was not obtained.", result);
+        
         File goldenF = null;
         File outFile = null;
         try {
@@ -202,19 +209,26 @@ public class ParseTest extends NbTestCase {
             outFile = new File(getWorkDir(), fName);
             writeOutResult(result, outFile);
         }
-        
+
         assertNotNull(outFile);
-        assertFile(outFile, goldenF, getWorkDir());
+        try {
+            assertFile(outFile, goldenF, getWorkDir());
+        } catch (Error e) {
+            System.out.println("golden: " + goldenF);
+            System.out.println("outFile: " + outFile);
+            fail(e.getMessage());
+        }
+        
         return result;
     }
-    
+
     private static int fileNr = 1;
-    
+
     /*private void analyzeIt(FileObject root, FileObject jspFile) throws Exception {
         log("calling parseIt, root: " + root + "  file: " + jspFile);
         JspParserAPI api = JspParserFactory.getJspParser();
         JspParserAPI.ParseResult result = api.analyzePage(jspFile, TestUtil.getWebModule(root, jspFile), JspParserAPI.ERROR_IGNORE);
-        
+
         File goldenF = null;
         File outFile = null;
         try {
@@ -232,14 +246,14 @@ public class ParseTest extends NbTestCase {
         assertNotNull(outFile);
         assertFile(outFile, goldenF, getWorkDir());
     }*/
-    
-    
+
+
     private void writeOutResult(JspParserAPI.ParseResult result, File outFile) throws IOException {
         PrintWriter pw = new PrintWriter(new FileWriter(outFile));
         pw.write(result.toString());
         pw.close();
     }
-    
+
     private String getBrotherFile(File f, String ext) {
         String goldenFile = f.getName();
         int i = goldenFile.lastIndexOf('.');
@@ -248,5 +262,5 @@ public class ParseTest extends NbTestCase {
         }
         return goldenFile.substring(0, i) + "." + ext;
     }
-    
+
 }

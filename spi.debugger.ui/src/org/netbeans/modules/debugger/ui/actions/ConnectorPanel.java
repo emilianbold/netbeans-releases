@@ -74,6 +74,8 @@ public class ConnectorPanel extends JPanel implements ActionListener {
 
     public static final String PROP_TYPE = "type";
     
+    private static final String FIRST_ATTACH_TYPE = "org.netbeans.modules.debugger.jpda.ui.JPDAAttachType"; // NOI18N
+    
     /** Contains list of AttachType names.*/
     private JComboBox             cbAttachTypes;
     /** Switches off listenning on cbAttachTypes.*/
@@ -105,6 +107,12 @@ public class ConnectorPanel extends JPanel implements ActionListener {
         Collections.sort(attachTypes, new Comparator() {
             public int compare(Object o1, Object o2) {
                 if (!(o1 instanceof AttachType) || !(o2 instanceof AttachType)) return 0;
+                if (FIRST_ATTACH_TYPE.equals(o1.getClass().getName())) {
+                    return -1;
+                }
+                if (FIRST_ATTACH_TYPE.equals(o2.getClass().getName())) {
+                    return +1;
+                }
                 return ((AttachType) o1).getTypeDisplayName().compareTo(((AttachType) o2).getTypeDisplayName());
             }
         });
