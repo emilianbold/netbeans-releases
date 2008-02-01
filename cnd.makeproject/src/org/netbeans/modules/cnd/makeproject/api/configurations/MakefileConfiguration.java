@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.MacOSXExecutableFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeExecutableFileFilter;
+import org.netbeans.modules.cnd.api.utils.PeStaticLibraryFileFilter;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.Sheet;
@@ -347,7 +348,7 @@ public class MakefileConfiguration {
             
             if (Utilities.isWindows()) {
                 addChoosableFileFilter(PeExecutableFileFilter.getInstance());
-                addChoosableFileFilter(ElfStaticLibraryFileFilter.getInstance());
+                addChoosableFileFilter(PeStaticLibraryFileFilter.getInstance());
                 addChoosableFileFilter(PeDynamicLibraryFileFilter.getInstance());
             } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 addChoosableFileFilter(MacOSXExecutableFileFilter.getInstance());
