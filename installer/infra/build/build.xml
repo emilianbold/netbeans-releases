@@ -277,7 +277,6 @@
             file="${temp.file}" 
             prefix="sjsas"/>
 	-->
-
         <set property="glassfish.milestone.number" value="09"/>
         <set property="glassfish.milestone.number.real" value="09d"/>
         <set property="glassfish.build.type" value="fcs"/>
