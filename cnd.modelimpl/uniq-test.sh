@@ -38,7 +38,7 @@
 # However, if you add GPL Version 2 code and therefore, elected the GPL
 # Version 2 license, then the option applies only if the new code is
 # made subject to such option by the copyright holder.
-
+ 
 DIR=${REGRESSION_SRC}
 FILES=`(cd ${DIR}; ls *.ppp *.cc *.cpp *.c)`
 #FILES=`(cd ${DIR}; ls *.cc)`

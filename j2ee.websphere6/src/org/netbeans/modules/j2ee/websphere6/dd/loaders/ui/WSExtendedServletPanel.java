@@ -388,8 +388,6 @@ public class WSExtendedServletPanel extends /*javax.swing.JPanel*/ SectionInnerP
         final EditDialog dialog = new EditDialog(dialogPanel,NbBundle.getMessage(WSExtendedServletPanel.class,"TTL_MarkupLanguages"),true) {
             protected String validate() {
                 String id = dialogPanel.getIdField().getText().trim();
-                String name = ((String)dialogPanel.getNameComboBox().getSelectedItem()).trim();
-                String mimeType = ((String)dialogPanel.getMimeTypeComboBox().getSelectedItem()).trim();
                 int size=extendedServlet.sizeMarkupLanguages();
                 
                 for(int i=0;i<size;i++) {

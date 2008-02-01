@@ -71,4 +71,3 @@ BUNDLE_LONG_NAMES[4] = "C/C++";
 BUNDLE_LONG_NAMES[5] = "All";
 
 BUILD_DISPLAY_VERSION = "{build.display.version}";
-BUILD_DISPLAY_VERSION_SHORT = "{build.display.version.short}";

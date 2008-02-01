@@ -227,8 +227,7 @@ public class SemanticHighlighter extends HighlighterBase {
 
         boolean validate(CsmReference ref);
     }
-    
-    // PhaseRunner
+    // Runnable
     public void run(Phase phase) {
         if (phase == Phase.PARSED || phase == Phase.INIT) {
             try {
@@ -245,9 +244,5 @@ public class SemanticHighlighter extends HighlighterBase {
                 getHighlightsBag(doc).clear();
             }
         }
-    }
-
-    public boolean isValid() {
-        return true;
     }
 }

@@ -69,7 +69,6 @@ public class ShowComponentEndpointsStatisticsAction extends NodeAction {
             String compName = node.getName();
             
             InputOutput io = IOProvider.getDefault().getIO("Endpoint Statistics", false);
-            io.select();
             OutputWriter writer = io.getOut();
             
             writer.println("==================================================");
