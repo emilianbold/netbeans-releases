@@ -39,10 +39,7 @@
 package org.netbeans.modules.ruby.railsprojects.server;
 
 import org.netbeans.modules.ruby.railsprojects.server.nodes.RailsAppNode;
-import java.util.AbstractList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.nodes.ChildFactory;

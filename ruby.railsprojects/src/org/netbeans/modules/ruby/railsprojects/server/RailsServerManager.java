@@ -248,7 +248,7 @@ public final class RailsServerManager {
     
     private static String getServerTabName(RubyServer server, String projectName, int port) {
         return NbBundle.getMessage(RailsServerManager.class, 
-                "LBL_ServerTab" , server.getName(), projectName, String.valueOf(port));
+                "LBL_ServerTab" , server.getDisplayName(), projectName, String.valueOf(port));
     }
     
     private void notifyPortConflict() {

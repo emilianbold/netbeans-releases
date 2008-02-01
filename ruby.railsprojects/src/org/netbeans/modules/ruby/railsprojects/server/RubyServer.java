@@ -52,7 +52,7 @@ import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
  */
 public interface RubyServer extends RubyInstance {
 
-    String getName();
+    String getNodeName();
     
     String getStartupParam();
 
@@ -60,10 +60,27 @@ public interface RubyServer extends RubyInstance {
 
     boolean isStartupMsg(String outputLine);
 
+    /**
+     * @return the applications running on this server.
+     */
     List<RailsApplication> getApplications();
 
+    /**
+     * Adds a new running application to this server. Must notify 
+     * all registered listeners.
+     * 
+     * @param application the application to add.
+     * @return true if adding was successful, false otherwise.
+     */
     boolean addApplication(RailsApplication application);
 
+    /**
+     * Removes the application running on the given <code>port</code>. Must
+     * notify all registered listeners.
+     * 
+     * @param port
+     * @return 
+     */
     boolean removeApplication(int port);
 
     void addChangeListener(ChangeListener listener);
