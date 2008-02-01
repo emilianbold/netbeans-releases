@@ -308,5 +308,18 @@ public class JspParserImpl implements JspParserAPI {
             perms.add(ALL_PERM);
             return perms;
         }
+
+        @Override
+        protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            // this is because debugger adds ant on cp but this classloader needs ant as well
+            //  - so let this class loader find the class
+            if (name.startsWith("org.apache.tools.ant.")) { // NOI18N
+                Class<?> clazz = findClass(name);
+                return clazz;
+            }
+            return super.loadClass(name, resolve);
+        }
+        
+        
     }
 }

@@ -153,7 +153,9 @@ public class ProjectUtil
             if((filename != null) && (filename.length() > 0))
             {
                 FileObject fo = FileUtil.toFileObject(new File(filename));
-                retVal = FileOwnerQuery.getOwner(fo);
+                if (fo != null) {
+                    retVal = FileOwnerQuery.getOwner(fo);
+                }
             }
         }
         
@@ -362,10 +364,13 @@ public class ProjectUtil
             
             DataObject dObj = (DataObject)it.next();
             FileObject fObj = dObj.getPrimaryFile();
-            Project p = FileOwnerQuery.getOwner(fObj);
-            if ( p != null )
+            if (fObj != null) 
             {
-                result.add( p );
+                Project p = FileOwnerQuery.getOwner(fObj);
+                if ( p != null )
+                {
+                    result.add( p );
+                }
             }
         }
         Project[] projects = new Project[ result.size() ];
