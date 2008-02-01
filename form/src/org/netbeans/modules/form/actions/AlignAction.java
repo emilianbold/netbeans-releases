@@ -150,23 +150,31 @@ public class AlignAction extends NodeAction {
                     bundle.getString("CTL_AlignRight"), // NOI18N
                     components,
                     7);
+            JMenuItem centerHItem = new AlignMenuItem(
+                    bundle.getString("CTL_AlignHCenter"), // NOI18N
+                    components,
+                    8);
             JMenuItem upItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignUp"), // NOI18N
                     components,
-                    8);
+                    9);
             JMenuItem downItem = new AlignMenuItem(
                     bundle.getString("CTL_AlignDown"), // NOI18N
                     components,
-                    9);
+                    10);
+            JMenuItem centerVItem = new AlignMenuItem(
+                    bundle.getString("CTL_AlignVCenter"), // NOI18N
+                    components,
+                    11);
             items = new JMenuItem[] {leftGroupItem, rightGroupItem, centerHGroupItem,
                 upGroupItem, downGroupItem, centerVGroupItem, leftItem, rightItem,
-                upItem, downItem};
+                centerHItem, upItem, downItem, centerVItem};
             for (int i=0; i < items.length; i++) {
                 items[i].addActionListener(getMenuItemListener());
                 items[i].setEnabled(false);
                 HelpCtx.setHelpIDString(items[i], AlignAction.class.getName());
                 menu.add(items[i]);
-                if (i == 5) {
+                if (i+1 == items.length/2) {
                     menu.addSeparator();
                 }
             }
@@ -181,16 +189,13 @@ public class AlignAction extends NodeAction {
         RADComponent rc = (RADComponent)components.get(0);
         FormDesigner formDesigner = FormEditor.getFormDesigner(rc.getFormModel());
         java.util.Collection<Action> col = formDesigner.getDesignerActions(true);
-        assert (items.length == 10);
         int n = col.size();
+        assert n == (items.length / 2);
         Action[] actions = col.toArray(new Action[n]);
         for (int i=0; i < n; i++) {
             items[i].setEnabled(actions[i].isEnabled());
+            items[i+n].setEnabled(actions[i].isEnabled());
         }
-        items[n].setEnabled(actions[0].isEnabled());
-        items[n+1].setEnabled(actions[1].isEnabled());
-        items[n+2].setEnabled(actions[3].isEnabled());
-        items[n+3].setEnabled(actions[4].isEnabled());
     }
     
     private ActionListener getMenuItemListener() {

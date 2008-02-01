@@ -104,12 +104,8 @@ public class ModuleExtensionTablePanel extends DefaultTablePanel {
                 protected String validate() {
                     String id = dialogPanel.getIdField().getText().trim();
                     String href = dialogPanel.getHrefField().getText().trim();
-                    String altRoot = dialogPanel.getAltRootField().getText().trim();
-                    String altBindings = dialogPanel.getAltBindingsField().getText().trim();
-                    String altExtensions = dialogPanel.getAltExtensionsField().getText().trim();
-                    String type = (String) dialogPanel.getTypeComboBox().getSelectedItem();
-                    
-                    if (id.length()==0) {
+
+                    if (id.length() == 0) {
                         return NbBundle.getMessage(ModuleExtensionTablePanel.class,"TXT_EmptyModuleExtensionId");
                     } else {
                         ModuleExtensionsType[] params = appext.getModuleExtensions();
@@ -165,7 +161,6 @@ public class ModuleExtensionTablePanel extends DefaultTablePanel {
                 if (add) {
                     model.addRow(new String[]{id,href,altRoot,altBindings,altExtensions,type});
                 } else {
-                    String oldPageId=(String)model.getValueAt(row,0);
                     model.editRow(row,new String[]{id,href,altRoot,altBindings,altExtensions,type});
                 }
                 dObj.modelUpdatedFromUI();

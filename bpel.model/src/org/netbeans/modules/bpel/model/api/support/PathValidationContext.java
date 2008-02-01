@@ -178,6 +178,10 @@ public class PathValidationContext implements XPathValidationContext {
         if (exprText == null || exprText.length() == 0) {
             if (myXPathModel != null) {
                 XPathExpression rootExpr = myXPathModel.getRootExpression();
+
+                if (rootExpr == null) {
+                  return;
+                }
                 exprText = rootExpr.getExpressionString();
             }
         }

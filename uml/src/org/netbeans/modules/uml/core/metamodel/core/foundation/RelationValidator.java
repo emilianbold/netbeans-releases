@@ -131,7 +131,7 @@ public class RelationValidator {
 		boolean proceed = true;
 		IElement fromEl = proxy.getFrom();
 		IElement toEl = proxy.getTo();
-		proceed = validateRels(proxy);
+		proceed = validateRels(fromEl, toEl, proxy);
 		if (proceed)
 		{
 			MetaLayerRelationFactory relFact = MetaLayerRelationFactory.instance();
@@ -156,16 +156,12 @@ public class RelationValidator {
 	 * @return HRESULT
 	 *
 	 */
-	public boolean validateRels(IRelationProxy proxy) {
+	protected boolean validateRels(IElement fromEl, IElement toEl, IRelationProxy proxy) {
 		// Initialize the validated flag so that we assume the relationship is valid until
 		// we determine it isn't.
 		boolean validated = true;
-		if (proxy != null)
-		{            
-                    IElement fromEl = proxy.getFrom();
-                    IElement toEl = proxy.getTo();
-                    if (fromEl != null && toEl != null)
-                    {
+		if (fromEl != null && toEl != null && proxy != null)
+		{
 			String relType = proxy.getConnectionElementType();
 			if (relType != null && relType.equals("Generalization"))
 			{
@@ -215,8 +211,7 @@ public class RelationValidator {
 					// TODO: Limit dependencies?
 				}
 			}
-                    }
-                }
+		}
 		return validated;
 	}
 

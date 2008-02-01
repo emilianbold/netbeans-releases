@@ -48,10 +48,9 @@ import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
  */
 public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorModel {
 
-    XmlMultiViewDataSynchronizer synchronizer;
+    private final XmlMultiViewDataSynchronizer synchronizer;
     private boolean emptyAllowed;
     private boolean emptyIsNull;
-    String origValue;
 
     protected TextItemEditorModel(XmlMultiViewDataSynchronizer synchronizer, boolean emptyAllowed) {
         this(synchronizer, emptyAllowed, false);
@@ -61,7 +60,6 @@ public abstract class TextItemEditorModel extends ItemEditorHelper.ItemEditorMod
         this.synchronizer = synchronizer;
         this.emptyAllowed = emptyAllowed;
         this.emptyIsNull = emptyIsNull;
-        origValue = getValue();
     }
 
     protected boolean validate(String value) {

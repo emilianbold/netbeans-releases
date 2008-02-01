@@ -225,8 +225,9 @@ public class WSStartServer extends StartServer {
      */
     public boolean supportsStartDeploymentManager() {
         // if the server is local we can start it
-        if (dm.getInstanceProperties().getProperty(
-                WSDeploymentFactory.IS_LOCAL_ATTR).equals("true")) {   // NOI18N
+        InstanceProperties ip = dm.getInstanceProperties();
+        if (ip != null && Boolean.parseBoolean(ip.getProperty(
+                WSDeploymentFactory.IS_LOCAL_ATTR))) {   // NOI18N
             return true;
         } else {
             return false;
