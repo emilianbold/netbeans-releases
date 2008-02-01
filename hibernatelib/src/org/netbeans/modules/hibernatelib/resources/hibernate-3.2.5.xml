@@ -53,6 +53,7 @@ made subject to such option by the copyright holder.
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/asm-attrs.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/cglib-2.1.3.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/commons-collections-2.1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/commons-logging-1.0.4.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/dom4j-1.6.1.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/ehcache-1.2.3.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.modules.hibernatelib/modules/ext/hibernate/jdbc2_0-stdext.jar!/</resource>
