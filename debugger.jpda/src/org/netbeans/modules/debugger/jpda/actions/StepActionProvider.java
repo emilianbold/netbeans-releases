@@ -334,6 +334,12 @@ implements Executor {
     }
     
     private void setLastOperation(ThreadReference tr) {
+        Variable returnValue = null;
+        if (lastMethodExitBreakpointListener != null) {
+            returnValue = lastMethodExitBreakpointListener.getReturnValue();
+            lastMethodExitBreakpointListener.destroy();
+            lastMethodExitBreakpointListener = null;
+        }
         Location loc;
         try {
             loc = tr.frame(0).location();
@@ -366,12 +372,7 @@ implements Executor {
         } else {
             return ;
         }
-        if (lastMethodExitBreakpointListener != null) {
-            Variable returnValue = lastMethodExitBreakpointListener.getReturnValue();
-            lastMethodExitBreakpointListener.destroy();
-            lastMethodExitBreakpointListener = null;
-            lastOperation.setReturnValue(returnValue);
-        }
+        lastOperation.setReturnValue(returnValue);
         JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl().getThread(tr);
         jtr.addLastOperation(lastOperation);
         jtr.setCurrentOperation(lastOperation);
