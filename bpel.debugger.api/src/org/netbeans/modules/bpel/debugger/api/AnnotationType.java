@@ -29,6 +29,9 @@ public final class AnnotationType {
 
     public static final AnnotationType CURRENT_POSITION = new AnnotationType(
             "CurrentPC", "LBL_Current_Position"); // NOI18N
+    
+    public static final AnnotationType CURRENTLY_EXECUTING = new AnnotationType(
+            "CurrentlyExecuting", "LBL_Currently_Executing", true, false); // NOI18N
 
     public static final AnnotationType ENABLED_BREAKPOINT = new AnnotationType(
             "BpelBreakpoint_normal", "LBL_Enabled_Breakpoint"); // NOI18N
