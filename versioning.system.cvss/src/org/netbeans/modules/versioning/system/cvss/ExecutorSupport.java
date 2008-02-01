@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.versioning.system.cvss;
 
+import org.netbeans.modules.versioning.util.CommandReport;
 import org.netbeans.lib.cvsclient.CVSRoot;
 import org.netbeans.lib.cvsclient.event.*;
 import org.netbeans.lib.cvsclient.command.*;
