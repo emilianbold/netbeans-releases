@@ -41,9 +41,12 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
@@ -60,6 +63,35 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
 
     public GroovyOccurencesFinderTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws IOException {
+        super.setUp();
+        Logger.getLogger(PathFinderVisitor.class.getName()).setLevel(Level.FINEST);
+    }
+
+    // uncomment this to have logging from GroovyLexer
+//    protected Level logLevel() {
+//        // enabling logging
+//        return Level.INFO;
+//        // we are only interested in a single logger, so we set its level in setUp(),
+//        // as returning Level.FINEST here would log from all loggers
+//    }
+
+    public void testParams() throws Exception {
+        String caretLine = "        par^ams.each {";
+        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
+    }
+
+    public void testUnusedParams() throws Exception {
+        String caretLine = "    private printParams(params, unus^edParam) {";
+        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
+    }
+
+    public void testClassVariable() throws Exception {
+        String caretLine = "    Map par^ams = [:]";
+        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
     }
 
     private String annotate(BaseDocument doc, Map<OffsetRange, ColoringAttributes> highlights, int caretOffset) throws Exception {
@@ -149,16 +181,6 @@ public class GroovyOccurencesFinderTest extends GroovyTestBase {
                 assertEquals("Marks differ between caret positions", occurrences, alternates);
             }
         }
-    }
-
-    public void testParams() throws Exception {
-        String caretLine = "        par^ams.each {";
-        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
-    }
-
-    public void testUnusedParams() throws Exception {
-        String caretLine = "    private printParams(params, unus^edParam) {";
-        checkOccurrences("testfiles/BookmarkController.groovy", caretLine, true);
     }
 
 }

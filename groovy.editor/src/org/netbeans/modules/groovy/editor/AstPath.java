@@ -49,6 +49,8 @@ import java.util.ListIterator;
 import java.util.Scanner;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
 import org.openide.util.Exceptions;
@@ -123,94 +125,36 @@ public class AstPath implements Iterable<ASTNode> {
     @SuppressWarnings("unchecked")
     public ASTNode findPathTo(ASTNode node, int line, int column) {
         
-        ASTNode result = find(node, line, column);
-        path.add(node);
+        path.addAll(find(node, line, column));
+        path.add(0, node);
 
-        // Reverse the list such that node is on top
-        // When I get time rewrite the find method to build the list that way in the first place
-        Collections.reverse(path);
-
+        ASTNode result = path.get(path.size() - 1);
+        
         return result;
     }
 
     @SuppressWarnings("unchecked")
-    private ASTNode find(ASTNode node, int line, int column) {
+    private List<ASTNode> find(ASTNode node, int line, int column) {
         
         assert line >=0 : "line number was negative: " + line;
         assert column >=0 : "column number was negative: " + column;
         
-        if (node instanceof ModuleNode) {
-            List<ASTNode> children = AstUtilities.children(node);
+        ModuleNode moduleNode = (ModuleNode) node;
+        PathFinderVisitor pathFinder = new PathFinderVisitor(moduleNode.getContext(), line, column);
 
-            for (ASTNode child : children) {
-                ASTNode found = find(child, line, column);
-
-                if (found != null) {
-                    path.add(child);
-
-                    return found;
-                }
-            }
-
-            return node;
-        } else if (isInside(node, line, column)) {
-            List<ASTNode> children = AstUtilities.children(node);
-
-            for (ASTNode child : children) {
-                ASTNode found = find(child, line, column);
-
-                if (found != null) {
-                    path.add(child);
-
-                    return found;
-                }
-            }
-
-            return node;
-        } else {
-            List<ASTNode> children = AstUtilities.children(node);
-
-            for (ASTNode child : children) {
-                ASTNode found = find(child, line, column);
-
-                if (found != null) {
-                    path.add(child);
-
-                    return found;
-                }
-            }
-
-            return null;
+        for (Object object : moduleNode.getClasses()) {
+            pathFinder.visitClass((ClassNode)object);
         }
-    }
 
-    private static boolean isInside(ASTNode node, int line, int column) {
+        for (Object object : moduleNode.getMethods()) {
+            pathFinder.visitMethod((MethodNode)object);
+        }
+
+        pathFinder.visitBlockStatement(moduleNode.getStatementBlock());
         
-        int beginLine = node.getLineNumber();
-        int beginColumn = node.getColumnNumber();
-        int endLine = node.getLastLineNumber();
-        int endColumn = node.getLastColumnNumber();
-
-        if (beginLine == endLine) {
-            if (line == beginLine && column >= beginColumn && column <= endColumn) {
-                return true;
-            }
-        } else if (line == beginLine) {
-            if (column >= beginColumn) {
-                return true;
-            }
-        } else if (line == endLine) {
-            if (column <= endColumn) {
-                return true;
-            }
-        } else if (beginLine < line && line < endLine) {
-            return true;
-        } else {
-            return false;
-        }
-        return false;
+        return pathFinder.getPath();
     }
-    
+
     /**
      * Find the path to the given node in the AST
      */

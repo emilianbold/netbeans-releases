@@ -310,10 +310,11 @@ public class AstUtilities {
                     return it.next();
                 }
             } else {
-                current.visit(scopeVisitor);
-                if (scopeVisitor.isDeclaring()) {
-                    return current;
-                }
+                // visit is not implemented for everybody and then it throws exception
+//                current.visit(scopeVisitor);
+//                if (scopeVisitor.isDeclaring()) {
+//                    return current;
+//                }
             }
         }
         return path.root();
