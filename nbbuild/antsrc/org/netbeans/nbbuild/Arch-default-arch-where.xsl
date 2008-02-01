@@ -47,16 +47,8 @@ made subject to such option by the copyright holder.
     <!-- print out <api /> dependencies on all needed netbeans subprojects -->
     <xsl:template match="/" >
         <p>
-            The sources for the module are in <a href="http://www.netbeans.org">NetBeans</a>
-            CVS in
-            <a>
-                <xsl:attribute name="href">
-                    <xsl:text>http://www.netbeans.org/source/browse/</xsl:text>
-                    <xsl:value-of select="//project/cvs-location" />
-                </xsl:attribute>
-                <xsl:value-of select="//project/cvs-location" />
-            </a>
-            directory.
+            The sources for the module are in the
+            <a href="http://hg.netbeans.org/">NetBeans Mercurial repositories</a>.
         </p>
     </xsl:template>    
         </xsl:stylesheet> 

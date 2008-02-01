@@ -40,8 +40,10 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.util.List;
-import org.netbeans.modules.websvc.saas.model.SaasServices.Header;
-import org.netbeans.modules.websvc.saas.model.SaasServices.SaasMetadata;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 
 /**
  *
@@ -49,29 +51,16 @@ import org.netbeans.modules.websvc.saas.model.SaasServices.SaasMetadata;
  */
 public class Saas {
     public static final String PROP_PARENT_GROUP = "parentGroup";
-    private static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
-    private static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
+    public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
+    public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
+    public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
-    
-    public static enum Type {
-        WSDL, WADL, CUSTOM
-    }
-    
     private SaasServices delegate;
     private SaasGroup parentGroup;
-    private Type type;
         
-    public Saas(SaasServices services, SaasGroup parentGroup) {
+    public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
         this.parentGroup = parentGroup;
-        String ns = delegate.getType();
-        if (NS_WSDL.equals(ns)) {
-            type = Type.WSDL;
-        } else if (NS_WADL.equals(ns)) {
-            type = Type.WADL;
-        } else {
-            type = Type.CUSTOM;
-        }
     }
 
     public SaasServices getDelegate() {
@@ -88,10 +77,6 @@ public class Saas {
 
     public String getUrl() {
         return delegate.getUrl();
-    }
-
-    public Type getType() {
-        return type;
     }
 
     public SaasMetadata getSaasMetadata() {
@@ -117,6 +102,4 @@ public class Saas {
     public String getApiDoc() {
         return delegate.getApiDoc();
     }
-
-    
 }

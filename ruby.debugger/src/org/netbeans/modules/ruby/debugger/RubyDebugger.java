@@ -155,8 +155,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
         Util.finest("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
-        boolean forceRubyDebug = Boolean.getBoolean("org.netbeans.modules.ruby.debugger.force.rdebug");
-        if (!forceRubyDebug && (jrubySet || prefs.isUseClassicDebugger(platform))) {
+        if (prefs.isUseClassicDebugger(platform)) {
             Util.LOGGER.fine("Running classic(slow) debugger...");
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
@@ -185,28 +184,19 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
         DebuggerPreferences prefs = DebuggerPreferences.getInstance();
         final RubyPlatform platform = descriptor.getPlatform();
+        assert platform.isValid() : platform + " is a valid platform";
 
         boolean jrubySet = platform.isJRuby();
         
-        // TODO stop to support the property when jruby-debug is available
-        boolean fastDebuggerRequired = descriptor.isFastDebugRequired() 
-                && !Boolean.getBoolean("org.netbeans.modules.ruby.debugger.fast.not.required");
+        boolean fastDebuggerRequired = descriptor.isFastDebugRequired();
 
-        // See issue #114183
+        // Offers to install only for fast native Ruby debugger. Installation
+        // does not work for jruby ruby-debug-base yet.
+        //
+        // Asks for the first time - see issue #114183
         if (!jrubySet && prefs.isFirstTime()) {
             prefs.setFirstTime(false);
             Util.offerToInstallFastDebugger(platform);
-        }
-        
-        // JRuby vs. ruby-debug-ide
-        if (jrubySet) {
-            if (fastDebuggerRequired) {
-                Util.showMessage(getMessage("RubyDebugger.jruby.cannot.be.used"));
-                return false;
-            }
-            if (!prefs.isUseClassicDebugger(platform) && !shouldContinueWithCD(platform)) {
-                return false;
-            }
         }
         
         if (fastDebuggerRequired && prefs.isUseClassicDebugger(platform)
@@ -219,11 +209,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             prefs.setUseClassicDebugger(platform, true);
         }
 
-        if (jrubySet || prefs.isUseClassicDebugger(platform)) {
-            if (!platform.isValidRuby(true)) {
-                return false;
-            }
-        } else { // ruby-debug
+        if (!prefs.isUseClassicDebugger(platform)) {
             if (!Util.ensureRubyDebuggerIsPresent(platform, true, "RubyDebugger.requiredMessage")) { // NOI18N
                 return false;
             }
@@ -231,23 +217,12 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             if (rDebugPath == null) {
                 Util.showMessage(NbBundle.getMessage(RubyDebugger.class,
                         "RubyDebugger.wrong.rdebug-ide", // NOI18N
-                        platform.getInterpreter(), 
+                        platform.getInterpreter(),
                         Util.rdebugPattern()));
                 return false;
             }
         }
         return true;
-    }
-    
-    private static boolean shouldContinueWithCD(final RubyPlatform platform) {
-        Confirmation confirmation = new Confirmation(getMessage("RubyDebugger.jruby.vs.fast.debugger"),
-                Confirmation.OK_CANCEL_OPTION);
-        DialogDisplayer.getDefault().notify(confirmation);
-        boolean continueWithCD = confirmation.getValue() != Confirmation.CANCEL_OPTION;
-        if (continueWithCD) {
-            DebuggerPreferences.getInstance().setUseClassicDebugger(platform, true);
-        }
-        return continueWithCD;
     }
     
     private static void intializeIDEDebuggerEngine(final RubyDebuggerProxy proxy, final FileLocator fileLocator) {

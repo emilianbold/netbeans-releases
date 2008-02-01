@@ -376,6 +376,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.jpa.verification</friend>
                 <friend>org.netbeans.modules.profiler.j2ee</friend>
                 <friend>org.netbeans.modules.web.project</friend>
+                <friend>org.netbeans.modules.web.jsf</friend>
                 <package>org.netbeans.modules.j2ee.persistence.api.entity.generator</package>
                 <package>org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator</package>
                 <package>org.netbeans.modules.j2ee.persistence.dd</package>

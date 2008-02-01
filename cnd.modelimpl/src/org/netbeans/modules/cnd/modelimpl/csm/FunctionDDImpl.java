@@ -43,7 +43,6 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import java.util.List;
 import antlr.collections.AST;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -74,6 +73,15 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
     }
 
     public CsmFunction getDeclaration() {
+        if( isCStyleStatic() ) {
+            CharSequence name = getName();
+            for( CsmFunction fun : ((FileImpl) getContainingFile()).getStaticFunctionDeclarations() ) {
+                if( name.equals(fun.getName()) ) {
+                    return fun;
+                }
+            }
+            return this;
+        }
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION) + UNIQUE_NAME_SEPARATOR + getUniqueNameWithoutPrefix();
         CsmProject prj = getContainingFile().getProject();
         CsmDeclaration decl = findDeclaration(prj, uname);

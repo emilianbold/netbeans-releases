@@ -82,6 +82,12 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         shp.setSearchCriteria(false);
     }
     
+    public void searchOut() {  
+        shp.setOutSearch();
+        shp.executeSearch();
+        shp.setSearchCriteria(false);
+    }
+    
     private void initComponents(String repositoryUrl, File localRoot, long revision) {
         setLayout(new BorderLayout());
         SearchCriteriaPanel scp = new SearchCriteriaPanel(repositoryUrl);
