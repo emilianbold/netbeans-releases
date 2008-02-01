@@ -65,6 +65,7 @@ import org.netbeans.modules.spring.util.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupportListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * The implementation of the config model. Listens on the config files
@@ -245,6 +246,8 @@ public class SpringConfigModelController {
     private final class EditorRegistryListener implements PropertyChangeListener, DocumentListener {
 
         private volatile Document currentDocument;
+        private FileObject currentFile;
+        private Task task;
 
         public EditorRegistryListener() {
         }
@@ -283,8 +286,6 @@ public class SpringConfigModelController {
             if (fo == null){
                 return;
             }
-            // XXX sending events for all files, perhaps should check MIME type.
-            // Or perhaps use a sliding task.
             notifyFileChanged(fo);
         }
     }

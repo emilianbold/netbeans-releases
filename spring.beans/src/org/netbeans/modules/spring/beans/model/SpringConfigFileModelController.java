@@ -43,12 +43,14 @@ package org.netbeans.modules.spring.beans.model;
 
 import java.io.File;
 import java.util.logging.Logger;
+import org.netbeans.modules.spring.beans.model.ExclusiveAccess.AsyncTask;
 import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Handles the lifecycle of a single config file. Can be notified of external changes
@@ -60,14 +62,15 @@ import org.openide.util.Exceptions;
 public class SpringConfigFileModelController {
 
     private static final Logger LOGGER = Logger.getLogger(SpringConfigFileModelController.class.getName());
+    private static final int DELAY = 500;
 
     private final ConfigFileSpringBeanSource beanSource = new ConfigFileSpringBeanSource();
     private final File file;
 
-    // XXX better to use a sliding task to avoid creating an instance on every
-    // notifyChange().
-    private Updater updater;
     private volatile boolean parsedAtLeastOnce = false;
+
+    private AsyncTask currentUpdateTask;
+    private FileObject currentFile;
 
     public SpringConfigFileModelController(File file) {
         this.file = file;
@@ -93,35 +96,43 @@ public class SpringConfigFileModelController {
      */
     public void makeUpToDate() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-        FileObject configFO;
+        FileObject fileToParse;
         synchronized (this) {
-            if (updater == null) {
+            if (currentUpdateTask == null || currentUpdateTask.isFinished()) {
                 if (parsedAtLeastOnce) {
                     // No update in progress and file already parsed,
                     // nothing to do.
                     return;
                 } else {
                     // Not parsed yet, so parse now.
-                    configFO = FileUtil.toFileObject(file);
+                    fileToParse = FileUtil.toFileObject(file);
                 }
             } else {
                 // An update is scheduled, so perform it now.
-                configFO = updater.getConfigFile();
+                fileToParse = currentFile;
                 // Ensure the updater will not run again.
-                LOGGER.log(Level.FINE, "Updater {0} for {1} invalidated", new Object[] { updater, configFO });
-                updater = null;
+                LOGGER.log(Level.FINE, "Canceling update task for " + currentFile);
+                currentUpdateTask.cancel();
             }
         }
-        if (configFO != null) {
-            parse(configFO);
+        if (fileToParse != null) {
+            parse(fileToParse);
         }
     }
 
     public void notifyChange(FileObject configFO) {
+        Parameters.notNull("configFO", configFO);
         LOGGER.log(Level.FINE, "Scheduling update for {0}", configFO);
         synchronized (this) {
-            updater = new Updater(configFO);
-            ExclusiveAccess.getInstance().postAsyncTask(updater);
+            if (configFO != currentFile) {
+                // We are going to parse another file.
+                if (currentUpdateTask != null) {
+                    currentUpdateTask.cancel();
+                }
+                currentFile = configFO;
+                currentUpdateTask = ExclusiveAccess.getInstance().createAsyncTask(new Updater(configFO));
+            }
+            currentUpdateTask.schedule(DELAY);
         }
     }
 
@@ -141,24 +152,8 @@ public class SpringConfigFileModelController {
             this.configFile = configFile;
         }
 
-        public FileObject getConfigFile() {
-            return configFile;
-        }
-
         public void run() {
             assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-            synchronized (SpringConfigFileModelController.this) {
-                // Back off if we are not the current updater -- there should
-                // be another one later in the queue.
-                if (updater != this) {
-                    LOGGER.log(Level.FINE, "Updater {0} for {1} is not the current one", new Object[] { this, configFile });
-                    return;
-                }
-                // Signal that we are updating
-                // This way, if a change event is fired while we are updating,
-                // we will update again later.
-                updater = null;
-            }
             try {
                 parse(configFile);
             } catch (IOException e) {

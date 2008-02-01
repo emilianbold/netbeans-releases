@@ -57,7 +57,6 @@ public final class ExclusiveAccess {
     // TODO improve the priority of runSyncTask() tasks.
 
     private final static ExclusiveAccess INSTANCE = new ExclusiveAccess();
-    private final static int DELAY = 2500;
 
     private final RequestProcessor rp = new RequestProcessor("Spring config file access thread", 1, false); // NOI18N
     private final ReentrantLock lock = new ReentrantLock();
@@ -72,9 +71,8 @@ public final class ExclusiveAccess {
      *
      * @param  run the task.
      */
-    public void postAsyncTask(Runnable run) {
-        Task task = rp.create(new TaskWrapper(run), true);
-        task.schedule(DELAY);
+    public AsyncTask createAsyncTask(Runnable run) {
+        return new AsyncTask(rp.create(new TaskWrapper(run), true));
     }
 
     /**
@@ -100,6 +98,31 @@ public final class ExclusiveAccess {
      */
     public boolean isCurrentThreadAccess() {
         return lock.isHeldByCurrentThread();
+    }
+
+    public static final class AsyncTask {
+
+        private final Task task;
+
+        AsyncTask(RequestProcessor.Task task) {
+            this.task = task;
+        }
+
+        public void schedule(int delay) {
+            task.schedule(delay);
+        }
+
+        public boolean cancel() {
+            if (task.cancel()) {
+                task.waitFinished();
+                return true;
+            }
+            return false;
+        }
+
+        public boolean isFinished() {
+            return task.isFinished();
+        }
     }
 
     /**
