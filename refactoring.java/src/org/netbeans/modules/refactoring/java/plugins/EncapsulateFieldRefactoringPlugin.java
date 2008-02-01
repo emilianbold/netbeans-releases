@@ -59,6 +59,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -207,7 +208,10 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         if (getter != null) {
             Types types = javac.getTypes();
             if (!types.isSameType(field.asType(), getter.getReturnType())) {
-                p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongGetter", null));
+                String msg = new MessageFormat(NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongGetter")).format (
+                    new Object[] {getter.getReturnType().toString()}
+                );
+                p = createProblem(p, true, msg);
             }
             if (getter.getEnclosingElement() != field.getEnclosingElement()) {
                 p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateGetterExists"));
