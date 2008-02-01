@@ -472,6 +472,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.frameworks.struts2</friend>
                 <friend>org.netbeans.modules.portalpack.portlets.genericportlets</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.websvc.saas.api</friend>
                 <package>org.netbeans.modules.web.project.api</package>
                 <package>org.netbeans.modules.web.project.spi</package>
             </friend-packages>

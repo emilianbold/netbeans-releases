@@ -94,6 +94,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.websvc.manager</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -114,6 +122,7 @@
                 <friend>org.netbeans.modules.websvc.saas.ui</friend>
                 <package>org.netbeans.modules.websvc.saas</package>
                 <package>org.netbeans.modules.websvc.saas.model</package>
+                <package>org.netbeans.modules.websvc.saas.model.jaxb</package>
                 <package>org.netbeans.modules.websvc.saas.spi</package>
                 <package>org.netbeans.modules.websvc.saas.util</package>
             </friend-packages>

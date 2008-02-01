@@ -203,8 +203,7 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
   
     
     private static Function createConcat() {
-        Function function = new Function(null, 
-                new StringIcon2D("+", MapperStyle.ICON_COLOR, 0.75), "Concat", 
+        Function function = new Function(null, null, "Concat", 
                 "Returns String");
         function.addItem(new VertexItem(function, null));
         function.addItem(new VertexItem(function, null, "Huba", String.class));
@@ -214,8 +213,7 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
     
     
     private static Operation createPlus() {
-        Operation operation = new Operation(null,
-                new PlusIcon2D(MapperStyle.ICON_COLOR, 1));
+        Operation operation = new Operation(null, null);
         operation.addItem(new VertexItem(operation, null, Number.class));
         operation.addItem(new VertexItem(operation, null, Number.class));
         return operation;
@@ -223,8 +221,7 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
     
     
     private static Constant createNumber(int value) {
-        Constant constant = new Constant(null,
-                new NumberIcon2D(MapperStyle.ICON_COLOR, 1));
+        Constant constant = new Constant(null, null);
         constant.addItem(new VertexItem(constant, null, new Integer(value), Number.class));
         return constant;
     }
