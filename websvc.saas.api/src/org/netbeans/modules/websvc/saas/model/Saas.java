@@ -40,10 +40,10 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.util.List;
-import org.netbeans.modules.websvc.saas.model.jaxb.MethodType;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServicesType;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServicesType.Header;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadataType;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 
 /**
  *
@@ -55,15 +55,15 @@ public class Saas {
     public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
     public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
-    private SaasServicesType delegate;
+    private SaasServices delegate;
     private SaasGroup parentGroup;
         
-    public Saas(SaasGroup parentGroup, SaasServicesType services) {
+    public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
         this.parentGroup = parentGroup;
     }
 
-    public SaasServicesType getDelegate() {
+    public SaasServices getDelegate() {
         return delegate;
     }
 
@@ -79,11 +79,11 @@ public class Saas {
         return delegate.getUrl();
     }
 
-    public SaasMetadataType getSaasMetadata() {
+    public SaasMetadata getSaasMetadata() {
         return delegate.getSaasMetadata();
     }
 
-    public List<MethodType> getMethods() {
+    public List<Method> getMethods() {
         return delegate.getMethods().getMethod();
     }
 

@@ -58,13 +58,13 @@
         </xsd:documentation>
     </xsd:annotation>
     
-    <xsd:element name="saas-services" type="saas:SaasServicesType"/>
+    <xsd:element name="saas-services" type="saas:SaasServices"/>
     
-    <xsd:element name="saas-metadata" type="saas:SaasMetadataType"/>
+    <xsd:element name="saas-metadata" type="saas:SaasMetadata"/>
     
-    <xsd:element name="group" type="saas:GroupType"/>
+    <xsd:element name="group" type="saas:Group"/>
     
-    <xsd:complexType name="SaasServicesType">
+    <xsd:complexType name="SaasServices">
         <xsd:sequence>
             <xsd:element name="description">
                 <xsd:simpleType>
@@ -77,18 +77,18 @@
             <xsd:element name="header" minOccurs="0" maxOccurs="1">
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:element name="params" type="saas:ParamsType"/>
+                        <xsd:element name="params" type="saas:Params"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
-            <xsd:element name="methods" type="saas:MethodsType"/>
+            <xsd:element name="methods" type="saas:Methods"/>
         </xsd:sequence>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
         <xsd:attribute name="url" type="xsd:string" use="required"/>
         <xsd:attribute name="api-doc" type="xsd:string" use="required"/>
     </xsd:complexType>
         
-    <xsd:complexType name="SaasMetadataType">
+    <xsd:complexType name="SaasMetadata">
         <xsd:sequence>
             <xsd:element name="localizing-bundle" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="icon16" minOccurs="1" maxOccurs="1"/>
@@ -97,7 +97,7 @@
             <xsd:element name="code-gen" minOccurs="0">
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:element name="artifacts" type="saas:ArtifactsType" minOccurs="0" maxOccurs="unbounded"/>
+                        <xsd:element name="artifacts" type="saas:Artifacts" minOccurs="0" maxOccurs="unbounded"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element>
@@ -118,27 +118,27 @@
         </xsd:sequence>
     </xsd:complexType>
     
-    <xsd:complexType name="ArtifactsType">
+    <xsd:complexType name="Artifacts">
         <xsd:sequence>
-            <xsd:element name="artifact" type="saas:ArtifactType" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element name="artifact" type="saas:Artifact" minOccurs="1" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="targets" type="xsd:string" default="java, servlets, jruby"/>
     </xsd:complexType>
     
-    <xsd:complexType name="ArtifactType">
+    <xsd:complexType name="Artifact">
         <xsd:attribute name="id" type="xsd:string"/>
         <xsd:attribute name="type" type="xsd:string" default="library"/>
         <xsd:attribute name="url" type="xsd:string" default="location of jar"/>
         <xsd:attribute name="requires" type="xsd:string" default="id of another artifact"/>
     </xsd:complexType>
                 
-    <xsd:complexType name="MethodsType">
+    <xsd:complexType name="Methods">
         <xsd:sequence>
-            <xsd:element name="method" type="saas:MethodType" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="method" type="saas:Method" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:complexType name="MethodType">                      
+    <xsd:complexType name="Method">                      
         <xsd:annotation>
             <xsd:documentation>
                 a method represents one operation in case of WSDL. In case
@@ -160,7 +160,7 @@
                 </xsd:annotation>
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:element name="params" type="saas:ParamsType"/>
+                        <xsd:element name="params" type="saas:Params"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element> 
@@ -199,7 +199,7 @@
         </xsd:attribute>                                       
     </xsd:complexType>
     
-    <xsd:complexType name="ParamsType">
+    <xsd:complexType name="Params">
         <xsd:sequence>
             <xsd:element name="param" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
@@ -221,9 +221,9 @@
         </xsd:sequence>
     </xsd:complexType>
     
-    <xsd:complexType name="GroupType">
+    <xsd:complexType name="Group">
         <xsd:sequence minOccurs="0">
-            <xsd:element name="group" type="saas:GroupType" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+            <xsd:element name="group" type="saas:Group" minOccurs="0" maxOccurs="unbounded"></xsd:element>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>
