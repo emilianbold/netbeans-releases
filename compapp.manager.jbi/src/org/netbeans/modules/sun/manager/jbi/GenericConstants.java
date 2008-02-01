@@ -212,6 +212,13 @@ public interface GenericConstants {
     public static final String SERVICE_ENGINES_FOLDER_NAME = "serviceEngines"; // NOI18N
     public static final String SHARED_LIBRARIES_FOLDER_NAME = "sharedLibraries"; // NOI18N
     public static final String SERVICE_ASSEMBLIES_FOLDER_NAME = "serviceAssemblies"; // NOI18N
+    
+    public static final String ADD_APPLICATION_VARIABLE_NAME = "addApplicationVariable"; // NOI18N
+    public static final String DELETE_APPLICATION_VARIABLE_NAME = "deleteApplicationVariable"; // NOI18N
+    public static final String SET_APPLICATION_VARIABLE_NAME = "setApplicationVariable"; // NOI18N
+    public static final String ADD_APPLICATION_CONFIGURATION_NAME = "addApplicationConfiguration"; // NOI18N
+    public static final String DELETE_APPLICATION_CONFIGURATION_NAME = "deleteApplicationConfiguration"; // NOI18N
+    public static final String SET_APPLICATION_CONFIGURATION_NAME = "setApplicationConfiguration"; // NOI18N
 
     public static final String SUN_JBI_DOMAIN_NAME = "com.sun.jbi"; // NOI18N
     public static final String STC_EBI_DOMAIN_NAME = "com.sun.ebi"; // NOI18N
