@@ -248,6 +248,13 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 0);
     }
     
+    public void testFix126460() throws Exception {
+        performFixTest("package test; import java.util.List; public class Test {public void test1() {List<String> l = null; assert |l.get(0)| == null;} }",
+                       "package test; import java.util.List; public class Test {public void test1() {List<String> l = null;String name = l.get(0); assert name == null;} }",
+                       new DialogDisplayerImpl("name", true, false, true),
+                       3, 0);
+    }
+    
 //    public void testFix121420() throws Exception {
 //        performFixTest("package test; public class Test {public void test1() {|System.getProperty(\"\")|;} }",
 //                       "package test; public class Test {public void test1() { String name = System.getProperty(\"\");} }",
