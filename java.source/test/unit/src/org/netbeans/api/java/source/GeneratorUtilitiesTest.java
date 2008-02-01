@@ -230,6 +230,10 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("package test;\npublic class Test extends XX {\nprivate int test;\n}\nclass XX {\npublic XX(boolean b){\n}\n}\n", new ConstructorTask(30), new ConstructorValidator());
     }
     
+    public void testConstructor100341() throws Exception {
+        performTest("package test;\npublic class Test extends java.util.ArrayList<String> {\n}\n", new ALConstructorTask(30), null);
+    }
+    
     public void testGetter() throws Exception {
         performTest("package test;\npublic class Test {\nprivate int test;\npublic Test(){\n}\n }\n", new GetterSetterTask(34, true), new GetterSetterValidator(true));
     }
@@ -580,6 +584,46 @@ public class GeneratorUtilitiesTest extends NbTestCase {
             GeneratorUtilities utilities = GeneratorUtilities.get(copy);
             assertNotNull(utilities);
             ClassTree newCt = utilities.insertClassMember(ct, utilities.createConstructor(te, vars, ctors != null ? ctors.get(0) : null));
+            copy.rewrite(ct, newCt);
+        }
+    }
+    
+    private static class ALConstructorTask implements CancellableTask<WorkingCopy> {        
+    
+        private int offset;
+        
+        public ALConstructorTask(int offset) {
+            this.offset = offset;
+        }
+        
+        public void cancel() {
+        }
+    
+        public void run(WorkingCopy copy) throws Exception {
+            copy.toPhase(JavaSource.Phase.RESOLVED);
+            TreePath tp = copy.getTreeUtilities().pathFor(offset);
+            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            ClassTree ct = (ClassTree)tp.getLeaf();
+            TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
+            assertNotNull(te);
+            List<? extends VariableElement> vars = ElementFilter.fieldsIn(te.getEnclosedElements());
+            TypeElement sup = (TypeElement)((DeclaredType)te.getSuperclass()).asElement();
+            assertNotNull(sup);
+            List<? extends ExecutableElement> ctors = ElementFilter.constructorsIn(sup.getEnclosedElements());
+            ExecutableElement found = null;
+            for (ExecutableElement ee : ctors) {
+                if (ee.getParameters().size() != 1) {
+                    continue;
+                }
+                
+                if (ee.getParameters().get(0).asType().getKind() == TypeKind.DECLARED) {
+                    found = ee;
+                    break;
+                }
+            }
+            GeneratorUtilities utilities = GeneratorUtilities.get(copy);
+            assertNotNull(utilities);
+            ClassTree newCt = utilities.insertClassMember(ct, utilities.createConstructor(te, vars, found));
             copy.rewrite(ct, newCt);
         }
     }
