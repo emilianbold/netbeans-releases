@@ -123,7 +123,7 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
 
     // ServerInstanceImplementation methods
     public String getServerDisplayName() {
-        return NbBundle.getMessage(Mongrel.class, "LBL_ServerDisplayName", getDisplayName(), platform.getLabel());
+        return getNodeName();
     }
 
     public Node getFullNode() {
