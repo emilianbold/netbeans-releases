@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.nbbuild.extlibs;
@@ -135,7 +135,7 @@ public class RegisterExternalHook extends Task {
                 }
                 if (Pattern.compile("(?m)^external *=").matcher(config).find()) {
                     log("Hook already registered in " + hgrc + " in wrong location, correcting...", Project.MSG_WARN);
-                    config = config.replaceFirst("(?m)^external *=.*$", "external = " + hook);
+                    config = config.replaceFirst("(?m)^external *=.*$", "external = " + hook.toString().replaceAll("\\\\", "\\\\\\\\"));
                 } else {
                     log("Registering hook in " + hgrc);
                     String nl = System.getProperty("line.separator");

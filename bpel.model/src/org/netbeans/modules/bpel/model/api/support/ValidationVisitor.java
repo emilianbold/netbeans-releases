@@ -16,16 +16,14 @@
  */
 package org.netbeans.modules.bpel.model.api.support;
 
-import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.bpel.model.api.support.BpelModelVisitor;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 
 /**
- *
  * @author nk160297
  */
 public interface ValidationVisitor extends BpelModelVisitor {
     
-    HashSet<ResultItem> getResultItems();
-    
+    Set<ResultItem> getResultItems();
 }

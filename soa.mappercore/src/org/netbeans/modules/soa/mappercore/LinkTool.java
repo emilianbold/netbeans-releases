@@ -667,7 +667,7 @@ public class LinkTool extends MapperPropertyAccess {
     }
     
     
-    public void dragDone() {
+    public void done() {
         if (!isActive()) return;
         reset();
         getMapper().repaint();
@@ -685,6 +685,7 @@ public class LinkTool extends MapperPropertyAccess {
     public void setTarget(TreePath targetPath, TargetPin targetPin, 
             JComponent c, Point p) 
     {
+        this.targetPath = targetPath;
         this.targetPin = targetPin;
         this.targetComponent = c;
         this.x2 = p.x;

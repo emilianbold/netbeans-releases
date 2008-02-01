@@ -48,6 +48,7 @@ import javax.management.Attribute;
 import javax.management.MBeanAttributeInfo;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
+import org.netbeans.modules.sun.manager.jbi.GenericConstants;
 import org.netbeans.modules.sun.manager.jbi.editors.EnvironmentVariablesEditor;
 import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtController;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
@@ -92,21 +93,33 @@ class ApplicationVariablesPropertySupport extends AbstractTabularPropertySupport
                 compName, AppserverJBIMgmtController.SERVER_TARGET);
     }
      
-    protected void deleteCompositeData(CompositeData cd) 
+    protected String deleteCompositeData(CompositeData cd) 
         throws ManagementRemoteException {
-        ((JBIComponentNode)componentNode).deleteApplicationVariable(
+        return ((JBIComponentNode)componentNode).deleteApplicationVariable(
                 (String) cd.get(APPLICATION_VARIABLE_NAME));
     }
 
-    protected void addCompositeData(CompositeData cd) 
+    protected String addCompositeData(CompositeData cd) 
             throws ManagementRemoteException {
-        ((JBIComponentNode)componentNode).addApplicationVariable(
+        return ((JBIComponentNode)componentNode).addApplicationVariable(
                 (String) cd.get(APPLICATION_VARIABLE_NAME), cd);
     }
 
-    protected void setCompositeData(CompositeData cd) 
+    protected String setCompositeData(CompositeData cd) 
             throws ManagementRemoteException {
-        ((JBIComponentNode)componentNode).setApplicationVariable(
+        return ((JBIComponentNode)componentNode).setApplicationVariable(
                 (String) cd.get(APPLICATION_VARIABLE_NAME), cd);
+    }    
+    
+    protected String getAddCompositeDataOperationName() {
+        return GenericConstants.ADD_APPLICATION_VARIABLE_NAME;
+    }
+    
+    protected String getDeleteCompositeDataOperationName() {
+        return GenericConstants.DELETE_APPLICATION_VARIABLE_NAME;
+    }
+    
+    protected String getSetCompositeDataOperationName() {
+        return GenericConstants.SET_APPLICATION_VARIABLE_NAME;
     }
 }

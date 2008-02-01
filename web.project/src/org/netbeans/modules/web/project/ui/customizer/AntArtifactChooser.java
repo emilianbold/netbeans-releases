@@ -42,11 +42,15 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -72,12 +76,12 @@ import org.openide.util.NbBundle;
  */
 public class AntArtifactChooser extends JPanel implements PropertyChangeListener {
     
-    // XXX to become an array later
-    private String artifactType;
+
+    private String[] artifactTypes;
     
     /** Creates new form JarArtifactChooser */
-    public AntArtifactChooser( String artifactType, JFileChooser chooser ) {
-        this.artifactType = artifactType;
+    public AntArtifactChooser( String[] artifactTypes, JFileChooser chooser ) {
+        this.artifactTypes = artifactTypes;
         
         initComponents();
         jListArtifacts.setModel( new DefaultListModel() );
@@ -184,13 +188,16 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
         jTextFieldName.setText(project == null ? "" : ProjectUtils.getInformation(project).getDisplayName()); //NOI18N
         
         if ( project != null ) {
-                        
-            AntArtifact artifacts[] = AntArtifactQuery.findArtifactsByType( project, artifactType );
-        
-            for( int i = 0; i < artifacts.length; i++ ) {
-                URI uris[] = artifacts[i].getArtifactLocations();
+            
+            List<AntArtifact> artifacts = new ArrayList<AntArtifact>();
+            for (int i=0; i<artifactTypes.length; i++) {
+                artifacts.addAll (Arrays.asList(AntArtifactQuery.findArtifactsByType(project, artifactTypes[i])));
+            }
+            
+            for(AntArtifact artifact : artifacts) {
+                URI uris[] = artifact.getArtifactLocations();
                 for( int y = 0; y < uris.length; y++ ) {
-                    model.addElement( new ArtifactItem(artifacts[i], uris[y]));
+                    model.addElement( new ArtifactItem(artifact, uris[y]));
                 }
             }
             jListArtifacts.setSelectionInterval(0, model.size());
@@ -211,15 +218,24 @@ public class AntArtifactChooser extends JPanel implements PropertyChangeListener
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static ArtifactItem[] showDialog( String artifactType, Project master, Component parent ) {
+    public static ArtifactItem[] showDialog( String[] artifactTypes, Project master, Component parent ) {
         
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
         chooser.setApproveButtonText( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_SelectProject" ) ); // NOI18N
-        
-        AntArtifactChooser accessory = new AntArtifactChooser( artifactType, chooser );
+        chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage (AntArtifactChooser.class,"AD_AACH_SelectProject"));
+        AntArtifactChooser accessory = new AntArtifactChooser( artifactTypes, chooser );
         chooser.setAccessory( accessory );
-        chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder());
+        chooser.setPreferredSize( new Dimension( 650, 380 ) );        
+        File defaultFolder = null;
+        FileObject defFo = master.getProjectDirectory();
+        if (defFo != null) {
+            defFo = defFo.getParent();
+            if (defFo != null) {
+                defaultFolder = FileUtil.toFile(defFo);
+            }
+        }
+        chooser.setCurrentDirectory (FoldersListSettings.getDefault().getLastUsedArtifactFolder(defaultFolder));
 
         int option = chooser.showOpenDialog( parent ); // Show the chooser
               
