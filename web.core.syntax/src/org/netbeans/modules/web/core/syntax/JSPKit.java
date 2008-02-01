@@ -47,7 +47,6 @@ import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.html.editor.coloring.EmbeddingUpdater;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
-import org.netbeans.modules.web.core.syntax.JspUtils;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import org.netbeans.modules.web.core.syntax.deprecated.ELDrawLayerFactory;
 import java.awt.event.ActionEvent;
@@ -262,6 +261,7 @@ public class JSPKit extends LanguagesEditorKit implements org.openide.util.HelpC
         LanguagePath jspLP = LanguagePath.get(JspTokenId.language());
         LanguagePath htmlLP = LanguagePath.get(jspLP, HTMLTokenId.language());
         
+        doc.getDocumentProperties().put(NbEditorDocument.MIME_TYPE_PROP, "text/x-java"); //NOI18N
         SyntaxParser.get(doc, htmlLP).addSyntaxParserListener(new EmbeddingUpdater(doc));
         //initialize JSP embedding updater
         //just a prototype - better disable it for 6.0

@@ -54,6 +54,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectCreateData;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectGenerator;
+import org.netbeans.modules.ruby.railsprojects.server.RubyServer;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.ErrorManager;
@@ -77,6 +78,8 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
     static final String RAILS_DB_WN = "railsDatabase"; // NOI18N
     /** Wizard descriptor name for including Goldspike for WAR deployment */
     static final String GOLDSPIKE_WN = "goldspike"; // NOI18N
+    /** Wizard descriptor name for the target Rails server */
+    static final String SERVER_INSTANCE = "serverInstance"; //NOI18N
     
     static final int TYPE_APP = 0;
     //static final int TYPE_LIB = 1;
@@ -144,15 +147,16 @@ public class NewRailsProjectWizardIterator implements WizardDescriptor.ProgressI
 
         RakeProjectHelper h = null;
         
-        String database = (String)wiz.getProperty(RAILS_DB_WN); // NOI18N
-        Boolean jdbc = (Boolean)wiz.getProperty(JDBC_WN); // NOI18N
-        Boolean deploy = (Boolean)wiz.getProperty(GOLDSPIKE_WN); // NOI18N
-        
-        RailsProjectCreateData data = new RailsProjectCreateData(dirF, name, type == TYPE_APP,
-                database, jdbc, deploy);
+        String database = (String) wiz.getProperty(RAILS_DB_WN); // NOI18N
+        Boolean jdbc = (Boolean) wiz.getProperty(JDBC_WN); // NOI18N
+        Boolean deploy = (Boolean) wiz.getProperty(GOLDSPIKE_WN); // NOI18N
+        RubyServer server = (RubyServer) wiz.getProperty(SERVER_INSTANCE); // NOI18N
+
         RubyPlatform platform = (RubyPlatform) wiz.getProperty("platform"); // NOI18N
-        h = RailsProjectGenerator.createProject(data, platform);
-        handle.progress (2);
+        RailsProjectCreateData data = new RailsProjectCreateData(platform, dirF, name, type == TYPE_APP,
+                database, jdbc, deploy, server.getServerUri());
+        h = RailsProjectGenerator.createProject(data);
+        handle.progress(2);
 
 //        if (mainClass != null && mainClass.length () > 0) {
 //            try {

@@ -112,7 +112,7 @@ public abstract class HintAction extends AbstractAction implements PropertyChang
         }
         
         Document doc = pane.getDocument();
-        Object stream = doc.getProperty(Document.StreamDescriptionProperty);
+        Object stream = doc != null ? doc.getProperty(Document.StreamDescriptionProperty) : null;
         
         if (!(stream instanceof DataObject))
             return null;

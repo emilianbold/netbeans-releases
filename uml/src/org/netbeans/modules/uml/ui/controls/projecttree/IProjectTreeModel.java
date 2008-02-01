@@ -122,6 +122,21 @@ public interface IProjectTreeModel
     */
    public ITreeItem getRootItem();
    
+   /**
+    * Retrieve Diagrams root node
+    * 
+    * @return The Diagrams item.
+    */
+   public ITreeItem getDiagramsRootNode(IProject project);
+   
+    /**
+    * Check if the node is an instance of Diagrams root node
+    * 
+    * @return true if the  node is an instance of UMLDiagramRootNode; false otherwise.
+    */
+   public boolean isDiagramsRootNode(ITreeItem node);
+   
+   
    public IProjectTreeItem addItem(IProjectTreeItem parent,
                                    String           name,
                                    String           text,

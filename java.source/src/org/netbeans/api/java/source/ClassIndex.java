@@ -95,7 +95,10 @@ public final class ClassIndex {
     private final Set<URL> oldSources;
     //INV: Never null
     //@GuardedBy (this)
-    private final Set<URL> oldDeps;    
+    private final Set<URL> oldBoot;    
+    //INV: Never null
+    //@GuardedBy (this)
+    private final Set<URL> oldCompile;
     //INV: Never null
     //@GuardedBy (this)
     private final Set<ClassIndexImpl> sourceIndeces;
@@ -204,7 +207,7 @@ public final class ClassIndex {
     
     static {
 	ClassIndexImpl.FACTORY = new ClassIndexFactoryImpl();
-    }
+    }    
     
     ClassIndex(final ClassPath bootPath, final ClassPath classPath, final ClassPath sourcePath) {
         assert bootPath != null;
@@ -213,7 +216,8 @@ public final class ClassIndex {
         this.bootPath = bootPath;
         this.classPath = classPath;
         this.sourcePath = sourcePath;
-        this.oldDeps = new HashSet<URL>();
+        this.oldBoot = new HashSet<URL>();
+        this.oldCompile = new  HashSet<URL>();
         this.oldSources = new HashSet<URL>();
         this.depsIndeces = new HashSet<ClassIndexImpl>();
         this.sourceIndeces = new HashSet<ClassIndexImpl>();
@@ -391,13 +395,14 @@ public final class ClassIndex {
                             impl.removeClassIndexImplListener(spiListener);
                         }
                         depsIndeces.clear();
-                        oldDeps.clear();
-                        createQueriesForRoots (bootPath, false, depsIndeces,  oldDeps);                
-                        createQueriesForRoots (classPath, false, depsIndeces, oldDeps);	    
+                        oldBoot.clear();
+                        oldCompile.clear();
+                        createQueriesForRoots (bootPath, false, depsIndeces,  oldBoot);                
+                        createQueriesForRoots (classPath, false, depsIndeces, oldCompile);	    
                     }
                 }
             }
-        } );        
+        });        
     }
     
     private synchronized Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {        
@@ -418,7 +423,8 @@ public final class ClassIndex {
             result.addAll(this.oldSources);
         }
         if (scope.contains(SearchScope.DEPENDENCIES)) {
-            result.addAll(this.oldDeps);
+            result.addAll(this.oldBoot);
+            result.addAll(this.oldCompile);
         }
         return result;
     }
@@ -536,18 +542,7 @@ public final class ClassIndex {
         }
         
         public void classIndexRemoved (final ClassIndexManagerEvent event) {
-            final Set<? extends URL> roots = event.getRoots();
-            assert roots != null;
-            List<URL> ar = new LinkedList<URL> ();
-            boolean srcF = containsRoot(getOldState(EnumSet.of(SearchScope.SOURCE)), roots, ar);
-            boolean depF = containsRoot(getOldState(EnumSet.of(SearchScope.DEPENDENCIES)), roots, ar);
-            if (srcF || depF) {
-                reset (srcF, depF);
-                final RootsEvent e = new RootsEvent(ClassIndex.this, ar);
-                for (ClassIndexListener l : listeners) {
-                    l.rootsRemoved(e);
-                }
-            }
+            //Not important handled by propertyChange from ClassPath
         }
         
         private boolean containsRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> affectedRoots, final boolean translate) {
@@ -578,7 +573,9 @@ public final class ClassIndex {
             return result;
         }
         
-        private boolean containsNewRoot (final ClassPath cp, final Set<? extends URL> roots, final List<? super URL> newRoots, final boolean translate) throws IOException {
+        private boolean containsNewRoot (final ClassPath cp, final Set<? extends URL> roots,
+                final List<? super URL> newRoots, final List<? super URL> removedRoots,
+                final boolean translate) throws IOException {
             final List<ClassPath.Entry> entries = cp.entries();
             final GlobalSourcePath gsp = GlobalSourcePath.getDefault();
             final ClassIndexManager mgr = ClassIndexManager.getDefault();
@@ -590,20 +587,22 @@ public final class ClassIndex {
                     srcRoots = gsp.getSourceRootForBinaryRoot (entry.getURL(), cp, false);
                 }                
                 if (srcRoots == null) {
-                    if (!roots.contains(url) && mgr.getUsagesQuery(url)!=null) {
+                    if (!roots.remove(url) && mgr.getUsagesQuery(url)!=null) {
                         newRoots.add (url);
                         result = true;
                     }
                 }
                 else {
                     for (URL _url : srcRoots) {
-                        if (!roots.contains(_url) && mgr.getUsagesQuery(_url)!=null) {
+                        if (!roots.remove(_url) && mgr.getUsagesQuery(_url)!=null) {
                             newRoots.add (_url);
                             result = true;
                         }
                     }
                 }
             }
+            result |= !roots.isEmpty();
+            removedRoots.addAll(roots);;
             return result;
         }
         
@@ -621,6 +620,7 @@ public final class ClassIndex {
         public void propertyChange(PropertyChangeEvent evt) {
             if (ClassPath.PROP_ENTRIES.equals (evt.getPropertyName())) {
                 final List<URL> newRoots = new LinkedList<URL>();
+                final List<URL> removedRoots = new  LinkedList<URL> ();
                 boolean dirtySource = false;
                 boolean dirtyDeps = false;
                 try {
@@ -630,26 +630,27 @@ public final class ClassIndex {
                         synchronized (ClassIndex.this) {
                             copy = new HashSet<URL>(oldSources);
                         }
-                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, false);                        
+                        dirtySource = containsNewRoot(sourcePath, copy, newRoots, removedRoots, false);                        
                     }                
                     else if (source == ClassIndex.this.classPath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
-                            copy = new HashSet<URL>(oldDeps);
+                            copy = new HashSet<URL>(oldCompile);
                         }
-                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, true);                        
+                        dirtyDeps = containsNewRoot(classPath, copy, newRoots, removedRoots, true);                        
                     }
                     else if (source == ClassIndex.this.bootPath) {
                         Set<URL> copy;
                         synchronized (ClassIndex.this) {
-                            copy = new HashSet<URL>(oldDeps);
+                            copy = new HashSet<URL>(oldBoot);
                         }
-                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, true);
+                        dirtyDeps = containsNewRoot(bootPath, copy, newRoots, removedRoots, true);
                     }
                     
                     if (dirtySource || dirtyDeps) {                        
                         ClassIndex.this.reset(dirtySource, dirtyDeps);
-                        final RootsEvent e = new RootsEvent(ClassIndex.this, newRoots);
+                        final RootsEvent ae = newRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, newRoots);
+                        final RootsEvent re = removedRoots.isEmpty() ? null : new RootsEvent(ClassIndex.this, removedRoots);
                         //Threading warning:
                         //The Javadoc promises that events are fired under javac lock,
                         //reschedule firing to the Java Worker Thread which runs under javac lock,
@@ -662,9 +663,16 @@ public final class ClassIndex {
                             }
 
                             public void run(CompilationInfo _null) throws Exception {
-                                for (ClassIndexListener l : listeners) {
-                                    l.rootsRemoved(e);
-                                }                        
+                                if (ae != null) {
+                                    for (ClassIndexListener l : listeners) {
+                                        l.rootsAdded(ae);
+                                    }                        
+                                }
+                                if (re != null) {
+                                    for (ClassIndexListener l : listeners) {
+                                        l.rootsRemoved(re);
+                                    }
+                                }
                             }
                         }, JavaSource.Priority.MAX);                        
                     }                    
