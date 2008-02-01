@@ -45,13 +45,13 @@ import junit.framework.TestCase;
  *
  * @author Erno Mononen
  */
-public class RailsServerTest extends TestCase {
+public class RubyServerTest extends TestCase {
 
-    public RailsServerTest(String testName) {
+    public RubyServerTest(String testName) {
         super(testName);
     }
 
-    public void testGetStartedMessagePattern() {
+    public void testMongrelStartup() {
 
         String mongrel = "** Mongrel available at 127.0.0.1:3000 **";
         String mongrel_with_version_nro = "** Mongrel 1.1.3 available at 127.0.0.1:3000 **";
@@ -59,31 +59,35 @@ public class RailsServerTest extends TestCase {
         String mongrel_dos_line_end = "** Mongrel 1.1.2 available at 0.0.0.0:3000\r\n";
         String mongrel_unix_line_end = "** Mongrel 1.1.2 available at 0.0.0.0:3000\n";
 
-        Pattern mongrelPattern = RailsServer.getStartedMessagePattern(RailsServer.ServerType.MONGREL);
+        Mongrel mongrelInstance = new Mongrel(null);
         
-        assertTrue(mongrelPattern.matcher(mongrel).find());
-        assertTrue(mongrelPattern.matcher(mongrel_with_version_nro).find());
-        assertTrue(mongrelPattern.matcher(mongrel_with_version_nro2).find());
-        assertTrue(mongrelPattern.matcher(mongrel_dos_line_end).find());
-        assertTrue(mongrelPattern.matcher(mongrel_unix_line_end).find());
+        assertTrue(mongrelInstance.isStartupMsg(mongrel));
+        assertTrue(mongrelInstance.isStartupMsg(mongrel_with_version_nro));
+        assertTrue(mongrelInstance.isStartupMsg(mongrel_with_version_nro2));
+        assertTrue(mongrelInstance.isStartupMsg(mongrel_dos_line_end));
+        assertTrue(mongrelInstance.isStartupMsg(mongrel_unix_line_end));
+
+    }
+
+    public void testWebrickStartup() {
 
         String webBrick = "=> Rails application started on http://0.0.0.0:3000";
         String webBrick2 = "=> Rails application started on http://localhost:3000";
         String webBrick_dos_line_end = "=> Rails application started on http://localhost:3000 \r\n";
         String webBrick_unix_line_end = "=> Rails application started on http://localhost:3000\n";
         
-        Pattern webrickPattern = RailsServer.getStartedMessagePattern(RailsServer.ServerType.WEBRICK);
+        WEBrick webrickInstance = new WEBrick(null);
 
-        assertTrue(webrickPattern.matcher(webBrick).find());
-        assertTrue(webrickPattern.matcher(webBrick2).find());
-        assertTrue(webrickPattern.matcher(webBrick_dos_line_end).find());
-        assertTrue(webrickPattern.matcher(webBrick_unix_line_end).find());
+        assertTrue(webrickInstance.isStartupMsg(webBrick));
+        assertTrue(webrickInstance.isStartupMsg(webBrick2));
+        assertTrue(webrickInstance.isStartupMsg(webBrick_dos_line_end));
+        assertTrue(webrickInstance.isStartupMsg(webBrick_unix_line_end));
 
     }
 
     public void testIsAddressInUseMsg(){
-        assertTrue(RailsServer.isAddressInUseMsg("/usr/local/lib/ruby/1.8/webrick/utils.rb:62:in `initialize': Address already in use - bind(2) (Errno::EADDRINUSE)"));
-        assertTrue(RailsServer.isAddressInUseMsg("/usr/lib/ruby/gems/1.8/gems/mongrel-0.3.13.4/lib/mongrel/tcphack.rb:12:in `initialize_without_backlog': Address already in use - bind(2) (Errno::EADDRINUSE)"));
-        assertFalse(RailsServer.isAddressInUseMsg("Address not in use"));
+        assertTrue(RailsServerManager.isAddressInUseMsg("/usr/local/lib/ruby/1.8/webrick/utils.rb:62:in `initialize': Address already in use - bind(2) (Errno::EADDRINUSE)"));
+        assertTrue(RailsServerManager.isAddressInUseMsg("/usr/lib/ruby/gems/1.8/gems/mongrel-0.3.13.4/lib/mongrel/tcphack.rb:12:in `initialize_without_backlog': Address already in use - bind(2) (Errno::EADDRINUSE)"));
+        assertFalse(RailsServerManager.isAddressInUseMsg("Address not in use"));
     }
 }

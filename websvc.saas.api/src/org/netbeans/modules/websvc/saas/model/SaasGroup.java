@@ -39,8 +39,8 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import org.netbeans.modules.websvc.saas.model.jaxb.GroupType;
 import java.util.ArrayList;
-import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
@@ -51,13 +51,13 @@ import java.util.TreeMap;
  * @author nam
  */
 public class SaasGroup {
-    private final Group delegate;
+    private final GroupType delegate;
     private final SaasGroup parent;
     private boolean userDefined = true; //once set to false, remain false.
     private SortedMap<String, Saas> services;
     private SortedMap<String, SaasGroup> children;
     
-    public SaasGroup(SaasGroup parent, Group group) {
+    public SaasGroup(SaasGroup parent, GroupType group) {
         this.parent = parent;
         this.delegate = group;
         services = Collections.synchronizedSortedMap(new TreeMap<String, Saas>());
@@ -67,7 +67,7 @@ public class SaasGroup {
         return parent;
     }
     
-    public Group getDelegate() {
+    public GroupType getDelegate() {
         return delegate;
     }
 

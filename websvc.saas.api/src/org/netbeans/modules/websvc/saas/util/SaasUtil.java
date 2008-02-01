@@ -52,7 +52,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
-import org.netbeans.modules.websvc.saas.model.jaxb.Group;
+import org.netbeans.modules.websvc.saas.model.jaxb.GroupType;
 
 /**
  *
@@ -72,9 +72,9 @@ public class SaasUtil {
     }
 
     public static SaasGroup loadSaasGroup(InputStream input) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
+        JAXBContext jc = JAXBContext.newInstance(GroupType.class.getPackage().getName());
         Unmarshaller unmarshaller = jc.createUnmarshaller();
-        JAXBElement<Group> groupElement = (JAXBElement)unmarshaller.unmarshal(input);
+        JAXBElement<GroupType> groupElement = (JAXBElement)unmarshaller.unmarshal(input);
         if (groupElement != null && groupElement.getValue() != null) {
             return new SaasGroup(null, groupElement.getValue());
         }
@@ -95,9 +95,9 @@ public class SaasUtil {
     public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
     
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
+        JAXBContext jc = JAXBContext.newInstance(GroupType.class.getPackage().getName());
         Marshaller marshaller = jc.createMarshaller();
-        JAXBElement<Group> jbe = new JAXBElement<Group>(QNAME_GROUP, Group.class, saasGroup.getDelegate());
+        JAXBElement<GroupType> jbe = new JAXBElement<GroupType>(QNAME_GROUP, GroupType.class, saasGroup.getDelegate());
         marshaller.marshal(jbe, output);
     }
 }

@@ -43,7 +43,7 @@
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://xml.netbeans.org/websvc/saas/services/1.0"
-            xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0"
+            xmlns:saas="http://xml.netbeans.org/websvc/saas/services/1.0"
             elementFormDefault="qualified">
     <xsd:annotation>
         <xsd:documentation>
@@ -57,87 +57,88 @@
             /StrikeIron=Strike Iron or /StrikeIron/ZipCode=Zip Code etc.,
         </xsd:documentation>
     </xsd:annotation>
-    <xsd:element name="saas-services">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element name="include" minOccurs="0" maxOccurs="unbounded">
-                    <xsd:complexType>
-                        <xsd:attribute name="url" type="xsd:string"/>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="description">
-                    <xsd:simpleType>
-                        <xsd:restriction base="xsd:string"/>
-                    </xsd:simpleType> 
-                </xsd:element>
-                <xsd:element name="display-name" minOccurs="0" maxOccurs="1"/>
-                <xsd:element name="saas-metadata" maxOccurs="1">
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="localizing-bundle" minOccurs="0" maxOccurs="1"/>
-                            <xsd:element name="icon16" minOccurs="1" maxOccurs="1"/>
-                            <xsd:element name="icon32" minOccurs="0" maxOccurs="1"/>
-                            <xsd:element name="group"  minOccurs="0" maxOccurs="1"/>
-                            <xsd:element name="code-gen" minOccurs="0">
-                                <xsd:complexType>
-                                    <xsd:sequence>
-                                        <xsd:element name="artifacts" minOccurs="0" maxOccurs="unbounded">
-                                            <xsd:complexType>
-                                                <xsd:sequence>
-                                                    <xsd:element name="artifact" minOccurs="1" maxOccurs="unbounded">
-                                                        <xsd:complexType>
-                                                            <xsd:attribute name="id" type="xsd:string"/>
-                                                            <xsd:attribute name="type" type="xsd:string" default="library"/>
-                                                            <xsd:attribute name="url" type="xsd:string" default="location of jar"/>
-                                                            <xsd:attribute name="requires" type="xsd:string" default="id of another artifact"/>
-                                                        </xsd:complexType>
-                                                    </xsd:element>
-                                                </xsd:sequence>
-                                                <xsd:attribute name="targets" type="xsd:string" default="java, servlets, jruby"/>
-                                            </xsd:complexType>
-                                        </xsd:element>
-                                    </xsd:sequence>
-                                </xsd:complexType>
-                            </xsd:element>
-                            <xsd:element name="authentication" minOccurs="0" maxOccurs="1">
-                                <xsd:complexType>
-                                    <xsd:sequence>
-                                        <xsd:element name="http-basic"/>
-                                        <xsd:element name="api-key">
-                                            <xsd:complexType>
-                                                <xsd:attribute name="id" type="xsd:string"/>
-                                            </xsd:complexType>
-                                        </xsd:element>
-                                        <xsd:element name="custom"/>
-                                    </xsd:sequence>
-                                    <xsd:attribute name="profile" type="xsd:string" default="Templates/WebServices/profile.properties"/>
-                                </xsd:complexType>
-                            </xsd:element>
-                        </xsd:sequence>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="header">
-                    <xsd:complexType>
-                        <xsd:sequence>
-                            <xsd:element name="params" type="tns:Params"/>
-                        </xsd:sequence>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="methods" type="tns:Methods"/>
-            </xsd:sequence>
-            <xsd:attribute name="type" type="xsd:string" use="required"/>
-            <xsd:attribute name="url" type="xsd:string" use="required"/>
-            <xsd:attribute name="api-doc" type="xsd:string" use="required"/>
-        </xsd:complexType>
-    </xsd:element>
-    <xsd:element name="group" type="tns:Group"/>
-    <xsd:complexType name="Methods">
+    
+    <xsd:element name="saas-services" type="saas:SaasServicesType"/>
+    
+    <xsd:element name="saas-metadata" type="saas:SaasMetadataType"/>
+    
+    <xsd:element name="group" type="saas:GroupType"/>
+    
+    <xsd:complexType name="SaasServicesType">
         <xsd:sequence>
-            <xsd:element name="method" type="tns:Method" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="description">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string"/>
+                </xsd:simpleType> 
+            </xsd:element>
+            <xsd:element name="display-name" minOccurs="0" maxOccurs="1"/>
+            <xsd:element ref="saas:saas-metadata" maxOccurs="1">
+            </xsd:element>
+            <xsd:element name="header" minOccurs="0" maxOccurs="1">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="params" type="saas:ParamsType"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="methods" type="saas:MethodsType"/>
+        </xsd:sequence>
+        <xsd:attribute name="type" type="xsd:string" use="required"/>
+        <xsd:attribute name="url" type="xsd:string" use="required"/>
+        <xsd:attribute name="api-doc" type="xsd:string" use="required"/>
+    </xsd:complexType>
+        
+    <xsd:complexType name="SaasMetadataType">
+        <xsd:sequence>
+            <xsd:element name="localizing-bundle" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="icon16" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="icon32" minOccurs="0" maxOccurs="1"/>
+            <xsd:element ref="saas:group"  minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="code-gen" minOccurs="0">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="artifacts" type="saas:ArtifactsType" minOccurs="0" maxOccurs="unbounded"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="authentication" minOccurs="0" maxOccurs="1">
+                <xsd:complexType>
+                    <xsd:choice>
+                        <xsd:element name="http-basic"/>
+                        <xsd:element name="api-key">
+                            <xsd:complexType>
+                                <xsd:attribute name="id" type="xsd:string"/>
+                            </xsd:complexType>
+                        </xsd:element>
+                        <xsd:element name="custom"/>
+                    </xsd:choice>
+                    <xsd:attribute name="profile" type="xsd:string" default="Templates/WebServices/profile.properties"/>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="ArtifactsType">
+        <xsd:sequence>
+            <xsd:element name="artifact" type="saas:ArtifactType" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="targets" type="xsd:string" default="java, servlets, jruby"/>
+    </xsd:complexType>
+    
+    <xsd:complexType name="ArtifactType">
+        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="type" type="xsd:string" default="library"/>
+        <xsd:attribute name="url" type="xsd:string" default="location of jar"/>
+        <xsd:attribute name="requires" type="xsd:string" default="id of another artifact"/>
+    </xsd:complexType>
+                
+    <xsd:complexType name="MethodsType">
+        <xsd:sequence>
+            <xsd:element name="method" type="saas:MethodType" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
-    <xsd:complexType name="Method">                      
+    <xsd:complexType name="MethodType">                      
         <xsd:annotation>
             <xsd:documentation>
                 a method represents one operation in case of WSDL. In case
@@ -159,7 +160,7 @@
                 </xsd:annotation>
                 <xsd:complexType>
                     <xsd:sequence>
-                        <xsd:element name="params" type="tns:Params"/>
+                        <xsd:element name="params" type="saas:ParamsType"/>
                     </xsd:sequence>
                 </xsd:complexType>
             </xsd:element> 
@@ -198,7 +199,7 @@
         </xsd:attribute>                                       
     </xsd:complexType>
     
-    <xsd:complexType name="Params">
+    <xsd:complexType name="ParamsType">
         <xsd:sequence>
             <xsd:element name="param" minOccurs="0" maxOccurs="unbounded">
                 <xsd:complexType>
@@ -219,10 +220,12 @@
             </xsd:element>  
         </xsd:sequence>
     </xsd:complexType>
-    <xsd:complexType name="Group">
+    
+    <xsd:complexType name="GroupType">
         <xsd:sequence minOccurs="0">
-            <xsd:element name="group" type="tns:Group" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+            <xsd:element name="group" type="saas:GroupType" minOccurs="0" maxOccurs="unbounded"></xsd:element>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>
+    
 </xsd:schema>

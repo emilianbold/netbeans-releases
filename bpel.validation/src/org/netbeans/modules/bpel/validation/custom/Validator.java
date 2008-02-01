@@ -564,25 +564,13 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
         }
     }
 
-    private void addError(String bundleKey, Collection<Component> collection, Object... values) {
-        String str = i18n(getClass(), bundleKey);
-
-        if (values != null && values.length > 0) {
-            str = MessageFormat.format(str, values);
-        }
-        for(Component component: collection) {
-            ResultItem resultItem = new ResultItem(this, ResultType.ERROR, component, str);
-            getResultItems().add(resultItem);
-        }
-    }
-
     @Override
     public void visit(Import imp) {
         Model model = getModel(imp);
 
         if (model == null) {
-            addInvalidImportModelError(imp);
-            return;
+          addError("FIX_NotWellFormedImport", imp); // NOI18N
+          return;
         }
         validate(model);
     }
@@ -594,9 +582,5 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
             return model;
         }
         return ImportHelper.getSchemaModel(imp, false);
-    }
-
-    private void addInvalidImportModelError(BpelEntity bpelEntity) {
-      getResultItems().add(new ResultItem(this, ResultType.WARNING, bpelEntity, i18n(getClass(), "FIX_NotWellFormedImport"))); // NOI18N
     }
 }
