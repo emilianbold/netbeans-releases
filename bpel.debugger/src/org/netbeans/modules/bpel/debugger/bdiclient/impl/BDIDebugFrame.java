@@ -119,7 +119,8 @@ public class BDIDebugFrame implements DebugFrame {
             final BPELVariable faultData, 
             final DebuggableEngine engine) {
         System.out.println("- onFault(" + lineNumber + ", " + 
-                xpath + ", " + faultQName + ", " + faultData + ")");
+                xpath + ", " + faultQName.replace("\n", "|") + 
+                ", " + faultData + ")");
         
         myDebuggableEngine = engine;
         

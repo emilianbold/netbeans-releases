@@ -46,6 +46,7 @@
 
 package org.netbeans.modules.visualweb.ejb.ui;
 
+import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbDataModel;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbGroup;
 import org.netbeans.modules.visualweb.ejb.datamodel.EjbInfo;
@@ -55,6 +56,7 @@ import org.netbeans.modules.visualweb.ejb.load.EjbLoader;
 import java.awt.Dialog;
 import java.text.MessageFormat;
 import java.util.*;
+import javax.swing.event.ChangeListener;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
@@ -89,7 +91,7 @@ public class AddEjbGroupDialog {
      */
     private static final String PROP_CONTENT_DATA = "WizardPanel_contentData"; // NOI18N
     
-    private WizardDescriptor wizardDescriptor;
+    private EjbWizardDescriptor wizardDescriptor;
     private Dialog dialog;
     
     private EjbGroupPanel addPanel;
@@ -108,12 +110,13 @@ public class AddEjbGroupDialog {
         addPanel = new EjbGroupPanel();
         addWizardPanel =  new AddEjbsWizardPanel();
         
+        addPanel.addChangeListener(addWizardPanel);
         // The second wizard panel
         configWizardPanel = new ConfigureMethodWizardPanel();
         
         // Create the wizard descriptor
         WizardDescriptor.Panel[] wizardPanels = new WizardDescriptor.Panel[] { addWizardPanel, configWizardPanel  };
-        wizardDescriptor = new WizardDescriptor( wizardPanels );
+        wizardDescriptor = new EjbWizardDescriptor( wizardPanels );
         
         // The following properties are need in order to get the content panel on the left side
         wizardDescriptor.putProperty( PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
@@ -273,11 +276,25 @@ public class AddEjbGroupDialog {
         return allSet;
     }
     
+    // Expose updateState() method to disable next/finish buttons
+    private static class EjbWizardDescriptor extends WizardDescriptor {
+        public EjbWizardDescriptor(WizardDescriptor.Panel[] panels) {
+            super(panels);
+        }
+        
+        public void updateNavigatingState() {
+            super.updateState();
+        }
+        
+    }
+    
     /**
      * The wizard panel for gathering the EJB information
      */
-    private class AddEjbsWizardPanel implements WizardDescriptor.ValidatingPanel {
-       
+    private class AddEjbsWizardPanel implements WizardDescriptor.ValidatingPanel, ChangeListener {
+        
+        private boolean valid = true;
+        
         public AddEjbsWizardPanel() {
         }
         
@@ -295,8 +312,8 @@ public class AddEjbGroupDialog {
         }
         
         public boolean isValid() {
-            
-            return true;
+            String groupName = addPanel.getGroupName();
+            return groupName != null && EjbDataModel.getInstance().getEjbGroup(groupName) == null;
         }
         
         public void readSettings(Object settings) {
@@ -309,12 +326,33 @@ public class AddEjbGroupDialog {
             
         }
         
-        public void validate() throws org.openide.WizardValidationException {
+        public void validate() throws org.openide.WizardValidationException {            
+            if (!isValid()) {
+                String groupName = (addPanel.getGroupName() != null) ? addPanel.getGroupName() : "";
+                String errorMsg = NbBundle.getMessage(AddEjbGroupDialog.class, "NAME_NOT_UNIQUE", groupName);
+                throw new org.openide.WizardValidationException( addPanel,  errorMsg, errorMsg );
+            }
             
             // Throw WizardValidationException will cause the wizard to stay at the same step
             String loadResult = loadingEjbGroup();
             if( loadResult != null )
-                throw new org.openide.WizardValidationException( addPanel,  "not valid", loadResult );
+                throw new org.openide.WizardValidationException( addPanel,  NbBundle.getMessage(AddEjbGroupDialog.class, "IMPORT_SET_ERROR" ), loadResult );
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            if (!isValid()) {
+                valid = false;
+                wizardDescriptor.updateNavigatingState();
+
+                String groupName = (addPanel.getGroupName() != null) ? addPanel.getGroupName() : "";
+                String errorMsg = NbBundle.getMessage(AddEjbGroupDialog.class, "NAME_NOT_UNIQUE", groupName);
+                
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", errorMsg); // NOI18N
+            }else if (!valid) {
+                valid = true;
+                wizardDescriptor.updateNavigatingState();
+                wizardDescriptor.putProperty("WizardPanel_errorMessage", null); // NOI18N
+            }
         }
         
     }

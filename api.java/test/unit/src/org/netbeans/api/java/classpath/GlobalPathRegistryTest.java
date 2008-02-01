@@ -243,6 +243,27 @@ public class GlobalPathRegistryTest extends NbTestCase {
         assertEquals(null, r.findResource("nonexistent"));
     }
     
+    public void testMemoryLeak124055 () throws Exception {
+        final GlobalPathRegistry reg = GlobalPathRegistry.getDefault();
+        final Set<? extends ClassPath> src = reg.getPaths(ClassPath.SOURCE);
+        final Set<? extends ClassPath> boot = reg.getPaths(ClassPath.BOOT);
+        final Set<? extends ClassPath> compile = reg.getPaths(ClassPath.COMPILE);
+        assertTrue(src.isEmpty());
+        assertTrue(boot.isEmpty());
+        assertTrue(compile.isEmpty());
+        assertTrue(reg.getSourceRoots().isEmpty());
+        r.register(ClassPath.COMPILE, new ClassPath[] {cp3});
+        SFBQImpl query = Lookup.getDefault().lookup(SFBQImpl.class);
+        query.addPair(cp3.getRoots()[0].getURL(),cp4.getRoots());       
+        //There should be one translated source root
+        assertEquals(1, reg.getSourceRoots().size());
+        assertEquals(1, reg.getResults().size());
+        r.unregister(ClassPath.COMPILE, new ClassPath[] {cp3});
+        //There shouldn't be registered source root
+        assertTrue(reg.getSourceRoots().isEmpty());
+        assertTrue(reg.getResults().isEmpty());
+    }
+    
     private static final class L implements GlobalPathRegistryListener {
         
         private GlobalPathRegistryEvent e;

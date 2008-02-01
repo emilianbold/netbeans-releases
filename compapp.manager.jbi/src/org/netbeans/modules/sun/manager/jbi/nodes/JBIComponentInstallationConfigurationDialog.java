@@ -143,6 +143,20 @@ public class JBIComponentInstallationConfigurationDialog
             String value = configDescriptor.getDefaultValue();
             QName typeQName = configDescriptor.getTypeQName();
 
+            if (value == null) {
+                if (JBIComponentConfigurationDescriptor.XSD_STRING.equals(typeQName)) {
+                    value = "";                    
+                } else if (JBIComponentConfigurationDescriptor.XSD_BOOLEAN.equals(typeQName)) {
+                    value = "false";                    
+                } else if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName) ||
+                    JBIComponentConfigurationDescriptor.XSD_POSITIVE_INTEGER.equals(typeQName) ||
+                    JBIComponentConfigurationDescriptor.XSD_NEGATIVE_INTEGER.equals(typeQName) ||
+                    JBIComponentConfigurationDescriptor.XSD_NON_POSITIVE_INTEGER.equals(typeQName) ||
+                    JBIComponentConfigurationDescriptor.XSD_NON_NEGATIVE_INTEGER.equals(typeQName)) {
+                    value = "0";   // FIXME: Int editor should accept empty value                 
+                }
+            }
+            
             properties.setProperty(name, value);
 
             Object attrValue = null;

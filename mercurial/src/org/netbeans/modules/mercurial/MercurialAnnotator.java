@@ -70,8 +70,10 @@ import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
+import org.netbeans.modules.mercurial.ui.log.OutAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.properties.PropertiesAction;
+import org.netbeans.modules.mercurial.ui.pull.FetchAction;
 import org.netbeans.modules.mercurial.ui.pull.PullAction;
 import org.netbeans.modules.mercurial.ui.pull.PullOtherAction;
 import org.netbeans.modules.mercurial.ui.push.PushAction;
@@ -357,6 +359,10 @@ public class MercurialAnnotator extends VCSAnnotator {
                         root.getName()), ctx));
             }
             actions.add(new CloneExternalAction(loc.getString("CTL_PopupMenuItem_CloneOther"), ctx));     // NOI18N        
+            actions.add(null);
+            actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
+            actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
+            actions.add(null);
             actions.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PushLocal"), ctx)); // NOI18N
             actions.add(new PushOtherAction(loc.getString("CTL_PopupMenuItem_PushOther"), ctx)); // NOI18N
             actions.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_PullLocal"), ctx)); // NOI18N
@@ -392,6 +398,11 @@ public class MercurialAnnotator extends VCSAnnotator {
                             root.getName()), ctx));
                 }
 
+                actions.add(null);                
+                actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
+                actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, 
+                        "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
+                actions.add(null);                
                 actions.add(new PushAction(NbBundle.getMessage(MercurialAnnotator.class, 
                         "CTL_PopupMenuItem_PushLocal"), ctx)); // NOI18N
                 actions.add(new PullAction(NbBundle.getMessage(MercurialAnnotator.class, 
@@ -558,20 +569,23 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
     
     private String annotateFolderNameHtml(String name, FileInformation mostImportantInfo, File mostImportantFile) {
-        String project = HgProjectUtils.getProjectName(mostImportantFile);
-        String fileName = mostImportantFile.getName();
-        if (project == null || fileName.equals(name)) {
-            fileName = null;
-        } else {
-            File repo = Mercurial.getInstance().getTopmostManagedParent(mostImportantFile);
-            if (!repo.equals(mostImportantFile)) {
-                fileName = repo.getName();
-            }
-        }
-
-        name = htmlEncode(name);
+        String nameHtml = htmlEncode(name);
         if (mostImportantInfo.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED){
-            return excludedFormat.format(new Object [] { name, ""}); // NOI18N
+            return excludedFormat.format(new Object [] { nameHtml, ""}); // NOI18N
+        }
+        String fileName = mostImportantFile.getName();
+        if (fileName.equals(name)){
+            return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
+        }
+        
+        // Label top level repository nodes with a repository name label when:
+        // Display Name (name) is different from its repo name (repo.getName())
+        fileName = null;
+        File repo = Mercurial.getInstance().getTopmostManagedParent(mostImportantFile);
+        if(repo != null && repo.equals(mostImportantFile)){
+            if (!repo.getName().equals(name)){
+                fileName = repo.getName();
+            }          
         }
         if (fileName != null)
             return uptodateFormat.format(new Object [] { name, " [" + fileName + "]" }); // NOI18N

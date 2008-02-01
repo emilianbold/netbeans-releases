@@ -1,4 +1,5 @@
 # XXX check compatibility; seems to be OK on Python 2.4.4, but not 2.4.2
+# XXX said not to work in d39af2eabb8c; generates JARs of size zero
 
 import os, re, urllib2, sha, inspect
 

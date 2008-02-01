@@ -21,8 +21,6 @@ package org.netbeans.modules.bpel.properties.editors.controls;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +43,7 @@ import org.netbeans.modules.soa.ui.form.valid.DefaultValidStateManager;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.UserNotification;
-import org.openide.DialogDescriptor;
+import org.netbeans.modules.soa.ui.form.valid.Validator.Reason;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -200,8 +198,10 @@ public class AbstractCustomNodeEditor<T> extends JPanel
             //
         } else {
             if (finalValidationState != null) {
-                String reason = finalValidationState.getReason();
-                UserNotification.showMessage(reason);
+                Reason reason = finalValidationState.getFistReason(null);
+                if (reason != null) {
+                    UserNotification.showMessage(reason.getText());
+                }
             }
         }
         //

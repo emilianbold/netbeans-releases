@@ -390,38 +390,6 @@ public class Arch extends Task implements ErrorHandler, EntityResolver, URIResol
                 }
             }
 
-            // finds out the lotion in CVS
-            // will be available as element under
-            // <project>
-            //    <cvs-location>openide/util</cvs-location>
-            {
-                File f = project;
-                StringBuffer sb = new StringBuffer();
-                String sep = "";
-                for (;;) {
-                    if (new File(f, "nbbuild").isDirectory()) {
-                        break;
-                    }
-                    
-                    if (f.isDirectory() && !"nbproject".equals (f.getName())) {
-                        sb.insert(0, sep);
-                        sep = "/";
-                        sb.insert(0, f.getName());
-                    }
-                    
-                    f = f.getParentFile();
-                    if (f == null) {
-                        // not found anything
-                        sb.setLength(0);
-                        break;
-                    }
-                }
-                Element el = prj.createElement("cvs-location");
-                el.appendChild(prj.createTextNode(sb.toString()));
-                prj.getDocumentElement().appendChild(el);
-            }
-            
-            
             DOMSource prjSrc = new DOMSource(prj);
             
             NodeList node = prj.getElementsByTagName("project");

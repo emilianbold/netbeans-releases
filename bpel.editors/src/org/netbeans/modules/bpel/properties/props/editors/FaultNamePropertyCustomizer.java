@@ -297,7 +297,7 @@ public class FaultNamePropertyCustomizer extends ValidablePropertyCustomizer
     public Validator createValidator() {
         return new DefaultValidator(
                 (ValidStateManager.Provider)this, ErrorMessagesBundle.class) {
-            public boolean doFastValidation() {
+            public void doFastValidation() {
 /* issue 85149 No way to clear the Fault Name field in Reply editor
                 QName currFaultName = getFaultName();
  
@@ -318,7 +318,6 @@ public class FaultNamePropertyCustomizer extends ValidablePropertyCustomizer
                     }
                 }
  */
-                return true;
             }
         };
     }
