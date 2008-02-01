@@ -1159,15 +1159,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
 
     public void uninstall(boolean force) {
 
-        InstallationService mgmtService = getInstallationService();
-        if (mgmtService == null) {
-            return;
-        }
-
-        if (canShutdown()) {
-            shutdown(force);
-        }
-
         final String componentName = getName();
 
         if (confirmComponentUninstallation) {
@@ -1184,6 +1175,20 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             if (d.getDoNotShowAgain()) {
                 confirmComponentUninstallation = false;
             }
+        }
+        
+        // Make sure no service assembly is deployed before stop-shutdown-uninstall.
+        if (!undeploy(force)) { // undeployment cancelled or failed
+            return;
+        }
+
+        InstallationService mgmtService = getInstallationService();
+        if (mgmtService == null) {
+            return;
+        }
+
+        if (canShutdown()) {
+            shutdown(force);
         }
 
         String progressLabel = getUninstallProgressLabel();
@@ -1347,12 +1352,12 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         return true;
     }
 
-    public void undeploy(boolean force) {
+    public boolean undeploy(boolean force) {
         RuntimeManagementServiceWrapper mgmtService =
                 getRuntimeManagementServiceWrapper();
 
         if (mgmtService == null) {
-            return;
+            return false;
         }
 
         String componentName = getName();
@@ -1364,24 +1369,36 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
                     NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(d);
-            return;
+            return false;
         }
 
+        boolean success = true;
         if (saNames.size() > 0) {
 
             if (confirmForServiceAssembliesUndeployment) {
                 String wordWrappedSANames = Utils.wordWrapString(
                         saNames.toString(), 80, "<br>");  // NOI18N
-                String msg = NbBundle.getMessage(JBIComponentNode.class,
+                
+                String msg;
+                if (StackTraceUtil.isCalledBy(
+                        "org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode", // NOI18N
+                        "uninstall")) { // NOI18N
+                    msg = NbBundle.getMessage(JBIComponentNode.class,
+                        "MSG_UNDEPLOY_DURING_UNINSTALL_CONFIRMATION", // NOI18N
+                        componentName, wordWrappedSANames);
+                } else {
+                     msg = NbBundle.getMessage(JBIComponentNode.class,
                         "MSG_UNDEPLOY_CONFIRMATION", // NOI18N
                         componentName, wordWrappedSANames);
+                }
+                
                 String title = NbBundle.getMessage(JBIComponentNode.class,
-                        "TTL_UNINSTALL_CONFIRMATION"); // NOI18N
+                        "TTL_UNDEPLOY_CONFIRMATION"); // NOI18N
                 DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
                         msg, title, NotifyDescriptor.YES_NO_OPTION);
 
-                if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
-                    return;
+                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
+                    return false;
                 }
 
                 if (d.getDoNotShowAgain()) {
@@ -1398,7 +1415,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             for (String saName : saNames) {
                 for (Node saNode : saNodes) {
                     if (saName.equals(saNode.getName())) {
-                        ((Undeployable) saNode).undeploy(force);
+                        success = success && ((Undeployable) saNode).undeploy(force);
                         break;
                     }
                 }
@@ -1406,6 +1423,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
 
             sasNode.refresh();
         }
+        
+        return success;
     }
 
     private List<File> filterSelectedFiles(File[] files) {
