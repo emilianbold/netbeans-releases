@@ -215,7 +215,14 @@ public final class RailsServerManager {
         String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         String serverId = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE);
-        RubyInstance instance = ServerRegistry.getServer(serverId, RubyPlatform.platformFor(project));
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        RubyInstance instance = ServerRegistry.getServer(serverId, platform);
+        if (instance == null) {
+            // TODO: need to inform the user somehow
+            // fall back to the first available server
+            List<? extends RubyInstance> availableServers = ServerRegistry.getServers(platform);
+            instance = availableServers.get(availableServers.size() - 1);
+        }
         if (!(instance instanceof RubyServer)){
             //XXX: handle glassfish..
             RequestProcessor.getDefault().post(finishedAction);
