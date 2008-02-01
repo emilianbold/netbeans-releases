@@ -107,4 +107,10 @@
         <delete dir="${zip.folder}"/>
         <delete dir="build"/>
     </target>
+
+    <target name="check">
+        <ant dir="../../_code" inheritAll="true">
+            <property name="check.dir" value="${basedir}"/>
+        </ant>
+    </target>
 </project>

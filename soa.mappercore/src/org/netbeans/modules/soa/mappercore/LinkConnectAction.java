@@ -39,38 +39,60 @@
 
 package org.netbeans.modules.soa.mappercore;
 
+import java.awt.Component;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.KeyStroke;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.event.MapperSelectionEvent;
 import org.netbeans.modules.soa.mappercore.event.MapperSelectionListener;
+import org.netbeans.modules.soa.mappercore.model.Graph;
+import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.SourcePin;
 import org.netbeans.modules.soa.mappercore.model.TargetPin;
+import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
 import org.netbeans.modules.soa.mappercore.utils.Utils;
 
 /**
  *
- * @author alex
+ * @author AlexanderPermyacov
  */
 public class LinkConnectAction extends MapperKeyboardAction implements 
-        MapperSelectionListener, TreeExpansionListener
+        MapperSelectionListener, TreeExpansionListener, FocusListener,
+        TreeSelectionListener
 {
-    private Canvas canvas;
-    private LinkTool linkTool;
     private TreePath treePath;
+    private Canvas canvas;
     
     public LinkConnectAction(Canvas canvas) {
         this.canvas = canvas;
         treePath = null;
+        
+        MapperKeyboardAction action = new LinkConnectDone(canvas);
+        
         canvas.getMapper().addRightTreeExpansionListener(this);
         canvas.getSelectionModel().addSelectionListener(this);
+        canvas.registerAction(action);
+        
+        canvas.getRightTree().addFocusListener(this);
+        canvas.getRightTree().registrAction(this);
+        canvas.getRightTree().registrAction(action);
+        
+        canvas.getLeftTree().addFocusListener(this);
+        canvas.getLeftTree().addTreeSelectionListener(this);
+        canvas.getLeftTree().registrAction(this);
+        canvas.getLeftTree().registrAction(action);
     }
     
     @Override
@@ -80,128 +102,235 @@ public class LinkConnectAction extends MapperKeyboardAction implements
 
     @Override
     public KeyStroke[] getShortcuts() {
-        KeyStroke[] a = new KeyStroke[3];
-          a[0] = KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.CTRL_MASK);
-          a[1] = KeyStroke.getKeyStroke(KeyEvent.VK_0, ActionEvent.CTRL_MASK);
-          a[2] = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
-          return a;
+        return new KeyStroke[] {
+            KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_DOWN_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_0, KeyEvent.CTRL_DOWN_MASK), 
+            KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0)
+        };
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (linkTool == null) {linkTool = canvas.getLinkTool();}
+        LinkTool linkTool = canvas.getLinkTool();
         if (linkTool == null) {return;}
         
         SelectionModel selectionModel = canvas.getSelectionModel();
         treePath = selectionModel.getSelectedPath();
         if (treePath == null) return;
         
-        canvas.getMapper().getNode(treePath, true);
-        
         SourcePin source = linkTool.getSourcePin();
         TargetPin target = linkTool.getTargetPin();
         
         if (!linkTool.isActive()) {
-            List<Vertex> vertexes = selectionModel.getSelectedVerteces();
-            if (vertexes != null && vertexes.size() != 0) {
-                if (source != null) {
-                    linkTool.activateIngoing(treePath, vertexes.get(0).getItem(0));
-                    Point p = linkTool.getTargetPoint();
-                    p = Utils.toScrollPane(canvas, p, null);
-                    linkTool.setSource(source, canvas, p);
-                } else {
-                    linkTool.activateOutgoing(treePath, vertexes.get(0));
-                    Point p = linkTool.getSourcePoint();
-                    p = Utils.toScrollPane(canvas, p, null);
-                    linkTool.setTarget(treePath, null, canvas, p);
+            if (e.getSource() == canvas) {
+                List<Vertex> vertexes = selectionModel.getSelectedVerteces();
+                if (vertexes != null && vertexes.size() != 0) {
+                    if (source != null) {
+                        linkTool.activateIngoing(treePath, vertexes.get(0).getItem(0));
+                        setSource(source, canvas);
+                    } else {
+                        linkTool.activateOutgoing(treePath, vertexes.get(0));
+                        setTarget(null, canvas);
+                    }
                 }
+                VertexItem vertexItem = selectionModel.getSelectedVertexItem();
+                if (vertexItem != null) {
+                    linkTool.activateIngoing(treePath, vertexItem);
+                    setSource(source, canvas);
+                }
+                canvas.repaint();
             }
-            VertexItem vertexItem = selectionModel.getSelectedVertexItem();
-            if (vertexItem != null) {
-                linkTool.activateIngoing(treePath, vertexItem);
-                Point p = linkTool.getTargetPoint();
-                p = Utils.toScrollPane(canvas, p, null);
-                linkTool.setSource(source, canvas, p);
+            
+            if (e.getSource() == canvas.getRightTree()) {
+                Graph graph = canvas.getMapper().getNode(treePath, true).getGraph();
+                linkTool.activateIngoing(treePath, graph, null);
+                setSource(null, canvas);
+                canvas.getRightTree().repaint();
+            }
+            if (e.getSource() == canvas.getLeftTree()) {
+                TreePath leftPath = canvas.getLeftTree().getSelectionPath();
+                if (leftPath == null) { return; }
+
+                TreeSourcePin treeSource = new TreeSourcePin(leftPath);
+                linkTool.activateOutgoing(treeSource, null, null);
+                canvas.getLeftTree().repaint();
             }
         }
-        canvas.repaint();
+        
         if (e.getModifiers() != 0) return;
         if (target != null && source != null) { 
-            if (canvas.getMapperModel().canConnect(treePath, source, target, treePath, null)) {
-                canvas.getMapperModel().connect(treePath, source,
-                        target, treePath, null);
+            if (linkTool.getMapperModel().canConnect(treePath, source, target, null, null)) {
+                linkTool.getMapperModel().connect(treePath, source,
+                        target, null, null);
             }
         }
-        linkTool.dragDone();
+        linkTool.done();
     }
 
     public void mapperSelectionChanged(MapperSelectionEvent event) {
-        if (linkTool == null || !linkTool.isActive()) { return;}
-        
-        SelectionModel selectionModel = canvas.getSelectionModel();
-        if (selectionModel.getSelectedPath() != treePath) {linkTool.dragDone();}
+        LinkTool linkTool = canvas.getLinkTool();
+        if (linkTool == null || !linkTool.isActive()) { return; }
+       
+        SelectionModel selectionModel = linkTool.getSelectionModel();
+        if (treePath == null ) { treePath = selectionModel.getSelectedPath(); }
+        if (selectionModel.getSelectedPath() != treePath) { linkTool.done(); }
         if (treePath == null) return;
         
-        SourcePin source = linkTool.getSourcePin();
-        TargetPin target = linkTool.getTargetPin();
+        Vertex vertex = null;
+        List<Vertex> vertexes = selectionModel.getSelectedVerteces();
+        if (vertexes != null && !vertexes.isEmpty()) {
+            vertex = vertexes.get(0);
+        }
         
         if (linkTool.isOutgoing()) {
             VertexItem vertexItem = selectionModel.getSelectedVertexItem();
             if (vertexItem != null) {
-                if (canvas.getMapperModel().canConnect(treePath, source, vertexItem, treePath, null)) {
-                    linkTool.setTarget(treePath, vertexItem, canvas, new Point());
-                } else {
-                    Point p = linkTool.getSourcePoint();
-                    p = Utils.toScrollPane(canvas, p, null);
-                    linkTool.setTarget(treePath, null, canvas, p);
-                }
+                setTarget(vertexItem, canvas);
                 return;
             }
-            List<Vertex> vertexes = selectionModel.getSelectedVerteces();
-            if (vertexes != null && vertexes.size() > 0) {
             
-                Vertex vertex = vertexes.get(0);
-                vertexItem = vertex.getItem(0);
-                if (canvas.getMapperModel().canConnect(treePath, source, vertexItem, treePath, null)) {
-                    linkTool.setTarget(treePath, vertexItem, canvas, new Point());
-                } else {
-                    Point p = linkTool.getSourcePoint();
-                    p = Utils.toScrollPane(canvas, p, null);
-                    linkTool.setTarget(treePath, null, canvas, p);
-                }
-                return;
-            }
+            if (vertex == null || vertex.getItemCount() < 1) { return; }
+
+            vertexItem = vertex.getItem(0);
+            setTarget(vertexItem, canvas);
+            return;
         }
+
         if (linkTool.isIngoing()) {
-            List<Vertex> vertexes = selectionModel.getSelectedVerteces();
-            if (vertexes == null || vertexes.size() < 1) return;
+            if (vertex == null) { return; }
             
-            Vertex vertex = vertexes.get(0);
-            if (canvas.getMapperModel().canConnect(treePath, vertex, target, treePath, null)) {
-                linkTool.setSource(vertex, canvas, new Point());
-            } else {
-                Point p = linkTool.getTargetPoint();
-                p = Utils.toScrollPane(canvas, p, null);
-                linkTool.setSource(null, canvas, p);
-            }
+            setSource(vertex, canvas);
         }
+        canvas.repaint();
     }
 
     public void treeExpanded(TreeExpansionEvent event) {
-        if (linkTool == null || treePath == null) {return;}
+        LinkTool linkTool = canvas.getLinkTool();
+        if (linkTool == null || treePath == null) { return; }
         
-        MapperNode node = canvas.getMapper().getNode(treePath, true);
+        MapperNode node = linkTool.getMapper().getNode(treePath, true);
         if (!node.isVisibleGraph()) {
             this.treePath = null;
-            linkTool.dragDone();
+            linkTool.done();
         }
     }
 
     public void treeCollapsed(TreeExpansionEvent event) {
-        if (linkTool == null || treePath == null) {return;}
-        MapperNode node = canvas.getMapper().getNode(treePath, true);
+        LinkTool linkTool = canvas.getLinkTool();
+        if (linkTool == null || !linkTool.isActive()) { return; }
+        
+        MapperNode node = linkTool.getMapper().getNode(treePath, true);
         if (!node.isVisibleGraph()) {
             this.treePath = null;
-            linkTool.dragDone();
+            linkTool.done();
         }
+    }
+
+    public void focusGained(FocusEvent e) {
+        LinkTool linkTool = canvas.getLinkTool();
+        if (linkTool == null || !linkTool.isActive()) { return; }
+        
+        Component component = e.getComponent();
+        if (component == linkTool.getRightTree()) {
+            if (linkTool.isOutgoing()) {
+                SelectionModel selectionModel = linkTool.getSelectionModel();
+                TreePath treePath = selectionModel.getSelectedPath();
+                Graph graph = linkTool.getMapper().getNode(treePath, true).getGraph();
+                setTarget(graph, linkTool.getRightTree());  
+            }
+            if (linkTool.isIngoing()) {
+                 setSource(null, null);
+            }
+        }
+        
+        if (component == linkTool.getLeftTree()){
+            if (linkTool.isIngoing()) {
+                TreePath leftPath = canvas.getLeftTree().getSelectionPath();
+                if (leftPath == null) { return; }
+                
+                SourcePin source = new TreeSourcePin(leftPath);
+                setSource(source, canvas.getLeftTree());
+                canvas.getLeftTree().repaint();
+            }
+            if (linkTool.isOutgoing()) {
+                setSource(null, null);
+            }
+            
+        }    
+    }
+
+    public void focusLost(FocusEvent e) {
+        LinkTool linkTool = canvas.getLinkTool();
+         if (linkTool == null || !linkTool.isActive()) { return; }
+        
+        List<Vertex> sVertexes = linkTool.getSelectionModel().getSelectedVerteces();
+        if (sVertexes == null || sVertexes.isEmpty()) { return; }
+        Vertex vertex = sVertexes.get(0); 
+         
+        JComponent component = (JComponent) e.getComponent();
+        if (component == linkTool.getRightTree()) {
+            if (linkTool.isIngoing()) {
+                setSource(vertex, canvas);
+                return;
+            }
+            if (linkTool.isOutgoing()) {
+                if (vertex.getItemCount() < 1) { return; }
+                
+                VertexItem vertexItem = vertex.getItem(0);
+                setTarget(vertexItem, canvas);
+                return;
+            }
+        }
+        
+        if (component == linkTool.getLeftTree()){
+            
+        }
+    }
+    
+    private void setSource(SourcePin source, JComponent c) {
+        LinkTool linkTool = canvas.getLinkTool();
+        TargetPin target = linkTool.getTargetPin();
+        MapperModel mapperModel = linkTool.getMapperModel();
+        
+        if (source != null && mapperModel.canConnect(treePath, source, target, 
+                null, null)) 
+        {
+            linkTool.setSource(source, c, new Point());
+        } else if (target instanceof Graph) {
+            linkTool.setSource(null, null, new Point());
+        } else {
+            Point p = linkTool.getTargetPoint();
+            p = Utils.toScrollPane(canvas, p, null);
+            linkTool.setSource(null, canvas, p);
+        }
+        
+    }
+    
+    private void setTarget(TargetPin target, JComponent c) {
+        LinkTool linkTool = canvas.getLinkTool();
+        SourcePin source = linkTool.getSourcePin();
+        MapperModel mapperModel = linkTool.getMapperModel();
+        TreePath treePath = canvas.getSelectionModel().getSelectedPath();
+        
+        if (target != null && mapperModel.canConnect(treePath, source, target, 
+                null, null)) 
+        {
+            linkTool.setTarget(treePath, target, c, new Point());
+        } else {
+            Point p = linkTool.getSourcePoint();
+            p = Utils.toScrollPane(canvas, p, null);
+            linkTool.setTarget(treePath, null, canvas, p);
+        }
+    }
+
+    public void valueChanged(TreeSelectionEvent e) {
+        LinkTool linkTool = canvas.getLinkTool();
+        if (linkTool == null || !linkTool.isActive()) { return; }
+        
+        TreePath leftPath = e.getNewLeadSelectionPath();
+                                
+        SourcePin source = new TreeSourcePin(leftPath);
+        setSource(source, linkTool.getLeftTree());
+        linkTool.getLeftTree().repaint();
+        canvas.repaint();
     }
 }
