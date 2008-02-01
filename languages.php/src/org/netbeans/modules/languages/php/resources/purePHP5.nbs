@@ -69,6 +69,7 @@ TOKEN:php_keyword:(
     "switch" |
     "throw" |
     "try" |
+    "var" |
     "while" |
     "xor"
 )
