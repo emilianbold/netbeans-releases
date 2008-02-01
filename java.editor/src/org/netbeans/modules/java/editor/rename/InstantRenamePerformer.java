@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -68,6 +68,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -87,6 +89,7 @@ import org.netbeans.editor.GuardedDocument;
 import org.netbeans.editor.MarkBlock;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
+import org.netbeans.modules.editor.java.JavaKit.JavaDeleteCharAction;
 import org.netbeans.modules.java.editor.semantic.FindLocalUsagesQuery;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
@@ -107,6 +110,7 @@ import org.openide.util.lookup.InstanceContent;
 public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
     private SyncDocumentRegion region;
+    private int span;
     private Document doc;
     private JTextComponent target;
     
@@ -152,15 +156,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         getHighlightsBag(doc).setHighlights(bag);
         
         target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
-    }
-    
-    private FileObject getFileObject() {
-	DataObject od = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-	
-	if (od == null)
-	    return null;
-	
-	return od.getPrimaryFile();
+        
+        span = region.getFirstRegionLength();
     }
     
     public static void invokeInstantRename(JTextComponent target) {
@@ -371,8 +368,16 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	if (inSync)
 	    return ;
 	
+        //check for modifications outside the first region:
+        
+        if (e.getOffset() < region.getFirstRegionStartOffset() || (e.getOffset() + e.getLength()) > region.getFirstRegionEndOffset()) {
+            release();
+            return;
+        }
+        
 	inSync = true;
 	region.sync(0);
+        span = region.getFirstRegionLength();
 	inSync = false;
 	target.repaint();
     }
@@ -381,6 +386,46 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	if (inSync)
 	    return ;
 	
+        if (e.getLength() == 1) {
+            if ((e.getOffset() < region.getFirstRegionStartOffset() || e.getOffset() > region.getFirstRegionEndOffset())) {
+                release();
+                return;
+            }
+
+            if (e.getOffset() == region.getFirstRegionStartOffset()) {
+                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
+                
+                if (jdca != null && !jdca.getNextChar()) {
+                    undo();
+                } else {
+                    release();
+                }
+                
+                return;
+            }
+            
+            if (e.getOffset() == region.getFirstRegionEndOffset()) {
+            //XXX: moves the caret anyway:
+//                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
+//
+//                if (jdca != null && jdca.getNextChar()) {
+//                    undo();
+//                } else {
+                    release();
+//                }
+
+                return;
+            }
+        } else {
+            //selection/multiple characters removed:
+            int removeSpan = e.getLength() + region.getFirstRegionLength();
+            
+            if (span < removeSpan) {
+                release();
+                return;
+            }
+        }
+        
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
         //after the insert anyway.
@@ -390,6 +435,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         
 	inSync = true;
 	region.sync(0);
+        span = region.getFirstRegionLength();
 	inSync = false;
 	target.repaint();
     }
@@ -427,11 +473,26 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	target = null;
     }
 
+    private void undo() {
+        if (doc instanceof BaseDocument && ((BaseDocument) doc).isAtomicLock()) {
+            ((BaseDocument) doc).atomicUndo();
+        } else {
+            UndoableEdit undoMgr = (UndoableEdit) doc.getProperty(BaseDocument.UNDO_MANAGER_PROP);
+            if (target != null && undoMgr != null) {
+                try {
+                    undoMgr.undo();
+                } catch (CannotUndoException e) {
+                    Logger.getLogger(InstantRenamePerformer.class.getName()).log(Level.WARNING, null, e);
+                }
+            }
+        }
+    }
+            
     private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
     
     private static AttributeSet getSyncedTextBlocksHighlight() {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
-        AttributeSet as = fcs.getFontColors("synchronized-text-blocks"); //NOI18N
+        AttributeSet as = fcs != null ? fcs.getFontColors("synchronized-text-blocks") : null; //NOI18N
         return as == null ? defaultSyncedTextBlocksHighlight : as;
     }
     
