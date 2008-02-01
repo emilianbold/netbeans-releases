@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.php.model;
 
+import java.util.List;
+
 
 /**
  * @author ads
@@ -47,15 +49,43 @@ package org.netbeans.modules.php.model;
  */
 public enum Modifier {
 
-    VAR,
-    PUBLIC,
-    PROTECTED,
-    PRIVATE,
-    STATIC,
-    FINAL,
-    ABSTRACT
+    PUBLIC(1<<1),
+    PROTECTED(1<<2),
+    PRIVATE(1<<3),
+    STATIC(1<<4),
+    ABSTRACT(1<<5),
+    FINAL(1<<6),
+    /**
+     * @see http://www.php.net/manual/en/language.oop5.visibility.php
+     * Note:  The PHP 4 method of declaring a variable with the var keyword is 
+     * still supported for compatibility reasons (as a synonym for the public 
+     * keyword). In PHP 5 before 5.1.3, its usage would generate an 
+     * E_STRICT warning."
+     */
+    VAR(PUBLIC.flag()),
     ;
+
+    public static final int VISIBILITY_MASK = 
+            PUBLIC.flag() & PROTECTED.flag() & PRIVATE.flag();
     
+    private final int flag;
+    Modifier(int flag) { this.flag = flag; }
+
+    /**
+     * Returns the bit-flag associated with the underlying <code>Modifier<code>.
+     * @return the bit-flag.
+     */
+    public int flag() { return flag; }
+
+    /**
+     * 
+     * @param flags the flags value
+     * @return <code>true</code> if underlying modifier flag is on the specified
+     * <code>flags</code>.
+     */
+    public boolean isOn(int flags) { return (flags & flag) == flag; }
+
+    @Override
     public String toString(){
         return super.toString().toLowerCase();
     }
@@ -67,5 +97,29 @@ public enum Modifier {
             }
         }
         return null;
+    }
+    
+    /**
+     * Converts the specified list of modifiers to the bit-flags.  
+     * Returned value can be processed via a bit-mask.
+     * @param list the list of actual modifiers.
+     * @return the bit-flags value according to the modifiers actually defined 
+     * in the source.
+     */
+    public static int toFlags(List<Modifier> list) {
+        int flags = 0;
+        for(Modifier m: list) {
+            flags |= m.flag();
+        }
+        return flags;
+    }
+    
+    public static int toLogicalFlags(int actualFlags) {
+        return isDefaultVisibility(actualFlags) ? 
+            actualFlags |= PUBLIC.flag() : actualFlags;
+    }
+    
+    public static boolean isDefaultVisibility(int actualFlags) {
+        return (actualFlags & VISIBILITY_MASK) == 0;
     }
 }

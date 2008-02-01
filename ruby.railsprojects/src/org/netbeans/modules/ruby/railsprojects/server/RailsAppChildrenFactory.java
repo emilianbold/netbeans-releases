@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,23 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.railsprojects.server;
 
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.netbeans.modules.ruby.railsprojects.server.nodes.RailsAppNode;
+import java.util.AbstractList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.openide.nodes.ChildFactory;
+import org.openide.nodes.Node;
 
 /**
+ * A factory for creating Rails application nodes.
  *
- * @author Tor Norbye
+ * @author Erno Mononen
  */
-public class RuntimeNode extends AbstractNode {
-    
-    public RuntimeNode() {
-        super(Children.LEAF);
-//        setDisplayName(RailsServer.getServerName());
-        setIconBaseWithExtension("org/netbeans/modules/ruby/railsprojects/ui/resources/rails.png");
+public class RailsAppChildrenFactory extends ChildFactory<RailsApplication> implements ChangeListener {
+
+    private final RubyServer server;
+
+    public static RailsAppChildrenFactory create(RubyServer server) {
+        RailsAppChildrenFactory result = new RailsAppChildrenFactory(server);
+        server.addChangeListener(result);
+        return result;
     }
-    
-    // TODO - actions for starting and stopping the server, viewing logs, etc.
+
+    private RailsAppChildrenFactory(RubyServer server) {
+        this.server = server;
+    }
+
+    @Override
+    protected Node createNodeForKey(RailsApplication key) {
+        return new RailsAppNode(key);
+    }
+
+    @Override
+    protected boolean createKeys(List<RailsApplication> toPopulate) {
+        for (RailsApplication app : server.getApplications()) {
+            toPopulate.add(app);
+        }
+        return true;
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        refresh(false);
+    }
 }
