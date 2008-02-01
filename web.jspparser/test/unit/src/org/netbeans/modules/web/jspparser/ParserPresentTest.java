@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,20 +41,13 @@
 
 package org.netbeans.modules.web.jspparser;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.StringTokenizer;
 
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
-/** JUnit test suite with Jemmy support
+/**
  *
  * @author pj97932
  */
@@ -65,6 +58,13 @@ public class ParserPresentTest extends NbTestCase {
      */
     public ParserPresentTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+        TestUtil.setup(this);
     }
     
     public void testParserPresent() throws IOException {
