@@ -241,6 +241,10 @@ public class HgUtils {
      * @return boolean true - ignore, false - not ignored
      */
     public static boolean isIgnored(File file){
+        return isIgnored(file, true);
+    }
+
+    public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
         String name = file.getPath();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
@@ -268,8 +272,10 @@ public class HgUtils {
         }
 
         if (FILENAME_HGIGNORE.equals(name)) return false;
-        int sharability = SharabilityQuery.getSharability(file);
-        if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
+        if (checkSharability) {
+            int sharability = SharabilityQuery.getSharability(file);
+            if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
+        }
         return false;
     }
 
