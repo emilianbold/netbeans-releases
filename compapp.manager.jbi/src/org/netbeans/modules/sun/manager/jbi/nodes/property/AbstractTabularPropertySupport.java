@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.sun.manager.jbi.nodes.property;
 
-import com.sun.esb.management.api.configuration.ConfigurationService;
 import com.sun.esb.management.common.ManagementRemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,6 +53,8 @@ import javax.management.openmbean.CompositeType;
 import javax.management.openmbean.TabularData;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
+import org.netbeans.modules.sun.manager.jbi.GenericConstants;
+import org.netbeans.modules.sun.manager.jbi.management.JBIMBeanTaskResultHandler;
 import org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -94,19 +95,34 @@ abstract class AbstractTabularPropertySupport
         List<CompositeData> updateList = diffs[2];
 
         try {
+            String componentName = "?"; // NOI18N
+            
+            if (propertySheetOwner instanceof JBIComponentNode) {
+                componentName = ((JBIComponentNode) propertySheetOwner).getName();
+            }
+            
             // Remove deleted composite data first
+            String operationName = getDeleteCompositeDataOperationName();
             for (CompositeData cd : deletionList) {
-                deleteCompositeData(cd);
+                String result = deleteCompositeData(cd);
+                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                    operationName, componentName, result);
             }
 
             // Add new composite data next
+            operationName = getAddCompositeDataOperationName();
             for (CompositeData cd : additionList) {
-                addCompositeData(cd);
+                String result = addCompositeData(cd);
+                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                    operationName, componentName, result);
             }
 
             // Update modified composite data
+            operationName = getSetCompositeDataOperationName();
             for (CompositeData cd : updateList) {
-                setCompositeData(cd);
+                String result = setCompositeData(cd);
+                JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+                    operationName, componentName, result);
             }
 
             String attrName = attr.getName();
@@ -140,21 +156,61 @@ abstract class AbstractTabularPropertySupport
     
     /**
      * Adds a composite data into the tabular data.
+     * 
+     * @param compositeData     a composite data to be added
+     * @return  an XML management message if the operation is a complete 
+     *          or partial success
+     * @throw ManagementRemoteException if the operation is a complete failure
      */
-    protected abstract void addCompositeData(CompositeData compositeData)
+    protected abstract String addCompositeData(CompositeData compositeData)
             throws ManagementRemoteException;
 
     /**
      * Deletes a composite data from the tabular data.
+     * 
+     * @param compositeData     a composite data to be deleted
+     * @return  an XML management message if the operation is a complete 
+     *          or partial success
+     * @throw ManagementRemoteException if the operation is a complete failure
      */
-    protected abstract void deleteCompositeData(CompositeData compositeData)
+    protected abstract String deleteCompositeData(CompositeData compositeData)
+            throws ManagementRemoteException;
+    
+    /**
+     * Updates an existing composite data.
+     * 
+     * @param compositeData     a composite data to be updated
+     * @return  an XML management message if the operation is a complete 
+     *          or partial success
+     * @throw ManagementRemoteException if the operation is a complete failure
+     */
+    protected abstract String setCompositeData(CompositeData compositeData)
             throws ManagementRemoteException;
 
     /**
-     * Updates an existing composite data.
+     * Gets the operation name for adding composite data. 
+     * (Used for display purpose when error occurs.)
+     * 
+     * @return operation name for adding composite data
      */
-    protected abstract void setCompositeData(CompositeData compositeData)
-            throws ManagementRemoteException;
+    protected abstract String getAddCompositeDataOperationName();
+    
+    /**
+     * Gets the operation name for deleting composite data. 
+     * (Used for display purpose when error occurs.)
+     * 
+     * @return operation name for deleting composite data
+     */
+    protected abstract String getDeleteCompositeDataOperationName();
+    
+    /**
+     * Gets the operation name for setting composite data. 
+     * (Used for display purpose when error occurs.)
+     * 
+     * @return operation name for setting composite data
+     */
+    protected abstract String getSetCompositeDataOperationName();
+    
 
     private static List<CompositeData>[] compareTabularData(
             TabularData oldTabularData,

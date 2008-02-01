@@ -807,80 +807,98 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     /**
      * Updates an existing application variable.
      * 
-     * @param attrName  application variable name
+     * @param name      application variable name
      * @param value     new value of the application variable
+     * @return  an XML management message if the operation is a complete 
+     *          or partial success
+     * @throw ManagementRemoteException if the operation is a complete failure
      */
-    public void setApplicationVariable(String attrName, CompositeData value)
+    public String setApplicationVariable(String name, CompositeData value)
             throws ManagementRemoteException {
         ConfigurationService configService = getConfigurationService();
         String compName = getName();
-        configService.setApplicationVariable(compName, SERVER_TARGET, attrName, value);
+        return configService.setApplicationVariable(compName, SERVER_TARGET, name, value);
     }
 
     /**
      * Adds a new application variable.
      * 
-     * @param attrName  application variable name
-     * @param value     value of composite data
+     * @param name      application variable name
+     * @param value     value of the application variable
+     * @return  an XML management message if the operation is a complete 
+     *          or partial success
+     * @throw ManagementRemoteException if the operation is a complete failure
      */
-    public void addApplicationVariable(String attrName, CompositeData value)
+    public String addApplicationVariable(String name, CompositeData value)
             throws ManagementRemoteException {
         ConfigurationService configService = getConfigurationService();
         String compName = getName();
-        configService.addApplicationVariable(compName, SERVER_TARGET, attrName, value);
+        return configService.addApplicationVariable(compName, SERVER_TARGET, name, value);
     }
 
     /**
      * Deletes an existing application variable.
      * 
-     * @param attrName  application variable name
+     * @param name  an existing application variable name
+     * @return  an XML management message if the operation is a complete 
+     *          or partial success
+     * @throw ManagementRemoteException if the operation is a complete failure
      */
-    public void deleteApplicationVariable(String name)
+    public String deleteApplicationVariable(String name)
             throws ManagementRemoteException {
         ConfigurationService configService = getConfigurationService();
         String compName = getName();
-        configService.deleteApplicationVariables(compName, SERVER_TARGET,
+        return configService.deleteApplicationVariables(compName, SERVER_TARGET,
                 new String[]{name}); // TODO: support mass-deletion
     }
 
     /**
      * Updates an existing application configuration.
      * 
-     * @param attrName  application configuration name
+     * @param name      application configuration name
      * @param value     new value of composite data
+     * @return  an XML management message if the operation is a complete 
+     *          or partial success
+     * @throw ManagementRemoteException if the operation is a complete failure
      */
-    public void setApplicationConfiguration(String name, CompositeData value)
+    public String setApplicationConfiguration(String name, CompositeData value)
             throws ManagementRemoteException {
         ConfigurationService configService = getConfigurationService();
         String compName = getName();
-        configService.setApplicationConfiguration(
+        return configService.setApplicationConfiguration(
                 compName, SERVER_TARGET, name, value);
     }
 
     /**
      * Adds a new application configuration.
      * 
-     * @param name  application configuration name
-     * @param value new value of composite data
+     * @param name      application configuration name
+     * @param value     new value of composite data
+     * @return  an XML management message if the operation is a complete 
+     *          or partial success
+     * @throw ManagementRemoteException if the operation is a complete failure
      */
-    public void addApplicationConfiguration(String name, CompositeData value)
+    public String addApplicationConfiguration(String name, CompositeData value)
             throws ManagementRemoteException {
         ConfigurationService configService = getConfigurationService();
         String compName = getName();
-        configService.addApplicationConfiguration(
+        return configService.addApplicationConfiguration(
                 compName, SERVER_TARGET, name, value);
     }
 
     /**
      * Deletes an existing application configuration.
      * 
-     * @param attrName  application configuration name
+     * @param name  application configuration name
+     * @return  an XML management message if the operation is a complete 
+     *          or partial success
+     * @throw ManagementRemoteException if the operation is a complete failure
      */
-    public void deleteApplicationConfiguration(String name)
+    public String deleteApplicationConfiguration(String name)
             throws ManagementRemoteException {
         ConfigurationService configService = getConfigurationService();
         String compName = getName();
-        configService.deleteApplicationConfiguration(
+        return configService.deleteApplicationConfiguration(
                 compName, SERVER_TARGET, name);
     }
 
