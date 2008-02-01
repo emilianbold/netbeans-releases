@@ -54,8 +54,10 @@ import org.openide.util.RequestProcessor.Task;
  */
 public final class ExclusiveAccess {
 
+    // TODO improve the priority of runSyncTask() tasks.
+
     private final static ExclusiveAccess INSTANCE = new ExclusiveAccess();
-    private final static int DELAY = 400;
+    private final static int DELAY = 2500;
 
     private final RequestProcessor rp = new RequestProcessor("Spring config file access thread", 1, false); // NOI18N
     private final ReentrantLock lock = new ReentrantLock();
@@ -70,7 +72,7 @@ public final class ExclusiveAccess {
      *
      * @param  run the task.
      */
-    public void postTask(Runnable run) {
+    public void postAsyncTask(Runnable run) {
         Task task = rp.create(new TaskWrapper(run), true);
         task.schedule(DELAY);
     }
@@ -81,7 +83,7 @@ public final class ExclusiveAccess {
      *
      * @param  run the task.
      */
-    public <V> V runPriorityTask(Callable<V> task) throws Exception {
+    public <V> V runSyncTask(Callable<V> task) throws Exception {
         lock.lock();
         try {
             return task.call();

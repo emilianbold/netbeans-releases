@@ -139,7 +139,7 @@ public class SpringConfigModelController {
     }
 
     private void runReadAction0(final Action<SpringBeans> action) throws Exception {
-        ExclusiveAccess.getInstance().runPriorityTask(new Callable<Void>() {
+        ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
             public Void call() throws IOException {
                 // Handle reentrant access.
                 boolean firstEntry = (currentAccess == null);

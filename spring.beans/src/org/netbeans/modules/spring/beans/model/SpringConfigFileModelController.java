@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.logging.Logger;
 import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
+import java.util.logging.Level;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -92,25 +93,35 @@ public class SpringConfigFileModelController {
      */
     public void makeUpToDate() throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
+        FileObject configFO;
         synchronized (this) {
-            if (updater == null && parsedAtLeastOnce) {
-                // Already up to date.
-                return;
+            if (updater == null) {
+                if (parsedAtLeastOnce) {
+                    // No update in progress and file already parsed,
+                    // nothing to do.
+                    return;
+                } else {
+                    // Not parsed yet, so parse now.
+                    configFO = FileUtil.toFileObject(file);
+                }
+            } else {
+                // An update is scheduled, so perform it now.
+                configFO = updater.getConfigFile();
+                // Ensure the updater will not run again.
+                LOGGER.log(Level.FINE, "Updater {0} for {1} invalidated", new Object[] { updater, configFO });
+                updater = null;
             }
-            // XXX we need to use the data from the update, since it could
-            // have been a document-based updater.
-            updater = null;
         }
-        FileObject configFO = FileUtil.toFileObject(file);
         if (configFO != null) {
             parse(configFO);
         }
     }
 
     public void notifyChange(FileObject configFO) {
+        LOGGER.log(Level.FINE, "Scheduling update for {0}", configFO);
         synchronized (this) {
             updater = new Updater(configFO);
-            ExclusiveAccess.getInstance().postTask(updater);
+            ExclusiveAccess.getInstance().postAsyncTask(updater);
         }
     }
 
@@ -130,12 +141,17 @@ public class SpringConfigFileModelController {
             this.configFile = configFile;
         }
 
+        public FileObject getConfigFile() {
+            return configFile;
+        }
+
         public void run() {
             assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
             synchronized (SpringConfigFileModelController.this) {
                 // Back off if we are not the current updater -- there should
                 // be another one later in the queue.
                 if (updater != this) {
+                    LOGGER.log(Level.FINE, "Updater {0} for {1} is not the current one", new Object[] { this, configFile });
                     return;
                 }
                 // Signal that we are updating
