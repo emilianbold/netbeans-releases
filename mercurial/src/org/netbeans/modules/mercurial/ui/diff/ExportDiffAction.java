@@ -54,6 +54,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
@@ -65,7 +66,7 @@ import org.openide.NotifyDescriptor;
  * 
  * @author Padraig O'Briain
  */
-public class ExportDiffAction extends AbstractAction {
+public class ExportDiffAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -74,8 +75,7 @@ public class ExportDiffAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         exportDiff(context);
     }
     
