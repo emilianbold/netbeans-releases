@@ -42,14 +42,19 @@ made subject to such option by the copyright holder.
 -->
 <project name="web/test-qa-functional" basedir="." default="all">
 
+    <property name="tomcat_version" value="5.5.17"/>
+    <!-- Root folders -->
+    <property name="nball.dir" location="../../../../nb_all"/>
+    <property environment="env"/>
+
     <!-- Imports default qa-functional-compiler and runidetes executor.
         jemmy and jellytools jars are on classpath for both. -->
-    <import file="../../nbbuild/templates/xtest-qa-functional.xml"/>
+    <import file="${nball.dir}/nbbuild/templates/xtest-qa-functional.xml"/>
 
     <!-- Setting command line -->
     <target name="ide_command_line_suffix">
         <property name="reg.home"
-        value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${tomcat.home}"/>
+        value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
         <property name="reg.token" value="-J-Dorg.netbeans.modules.tomcat.autoregister.token=1"/>
         <property name="jmxremote.option" value="-J-Dcom.sun.management.jmxremote=true"/>
         <property name="xtest.ide.commandline.suffix" value="${reg.home} ${reg.token} ${jmxremote.option}"/>
@@ -69,21 +74,15 @@ made subject to such option by the copyright holder.
             <property name="xtest.timeout" value="7200000" />
         </executeTests>
     </target>
+    <property name="tomcat.ext.dir" location="${nball.dir}/tomcatint/tomcat5/bundled/external"/>
+    <import file="${nball.dir}/tomcatint/tomcat5/bundled/build.xml"/>
     
-    <target name="install-tomcat" depends="-setup-proxy" >
-        <echo message="Going to download tomcat. If it fails " />
-        <echo message="invoke with -Dproxy.host='host' -Dproxy.port='port'" />
-        <property name="tomcat_version" value="5.5.17"/>
-        <property name="tomcat.binary" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}.zip"/>
-        <get src="http://hg.netbeans.org/binaries/0AFEB6F734FD2852B339B6BB3EA44A64B0DC161E-apache-tomcat-5.5.17.zip" dest="${tomcat.binary}"/>
-        <property name="tomcat.home" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
+    <property name="tomcat.home" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
+    
+    <target name="install-tomcat" depends="init">
         <delete dir="${tomcat.home}" quiet="true"/>
-        <unzip src="${tomcat.binary}" dest="${xtest.tmpdir}"/>
+        <unzip src="${tomcat.ext.dir}/apache-tomcat-${tomcat_version}.zip" dest="${xtest.tmpdir}/"/>
         <chmod dir="${tomcat.home}/bin" perm="ugo+rx" includes="**/*.sh"/>
-    </target>
-    
-    <target name="-setup-proxy" if="proxy.host" >
-        <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" />
     </target>
 
     <target name="runidetest-debug" depends="setup-debugger,runidetest"/>

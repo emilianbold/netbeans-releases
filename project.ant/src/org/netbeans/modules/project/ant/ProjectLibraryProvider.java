@@ -443,7 +443,11 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                             if (FileUtil.isArchiveFile(normalizedFile.toURI().toURL())) {
                                 u = FileUtil.getArchiveRoot(u);
                                 if (jarFolder != null) {
-                                    u = appendJarFolder(u, jarFolder);
+                                    try {
+                                        u = new URL(u + jarFolder.replace('\\', '/')); //NOI18N
+                                    } catch (MalformedURLException e) {
+                                        throw new AssertionError(e);
+                                    }
                                 }
                             } else if (!u.toExternalForm().endsWith("/")) {
                                 u = new URL(u.toExternalForm() + "/");
@@ -502,27 +506,6 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return !added.isEmpty() || !removed.isEmpty();
     }
 
-    /** for jar url this method returns path wihtin jar or null*/
-    private static String getJarFolder(URL url) {
-        assert "jar".equals(url.getProtocol()) : url;
-        String u = url.toExternalForm();
-        int index = u.indexOf("!/"); //NOI18N
-        if (index != -1 && index + 2 < u.length()) {
-            return u.substring(index+2);
-        }
-        return null;
-    }
-    
-    /** append path to given jar root url */
-    private static URL appendJarFolder(URL u, String jarFolder) {
-        assert "jar".equals(u.getProtocol()) && u.toExternalForm().endsWith("!/") : u;
-        try {
-            return new URL(u + jarFolder.replace('\\', '/')); //NOI18N
-        } catch (MalformedURLException e) {
-            throw new AssertionError(e);
-        }
-    }
-    
     static final class ProjectLibraryImplementation implements LibraryImplementation {
 
         final File mainPropertiesFile, privatePropertiesFile;
@@ -583,7 +566,11 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
             for (URL entry : path) {
                 String jarFolder = null;
                 if ("jar".equals(entry.getProtocol())) { // NOI18N
-                    jarFolder = getJarFolder(entry);
+                    String u = entry.toExternalForm();
+                    int index = u.indexOf("!/"); //NOI18N
+                    if (index != -1 && index + 2 < u.length()) {
+                        jarFolder = u.substring(index);
+                    }
                     entry = FileUtil.getArchiveFile(entry);
                 } else if (!"file".equals(entry.getProtocol())) { // NOI18N
                     throw new IllegalArgumentException(entry.toExternalForm());
@@ -597,7 +584,6 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     s.append("${base}/" + f.getPath().replace('\\', '/')); // NOI18N
                 }
                 if (jarFolder != null) {
-                    s.append("!/"); // NOI18N
                     s.append(jarFolder);
                 }
                 if (value.size()+1 != path.size()) {
@@ -912,9 +898,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         for (String volume : volumes) {
             List<URL> volumeContent = new ArrayList<URL>();
             for (URL libEntry : lib.getContent(volume)) {
-                String jarFolder = null;
                 if ("jar".equals(libEntry.getProtocol())) { // NOI18N
-                    jarFolder = getJarFolder(libEntry);
                     libEntry = FileUtil.getArchiveFile(libEntry);
                 }
                 FileObject libEntryFO = URLMapper.findFileObject(libEntry);
@@ -939,14 +923,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
                     name = sharedLibFolder.getName()+File.separatorChar+newFO.getNameExt();
                 }
-                URL u = LibrariesSupport.convertFileToURL(new File(name));
-                if (FileUtil.isArchiveFile(newFO)) {
-                    u = FileUtil.getArchiveRoot(u);
-                }
-                if (jarFolder != null) {
-                    u = appendJarFolder(u, jarFolder);
-                }
-                volumeContent.add(u);
+                volumeContent.add(LibrariesSupport.convertFileToURL(new File(name)));
             }
             content.put(volume, volumeContent);
         }

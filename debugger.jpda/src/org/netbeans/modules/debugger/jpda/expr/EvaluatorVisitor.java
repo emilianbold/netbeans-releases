@@ -1190,8 +1190,6 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     }
                     return (Value) Assert2.error(arg0, "unknownVariable", paramName);
                 }
-            case PACKAGE:
-                return (Value) Assert2.error(arg0, "notExpression");
             default:
                 throw new UnsupportedOperationException("Not supported element kind:"+elm.getKind()+" Tree = '"+arg0+"'");
         }
@@ -1586,16 +1584,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         return thisObject;
                     }
                 }
-                if (name.equals("class")) {
-                    return clazz.classObject();
-                }
                 Field f = clazz.fieldByName(name);
                 if (f != null) {
                     return clazz.getValue(f);
-                }
-            } else if (expression instanceof InterfaceType) {
-                if (name.equals("class")) {
-                    return ((InterfaceType) expression).classObject();
                 }
             } else if (expression instanceof ObjectReference) {
                 if (expression instanceof ArrayReference && "length".equals(name)) {
@@ -1653,20 +1644,12 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                             return thisObject;
                         }
                     }
-                    if (fieldName.equals("class")) {
-                        return clazz.classObject();
-                    }
                     Field f = clazz.fieldByName(fieldName);
                     if (f != null) {
                         return clazz.getValue(f);
                     } else {
                         Assert2.error(arg0, "unknownField", fieldName);
                         return null;
-                    }
-                }
-                if (expression instanceof InterfaceType) {
-                    if (fieldName.equals("class")) {
-                        return ((InterfaceType) expression).classObject();
                     }
                 }
                 if (expression instanceof ObjectReference) {

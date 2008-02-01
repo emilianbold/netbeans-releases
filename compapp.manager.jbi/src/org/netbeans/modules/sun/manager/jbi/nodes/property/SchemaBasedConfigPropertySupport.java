@@ -74,7 +74,7 @@ class SchemaBasedConfigPropertySupport<T>
     protected Attribute attr;
     protected MBeanAttributeInfo info;
     protected AppserverJBIMgmtNode componentNode;
-    protected PropertySheetOwner propertySheetOwner;
+    private PropertySheetOwner propertySheetOwner;
 
     SchemaBasedConfigPropertySupport(
             PropertySheetOwner propertySheetOwner, 

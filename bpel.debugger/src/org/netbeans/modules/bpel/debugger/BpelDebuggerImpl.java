@@ -405,8 +405,6 @@ public class BpelDebuggerImpl extends BpelDebugger {
         if (processInstance != null) {
             processInstance.resume();
         }
-        
-        setCurrentPosition(null);
     }
     
     public BreakPosition getCurrentPosition() {

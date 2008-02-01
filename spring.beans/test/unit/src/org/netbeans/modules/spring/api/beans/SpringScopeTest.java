@@ -45,9 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -112,7 +110,7 @@ public class SpringScopeTest extends ConfigFileTestCase {
 
         FileObject configFO = FileUtil.toFileObject(configFile);
         SpringConfigModel model = SpringScopeAccessor.DEFAULT.getConfigModel(scope, configFO);
-        final Set<String> beanNames = new HashSet<String>();
+        final List<String> beanNames = new ArrayList<String>();
         model.runReadAction(new Action<SpringBeans>() {
             public void run(SpringBeans beans) {
                 for (SpringBean bean : beans.getBeans(configFile)) {
@@ -121,8 +119,7 @@ public class SpringScopeTest extends ConfigFileTestCase {
             }
         });
         assertEquals(1, beanNames.size());
-        assertTrue(beanNames.contains("foo"));
-
+        assertEquals("foo", beanNames.get(0));
         beanNames.clear();
         model.runReadAction(new Action<SpringBeans>() {
             public void run(SpringBeans beans) {
@@ -132,19 +129,7 @@ public class SpringScopeTest extends ConfigFileTestCase {
             }
         });
         assertEquals(1, beanNames.size());
-        assertTrue(beanNames.contains("bar"));
-
-        beanNames.clear();
-        model.runReadAction(new Action<SpringBeans>() {
-            public void run(SpringBeans beans) {
-                for (SpringBean bean : beans.getBeans()) {
-                    beanNames.add(bean.getId());
-                }
-            }
-        });
-        assertEquals(2, beanNames.size());
-        assertTrue(beanNames.contains("foo"));
-        assertTrue(beanNames.contains("bar"));
+        assertEquals("bar", beanNames.get(0));
 
         assertEquals(1, scope.group2Model.size());
 

@@ -142,9 +142,6 @@ public class HgLogMessage {
     public String getAuthor() {
         return author;
     }
-    public String getCSetShortID() {
-        return id;
-    }
     public String getMessage() {
         return desc;
     }

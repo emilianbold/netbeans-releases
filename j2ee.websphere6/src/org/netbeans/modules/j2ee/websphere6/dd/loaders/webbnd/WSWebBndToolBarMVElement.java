@@ -41,25 +41,28 @@
 package org.netbeans.modules.j2ee.websphere6.dd.loaders.webbnd;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.DDXmiConstants;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.EjbRefBindingsType;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.ResEnvRefBindingsType;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.ResRefBindingsType;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.WSWebBnd;
 import org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject;
-import org.netbeans.modules.j2ee.websphere6.dd.loaders.ui.WSReferenceBindingsPanel;
 import org.netbeans.modules.j2ee.websphere6.dd.loaders.SectionNodes.*;
 import org.netbeans.modules.xml.multiview.*;
 import org.netbeans.modules.xml.multiview.ui.*;
 import org.openide.nodes.*;
 import org.openide.util.RequestProcessor;
-import org.openide.util.NbBundle;
 import org.netbeans.modules.xml.multiview.Error;
 /**
  *
  * @author dlipin
  */
 public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener, DDXmiConstants{
+    
+    private static final Logger LOGGER = Logger.getLogger(WSWebBndToolBarMVElement.class.getName());
+    
     private ToolBarDesignEditor comp;
     private SectionView view;
     private WSWebBndDataObject dObj;
@@ -133,7 +136,7 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
         try {
             ((SectionView)view).openPanel(dObj.getWebBnd());
         } catch(java.io.IOException e) {
-            
+            LOGGER.log(Level.INFO, null, e);
         }
         
         view.checkValidity();
@@ -192,7 +195,6 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
                 resrefNode.setDisplayName(resrefNode.getDisplayName()+number);
                 dObj.setChangedFromUI(true);
                 dObj.modelUpdatedFromUI();
-                ResRefBindingsType[] resrefs = webbnd.getResRefBindings();
                 SectionPanel sectionPanel=new SectionPanel(view,resrefNode,rr);
                 sectionPanel.setHeaderActions(new javax.swing.Action[]{removeResRefAction});
                 ((WSWebBndView)view).getResRefsContainer().addSection(sectionPanel,true);
@@ -256,14 +258,16 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
                 ejbrefNode.setDisplayName(ejbrefNode.getDisplayName()+number);
                 dObj.setChangedFromUI(true);
                 dObj.modelUpdatedFromUI();
-                EjbRefBindingsType[] ejbrefs = webbnd.getEjbRefBindings();
                 SectionPanel sectionPanel=new SectionPanel(view,ejbrefNode,er);
                 sectionPanel.setHeaderActions(new javax.swing.Action[]{removeEjbRefAction});
                 ((WSWebBndView)view).getEjbRefsContainer().addSection(sectionPanel,true);
                 dObj.setChangedFromUI(false);
                 
             } catch (java.io.IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
             } catch (java.lang.IllegalArgumentException ex) {
+                // FIXME what is that? really suspicious
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
     }
@@ -319,7 +323,6 @@ public class WSWebBndToolBarMVElement extends ToolBarMultiViewElement implements
                 resenvrefNode.setDisplayName(resenvrefNode.getDisplayName()+number);
                 dObj.setChangedFromUI(true);
                 dObj.modelUpdatedFromUI();
-                ResEnvRefBindingsType[] resenvrefs = webbnd.getResEnvRefBindings();
                 SectionPanel sectionPanel=new SectionPanel(view,resenvrefNode,rer);
                 sectionPanel.setHeaderActions(new javax.swing.Action[]{removeResEnvRefAction});
                 ((WSWebBndView)view).getResEnvRefsContainer().addSection(sectionPanel,true);

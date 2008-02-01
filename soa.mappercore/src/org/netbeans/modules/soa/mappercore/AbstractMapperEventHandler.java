@@ -116,7 +116,7 @@ public abstract class AbstractMapperEventHandler extends MapperPropertyAccess
     }
 
     public void dragDone(JComponent component, DragSourceDropEvent dsde) {
-        getLinkTool().done();
+        getLinkTool().dragDone();
         getMoveTool().dragDone();
         removeTimer();
         

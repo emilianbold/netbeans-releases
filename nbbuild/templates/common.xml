@@ -56,7 +56,13 @@ made subject to such option by the copyright holder.
         <property name="module.jar.dir" value="modules"/>
         <property name="module.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="module.jar" value="${module.jar.dir}/${module.jar.basename}"/>
-        <available property="has.javahelp" file="javahelp" type="dir"/>
+        <condition property="has.javahelp">
+            <and>
+                <available file="javahelp"/>
+                <!-- Special hack for core: -->
+                <not><available file="javahelp/manifest.mf"/></not>
+            </and>
+        </condition>
         <property name="javahelp.jar.dir" value="modules/docs"/>
         <property name="javahelp.jar.basename" value="${code.name.base.dashes}.jar"/>
         <property name="javahelp.jar" value="${javahelp.jar.dir}/${javahelp.jar.basename}"/>
@@ -126,7 +132,7 @@ made subject to such option by the copyright holder.
                 </not>
             </condition>
             You have stray *.class files in ${src.dir} which you must remove.
-            Probably you failed to clean your sources before updating them.
+            Probably you failed to clean your sources before updating them from CVS.
         </fail>
         <!-- OK, continue: -->
         <copy todir="${build.classes.dir}">

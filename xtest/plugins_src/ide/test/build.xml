@@ -87,7 +87,7 @@ made subject to such option by the copyright holder.
         <xtest executeAction="cleanResults"/>
     </target>
     <!-- This target cleans both tests and results -->
-    <target name="clean">
+    <target name="realclean">
         <xtest executeAction="cleanAll"/>
     </target>
     <!-- This target prints out default xtest configuration which will be used to run the tests -->
