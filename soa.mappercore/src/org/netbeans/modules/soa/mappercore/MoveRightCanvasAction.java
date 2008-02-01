@@ -114,6 +114,9 @@ public class MoveRightCanvasAction extends MapperKeyboardAction {
                 Vertex vertex = sVertexeces.get(0);
                 Link link = vertex.getOutgoingLink();
                 if (link == null) {
+                    if (vertex.getGraph().getNextVertex(vertex) == vertex) {
+                        canvas.getRightTree().requestFocus();
+                    }
                     return;
                 }
 
