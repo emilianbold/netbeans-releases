@@ -42,8 +42,53 @@
 -->
 
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://xml.netbeans.org/schema/YouTubeVideosContent"
-            xmlns:tns="http://xml.netbeans.org/schema/YouTubeVideosContent"
+            targetNamespace="http://xml.netbeans.org/schema/youtube"
+            xmlns:tns="http://xml.netbeans.org/schema/youtube"
             elementFormDefault="qualified">
-
+    <xsd:element name="video_details">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="author"/>
+                <xsd:element name="title"/>
+                <xsd:element name="rating_avg"/>
+                <xsd:element name="rating_count"/>
+                <xsd:element name="tags"/>
+                <xsd:element name="description"/>
+                <xsd:element name="update_time"/>
+                <xsd:element name="view_count"/>
+                <xsd:element name="comment_count"/>
+                <xsd:element name="upload_time"/>
+                <xsd:element name="length_seconds"/>
+                <xsd:element name="recording_date"/>
+                <xsd:element name="recording_location"/>
+                <xsd:element name="recording_country"/>
+                <xsd:element name="comment_list">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="comment">
+                                <xsd:complexType>
+                                    <xsd:sequence>
+                                        <xsd:element name="author"/>
+                                        <xsd:element name="text"/>
+                                        <xsd:element name="time"/>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="channel_list">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="channel"/>
+                            <xsd:element name="channel"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="thumbnail_url"/>
+                <xsd:element name="embed_status"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
 </xsd:schema>
+

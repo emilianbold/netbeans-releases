@@ -122,9 +122,12 @@ public class MoveLeftCanvasAction extends MapperKeyboardAction {
                     Link link = vertex.getItem(i).getIngoingLink();
                     if (link != null) {
                         selectionModel.setSelected(treePath, link);
-                        break;
+                        return;
                     }
                 }
+                if (vertex.getGraph().getPrevVertex(vertex) == vertex) {
+                    canvas.getLeftTree().requestFocus();
+                } 
                 return;
             }
             // Link is select

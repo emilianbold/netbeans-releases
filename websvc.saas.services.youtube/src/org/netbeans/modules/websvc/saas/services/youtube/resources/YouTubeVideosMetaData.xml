@@ -41,6 +41,22 @@
  made subject to such option by the copyright holder.
 -->
 
-<saas-services>
-
-</saas-services>
+<saas-metadata xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
+               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/youtube"
+               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
+               xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'>
+    
+    <localizing-bundle>org.netbeans.modules.websvc.saas.services.youtube.Bundle</localizing-bundle>
+    
+    <icon16>org/netbeans/modules/websvc/saas/services/youtube/resources/youtube16.png</icon16>
+    
+    <group name="YouTube">
+        <group name="Videos"/>
+    </group>
+    
+    <authentication profile="Templates/WebServices/profile.properties">
+        <api-key id="dev_id"/>
+    </authentication>
+    
+</saas-metadata>

@@ -64,24 +64,22 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     private final List<RailsApplication> applications;
     private final RubyPlatform platform;
     private Node node;
+    private final String version;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    Mongrel(RubyPlatform platform) {
+    Mongrel(RubyPlatform platform, String version) {
         this.platform = platform;
+        this.version = version;
         this.applications = new ArrayList<RailsApplication>();
     }
 
-    public String getName() {
-        return NbBundle.getMessage(Mongrel.class, "LBL_Mongrel");
+    // RubyServer  methods
+    public String getNodeName() {
+        return NbBundle.getMessage(Mongrel.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
 
-    // RubyServer  methods
     public String getStartupParam() {
         return null;
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(Mongrel.class, "LBL_ServerDisplayName", getName(), platform.getLabel());
     }
 
     public String getServerPath() {
@@ -157,6 +155,10 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     // RubyInstance methods 
     public String getServerUri() {
         return "MONGREL";
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(Mongrel.class, "LBL_Mongrel", version);
     }
 
     public String getServerState() {
