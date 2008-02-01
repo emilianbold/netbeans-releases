@@ -27,7 +27,6 @@ import java.awt.RenderingHints;
 import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.Icon;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
 import org.netbeans.modules.soa.mappercore.MapperStyle;
@@ -51,7 +50,7 @@ public abstract class Vertex implements SourcePin, GraphItem {
     private int width;
     private int height = 2;
     
-    private Icon icon;
+    private Icon2D icon;
     private String name;
     private String resultText;
     
@@ -60,12 +59,12 @@ public abstract class Vertex implements SourcePin, GraphItem {
     final long uid;
     
     
-    Vertex(Object dataObject, Icon icon) {
+    Vertex(Object dataObject, Icon2D icon) {
         this(dataObject, icon, null, null);
     }
     
     
-    Vertex(Object dataObject, Icon icon, String name, String resultText) {
+    Vertex(Object dataObject, Icon2D icon, String name, String resultText) {
         this.icon = icon;
         this.name = name;
         this.resultText = resultText;
@@ -220,7 +219,7 @@ public abstract class Vertex implements SourcePin, GraphItem {
     }    
     
     
-    public Icon getIcon() {
+    public Icon2D getIcon() {
         return icon;
     }
     

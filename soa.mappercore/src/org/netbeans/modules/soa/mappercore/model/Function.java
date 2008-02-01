@@ -26,7 +26,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
-import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
@@ -41,12 +40,12 @@ import org.netbeans.modules.soa.mappercore.icons.Icon2D;
 public class Function extends Vertex {
 
     
-    public Function(Icon icon, String name, String resultText) {
+    public Function(Icon2D icon, String name, String resultText) {
         this(null, icon, name, resultText);
     }
     
     
-    public Function(Object dataObject, Icon icon, String name, 
+    public Function(Object dataObject, Icon2D icon, String name, 
             String resultText) 
     {
         super(dataObject, icon, name, resultText);
@@ -94,22 +93,13 @@ public class Function extends Vertex {
                 new Rectangle(0, 0, width, step * 2)));
         g2.fill(rrect);
 
-        Icon icon = getIcon();
-        
-        int textX = step;
-        
+        Icon2D icon = getIcon();
         if (icon != null) {
-            double tx2 = step - 0.5;
-            double ty2 = step - 0.5 - icon.getIconHeight() / 2 + 1;
+            double tx2 = step * 1.5;
+            double ty2 = step;
             g2.translate(tx2, ty2);
-            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-                    RenderingHints.VALUE_STROKE_NORMALIZE);
-            icon.paintIcon(rendererContext.getCanvas(), g2, 0, 0);
-            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-                    RenderingHints.VALUE_STROKE_PURE);
+            icon.paintIcon(this, g2, step);
             g2.translate(-tx2, -ty2);
-            
-            textX += icon.getIconWidth() + 4;
         }
         g2.translate(-tx, -ty);
         g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
@@ -117,9 +107,9 @@ public class Function extends Vertex {
         
         String name = getName();
         if (name != null) {
-            int labelWidth = width - textX - step - 1;
+            int labelWidth = width - 3 * step - 3;
             if (labelWidth > 0) {
-                int labelX = x0 + textX;
+                int labelX = x0 + step * 5 / 2 + 2;
                 int labelY = y0 + 1;
                 int labelHeight = step * 2 - 1;
                 

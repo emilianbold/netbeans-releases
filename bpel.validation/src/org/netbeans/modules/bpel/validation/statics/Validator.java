@@ -92,7 +92,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.CorrelationProperty;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
-import org.netbeans.modules.bpel.validation.util.ValidationItem;
+import org.netbeans.modules.bpel.validation.util.ResultItem;
 
 public final class Validator extends org.netbeans.modules.bpel.validation.util.Validator {
     
@@ -600,12 +600,11 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
         String faultVariable = catc.getFaultVariable();
         SchemaReference<GlobalElement> element = catc.getFaultElement();
         WSDLReference<Message> message = catc.getFaultMessageType();
-        ValidationItem item = null;
-
+        ResultItem resultItem = null;
         if ( faultVariable!= null && element == null && message== null ) {
             getHelper().addError( FIX_FAULT_VARIABLE_TYPE , catc );
         }
-        if ( element != null && message != null && item == null ) {
+        if ( element != null && message != null && resultItem == null ) {
             getHelper().addError( FIX_FAULT_VARIABLE_TYPE , catc );
         }
         if ( faultVariable == null && ( element != null || message != null) ) {
@@ -616,6 +615,7 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
          * Check fault variable name
          */
         checkVariableName( catc);
+        
     }
     
     @Override
@@ -645,6 +645,8 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
         if (model == null) {
             return;
         }
+        
+        
         final String namespace = imp.getNamespace();
         final String ns = getHelper().getTargetNamespace( imp );
         

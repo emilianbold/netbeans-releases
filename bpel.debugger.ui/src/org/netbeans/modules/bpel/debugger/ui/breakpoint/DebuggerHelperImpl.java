@@ -5,10 +5,8 @@
 
 package org.netbeans.modules.bpel.debugger.ui.breakpoint;
 
-import java.util.List;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.bpel.core.debugger.DebuggerHelper;
-import org.netbeans.modules.bpel.debugger.api.EditorContextBridge;
 import org.netbeans.modules.bpel.debugger.api.breakpoints.LineBreakpoint;
 import org.netbeans.modules.bpel.debugger.ui.util.EditorUtil;
 import org.netbeans.modules.bpel.debugger.ui.util.ModelUtil;
@@ -55,82 +53,12 @@ public class DebuggerHelperImpl implements DebuggerHelper {
         }
     }
     
-    public void enableBreakpoints(
-            final BpelEntity entity) {
-        final List<LineBreakpoint> breakpoints = 
-                getBreakpointAnnotationListener().getBreakpoints();
-        
-        final String entityXPath = ModelUtil.getXpath(entity.getUID());
-        
-        for (LineBreakpoint breakpoint: breakpoints) {
-            if (breakpoint.isEnabled()) {
-                continue;
-            }
-            
-            final Object annotation = getBreakpointAnnotationListener().
-                    findAnnotation(breakpoint);
-            
-            final String breakpointXPath = 
-                    EditorContextBridge.getXpath(annotation);
-            
-            if (breakpointXPath.startsWith(entityXPath) ) {
-                breakpoint.enable();
-            }
-        }
-    }
-    
-    public void disableBreakpoints(
-            final BpelEntity entity) {
-        final List<LineBreakpoint> breakpoints = 
-                getBreakpointAnnotationListener().getBreakpoints();
-        
-        final String entityXPath = ModelUtil.getXpath(entity.getUID());
-        
-        for (LineBreakpoint breakpoint: breakpoints) {
-            if (!breakpoint.isEnabled()) {
-                continue;
-            }
-            
-            final Object annotation = getBreakpointAnnotationListener().
-                    findAnnotation(breakpoint);
-            
-            final String breakpointXPath = 
-                    EditorContextBridge.getXpath(annotation);
-            
-            if (breakpointXPath.startsWith(entityXPath) ) {
-                breakpoint.disable();
-            }
-        }
-    }
-    
-    public void deleteBreakpoints(
-            final BpelEntity entity) {
-        final List<LineBreakpoint> breakpoints = 
-                getBreakpointAnnotationListener().getBreakpoints();
-        
-        final String entityXPath = ModelUtil.getXpath(entity.getUID());
-        
-        for (LineBreakpoint breakpoint: breakpoints) {
-            final Object annotation = getBreakpointAnnotationListener().
-                    findAnnotation(breakpoint);
-            
-            final String breakpointXPath = 
-                    EditorContextBridge.getXpath(annotation);
-            
-            if (breakpointXPath.startsWith(entityXPath) ) {
-                DebuggerManager.
-                        getDebuggerManager().removeBreakpoint(breakpoint);
-            }
-        }
-    }
-    
     private BpelBreakpointListener getBreakpointAnnotationListener () {
         if (myBreakpointAnnotationListener == null) {
             myBreakpointAnnotationListener = (BpelBreakpointListener) 
                     DebuggerManager.getDebuggerManager ().lookupFirst 
                     (null, BpelBreakpointListener.class);
         }
-        
         return myBreakpointAnnotationListener;
     }
 }

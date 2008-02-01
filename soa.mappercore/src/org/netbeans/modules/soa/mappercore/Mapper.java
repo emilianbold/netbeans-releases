@@ -693,7 +693,7 @@ public class Mapper extends JPanel {
     }
 
     int getStepSize() {
-        return Math.max((getTextHeight() + 2) / 2 + 1, 9);
+        return (getTextHeight() + 4) / 2;
     }
 
     MapperNode getNode(TreePath treePath, boolean load) {

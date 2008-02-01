@@ -27,10 +27,4 @@ import org.openide.nodes.Node;
  */
 public interface DebuggerHelper {
     void toggleBreakpointEnabledState(Node node, BpelEntity entity);
-    
-    void enableBreakpoints(BpelEntity entity);
-    
-    void disableBreakpoints(BpelEntity entity);
-    
-    void deleteBreakpoints(BpelEntity entity);
 }
