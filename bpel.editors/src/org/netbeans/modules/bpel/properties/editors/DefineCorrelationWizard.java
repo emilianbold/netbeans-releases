@@ -437,10 +437,10 @@ public class DefineCorrelationWizard implements WizardProperties {
     
     private class RequesterActivityChooser extends AbstractActivityChooser {
         public RequesterActivityChooser() {
-            permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-                Responder.class}));
-            forbiddenActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-                Requester.class}));
+            //permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
+            //    Responder.class}));
+            //forbiddenActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
+            //    Requester.class}));
         }
         @Override
         public List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity) {
@@ -448,7 +448,7 @@ public class DefineCorrelationWizard implements WizardProperties {
             if (activityList.isEmpty()) return activityList;
             
             // remove all Responder-activities above mainBpelEntity and mainBpelEntity itself
-            //activityList = removeResponderActivityAbove(activityList, mainBpelEntity);
+            // activityList = removeResponderActivityAbove(activityList, mainBpelEntity);
             activityList.remove(mainBpelEntity);
             return activityList;
         }
@@ -456,8 +456,8 @@ public class DefineCorrelationWizard implements WizardProperties {
     
     private class ResponderActivityChooser extends AbstractActivityChooser  {
         public ResponderActivityChooser() {
-            permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-                Requester.class}));
+            //permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
+            //    Requester.class}));
         }
         @Override
         public List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity) {
@@ -465,19 +465,19 @@ public class DefineCorrelationWizard implements WizardProperties {
             if (activityList.isEmpty()) return activityList;
 
             // remove all Requester-activities below mainBpelEntity and mainBpelEntity itself
-            //activityList = removeRequesterActivityBelow(activityList, mainBpelEntity);
+            // activityList = removeRequesterActivityBelow(activityList, mainBpelEntity);
             activityList.remove(mainBpelEntity);
             return activityList;
         }
     }
     
     private class RequesterResponderActivityChooser extends AbstractActivityChooser  {
-        // it's assumed that Invoke (Requester-Responder) is used as Requester only
         public RequesterResponderActivityChooser() {
-            permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-                Responder.class}));
-            forbiddenActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
-                Requester.class}));
+            // it's assumed that Invoke (Requester-Responder) is used as Requester only
+            //permittedActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
+            //    Responder.class}));
+            //forbiddenActivityTypeSet = new HashSet<Class>(Arrays.asList(new Class[] {
+            //    Requester.class}));
         }
         @Override
         public List<BpelEntity> getPermittedActivityList(BpelEntity mainBpelEntity) {
@@ -485,10 +485,10 @@ public class DefineCorrelationWizard implements WizardProperties {
             if (activityList.isEmpty()) return activityList;
             
             // remove all Responder-activities above mainBpelEntity
-            //activityList = removeResponderActivityAbove(activityList, mainBpelEntity);
+            // activityList = removeResponderActivityAbove(activityList, mainBpelEntity);
             
             // remove all Requester-activities below mainBpelEntity
-            //activityList = removeRequesterActivityBelow(activityList, mainBpelEntity);
+            // activityList = removeRequesterActivityBelow(activityList, mainBpelEntity);
             
             // remove mainBpelEntity from the list
             activityList.remove(mainBpelEntity);
@@ -895,7 +895,11 @@ public class DefineCorrelationWizard implements WizardProperties {
 
         @Override
         public void validate() throws WizardValidationException {
-            makeCorrelations();
+            try {
+                makeCorrelations();
+            } finally {
+                CorrelationWizardWSDLWrapper.closeInstance();
+            }
         }
         
         private void makeCorrelations() throws WizardValidationException {
@@ -1802,18 +1806,17 @@ class CorrelationWizardWSDLWrapper {
         WSDL_FILE_EXTENSION = "wsdl", // NOI18N
         HOST = "http://enterprise.netbeans.org/bpel/"; // NOI18N
     
-    private static final CorrelationWizardWSDLWrapper wizardWSDLWrapperInstance = 
-        new CorrelationWizardWSDLWrapper();
+    private static CorrelationWizardWSDLWrapper wizardWSDLWrapperInstance = null;
     
     private BpelModel bpelModel;
     private WSDLModel wsdlModel;
     
     private CorrelationWizardWSDLWrapper() {}
 
-    public static final CorrelationWizardWSDLWrapper getInstance() {
-        return getInstance(null);
-    }
     public static final CorrelationWizardWSDLWrapper getInstance(BpelModel bpelModel) {
+        if (wizardWSDLWrapperInstance == null) {
+            wizardWSDLWrapperInstance = new CorrelationWizardWSDLWrapper();
+        }
         if (bpelModel != null) {
             wizardWSDLWrapperInstance.bpelModel = bpelModel;
         }
@@ -1821,12 +1824,20 @@ class CorrelationWizardWSDLWrapper {
         return wizardWSDLWrapperInstance;
     }
     
+    public static void closeInstance() {
+        if (wizardWSDLWrapperInstance != null) {
+            wizardWSDLWrapperInstance.wsdlModel = null;
+            wizardWSDLWrapperInstance.bpelModel = null;
+        }
+        wizardWSDLWrapperInstance = null;
+    }
+    
     public WSDLModel getWsdlModel() {
         if (wsdlModel == null) createWSDLPropertiesFile();
         return wsdlModel;
     }
     
-    public FileObject createWSDLPropertiesFile() {
+    private FileObject createWSDLPropertiesFile() {
         try {
             FileObject folderBpelProcess = ResolverUtility.getBpelProcessFolder(bpelModel);
             WsdlWrapper wsdlWrapper = new WsdlWrapper(folderBpelProcess, 
