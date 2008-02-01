@@ -71,6 +71,11 @@ public class SpringMVCFrameworkPatternTest extends NbTestCase {
         assertMapping(extender.getDispatcherMapping(), false);
     }
     
+    public void testDispatcherMappingEntry_ExtensionNonWordPattern() throws Exception {
+        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "*.h&tm");
+        assertMapping(extender.getDispatcherMapping(), false);
+    }
+    
     public void testDispatcherMappingEntry_ServletSpacePattern() throws Exception {
         extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "/a /*");
         assertMapping(extender.getDispatcherMapping(), false);
