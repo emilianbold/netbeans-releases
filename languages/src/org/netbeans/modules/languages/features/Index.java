@@ -229,7 +229,7 @@ public class Index {
             this.cache = cache;
         }
 
-        private void add (
+        private synchronized void add (
             Map<FileObject,List<DatabaseDefinition>>    result,
             String                                      name
         ) {
@@ -244,7 +244,7 @@ public class Index {
             }
         }
 
-        private void init (FileObject root) {
+        private synchronized void init (FileObject root) {
             FileObject[] ch = root.getChildren ();
             int i, k = ch.length;
             for (i = 0; i < k; i++) {
@@ -280,7 +280,7 @@ public class Index {
             }
         }
         
-        private void save (File f) throws IOException {
+        private synchronized void save (File f) throws IOException {
             DataOutputStream os = new DataOutputStream (new FileOutputStream (f));
             try {
                 os.writeInt (cache.size ());
@@ -319,7 +319,7 @@ public class Index {
             return DatabaseManager.parse (root, null, null);
         }
 
-        private void add (
+        private synchronized void add (
             Map<FileObject,List<DatabaseDefinition>>    result,
             String                                      name
         ) {
@@ -371,7 +371,7 @@ public class Index {
             return new FileCache (fo, definitions);
         }
         
-        private void save (DataOutputStream os) throws IOException {
+        private synchronized void save (DataOutputStream os) throws IOException {
             os.writeInt (definitions.size ());
             Iterator<DatabaseDefinition> it = definitions.iterator ();
             while (it.hasNext ())

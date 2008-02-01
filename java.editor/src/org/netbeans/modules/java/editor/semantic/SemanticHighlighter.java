@@ -74,6 +74,7 @@ import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
@@ -1302,6 +1303,14 @@ public class SemanticHighlighter extends ScanningCancellableTask<CompilationInfo
             }
             
             return super.visitForLoop(node, p);
+        }
+
+        @Override
+        public Void visitWildcard(WildcardTree node, EnumSet<UseTypes> p) {
+            if (node.getBound() != null && node.getBound().getKind() == Kind.IDENTIFIER) {
+                handlePossibleIdentifier(new TreePath(getCurrentPath(), node.getBound()), EnumSet.of(UseTypes.CLASS_USE));
+            }
+            return super.visitWildcard(node, p);
         }
         
         private void typeUsed(Element decl, TreePath expr) {

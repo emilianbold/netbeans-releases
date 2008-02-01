@@ -9,6 +9,15 @@ source init.sh
 cd $NB_ALL/installer/infra/build
 
 if [ ! -z $NATIVE_MAC_MACHINE ]; then
+   ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
+   ERROR_CODE=$?
+   if [ $ERROR_CODE != 0 ]; then
+       echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't remove old scripts"
+       exit $ERROR_CODE;
+   fi
+   ssh $NATIVE_MAC_MACHINE mkdir $MAC_PATH/installer
+   cd $NB_ALL
+   gtar c installer/mac | ssh $NATIVE_MAC_MACHINE "( cd $MAC_PATH; tar x )"
    ssh $NATIVE_MAC_MACHINE rm -f $MAC_PATH/zip/*
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then
@@ -64,14 +73,14 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
         #copy the bits back
         mkdir -p $DIST/bundles
         scp $NATIVE_MAC_MACHINE:$MAC_PATH/installer/mac/dist/* $DIST/bundles
-        EXIT_CODE=$?
+        ERROR_CODE=$?
         if [ $ERROR_CODE != 0 ]; then
             echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
             exit $ERROR_CODE;
         fi    
 	if [ 1 -eq $ML_BUILD ] ; then
 		scp $NATIVE_MAC_MACHINE:$MAC_PATH/dist/* $DIST/ml/bundles
-                EXIT_CODE=$?
+                ERROR_CODE=$?
                 if [ $ERROR_CODE != 0 ]; then
                     echo "ERROR: $ERROR_CODE - Connection to MAC machine $NATIVE_MAC_MACHINE failed, can't get installers"
                     exit $ERROR_CODE;

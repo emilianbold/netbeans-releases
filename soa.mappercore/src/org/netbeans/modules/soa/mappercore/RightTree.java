@@ -96,6 +96,8 @@ public class RightTree extends MapperPanel implements
         addFocusListener(this);
 
         eventHandler = new RightTreeEventHandler(this);
+        
+        ToolTipManager.sharedInstance().registerComponent(this);
 
         InputMap iMap = getInputMap();
         ActionMap aMap = getActionMap();
@@ -108,11 +110,11 @@ public class RightTree extends MapperPanel implements
                 "press-moveSelectionUp");
         aMap.put("press-moveSelectionUp", new MoveSelectionUp());
         
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 2), 
-                "press-moveSelectionDown+Control");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 
+                KeyEvent.CTRL_DOWN_MASK), "press-moveSelectionDown+Control");
         aMap.put("press-moveSelectionDown+Control", new MoveSelectionDown());
         
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 2),
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.CTRL_DOWN_MASK),
                 "press-moveSelectionUp+Control");
         aMap.put("press-moveSelectionUp+Control", new MoveSelectionUp());
         
@@ -124,29 +126,46 @@ public class RightTree extends MapperPanel implements
                 "press-right-collapse");
         aMap.put("press-right-collapse", new PressRightCollapse());
 
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 2),
-                "press-left-expandGraph");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 
+                KeyEvent.CTRL_DOWN_MASK), "press-left-expandGraph");
         aMap.put("press-left-expandGraph", new PressLeftExpandGraph());
         
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 2),
-                "press-right-collapseGraph");
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 
+                KeyEvent.CTRL_DOWN_MASK), "press-right-collapseGraph");
         aMap.put("press-right-collapseGraph", new PressRightCollapseGraph());
         
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 1), "auto-scroll-down"); 
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 
+                KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-down"); 
         aMap.put("auto-scroll-down", new AutoScrollDown());
         
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 1), "auto-scroll-up"); 
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 
+                KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-up"); 
         aMap.put("auto-scroll-up", new AutoScrollUp());
         
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 1), "auto-scroll-left"); 
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 
+                KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-left"); 
         aMap.put("auto-scroll-left", new AutoScrollLeft());
         
-        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 1), "auto-scroll-right"); 
+        iMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, 
+                KeyEvent.SHIFT_DOWN_MASK), "auto-scroll-right"); 
         aMap.put("auto-scroll-right", new AutoScrollRight());
         
-        ToolTipManager.sharedInstance().registerComponent(this);
     }
     
+    public void registrAction(MapperKeyboardAction action) {
+        InputMap iMap = getInputMap();
+        ActionMap aMap = getActionMap();
+
+        String actionKey = action.getActionKey();
+        aMap.put(actionKey, action);
+
+        KeyStroke[] shortcuts = action.getShortcuts();
+        if (shortcuts != null) {
+            for (KeyStroke s : shortcuts) {
+                iMap.put(s, actionKey);
+            }
+        }
+    }
     
     @Override
     public String getToolTipText(MouseEvent event) {
@@ -479,7 +498,7 @@ public class RightTree extends MapperPanel implements
     public void focusLost(FocusEvent e) {
         repaint();
     }
-
+    
     private class RowHeader extends JPanel implements MouseListener {
 
         public RowHeader() {
@@ -607,7 +626,7 @@ public class RightTree extends MapperPanel implements
                     if (graph != null) {
                         getMapper().setExpandedGraphState(node.getTreePath(), 
                                 !node.isGraphExpanded());
-                        getLinkTool().dragDone();
+                        getLinkTool().done();
                         select = false;
                     }
                 }
@@ -714,8 +733,7 @@ public class RightTree extends MapperPanel implements
         }
         scrollRectToVisible(r);
     }
-    
-    
+
     private class MoveSelectionUp extends AbstractAction {
         public void actionPerformed(ActionEvent event) {
             Mapper mapper = RightTree.this.getMapper();
@@ -815,7 +833,7 @@ public class RightTree extends MapperPanel implements
                 if (graph.hasOutgoingLinks()) {
                     List<Link> links = graph.getLinks();
                     for (Link l : links) {
-                        if (l.getTarget().getClass() == Graph.class) {
+                        if (l.getTarget() instanceof Graph) {
                             mapper.getSelectionModel().setSelected(treePath, l);
                             break;
                         }
@@ -837,7 +855,8 @@ public class RightTree extends MapperPanel implements
             TreePath treePath = getSelectionModel().getSelectedPath();
             MapperNode node = mapper.getNode(treePath, true);
             if (treePath != null && node.isGraphExpanded()) {
-                mapper.setExpandedGraphState(treePath, false); 
+                mapper.setExpandedGraphState(treePath, false);
+                getLinkTool().done();
             }
         }
     }
