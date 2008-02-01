@@ -54,6 +54,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -370,7 +371,17 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         }
         
         private boolean containsPath(List<URL> roots, String relativePath) {
-            ClassPath cp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+             // workaround for #126307
+            List<URL> validRoots = new ArrayList<URL>();            
+            URL url = null;
+            Iterator it = roots.iterator();
+            while (it.hasNext()) {
+                url = (URL)it.next();
+                if ((url.getPath().startsWith("nbinst://"))) { // NOI18N
+                    validRoots.add(url);
+                }
+            }                        
+            ClassPath cp = ClassPathSupport.createClassPath((validRoots.toArray(new URL[validRoots.size()])));
             return cp.findResource(relativePath) != null;
         }
                         
