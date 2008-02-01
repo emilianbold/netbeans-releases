@@ -360,7 +360,6 @@ public abstract class BaseFileObj extends FileObject {
 
     public boolean isReadOnly() {
         final File f = getFileName().getFile();
-
         return !f.canWrite() && FileChangedManager.getInstance().exists(f);
     }
 

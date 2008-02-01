@@ -39,8 +39,6 @@
 package org.netbeans.modules.masterfs.filebasedfs.utils;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
 import org.openide.util.Lookup;
@@ -51,7 +49,10 @@ import org.openide.util.Lookup;
  */
 public class FileChangedManager extends SecurityManager {
     private static  FileChangedManager INSTANCE;
-    private Map<Integer,Boolean> hints = new ConcurrentHashMap<Integer,Boolean>();
+    private final ConcurrentHashMap<Integer,Boolean> hints = new ConcurrentHashMap<Integer,Boolean>();
+    private final ConcurrentHashMap<Integer, Boolean> usedHints = new ConcurrentHashMap<Integer, Boolean>();
+    private long shrinkTime = System.currentTimeMillis();
+    
     public FileChangedManager() {
         INSTANCE = this;
     }
@@ -65,74 +66,47 @@ public class FileChangedManager extends SecurityManager {
     }
     
     @Override
-    public void checkDelete(String file) {
+    public void checkDelete(String file) {        
         put(file, false);
     }
 
     @Override
     public void checkWrite(String file) {
         put(file, true);
-    }    
-    
+    }
+        
     public boolean impeachExistence(File f, boolean expectedExixts) {
-        Boolean hint = get(getKey(f));
+        Boolean hint = get(f);
         boolean retval = (hint == null) ? false : !hint.equals(expectedExixts);
-        if (retval) {
-            System.out.println("!!!! impeachExistence: " + f.getAbsolutePath());
-        }
         return retval;
     }    
-    
-    public boolean createNewFile(File file) throws IOException {
-        boolean retval = file.createNewFile();
-        if (retval) {
-            put(file, retval);
-        }
-        return retval;
-    }
-    
-    public boolean mkdir(File file) throws IOException {
-        boolean retval = file.mkdir();
-        if (retval) {
-            File f = file;
-            while(f != null) {
-                put(f, retval);
-                f = f.getParentFile();
-            }
-        }
-        return retval;
-    }
-
-    public boolean mkdirs(File file) throws IOException {
-        boolean retval = file.mkdirs();
-        if (retval) {
-            File f = file;
-            while(f != null) {
-                put(f, retval);
-                f = f.getParentFile();
-            }
-        }
-        return retval;
-    }
     
     public boolean exists(File file) {
         boolean retval = file.exists();
         put(file,retval);
         return retval;
     }
-
-    public boolean canWrite(File file) {
-        int id = getKey(file);
-        Boolean hint =get(id);
-        boolean retval = file.canWrite();
-        //no hint - revert
-        if (hint == null) {
-            remove(id);
-        } else {
-            put(file, hint);
-        }
-        return retval;
+    
+    private Boolean put(int id, boolean value) {
+        return hints.put(id, value);
     }
+    
+    private Boolean get(int id) {
+        usedHints.put(id, true);
+        long now = System.currentTimeMillis();
+        if ( (now - shrinkTime) > 60000) {
+            if (usedHints.size() + hints.size() > 1500) {
+                shrinkTime = now; 
+                hints.keySet().retainAll(usedHints.keySet());
+                usedHints.clear();
+            }
+        }
+        return hints.get(id);
+    }
+
+    private Boolean remove(int id) {
+        return hints.remove(id);
+    }                
     
     private static int getKey(File f) {
         return NamingFactory.createID(f);
@@ -142,34 +116,18 @@ public class FileChangedManager extends SecurityManager {
     }  
 
     private Boolean put(String f, boolean value) {
-        if (value && f.endsWith("JavaApplication166/build")) {
-            Boolean b = get(getKey(f));
-            if (b != null && b.equals(false)) {
-                new Exception(f).printStackTrace();
-            }
-        }
         return put(getKey(f), value);
     }
     
     private Boolean put(File f, boolean value) {
-        if (value && f.getAbsolutePath().endsWith("JavaApplication166/build")) {
-            Boolean b = get(getKey(f));
-            if (b != null && b.equals(false)) {
-                new Exception(f.getAbsolutePath()).printStackTrace();
-            }           
-        }        
         return put(getKey(f), value);
     }
     
-    private Boolean put(int id, boolean value) {
-        return hints.put(id, value);
-    }
-    
-    private Boolean get(int id) {
-        return hints.get(id);
+    private Boolean get(String file) {
+        return get(getKey(file));
     }
 
-    private Boolean remove(int id) {
-        return hints.remove(id);
+    private Boolean get(File file) {
+        return get(getKey(file));        
     }    
 }

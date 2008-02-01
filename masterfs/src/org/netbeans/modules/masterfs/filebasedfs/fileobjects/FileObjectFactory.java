@@ -288,7 +288,7 @@ public final class FileObjectFactory {
                             //parent is exception must be issued even if not valid
                             ((BaseFileObj)retval).setValid(false);
                         }
-                    }
+                    }                    
                     return retval;
                 case ToFileObject:
                     //guarantee issuing for existing file
@@ -300,6 +300,7 @@ public final class FileObjectFactory {
                     break;
             }
         }
+        //ratio 59993/507 (means 507 touches for 59993 calls)
         return (exist) ? getOrCreate(new FileInfo(file, 1)) : null;
     }
 

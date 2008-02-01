@@ -64,6 +64,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import org.openide.util.Lookup;
+import org.openide.util.Lookup.Item;
 import org.openide.util.NbPreferences;
 
 /** NetBeans security manager implementation.
@@ -82,7 +83,7 @@ public class TopSecurityManager extends SecurityManager {
     private static final Class URLClass = URL.class;
     private static final Class runtimePermissionClass = RuntimePermission.class;
     private static final Class accessControllerClass = AccessController.class;
-    private static SecurityManager scm;
+    private static SecurityManager fsSecManager;
 
     private static List<SecurityManager> delegates = new ArrayList<SecurityManager>();
     /** Register a delegate security manager that can handle some checks for us.
@@ -107,12 +108,16 @@ public class TopSecurityManager extends SecurityManager {
         synchronized (delegates) {
             if (delegates.contains(sm)) throw new SecurityException();
             delegates.add(sm);
-            if (scm == null) {
-                Lookup.Item<SecurityManager> it = Lookup.getDefault().lookupItem(new Lookup.Template(SecurityManager.class));
-                if (it != null) {//NOI18N
-                    assert "org.netbeans.modules.masterfs.filebasedfs.utils.FileCachedBroker".equals(it.getId());
-                    scm = it.getInstance();
+            if (fsSecManager == null) {
+                Lookup.Result<SecurityManager> res = Lookup.getDefault().lookup(new Lookup.Template(SecurityManager.class));
+                Iterator<? extends Item<SecurityManager>> it = res.allItems().iterator();
+                for (; it.hasNext();) {
+                    Lookup.Item<SecurityManager> item = it.next();
+                    if (item != null && "org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager".equals(item.getId())) {//NOI18N
+                        fsSecManager = item.getInstance();
+                    }
                 }
+                assert fsSecManager != null;
             }            
         }
     }
@@ -154,12 +159,12 @@ public class TopSecurityManager extends SecurityManager {
     }
 
     SecurityManager getSecurityManager() {
-        if (scm == null) {
+        if (fsSecManager == null) {
             synchronized (delegates) {
-                return scm;
+                return fsSecManager;
             }        
         }
-        return scm;
+        return fsSecManager;
     }
     
     private void notifyDelete(String file) {
