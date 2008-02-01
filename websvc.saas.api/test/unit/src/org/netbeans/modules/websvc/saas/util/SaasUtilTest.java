@@ -36,68 +36,75 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.websvc.saas.util;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.namespace.QName;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
-import org.netbeans.modules.websvc.saas.model.jaxb.Group;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 
 /**
  *
  * @author nam
  */
-public class SaasUtil {
+public class SaasUtilTest extends NbTestCase {
 
-    public static SaasGroup loadSaasGroup(File input) throws IOException, JAXBException {
-        InputStream in = new FileInputStream(input);
-        try {
-            return loadSaasGroup(new FileInputStream(input));
-        } finally {
-            if (in != null) {
-                in.close();
-            }
+    File output;
+    
+    public SaasUtilTest(String testName) {
+        super(testName);
+    }            
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        if (output != null && output.isFile()) {
+            output.delete();
         }
     }
 
-    public static SaasGroup loadSaasGroup(InputStream input) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
-        Unmarshaller unmarshaller = jc.createUnmarshaller();
-        JAXBElement<Group> groupElement = (JAXBElement)unmarshaller.unmarshal(input);
-        if (groupElement != null && groupElement.getValue() != null) {
-            return new SaasGroup(null, groupElement.getValue());
-        }
-        return null;
-    }
-
-    public static void saveSaasGroup(SaasGroup saasGroup, File outFile) throws IOException, JAXBException {
-        FileOutputStream out = new FileOutputStream(outFile);
-        try {
-            saveSaasGroup(saasGroup, out);
-        } finally {
-            if (out != null) {
-                out.close();
-            }
-        }
+    public void testLoadSaasGroup() throws Exception {
+        InputStream in = this.getClass().getResourceAsStream("rootGroup.xml");
+        verifyRootGroup(in);
     }
     
-    public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
-    
-    public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
-        Marshaller marshaller = jc.createMarshaller();
-        JAXBElement<Group> jbe = new JAXBElement<Group>(QNAME_GROUP, Group.class, saasGroup.getDelegate());
-        marshaller.marshal(jbe, output);
+    private void verifyRootGroup(InputStream in) throws Exception {
+        SaasGroup result = SaasUtil.loadSaasGroup(in);
+        assertEquals("Web Services", result.getName());
+        SaasGroup test1 = result.getChildrenGroups().get(0);
+        assertEquals("test1", test1.getName());
+        assertSame(result, test1.getParent());
+        assertEquals(0, test1.getChildrenGroups().size());
+        
+        SaasGroup test2 = result.getChildrenGroups().get(1);
+        assertEquals("test2", test2.getName());
+        assertEquals(2, test2.getChildrenGroups().size());
+        assertEquals("test2.1", test2.getChildrenGroups().get(0).getName());
+        assertEquals("test2.2", test2.getChildrenGroups().get(1).getName());
+        assertSame(result, test2.getParent());
+        assertEquals(2, test2.getChildrenGroups().size());
+        assertEquals("test3", result.getChildrenGroups().get(2).getName());
     }
+
+    public void testSaveSaasGroup() throws Exception {
+        output = new File(getWorkDir(), "testSaveSaasGroup");
+        InputStream in = this.getClass().getResourceAsStream("rootGroup.xml");
+        SaasGroup rootGroup = SaasUtil.loadSaasGroup(in);
+        SaasGroup test2 = rootGroup.getChildrenGroups().get(1);
+        test2.addService(new Saas(test2, new SaasServices()));
+        test2.getServices().get(0).getDelegate().setDisplayName("Test2Service1");
+        SaasUtil.saveSaasGroup(rootGroup, output);
+        
+        verifyRootGroup(new FileInputStream(output));
+    }
+
 }

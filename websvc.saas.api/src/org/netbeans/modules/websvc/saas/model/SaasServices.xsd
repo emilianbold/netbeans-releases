@@ -77,7 +77,7 @@
                             <xsd:element name="localizing-bundle" minOccurs="0" maxOccurs="1"/>
                             <xsd:element name="icon16" minOccurs="1" maxOccurs="1"/>
                             <xsd:element name="icon32" minOccurs="0" maxOccurs="1"/>
-                            <xsd:element name="group"  minOccurs="1" maxOccurs="1"/>
+                            <xsd:element name="group"  minOccurs="0" maxOccurs="1"/>
                             <xsd:element name="code-gen" minOccurs="0">
                                 <xsd:complexType>
                                     <xsd:sequence>
@@ -130,6 +130,7 @@
             <xsd:attribute name="api-doc" type="xsd:string" use="required"/>
         </xsd:complexType>
     </xsd:element>
+    <xsd:element name="group" type="tns:Group"/>
     <xsd:complexType name="Methods">
         <xsd:sequence>
             <xsd:element name="method" type="tns:Method" minOccurs="0" maxOccurs="unbounded"/>

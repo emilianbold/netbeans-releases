@@ -51,14 +51,15 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.SaasMetadata;
  */
 public class Saas {
     public static final String PROP_PARENT_GROUP = "parentGroup";
+    public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
     public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
     public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
-    
+
     private SaasServices delegate;
     private SaasGroup parentGroup;
         
-    public Saas(SaasServices services, SaasGroup parentGroup) {
+    public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
         this.parentGroup = parentGroup;
     }
