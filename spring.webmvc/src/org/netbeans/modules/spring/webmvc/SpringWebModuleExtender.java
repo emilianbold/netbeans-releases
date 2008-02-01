@@ -105,11 +105,9 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
     private boolean customizer;
-
     private String dispatcherName; 
     private String dispatcherMapping; 
     private boolean includeJstl = true;
-
 
     /**
      * Creates a new instance of SpringWebModuleExtender 
@@ -180,7 +178,7 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         if (pattern.startsWith("*.")){ // NOI18N
             String p = pattern.substring(2);
             if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
-                    && p.indexOf('/') == -1 && !p.trim().equals("") && !p.contains(" ")) { // NOI18N
+                    && p.indexOf('/') == -1 && !p.trim().equals("") && !p.contains(" ") && Pattern.matches("\\w+",p)) { // NOI18N
                 return true;
             }
         }
