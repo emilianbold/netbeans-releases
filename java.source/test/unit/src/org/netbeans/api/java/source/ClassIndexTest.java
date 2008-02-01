@@ -225,6 +225,43 @@ public class ClassIndexTest extends NbTestCase {
         spiCp.setImpls(Collections.<PathResourceImplementation>emptyList());
         assertTrue(testListener.awaitEvent(10, TimeUnit.SECONDS));
         assertExpectedEvents (et, testListener.getEventLog());
+        
+        //Root Added should NOT be fired by registration of new source root 
+        //outside these ClassPaths, but should be fired by other ClassIndex
+        et = EnumSet.noneOf (EventType.class);
+        testListener.setExpectedEvents(et);
+        ClassPath srcPath2 = ClassPathSupport.createClassPath(new FileObject[]{libSrc2});
+        ClasspathInfo cpInfo2 = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[0]),
+                ClassPathSupport.createClassPath(new URL[0]), srcPath2);        
+        ClassIndex ci2 = cpInfo2.getClassIndex();
+        CIL testListener2 = new CIL ();
+        ci2.addClassIndexListener(testListener2);
+        EnumSet<EventType> et2 = EnumSet.of (EventType.ROOTS_ADDED);
+        testListener2.setExpectedEvents(et2);
+        
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[]{srcPath2});
+        assertTrue(testListener2.awaitEvent(10, TimeUnit.SECONDS));
+        assertExpectedEvents (et2, testListener2.getEventLog());
+        assertTrue(testListener.awaitEvent(10, TimeUnit.SECONDS));
+        assertExpectedEvents (et, testListener.getEventLog());
+        ci2.removeClassIndexListener(testListener2);
+        ci2 = null;
+        
+        //Root Added should be finred by registration of new binary root pointing to already registered source root
+        et = EnumSet.of (EventType.ROOTS_ADDED);
+        testListener.setExpectedEvents(et);        
+        impls = new ArrayList<PathResourceImplementation>();
+        impls.add (ClassPathSupport.createResource(binRoot2.getURL()));
+        spiCp.setImpls(impls);
+        assertTrue(testListener.awaitEvent(10, TimeUnit.SECONDS));
+        assertExpectedEvents (et, testListener.getEventLog());
+        
+        //Root Removed should be called on ClassIndex 1
+        et = EnumSet.of (EventType.ROOTS_REMOVED);
+        testListener.setExpectedEvents(et);
+        spiCp.setImpls(Collections.<PathResourceImplementation>emptyList());
+        assertTrue(testListener.awaitEvent(10, TimeUnit.SECONDS));
+        assertExpectedEvents (et, testListener.getEventLog());
     }
     
     public void testholdsWriteLock () throws Exception {
@@ -303,8 +340,10 @@ public class ClassIndexTest extends NbTestCase {
     
     private static void deleteFile (final String path) throws IOException {
         assert srcRoot != null && srcRoot.isValid();
-        final FileObject data  = srcRoot.getFileObject(path);
+        final FileObject data  = srcRoot.getFileObject(path);        
         if (data != null) {
+            //Workaround of issue #126367
+            final FileObject parent = data.getParent();
             data.delete();
         }
     }

@@ -291,7 +291,10 @@ public abstract class DocumentBox extends ContainerBox {
             ErrorManager.getDefault().notify(e);
             e.printStackTrace();
             layoutValid = false;
-            pane.repaint();
+            // XXX #126314 Possible NPE.
+            if (pane != null) {
+                pane.repaint();
+            }
 
             return;
         }

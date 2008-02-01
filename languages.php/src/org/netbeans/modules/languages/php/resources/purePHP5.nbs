@@ -284,7 +284,7 @@ ANDExp = LogicalANDExpression;
 AssignmentExpression = LogicalORExpression [ AssignmentOperator AssExp ];
 AssExp= AssignmentExpression;
 AssignmentOperator = "=" | "+=" | "-=" | "*=" | "/=" | ".=" | "%=" | "&=" | "|=" | "^=" | "~=" | "<<=" | ">>=";
-ConditionalExpression = LogicalORORExpression [ "?" LogicalORORExpression ":" LogicalORORExpression ];
+ConditionalExpression = LogicalORORExpression [ "?" Expression ":" Expression ];
 LogicalORORExpression = LogicalANDANDExpression [ "||" ORORExp ];
 ORORExp = LogicalORORExpression;
 LogicalANDANDExpression = BitwiseORExpression [ "&&" ANDANDExp ];
@@ -429,10 +429,12 @@ FOLD:ClassBody: {
     expand_type_action_name:"Expand Classes";
     collapse_type_action_name:"Collapse Classes";
 }
-FOLD:FunctionDeclaration: {
+
+FOLD:FunctionDefinition.Block: {
     expand_type_action_name:"Expand Methods";
     collapse_type_action_name:"Collapse Methods";
 }
+
 FOLD:InterfaceBody: {
     expand_type_action_name:"Expand Classes";
     collapse_type_action_name:"Collapse Classes";

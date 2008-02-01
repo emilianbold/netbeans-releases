@@ -359,4 +359,20 @@ public class WSDLMultipleExtensibilityElementsTest extends TestCase {
         assertNotNull(jmsServicePortElementExInfo);
 
     }
+    
+    public void testUndefinedExtensibilityElements126150() throws Exception {
+        WSDLExtensibilityElementsFactory instance = WSDLExtensibilityElementsFactory.getInstance();
+        WSDLExtensibilityElements result = instance.getWSDLExtensibilityElements();
+        
+        
+        WSDLExtensibilityElement messageElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_MESSAGE);
+        assertNull(messageElement);
+        
+        WSDLExtensibilityElement definitionsElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_DEFINITIONS);
+        assertNull(definitionsElement);
+        
+        WSDLExtensibilityElement portTypeOperationElement = result.getWSDLExtensibilityElement(WSDLExtensibilityElements.ELEMENT_PORTTYPE_OPERATION);
+        assertNull(portTypeOperationElement);
+       
+    }
 }

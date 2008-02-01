@@ -80,6 +80,7 @@ public class PropertyAliasMainPanel2 extends EditorLifeCycleAdapter
 ////        fldProperty.putClientProperty(CustomNodeEditor.PROPERTY_BINDER, NAME);
     }
     
+    @Override
     public boolean initControls() {
         try {
             //
@@ -118,6 +119,7 @@ public class PropertyAliasMainPanel2 extends EditorLifeCycleAdapter
         return true;
     }
     
+    @Override
     public void createContent() {
         initComponents();
         bindControls2PropertyNames();
@@ -181,6 +183,7 @@ public class PropertyAliasMainPanel2 extends EditorLifeCycleAdapter
         });
     }
     
+    @Override
     public boolean applyNewValues() {
         try {
             PropertyAlias propAlias = myEditor.getEditedObject();
@@ -272,23 +275,22 @@ public class PropertyAliasMainPanel2 extends EditorLifeCycleAdapter
         if (myValidator == null) {
             myValidator = new DefaultValidator(myEditor, ErrorMessagesBundle.class) {
                 
-                public boolean doFastValidation() {
+                public void doFastValidation() {
                     String property = fldProperty.getText();
 //                    System.out.println("propName: "+fldProperty.getText());
                     if (property == null || property.length() == 0) {
-                        addReasonKey("ERR_PROP_EMPTY"); //NOI18N
+                        addReasonKey(Severity.ERROR, "ERR_PROP_EMPTY"); //NOI18N
                     }
 //                    if (property == null || property.length() == 0) {
 //                        addReasonKey("ERR_NAME_EMPTY"); //NOI18N
 //                    }
-                    //
-                    return isReasonsListEmpty();
                 }
-                
-                public boolean doDetailedValidation() {
-                    super.doDetailedValidation();
-                    //
-                    // Check that the variable name is unique
+
+//                @Override
+//                public void doDetailedValidation() {
+//                    super.doDetailedValidation();
+//                    //
+//                    // Check that the variable name is unique
 ////                    VariableContainer vc = null;
 ////                    if (myEditor.getEditingMode() ==
 ////                            EditingMode.CREATE_NEW_INSTANCE) {
@@ -318,9 +320,7 @@ public class PropertyAliasMainPanel2 extends EditorLifeCycleAdapter
 ////                            }
 ////                        }
 ////                    }
-                    //
-                    return isReasonsListEmpty();
-                }
+//                }
                 
             };
         }

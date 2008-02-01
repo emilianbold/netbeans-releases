@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.jar.JarFile;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.api.project.Project;
@@ -110,7 +110,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
     public void testLibraryLoadingBasic() throws Exception {
         writeProperties("libs/my libraries.properties",
                 "libs.jgraph.classpath=${base}/jgraph.jar:${base}/../extra libs/jgraph-extras.jar",
-                "libs.jgraph.javadoc=${base}/api/jgraph-docs",
+                "libs.jgraph.javadoc=${base}/api/jgraph-docs:${base}/api/jgraph-docs.zip!/docs/api/",
                 "irrelevant=stuff");
         storeDefs(project, "../libs/my libraries.properties");
         Library lib = LibraryManager.forLocation(new URL(base, "libs/my%20libraries.properties")).getLibrary("jgraph");
@@ -120,7 +120,7 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertNull(lib.getDescription());
         assertEquals("j2se", lib.getType());
         assertEquals(Arrays.asList(new URL("jar:file:jgraph.jar!/"), new URL("jar:file:../extra%20libs/jgraph-extras.jar!/")), lib.getContent("classpath"));
-        assertEquals(Collections.singletonList(new URL("file:api/jgraph-docs/")), lib.getContent("javadoc"));
+        assertEquals(Arrays.asList(new URL("file:api/jgraph-docs/"), new URL("jar:file:api/jgraph-docs.zip!/docs/api/")), lib.getContent("javadoc"));
         assertEquals(Collections.emptyList(), lib.getContent("src"));
     }
 
@@ -154,13 +154,14 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         Library lib = LibraryManager.forLocation(new URL(base, "libs/libraries.properties")).getLibrary("jgraph");
         setLibraryContent(lib, "classpath", new URL("jar:file:jgraph.jar!/"), new URL("jar:file:../extra%20libs/jgraph-extras.jar!/"));
         setLibraryContent(lib, "src", new URL(base, "separate/jgraph-src/"), new URL(base, "jgraph-other-src/"));
-        setLibraryContent(lib, "javadoc", new URL("jar:" + base + "separate/jgraph-api.zip!/"));
+        setLibraryContent(lib, "javadoc", new URL("jar:" + base + "separate/jgraph-api.zip!/"), new URL("jar:file:../separate/jgraph-api.zip!/docs/api/"));
         Map<String,String> m = new HashMap<String,String>();
         File separate = new File(getWorkDir(), "separate");
         m.put("libs.jgraph.classpath", "${base}/jgraph.jar"+File.pathSeparatorChar+"${base}/../extra libs/jgraph-extras.jar");
         m.put("libs.jgraph.src", new File(separate, "jgraph-src").getAbsolutePath().replace('\\', '/') + File.pathSeparator + 
                 new File(getWorkDir(), "jgraph-other-src").getAbsolutePath().replace('\\', '/'));
-        m.put("libs.jgraph.javadoc", new File(separate, "jgraph-api.zip").getAbsolutePath().replace('\\', '/'));
+        m.put("libs.jgraph.javadoc", new File(separate, "jgraph-api.zip").getAbsolutePath().replace('\\', '/') + File.pathSeparator + 
+                "${base}/../separate/jgraph-api.zip!/docs/api/");
         assertEquals(m, loadProperties("libs/libraries.properties"));
     }
 
@@ -222,7 +223,8 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         storeDefs(project, "../others.properties");
         contentlist.assertEventCount(0);
         liblist.assertEventCount(0);
-        pplist.assertEventCount(1);
+        // storeDefs() fires configurationXmlChanged twice - after put() and after save()
+        pplist.assertEventCount(2);
         assertEquals(("{libs.jrcs.classpath=}").replace('/', File.separatorChar),
                 new TreeMap<String,String>(pp.getProperties()).toString());
     }
@@ -353,19 +355,20 @@ public class ProjectLibraryProviderTest extends NbTestCase {
      */
     public void testCopyLibrary() throws Exception {
         File f = new File(this.getWorkDir(), "bertie.jar");
-        createFakeJAR(f);
+        createFakeJAR(f, "smth");
         File f1 = new File(this.getWorkDir(), "dog.jar");
-        createFakeJAR(f1);
+        createFakeJAR(f1, "smth");
         new File(this.getWorkDir(), "sources").mkdir();
         File f2 = new File(this.getWorkDir(), "sources/bertie.jar");
-        createFakeJAR(f2);
+        createFakeJAR(f2, "docs/api/test.smth");
         new File(this.getWorkDir(), "libraries").mkdir();
         File f3 = new File(this.getWorkDir(), "libraries/libs.properties");
         f3.createNewFile();
+        FileUtil.toFileObject(getWorkDir()).refresh();
         LibraryImplementation l1 = LibrariesSupport.createLibraryImplementation("j2test", new String[]{"jars", "sources"});
         l1.setName("vino");
         l1.setContent("jars", Arrays.asList(new URL[]{f.toURI().toURL(), f1.toURI().toURL()}));
-        l1.setContent("sources", Arrays.asList(new URL[]{f2.toURI().toURL()}));
+        l1.setContent("sources", Arrays.asList(new URL[]{new URL("jar:" + f2.toURI().toURL() + "!/docs/api/")}));
         libraryProvider.set(l1);
         Library l = LibraryManager.getDefault().getLibrary("vino");
         assertNotNull(l);
@@ -376,20 +379,41 @@ public class ProjectLibraryProviderTest extends NbTestCase {
         assertEquals(u, result.getManager().getLocation());
         assertEquals(Arrays.asList(new URL("jar:file:vino/bertie.jar!/"),
                 new URL("jar:file:vino/dog.jar!/")), result.getContent("jars"));
-        assertEquals(Arrays.asList(new URL("jar:file:vino/bertie-2.jar!/")), result.getContent("sources"));
+        assertEquals(Arrays.asList(new URL("jar:file:vino/bertie-2.jar!/docs/api/")), result.getContent("sources"));
         assertEquals("vino", result.getName());
         assertEquals("j2test", result.getType());
+        //assertNotNull(LibrariesSupport.resolveLibraryEntryFileObject(u, result.getContent("jars").get(0)));
         assertEquals(new File(this.getWorkDir(), "libraries/vino/bertie.jar").getPath(), 
                 FileUtil.toFile(LibrariesSupport.resolveLibraryEntryFileObject(u, FileUtil.getArchiveFile(result.getContent("jars").get(0)))).getPath());
+        //assertNotNull(LibrariesSupport.resolveLibraryEntryFileObject(u, result.getContent("sources").get(0)));
+        assertEquals(new File(this.getWorkDir(), "libraries/vino/bertie-2.jar").getPath(), 
+                FileUtil.toFile(LibrariesSupport.resolveLibraryEntryFileObject(u, FileUtil.getArchiveFile(result.getContent("sources").get(0)))).getPath());
     }
     
-    private void createFakeJAR(File f) throws IOException {
+    private void createFakeJAR(File f, String content) throws IOException {
         // create just enough to make URLMapper recognize file as JAR:
         ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(f));
-        zos.putNextEntry(new ZipEntry("test"));
+        writeZipFileEntry(zos, content, "some content".getBytes());
         zos.finish();
         zos.close();
     }
+
+    private static void writeZipFileEntry(ZipOutputStream zos, String zipEntryName, byte[] byteArray) throws IOException {
+        int byteArraySize = byteArray.length;
+
+        CRC32 crc = new CRC32();
+        crc.update(byteArray, 0, byteArraySize);
+
+        ZipEntry entry = new ZipEntry(zipEntryName);
+        entry.setMethod(ZipEntry.STORED);
+        entry.setSize(byteArraySize);
+        entry.setCrc(crc.getValue());
+
+        zos.putNextEntry(entry);
+        zos.write(byteArray, 0, byteArraySize);
+        zos.closeEntry();
+    }
+    
 
     public static class TestLibraryProvider implements LibraryProvider<LibraryImplementation> {
 

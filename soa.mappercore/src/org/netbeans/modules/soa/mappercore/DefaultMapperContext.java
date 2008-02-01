@@ -35,8 +35,10 @@ public class DefaultMapperContext implements MapperContext {
         return value.toString();
     }
     
-    public Color getLeftForeground(MapperModel model, Object value) {
-        return null;
+    public Color getLeftForeground(MapperModel model, Object value, 
+            Color defaultColor) 
+    {
+        return defaultColor;
     }
     
     public Font getLeftFont(MapperModel model, Object value, Font defaultFont) {

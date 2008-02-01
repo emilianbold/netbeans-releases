@@ -415,7 +415,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
     private boolean isValidPointerAddress() {
         String frag = "";
         int pos1;
-        int i;
+        long i;
         
         if (value != null) { // value can be null for watches during initialization...
             if (value.length() > 0 && value.charAt(0) == '(') {
@@ -430,7 +430,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 }
                 if (pos1 != -1) {
                     try {
-                        i = Integer.parseInt(frag, 16);
+                        i = Long.parseLong(frag, 16);
                     } catch (NumberFormatException ex) {
                         return false;
                     }

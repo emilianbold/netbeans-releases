@@ -103,6 +103,11 @@ final class FeedbackSurvey {
                 return;
             }
 
+            int counts = prefs.getInt("feedback.survey.show.count", 0); // NOI18N
+            if (counts >= bundledInt("MSG_FeedbackSurvey_AskTimes")) { // NOI18N
+                return;
+            }
+            
             URL u = new URL(url);
             URLConnection conn = u.openConnection();
             String type = conn.getContentType();
@@ -111,10 +116,6 @@ final class FeedbackSurvey {
                 return;
             }
             
-            int counts = prefs.getInt("feedback.survey.show.count", 0); // NOI18N
-            if (counts >= bundledInt("MSG_FeedbackSurvey_AskTimes")) { // NOI18N
-                return;
-            }
             prefs.putInt("feedback.survey.show.count", counts + 1); // NOI18N
             
             if (showDialog(u)) {
@@ -138,10 +139,11 @@ final class FeedbackSurvey {
         String tit = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_Title");
         String yes = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_Yes");
         String later = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_Later");
+        String never = NbBundle.getMessage(FeedbackSurvey.class, "MSG_FeedbackSurvey_Never");
         
         NotifyDescriptor nd = new NotifyDescriptor.Message(msg, NotifyDescriptor.QUESTION_MESSAGE);
         nd.setTitle(tit);
-        Object[] buttons = { yes, later };
+        Object[] buttons = { yes, later, never };
         nd.setOptions(buttons);
         Object res = DialogDisplayer.getDefault().notify(nd);
         
@@ -149,6 +151,10 @@ final class FeedbackSurvey {
             HtmlBrowser.URLDisplayer.getDefault().showURL(whereTo);
             return true;
         } else {
+            if( res == never ) {
+                Preferences prefs = NbPreferences.forModule(FeedbackSurvey.class);
+                prefs.putInt("feedback.survey.show.count", (int)bundledInt("MSG_FeedbackSurvey_AskTimes")); // NOI18N
+            }
             return false;
         }
     }

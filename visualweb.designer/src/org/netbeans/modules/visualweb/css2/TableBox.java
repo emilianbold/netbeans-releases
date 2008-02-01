@@ -2062,7 +2062,9 @@ public class TableBox extends ContainerBox {
                         // Only replace auto or other (smaller) fixed widths
                         // positive numbers indicates actual length
 //                        int length = (int)value.getFloatValue();
-                        int length = (int)cssValue.getFloatValue();
+//                        int length = (int)cssValue.getFloatValue();
+                        // XXX #126240 Possible NPE
+                        int length = cssValue == null ? null : (int)cssValue.getFloatValue();
 
                         if (length < 0) {
                             length = 0;

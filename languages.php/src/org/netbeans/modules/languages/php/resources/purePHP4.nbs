@@ -238,7 +238,7 @@ LogicalXORExpression = LogicalANDExpression ( "xor" LogicalANDExpression )*;
 LogicalANDExpression = AssignmentExpression ( "and" AssignmentExpression )*;
 AssignmentExpression = ConditionalExpression ( AssignmentOperator ConditionalExpression )*;
 AssignmentOperator = "=" | "+=" | "-=" | "*=" | "/=" | ".=" | "%=" | "&=" | "|=" | "^=" | "~=" | "<<=" | ">>=";
-ConditionalExpression = LogicalORORExpression [ "?" LogicalORORExpression ":" LogicalORORExpression ];
+ConditionalExpression = LogicalORORExpression [ "?" Expression ":" Expression ];
 LogicalORORExpression = LogicalANDANDExpression ( "||" LogicalANDANDExpression )*;
 LogicalANDANDExpression = BitwiseORExpression ( "&&" BitwiseORExpression )*;
 BitwiseORExpression = BitwiseXORExpression ( "|" BitwiseXORExpression )*;

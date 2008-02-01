@@ -85,12 +85,13 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private List<RepositoryRevision> results;
     private SummaryView             summaryView;    
     private DiffResultsView         diffView;
-    
+    private boolean                 bOutSearch;
     private AbstractAction nextAction;
     private AbstractAction prevAction;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
+        this.bOutSearch = false;
         this.roots = roots;
         this.repositoryUrl = null;
         this.criteria = criteria;
@@ -102,6 +103,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
     
     public SearchHistoryPanel(String repositoryUrl, File localRoot, SearchCriteriaPanel criteria) {
+        this.bOutSearch = false;
         this.repositoryUrl = repositoryUrl;
         this.roots = new File[] { localRoot };
         this.criteria = criteria;
@@ -110,6 +112,15 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         initComponents();
         setupComponents();
         refreshComponents(true);
+    }
+
+    void setOutSearch() {
+        bOutSearch = true;
+        divider.setVisible(false);
+    }
+    
+    boolean isOutSearch() {
+        return bOutSearch;
     }
 
     void setSearchCriteria(boolean b) {

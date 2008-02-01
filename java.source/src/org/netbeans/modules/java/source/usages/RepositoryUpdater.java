@@ -746,6 +746,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
             });
             url2CompileWithDepsTask.put(root, new WeakReference<Task>(t));
+            t.schedule(Integer.MAX_VALUE);
             url2CompileWithDeps.put(root, storedFiles);
             compileScheduled++;
         } else {

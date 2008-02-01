@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -60,30 +60,55 @@ public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementat
     }
     
     public synchronized Result findSourceRoots(URL binaryRoot) {
-        try {
-            String binaryRootS = binaryRoot.toExternalForm();
-            URL result = null;
-            if (binaryRootS.startsWith("jar:file:")) { // NOI18N
-                if (binaryRootS.endsWith("/java/source/javacapi/external/javac-api-nb-7.0-b07.jar!/")) { // NOI18N
-                    result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/java/source/javacapi/external/javac-api-nb-7.0-b07.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
-                } else if (binaryRootS.endsWith("/java/source/javacimpl/external/javac-impl-nb-7.0-b07.jar!/")) { // NOI18N
-                    result = new URL(binaryRootS.substring("jar:".length(), binaryRootS.length() - "/java/source/javacimpl/external/javac-impl-nb-7.0-b07.jar!/".length()) + "/retouche/Jsr199/src"); // NOI18N
-                }
-                final FileObject resultFO = result != null ? URLMapper.findFileObject(result) : null;
-                if (resultFO != null) {
-                    return new Result() {
-                        public FileObject[] getRoots() {
-                            return new FileObject[] {resultFO};
-                        }
-                        public void addChangeListener(ChangeListener l) {}
-                        public void removeChangeListener(ChangeListener l) {}
-                    };
+        String binaryRootS = binaryRoot.toExternalForm();
+        URL result = null;
+        if (binaryRootS.startsWith("jar:file:")) { // NOI18N
+            if ((result = checkForBinaryRoot(binaryRootS, "/java/source/javacapi/external/javac-api", false)) == null) { // NOI18N
+                if ((result = checkForBinaryRoot(binaryRootS, "/java/source/javacimpl/external/javac-impl", false)) == null) { // NOI18N
+                    if ((result = checkForBinaryRoot(binaryRootS, "/libs.javacapi/external/javac-api", true)) == null) { // NOI18N
+                        result = checkForBinaryRoot(binaryRootS, "/libs.javacimpl/external/javac-impl", true); // NOI18N
+                    }
                 }
             }
-        } catch (MalformedURLException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e); //NOI18N
+            final FileObject resultFO = result != null ? URLMapper.findFileObject(result) : null;
+            if (resultFO != null) {
+                return new Result() {
+                    public FileObject[] getRoots() {
+                        return new FileObject[]{resultFO};
+                    }
+
+                    public void addChangeListener(ChangeListener l) {
+                    }
+
+                    public void removeChangeListener(ChangeListener l) {
+                    }
+                };
+            }
         }
         return null;
     }
 
+    private URL checkForBinaryRoot(String ext, String prefix, boolean oneUp) {
+        if (ext.endsWith(prefix + "-nb-7.0-b07.jar!/")) { // NOI18N
+            try {
+                String part = ext.substring("jar:".length(), ext.length() - prefix.length() - "-nb-7.0-b07.jar!/".length()); // NOI18N
+                
+                if (oneUp) {
+                    int lastSlash = part.lastIndexOf('/');
+
+                    if (lastSlash == (-1)) {
+                        return null;
+                    }
+                    part = part.substring(0, lastSlash);
+                }
+
+                return new URL(part + "/retouche/Jsr199/src"); // NOI18N
+            } catch (MalformedURLException ex) {
+                Logger.getLogger("global").log(Level.INFO, null, ex); //NOI18N
+            }
+        }
+        
+        return null;
+    }
+    
 }

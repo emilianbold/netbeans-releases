@@ -46,7 +46,7 @@ import java.util.Collection;
 import java.util.List;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularType;
-import org.netbeans.modules.sun.manager.jbi.management.model.OldJBIComponentConfigurationDescriptor;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,7 +65,7 @@ public class EnvironmentVariablesEditor extends SimpleTabularDataEditor {
      * @param tabularType   the type of the tabular data
      */
     public EnvironmentVariablesEditor(boolean isAppVar, TabularType tabularType,
-            OldJBIComponentConfigurationDescriptor descriptor, boolean isWritable) {
+            JBIComponentConfigurationDescriptor descriptor, boolean isWritable) {
         super(NbBundle.getMessage(EnvironmentVariablesEditor.class, 
                 isAppVar ? "LBL_APPLICATION_VARIABLES_TABLE" :  // NOI18N 
                     "LBL_ENVIRONMENT_VARIABLES_TABLE"),  // NOI18N 

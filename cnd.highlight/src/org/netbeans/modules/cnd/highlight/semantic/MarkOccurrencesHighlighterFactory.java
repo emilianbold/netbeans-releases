@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.cnd.highlight.semantic;
 
+import javax.swing.text.Document;
 import org.netbeans.modules.cnd.highlight.semantic.options.SemanticHighlightingOptions;
 import org.netbeans.modules.cnd.model.tasks.CaretAwareCsmFileTaskFactory;
 import org.openide.cookies.EditorCookie;
@@ -61,11 +62,23 @@ public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFact
             try {
                 DataObject dobj = DataObject.find(fo);
                 EditorCookie ec = dobj.getCookie(EditorCookie.class);
-                ph = new MarkOccurrencesHighlighter(ec.getDocument());
+                Document doc = ec.getDocument();
+                if (doc != null) {
+                    ph = new MarkOccurrencesHighlighter(doc);
+                }
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-        return ph != null ? ph : lazyRunner();
+        return ph != null ? ph :new PhaseRunner() {
+
+            public void run(Phase phase) {
+                // rest
+            }
+
+            public boolean isValid() {
+                return !SemanticHighlightingOptions.getEnableMarkOccurences();
+            }
+        };
     }
 }

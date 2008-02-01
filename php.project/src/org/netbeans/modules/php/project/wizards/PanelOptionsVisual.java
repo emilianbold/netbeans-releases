@@ -41,15 +41,22 @@
 
 package org.netbeans.modules.php.project.wizards;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.text.MessageFormat;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.WizardDescriptor;
+import org.openide.util.NbBundle;
 
-class PanelOptionsVisual extends JPanel {
+class PanelOptionsVisual extends JPanel implements PropertyChangeListener{
 
     private static final long serialVersionUID = -3838819874834494985L;
 
+    public static final String LBL_INDEX_FILE_PATH = "LBL_PathToIndexFile"; // NOI18N
     //private static final String MSG_ILLEGAL_INDEX_FILE_NAME 
     //                                     = "MSG_IllegalIndexFileName";     // NOI18N
     
@@ -59,16 +66,30 @@ class PanelOptionsVisual extends JPanel {
         init();
     }
 
-    private void init() {
-        switch (getPanel().getWizardType()) {
-            case EXISTING:
-                createIndexCheckBox.setVisible(false);
-                indexNameTextField.setVisible(false);
-                break;
-            default:
-        // show all
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(ExistingSourcesPanel.PROP_SOURCE_ROOT)){
+            mySourceRootDir = (File)evt.getNewValue();
+            
+            updateIndexPreview();
         }
+    }
 
+    private void updateIndexPreview(){
+        String indexName = indexNameTextField.getText().trim();
+        String indexPath = null;
+        if (mySourceRootDir != null && indexName.length()!= 0){
+            File indexPathFile = new File(mySourceRootDir, indexName);
+            indexPath = indexPathFile.getAbsolutePath();
+        }
+        if (indexPath != null){
+            String msg = MessageFormat.format(mySourcePathPreviewMsg, indexPath);
+            indexPathPreview.setText(msg);
+        }
+    }
+    
+    private void init() {
+        //createIndexCheckBox.setVisible(false);
+        //indexNameTextField.setVisible(false);
         indexNameTextField.getDocument().addDocumentListener(new NameListener());
     }
 
@@ -158,6 +179,7 @@ class PanelOptionsVisual extends JPanel {
 
 
     private void performUpdate() {
+        updateIndexPreview();
         getPanel().fireChangeEvent();
     }
 
@@ -178,7 +200,8 @@ class PanelOptionsVisual extends JPanel {
         indexNameTextField = new javax.swing.JTextField();
         createIndexCheckBox = new javax.swing.JCheckBox();
         fakeVersionLbl = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        fakeVersionValue = new javax.swing.JLabel();
+        indexPathPreview = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -187,22 +210,22 @@ class PanelOptionsVisual extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, bundle.getString("LBL_SetAsMain_CheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(setAsMainCheckBox, gridBagConstraints);
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_SetAsMain_A11YDesc")); // NOI18N
 
         indexNameTextField.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "DefaultNewFileName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
         add(indexNameTextField, gridBagConstraints);
         indexNameTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "A11_IndexNameText")); // NOI18N
         indexNameTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_IndexNameText_A11Descr")); // NOI18N
@@ -212,9 +235,9 @@ class PanelOptionsVisual extends JPanel {
         createIndexCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         add(createIndexCheckBox, gridBagConstraints);
         createIndexCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "A11_createIndexCheckBoxLbl")); // NOI18N
         createIndexCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_createIndexCheckBox_A11Descr")); // NOI18N
@@ -222,35 +245,51 @@ class PanelOptionsVisual extends JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(fakeVersionLbl, "Language Version:");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 3, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         add(fakeVersionLbl, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "PHP 5");
+        org.openide.awt.Mnemonics.setLocalizedText(fakeVersionValue, "PHP 5");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 12, 0);
-        add(jLabel1, gridBagConstraints);
+        add(fakeVersionValue, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(indexPathPreview, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "DefaultNewFileName")); // NOI18N
+        indexPathPreview.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 24, 5, 0);
+        add(indexPathPreview, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox createIndexCheckBox;
     private javax.swing.JLabel fakeVersionLbl;
+    private javax.swing.JLabel fakeVersionValue;
     private javax.swing.JTextField indexNameTextField;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel indexPathPreview;
     private javax.swing.JCheckBox setAsMainCheckBox;
     // End of variables declaration//GEN-END:variables
     // End of variables declaration
     private PhpProjectConfigurePanel myPanel;
 
+    private File mySourceRootDir;
+
+    private String mySourcePathPreviewMsg = NbBundle.getMessage(
+            PanelOptionsVisual.class, LBL_INDEX_FILE_PATH);
 }
 

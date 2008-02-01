@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.compapp.catd;
 
+import com.sun.esb.management.api.administration.AdministrationService;
+import com.sun.esb.management.api.configuration.ConfigurationService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
@@ -111,6 +113,7 @@ import javax.swing.text.BadLocationException;
 //import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.compapp.catd.util.EditableProperties;
 
+import org.netbeans.modules.compapp.projects.jbi.AdministrationServiceHelper;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstance;
 import org.netbeans.modules.sun.manager.jbi.util.ServerInstanceReader;
 
@@ -1955,16 +1958,91 @@ public class ConfiguredTest extends TestCase {
             start = System.currentTimeMillis();
         }
         
-        // FIXME: temporarily disable
-//        if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
+        // Currently only deal with http soap bc because soap binding is the 
+        // only supported binding type in test driver.
+        if (destination.indexOf("${") != -1 && destination.indexOf("}") != -1) {
+            
+            String nbUserDir = System.getProperty("NetBeansUserDir");
+            // FIXME: use the first instance for now
+            ServerInstance serverInstance = getFirstServerInstance(nbUserDir);
+            
+            // Translate ${HttpDefaultPort} first
+            String httpDefaultPort = "HttpDefaultPort";
+            if (destination.indexOf("${" + httpDefaultPort + "}") != -1) {
+                try {
+                    ConfigurationService configService = 
+                            AdministrationServiceHelper.getConfigurationService(serverInstance);
+                    Map<String, Object> configMap  = 
+                            configService.getComponentConfigurationAsMap(
+                            "sun-http-binding", "server");
+                    Object httpDefaultPortValue = configMap.get(httpDefaultPort);
+                    System.out.println("");
+                    if (httpDefaultPortValue != null) {
+                        int httpDefaultPortIntValue = 
+                                Integer.parseInt(httpDefaultPortValue.toString()); 
+                        if (httpDefaultPortIntValue != -1) {
+                            destination = destination.replace("${" + httpDefaultPort + "}", 
+                                    "" + httpDefaultPortIntValue);
+                            System.out.println("Replace '${HttpDefaultPort}' in WSDL soap location by '" +
+                                    httpDefaultPortIntValue + "' defined in sun-http-binding.");
+                        } else {
+                            System.out.println("WARNING: 'HttpDefaultPort' is not defined in sun-http-binding.");
+                        }
+                    } else {
+                        System.out.println("WARNING: 'HttpDefaultPort' is not found in sun-http-binding's component configuration.");
+                    }
+                } catch (Exception ex) {
+                    if (stdErr != null) {
+                        System.setErr(origErr);
+                        stdErr.flush();
+                        stdErr.close();
+                        origErr.print(bufferedErr.toString());
+                    }
+                    throw ex;
+                }
+            }
+            
+            // Translate ${HttpsDefaultPort} next
+            String httpsDefaultPort = "HttpsDefaultPort";
+            if (destination.indexOf("${" + httpsDefaultPort + "}") != -1) {
+                try {
+                    ConfigurationService configService = 
+                            AdministrationServiceHelper.getConfigurationService(serverInstance);
+                    Map<String, Object> configMap  = 
+                            configService.getComponentConfigurationAsMap(
+                            "sun-http-binding", "server");
+                    Object httpsDefaultPortValue = configMap.get(httpsDefaultPort);
+                    System.out.println("");
+                    if (httpsDefaultPortValue != null) {
+                        int httpsDefaultPortIntValue = 
+                                Integer.parseInt(httpsDefaultPortValue.toString()); 
+                        if (httpsDefaultPortIntValue != -1) {
+                            destination = destination.replace("${" + httpsDefaultPort + "}", 
+                                    "" + httpsDefaultPortIntValue);
+                            System.out.println("Replace '${HttpsDefaultPort}' in WSDL soap location by '" +
+                                    httpsDefaultPortIntValue + "' defined in sun-http-binding.");
+                        } else {
+                            System.out.println("WARNING: 'HttpsDefaultPort' is not defined in sun-http-binding.");
+                        }
+                    } else {
+                        System.out.println("WARNING: 'HttpsDefaultPort' is not found in sun-http-binding's component configuration.");
+                    }
+                } catch (Exception ex) {
+                    if (stdErr != null) {
+                        System.setErr(origErr);
+                        stdErr.flush();
+                        stdErr.close();
+                        origErr.print(bufferedErr.toString());
+                    }
+                    throw ex;
+                }
+            }        
+        
+//            // Temporarily disabled
+//            // Translate other Application Variables.
 //            try {
-//                String nbUserDir = System.getProperty("NetBeansUserDir");
-//                // FIXME: use the first instance for now
-//                ServerInstance serverInstance = getFirstServerInstance(nbUserDir);
 //                AdministrationService adminService = 
-//                        AdministrationServiceHerlper.(serverInstance);
-//                // Currently only deal with http soap bc because soap binding is the 
-//                // only supported binding type in test driver.
+//                        AdministrationServiceHelper.get(serverInstance);
 //                destination = 
 //                        adminService.translateEnvrionmentVariables(
 //                        destination, "bindingComponents", "sun-http-binding");
@@ -1977,7 +2055,7 @@ public class ConfiguredTest extends TestCase {
 //                }
 //                throw ex;
 //            }
-//        }
+        }
         
         boolean httpSuccess = true;
         try {
