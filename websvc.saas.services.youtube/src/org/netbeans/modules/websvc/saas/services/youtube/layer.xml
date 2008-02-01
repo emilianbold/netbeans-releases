@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    
+    <folder name="Templates">
+        <folder name="WebServices">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.youtube.Bundle"/>
+            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/youtube/resources/profile.properties">
+                <attr name="position" intvalue="0"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="SaasServices">
+        <folder name="YouTube">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.youtube.Bundle"/>
+            <file name="YouTubeVideos.xml" url="/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideos.xml"/>
+        </folder>
+    </folder>
+    
+</filesystem>

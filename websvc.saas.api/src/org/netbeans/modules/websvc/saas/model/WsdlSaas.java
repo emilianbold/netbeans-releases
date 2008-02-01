@@ -39,7 +39,10 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServicesType;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 
 /**
@@ -47,10 +50,19 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
  * @author nam
  */
 public class WsdlSaas extends Saas {
-    private WsdlModel wsdlModel;
+    //TODO consolidate and remove
+    private WebServiceData wsData;
 
-    public WsdlSaas(SaasServicesType services, SaasGroup parentGroup) {
-        super(services, parentGroup);
+    public WsdlSaas(SaasGroup parentGroup, SaasServices services) {
+        super(parentGroup, services);
+        //wsData = WebServiceListModel.getInstance().findWebServiceData(services.getUrl(), getServiceName());
     }
-    
+
+    public WsdlService getWsdlModel() {
+        return wsData.getWsdlService();
+    }
+
+    public String getLocalWsdlFile() {
+        return wsData.getWsdlFile();
+    }
 }

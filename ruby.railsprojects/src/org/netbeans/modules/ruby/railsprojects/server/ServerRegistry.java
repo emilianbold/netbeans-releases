@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
@@ -117,8 +118,9 @@ class ServerRegistry {
         if (gemManager == null) {
             return result;
         }
-        if (gemManager.getVersion(Mongrel.GEM_NAME) != null) {
-            result.add(new Mongrel(platform));
+        String mongrelVersion = gemManager.getVersion(Mongrel.GEM_NAME);
+        if (mongrelVersion != null) {
+            result.add(new Mongrel(platform, mongrelVersion));
         }
         return result;
     }
