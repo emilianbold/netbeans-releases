@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -42,6 +43,8 @@
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.util.Vector;
+import java.util.List;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 public class VectorConfiguration {
@@ -74,6 +77,15 @@ public class VectorConfiguration {
 
     public void setValue(Vector b) {
 	this.value = b;
+    }
+    
+    /*
+     * @deprecated use setValue(Vector b)
+     * See IZ 122300
+     */
+    public void setValue(String s) {
+        List list = CppUtils.tokenizeString(s);
+        setValue(new Vector(list));
     }
 
     public Vector getValue() {
