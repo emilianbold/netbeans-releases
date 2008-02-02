@@ -45,17 +45,18 @@ import java.io.InputStream;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 
 /**
  *
  * @author nam
  */
-public class SaasUtilTest extends NbTestCase {
+public class SaasUtilTest_1 extends NbTestCase {
 
     File output;
     
-    public SaasUtilTest(String testName) {
+    public SaasUtilTest_1(String testName) {
         super(testName);
     }            
 
@@ -107,4 +108,21 @@ public class SaasUtilTest extends NbTestCase {
         verifyRootGroup(new FileInputStream(output));
     }
 
+    public void testSaasMetaData() throws Exception {
+        InputStream in = this.getClass().getResourceAsStream("YouTubeVideosMetaData.xml");
+        SaasMetadata metadata = SaasUtil.loadJaxbObject(in, SaasMetadata.class);
+        assertEquals("YouTube", metadata.getGroup().getName());
+        assertEquals("Videos", metadata.getGroup().getGroup().get(0).getName());
+        //TODO failing assertEquals("org.netbeans.modules.websvc.saas.services.youtube.Bundle", metadata.getLocalizingBundle());
+        assertEquals("Templates/WebServices/profile.properties", metadata.getAuthentication().getProfile());
+        assertEquals("dev_id", metadata.getAuthentication().getApiKey().getId());
+    }
+
+    public void testSaasServices() throws Exception {
+        InputStream in = this.getClass().getResourceAsStream("YouTubeVideos.xml");
+        SaasServices ss = SaasUtil.loadSaasServices(in);
+        //assertEquals("YouTubeVideos", ss.getDisplayName());
+        assertNotNull(ss.getSaasMetadata());
+        assertEquals("Videos", ss.getSaasMetadata().getGroup().getGroup().get(0).getName());
+    }
 }

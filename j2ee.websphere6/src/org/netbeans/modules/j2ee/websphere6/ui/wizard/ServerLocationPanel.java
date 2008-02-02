@@ -48,6 +48,8 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
@@ -63,8 +65,10 @@ import org.openide.util.*;
  * @author Kirill Sorokin
  * @author Arathi
  */
-public class ServerLocationPanel extends JPanel
-        implements WizardDescriptor.Panel {
+public class ServerLocationPanel extends JPanel implements WizardDescriptor.Panel {
+    
+    private static final Logger LOGGER = Logger.getLogger(ServerLocationPanel.class.getName());
+    
     /**
      * Since the WizardDescriptor does not expose the property name for the
      * error message label, we have to keep it here also
@@ -102,7 +106,7 @@ public class ServerLocationPanel extends JPanel
         // the steps
         putClientProperty("WizardPanel_contentData", steps);           // NOI18N
         putClientProperty("WizardPanel_contentSelectedIndex",          // NOI18N
-                new Integer(index));
+                Integer.valueOf(index));
         
         // register the supplied listener
         addChangeListener(listener);
@@ -199,24 +203,26 @@ public class ServerLocationPanel extends JPanel
         
         // add server installation directory field
         locationField.addKeyListener(new LocationKeyListener());
-        if(System.getProperty("websphere.home")==null ||
+        if(System.getProperty("websphere.home") == null ||
                 System.getProperty("websphere.home").equals("")) {
             String home = System.getProperty("user.home");
-            if(home!=null) {
+            if (home != null) {
                 try{
                     File f = new File(home + File.separator + ".WASRegistry");
-                    BufferedReader reader = new BufferedReader(
-                            new InputStreamReader(
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(
                             new FileInputStream(f)));
-                    String string;
-                    while((string=reader.readLine())!=null) {
-                        if(string.length()>1 && new File(string).exists()) {
-                            System.setProperty("websphere.home",string);
+                    try {
+                        String string;
+                        while ((string = reader.readLine()) != null) {
+                            if (string.length() > 1 && new File(string).exists()) {
+                                System.setProperty("websphere.home", string);
+                            }
                         }
+                    } finally {
+                        reader.close();
                     }
-                } catch (IOException e){
-                    e=null;
-                    //either the file does not exist or not available. Do nothing
+                } catch (IOException e) {
+                    LOGGER.log(Level.FINE, null, e);
                 }
             }
         }

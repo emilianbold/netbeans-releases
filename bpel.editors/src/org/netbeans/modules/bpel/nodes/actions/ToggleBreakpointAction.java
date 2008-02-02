@@ -61,16 +61,14 @@ public class ToggleBreakpointAction extends BpelNodeAction {
         return NbBundle.getMessage(getClass(), "CTL_ToggleBreakpointAction"); // NOI18N
     }
     
-    
     public ActionType getType() {
         return ActionType.TOGGLE_BREAKPOINT;
     }
     
-    
+    @Override
     public boolean isChangeAction() {
         return false;
     }
-    
     
     protected void performAction(BpelEntity[] bpelEntities) {
         DebuggerManager.getDebuggerManager().getActionsManager().doAction(

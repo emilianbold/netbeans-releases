@@ -78,8 +78,11 @@ public abstract class SimpleItem {
     
     public static final String LICENSE = "license";
     
+    static final Set<Node> declaratingNodes = new org.openide.util.WeakSet<Node> ();
+    
     public SimpleItem (Node node) {
         declaratingNode = node;
+        declaratingNodes.add (declaratingNode);
     }
     
     public abstract UpdateItem toUpdateItem (Map<String, String> licenses, String catalogDate);

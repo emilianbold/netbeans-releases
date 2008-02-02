@@ -44,6 +44,7 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.io.File;
 import java.io.IOException;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Exceptions;
 
@@ -69,7 +70,7 @@ public class FileName implements FileNaming {
         boolean retVal = false;
         final File f = getFile();
 
-        if (f.exists()) {
+        if (FileChangedManager.getInstance().exists(f)) {
             File newFile = new File(f.getParentFile(), name);
             if (handler != null) {
                 try {

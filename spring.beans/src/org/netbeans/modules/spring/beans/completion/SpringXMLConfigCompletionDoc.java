@@ -39,8 +39,12 @@
 package org.netbeans.modules.spring.beans.completion;
 
 import java.net.URL;
+import javax.lang.model.element.Element;
 import javax.swing.Action;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -50,6 +54,14 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
 
     public static SpringXMLConfigCompletionDoc getAttribValueDoc(String text) {
         return new AttribValueDoc(text);
+    }
+    
+    public static SpringXMLConfigCompletionDoc createJavaDoc(CompilationController cc, Element element) {
+        return new JavaElementDoc(ElementJavadoc.create(cc, element));
+    }
+    
+    public static SpringXMLConfigCompletionDoc getBeanRefDoc(String beanClassName, String filePath) {
+        return new BeanRefDoc(beanClassName, filePath);
     }
 
     public URL getURL() {
@@ -63,7 +75,72 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
     public Action getGotoSourceAction() {
         return null;
     }
+    
+    private static class JavaElementDoc extends SpringXMLConfigCompletionDoc {
 
+        private ElementJavadoc elementJavadoc;
+
+        public JavaElementDoc(ElementJavadoc elementJavadoc) {
+            this.elementJavadoc = elementJavadoc;
+        }
+
+        @Override
+        public JavaElementDoc resolveLink(String link) {
+            ElementJavadoc doc = elementJavadoc.resolveLink(link);
+            return doc != null ? new JavaElementDoc(doc) : null;
+        }
+
+        @Override
+        public URL getURL() {
+            return elementJavadoc.getURL();
+        }
+
+        public String getText() {
+            return elementJavadoc.getText();
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return elementJavadoc.getGotoSourceAction();
+        }
+    }
+
+    private static class BeanRefDoc extends SpringXMLConfigCompletionDoc {
+        private String filePath;
+        private String beanClassName;
+        private String displayText;
+
+        private static final String BOLD_START = "<b>"; // NOI18N
+        private static final String BOLD_END = "</b>"; // NOI18N
+        private static final String BR = "<br>"; // NOI18N
+        
+        public BeanRefDoc(String beanClassName, String filePath) {
+            this.beanClassName = beanClassName;
+            this.filePath = filePath;
+        }
+        
+        public String getText() {
+            if(displayText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(BOLD_START);
+                sb.append(NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_Implementation_Class"));
+                sb.append(": "); // NOI18N
+                sb.append(BOLD_END);
+                sb.append(beanClassName);
+                sb.append(BR); // NOI18N
+                sb.append(BOLD_START);
+                sb.append(NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_File_Path"));
+                sb.append(": "); // NOI18N
+                sb.append(BOLD_END);
+                sb.append(filePath);
+                displayText = sb.toString();
+            }
+            
+            return displayText;
+        }
+        
+    }
+    
     private static class AttribValueDoc extends SpringXMLConfigCompletionDoc {
 
         private String text;

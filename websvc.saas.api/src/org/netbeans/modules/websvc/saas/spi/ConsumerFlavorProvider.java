@@ -36,7 +36,7 @@ import java.awt.datatransfer.Transferable;
  *
  * @author quynguyen
  */
-public interface ConsumerFlavorProvider {
+public interface ConsumerFlavorProvider_1 {
     
     /**
      * Add DataFlavors specific to a web service consumer to the base <code>Transferable</code>.

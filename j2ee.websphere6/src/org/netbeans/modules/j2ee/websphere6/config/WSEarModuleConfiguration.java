@@ -77,8 +77,8 @@ public class WSEarModuleConfiguration extends WSModuleConfiguration
     private File  wsAppBndFile;
     private File  wsAppExtFile;
     
-    WSAppBnd  websphereApplicationBnd;
-    WSAppExt websphereApplicationExt;
+    private WSAppBnd websphereApplicationBnd;
+    private WSAppExt websphereApplicationExt;
     
     DataObject [] dataObjects;
     
@@ -120,8 +120,10 @@ public class WSEarModuleConfiguration extends WSModuleConfiguration
         if (evt.getPropertyName() == DataObject.PROP_MODIFIED &&
                 evt.getNewValue() == Boolean.FALSE) {
             // dataobject has been modified, WSWeb{Ext,Bnd} graph is out of sync
-            websphereApplicationExt = null;
-            websphereApplicationBnd = null;
+            synchronized (this) {
+                websphereApplicationExt = null;
+                websphereApplicationBnd = null;
+            }
         }
     }
     
