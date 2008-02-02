@@ -189,8 +189,8 @@ made subject to such option by the copyright holder.
     <folder name="Templates">
         <folder name="Hibernate">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
-            <attr name="position" intvalue="1400"/>
-            <file name="HibernateCfgTemplate.xml" url="HibernateCfgTemplate.xml">
+            <attr name="position" intvalue="1450"/>
+            <file name="HibernateConfig.xml" url="HibernateConfig.xml">
                 <attr name="position" intvalue="100"/>
                 <attr name="template" boolvalue="true"/>                
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizard.create"/>

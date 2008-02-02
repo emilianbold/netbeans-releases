@@ -192,7 +192,8 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         String targetName = Templates.getTargetName(wizard);
         FileObject templateFileObject = Templates.getTemplate(wizard);
         DataObject templateDataObject = DataObject.find(templateFileObject);
-
+        
+        
         DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, targetName);
 
         SessionFactory sFactory = new SessionFactory();
