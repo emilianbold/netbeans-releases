@@ -77,6 +77,7 @@ import org.netbeans.modules.xml.wsdl.ui.view.OperationConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.OperationType;
 import org.netbeans.modules.xml.wsdl.ui.view.PartAndElementOrTypeTableModel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -130,8 +131,6 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
     private String mErrorMessage;
     
     private WizardDescriptor wiz = null;
-    
-    private WSDLModel mTempModel;
     
     private PortType mPortType;
     
@@ -202,42 +201,55 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
 
     public void storeSettings(Object settings) {
         TemplateWizard templateWizard = (TemplateWizard)settings;
-        if(templateWizard.getValue() == TemplateWizard.CANCEL_OPTION) {
-        	DataObject dobj = ActionHelper.getDataObject(mTempModel);
-        	if (dobj != null) dobj.setModified(false);
-        	return;
+        WSDLModel tempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
+        Object option = templateWizard.getValue();
+        if(option == NotifyDescriptor.CANCEL_OPTION || option == WizardDescriptor.PREVIOUS_OPTION) {
+            DataObject dobj = ActionHelper.getDataObject(tempModel);
+            if (dobj != null) {
+                dobj.setModified(false);
+                try {
+                    dobj.delete();
+                } catch (Exception e) {
+                    //ignore
+                }
+            }
+            templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, null);
+            mPortType = null;
+            mNewMessageList = null;
+            mPartnerLinkTypeElement = null;
+            mImports = null;
+            return;
         }
 
-        this.mTempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
-        if(this.mTempModel != null) {
-            this.mTempModel.startTransaction();
+        if(tempModel != null) {
+            tempModel.startTransaction();
             if(this.mPortType != null) {
-                this.mTempModel.getDefinitions().removePortType(this.mPortType);
+                tempModel.getDefinitions().removePortType(this.mPortType);
             }
 
             if(this.mNewMessageList != null) {
                 for (Message msg : mNewMessageList) {
-                    this.mTempModel.getDefinitions().removeMessage(msg);
+                    tempModel.getDefinitions().removeMessage(msg);
                 }
             }
 
             if(this.mPartnerLinkTypeElement != null) {
-                this.mTempModel.getDefinitions().removeExtensibilityElement(this.mPartnerLinkTypeElement);
+                tempModel.getDefinitions().removeExtensibilityElement(this.mPartnerLinkTypeElement);
             }
 
             if(this.mImports != null) {
                 //Cleanup all inline schemas and remove the imported schemas from the inline schema.
-                Collection<WSDLSchema> wSchemas = mTempModel.getDefinitions().getTypes().getExtensibilityElements(WSDLSchema.class);
+                Collection<WSDLSchema> wSchemas = tempModel.getDefinitions().getTypes().getExtensibilityElements(WSDLSchema.class);
                 for (WSDLSchema wSchema : wSchemas) {
                     Schema schema = wSchema.getSchemaModel().getSchema();
                     //Wizard adds all imported schemas in a inline schema with same TNS as the definitions.
                     //So remove from that schema.
-                    if (schema.getTargetNamespace().equals(mTempModel.getDefinitions().getTargetNamespace())) {
+                    if (schema.getTargetNamespace().equals(tempModel.getDefinitions().getTargetNamespace())) {
                         for (Import imp : mImports) {
                             schema.removeExternalReference(imp);
                         }
                     }
-                    mTempModel.getDefinitions().getTypes().removeExtensibilityElement(wSchema);
+                    tempModel.getDefinitions().getTypes().removeExtensibilityElement(wSchema);
                 }
             }
 
@@ -247,12 +259,6 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
             mPartnerLinkTypeElement = null;
             mImports = null;
 
-            if (templateWizard.getValue() == TemplateWizard.PREVIOUS_OPTION) {
-                //commit the cleanup.
-                this.mTempModel.endTransaction();
-                return;
-            }
-            
             String portTypeName = this.mPanel.getPortTypeName();
             String operationName = this.mPanel.getOperationName();        
             OperationType ot = this.mPanel.getOperationType();
@@ -288,14 +294,14 @@ public class WizardPortTypeConfigurationStep implements WizardDescriptor.Finisha
             templateWizard.putProperty(OPERATION_NAME, operationName);
             templateWizard.putProperty(OPERATION_TYPE, ot);
 
-            PortTypeGenerator ptGen = new PortTypeGenerator(this.mTempModel, configurationMap);
+            PortTypeGenerator ptGen = new PortTypeGenerator(tempModel, configurationMap);
             ptGen.execute();
             this.mPortType = ptGen.getPortType();
             this.mNewMessageList = ptGen.getNewMessages();
             this.mPartnerLinkTypeElement = ptGen.getPartnerLinkType();
             this.mImports = ptGen.getImports();
 
-            this.mTempModel.endTransaction();
+            tempModel.endTransaction();
             
             templateWizard.putProperty(PORTTYPE, this.mPortType);
         }
