@@ -69,7 +69,6 @@ import org.openide.util.RequestProcessor;
  * Implementation of a single classpath that is derived from one Ant property. It is possible to listen to
  * the changes of {@link ClassPathImplementation#PROP_RESOURCES}.
  * @author Tomas Zezula
- * @since org.netbeans.modules.java.api.common/0 1.0
  */
 public final class SourcePathImplementation implements ClassPathImplementation, PropertyChangeListener {
 

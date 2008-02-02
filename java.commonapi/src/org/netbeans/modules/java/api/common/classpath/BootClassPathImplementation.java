@@ -61,7 +61,6 @@ import org.openide.util.WeakListeners;
  * Represent a boot class path. It is possible to listen to the changes of
  * {@link ClassPathImplementation#PROP_RESOURCES}.
  * @author Tomas Zezula
- * @since org.netbeans.modules.java.api.common/0 1.0
  */
 public final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 

@@ -61,7 +61,6 @@ import org.openide.util.WeakListeners;
 /**
  * Defines the various class paths for various project types.
  * @author Tomas Zezula, David Konecny, Tomas Mysik
- * @since org.netbeans.modules.java.api.common/0 1.0
  */
 public final class DefaultClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
 

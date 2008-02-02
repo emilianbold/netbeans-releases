@@ -47,7 +47,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 /**
  * Customization of {@link SourcePathImplementation} which can be used by project types.
  * @author Tomas Mysik
- * @since org.netbeans.modules.java.api.common/0 1.0
  */
 public interface SourcePathImplementationCustomization {
 

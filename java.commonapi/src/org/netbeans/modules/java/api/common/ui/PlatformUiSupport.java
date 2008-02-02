@@ -74,7 +74,6 @@ import org.w3c.dom.NodeList;
 
 /**
  * Support class for {@link JavaPlatform} manipulation in project customizer.
- * @since org.netbeans.modules.java.api.common/0 1.0
  * @author Tomas Zezula, Tomas Mysik
  */
 public final class PlatformUiSupport {

@@ -52,7 +52,6 @@ import org.openide.util.NbBundle;
  * in Ant project metadata (see {@link #PROP_ROOT_PROPERTIES}) as well as
  * in project properties (see {@link #PROP_ROOTS}).
  * @author Tomas Zezula, Tomas Mysik
- * @since org.netbeans.modules.java.api.common/0 1.0
  */
 public interface SourceRoots {
 

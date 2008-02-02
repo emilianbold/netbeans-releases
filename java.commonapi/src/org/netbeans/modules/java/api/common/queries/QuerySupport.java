@@ -53,7 +53,6 @@ import org.openide.util.Parameters;
 
 /**
  * Support class for creating different types of queries implementations.
- * @since org.netbeans.modules.java.api.common/0 1.0
  * @author Tomas Mysik
  */
 public final class QuerySupport {
