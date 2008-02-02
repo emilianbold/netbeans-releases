@@ -44,10 +44,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.compapp.projects.common.CatalogWSDL.Entry;
-import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -79,9 +79,7 @@ import org.openide.util.NbBundle;
  * @author chikkala
  */
 public class ImplicitCatalogValidator {
-    /**  command that can be used in the project action provider to add the 
-     action that can validate the implicit catalog entries */
-    public static final String COMMAND_VALIDATE = "validate-implicit-catalog";
+
     /** logger */
     private static final Logger sLogger = Logger.getLogger(ImplicitCatalogValidator.class.getName());
     /** Project in which the implicit catalog is validated*/
@@ -92,6 +90,7 @@ public class ImplicitCatalogValidator {
     private ImplicitCatalogSupport mCatalogSupport;
     /** printer to print results */
     private ResultPrinter mPrn;
+
     /**
      * create constructor that validates the implicit catalog.
      * @param catSupport
@@ -102,6 +101,7 @@ public class ImplicitCatalogValidator {
         this.mCatalogSupport = catSupport;
         this.mCatalogWSDL = catWSDL;
     }
+
     /**
      * This method creates a new ImplicitCatalogValidator using the 
      * ImplicitCatalogSupport and the Catalog wsdl file loaded from the project.
@@ -116,6 +116,7 @@ public class ImplicitCatalogValidator {
         newInstance = new ImplicitCatalogValidator(catSupport, catWSDL);
         return newInstance;
     }
+
     /**
      * sets the result printer. By default a printer is initialized that prints
      * the results to stdout.
@@ -124,6 +125,7 @@ public class ImplicitCatalogValidator {
     public void setResultPrinter(ResultPrinter out) {
         this.mPrn = out;
     }
+
     /**
      * return printer
      * @return
@@ -131,6 +133,7 @@ public class ImplicitCatalogValidator {
     protected ResultPrinter getResultPrinter() {
         return this.mPrn;
     }
+
     /**
      * 
      * @return
@@ -138,6 +141,7 @@ public class ImplicitCatalogValidator {
     protected CatalogWSDL getCatalogWSDL() {
         return this.mCatalogWSDL;
     }
+
     /**
      * 
      * @return
@@ -145,6 +149,7 @@ public class ImplicitCatalogValidator {
     protected ImplicitCatalogSupport getImplicitCatalogSupport() {
         return this.mCatalogSupport;
     }
+
     /**
      * validates the catalog.wsdl entries by checking the correpsonding entries
      * in the catalog.xml and also existance of the actual file and optionally 
@@ -153,51 +158,54 @@ public class ImplicitCatalogValidator {
      * is failed with errors.
      */
     public boolean validate() {
-        try {
-            List<Entry> entries = this.mCatalogWSDL.getEntries();
-            for (Entry entry : entries) {
-                FileObject fo = null;
-                try {
-                    fo = this.mCatalogSupport.resolveImplicitReference(entry);
-                } catch (CatalogModelException ex) {
-                    printResult(ex);
-                }
+        String startedMsg = 
+                NbBundle.getMessage(ImplicitCatalogValidator.class, "icat.validator.msg.started");
+        String finishedMsg = 
+                NbBundle.getMessage(ImplicitCatalogValidator.class, "icat.validator.msg.finished");
+        this.mPrn.println(startedMsg);
+        List<Entry> entries = this.mCatalogWSDL.getEntries();
+        for (Entry entry : entries) {
+            FileObject fo = null;
+            try {
+                fo = this.mCatalogSupport.resolveImplicitReference(entry.getLocation());
                 printResult(entry, fo);
+            } catch (Exception ex) {
+                printResult(entry, ex);
+                sLogger.log(Level.FINE, ex.getMessage(), ex);
             }
-            return true;
-        } catch (IOException ex) {
-            printResult(ex);
-            return false;
         }
+        this.mPrn.println(finishedMsg);
+        return true;
     }
+
     /**     
      * prints out the result of validating an entry in catalog.wsdl
      * @param entry entry in the catalog.wsdl
      * @param fo resolved file corresponding to that entry.
      */
     protected void printResult(Entry entry, FileObject fo) {
-        String systemIdMsg = 
+        String systemIdMsg =
                 NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.systemid", entry.getLocation());
-        String typeMsg = 
+        String typeMsg =
                 NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.type", entry.getType());
         if (fo == null) {
-            String errMsg = 
+            String errMsg =
                     NbBundle.getMessage(this.getClass(), "icat.validator.msg.error", entry.getNamesapce());
-            String notFoundMsg = 
-                NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.result.file.not.found");
-            String resultMsg = 
+            String notFoundMsg =
+                    NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.result.file.not.found");
+            String resultMsg =
                     NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.result", notFoundMsg);
-            
+
             this.mPrn.println(errMsg);
             this.mPrn.println(systemIdMsg);
             this.mPrn.println(typeMsg);
             this.mPrn.println(resultMsg);
         } else {
-            String infoMsg = 
+            String infoMsg =
                     NbBundle.getMessage(this.getClass(), "icat.validator.msg.info", entry.getNamesapce());
-            String fileMsg = 
-                NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.result.file", fo.getPath());
-            String resultMsg = 
+            String fileMsg =
+                    NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.result.file", fo.getPath());
+            String resultMsg =
                     NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.result", fileMsg);
             this.mPrn.println(infoMsg);
             this.mPrn.println(systemIdMsg);
@@ -205,15 +213,29 @@ public class ImplicitCatalogValidator {
             this.mPrn.println(resultMsg);
         }
     }
+
     /**
-     * 
+     * prints any exception results in validating the entry
+     * @param entry
      * @param ex
      */
-    protected void printResult(Exception ex) {
-        String msg = NbBundle.getMessage(this.getClass(), "icat.validator.msg.exption", ex.getMessage());
-        this.mPrn.error(msg);
-        // TODO: print statcktrace also to the error output
+    protected void printResult(Entry entry, Exception ex) {
+        String errMsg =
+                NbBundle.getMessage(this.getClass(), "icat.validator.msg.error", entry.getNamesapce());        
+        String systemIdMsg =
+                NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.systemid", entry.getLocation());
+        String typeMsg =
+                NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.type", entry.getType());
+        String resultMsg =
+                NbBundle.getMessage(this.getClass(), "icat.validator.msg.entry.result", ex.getMessage());
+        this.mPrn.println(errMsg);
+        this.mPrn.println(systemIdMsg);
+        this.mPrn.println(typeMsg);
+        this.mPrn.println(resultMsg);        
+        
+    // TODO: print statcktrace to log 
     }
+
     /**
      * This class is a print interface for the validation results. By default it
      * prints the result output to stdout. Extended classes
@@ -222,14 +244,17 @@ public class ImplicitCatalogValidator {
      * output window, or logger etc).
      */
     public static class ResultPrinter {
+
         /** standard output writer*/
         private PrintWriter mOut;
         /** error output writer */
         private PrintWriter mErr;
+
         /** constructor */
         public ResultPrinter() {
             initWriters();
         }
+
         /**
          * initializes the writers. By default it initializes writes to system.out and err.
          * Called from the constructor to initialize the writers. extended classes
@@ -242,6 +267,7 @@ public class ImplicitCatalogValidator {
             setOutWriter(out);
             setErrorWriter(err);
         }
+
         /**
          * 
          * @param out
@@ -249,6 +275,7 @@ public class ImplicitCatalogValidator {
         protected final void setOutWriter(PrintWriter out) {
             this.mOut = out;
         }
+
         /**
          * 
          * @return
@@ -256,6 +283,7 @@ public class ImplicitCatalogValidator {
         protected final PrintWriter getOutWriter() {
             return this.mOut;
         }
+
         /**
          * 
          * @param err
@@ -263,6 +291,7 @@ public class ImplicitCatalogValidator {
         protected final void setErrorWriter(PrintWriter err) {
             this.mErr = err;
         }
+
         /**
          * 
          * @return
@@ -270,6 +299,7 @@ public class ImplicitCatalogValidator {
         protected final PrintWriter getErrorWriter() {
             return this.mErr;
         }
+
         /**
          * 
          * @param obj
@@ -277,6 +307,7 @@ public class ImplicitCatalogValidator {
         public void println(Object obj) {
             this.mOut.println(obj);
         }
+
         /**
          * 
          * @param obj
@@ -284,6 +315,7 @@ public class ImplicitCatalogValidator {
         public void error(Object obj) {
             this.mErr.print(obj);
         }
+
         /**
          * 
          * @param obj
@@ -292,12 +324,14 @@ public class ImplicitCatalogValidator {
             this.mErr.print(obj);
         }
     }
+
     /**
      *  ResultPrinter that prints results to a string.
      */
     public static class StringResult extends ResultPrinter {
 
         private StringWriter mStrWriter;
+
         /**
          * initializes both error and outout writers to a string writer.
          */
@@ -308,6 +342,7 @@ public class ImplicitCatalogValidator {
             setOutWriter(out);
             setErrorWriter(out); // both err and out to same file.
         }
+
         @Override
         public String toString() {
             return this.mStrWriter.getBuffer().toString();
