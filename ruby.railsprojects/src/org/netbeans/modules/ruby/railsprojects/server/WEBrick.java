@@ -69,8 +69,8 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
         this.platform = platform;
     }
 
-    public String getName() {
-        return NbBundle.getMessage(WEBrick.class, "LBL_WEBrick");
+    public String getNodeName() {
+        return NbBundle.getMessage(WEBrick.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
 
     // RubyServer methods 
@@ -87,7 +87,7 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(WEBrick.class, "LBL_ServerDisplayName", getName(), platform.getLabel());
+        return NbBundle.getMessage(WEBrick.class, "LBL_WEBrick");
     }
 
     public List<RailsApplication> getApplications() {

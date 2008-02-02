@@ -24,11 +24,11 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
+import javax.swing.Icon;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
 import org.netbeans.modules.soa.mappercore.MapperStyle;
 import org.netbeans.modules.soa.mappercore.graphics.RRectangle;
-import org.netbeans.modules.soa.mappercore.icons.Icon2D;
 
 /**
  *
@@ -37,12 +37,12 @@ import org.netbeans.modules.soa.mappercore.icons.Icon2D;
 public class Operation extends Vertex {
 
     
-    public Operation(Icon2D icon) {
+    public Operation(Icon icon) {
         this(null, icon);
     }
     
 
-    public Operation(Object dataObject, Icon2D icon) {
+    public Operation(Object dataObject, Icon icon) {
         super(dataObject, icon);
     }
     
@@ -83,12 +83,16 @@ public class Operation extends Vertex {
         
         g2.fill(rrect);
 
-        Icon2D icon = getIcon();
+        Icon icon = getIcon();
         if (icon != null) {
-            double tx2 = 0.5 * w;
-            double ty2 = 0.5 * h;
+            double tx2 = Math.round(0.5 * w) - 0.5 - icon.getIconWidth() / 2 + 1;
+            double ty2 = Math.round(0.5 * h) - 0.5 - icon.getIconHeight() / 2 + 1;
             g2.translate(tx2, ty2);
-            icon.paintIcon(this, g2, step);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                    RenderingHints.VALUE_STROKE_NORMALIZE);
+            icon.paintIcon(rendererContext.getCanvas(), g2, 0, 0);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                    RenderingHints.VALUE_STROKE_PURE);
             g2.translate(-tx2, -ty2);
         }
         

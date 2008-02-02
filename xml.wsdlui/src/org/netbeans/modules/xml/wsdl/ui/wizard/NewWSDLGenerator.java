@@ -80,7 +80,7 @@ public class NewWSDLGenerator {
     
     private WSDLModel mModel;
    
-    private WsdlGenerationUtil mUtil;
+    //private WsdlGenerationUtil mUtil;
     
     /** Creates a new instance of NewWSDLGenerator */
     public NewWSDLGenerator(FileObject newWSDLFile, TemplateWizard templateWizard) {
@@ -90,7 +90,7 @@ public class NewWSDLGenerator {
 			true);
         
         mModel = WSDLModelFactory.getDefault().getModel(modelSource);
-        this.mUtil = new WsdlGenerationUtil(this.mModel);
+        //this.mUtil = new WsdlGenerationUtil(this.mModel);
     }
     
     public void generate() {
