@@ -37,7 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.api.common.classpath.j2ee;
+package org.netbeans.modules.j2ee.common.classpath;
 
 import org.netbeans.modules.java.api.common.classpath.*;
 import java.beans.PropertyChangeEvent;
@@ -64,6 +64,7 @@ import org.openide.util.WeakListeners;
 // XXX improve javadoc
 /**
  * Defines the various class paths for a web project.
+ * @since 1.21
  */
 public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
 

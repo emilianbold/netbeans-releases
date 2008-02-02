@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.api.common.classpath.j2ee;
+package org.netbeans.modules.j2ee.common.classpath;
 
 import java.io.IOException;
 import java.net.URL;
@@ -51,6 +51,12 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.classpath.ProjectClassPathModifierSupport.Operation;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
+/**
+ *
+ * @author Tomas Mysik
+ * @since 1.21
+ * @deprecated
+ */
 @Deprecated
 public abstract class WebProjectClassPathExtender implements ProjectClassPathExtender {
 

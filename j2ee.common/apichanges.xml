@@ -103,6 +103,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="CodeDuplication">
+            <api name="j2ee-utilities"/>
+            <summary>Created common classes for Java project types.</summary>
+            <version major="1" minor="21"/>
+            <date day="2" month="2" year="2008"/>
+            <author login="tmysik"/>
+            <!-- XXX -->
+            <compatibility binary="incompatible" source="incompatible" semantic="incompatible" addition="no"/>
+            <description>
+                <p>
+                    Package org.netbeans.modules.j2ee.common.classpath serves for code related to class path
+                    duplicated among Java EE project types.
+                </p>
+            </description>
+            <!-- XXX -->
+            <package name="org.netbeans.modules.j2ee.common.classpath" link="no" />
+        </change>
+
         <change id="J2eeProjectsConstants">
             <api name="j2ee-utilities"/>
             <summary>Removed J2eeProjectsConstants class.</summary>

@@ -152,6 +152,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.api.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>0-1</release-version>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.java.editor.lib</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -182,6 +191,15 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.3</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.project.ant</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -344,6 +362,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <package>org.netbeans.modules.j2ee.common</package>
+                <package>org.netbeans.modules.j2ee.common.classpath</package>
                 <package>org.netbeans.modules.j2ee.common.method</package>
                 <package>org.netbeans.modules.j2ee.common.queries.api</package>
                 <package>org.netbeans.modules.j2ee.common.queries.spi</package>

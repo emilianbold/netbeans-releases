@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.api.common.classpath.j2ee;
+package org.netbeans.modules.j2ee.common.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -79,7 +79,7 @@ import org.openide.util.WeakListeners;
 
 /**
  *@author Tomas Zezula, Tomas Mysik
- *
+ * @since 1.21
  */
 public class J2EEProjectClassPathModifier extends ProjectClassPathModifierImplementation
         implements PropertyChangeListener {
