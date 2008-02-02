@@ -76,8 +76,6 @@ import org.codehaus.groovy.control.SourceUnit;
  * @author Martin Adamek
  */
 public class AstUtilities {
-    
-    
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
         return info.getPositionManager().getAstOffset(info.getParserResult(), lexOffset);
@@ -154,6 +152,22 @@ public class AstUtilities {
         return root;
     }
 
+    public static OffsetRange getRangeFull(ASTNode node, String text) {
+            if (node.getLineNumber() < 0 || node.getColumnNumber() < 0 || node.getLastLineNumber() < 0 || node.getLastColumnNumber() < 0) {
+                System.out.println("### NONE range for " + node);
+                return OffsetRange.NONE;
+            }
+            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            if (start < 0) {
+                start = 0;
+            }
+            int end = getOffset(text, node.getLastLineNumber(), node.getLastColumnNumber());
+            if (end < 0) {
+                end = 0;
+            }
+            return new OffsetRange(start, end);
+    }
+    
     public static OffsetRange getRange(ASTNode node, String text) {
         if (node instanceof MethodNode) {
             int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
