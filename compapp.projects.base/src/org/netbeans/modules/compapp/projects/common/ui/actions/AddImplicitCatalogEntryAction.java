@@ -47,13 +47,12 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
- * This class provides the project action implementation for validating the implicit catalog 
- * in projects. This delegates the work to ValidateImplicitCatalogActionPerformer.
- * @see ValidateImplicitCatalogActionPerformer
- * 
+ * This class provides the project action implementation for add implicit catalog 
+ * entries action to projects. This delegates the work AddImplicitCatalogEntryActionPerformer
+ * @see AddImplicitCatalogEntryActionPerformer
  * @author chikkala
  */
-public final class ValidateImplicitCatalogAction extends CookieAction {
+public final class AddImplicitCatalogEntryAction extends CookieAction {
 
     /**
      * 
@@ -61,7 +60,7 @@ public final class ValidateImplicitCatalogAction extends CookieAction {
      */
     protected void performAction(Node[] activatedNodes) {
         Project project = activatedNodes[0].getLookup().lookup(Project.class);
-        (new ValidateImplicitCatalogActionPerformer()).perform(project);
+        (new AddImplicitCatalogEntryActionPerformer()).perform(project);
     }
 
     /**
@@ -77,7 +76,7 @@ public final class ValidateImplicitCatalogAction extends CookieAction {
      * @return
      */
     public String getName() {
-        return NbBundle.getMessage(ValidateImplicitCatalogAction.class, "LBL_ValidateImplicitCatalogAction");
+        return NbBundle.getMessage(AddImplicitCatalogEntryAction.class, "LBL_AddImplicitCatalogEntryAction");
     }
 
     protected Class[] cookieClasses() {
