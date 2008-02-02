@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xsd:schema attributeFormDefault="unqualified"
+            elementFormDefault="unqualified"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:ZillowTypes="http://www.zillow.com/static/xsd/ZillowTypes.xsd"
+            targetNamespace="http://www.zillow.com/static/xsd/Chart.xsd">
+
+    <xsd:import namespace="http://www.zillow.com/static/xsd/ZillowTypes.xsd"
+    schemaLocation="ZillowTypes.xsd"  />
+
+    <xsd:element name="chart">
+        <xsd:complexType>
+            <xsd:sequence>
+
+                <xsd:element name="request">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="zpid" type="xsd:string"/>
+                            <xsd:element name="unit-type" type="xsd:string"/>
+                            <xsd:element minOccurs="0" name="width" type="xsd:string"/>
+                            <xsd:element minOccurs="0" name="height" type="xsd:string"/>                            
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+
+                <xsd:element name="message" type="ZillowTypes:Message"/>
+
+                <xsd:element minOccurs="0" name="response">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="url" type="xsd:string"/>
+                            <xsd:element name="graphsanddata" type="xsd:string"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+</xsd:schema>
+
