@@ -54,10 +54,12 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -90,6 +92,7 @@ import org.netbeans.modules.sun.manager.jbi.management.JBIComponentType;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationDescriptor;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationMBeanAttributeInfo;
 import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentConfigurationParser;
+import org.netbeans.modules.sun.manager.jbi.management.model.JBIComponentStatus;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.PerformanceMeasurementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.management.wrapper.api.RuntimeManagementServiceWrapper;
 import org.netbeans.modules.sun.manager.jbi.nodes.property.JBIPropertySupportFactory;
@@ -147,6 +150,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     private static boolean confirmComponentShutdownDuringUpgrade = true;
     // This is not persistent across sessions.
     private static boolean confirmForServiceAssembliesUndeployment = true;
+    // This is not persistent across sessions.
+    private static boolean confirmForComponentAutoStartForServiceAssembliesUndeployment = true;
     private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode"); // NOI18N
 
     public JBIComponentNode(final AppserverJBIMgmtController controller,
@@ -225,7 +230,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             if (rootConfigDescriptor != null) {
                 PropertySupport[] propertySupports =
                         createPropertySupportArrayWithSchema(
-                        (Map<Attribute, JBIComponentConfigurationMBeanAttributeInfo>)configPropertyMap);
+                        (Map<Attribute, JBIComponentConfigurationMBeanAttributeInfo>) configPropertyMap);
                 sheetSet = createSheetSet(CONFIGURATION_SHEET_SET_NAME,
                         "LBL_CONFIG_PROPERTIES", // NOI18N
                         "DSC_CONFIG_PROPERTIES", // NOI18N
@@ -255,21 +260,24 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             logger.warning(e.getMessage());
         }
 
-        // 4. Augment the general property sheet by adding component statistics sheet
-        try {
-            addSheetSet(sheet,
-                    COMPONENT_STATISTICS_SHEET_SET_NAME,
-                    "LBL_COMPONENT_STATISTICS_PROPERTIES", // NOI18N
-                    "DSC_COMPONENT_STATISTICS_PROPERTIES", // NOI18N
-                    geComponentStatisticsSheetSetProperties());
-        } catch (ManagementRemoteException e) {
-            logger.warning(e.getMessage());
+        // 4. Augment the general property sheet by adding component 
+        // statistics sheet.
+        if (JBIComponentStatus.STARTED_STATE.equals(getState())) {
+            try {
+                addSheetSet(sheet,
+                        COMPONENT_STATISTICS_SHEET_SET_NAME,
+                        "LBL_COMPONENT_STATISTICS_PROPERTIES", // NOI18N
+                        "DSC_COMPONENT_STATISTICS_PROPERTIES", // NOI18N
+                        getComponentStatisticsSheetSetProperties());
+            } catch (ManagementRemoteException e) {
+                logger.warning(e.getMessage());
+            }
         }
 
         return sheet;
     }
 
-    private Map<Attribute, MBeanAttributeInfo> geComponentStatisticsSheetSetProperties()
+    private Map<Attribute, MBeanAttributeInfo> getComponentStatisticsSheetSetProperties()
             throws ManagementRemoteException {
         AppserverJBIMgmtController controller = getAppserverJBIMgmtController();
         PerformanceMeasurementServiceWrapper perfService =
@@ -279,107 +287,6 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         return Utils.getIntrospectedPropertyMap(statistics, true);
     }
 
-    protected PropertySupport[] oldCreatePropertySupportArrayWithSchema(
-            final Map<Attribute, ? extends MBeanAttributeInfo> attrMap) {
-
-        assert configSchema != null;
-
-        List<PropertySupport> supports = new ArrayList<PropertySupport>();
-
-        try {
-            String compName = getName();
-
-            for (Attribute attr : attrMap.keySet()) {
-                MBeanAttributeInfo info = attrMap.get(attr);
-
-                PropertySupport support = 
-                        OldSchemaBasedConfigPropertySupportFactory.
-                        getPropertySupport(configSchema, compName, this, attr, info);
-
-                if (support == null) {
-
-                    if (attr.getValue() instanceof TabularData) {
-                        // There is no schema support for tabular data.
-                        support = JBIPropertySupportFactory.getPropertySupport(
-                                this, attr, info);
-                        supports.add(support);
-                        continue;
-                    }
-
-                    String msg = "Failed to get property support for " +
-                            compName + ":" + attr.getName() + ". " +
-                            "Missing definition in configuration schema.";
-                    NotifyDescriptor d = new NotifyDescriptor.Message(
-                            msg, NotifyDescriptor.WARNING_MESSAGE);
-                    DialogDisplayer.getDefault().notify(d);
-                } else {
-                    supports.add(support);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return supports.toArray(new PropertySupport[0]);
-    }
-    
-    /*
-     private void addPropertySupport(List<PropertySupport> propertySupports,
-            JBIComponentConfigurationDescriptor configDescriptor,
-            Map<Attribute, ? extends MBeanAttributeInfo> attrMap) {
-
-        if (configDescriptor.isApplicationConfiguration() ||
-                configDescriptor.isApplicationVariable()) {
-            // do nothing
-        } else if (configDescriptor.isProperty()) {
-
-            if (!configDescriptor.showDisplayAtInstallation()) {
-                return;
-            }
-
-            String name = configDescriptor.getName();
-//            String value = configDescriptor.getDefaultValue();
-//            QName typeQName = configDescriptor.getTypeQName();
-
-
-//            Object attrValue = null;
-//            if (JBIComponentConfigurationDescriptor.XSD_INT.equals(typeQName) ||
-//                    JBIComponentConfigurationDescriptor.XSD_POSITIVE_INTEGER.equals(typeQName) ||
-//                    JBIComponentConfigurationDescriptor.XSD_NEGATIVE_INTEGER.equals(typeQName) ||
-//                    JBIComponentConfigurationDescriptor.XSD_NON_POSITIVE_INTEGER.equals(typeQName) ||
-//                    JBIComponentConfigurationDescriptor.XSD_NON_NEGATIVE_INTEGER.equals(typeQName)) {
-//                attrValue = Integer.parseInt(value);
-//            } else if (JBIComponentConfigurationDescriptor.XSD_STRING.equals(typeQName)) {
-//                attrValue = value;
-//            } else if (JBIComponentConfigurationDescriptor.XSD_BOOLEAN.equals(typeQName)) {
-//                attrValue = Boolean.parseBoolean(value);
-//            } else {
-//                throw new RuntimeException("Type not supported: " + typeQName);
-//            }
-
-            Attribute attr = new Attribute(name, attrValue);
-
-            JBIComponentConfigurationMBeanAttributeInfo attrInfo =
-                    new JBIComponentConfigurationMBeanAttributeInfo(
-                    configDescriptor,
-                    attrValue.getClass().getName(),
-                    true, true, false);
-
-            propertySupports.add(
-                    NewSchemaBasedConfigPropertySupportFactory.getPropertySupport(
-                    this, attr, attrInfo));
-
-        } else { // PropertyGroup or root descriptor
-            for (JBIComponentConfigurationDescriptor childDescriptor : 
-                    configDescriptor.getChildren()) {
-                addPropertySupport(propertySupports, childDescriptor);
-            }
-        }
-    }
-     */
-
-     
     protected PropertySupport[] createPropertySupportArrayWithSchema(
             final Map<Attribute, JBIComponentConfigurationMBeanAttributeInfo> attrMap) {
 
@@ -388,11 +295,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         try {
             String compName = getName();
 
-            for (Attribute attr : attrMap.keySet()) { 
+            for (Attribute attr : attrMap.keySet()) {
                 JBIComponentConfigurationMBeanAttributeInfo info = attrMap.get(attr);
 
-                PropertySupport support = NewSchemaBasedConfigPropertySupportFactory.
-                        getPropertySupport(this, attr, info);
+                PropertySupport support = NewSchemaBasedConfigPropertySupportFactory.getPropertySupport(this, attr, info);
 
                 if (support == null) {
 
@@ -472,40 +378,43 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                     ret.put(attr, attrInfo);
                 }
 
-                try {
-                    if (configService.isAppVarsSupported(compName, SERVER_TARGET)) {
-                        TabularData appVars =
-                                configService.getApplicationVariablesAsTabularData(
-                                compName, SERVER_TARGET);
-                        Attribute attr =
-                                new Attribute(APPLICATION_VARIABLES_NAME, appVars);
-                        MBeanAttributeInfo attrInfo =
-                                new MBeanAttributeInfo(APPLICATION_VARIABLES_NAME,
-                                "javax.management.openmbean.TabularData", // NOI18N
-                                "Application variables",
-                                true, true, false);
-                        ret.put(attr, attrInfo);
+                // App Var/Config is only available when component is started.
+                if (JBIComponentStatus.STARTED_STATE.equals(getState())) {
+                    try {
+                        if (configService.isAppVarsSupported(compName, SERVER_TARGET)) {
+                            TabularData appVars =
+                                    configService.getApplicationVariablesAsTabularData(
+                                    compName, SERVER_TARGET);
+                            Attribute attr =
+                                    new Attribute(APPLICATION_VARIABLES_NAME, appVars);
+                            MBeanAttributeInfo attrInfo =
+                                    new MBeanAttributeInfo(APPLICATION_VARIABLES_NAME,
+                                    "javax.management.openmbean.TabularData", // NOI18N
+                                    "Application variables",
+                                    true, true, false);
+                            ret.put(attr, attrInfo);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
 
-                try {
-                    if (configService.isAppConfigSupported(compName, SERVER_TARGET)) {
-                        TabularData appConfigs =
-                                configService.getApplicationConfigurationsAsTabularData(
-                                compName, SERVER_TARGET);
-                        Attribute attr =
-                                new Attribute(APPLICATION_CONFIGURATIONS_NAME, appConfigs);
-                        MBeanAttributeInfo attrInfo =
-                                new MBeanAttributeInfo(APPLICATION_CONFIGURATIONS_NAME,
-                                "javax.management.openmbean.TabularData", // NOI18N
-                                "Application configurations",
-                                true, true, false);
-                        ret.put(attr, attrInfo);
+                    try {
+                        if (configService.isAppConfigSupported(compName, SERVER_TARGET)) {
+                            TabularData appConfigs =
+                                    configService.getApplicationConfigurationsAsTabularData(
+                                    compName, SERVER_TARGET);
+                            Attribute attr =
+                                    new Attribute(APPLICATION_CONFIGURATIONS_NAME, appConfigs);
+                            MBeanAttributeInfo attrInfo =
+                                    new MBeanAttributeInfo(APPLICATION_CONFIGURATIONS_NAME,
+                                    "javax.management.openmbean.TabularData", // NOI18N
+                                    "Application configurations",
+                                    true, true, false);
+                            ret.put(attr, attrInfo);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
 
             } else {
@@ -522,18 +431,22 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
     private void addProperty(Map<Attribute, MBeanAttributeInfo> attrMap,
             JBIComponentConfigurationDescriptor configDescriptor,
             ConfigurationService configService,
-            Map<String, Object> configMap) 
+            Map<String, Object> configMap)
             throws ManagementRemoteException {
 
         String name = configDescriptor.getName();
         Object value = null;
 
         if (configDescriptor.isApplicationConfiguration()) {
-            value = configService.getApplicationConfigurationsAsTabularData(
-                    getName(), SERVER_TARGET);
+            if (JBIComponentStatus.STARTED_STATE.equals(getState())) {
+                value = configService.getApplicationConfigurationsAsTabularData(
+                        getName(), SERVER_TARGET);
+            }
         } else if (configDescriptor.isApplicationVariable()) {
-            value = configService.getApplicationVariablesAsTabularData(
-                    getName(), SERVER_TARGET);
+            if (JBIComponentStatus.STARTED_STATE.equals(getState())) {
+                value = configService.getApplicationVariablesAsTabularData(
+                        getName(), SERVER_TARGET);
+            }
         } else if (configDescriptor.isProperty()) {
             if (!configDescriptor.showDisplayAtRuntime()) {
                 return;
@@ -544,7 +457,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
                 addProperty(attrMap, childDescriptor, configService, configMap);
             }
         }
-        
+
         if (value != null) {
             Attribute attr = new Attribute(name, value);
 
@@ -578,8 +491,7 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         for (String loggerCustomName : loggerMap.keySet()) {
             Level logLevel = loggerMap.get(loggerCustomName);
             int lastDotIndex = loggerCustomName.lastIndexOf("."); // NOI18N
-            String shortName = lastDotIndex == -1 ? loggerCustomName : 
-                loggerCustomName.substring(lastDotIndex + 1);
+            String shortName = lastDotIndex == -1 ? loggerCustomName : loggerCustomName.substring(lastDotIndex + 1);
 
             Attribute attr = new Attribute(loggerCustomName, logLevel);
             MBeanAttributeInfo info = new MBeanAttributeInfo(
@@ -1022,8 +934,8 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
             if (d.getDoNotShowAgain()) {
                 confirmComponentUninstallation = false;
             }
-        }        
-        
+        }
+
         // Make sure no service assembly is deployed before stop-shutdown-uninstall.
         if (!undeploy(force)) { // undeployment cancelled or failed
             return;
@@ -1220,58 +1132,213 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         }
 
         boolean success = true;
+
         if (saNames.size() > 0) {
 
-            if (confirmForServiceAssembliesUndeployment) {
-                String wordWrappedSANames = Utils.wordWrapString(
-                        saNames.toString(), 80, "<br>");  // NOI18N
-                
-                String msg;
-                if (StackTraceUtil.isCalledBy(
-                        JBIComponentNode.this.getClass().getCanonicalName(),
-                        "uninstall")) { // NOI18N
-                    msg = NbBundle.getMessage(JBIComponentNode.class,
-                        "MSG_UNDEPLOY_DURING_UNINSTALL_CONFIRMATION", // NOI18N
-                        componentName, wordWrappedSANames);
-                } else {
-                     msg = NbBundle.getMessage(JBIComponentNode.class,
-                        "MSG_UNDEPLOY_CONFIRMATION", // NOI18N
-                        componentName, wordWrappedSANames);
-                }
-                
-                String title = NbBundle.getMessage(JBIComponentNode.class,
-                        "TTL_UNDEPLOY_CONFIRMATION"); // NOI18N
-                DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
-                        msg, title, NotifyDescriptor.YES_NO_OPTION);
-
-                if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
-                    return false;
-                }
-
-                if (d.getDoNotShowAgain()) {
-                    confirmForServiceAssembliesUndeployment = false;
-                }
-            }
-
             JBINode jbiNode = (JBINode) getParentNode().getParentNode();
+
+            JBIComponentContainerNode sesNode =
+                    (JBIComponentContainerNode.ServiceEngines) jbiNode.getChildren().getNodes()[0];
+            // Can't do refresh: NPE while invoking undeployment on multiple components.
+            sesNode.refresh();
+
+            JBIComponentContainerNode bcsNode =
+                    (JBIComponentContainerNode.BindingComponents) jbiNode.getChildren().getNodes()[1];
+            bcsNode.refresh();
+
             JBIServiceAssembliesNode sasNode =
                     (JBIServiceAssembliesNode) jbiNode.getChildren().getNodes()[3];
             sasNode.refresh();
 
-            Node[] saNodes = sasNode.getChildren().getNodes();
-            for (String saName : saNames) {
-                for (Node saNode : saNodes) {
-                    if (saName.equals(saNode.getName())) {
-                        success = success && ((Undeployable) saNode).undeploy(force);
-                        break;
+            try {
+                List<String> componentsNeedingStart =
+                        getNonStartedComponentsForServiceAssemblies(saNames);
+
+                if (confirmForServiceAssembliesUndeployment) {
+                    String wordWrappedSANames = Utils.wordWrapString(
+                            saNames.toString(), 80, "<br>");  // NOI18N
+
+                    String msg;
+                    if (componentsNeedingStart.size() > 0) {
+                        if (StackTraceUtil.isCalledBy(
+                                "org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode", // NOI18N
+                                //JBIComponentNode.this.getClass().getCanonicalName(),
+                                "uninstall")) { // NOI18N
+                            msg = NbBundle.getMessage(JBIComponentNode.class,
+                                    "MSG_UNDEPLOY_WITH_AUTO_COMPONENT_START_DURING_UNINSTALL_CONFIRMATION", // NOI18N
+                                    componentName, wordWrappedSANames, componentsNeedingStart);
+                        } else {
+                            msg = NbBundle.getMessage(JBIComponentNode.class,
+                                    "MSG_UNDEPLOY_WITH_AUTO_COMPONENT_START_CONFIRMATION", // NOI18N
+                                    componentName, wordWrappedSANames, componentsNeedingStart);
+                        }
+                    } else {
+                        if (StackTraceUtil.isCalledBy(
+                                "org.netbeans.modules.sun.manager.jbi.nodes.JBIComponentNode", // NOI18N
+                                //JBIComponentNode.this.getClass().getCanonicalName(),
+                                "uninstall")) { // NOI18N
+                            msg = NbBundle.getMessage(JBIComponentNode.class,
+                                    "MSG_UNDEPLOY_DURING_UNINSTALL_CONFIRMATION", // NOI18N
+                                    componentName, wordWrappedSANames);
+                        } else {
+                            msg = NbBundle.getMessage(JBIComponentNode.class,
+                                    "MSG_UNDEPLOY_CONFIRMATION", // NOI18N
+                                    componentName, wordWrappedSANames);
+                        }
                     }
+
+                    String title = NbBundle.getMessage(JBIComponentNode.class,
+                            "TTL_UNDEPLOY_CONFIRMATION"); // NOI18N
+                    DoNotShowAgainConfirmation d = new DoNotShowAgainConfirmation(
+                            msg, title, NotifyDescriptor.YES_NO_OPTION);
+
+                    if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.NO_OPTION) {
+                        return false;
+                    }
+
+                    if (d.getDoNotShowAgain()) {
+                        confirmForServiceAssembliesUndeployment = false;
+                    }
+                }
+
+                // Start the required components
+                List<JBIComponentInfo> bcInfoes =
+                        mgmtService.listBindingComponents(SERVER_TARGET);
+
+                for (String componentNeedingStart : componentsNeedingStart) {
+                    boolean isBC = false;
+                    for (JBIComponentInfo bcInfo : bcInfoes) {
+                        if (bcInfo.getName().equals(componentNeedingStart)) {
+                            isBC = true;
+                            break;
+                        }
+                    }
+
+                    Node startableNode = isBC ? 
+                        getChildNode(bcsNode, componentNeedingStart) : 
+                        getChildNode(sesNode, componentNeedingStart);
+                    ((Startable) startableNode).start();
+                }
+            } catch (ManagementRemoteException e) {
+                NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
+                        NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notify(d);
+                return false;
+            }
+
+            // real work
+            for (String saName : saNames) {
+                Node saNode = getChildNode(sasNode, saName);
+                if (saNode != null) {
+                    success = success && ((Undeployable) saNode).undeploy(force);
                 }
             }
 
             sasNode.refresh();
         }
-        
+
         return success;
+    }
+
+    private Node getChildNode(Node parentNode, String childName) {
+        Node[] childNodes = parentNode.getChildren().getNodes();
+        for (Node childNode : childNodes) {
+            if (childNode.getName().equals(childName)) {
+                return childNode;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Gets the list of non-started components that the given list of
+     * service assemblies are deployed on.
+     * 
+     * @param saNames   a list of service assembly names
+     * @return          the list of target components
+     */
+    private List<String> getNonStartedComponentsForServiceAssemblies(
+            List<String> saNames) throws ManagementRemoteException {
+
+        List<String> ret = new ArrayList<String>();
+
+        RuntimeManagementServiceWrapper mgmtService =
+                getRuntimeManagementServiceWrapper();
+        assert mgmtService != null;
+
+        AdministrationService adminService = getAdministrationService();
+        assert adminService != null;
+
+        Set<String> componentNames = new HashSet<String>();
+        for (String saName : saNames) {
+            componentNames.addAll(
+                    getComponentsForServiceAssembly(adminService, saName));
+        }
+
+        List<JBIComponentInfo> bcInfoes =
+                mgmtService.listBindingComponents(SERVER_TARGET);
+        List<JBIComponentInfo> seInfoes =
+                mgmtService.listServiceEngines(SERVER_TARGET);
+
+        for (String componentName : componentNames) {
+            String state = null;
+            for (JBIComponentInfo bcInfo : bcInfoes) {
+                if (bcInfo.getName().equals(componentName)) {
+                    state = bcInfo.getState();
+                    break;
+                }
+            }
+            if (state == null) {
+                for (JBIComponentInfo seInfo : seInfoes) {
+                    if (seInfo.getName().equals(componentName)) {
+                        state = seInfo.getState();
+                        break;
+                    }
+                }
+            }
+
+            if (!JBIComponentStatus.STARTED_STATE.equals(state)) {
+                ret.add(componentName);
+            }
+        }
+
+        return ret;
+    }
+
+    /**
+     * Gets the list of components that the given service assembly is 
+     * deployed on.
+     * 
+     * @param saName   a service assembly names
+     * @return         the list of target components
+     */
+    private static List<String> getComponentsForServiceAssembly(
+            AdministrationService adminService, String saName) {
+        List<String> ret = new ArrayList<String>();
+
+        try {
+            String saDD =
+                    adminService.getServiceAssemblyDeploymentDescriptor(saName);
+
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+
+            // parse SA DD
+            Document saDoc = builder.parse(new InputSource(new StringReader(saDD)));
+            NodeList sus = saDoc.getElementsByTagName("service-unit"); // NOI18N
+            for (int i = 0; i < sus.getLength(); i++) {
+                Element su = (Element) sus.item(i);
+                String componentName = ((Element) su.getElementsByTagName(
+                        "component-name").item(0)).getFirstChild().getNodeValue(); // target/component-name                    
+                ret.add(componentName);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return ret;
     }
 
     private List<File> filterSelectedFiles(File[] files) {
@@ -1631,10 +1698,10 @@ public abstract class JBIComponentNode extends AppserverJBIMgmtLeafNode
         @Override
         public Action[] getActions(boolean flag) {
             return new SystemAction[]{
-                SystemAction.get(UninstallAction.Normal.class),
-                null,
-                SystemAction.get(PropertiesAction.class)
-            };
+                        SystemAction.get(UninstallAction.Normal.class),
+                        null,
+                        SystemAction.get(PropertiesAction.class)
+                    };
         }
 
         protected String uninstallComponent(
