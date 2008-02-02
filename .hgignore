@@ -279,9 +279,6 @@
 ^jellytools/test/qa-functional/data/SampleProject/nbproject/genfiles\.properties$
 ^jemmy/dist$
 ^jemmy/run$
-^jemmy/target$
-^jemmy/velocity\.log$
-^jemmy/xdocs$
 ^junit/manifest-subst\.mf$
 ^junit/test/qa-functional/data/projects/JunitTestProject/dist$
 ^lexer/gen/netbeans$

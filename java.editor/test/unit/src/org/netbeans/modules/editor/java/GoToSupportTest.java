@@ -42,7 +42,6 @@ package org.netbeans.modules.editor.java;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -54,11 +53,11 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
+import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.GoToSupport.UiUtilsCaller;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
@@ -793,18 +792,6 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
     }
     
-    private void writeIntoFile(FileObject file, String what) throws Exception {
-        FileLock lock = file.lock();
-        OutputStream out = file.getOutputStream(lock);
-        
-        try {
-            out.write(what.getBytes());
-        } finally {
-            out.close();
-            lock.releaseLock();
-        }
-    }
-    
     private FileObject source;
     
     private String performTest(String sourceCode, final int offset, final UiUtilsCaller validator, boolean tooltip) throws Exception {
@@ -821,8 +808,8 @@ public class GoToSupportTest extends NbTestCase {
         
         FileObject auxiliarySource = testDir.createData("Auxiliary.java");
         
-        writeIntoFile(source, sourceCode);
-        writeIntoFile(auxiliarySource, "package test; public class Auxiliary {}"); //test go to "syntetic" constructor
+        TestUtilities.copyStringToFile(source, sourceCode);
+        TestUtilities.copyStringToFile(auxiliarySource, "package test; public class Auxiliary {}"); //test go to "syntetic" constructor
         
         SourceUtilsTestUtil.prepareTest(sourceDir, buildDir, cacheDir, new FileObject[0]);
         SourceUtilsTestUtil.compileRecursively(sourceDir);

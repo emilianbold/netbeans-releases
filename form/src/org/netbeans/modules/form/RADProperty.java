@@ -48,6 +48,7 @@ import org.netbeans.modules.form.editors.AbstractFormatterFactoryEditor;
 import org.openide.ErrorManager;
 
 import org.netbeans.modules.form.editors.*;
+import org.netbeans.modules.form.editors2.JTableSelectionModelEditor;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 
 /**
@@ -234,6 +235,8 @@ public class RADProperty extends FormProperty {
                 prEd = new SpinnerEditorEditor();
             } else if ("formatterFactory".equals(descriptor.getName()) && (javax.swing.JFormattedTextField.class.isAssignableFrom(component.getBeanClass()))) { // NOI18N
                 prEd = new AbstractFormatterFactoryEditor();
+            } else if ("selectionModel".equals(descriptor.getName()) && (javax.swing.JTable.class.equals(component.getBeanClass()))) { // NOI18N
+                prEd = new JTableSelectionModelEditor();
             } else {
                 prEd = createEnumEditor(descriptor);
             }

@@ -98,11 +98,11 @@ public class RailsProjectGenerator {
      * @return the helper object permitting it to be further customized
      * @throws IOException in case something went wrong
      */
-    public static RakeProjectHelper createProject(RailsProjectCreateData data, final RubyPlatform platform) throws IOException {
+    public static RakeProjectHelper createProject(RailsProjectCreateData data) throws IOException {
         FileObject dirFO = FileUtil.createFolder(data.getDir());
         boolean createJavaDb = false;
         boolean createJdbc = false;
-        
+        RubyPlatform platform = data.getPlatform();
         // Run Rails to generate the appliation skeleton
         if (data.isCreate()) {
             final String rails = platform.getGemManager().getRails();
@@ -174,7 +174,8 @@ public class RailsProjectGenerator {
             }
         }
 
-        RakeProjectHelper h = createProject(dirFO, data.getName(), platform/*, "app", "test", mainClass, manifestFile, false*/); //NOI18N
+        RakeProjectHelper h = createProject(dirFO, platform, data); //NOI18N
+        
         Project p = ProjectManager.getDefault().findProject(dirFO);
         ProjectManager.getDefault().saveProject(p);
         
@@ -479,17 +480,22 @@ public class RailsProjectGenerator {
 //        return h;
 //    }
 
-    private static RakeProjectHelper createProject(FileObject dirFO, String name, final RubyPlatform platform/*,
-                                                  String srcRoot, String testRoot, String mainClass, String manifestFile, boolean isLibrary*/) throws IOException {
+    private static RakeProjectHelper createProject(FileObject dirFO, final RubyPlatform platform, RailsProjectCreateData createData) throws IOException {
+
         RakeProjectHelper h = ProjectGenerator.createProject(dirFO, RailsProjectType.TYPE);
         Element data = h.getPrimaryConfigurationData(true);
         Document doc = data.getOwnerDocument();
         Element nameEl = doc.createElementNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
-        nameEl.appendChild(doc.createTextNode(name));
+        nameEl.appendChild(doc.createTextNode(createData.getName()));
         data.appendChild(nameEl);
 //        Element minant = doc.createElementNS(RailsProjectType.PROJECT_CONFIGURATION_NAMESPACE, "minimum-ant-version"); // NOI18N
 //        minant.appendChild(doc.createTextNode(MINIMUM_ANT_VERSION)); // NOI18N
 //        data.appendChild(minant);
+        
+        // set the target server
+        EditableProperties privateProperties = h.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
+        privateProperties.put(RailsProjectProperties.RAILS_SERVERTYPE, createData.getServerInstanceId());
+        
         EditableProperties ep = h.getProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH);
         
         
@@ -589,6 +595,7 @@ public class RailsProjectGenerator {
 //        if (manifestFile != null) {
 //            ep.setProperty("manifest.file", manifestFile); // NOI18N
 //        }
+        h.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
         h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
         return h;
     }

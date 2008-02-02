@@ -361,7 +361,7 @@ public class TreeModelNode extends AbstractNode {
     private static RequestProcessor requestProcessor;
     public static RequestProcessor getRequestProcessor () {
         if (requestProcessor == null)
-            requestProcessor = new RequestProcessor ("TreeModel");
+            requestProcessor = new RequestProcessor ("TreeModel", 4);
         return requestProcessor;
     }
 
@@ -985,7 +985,7 @@ public class TreeModelNode extends AbstractNode {
             }
             
             if (refreshChildren) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                getRequestProcessor().post(new Runnable() {
                     public void run() {
                         refreshTheChildren(true);
                     }
