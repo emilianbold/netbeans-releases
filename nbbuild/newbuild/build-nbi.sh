@@ -6,8 +6,6 @@ cd ${DIRNAME}
 SCRIPTS_DIR=`pwd`
 source init.sh
 
-cd $NB_ALL/installer/infra/build
-
 if [ ! -z $NATIVE_MAC_MACHINE ]; then
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
    ERROR_CODE=$?
@@ -37,6 +35,8 @@ if [ ! -z $NATIVE_MAC_MACHINE ]; then
    fi
    ssh $NATIVE_MAC_MACHINE $MAC_PATH/run-mac-installer.sh $ML_BUILD > $MAC_LOG 2>&1 &
 fi
+
+cd $NB_ALL/installer/infra/build
 
 bash build.sh
 ERROR_CODE=$?

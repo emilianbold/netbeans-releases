@@ -705,6 +705,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             statement = statement.getParentPath();
         }
         
+        //#126269: the common parent may not be block:
+        while (statement.getParentPath() != null && statement.getParentPath().getLeaf().getKind() != Kind.BLOCK) {
+            statement = statement.getParentPath();
+        }
+        
         if (statement.getParentPath() == null)
             return null;//XXX: log
         

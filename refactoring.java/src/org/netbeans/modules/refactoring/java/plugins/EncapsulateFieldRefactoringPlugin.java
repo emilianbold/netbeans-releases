@@ -59,6 +59,7 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -80,6 +81,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -204,8 +206,12 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         }
         
         if (getter != null) {
-            if (field.asType() != getter.getReturnType()) {
-                p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongGetter", null));
+            Types types = javac.getTypes();
+            if (!types.isSameType(field.asType(), getter.getReturnType())) {
+                String msg = new MessageFormat(NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateWrongGetter")).format (
+                    new Object[] {getter.getReturnType().toString()}
+                );
+                p = createProblem(p, true, msg);
             }
             if (getter.getEnclosingElement() != field.getEnclosingElement()) {
                 p = createProblem(p, true, NbBundle.getMessage(EncapsulateFieldRefactoringPlugin.class, "ERR_EncapsulateGetterExists"));

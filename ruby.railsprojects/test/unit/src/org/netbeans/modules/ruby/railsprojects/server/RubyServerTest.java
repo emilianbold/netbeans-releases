@@ -59,7 +59,7 @@ public class RubyServerTest extends TestCase {
         String mongrel_dos_line_end = "** Mongrel 1.1.2 available at 0.0.0.0:3000\r\n";
         String mongrel_unix_line_end = "** Mongrel 1.1.2 available at 0.0.0.0:3000\n";
 
-        Mongrel mongrelInstance = new Mongrel(null);
+        Mongrel mongrelInstance = new Mongrel(null, "");
         
         assertTrue(mongrelInstance.isStartupMsg(mongrel));
         assertTrue(mongrelInstance.isStartupMsg(mongrel_with_version_nro));

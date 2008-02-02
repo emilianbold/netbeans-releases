@@ -103,8 +103,9 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
 
     static final String JSF_ATTRIBUTE = "jsfjsp"; // NOI18N
     private static final String JSP_ICON_BASE = "org/netbeans/modules/visualweb/project/jsfloader/resources/jsfJspObject.png"; // NOI18N
-    private static final String PROP_ENCODING = "encoding"; // NOI18N
-    private static final String DEFAULT_ENCODING = "ISO-8559-1"; // NOI18N
+    static final String PROP_ENCODING = "encoding"; // NOI18N
+    private static final String PROP_CUSTOM_TEMPLATE = "custom-template"; // NOI18N
+    private static final String DEFAULT_ENCODING = "UTF-8"; // NOI18N
     
     private transient OpenEdit openEdit;
     private transient Lookup currentLookup;
@@ -313,6 +314,11 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
     }
     
     void updateFileEncoding(boolean fromEditor) {
+        // VW templates are not valid JSP files, so skip the encoding step
+        if (isTemplate()) {
+            return;
+        }
+        
         TagLibParseCookie tlps = getCookie(TagLibParseCookie.class);
         if (tlps != null) {
             String encoding = tlps.getCachedOpenInfo(true, fromEditor).getEncoding();
@@ -430,14 +436,19 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
                         OutputStream os = primaryFileObject.getOutputStream(lock);
                         PrintStream ps = new PrintStream(os);
                         ps.println("<#assign pound = '#'>"); // NOI18N
-                        XMLUtil.write(document, os, "UTF-8");  // NOI18N
+                        XMLUtil.write(document, os, getFileEncoding());  // NOI18N
                     } finally {
                         lock.releaseLock();
                     }
-                    
+
                     // set required attributes
-                    primaryFileObject.setAttribute("template", Boolean.TRUE); // NOI18N
+                    primaryFileObject.setAttribute(PROP_ENCODING, getFileEncoding());
+                    primaryFileObject.setAttribute(DataObject.PROP_TEMPLATE, Boolean.TRUE);
                     primaryFileObject.setAttribute("javax.script.ScriptEngine", "freemarker"); // NOI18N
+                    
+                    // set attribute for JsfJspTemplateEncodingQueryImplementation for custom templates
+                    primaryFileObject.setAttribute(PROP_CUSTOM_TEMPLATE, Boolean.TRUE);
+                    
                     try {
                         Class iteratorClass = Thread.currentThread().getContextClassLoader().loadClass("org.netbeans.modules.visualweb.project.jsf.ui.PageIterator"); //NOI18N
                         Method m = iteratorClass.getMethod("createWebFormIterator"); // NOI18N
@@ -511,9 +522,19 @@ implements CookieSet.Factory, JsfJspDataObjectMarker {
         DataObject result = null;
         try {
             JsfJspDataLoader.jspTemplateCreation.set(Boolean.TRUE);
+            
+            // freemarker-based template encoding handling
+            if (Boolean.TRUE.equals(this.getPrimaryFile().getAttribute(PROP_CUSTOM_TEMPLATE))) {
+                JsfJspTemplateEncodingQueryImplementation.TEMPLATE_FILEOBJECT.set(this.getPrimaryFile());
+            }
+            
             result = super.handleCreateFromTemplate(df, name);
         } finally {
             JsfJspDataLoader.jspTemplateCreation.set(Boolean.FALSE);
+            
+            if (Boolean.TRUE.equals(this.getPrimaryFile().getAttribute(PROP_CUSTOM_TEMPLATE))) {
+                JsfJspTemplateEncodingQueryImplementation.TEMPLATE_FILEOBJECT.remove();
+            }
         }
         
         result.getPrimaryFile().setAttribute(JSF_ATTRIBUTE, Boolean.TRUE);

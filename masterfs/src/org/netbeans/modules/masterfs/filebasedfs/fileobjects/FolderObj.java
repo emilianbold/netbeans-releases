@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Utilities;
 
@@ -182,7 +183,7 @@ public final class FolderObj extends BaseFileObj {
         if (!isSupported) { 
             extensions.createFailure(this, folder2Create.getName(), true);
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N   
-        } else if (folder2Create.exists()) {
+        } else if (FileChangedManager.getInstance().exists(folder2Create)) {
             extensions.createFailure(this, folder2Create.getName(), true);            
             throw new SyncFailedException(folder2Create.getAbsolutePath());// NOI18N               
         } else if (!folder2Create.mkdirs()) {
@@ -245,7 +246,7 @@ public final class FolderObj extends BaseFileObj {
         if (!isSupported) {             
             extensions.createFailure(this, file2Create.getName(), false);
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
-        } else if (file2Create.exists()) {
+        } else if (FileChangedManager.getInstance().exists(file2Create)) {
             extensions.createFailure(this, file2Create.getName(), false);
             throw new SyncFailedException(file2Create.getAbsolutePath());// NOI18N               
         } else if (!file2Create.createNewFile()) {
@@ -372,7 +373,7 @@ public final class FolderObj extends BaseFileObj {
             }
 
         }
-        boolean validityFlag = getFileName().getFile().exists();
+        boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
         if (!validityFlag) {
             //fileobject is invalidated                
             setValid(false);
@@ -398,7 +399,7 @@ public final class FolderObj extends BaseFileObj {
             return true;
         }
 
-        if (!file.exists()) {
+        if (!FileChangedManager.getInstance().exists(file)) {
             return false;
         }
 

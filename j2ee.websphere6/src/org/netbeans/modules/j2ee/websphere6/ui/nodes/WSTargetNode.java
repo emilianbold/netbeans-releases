@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.websphere6.ui.nodes;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -62,10 +63,13 @@ public class WSTargetNode extends AbstractNode {
      */
     public WSTargetNode(Lookup lookup) {
         super(new Children.Array());
+        //getChildren().add(new Node[] {EnterpriseModuleGroupNode.newInstance(lookup)});
+        //getChildren().add(new Node[] {WebModuleGroupNode.newInstance(lookup)});
     }
 
     @Override
     public Action[] getActions(boolean b) {
         return new Action[] {};
     }
+
 }
