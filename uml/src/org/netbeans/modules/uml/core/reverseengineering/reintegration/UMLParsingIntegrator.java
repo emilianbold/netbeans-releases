@@ -81,6 +81,8 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationProxy;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationValidator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
@@ -2479,8 +2481,16 @@ public class UMLParsingIntegrator
         
         try
         {
-            IGeneralization gen = m_Factory.createGeneralization(superClass, subClass);
-            redef.add(gen);
+            RelationProxy p = new RelationProxy();
+            p.setFrom(subClass);
+            p.setTo(superClass);
+            p.setConnectionElementType("Generalization");
+            boolean relOk = new RelationValidator().validateRels(p);
+            if (relOk) 
+            {
+                IGeneralization gen = m_Factory.createGeneralization(superClass, subClass);
+                redef.add(gen);
+            }
         }
         catch (Exception e)
         {

@@ -333,6 +333,7 @@ public final class JavaSource {
     private FilterListener filterListener;
     
     private PositionConverter binding;
+    private final boolean supportsReparse;
     
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
         
@@ -508,6 +509,7 @@ public final class JavaSource {
         this.files = Collections.unmodifiableList(new ArrayList<FileObject>(files));   //Create a defensive copy, prevent modification
         this.fileChangeListener = new FileChangeListenerImpl ();
         this.binding = binding;
+        this.supportsReparse = this.binding == null;
         boolean multipleSources = this.files.size() > 1, filterAssigned = false;
         for (Iterator<? extends FileObject> it = this.files.iterator(); it.hasNext();) {
             FileObject file = it.next();
@@ -562,6 +564,7 @@ public final class JavaSource {
         this.rootFo = root;
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
         this.flags|= IS_CLASS_FILE;
+        this.supportsReparse = false;
         this.binding = new PositionConverter(classFileObject, null);
     }
        
@@ -1236,7 +1239,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 currentInfo.setCompilationUnit(unit);
                 assert !it.hasNext();
                 final Document doc = currentInfo.javaSource.listener == null ? null : currentInfo.javaSource.listener.document;
-                if (doc != null) {
+                if (doc != null && currentInfo.javaSource.supportsReparse) {
                     FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions());
                     v.visit(unit, null);
                     synchronized (currentInfo.javaSource.positions) {
@@ -1753,54 +1756,56 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public void stateChanged(ChangeEvent e) {
             JavaSource.this.resetState(true, false);
         }
-
+        
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             Pair<DocPositionRegion,MethodTree> changedMethod = null;
             if (evt.type() == TokenHierarchyEventType.MODIFICATION) {
-                int start = evt.affectedStartOffset();
-                int end = evt.affectedEndOffset();                                                                
-                synchronized (positions) {
-                    for (Pair<DocPositionRegion,MethodTree> pe : positions) {
-                        PositionRegion p = pe.first;
-                        if (start > p.getStartOffset() && end < p.getEndOffset()) {
-                            changedMethod = pe;
-                            break;
+                if (supportsReparse) {
+                    int start = evt.affectedStartOffset();
+                    int end = evt.affectedEndOffset();                                                                
+                    synchronized (positions) {
+                        for (Pair<DocPositionRegion,MethodTree> pe : positions) {
+                            PositionRegion p = pe.first;
+                            if (start > p.getStartOffset() && end < p.getEndOffset()) {
+                                changedMethod = pe;
+                                break;
+                            }
                         }
-                    }
-                    if (changedMethod != null) {
-                        TokenChange<JavaTokenId> change = evt.tokenChange(JavaTokenId.language());
-                        if (change != null) {
-                            TokenSequence<JavaTokenId> ts = change.removedTokenSequence();
-                            if (ts != null) {
-                                while (ts.moveNext()) {
-                                    switch (ts.token().id()) {
-                                        case LBRACE:
-                                        case RBRACE:
-                                            changedMethod = null;
-                                            break;
+                        if (changedMethod != null) {
+                            TokenChange<JavaTokenId> change = evt.tokenChange(JavaTokenId.language());
+                            if (change != null) {
+                                TokenSequence<JavaTokenId> ts = change.removedTokenSequence();
+                                if (ts != null) {
+                                    while (ts.moveNext()) {
+                                        switch (ts.token().id()) {
+                                            case LBRACE:
+                                            case RBRACE:
+                                                changedMethod = null;
+                                                break;
+                                        }
+                                    }
+                                }
+                                if (changedMethod != null) {
+                                    TokenSequence<JavaTokenId> current = change.currentTokenSequence();                
+                                    current.moveIndex(change.index());
+                                    for (int i=0; i< change.addedTokenCount(); i++) {
+                                        current.moveNext();
+                                        switch (current.token().id()) {
+                                            case LBRACE:
+                                            case RBRACE:
+                                                changedMethod = null;
+                                                break;
+                                            }
                                     }
                                 }
                             }
-                            if (changedMethod != null) {
-                                TokenSequence<JavaTokenId> current = change.currentTokenSequence();                
-                                current.moveIndex(change.index());
-                                for (int i=0; i< change.addedTokenCount(); i++) {
-                                    current.moveNext();
-                                    switch (current.token().id()) {
-                                        case LBRACE:
-                                        case RBRACE:
-                                            changedMethod = null;
-                                            break;
-                                        }
-                                }
-                            }
+                        }
+                        positions.clear();
+                        if (changedMethod!=null) {
+                            positions.add (changedMethod);
                         }
                     }
-                    positions.clear();
-                    if (changedMethod!=null) {
-                        positions.add (changedMethod);
-                    }
-                }                
+                }
             }
             JavaSource.this.resetState(true, changedMethod==null, changedMethod);
         }        
@@ -2582,6 +2587,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private static boolean reparseMethod (final CompilationInfoImpl ci, final MethodTree orig, final String newBody) throws IOException {        
         assert ci != null; 
+        if (!ci.getJavaSource().supportsReparse) {
+            return false;
+        }
         final Phase currentPhase = ci.getPhase();
         if (Phase.PARSED.compareTo(currentPhase) > 0) {
             return false;
