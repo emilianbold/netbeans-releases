@@ -43,9 +43,11 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.HashMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
@@ -99,9 +101,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private ArchiverConfiguration currentArchiverConfiguration = null;
     private LibrariesConfiguration currentLibrariesConfiguration = null;
     private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
-    private Vector currentIncludeDirectories = null;
-    private int defaultConf = 0;
     private Vector currentList = null;
+    private int defaultConf = 0;
     private Stack /*<Folder>*/ currentFolderStack = new Stack();
     private Folder currentFolder = null;
     private String relativeOffset;
@@ -168,7 +169,6 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(EXT_CONF_ELEMENT)) {
             currentConf = new MakeConfiguration(FileUtil.toFile(projectDirectory).getPath(), getString(atts.getValue(0)), MakeConfiguration.TYPE_MAKEFILE);
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP:  < version 5
-            currentList = new Vector();
             currentFolder = new Folder(projectDescriptor, ((MakeConfigurationDescriptor)projectDescriptor).getLogicalFolders(), "ExternalFiles", "Important Files", false); // NOI18N
             ((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentFolder);
             ((MakeConfigurationDescriptor)projectDescriptor).getLogicalFolders().addFolder(currentFolder);
@@ -245,13 +245,16 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
             if (currentCCCCompilerConfiguration != null)
-                currentIncludeDirectories = currentCCCCompilerConfiguration.getIncludeDirectories().getValue();
+                currentList = currentCCCCompilerConfiguration.getIncludeDirectories().getValue();
+        } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
+            if (currentCCCCompilerConfiguration != null)
+                currentList = currentCCCCompilerConfiguration.getPreprocessorConfiguration().getValue();
         } else if (element.equals(LINKER_ADD_LIB_ELEMENT)) {
             if (currentLinkerConfiguration != null)
-                currentIncludeDirectories = currentLinkerConfiguration.getAdditionalLibs().getValue();
+                currentList = currentLinkerConfiguration.getAdditionalLibs().getValue();
         } else if (element.equals(LINKER_DYN_SERCH_ELEMENT)) {
             if (currentLinkerConfiguration != null)
-                currentIncludeDirectories = currentLinkerConfiguration.getDynamicSearch().getValue();
+                currentList = currentLinkerConfiguration.getDynamicSearch().getValue();
         } else if (element.equals(LINKER_LIB_ITEMS_ELEMENT)) {
             currentLibrariesConfiguration = ((MakeConfiguration)currentConf).getLinkerConfiguration().getLibrariesConfiguration();
         } else if (element.equals(REQUIRED_PROJECTS_ELEMENT)) {
@@ -357,7 +360,6 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             path = getString(adjustOffset(path));
             ((MakeConfiguration)currentConf).getMakefileConfiguration().getOutput().setValue(path);
         } else if (element.equals(FOLDER_PATH_ELEMENT)) { // FIXUP: < version 5
-            //currentList.add(currentText);
             currentFolder.addItem(new Item(getString(currentText)));
         } else if (element.equals(SOURCE_FOLDERS_ELEMENT)) { // FIXUP: < version 5
             //((MakeConfigurationDescriptor)projectDescriptor).setExternalFileItems(currentList);
@@ -419,15 +421,21 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentArchiverConfiguration.getOutput().setValue(currentArchiverConfiguration.getOutputDefault27());
             currentArchiverConfiguration = null;
         } else if (element.equals(INCLUDE_DIRECTORIES_ELEMENT)) {
-            currentIncludeDirectories = null;
+            currentList = null;
+        } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
+            currentList = null;
         } else if (element.equals(LINKER_ADD_LIB_ELEMENT)) {
-            currentIncludeDirectories = null;
+            currentList = null;
         } else if (element.equals(LINKER_DYN_SERCH_ELEMENT)) {
-            currentIncludeDirectories = null;
+            currentList = null;
         } else if (element.equals(DIRECTORY_PATH_ELEMENT)) {
-            if (currentIncludeDirectories != null) {
+            if (currentList != null) {
                 String path = getString(adjustOffset(currentText));
-                currentIncludeDirectories.add(path);
+                currentList.add(path);
+            }
+        } else if (element.equals(LIST_ELEMENT)) {
+            if (currentList != null) {
+                currentList.add(currentText);
             }
         } else if (element.equals(COMMAND_LINE_ELEMENT)) {
             if (currentBasicCompilerConfiguration != null)
@@ -444,8 +452,11 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentArchiverConfiguration != null)
                 currentArchiverConfiguration.getTool().setValue(getString(currentText));
         } else if (element.equals(PREPROCESSOR_ELEMENT)) {
-            if (currentCCCCompilerConfiguration != null)
-                currentCCCCompilerConfiguration.getPreprocessorConfiguration().setValue(getString(currentText));
+            // Old style preprocessor list
+            if (currentCCCCompilerConfiguration != null) {
+                List list = CppUtils.tokenizeString(currentText);
+                currentCCCCompilerConfiguration.getPreprocessorConfiguration().getValue().addAll(list);
+            }
         } else if (element.equals(STRIP_SYMBOLS_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);
             if (currentBasicCompilerConfiguration != null)

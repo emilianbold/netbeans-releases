@@ -99,7 +99,7 @@ public abstract class CommonConfigurationXMLCodec
     extends XMLDecoder
     implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 39;
+    public final static int CURRENT_VERSION = 40;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
@@ -152,6 +152,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String SIXTYFOUR_BITS_ELEMENT = "sixtyfourBits"; // NOI18N
     protected final static String ARCHITECTURE_ELEMENT = "architecture"; // NOI18N
     protected final static String PREPROCESSOR_ELEMENT = "preprocessor"; // NOI18N
+    protected final static String PREPROCESSOR_LIST_ELEMENT = "preprocessorList"; // NOI18N
     protected final static String SUPRESS_WARNINGS_ELEMENT = "supressWarnings"; // NOI18N
     protected final static String WARNING_LEVEL_ELEMENT = "warningLevel"; // NOI18N
     protected final static String MT_LEVEL_ELEMENT = "mtLevel"; // NOI18N
@@ -215,6 +216,7 @@ public abstract class CommonConfigurationXMLCodec
 
     protected final static String TRUE_VALUE = "true"; // NOI18N
     protected final static String FALSE_VALUE = "false"; // NOI18N
+    protected final static String LIST_ELEMENT = "Elem"; // NOI18N
 
 
     private ConfigurationDescriptor projectDescriptor;
@@ -375,7 +377,7 @@ public abstract class CommonConfigurationXMLCodec
 	if (cCompilerConfiguration.getCommandLineConfiguration().getModified())
 	    xes.element(COMMAND_LINE_ELEMENT, "" + cCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
 	if (cCompilerConfiguration.getPreprocessorConfiguration().getModified())
-	    xes.element(PREPROCESSOR_ELEMENT, "" + cCompilerConfiguration.getPreprocessorConfiguration().getValue()); // NOI18N
+	    writeList(xes, PREPROCESSOR_LIST_ELEMENT, cCompilerConfiguration.getPreprocessorConfiguration().getValueAsArray());
 	if (cCompilerConfiguration.getInheritPreprocessor().getModified())
 	    xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
 	if (cCompilerConfiguration.getWarningLevel().getModified())
@@ -410,7 +412,7 @@ public abstract class CommonConfigurationXMLCodec
 	if (ccCompilerConfiguration.getCommandLineConfiguration().getModified())
 	    xes.element(COMMAND_LINE_ELEMENT, "" + ccCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getPreprocessorConfiguration().getModified())
-	    xes.element(PREPROCESSOR_ELEMENT, "" + ccCompilerConfiguration.getPreprocessorConfiguration().getValue()); // NOI18N
+	    writeList(xes, PREPROCESSOR_LIST_ELEMENT, ccCompilerConfiguration.getPreprocessorConfiguration().getValueAsArray());
 	if (ccCompilerConfiguration.getInheritPreprocessor().getModified())
 	    xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
 	if (ccCompilerConfiguration.getWarningLevel().getModified())
@@ -567,13 +569,21 @@ public abstract class CommonConfigurationXMLCodec
 	//xes.element(DEBUGGING_ELEMENT, "" + archiverConfiguration.getTool().getValue() + " " + archiverConfiguration.getOptions()); // NOI18N
 	xes.elementClose(ARCHIVERTOOL_ELEMENT);
     }
-
+    
+    public static void writeList(XMLEncoderStream xes, String tag, String[] list) {
+        writeList(xes, tag, LIST_ELEMENT, list);
+    }
+    
     public static void writeDirectories(XMLEncoderStream xes, String tag, String[] directories) {
+        writeList(xes, tag, DIRECTORY_PATH_ELEMENT, directories);
+    }
+
+    public static void writeList(XMLEncoderStream xes, String tag, String listTag, String[] directories) {
 	if (directories.length == 0)
 	    return;
 	xes.elementOpen(tag);
 	for (int i = 0; i < directories.length; i++)
-	    xes.element(DIRECTORY_PATH_ELEMENT, directories[i]);
+	    xes.element(listTag, directories[i]);
 	xes.elementClose(tag);
     }
 }
