@@ -45,7 +45,8 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -53,8 +54,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-
-import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager.WsVersion;
 
 
 /**
@@ -65,7 +64,7 @@ import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager.WsVersion;
  * @author Kirill Sorokin
  */
 public class WSDeploymentFactory implements DeploymentFactory {
-    
+
     // additional properties that are stored in the InstancePropeties object
     public static final String SERVER_ROOT_ATTR = "serverRoot";        // NOI18N
     public static final String DOMAIN_ROOT_ATTR = "domainRoot";        // NOI18N
@@ -76,15 +75,15 @@ public class WSDeploymentFactory implements DeploymentFactory {
     public static final String SERVER_NAME_ATTR = "serverName";        // NOI18N
     public static final String CONFIG_XML_PATH = "configXmlPath";      // NOI18N
     public static final String ADMIN_PORT_ATTR = "adminPort";          // NOI18N
-    
+
     public static final String USERNAME_ATTR = "username";
     public static final String PASSWORD_ATTR = "password";
     public static final String DEFAULT_HOST_PORT_ATTR="defaultHostPort";
 
-    public final WsVersion version;
+    private final WSVersion version;
 
-    private static final Logger LOGGER = Logger.getLogger(WSDeploymentFactory.class.getName());    
-    
+    private static final Logger LOGGER = Logger.getLogger(WSDeploymentFactory.class.getName());
+
     /**
      * The singleton instance of the factory
      */
@@ -93,19 +92,25 @@ public class WSDeploymentFactory implements DeploymentFactory {
 
     private WSClassLoader loader;
 
-    private HashMap<String, DeploymentFactory> factories = new HashMap<String, DeploymentFactory>();
-    private HashMap<String, DeploymentManager> managers = new HashMap<String, DeploymentManager>();
+    // worst case would be no cache at all, however InstanceProperties are
+    // hold by the ServerInstance, which in turn are holded by ServerRegistry
 
-    private WSDeploymentFactory(WsVersion version) {
+    private Map<InstanceProperties, DeploymentFactory> factories =
+            new WeakHashMap<InstanceProperties, DeploymentFactory>();
+
+    private Map<InstanceProperties, DeploymentManager> managers =
+            new WeakHashMap<InstanceProperties, DeploymentManager>();
+
+    private WSDeploymentFactory(WSVersion version) {
         this.version = version;
     }
-    
+
     /**
      * Factory method to create DeploymentFactory for WAS 6.0
      */
     public static synchronized WSDeploymentFactory create60() {
         if (instance60 == null) {
-            instance60 = new WSDeploymentFactory(WsVersion.WS_60);
+            instance60 = new WSDeploymentFactory(WSVersion.VERSION_60);
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance60);
         }
         return instance60;
@@ -116,44 +121,49 @@ public class WSDeploymentFactory implements DeploymentFactory {
      */
     public static synchronized WSDeploymentFactory create61() {
 	 if (instance61 == null) {
-            instance61 = new WSDeploymentFactory(WsVersion.WS_61);
+            instance61 = new WSDeploymentFactory(WSVersion.VERSION_61);
             DeploymentFactoryManager.getInstance().registerDeploymentFactory(instance61);
         }
         return instance61;
     }
 
 
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // DeploymentFactory implementation
     ////////////////////////////////////////////////////////////////////////////
     /**
      * Returns a wrapper for the connected deployment manager
-     * 
+     *
      * @return a connected DeploymentManager implementation
      */
-    public DeploymentManager getDeploymentManager(String uri, String username, 
+    public DeploymentManager getDeploymentManager(String uri, String username,
             String password) throws DeploymentManagerCreationException {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "getDeploymentManager(" + uri + ", " + username + ", " + password + ")"); // NOI18N
         }
- 
-        DeploymentManager manager = managers.get(uri);
-        
-        if (null == manager) {
-            manager = new WSDeploymentManager(uri);
-            managers.put(uri, manager);
+
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+        if (ip == null) {
+            return null;
         }
-        
-        return manager; 
+
+        DeploymentManager manager = managers.get(ip);
+
+        if (null == manager) {
+            manager = new WSDeploymentManager(uri, version);
+            managers.put(ip, manager);
+        }
+
+        return manager;
     }
-    
+
     /**
      * Returns a wrapper for the disconnecter deployment manager
-     * 
+     *
      * @return a disconnected DeploymentManager implementation
      */
-    public DeploymentManager getDisconnectedDeploymentManager(String uri) 
+    public DeploymentManager getDisconnectedDeploymentManager(String uri)
             throws DeploymentManagerCreationException {
         if (LOGGER.isLoggable(Level.FINEST)) // debug output
            LOGGER.log(Level.FINEST, "getDisconnectedDeploymentManager(" + uri + ")"); // NOI18N
@@ -161,16 +171,20 @@ public class WSDeploymentFactory implements DeploymentFactory {
         // return a new deployment manager
         return getDeploymentManager(uri,null,null);
     }
-        
+
    public DeploymentFactory getWSDeploymentFactory(String uri) {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "getWSDeploymentFactory(" + uri + ")");
         }
 
-        DeploymentFactory factory = factories.get(uri);
+        InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
+        if (ip == null) {
+            return null;
+        }
+
+        DeploymentFactory factory = factories.get(ip);
 
         if (null == factory) {
-            InstanceProperties ip = InstanceProperties.getInstanceProperties(uri);
 
             String serverRoot = null;
             String domainRoot = null;
@@ -207,18 +221,18 @@ public class WSDeploymentFactory implements DeploymentFactory {
                 loader.restoreLoader();
             }
 
-            factories.put(uri, factory);
+            factories.put(ip, factory);
         }
 
         return factory;
     }
 
 
-    
+
     /**
      * Tells whether this deployment factory is capable to handle the server
      * identified by the given URI
-     * 
+     *
      * @param uri the server URI
      * @return can or cannot handle the URI
      */
@@ -227,36 +241,50 @@ public class WSDeploymentFactory implements DeploymentFactory {
             LOGGER.log(Level.FINEST, "handlesURI(" + uri + ")"); // NOI18N
         }
 
-        //return uri == null ? false : uri.startsWith(
-        return uri == null ? false : (uri.indexOf(WSURIManager.WSURI)>-1);                                // NOI18N
+        if (uri == null) {
+            return false;
+        }
+        switch (version) {
+            case VERSION_60:
+                return uri.startsWith(WSURIManager.WSURI60);
+            case VERSION_61:
+                return uri.startsWith(WSURIManager.WSURI61);
+            default:
+                throw new IllegalArgumentException("Wrong enum value"); // NOI18N
+        }
     }
-    
+
     /**
      * Returns the product version of the deployment factory
-     * 
+     *
      * @return the product version
      */
     public String getProductVersion() {
-        return NbBundle.getMessage(WSDeploymentFactory.class, 
-                "TXT_productVersion");                                 // NOI18N
+        switch (version) {
+            case VERSION_60:
+                return NbBundle.getMessage(WSDeploymentFactory.class, "TXT_productVersion60");
+            case VERSION_61:
+                return NbBundle.getMessage(WSDeploymentFactory.class, "TXT_productVersion61");
+            default:
+                throw new IllegalArgumentException("Wrong enum value"); // NOI18N
+        }
     }
-    
+
     /**
      * Returns the deployment factory dysplay name
-     * 
+     *
      * @return display name
      */
     public String getDisplayName() {
         LOGGER.log(Level.FINEST, "getDisplayName()"); // NOI18N
-        
-	switch (version) {
-            case WS_60:
-        	return NbBundle.getMessage(WSDeploymentFactory.class, 
-                "TXT_displayName60");                                    // NOI18N
-            case WS_61:
-	    default:
-        	return NbBundle.getMessage(WSDeploymentFactory.class, 
-                "TXT_displayName61");                                    // NOI18N
-	}
+
+        switch (version) {
+            case VERSION_60:
+                return NbBundle.getMessage(WSDeploymentFactory.class, "TXT_displayName60");
+            case VERSION_61:
+                return NbBundle.getMessage(WSDeploymentFactory.class, "TXT_displayName61");
+            default:
+                throw new IllegalArgumentException("Wrong enum value"); // NOI18N
+        }
     }
 }
