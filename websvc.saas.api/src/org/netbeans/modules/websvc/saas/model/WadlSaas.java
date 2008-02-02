@@ -39,51 +39,39 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.io.File;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.manager.model.WebServiceData;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
+import java.io.IOException;
+import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author nam
  */
-public class WsdlSaas extends Saas {
-    //TODO consolidate and remove
-    private WebServiceData wsData;
+public class WadlSaas extends Saas {
 
-    public WsdlSaas(SaasGroup parentGroup, SaasServices services) {
+    private Application wadlModel;
+    
+    public WadlSaas(SaasGroup parentGroup, SaasServices services) {
         super(parentGroup, services);
-        //wsData = WebServiceListModel.getInstance().findWebServiceData(services.getUrl(), getServiceName());
-    }
-
-    public WsdlSaas(SaasGroup parentGroup, String displayName, String url, String packageName) {
-        this(parentGroup, new SaasServices());
-        this.getDelegate().setDisplayName(displayName);
-        this.getDelegate().setUrl(url);
-        SaasMetadata m = this.getDelegate().getSaasMetadata();
-        if (m == null) {
-            m = new SaasMetadata();
-            this.getDelegate().setSaasMetadata(m);
-        }
-        CodeGen cg = m.getCodeGen();
-        if (cg == null) {
-            cg = new CodeGen();
-            m.setCodeGen(cg);
-        }
-        cg.setPackageName(packageName);
-        //wsData = WebServiceListModel.getInstance().findWebServiceData(services.getUrl(), getServiceName());
     }
     
-    public WsdlService getWsdlModel() {
-        return wsData.getWsdlService();
+    public Application getWadlModel() throws IOException {
+        if (wadlModel == null) {
+            wadlModel = SaasUtil.loadWadl(getLocalWadlFile());
+        }
+        return wadlModel;
     }
-
-    public FileObject getLocalWsdlFile() {
-        return FileUtil.toFileObject(new File(wsData.getWsdlFile()));
+    
+    public List<Resource> getResources() throws IOException {
+        return getWadlModel().getResources().getResource();
+    } 
+    
+    public FileObject getLocalWadlFile() {
+        //TODO
+        return null;
     }
 }
