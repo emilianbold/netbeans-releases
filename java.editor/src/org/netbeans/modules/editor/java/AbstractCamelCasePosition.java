@@ -59,7 +59,7 @@ import org.openide.util.NbPreferences;
     private Action originalAction;
     
     public AbstractCamelCasePosition(String name, Action originalAction) {
-        super(name);
+        super(name, MAGIC_POSITION_RESET);
         
         if (originalAction != null) {
             Object nameObj = originalAction.getValue(Action.NAME);

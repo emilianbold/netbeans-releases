@@ -42,37 +42,40 @@
 -->
 
 <saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
-               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/zillow"
+               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/twitter"
                xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://zillow.com/dev_api_ref"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowWadl.xml">
+               api-doc="http://groups.google.com/group/twitter-development-talk/web/api-documentation"
+               url="nbres:/org/netbeans/modules/websvc/saas/services/twitter/resources/TwitterWadl.xml">
 
-    <description>Zillow Service</description>
+    <description>Twitter Service</description>
     
-    <display-name>Zillow</display-name>
+    <display-name>TwitterService</display-name>
 
     <saas-metadata>
 
-        <localizing-bundle>org.netbeans.modules.websvc.saas.services.zillow.Bundle</localizing-bundle>
+        <localizing-bundle>org.netbeans.modules.websvc.saas.services.twitter.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/zillow/resources/zillow16.png</icon16>
+        <icon16>org/netbeans/modules/websvc/saas/services/twitter/resources/twitter16.png</icon16>
 
-        <group name="Zillow">
+        <group name="Twitter">
         </group>
 
         <authentication profile="Templates/WebServices/profile.properties">
-            <api-key id="dev_id"/>
+            <http-basic/>
         </authentication>
 
     </saas-metadata>
 
     <methods>
-        <method name="getComps" href="//resource[@path='GetComps.htm']/method[@id='zillow.homevaluation_GetComps']"/>
-        <method name="getRegionChart" href="//resource[@path='GetRegionChart.htm']/method[@id='zillow.homevaluation_GetRegionChart']"/>
-        <method name="GetZestimate" href="//resource[@path='GetZestimate.htm']/method[@id='zillow.homevaluation_GetZestimate']"/>
+        <method name="getPublicTimeline" 
+            href="//resource[@path='statuses']/resource[@path='public_timeline.{format}']/method[@id='twitter.getPublicTimeline']"/>
+        <method name="getDirectMessages" 
+            href="//resource[@path='direct_messages.{format}']/method[@id='twitter.getDirectMessages']"/>
+        <method name="sendDirectMessage" 
+            href="//resource[@path='direct_messages']/resource[@path='new.{format}']/method[@id='twitter.sendDirectMessage']"/>
     </methods>
 
 </saas-services>

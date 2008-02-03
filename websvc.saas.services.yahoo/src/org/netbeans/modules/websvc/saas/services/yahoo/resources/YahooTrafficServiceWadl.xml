@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10">
+    
+    <grammars/>
+    <resources base="http://local.yahooapis.com/MapsService/V1">	
+                <resource path="trafficData">
+            <method name="GET" id="yahoo.trafficData">
+                <doc xml:lang="en">The Yahoo Traffic Service method, trafficData, provides parameters
+                    that support getting traffic information for a location based on 
+                    street name, city, state, zip code, or a combination of latitude and longitude. You  
+                    can also specify whether to include a map image, and you can provide a search radius in miles.
+                    For API documentation see:  
+                    http://developer.yahoo.com/traffic/rest/V1/index.html </doc>
+                <request>
+                    <param name="appid" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">The application ID. for more information, see 
+                        http://developer.yahoo.com/faq/index.html#appid .</doc>
+                    </param>
+                    <param name="street" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">Optional. Street name, with or without the house number.</doc>
+                    </param>
+                    <param name="city" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">Optional. City name</doc>
+                    </param>
+                    <param name="state" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">Optional. The state name for a United States location 
+                         You can spell out the full state name or 
+                         you can use the two-letter abbreviation. For a list of abbreviations,
+                         see http://en.wikipedia.org/wiki/State_codes .</doc>
+                    </param>
+                    <param name="zip" type="xsd:integer" style="query" required="false">
+                    <doc xml:lang="en">Optional. The five-digit zip code, or the five-digit code plus four-digit extension.
+                         If the city and state are specified and they don't match the zip code, 
+                         only the zip code is used.</doc>
+                    </param>
+                    <param name="location" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">Optional. A free-form field in which you can enter the following 
+                         combinations of values:
+                          [city, state], 
+                          [city, state, zip], 
+                          [zip], 
+                          [street, city, state], 
+                          [street, city, state, zip], 
+                          [street, zip].
+                          If this parameter is specified, it takes priority over the corresponding 
+                          parameters, and the city, state, and zip parameters are ignored.
+                    </doc>
+                    </param>
+                    <param name="latitude" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">Optional. The latitude of the starting location, range -90 to 90.</doc>
+                    </param>
+                    <param name="longitude" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">Optional. The longitude of the starting location, range -180 to 180. If both latitude and
+                         longitude are specified, they take priority and all other location
+                         data is ignored. If only one of latitude or longitude is specified, both 
+                         will be ignored. </doc>
+                    </param>
+                    <param name="severity" type="xsd:integer" style="query" required="false">
+                    <doc xml:lang="en">Optional. The minimum severity level to return, from 
+                         1, least severe, to 5, most severe. Defaults to 1.</doc>
+                    </param>
+                    <param name="zoom" type="xsd:integer" style="query" required="false">
+                     <doc xml:lang="en">Optional. The zoom level for the data, from 1, street level, 
+                          to 12, country level. Defaults to 6. If a radius is specified, 
+                          this parameter is ignored.s</doc>
+                    </param>
+                    <param name="radius" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">Optional. A distance in miles from the specified location.
+                         The default radius varies according to the location given and the 
+                         zoom level. If a zoom is specified, this parameter is ignored and
+                         the default radius is used.</doc>
+                    </param>
+                    <param name="include_map" type="xsd:integer" style="query" required="false">
+                    <doc xml:lang="en">Optional. Specifies whether to return a URL of a map image for the
+                         location of each reported incident. Default value is 0, no map image. 
+                         If you specify 1, the URL of a map image is returned.</doc>
+                    </param>
+                    <param name="image_type" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">Optional. The image format for the map if a map is requested. Default value
+                         is png. You can also specify gif.
+                    </doc>
+                    </param>
+                    <param name="image_height" type="xsd:integer" style="query" required="false">
+                    <doc xml:lang="en">Optional. If a map is requested, specifies the height in pixels, an integer
+                    from 10 to 2000. Default height is 500.</doc>
+                    </param>
+                    <param name="image_width" type="xsd:integer" style="query" required="false">
+                    <doc xml:lang="en">Optional. If a map is requested, specifies the height in pixels, an integer
+                         from 10 to 2000. Default width is 620.</doc>
+                    </param>
+                    <param name="output" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">Optional. The format for the output. Defaults to xml as described under
+                         Response Elements at http://developer.yahoo.com/traffic/rest/V1/index.html .
+                         If php is requested,
+                         the results are returned in Serialized PHP format as described at
+                         http://developer.yahoo.com/common/phpserial.html .</doc>
+                    </param>
+                </request>
+                <response>
+                </response>
+                
+            </method>
+        </resource>
+    </resources> 
+    
+</application>
