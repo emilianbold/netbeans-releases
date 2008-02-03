@@ -45,8 +45,10 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.beans.BeanInfo;
+import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
@@ -76,6 +78,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -85,6 +88,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
@@ -100,6 +104,11 @@ import org.openide.xml.XMLUtil;
  */
 public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 
+    public static SpringXMLConfigCompletionItem createBeanRefItem(int substitutionOffset, String displayName, 
+            SpringBean bean, FileObject containerFO) {
+        return new BeanRefItem(substitutionOffset, displayName, bean, containerFO);
+    }
+    
     public static SpringXMLConfigCompletionItem createPackageItem(int substitutionOffset, String packageName, 
             boolean isDeprecated) {
         return new PackageItem(substitutionOffset, packageName, isDeprecated);
@@ -195,6 +204,86 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     
     protected ImageIcon getIcon() {
         return null;
+    }
+    
+    private static class BeanRefItem extends SpringXMLConfigCompletionItem {
+
+        private static final String CLASS_COLOR = "<font color=#808080>"; //NOI18N
+        
+        private String beanId;
+        private String beanClass;
+        private List<String> beanNames;
+        private String displayName;
+        private String beanLocFile;
+        private String leftText;
+        
+        public BeanRefItem(int substitutionOffset, String displayName, SpringBean bean, FileObject containerFO) {
+            super(substitutionOffset);
+            this.beanId = bean.getId();
+            this.beanClass = bean.getClassName();
+            this.beanNames = bean.getNames();
+            if(bean.getLocation() != null) {
+                File file = bean.getLocation().getFile();
+                if(file != null) {
+                    FileObject fo = FileUtil.toFileObject(file);
+                    this.beanLocFile = FileUtil.getRelativePath(containerFO.getParent(), fo);
+                }
+                
+            }
+            this.displayName = displayName;
+        }
+        
+        public int getSortPriority() {
+            return 100;
+        }
+
+        public CharSequence getSortText() {
+            return displayName;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return displayName;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(displayName);
+                sb.append(CLASS_COLOR);
+                sb.append(" ("); // NOI18N
+                if(this.beanClass != null) {
+                    sb.append(beanClass);
+                }
+                sb.append(")"); // NOI18N
+                sb.append(COLOR_END);
+                leftText = sb.toString();
+            }
+            return leftText;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            return beanLocFile;
+        }
+        
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/bean.gif")); // NOI18N
+        }
+
+        @Override
+        public CompletionTask createDocumentationTask() {
+            return new AsyncCompletionTask(new AsyncCompletionQuery() {
+                @Override
+                protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+                    CompletionDocumentation docItem = SpringXMLConfigCompletionDoc.getBeanRefDoc(beanId, 
+                            beanNames, beanClass, beanLocFile);
+                    resultSet.setDocumentation(docItem);
+                    resultSet.finish();
+                }
+            });
+        }        
     }
     
     public static final String COLOR_END = "</font>"; //NOI18N
