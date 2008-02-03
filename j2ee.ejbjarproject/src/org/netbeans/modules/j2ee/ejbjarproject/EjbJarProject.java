@@ -75,7 +75,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
-import org.netbeans.modules.j2ee.ejbjarproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
@@ -353,7 +352,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 new ClassPathProviderMerger(cpProvider),
                 QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
-                new JavadocForBinaryQueryImpl(helper, evaluator()),
+                QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
                 new AntArtifactProviderImpl(),
                 new ProjectXmlSavedHookImpl(),
                 UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
