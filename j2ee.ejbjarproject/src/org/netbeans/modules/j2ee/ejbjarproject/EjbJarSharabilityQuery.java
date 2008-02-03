@@ -50,6 +50,7 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import org.netbeans.modules.java.api.common.SourceRoots;
 
 /**
  * SharabilityQueryImplementation for j2seproject with multiple sources

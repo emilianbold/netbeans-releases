@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.queries.FileBuiltQuery;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
