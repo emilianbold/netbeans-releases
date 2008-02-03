@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:yahoo:travel" xmlns="urn:yahoo:travel" elementFormDefault="qualified">
+
+	<xs:element name="ResultSet">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Result" type="ResultType" minOccurs="0" maxOccurs="100"/>
+			</xs:sequence>
+			<xs:attribute name="totalResultsAvailable" type="xs:integer"/>
+			<xs:attribute name="totalResultsReturned" type="xs:integer"/>
+			<xs:attribute name="firstResultPosition" type="xs:integer"/>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="ResultType">
+		<xs:sequence>
+			<xs:element name="YahooID" type="xs:string"/>
+			<xs:element name="Title" type="xs:string"/>
+			<xs:element name="Summary" type="xs:string"/>
+			<xs:element name="Destinations" type="xs:string"/>
+			<xs:element name="CreateDate" type="xs:integer"/>
+			<xs:element name="Duration" type="xs:integer" minOccurs="0"/>
+			<xs:element name="Image" type="ImageType" minOccurs="0"/>
+			<xs:element name="Geocode" type="GeocodeType" minOccurs="0"/>
+			<xs:element name="Url" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="id" type="xs:integer"/>
+	</xs:complexType>
+
+	
+	<xs:complexType name="GeocodeType">
+		<xs:sequence>
+			<xs:element name="Latitude" type="xs:decimal"/>
+			<xs:element name="Longitude" type="xs:decimal"/>
+		</xs:sequence>
+		<xs:attribute name="precision" type="xs:string"/>
+	</xs:complexType>
+
+	<xs:complexType name="ImageType">
+		<xs:sequence>
+			<xs:element name="Url" type="xs:string"/>
+			<xs:element name="Height" type="xs:integer" minOccurs="0"/>
+			<xs:element name="Width" type="xs:integer" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+
+</xs:schema>
+<!-- ws05.search.scd.yahoo.com compressed/chunked Sat Feb  2 19:59:15 PST 2008 -->

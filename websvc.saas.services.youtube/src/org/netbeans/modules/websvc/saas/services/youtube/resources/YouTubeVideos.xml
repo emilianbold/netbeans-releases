@@ -49,7 +49,7 @@
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
                api-doc="http://youtube.com/dev_api_ref"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/resources/YouTubeVideosWadl.xml">
+               url="nbres:/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosWadl.xml">
 
     <description>YouTube Video Service</description>
     
