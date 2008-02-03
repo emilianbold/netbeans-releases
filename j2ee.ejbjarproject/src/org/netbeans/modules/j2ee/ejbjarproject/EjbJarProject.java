@@ -119,7 +119,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSVersionProvi
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.j2ee.ejbjarproject.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.SourceRootsSupport;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -357,7 +356,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new ProjectXmlSavedHookImpl(),
                 UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
                 new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
-                new SourceLevelQueryImpl(helper, evaluator()),
+                QuerySupport.createSourceLevelQuery(evaluator()),
                 new EjbJarSources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 new EjbJarSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 new EjbJarFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
