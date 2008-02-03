@@ -43,11 +43,11 @@ made subject to such option by the copyright holder.
 <project basedir="." default="netbeans" name="contrib/hibernate">
     <description>Builds, tests, and runs the project org.netbeans.modules.hibernate</description>
     <import file="../../nbbuild/templates/projectized.xml"/>
-    
+
     <property name="s2b_root_cfg" location="src/org/netbeans/modules/hibernate/cfg/model"/>
     <property name="s2b_root_mapping" location="src/org/netbeans/modules/hibernate/mapping/model"/>
     <property name="s2b_res_root" location="src/org/netbeans/modules/hibernate/resources"/>
-    
+
     <target name="s2binit" depends="build-init">
 	<taskdef name="schema2beans" classname="org.netbeans.modules.s2banttask.Schema2BeansAntTask">
 	  <classpath>
@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
 	  </classpath>
 	</taskdef>
     </target>
-    
+
     <target name="s2bgen-cfg" depends="s2binit">
      <echo message="generating code generation input file information" />
 	<schema2beans schema="${s2b_res_root}/hibernate-configuration-3.0.dtd"
@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
     </target>
-    
+
     <target name="s2bgen-mapping" depends="s2binit">
      <echo message="generating code generation input file information" />
 	<schema2beans schema="${s2b_res_root}/hibernate-mapping-3.0.dtd"
@@ -77,9 +77,9 @@ made subject to such option by the copyright holder.
 	  removeUnreferencedNodes="true"
 	  rootDir="src"/>
     </target>
-    
+
     <target name="compile" depends="s2bgen-cfg, s2bgen-mapping, projectized-common.compile"/>
-  
+
     <target name="clean" depends="clean-s2b-src, projectized-common.clean"/>
 
     <target name="clean-s2b-src">
@@ -98,4 +98,27 @@ made subject to such option by the copyright holder.
         <delete dir="${s2b_root_cfg}"/>
         <delete dir="${s2b_root_mapping}"/>
     </target>
+
+    <!-- Unit test related -->
+    <property name="derby.data.dir" value="test/unit/data"/>
+    <available file="test/unit/data/db-derby-10.2.2.0-bin"
+             property="derby.extracted"/>
+    <target name="test-preinit">
+
+        <antcall target="extract-derby"/>
+    </target>
+
+    <target name="extract-derby" unless="derby.extracted">
+        <mkdir dir="${derby.data.dir}"/>
+        <unzip src="../../db/external/derby-10.2.2.0.zip" dest="${derby.data.dir}"/>
+    </target>
+
+    <target name="test-postinit">
+        <antcall target="clean-derby" />
+    </target>
+
+    <target name="clean-derby" if="derby.extracted">
+        <deltree dir="${derby.data.dir}" />
+    </target>
+
 </project>
