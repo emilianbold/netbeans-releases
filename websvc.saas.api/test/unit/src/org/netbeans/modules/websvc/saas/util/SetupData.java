@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,30 +20,61 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.saas.spi;
 
-import java.awt.datatransfer.Transferable;
+package org.netbeans.modules.websvc.saas.util;
+
+import java.io.File;
 
 /**
  *
- * Service class that allows consumers to add to the DataFlavors present in
- * the SaaS nodes Transferable.
- *
  * @author quynguyen
  */
-public interface ConsumerFlavorProvider {
+public class SetupData {
+    private File localWsdlFile = null;
+    private File localCatalogFile = null;
+    private File localOriginalWsdl = null;
     
-    /**
-     * Add DataFlavors specific to a web service consumer to the base <code>Transferable</code>.
-     * This method must not modify existing <code>DataFlavor</code> to data mappings.
-     * 
-     * @param t the base <code>Transferable</code>
-     * @return a <code>Transferable</code> that has the same data flavors as <code>t</code> with possible additions
-     */
-    public Transferable addDataFlavors(Transferable t);
+    private File websvcHome = null;
+    
+    public SetupData() {
+    }
+
+    public File getLocalCatalogFile() {
+        return localCatalogFile;
+    }
+
+    public void setLocalCatalogFile(File localCatalogFile) {
+        this.localCatalogFile = localCatalogFile;
+    }
+
+    public File getLocalOriginalWsdl() {
+        return localOriginalWsdl;
+    }
+
+    public void setLocalOriginalWsdl(File localOriginalWsdl) {
+        this.localOriginalWsdl = localOriginalWsdl;
+    }
+
+    public File getLocalWsdlFile() {
+        return localWsdlFile;
+    }
+
+    public void setLocalWsdlFile(File localWsdlFile) {
+        this.localWsdlFile = localWsdlFile;
+    }
+
+    public File getWebsvcHome() {
+        return websvcHome;
+    }
+
+    public void setWebsvcHome(File websvcHome) {
+        this.websvcHome = websvcHome;
+    }
+    
+    
 }

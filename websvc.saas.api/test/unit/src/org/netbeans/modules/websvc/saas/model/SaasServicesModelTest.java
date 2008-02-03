@@ -39,15 +39,17 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.beans.PropertyChangeListener;
-import junit.framework.TestCase;
-import org.netbeans.modules.websvc.saas.model.SaasServicesModel.State;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.websvc.saas.util.SetupUtil;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.Repository;
 
 /**
  *
  * @author nam
  */
-public class SaasServicesModelTest extends TestCase {
+public class SaasServicesModelTest extends NbTestCase {
     
     public SaasServicesModelTest(String testName) {
         super(testName);
@@ -63,9 +65,13 @@ public class SaasServicesModelTest extends TestCase {
         super.tearDown();
     }
 
-    public void testGetGroups() {
+    public void testGetGroups() throws Exception {
+        SetupUtil.commonSetUp(super.getWorkDir());
+
         SaasServicesModel instance = SaasServicesModel.getInstance();
         assertEquals("YouTube", instance.getGroups().get(0).getName());
+
+        SetupUtil.commonTearDown();
     }
 
     /*public void testAddGroup() {

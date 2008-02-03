@@ -84,7 +84,7 @@ public class SaasServicesModel {
         return instance;
     }
 
-    private SaasServicesModel_1() {
+    private SaasServicesModel() {
     }
 
     private void init() {
@@ -129,7 +129,6 @@ public class SaasServicesModel {
     }
 
     private void loadGroupFromDefaultFileSystemFolder(FileObject folder) {
-        List<Exception> exs = new ArrayList<Exception>();
         for (FileObject fo : folder.getChildren()) {
             try {
                 SaasServices ss = SaasUtil.loadSaasServices(fo);
@@ -151,16 +150,8 @@ public class SaasServicesModel {
                     parent = child;
                 }
             } catch (Exception ex) {
-                exs.add(ex);
+                Exceptions.printStackTrace(ex);
             }
-        }
-        if (exs.size() > 0) {
-            StringBuffer messages = new StringBuffer();
-            for (Exception ex : exs) {
-                messages.append(ex.getLocalizedMessage());
-                messages.append(System.getProperties().getProperty("line.separator"));
-            }
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, messages.toString());
         }
     }
 

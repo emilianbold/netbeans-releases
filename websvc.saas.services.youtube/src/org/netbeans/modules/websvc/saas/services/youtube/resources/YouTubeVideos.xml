@@ -43,7 +43,8 @@
 
 <saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
                xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/youtube"
-               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
+               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'
+               xmlns:xi="http://www.w3.org/2001/XInclude"
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
@@ -54,7 +55,7 @@
     
     <display-name>YouTubeVideos</display-name>
     
-    <xi:include url="YouTubeVideosMetaData.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+    <xi:include href="file:/export/home/nam/main/websvc.saas.services.youtube/src/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosMetaData.xml"/>
 
     <methods>
         <method name="ListByTag" href="//resource[@path='api2_rest']/method[@id='youtube.listByTag']"/>
