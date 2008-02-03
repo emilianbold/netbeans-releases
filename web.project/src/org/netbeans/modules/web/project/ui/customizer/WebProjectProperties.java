@@ -72,7 +72,6 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.Project;
@@ -82,16 +81,16 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.web.project.UpdateProjectImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.WebProjectUtil;
-import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -292,7 +291,7 @@ public class WebProjectProperties {
         this.updateHelper = updateHelper;
         
         //this is called from updatehelper when user confirms the project update
-        updateHelper.setProjectUpdateListener(new UpdateHelper.ProjectUpdateListener() {
+        project.getUpdateImplementation().setProjectUpdateListener(new UpdateProjectImpl.ProjectUpdateListener() {
             public void projectUpdated() {
                 needsUpdate = true;
             }

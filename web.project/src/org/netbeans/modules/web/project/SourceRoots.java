@@ -74,6 +74,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.openide.util.Exceptions;
 
 /**

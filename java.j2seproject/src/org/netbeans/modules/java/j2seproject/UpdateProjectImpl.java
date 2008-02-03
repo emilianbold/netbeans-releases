@@ -139,7 +139,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
         }
     }
 
-    public void saveUpdate() throws IOException {
+    public void saveUpdate(final EditableProperties props) throws IOException {
         this.helper.putPrimaryConfigurationData(getUpdatedSharedConfigurationData(),true);
         this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/1",true); //NOI18N
         this.cfg.removeConfigurationFragment("data","http://www.netbeans.org/ns/j2se-project/2",true); //NOI18N

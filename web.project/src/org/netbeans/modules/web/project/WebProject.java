@@ -105,6 +105,7 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
@@ -170,6 +171,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     private final UpdateHelper updateHelper;
+    private final UpdateProjectImpl updateProject;
     private final AuxiliaryConfiguration aux;
     private final WebProjectClassPathExtender classPathExtender;
     private final WebProjectClassPathModifier cpMod;
@@ -297,7 +299,10 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
         refHelper = new ReferenceHelper(helper, aux, eval);
         buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        this.updateHelper = new UpdateHelper (this, this.helper, this.aux, UpdateHelper.createDefaultNotifier());
+        updateProject = new UpdateProjectImpl(this, this.helper, aux, genFilesHelper,
+                UpdateProjectImpl.createDefaultNotifier());
+        this.updateHelper = new UpdateHelper(updateProject, helper);
+        updateProject.setUpdateHelper(updateHelper);
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
         webModule = new ProjectWebModule (this, updateHelper, cpProvider);
         apiWebModule = WebModuleFactory.createWebModule (webModule);
@@ -318,6 +323,10 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
         css = new CopyOnSaveSupport();
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
+    }
+    
+    public UpdateProjectImpl getUpdateImplementation() {
+        return updateProject;
     }
 
     public FileObject getProjectDirectory() {
