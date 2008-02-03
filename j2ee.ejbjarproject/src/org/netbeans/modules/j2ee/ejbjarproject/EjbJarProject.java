@@ -75,7 +75,6 @@ import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.EjbJarProjectClassPathExtender;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
-import org.netbeans.modules.j2ee.ejbjarproject.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
@@ -127,6 +126,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.SourceRootsSupport;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -353,7 +353,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 new ClassPathProviderMerger(cpProvider),
-                new CompiledSourceForBinaryQuery(helper,evaluator(),getSourceRoots(),getTestSourceRoots()),
+                QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
                 new JavadocForBinaryQueryImpl(helper, evaluator()),
                 new AntArtifactProviderImpl(),
                 new ProjectXmlSavedHookImpl(),
