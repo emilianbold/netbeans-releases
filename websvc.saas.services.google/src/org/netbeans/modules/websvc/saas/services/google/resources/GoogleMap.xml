@@ -42,37 +42,32 @@
 -->
 
 <saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
-               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/zillow"
+               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/google"
                xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
-                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
-               type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://zillow.com/dev_api_ref"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowWadl.xml">
-
-    <description>Zillow Service</description>
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
+               type="custom"
+               api-doc="http://code.google.com/apis/maps/">
+                   
+    <description>Google Map Service</description>
     
-    <display-name>Zillow</display-name>
+    <display-name>GoogleMap</display-name>
 
-    <saas-metadata>
-
-        <localizing-bundle>org.netbeans.modules.websvc.saas.services.zillow.Bundle</localizing-bundle>
-
-        <icon16>org/netbeans/modules/websvc/saas/services/zillow/resources/zillow16.png</icon16>
-
-        <group name="Zillow">
-        </group>
-
-        <authentication profile="Templates/WebServices/profile.properties">
-            <api-key id="dev_id"/>
-        </authentication>
-
-    </saas-metadata>
+    <xi:include url="GoogleMetaData.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
     <methods>
-        <method name="getComps" href="//resource[@path='GetComps.htm']/method[@id='zillow.homevaluation_GetComps']"/>
-        <method name="getRegionChart" href="//resource[@path='GetRegionChart.htm']/method[@id='zillow.homevaluation_GetRegionChart']"/>
-        <method name="GetZestimate" href="//resource[@path='GetZestimate.htm']/method[@id='zillow.homevaluation_GetZestimate']"/>
+        <method name="generateGoogleMapCode" href="GoogleMapResource">      
+            <input>
+                <params>
+                    <param name="apiKey" type="string"/>
+                    <param name="address" type="string" default="16 Network Circle, Menlo Park"/>
+                    <param name="zoom" type="int" default="15"/>
+                </params>
+            </input>
+            <output>
+                <media type="text/html"/>
+            </output>
+        </method>
     </methods>
-
+    
 </saas-services>
