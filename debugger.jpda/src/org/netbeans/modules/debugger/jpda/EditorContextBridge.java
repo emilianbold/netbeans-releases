@@ -461,6 +461,18 @@ public class EditorContextBridge {
             cp1.removePropertyChangeListener (propertyName, l);
             cp2.removePropertyChangeListener (propertyName, l);
         }
+
+        @Override
+        public Operation[] getOperations(String url, int lineNumber, BytecodeProvider bytecodeProvider) {
+            Operation[] operations = cp1.getOperations(url, lineNumber, bytecodeProvider);
+            if (operations != null) {
+                return operations;
+            } else {
+                return cp2.getOperations(url, lineNumber, bytecodeProvider);                
+            }
+        }
+        
+        
     }
     
     private static class CompoundAnnotation {
