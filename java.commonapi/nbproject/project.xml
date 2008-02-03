@@ -144,7 +144,6 @@
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.java.api.common</package>
                 <package>org.netbeans.modules.java.api.common.ant</package>
-                <package>org.netbeans.modules.java.api.common.classpath</package>
                 <package>org.netbeans.modules.java.api.common.queries</package>
                 <package>org.netbeans.modules.java.api.common.ui</package>
             </friend-packages>

@@ -362,7 +362,6 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <package>org.netbeans.modules.j2ee.common</package>
-                <package>org.netbeans.modules.j2ee.common.classpath</package>
                 <package>org.netbeans.modules.j2ee.common.method</package>
                 <package>org.netbeans.modules.j2ee.common.queries.api</package>
                 <package>org.netbeans.modules.j2ee.common.queries.spi</package>
