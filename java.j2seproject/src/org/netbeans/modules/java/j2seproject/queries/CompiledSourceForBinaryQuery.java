@@ -56,10 +56,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.modules.java.j2seproject.SourceRoots;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 

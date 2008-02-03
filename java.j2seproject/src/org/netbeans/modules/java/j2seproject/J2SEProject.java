@@ -67,6 +67,8 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.SourceRootsSupport;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
@@ -321,14 +323,16 @@ public final class J2SEProject implements Project, AntProjectListener {
      */
     public synchronized SourceRoots getSourceRoots() {        
         if (this.sourceRoots == null) { //Local caching, no project metadata access
-            this.sourceRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "source-roots", false, "src.{0}{1}.dir"); //NOI18N
-        }
+            this.sourceRoots = SourceRootsSupport.create(updateHelper, evaluator(), getReferenceHelper(),
+                    J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots", false, "src.{0}{1}.dir"); //NOI18N
+       }
         return this.sourceRoots;
     }
     
     public synchronized SourceRoots getTestSourceRoots() {
         if (this.testRoots == null) { //Local caching, no project metadata access
-            this.testRoots = new SourceRoots(this.updateHelper, evaluator(), getReferenceHelper(), "test-roots", true, "test.{0}{1}.dir"); //NOI18N
+            this.testRoots = SourceRootsSupport.create(updateHelper, evaluator(), getReferenceHelper(),
+                    J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "test-roots", true, "test.{0}{1}.dir"); //NOI18N
         }
         return this.testRoots;
     }

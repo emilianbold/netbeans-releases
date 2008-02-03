@@ -53,6 +53,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
