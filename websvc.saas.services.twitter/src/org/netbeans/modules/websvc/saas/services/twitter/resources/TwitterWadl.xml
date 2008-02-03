@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10">
+    <grammars/>
+    <resources base="http://twitter.com"> 
+	<resource path="statuses">
+	    <resource path="public_timeline.{format}">
+		<method name="GET" id="twitter.getPublicTimeline">
+		    <doc xml:lang="en">
+			Returns the 20 most recent statuses from non-protected users who have set a custom user icon.
+                        This method doesn't require authentication. 
+                        For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation. 
+		    </doc>
+		    <request>
+			<param name="since_id" type="xsd:integer" style="query" required="false">
+			    <doc xml:lang="en">Returns only public statuses with an ID greater than (that is, more recent than) the specified ID.</doc>
+			</param>
+		    </request>
+		    <response>
+			<!--
+			    Twitter does not provide a set of predefined errors,
+			    anything with HTTP status code != 200 is an error.
+			    
+			    In case of HTTP status code != 200, but no defined
+			    faults, error code is equal to status and error message
+			    to the whole response body.
+			-->
+		    </response>
+                    
+		</method>
+	    </resource> 
+	</resource>
+	
+	<resource path="direct_messages.{format}">
+	    <method name="GET" id="twitter.getDirectMessages">
+		<doc xml:lang="en">
+		    Returns a list of the 20 most recent direct messages sent to the authenticating user.  
+                    The XML and JSON versions include detailed information about the sending and recipient users.
+                    This method requires HTTP Basic Authentication as described at 
+                    http://en.wikipedia.org/wiki/Basic_authentication_scheme.
+                    For more information, see http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+		</doc>
+		<request>
+		</request>
+		<response/>
+		
+	    </method>
+	</resource>
+	
+	<resource path="direct_messages">
+	    <resource path="new.{format}">
+		<method name="POST" id="twitter.sendDirectMessage">
+                    <doc xml:lang="en">
+                        Sends a new, direct message to the specified user from the authenticating user.
+                        This method requires HTTP Basic Authentication, described at 
+                        http://en.wikipedia.org/wiki/Basic_authentication_scheme, as well as the user name
+                        of the recipient and the text of the message as parameters. Returns the text of
+                        the message in the requested format if successful.
+                        For more information, see 
+                        http://groups.google.com/group/twitter-development-talk/web/api-documentation.
+                    </doc>
+                    <request>
+			   <param name="user" type="xsd:string" style="query" required="true">
+                                <doc xml:lang="en">
+                                    The ID or screen name of the recipient user.
+                                </doc>
+                            </param>
+			    <param name="text" type="xsd:string" style="query" required="true">
+                                <doc xml:lang="en">
+                                    The text of your direct message.  Be sure to URL encode it
+                                    as necessary (as described at http://en.wikipedia.org/wiki/Percent_encoding) 
+                                    and keep the length under 140 characters.
+                                </doc>
+                            </param>
+		    </request>
+		    <response/>
+		</method>
+	    </resource>
+	</resource>	
+    </resources>
+    
+</application>
