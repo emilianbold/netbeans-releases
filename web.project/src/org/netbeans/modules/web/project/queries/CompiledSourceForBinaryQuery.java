@@ -56,8 +56,8 @@ import java.util.HashMap;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.modules.web.project.SourceRoots;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 

@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.openide.util.Mutex;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
