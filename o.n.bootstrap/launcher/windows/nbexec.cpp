@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -111,6 +111,8 @@ static int findHttpProxyFromEnv(char **proxy, char **nonProxy);
 static char* processAUClustersList(char *userdir);
 static int removeAUClustersListFile(char *userdir);
 
+int checkForNewUpdater(const char *basePath);
+
 int main(int argc, char *argv[]) {
     char exepath[1024 * 4];
     char buf[1024 * 8], *pc;
@@ -175,8 +177,8 @@ int main(int argc, char *argv[]) {
 
         newargv[i] = NULL;
             
-        // check for patches first
-
+        // check for patches first (for updater first)
+        checkForNewUpdater(plathome);
         bool runUpdater = runAutoUpdaterOnClusters(true);
 
         if (runUpdater) {
@@ -191,8 +193,8 @@ int main(int argc, char *argv[]) {
         newargv[1] = RUN_NORMAL;
         _spawnv(_P_WAIT, exepath, newargv);
 
-        // check for patches again
-        
+        // check for patches again (for updater first)
+        checkForNewUpdater(plathome);
         runUpdater = runAutoUpdaterOnClusters(false);
         if (runUpdater) {
             newargv[1] = RUN_UPDATER;
@@ -654,8 +656,13 @@ void addLauncherJarsToClassPath(const char *plathome)
     addAllFilesToClassPath(buf, "*.zip");
 
     if (runupdater) {
-        addToClassPath(plathome, "\\modules\\ext\\updater.jar");
-        strcat(strcpy(buf, plathome), "\\modules\\ext\\locale");
+        char userUpdater[MAX_PATH] = "";
+        _snprintf(userUpdater, MAX_PATH, "%s\\modules\\ext\\updater.jar", userdir);
+        const char *baseUpdaterPath = plathome;
+        if (fileExists(userUpdater))
+            baseUpdaterPath = userdir;
+        addToClassPath(baseUpdaterPath, "\\modules\\ext\\updater.jar");
+        strcat(strcpy(buf, baseUpdaterPath), "\\modules\\ext\\locale");
         addAllFilesToClassPath(buf, "updater_*.jar");
     }
 }
@@ -934,6 +941,29 @@ int removeAUClustersListFile(char* userdir) {
     strcat(pPath, "\\update\\download\\netbeans.dirs");
     if (remove(pPath) != 0) {
         if (errno != ENOENT) return -1; // an error while deleting
+    }
+    return 0;
+}
+
+// check if new updater exists, if exists install it (replace old one) and remove ...\new_updater directory
+int checkForNewUpdater(const char *basePath)
+{
+    char srcPath[MAX_PATH] = "";
+    _snprintf(srcPath, MAX_PATH, "%s\\update\\new_updater\\updater.jar", basePath);
+    WIN32_FIND_DATA fd = {0};
+    HANDLE hFind = FindFirstFile(srcPath, &fd);
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+        FindClose(hFind);
+        char destPath[MAX_PATH] = "";
+        _snprintf(destPath, MAX_PATH, "%s\\modules\\ext", basePath);
+        if (!CreateDirectory(destPath, 0) && GetLastError() != ERROR_ALREADY_EXISTS)
+                return -1;
+        strncat(destPath, "\\updater.jar", MAX_PATH - strlen(destPath));
+        if (!MoveFileEx(srcPath, destPath, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            return -1;
+        _snprintf(srcPath, MAX_PATH, "%s\\update\\new_updater", basePath);
+        RemoveDirectory(srcPath);
     }
     return 0;
 }
