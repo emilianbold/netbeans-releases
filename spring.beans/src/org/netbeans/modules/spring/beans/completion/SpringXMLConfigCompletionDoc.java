@@ -39,6 +39,7 @@
 package org.netbeans.modules.spring.beans.completion;
 
 import java.net.URL;
+import java.util.List;
 import javax.lang.model.element.Element;
 import javax.swing.Action;
 import org.netbeans.api.java.source.CompilationController;
@@ -60,8 +61,9 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
         return new JavaElementDoc(ElementJavadoc.create(cc, element));
     }
     
-    public static SpringXMLConfigCompletionDoc getBeanRefDoc(String beanClassName, String filePath) {
-        return new BeanRefDoc(beanClassName, filePath);
+    public static SpringXMLConfigCompletionDoc getBeanRefDoc(String beanId, List<String> beanNames, 
+            String beanClassName, String filePath) {
+        return new BeanRefDoc(beanId, beanNames, beanClassName, filePath);
     }
 
     public URL getURL() {
@@ -113,25 +115,32 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
         private static final String BOLD_START = "<b>"; // NOI18N
         private static final String BOLD_END = "</b>"; // NOI18N
         private static final String BR = "<br>"; // NOI18N
-        
-        public BeanRefDoc(String beanClassName, String filePath) {
+        private static final String COMMA = ", "; // NOI18N
+        private List<String> beanNames;
+        private String beanId;
+
+        public BeanRefDoc(String beanId, List<String> beanNames, String beanClassName, String filePath) {
             this.beanClassName = beanClassName;
             this.filePath = filePath;
+            this.beanId = beanId;
+            this.beanNames = beanNames;
         }
         
         public String getText() {
             if(displayText == null) {
                 StringBuilder sb = new StringBuilder();
-                sb.append(BOLD_START);
-                sb.append(NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_Implementation_Class"));
-                sb.append(": "); // NOI18N
-                sb.append(BOLD_END);
+                addLabel(sb, NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_Id")); // NOI18N
+                sb.append(beanId);
+                sb.append(BR); 
+                if(beanNames.size() > 0) {
+                    addLabel(sb, NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_Names")); // NOI18N
+                    addBeanNames(sb);
+                    sb.append(BR); 
+                }
+                addLabel(sb, NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_Implementation_Class")); // NOI18N
                 sb.append(beanClassName);
-                sb.append(BR); // NOI18N
-                sb.append(BOLD_START);
-                sb.append(NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_File_Path"));
-                sb.append(": "); // NOI18N
-                sb.append(BOLD_END);
+                sb.append(BR); 
+                addLabel(sb, NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_File_Path")); // NOI18N
                 sb.append(filePath);
                 displayText = sb.toString();
             }
@@ -139,6 +148,21 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
             return displayText;
         }
         
+        private void addBeanNames(StringBuilder sb) {
+            for(int i = 0; i < beanNames.size(); i++) {
+                sb.append(beanNames.get(i));
+                if(i != beanNames.size() - 1) {
+                    sb.append(COMMA);
+                }
+            }
+        }
+        
+        private void addLabel(StringBuilder sb, String lbl) {
+            sb.append(BOLD_START);
+            sb.append(lbl);
+            sb.append(": "); // NOI18N
+            sb.append(BOLD_END);
+        }
     }
     
     private static class AttribValueDoc extends SpringXMLConfigCompletionDoc {
