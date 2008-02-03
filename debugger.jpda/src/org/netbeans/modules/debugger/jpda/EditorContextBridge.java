@@ -423,7 +423,7 @@ public class EditorContextBridge {
             int lineNumber
         ) {
             String className = cp1.getClassName (url, lineNumber);
-            if (className != null) return className;
+            if (className != null && className.length() > 0) return className;
             return cp2.getClassName (url, lineNumber);
         }
     

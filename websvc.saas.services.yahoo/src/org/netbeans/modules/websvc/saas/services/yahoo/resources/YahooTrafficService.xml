@@ -42,25 +42,25 @@
 -->
 
 <saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
-               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/zillow"
+               xmlns:tns="http://xml.netbeans.org/websvc/saas/services/1.0/yahoo"
                xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
                xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
                     ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
                type="http://research.sun.com/wadl/2006/10"
-               api-doc="http://zillow.com/dev_api_ref"
-               url="nbres:/org/netbeans/modules/websvc/saas/services/zillow/resources/ZillowWadl.xml">
+               api-doc="http://developer.yahoo.com/traffic/rest/V1/index.html"
+               url="nbres:/org/netbeans/modules/websvc/saas/services/yahoo/resources/YahooTrafficServiceWadl.xml">
 
-    <description>Zillow Service</description>
+    <description>Yahoo Traffic Service</description>
     
-    <display-name>Zillow</display-name>
+    <display-name>YahooTrafficService</display-name>
 
     <saas-metadata>
 
-        <localizing-bundle>org.netbeans.modules.websvc.saas.services.zillow.Bundle</localizing-bundle>
+        <localizing-bundle>org.netbeans.modules.websvc.saas.services.yahoo.Bundle</localizing-bundle>
 
-        <icon16>org/netbeans/modules/websvc/saas/services/zillow/resources/zillow16.png</icon16>
+        <icon16>org/netbeans/modules/websvc/saas/services/yahoo/resources/yahoo16.png</icon16>
 
-        <group name="Zillow">
+        <group name="YahooTrafficService">
         </group>
 
         <authentication profile="Templates/WebServices/profile.properties">
@@ -70,9 +70,7 @@
     </saas-metadata>
 
     <methods>
-        <method name="getComps" href="//resource[@path='GetComps.htm']/method[@id='zillow.homevaluation_GetComps']"/>
-        <method name="getRegionChart" href="//resource[@path='GetRegionChart.htm']/method[@id='zillow.homevaluation_GetRegionChart']"/>
-        <method name="GetZestimate" href="//resource[@path='GetZestimate.htm']/method[@id='zillow.homevaluation_GetZestimate']"/>
+        <method name="getTrafficData" href="//resource[@path='trafficData']/method[@id='yahoo.trafficData']"/>
     </methods>
 
 </saas-services>
