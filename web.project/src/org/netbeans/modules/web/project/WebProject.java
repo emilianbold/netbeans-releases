@@ -98,7 +98,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
-import org.netbeans.modules.web.project.queries.*;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -412,7 +411,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
             libMod,
-            new WebProjectEncodingQueryImpl(evaluator()),
+            QuerySupport.createFileEncodingQuery(evaluator(), WebProjectProperties.SOURCE_ENCODING),
             new WebTemplateAttributesProvider(this.helper),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
