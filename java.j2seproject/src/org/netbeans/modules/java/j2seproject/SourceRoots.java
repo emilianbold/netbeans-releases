@@ -73,6 +73,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 
 /**
  * This class represents a project source roots. It is used to obtain roots as Ant properties, FileObject's
