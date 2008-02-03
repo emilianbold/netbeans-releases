@@ -65,9 +65,10 @@ public interface UpdateImplementation {
 
     /**
      * Saving of update. If the project is of current version it should probably do nothing.
+     * @param props project properties to be saved, can be <code>null</code>.
      * @throws IOException if error occurs during saving.
      */
-    void saveUpdate() throws IOException;
+    void saveUpdate(final EditableProperties props) throws IOException;
 
     /**
      * Creates probably an in memory update of shared configuration data and return it.

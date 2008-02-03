@@ -114,7 +114,7 @@ public final class UpdateHelper {
                         helper.putProperties(path, props);
                     } else if (updateProject.canUpdate()) {
                         try {
-                            updateProject.saveUpdate();
+                            updateProject.saveUpdate(props);
                             helper.putProperties(path, props);
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
@@ -159,7 +159,7 @@ public final class UpdateHelper {
                     helper.putPrimaryConfigurationData(element, shared);
                 } else if (updateProject.canUpdate()) {
                     try {
-                        updateProject.saveUpdate();
+                        updateProject.saveUpdate(null);
                         helper.putPrimaryConfigurationData(element, shared);
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
@@ -185,7 +185,7 @@ public final class UpdateHelper {
                     if (!updateProject.canUpdate()) {
                         return false;
                     }
-                    updateProject.saveUpdate();
+                    updateProject.saveUpdate(null);
                     return true;
                 }
             });
