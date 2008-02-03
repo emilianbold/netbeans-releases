@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.classpath;
+package org.netbeans.modules.java.api.common.classpath.j2ee;
 
 import java.io.IOException;
 import java.net.URL;

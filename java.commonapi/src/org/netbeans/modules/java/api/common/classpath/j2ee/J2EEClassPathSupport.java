@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.common.classpath;
+package org.netbeans.modules.java.api.common.classpath.j2ee;
 
 import java.io.File;
 import java.net.URI;

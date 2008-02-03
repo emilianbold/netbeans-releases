@@ -37,7 +37,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.common.classpath;
+package org.netbeans.modules.java.api.common.classpath.j2ee;
 
 import org.netbeans.modules.java.api.common.classpath.*;
 import java.beans.PropertyChangeEvent;
