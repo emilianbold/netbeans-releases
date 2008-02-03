@@ -76,7 +76,6 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender;
 import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathModifier;
-import org.netbeans.modules.java.j2seproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.java.j2seproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
@@ -265,7 +264,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             new ClassPathProviderMerger(cpProvider),
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
-            new JavadocForBinaryQueryImpl(this.helper, evaluator()), //Does not use APH to get/put properties/cfgdata
+            QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
