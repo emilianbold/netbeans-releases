@@ -48,6 +48,7 @@ import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
+import org.netbeans.modules.java.api.common.SourceRoots;
 
 
 

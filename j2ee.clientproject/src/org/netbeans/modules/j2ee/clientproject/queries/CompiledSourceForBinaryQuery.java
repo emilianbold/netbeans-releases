@@ -59,8 +59,8 @@ import javax.swing.event.ChangeEvent;
 
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.modules.j2ee.clientproject.SourceRoots;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.openide.util.Exceptions;
 
 /**

@@ -44,8 +44,8 @@ package org.netbeans.modules.j2ee.clientproject.queries;
 import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
-import org.netbeans.modules.j2ee.clientproject.SourceRoots;
 import org.openide.filesystems.FileObject;
 
 public class UnitTestForSourceQueryImpl implements MultipleRootsUnitTestForSourceQueryImplementation {
