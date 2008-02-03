@@ -71,6 +71,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
+import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupport;
@@ -81,6 +82,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -338,7 +340,11 @@ public class AppClientProjectProperties {
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator(projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
-        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), evaluator.getProperty(J2EE_PLATFORM));
+        PlatformUiSupport.JDK minimalSourceLevel = null;
+        if (evaluator.getProperty(J2EE_PLATFORM).equals(JAVA_EE_5)) {
+            minimalSourceLevel = PlatformUiSupport.JDK.VERSION_5;
+        }
+        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel(PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
                 
         // CustomizerCompile
@@ -471,7 +477,7 @@ public class AppClientProjectProperties {
         projectProperties.setProperty( RUN_TEST_CLASSPATH, run_test_cp );
         
         //Handle platform selection and javac.source javac.target properties
-        PlatformUiSupport.storePlatform (projectProperties, updateHelper,PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
+        PlatformUiSupport.storePlatform (projectProperties, updateHelper, AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
                                 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N

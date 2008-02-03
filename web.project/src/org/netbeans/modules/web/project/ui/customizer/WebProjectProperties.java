@@ -82,6 +82,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.web.project.UpdateProjectImpl;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -90,6 +91,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.web.project.WebProjectUtil;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
+import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.FileObject;
@@ -336,7 +338,11 @@ public class WebProjectProperties {
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( RUN_TEST_CLASSPATH ), null ) );
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
-        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), evaluator.getProperty(J2EE_PLATFORM));
+        PlatformUiSupport.JDK minimalSourceLevel = null;
+        if (evaluator.getProperty(J2EE_PLATFORM).equals(J2eeModule.JAVA_EE_5)) {
+            minimalSourceLevel = PlatformUiSupport.JDK.VERSION_5;
+        }
+        JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
         
         // CustomizerCompile
@@ -529,7 +535,7 @@ public class WebProjectProperties {
         projectProperties.setProperty( WAR_CONTENT_ADDITIONAL, war_includes );
         
         //Handle platform selection and javac.source javac.target properties
-        PlatformUiSupport.storePlatform (projectProperties, updateHelper, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
+        PlatformUiSupport.storePlatform (projectProperties, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, PLATFORM_MODEL.getSelectedItem(), JAVAC_SOURCE_MODEL.getSelectedItem());
 
         // Handle other special cases
         if ( NO_DEPENDENCIES_MODEL.isSelected() ) { // NOI18N

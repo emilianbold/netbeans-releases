@@ -82,12 +82,12 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.queries.FileEncodingQuery;
 
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.web.project.ui.customizer.PlatformUiSupport;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
@@ -290,7 +290,7 @@ public class WebProjectUtilities {
         if (sourceLevel == null) {
             sourceLevel = "1.5"; // NOI18N
         }
-        PlatformUiSupport.storePlatform(ep, updateHelper, javaPlatformName, new SpecificationVersion(sourceLevel));
+        PlatformUiSupport.storePlatform(ep, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, javaPlatformName, new SpecificationVersion(sourceLevel));
         
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         
@@ -568,7 +568,7 @@ public class WebProjectUtilities {
         // #89131: these levels are not actually distinct from 1.5.
         if (sourceLevel != null && (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")))
             sourceLevel = "1.5";
-        PlatformUiSupport.storePlatform(ep, updateHelper, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
+        PlatformUiSupport.storePlatform(ep, updateHelper, WebProjectType.PROJECT_CONFIGURATION_NAMESPACE, javaPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
         
         // Utils.updateProperties() prevents problems caused by modification of properties in AntProjectHelper
         // (e.g. during createForeignFileReference()) when local copy of properties is concurrently modified

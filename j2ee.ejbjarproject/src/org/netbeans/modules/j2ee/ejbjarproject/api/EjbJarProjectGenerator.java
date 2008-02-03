@@ -73,8 +73,8 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.PlatformUiSupport;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileSystem.AtomicAction;
@@ -510,7 +510,7 @@ public class EjbJarProjectGenerator {
                                     finalPlatformName = JavaPlatformManager.getDefault().getDefaultPlatform().getDisplayName();
                                 }
 
-                                PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
+                                PlatformUiSupport.storePlatform(ep, updateHelper, EjbJarProjectType.PROJECT_CONFIGURATION_NAMESPACE, finalPlatformName, sourceLevel != null ? new SpecificationVersion(sourceLevel) : null);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                                 ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
                             } catch (IOException e) {

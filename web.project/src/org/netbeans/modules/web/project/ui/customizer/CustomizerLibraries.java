@@ -53,6 +53,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.openide.util.HelpCtx;

@@ -60,7 +60,6 @@ import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
 import org.netbeans.modules.j2ee.clientproject.AppClientProvider;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.PlatformUiSupport;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
@@ -69,6 +68,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -637,7 +637,7 @@ public class AppClientProjectGenerator {
                                 if (sourceLevel.equals("1.6") || sourceLevel.equals("1.7")) {
                                     srcLevel = "1.5";
                                 }
-                                PlatformUiSupport.storePlatform(ep, updateHelper, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
+                                PlatformUiSupport.storePlatform(ep, updateHelper, AppClientProjectType.PROJECT_CONFIGURATION_NAMESPACE, finalPlatformName, srcLevel != null ? new SpecificationVersion(srcLevel) : null);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                                 ProjectManager.getDefault().saveProject(ProjectManager.getDefault().findProject(helper.getProjectDirectory()));
                             } catch (IOException e) {
