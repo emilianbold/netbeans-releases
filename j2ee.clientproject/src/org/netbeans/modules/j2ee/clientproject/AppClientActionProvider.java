@@ -77,6 +77,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -342,7 +343,7 @@ class AppClientActionProvider implements ActionProvider {
                     result=isSetMainClass(project.getSourceRoots().getRoots(), mainClass);
                 } while (result != MainClassStatus.SET_AND_VALID);
                 try {
-                    if (updateHelper.requestSave()) {
+                    if (updateHelper.requestUpdate()) {
                         updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
                         ProjectManager.getDefault().saveProject(project);
                     } else {

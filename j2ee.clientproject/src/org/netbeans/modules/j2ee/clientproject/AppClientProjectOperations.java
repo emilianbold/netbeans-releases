@@ -184,7 +184,7 @@ public class AppClientProjectOperations implements DeleteOperationImplementation
     }
     
     public void notifyMoving() throws IOException {
-        if (!this.project.getUpdateHelper().requestSave()) {
+        if (!this.project.getUpdateHelper().requestUpdate()) {
             throw new IOException(NbBundle.getMessage(AppClientProjectOperations.class,
                     "MSG_OldProjectMetadata")); // NOI18N
         }
