@@ -108,6 +108,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.SourceRootsSupport;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.netbeans.spi.project.ant.AntBuildExtenderFactory;
@@ -383,7 +384,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             new ClassPathProviderMerger(cpProvider),
-            new CompiledSourceForBinaryQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
+            QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
             new JavadocForBinaryQueryImpl(this.helper, evaluator()),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
