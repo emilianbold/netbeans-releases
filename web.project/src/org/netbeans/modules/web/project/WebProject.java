@@ -385,7 +385,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             new ClassPathProviderMerger(cpProvider),
             QuerySupport.createCompiledSourceForBinaryQuery(helper, evaluator(), getSourceRoots(),getTestSourceRoots()),
-            new JavadocForBinaryQueryImpl(this.helper, evaluator()),
+            QuerySupport.createJavadocForBinaryQuery(helper, evaluator()),
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
