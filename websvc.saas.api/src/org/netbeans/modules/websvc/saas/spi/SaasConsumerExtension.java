@@ -44,7 +44,7 @@ package org.netbeans.modules.websvc.saas.spi;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 
-public interface SaasConsumerExtension_1 {
+public interface SaasConsumerExtension {
     public static final Action[] EMPTY_ACTIONS = new Action[0];
     
     public boolean wsServiceAddedExt(WebServiceDescriptor wsMetadataDesc);

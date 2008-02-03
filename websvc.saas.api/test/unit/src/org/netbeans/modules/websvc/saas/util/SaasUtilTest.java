@@ -52,11 +52,11 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
  *
  * @author nam
  */
-public class SaasUtilTest_1 extends NbTestCase {
+public class SaasUtilTest extends NbTestCase {
 
     File output;
     
-    public SaasUtilTest_1(String testName) {
+    public SaasUtilTest(String testName) {
         super(testName);
     }            
 
@@ -109,20 +109,31 @@ public class SaasUtilTest_1 extends NbTestCase {
     }
 
     public void testSaasMetaData() throws Exception {
-        InputStream in = this.getClass().getResourceAsStream("YouTubeVideosMetaData.xml");
+        SetupUtil.commonSetUp(super.getWorkDir());
+
+        InputStream in = this.getClass().getResourceAsStream("/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosMetaData.xml");
         SaasMetadata metadata = SaasUtil.loadJaxbObject(in, SaasMetadata.class);
         assertEquals("YouTube", metadata.getGroup().getName());
         assertEquals("Videos", metadata.getGroup().getGroup().get(0).getName());
         //TODO failing assertEquals("org.netbeans.modules.websvc.saas.services.youtube.Bundle", metadata.getLocalizingBundle());
         assertEquals("Templates/WebServices/profile.properties", metadata.getAuthentication().getProfile());
         assertEquals("dev_id", metadata.getAuthentication().getApiKey().getId());
+
+        SetupUtil.commonTearDown();
     }
 
     public void testSaasServices() throws Exception {
-        InputStream in = this.getClass().getResourceAsStream("YouTubeVideos.xml");
+        SetupUtil.commonSetUp(super.getWorkDir());
+
+        InputStream in = this.getClass().getResourceAsStream("/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideos.xml");
         SaasServices ss = SaasUtil.loadSaasServices(in);
+        //TODO fix me
         //assertEquals("YouTubeVideos", ss.getDisplayName());
+        
+        //TODO fixme this only works if we have absolute include/href=<absolute-URI>
         assertNotNull(ss.getSaasMetadata());
         assertEquals("Videos", ss.getSaasMetadata().getGroup().getGroup().get(0).getName());
+
+        SetupUtil.commonTearDown();
     }
 }
