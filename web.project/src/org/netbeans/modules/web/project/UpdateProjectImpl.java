@@ -80,7 +80,7 @@ import org.w3c.dom.Text;
  */
 public class UpdateProjectImpl implements UpdateImplementation {
 
-    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("j2seproject.transparentUpdate");
+    private static final boolean TRANSPARENT_UPDATE = Boolean.getBoolean("webproject.transparentUpdate");
     private static final String BUILD_NUMBER = System.getProperty("netbeans.buildnumber"); // NOI18N
     private static final String TAG_MINIMUM_ANT_VERSION = "minimum-ant-version"; // NOI18N
     private static final String TAG_FILE = "file"; //NOI18N
