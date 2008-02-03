@@ -72,6 +72,7 @@ public class VectorNodeProp extends PropertySupport {
         this.helpCtx = helpCtx;
     }
 
+    @Override
     public String getHtmlDisplayName() {
         if (vectorConfiguration.getModified())
             return "<b>" + getDisplayName(); // NOI18N
@@ -87,18 +88,22 @@ public class VectorNodeProp extends PropertySupport {
         vectorConfiguration.setValue((Vector)v);
     }
     
+    @Override
     public void restoreDefaultValue() {
         vectorConfiguration.reset();
     }
     
+    @Override
     public boolean supportsDefaultValue() {
         return true;
     }
     
+    @Override
     public boolean isDefaultValue() {
         return vectorConfiguration.getValue().size() == 0;
     }
 
+    @Override
     public PropertyEditor getPropertyEditor() {
 	return new DirectoriesEditor((Vector)vectorConfiguration.getValue().clone());
     }
@@ -119,6 +124,7 @@ public class VectorNodeProp extends PropertySupport {
             this.value = value;
         }
         
+        @Override
         public void setAsText(String text) {
 	    Vector newList = new Vector();
 	    StringTokenizer st = new StringTokenizer(text, File.pathSeparator); // NOI18N
@@ -128,6 +134,7 @@ public class VectorNodeProp extends PropertySupport {
 	    setValue(newList);
         }
         
+        @Override
         public String getAsText() {
 	    boolean addSep = false;
 	    StringBuilder ret = new StringBuilder();
@@ -140,6 +147,7 @@ public class VectorNodeProp extends PropertySupport {
 	    return ret.toString();
         }
         
+        @Override
         public java.awt.Component getCustomEditor() {
 	    String text = null;
 	    if (inheritValues != null)
@@ -147,6 +155,7 @@ public class VectorNodeProp extends PropertySupport {
             return new DirectoryChooserPanel(baseDir, (String[])value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
         }
         
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }

@@ -56,16 +56,14 @@ import org.openide.util.HelpCtx;
 public class StringListNodeProp extends PropertySupport {
     private VectorConfiguration vectorConfiguration;
     private BooleanConfiguration inheritValues;
-    private String baseDir;
     private String[] texts;
     boolean addPathPanel;
     private HelpCtx helpCtx;
     
-    public StringListNodeProp(VectorConfiguration vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
+    public StringListNodeProp(VectorConfiguration vectorConfiguration, BooleanConfiguration inheritValues, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
         super(texts[0], Vector.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;
-	this.baseDir = baseDir;
 	this.texts = texts;
 	this.addPathPanel = addPathPanel;
         this.helpCtx = helpCtx;
@@ -104,7 +102,7 @@ public class StringListNodeProp extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new DirectoriesEditor((Vector)vectorConfiguration.getValue().clone());
+	return new StringEditor((Vector)vectorConfiguration.getValue().clone());
     }
 
     @Override
@@ -114,11 +112,11 @@ public class StringListNodeProp extends PropertySupport {
         return super.getValue(attributeName);
     }
 
-    private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
+    private class StringEditor extends PropertyEditorSupport implements ExPropertyEditor {
         private Vector value;
         private PropertyEnv env;
         
-        public DirectoriesEditor(Vector value) {
+        public StringEditor(Vector value) {
             this.value = value;
         }
         

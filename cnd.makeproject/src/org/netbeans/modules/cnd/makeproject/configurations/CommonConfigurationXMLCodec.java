@@ -68,7 +68,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
  */
 
 /**
- * History:
+ * Change History:
+ * V40:
+ *   Added PREPROCESSOR_LIST_ELEMENT and LIST_ELEMENT and saving preprocessor symbols as a list
  * V39:
  *   Added Required Projects for unmanaged projects (REQUIRED_PROJECTS_ELEMENT)
  * V38:
