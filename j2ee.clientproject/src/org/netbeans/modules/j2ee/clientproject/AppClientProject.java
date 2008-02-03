@@ -69,7 +69,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.clientproject.classpath.AppClientProjectClassPathExtender;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.clientproject.queries.AppClientProjectEncodingQueryImpl;
 import org.netbeans.modules.j2ee.clientproject.queries.CompiledSourceForBinaryQuery;
 import org.netbeans.modules.j2ee.clientproject.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.modules.j2ee.clientproject.queries.SourceLevelQueryImpl;
@@ -89,6 +88,7 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.SourceRootsSupport;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
@@ -270,7 +270,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new AppClientSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new AppClientSharabilityQuery(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new AppClientFileBuiltQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
-            new AppClientProjectEncodingQueryImpl(evaluator()), 
+            QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING),
             new RecommendedTemplatesImpl(this.updateHelper),
             classpathExtender,
             buildExtender,
