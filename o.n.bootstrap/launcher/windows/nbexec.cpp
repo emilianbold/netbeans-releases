@@ -112,6 +112,7 @@ static char* processAUClustersList(char *userdir);
 static int removeAUClustersListFile(char *userdir);
 
 int checkForNewUpdater(const char *basePath);
+int createProcessNoVirt(const char *exePath, char *argv[]);
 
 int main(int argc, char *argv[]) {
     char exepath[1024 * 4];
@@ -398,7 +399,8 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
 #ifdef DEBUG
     fflush(stdout);
 #endif
-    _spawnv(_P_WAIT, javapath, args);
+    //_spawnv(_P_WAIT, javapath, args);
+    createProcessNoVirt(javapath, args);
 }
 
 //////////
@@ -965,5 +967,59 @@ int checkForNewUpdater(const char *basePath)
         _snprintf(srcPath, MAX_PATH, "%s\\update\\new_updater", basePath);
         RemoveDirectory(srcPath);
     }
+    return 0;
+}
+
+// creates process and disable virtualization (Win VISTA fix)
+int createProcessNoVirt(const char *exePath, char *argv[])
+{
+    const int maxCmdLineLen = 32*1024;
+    int filled = 0;
+    char cmdLine[maxCmdLineLen] = "";
+    int i = 0;
+    while (argv[i])
+    {
+        int len = (int) strlen(argv[i]);
+        if (len + filled + 2 > maxCmdLineLen)
+        {
+            char err[1024] = "";
+            _snprintf(err, 1024, "Command line arguments for \"%s\" exceeds 32K characters!", exePath);
+            MessageBox(NULL, err, "Error", MB_OK | MB_ICONSTOP);
+            return -1;
+        }
+        memcpy(cmdLine + filled, argv[i], len);
+        filled += len;
+        cmdLine[filled++] = ' ';
+        i++;
+    }
+    cmdLine[filled++] = '\0';
+
+    STARTUPINFO si = {0};
+    si.cb = sizeof(STARTUPINFO);
+    PROCESS_INFORMATION pi = {0};
+
+    if (!CreateProcess(NULL, cmdLine, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi))
+    {
+        MessageBox(NULL, "Failed to create process.", "Error", MB_OK | MB_ICONSTOP);
+        return -1;
+    }
+    HANDLE hToken;
+    if (OpenProcessToken(pi.hProcess, TOKEN_ALL_ACCESS, &hToken))
+    {
+        DWORD tokenInfoVal = 0;
+        if (!SetTokenInformation(hToken, (TOKEN_INFORMATION_CLASS) 24, &tokenInfoVal, sizeof(DWORD)))
+        {
+            // invalid token information class (24) is OK, it means there is no folder virtualization on current system
+            if (GetLastError() != ERROR_INVALID_PARAMETER)
+                MessageBox(NULL, "Failed to set token information.", "Warning", MB_OK | MB_ICONWARNING);
+        }
+        CloseHandle(hToken);
+    }
+    else
+        MessageBox(NULL, "Failed to open process token.", "Warning", MB_OK | MB_ICONWARNING);
+    ResumeThread(pi.hThread);
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
     return 0;
 }
