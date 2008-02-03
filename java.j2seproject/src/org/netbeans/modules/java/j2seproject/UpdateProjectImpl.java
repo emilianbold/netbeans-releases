@@ -48,7 +48,6 @@ import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
@@ -87,8 +86,8 @@ public class UpdateProjectImpl implements UpdateImplementation {
      * @param genFileHelper GeneratedFilesHelper
      * @param notifier used to ask user about project update
      */
-    UpdateProjectImpl(Project project, AntProjectHelper helper, AuxiliaryConfiguration cfg, GeneratedFilesHelper genFileHelper, Notifier notifier) {
-        assert project != null && helper != null && cfg != null && genFileHelper != null && notifier != null;
+    UpdateProjectImpl(Project project, AntProjectHelper helper, AuxiliaryConfiguration cfg, Notifier notifier) {
+        assert project != null && helper != null && cfg != null && notifier != null;
         this.project = project;
         this.helper = helper;
         this.cfg = cfg;

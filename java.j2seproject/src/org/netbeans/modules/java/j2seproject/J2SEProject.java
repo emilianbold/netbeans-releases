@@ -160,7 +160,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation());
     /// TODO replace this GeneratedFilesHelper with the default one when fixing #101710
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        UpdateImplementation updateProject = new UpdateProjectImpl(this, this.helper, aux, genFilesHelper,
+        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux,
                 UpdateProjectImpl.createDefaultNotifier());
         this.updateHelper = new UpdateHelper(updateProject, helper);
 
