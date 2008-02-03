@@ -117,7 +117,6 @@ import org.openide.util.lookup.Lookups;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSVersionProvider;
-import org.netbeans.modules.j2ee.ejbjarproject.queries.EjbJarProjectEncodingQueryImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.FoldersListSettings;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
@@ -363,7 +362,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarSources (helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 new EjbJarSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
                 new EjbJarFileBuiltQuery (helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
-                new EjbJarProjectEncodingQueryImpl(evaluator()),
+                QuerySupport.createFileEncodingQuery(evaluator(), EjbJarProjectProperties.SOURCE_ENCODING),
                 new RecommendedTemplatesImpl(updateHelper),
                 refHelper,
                 classpathExtender,
