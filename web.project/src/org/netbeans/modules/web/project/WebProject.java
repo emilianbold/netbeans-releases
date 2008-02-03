@@ -389,7 +389,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             new AntArtifactProviderImpl(),
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
-            new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
+            QuerySupport.createUnitTestForSourceQuery(getSourceRoots(),getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
             new WebSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new WebSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
