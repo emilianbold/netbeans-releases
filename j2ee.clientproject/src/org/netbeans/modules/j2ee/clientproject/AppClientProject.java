@@ -69,7 +69,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.clientproject.classpath.AppClientProjectClassPathExtender;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.clientproject.queries.SourceLevelQueryImpl;
 import org.netbeans.modules.j2ee.clientproject.queries.UnitTestForSourceQueryImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.AppClientLogicalViewProvider;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
@@ -264,7 +263,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             new ProjectXmlSavedHookImpl(),
             UILookupMergerSupport.createProjectOpenHookMerger(new ProjectOpenedHookImpl()),
             new UnitTestForSourceQueryImpl(getSourceRoots(),getTestSourceRoots()),
-            new SourceLevelQueryImpl(evaluator()),
+            QuerySupport.createSourceLevelQuery(evaluator()),
             new AppClientSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
             new AppClientSharabilityQuery(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new AppClientFileBuiltQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
