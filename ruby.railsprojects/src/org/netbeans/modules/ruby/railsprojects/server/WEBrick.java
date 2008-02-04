@@ -124,7 +124,7 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
 
     // ServerInstanceImplementation methods
     public String getServerDisplayName() {
-        return NbBundle.getMessage(WEBrick.class, "LBL_ServerDisplayName", getDisplayName(), platform.getLabel());
+        return NbBundle.getMessage(WEBrick.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
 
     public Node getFullNode() {
