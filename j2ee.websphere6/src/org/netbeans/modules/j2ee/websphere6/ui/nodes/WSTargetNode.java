@@ -63,8 +63,7 @@ public class WSTargetNode extends AbstractNode {
      */
     public WSTargetNode(Lookup lookup) {
         super(new Children.Array());
-        //getChildren().add(new Node[] {EnterpriseModuleGroupNode.newInstance(lookup)});
-        //getChildren().add(new Node[] {WebModuleGroupNode.newInstance(lookup)});
+        getChildren().add(new Node[] {new ApplicationsNode(lookup)});
     }
 
     @Override
