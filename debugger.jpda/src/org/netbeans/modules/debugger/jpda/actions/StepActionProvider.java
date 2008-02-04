@@ -47,6 +47,7 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
+import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.StepRequest;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -330,6 +331,17 @@ implements Executor {
             }
             //S ystem.out.println("/nStepAction.exec end - resume");
             return true; // resume
+        }
+    }
+
+    public void removed(EventRequest eventRequest) {
+        if (stepWatch != null) {
+            stepWatch.done();
+            stepWatch = null;
+        }
+        if (lastMethodExitBreakpointListener != null) {
+            lastMethodExitBreakpointListener.destroy();
+            lastMethodExitBreakpointListener = null;
         }
     }
     

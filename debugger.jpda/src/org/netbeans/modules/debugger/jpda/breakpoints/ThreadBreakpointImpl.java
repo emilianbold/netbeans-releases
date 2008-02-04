@@ -131,4 +131,7 @@ public class ThreadBreakpointImpl extends BreakpointImpl implements Executor {
             thread
         );
     }
+
+    public void removed(EventRequest eventRequest) {
+    }
 }
