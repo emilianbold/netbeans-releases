@@ -65,7 +65,8 @@ public interface UpdateImplementation {
 
     /**
      * Saving of update. If the project is of current version it should probably do nothing.
-     * @param props project properties to be saved, can be <code>null</code>.
+     * @param props project properties to be saved, can be <code>null</code>. There's no need to save them because
+     *          {@link UpdateHelper} does it.
      * @throws IOException if error occurs during saving.
      */
     void saveUpdate(final EditableProperties props) throws IOException;

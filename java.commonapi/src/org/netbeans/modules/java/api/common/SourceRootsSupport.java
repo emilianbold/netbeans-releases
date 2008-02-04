@@ -42,9 +42,10 @@ package org.netbeans.modules.java.api.common;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.util.Parameters;
 
 /**
- *
+ * Support class for creating {@link SourceRoots} implementation.
  * @author Tomas Mysik
  */
 public final class SourceRootsSupport {
@@ -54,6 +55,14 @@ public final class SourceRootsSupport {
 
     public static SourceRoots create(UpdateHelper helper, PropertyEvaluator evaluator, ReferenceHelper refHelper,
             String projectConfigurationNamespace, String elementName, boolean isTest, String newRootNameTemplate) {
-        return new SourceRootsImpl(helper, evaluator, refHelper, projectConfigurationNamespace, elementName, isTest, newRootNameTemplate);
+        Parameters.notNull("helper", helper); // NOI18N
+        Parameters.notNull("evaluator", evaluator); // NOI18N
+        Parameters.notNull("refHelper", refHelper); // NOI18N
+        Parameters.notNull("projectConfigurationNamespace", projectConfigurationNamespace); // NOI18N
+        Parameters.notNull("elementName", elementName); // NOI18N
+        Parameters.notNull("newRootNameTemplate", newRootNameTemplate); // NOI18N
+
+        return new SourceRootsImpl(helper, evaluator, refHelper, projectConfigurationNamespace, elementName, isTest,
+                newRootNameTemplate);
     }
 }

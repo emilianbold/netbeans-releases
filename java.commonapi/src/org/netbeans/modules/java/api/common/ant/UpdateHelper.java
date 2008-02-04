@@ -57,7 +57,7 @@ import org.openide.util.Parameters;
  * to explicit user action. Caller has to provide implementation of {@link UpdateProject}
  * which takes care of updating project itself.
  * @author Tomas Zezula, Tomas Mysik
- * @see UpdateProject
+ * @see UpdateImplementation
  */
 public final class UpdateHelper {
 
@@ -66,7 +66,7 @@ public final class UpdateHelper {
 
     /**
      * Create new {@link UpdateHelper}.
-     * @param updateProject {@link UpdateProject} which takes care of updating project itself.
+     * @param updateProject {@link UpdateImplementation} which takes care of updating project itself.
      * @param helper {@link AntProjectHelper} to be proxied.
      */
     public UpdateHelper(UpdateImplementation updateProject, AntProjectHelper helper) {
@@ -135,7 +135,7 @@ public final class UpdateHelper {
     public Element getPrimaryConfigurationData(final boolean shared) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<Element>() {
             public Element run() {
-                if (!shared || isCurrent()) { //Only shared props should cause update
+                if (!shared || isCurrent()) { // only shared props should cause update
                     return helper.getPrimaryConfigurationData(shared);
                 }
                 return updateProject.getUpdatedSharedConfigurationData();
