@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.j2ee.websphere6.ui.nodes;
 
+import java.awt.Image;
 import javax.swing.Action;
+import org.openide.filesystems.Repository;
+import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
  *
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
-public class WSTargetNode extends AbstractNode {
+public class ApplicationsNode extends AbstractNode {
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for
-     *      node's customization, such as the deployment manager
-     */
-    public WSTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new ApplicationsNode(lookup)});
+    public ApplicationsNode(Lookup lookup) {
+        super(new ApplicationsChildren(lookup));
+        setDisplayName(NbBundle.getMessage(ApplicationsNode.class, "LBL_Apps"));
     }
 
     @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+    public Image getIcon(int type) {
+        return getIconDelegate().getIcon(type);
     }
 
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIconDelegate().getOpenedIcon(type);
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{};
+    }
+
+    private Node getIconDelegate() {
+        return DataFolder.findFolder(Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
+    }
+
+    private static class ApplicationsChildren extends Children.Keys<Node> {
+
+        public ApplicationsChildren(Lookup lookup) {
+            setKeys(new Node[]{
+                EnterpriseModulesNode.newInstance(lookup),
+                EjbModulesNode.newInstance(lookup),
+                WebModulesNode.newInstance(lookup)
+            });
+        }
+
+        @Override
+        protected Node[] createNodes(Node key) {
+            return new Node[] {key};
+        }
+
+    }
 }

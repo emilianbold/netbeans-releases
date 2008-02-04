@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,38 +31,71 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.j2ee.websphere6.ui.nodes;
 
+import java.awt.Image;
+import javax.enterprise.deploy.shared.ModuleType;
 import javax.swing.Action;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport;
+import org.netbeans.modules.j2ee.deployment.plugins.api.UISupport.ServerIcon;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
- * A node that represents a concrete target for a particuler server instance.
- * As it gets filtered and does not appear in the registry we do not implement
- * anything special.
  *
- * @author Kirill Sorokin
+ * @author Petr Hejl
  */
-public class WSTargetNode extends AbstractNode {
+public class WSDefaultModuleNode extends AbstractNode {
 
-    /**
-     * Creates a new instance of the WSTargetNode.
-     *
-     * @param lookup a lookup object that contains the objects required for
-     *      node's customization, such as the deployment manager
-     */
-    public WSTargetNode(Lookup lookup) {
-        super(new Children.Array());
-        getChildren().add(new Node[] {new ApplicationsNode(lookup)});
+    private final ModuleType moduleType;
+
+    private final WSDefaultModule module;
+
+    public WSDefaultModuleNode(ModuleType moduleType, WSDefaultModule module) {
+        super(Children.LEAF);
+        this.moduleType = moduleType;
+        this.module = module;
+        setDisplayName(decorateConsoleName(module.getConsoleName()));
+        setShortDescription(module.getRealName());
     }
 
     @Override
-    public Action[] getActions(boolean b) {
-        return new Action[] {};
+    public Image getIcon(int type) {
+        if (ModuleType.EAR.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.EAR_ARCHIVE);
+        } else if (ModuleType.EJB.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.EJB_ARCHIVE);
+        } else if (ModuleType.WAR.equals(moduleType)) {
+            return UISupport.getIcon(ServerIcon.WAR_ARCHIVE);
+        } else {
+            throw new IllegalArgumentException("Unsupported module type"); // NOI18N
+        }
     }
 
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{};
+    }
+
+    private String decorateConsoleName(String consoleName) {
+        String name = consoleName;
+        if (!module.isRunning()) {
+            name += " [" // NOI18N
+                    + NbBundle.getMessage(WSDefaultModuleNode.class, "LBL_Stopped")
+                    + "]"; // NOI18N
+        }
+        return name;
+    }
 }
