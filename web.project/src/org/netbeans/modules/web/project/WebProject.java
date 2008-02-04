@@ -390,7 +390,8 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(),getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
             new WebSources (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-            new WebSharabilityQuery (this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
+                    WebProjectProperties.WEB_DOCBASE_DIR),
             new RecommendedTemplatesImpl(),
             new WebFileBuiltQuery (this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()),
             classPathExtender,

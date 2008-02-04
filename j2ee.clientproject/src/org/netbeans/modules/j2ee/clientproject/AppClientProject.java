@@ -263,7 +263,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
             QuerySupport.createUnitTestForSourceQuery(getSourceRoots(),getTestSourceRoots()),
             QuerySupport.createSourceLevelQuery(evaluator()),
             new AppClientSources(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()),
-            new AppClientSharabilityQuery(this.helper, evaluator(), getSourceRoots(), getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
+            QuerySupport.createSharabilityQuery(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
+                    AppClientProjectProperties.META_INF),
             new AppClientFileBuiltQuery(this.helper, evaluator(),getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             QuerySupport.createFileEncodingQuery(evaluator(), AppClientProjectProperties.SOURCE_ENCODING),
             new RecommendedTemplatesImpl(this.updateHelper),
