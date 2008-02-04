@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+             xmlns="http://research.sun.com/wadl/2006/10">
+    <grammars/>
+    <resources base="http://maps.google.com/maps">
+	<resource path="geo">
+	    <method name="GET" id="google.Geocode">
+		<doc xml:lang="en">
+		    A GET call to google.Geocode
+                    returns a longitude and latitude for a given address. 
+		    
+		    More at:
+		    http://www.google.com/apis/maps/documentation/services.html#Geocoding
+		</doc>
+		<request>
+		    <param name="q" type="xsd:string" style="query" required="true">
+			<doc xml:lang="en">The address to be located and coverted to a geocode.</doc>
+		    </param>
+		    <param name="key" type="xsd:string" style="query" required="true">
+			<doc xml:lang="en">API key that you establish on the Google Geocode site at http://www.google.com/apis/maps/signup.html.</doc>
+		    </param>
+		</request>
+		<response>
+		</response>
+		</method>
+	</resource>
+    </resources>  
+    
+</application>

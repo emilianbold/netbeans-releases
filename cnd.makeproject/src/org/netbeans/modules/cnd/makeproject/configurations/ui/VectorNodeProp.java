@@ -45,7 +45,8 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.io.File;
 import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.DirectoryChooserPanel;
@@ -63,7 +64,7 @@ public class VectorNodeProp extends PropertySupport {
     private HelpCtx helpCtx;
     
     public VectorNodeProp(VectorConfiguration vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
-        super(texts[0], Vector.class, texts[1], texts[2], true, true);
+        super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;
 	this.baseDir = baseDir;
@@ -72,6 +73,7 @@ public class VectorNodeProp extends PropertySupport {
         this.helpCtx = helpCtx;
     }
 
+    @Override
     public String getHtmlDisplayName() {
         if (vectorConfiguration.getModified())
             return "<b>" + getDisplayName(); // NOI18N
@@ -84,23 +86,27 @@ public class VectorNodeProp extends PropertySupport {
     }
     
     public void setValue(Object v) {
-        vectorConfiguration.setValue((Vector)v);
+        vectorConfiguration.setValue((List)v);
     }
     
+    @Override
     public void restoreDefaultValue() {
         vectorConfiguration.reset();
     }
     
+    @Override
     public boolean supportsDefaultValue() {
         return true;
     }
     
+    @Override
     public boolean isDefaultValue() {
         return vectorConfiguration.getValue().size() == 0;
     }
 
+    @Override
     public PropertyEditor getPropertyEditor() {
-	return new DirectoriesEditor((Vector)vectorConfiguration.getValue().clone());
+	return new DirectoriesEditor((List)((ArrayList)vectorConfiguration.getValue()).clone());
     }
 
     /*
@@ -112,15 +118,16 @@ public class VectorNodeProp extends PropertySupport {
     */
 
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
-        private Vector value;
+        private List value;
         private PropertyEnv env;
         
-        public DirectoriesEditor(Vector value) {
+        public DirectoriesEditor(List value) {
             this.value = value;
         }
         
+        @Override
         public void setAsText(String text) {
-	    Vector newList = new Vector();
+	    List newList = new ArrayList();
 	    StringTokenizer st = new StringTokenizer(text, File.pathSeparator); // NOI18N
 	    while (st.hasMoreTokens()) {
 		newList.add(st.nextToken());
@@ -128,18 +135,20 @@ public class VectorNodeProp extends PropertySupport {
 	    setValue(newList);
         }
         
+        @Override
         public String getAsText() {
 	    boolean addSep = false;
 	    StringBuilder ret = new StringBuilder();
 	    for (int i = 0; i < value.size(); i++) {
 		if (addSep)
 		    ret.append(File.pathSeparator);
-		ret.append((String)value.elementAt(i));
+		ret.append((String)value.get(i));
 		addSep = true;
 	    }
 	    return ret.toString();
         }
         
+        @Override
         public java.awt.Component getCustomEditor() {
 	    String text = null;
 	    if (inheritValues != null)
@@ -147,6 +156,7 @@ public class VectorNodeProp extends PropertySupport {
             return new DirectoryChooserPanel(baseDir, (String[])value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
         }
         
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }

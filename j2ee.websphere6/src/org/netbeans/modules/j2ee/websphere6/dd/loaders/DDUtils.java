@@ -72,36 +72,36 @@ public class DDUtils {
 
     /** Parsing just for detecting the version  SAX parser used
     */
-    public static String getVersion(InputSource is) throws IOException, SAXException {
-        javax.xml.parsers.SAXParserFactory fact = javax.xml.parsers.SAXParserFactory.newInstance();
-        fact.setValidating(false);
-        try {
-            javax.xml.parsers.SAXParser parser = fact.newSAXParser();
-            XMLReader reader = parser.getXMLReader();
-            reader.setContentHandler(new VersionHandler());
-            reader.setEntityResolver(DDResolver.getInstance());
-            try {
-                reader.parse(is);
-            } catch (SAXException ex) {
-                String message = ex.getMessage();
-                if (message!=null && message.startsWith(EXCEPTION_PREFIX))
-                    return message.substring(EXCEPTION_PREFIX.length());
-                else throw new SAXException(org.openide.util.NbBundle.getMessage(DDUtils.class, "MSG_cannotParse"),ex);
-            }
-            throw new SAXException(org.openide.util.NbBundle.getMessage(DDUtils.class, "MSG_cannotFindRoot"));
-        } catch(javax.xml.parsers.ParserConfigurationException ex) {
-            throw new SAXException(org.openide.util.NbBundle.getMessage(DDUtils.class, "MSG_parserProblem"),ex);
-        }
-    }
+//    public static String getVersion(InputSource is) throws IOException, SAXException {
+//        javax.xml.parsers.SAXParserFactory fact = javax.xml.parsers.SAXParserFactory.newInstance();
+//        fact.setValidating(false);
+//        try {
+//            javax.xml.parsers.SAXParser parser = fact.newSAXParser();
+//            XMLReader reader = parser.getXMLReader();
+//            reader.setContentHandler(new VersionHandler());
+//            reader.setEntityResolver(DDResolver.getInstance());
+//            try {
+//                reader.parse(is);
+//            } catch (SAXException ex) {
+//                String message = ex.getMessage();
+//                if (message!=null && message.startsWith(EXCEPTION_PREFIX))
+//                    return message.substring(EXCEPTION_PREFIX.length());
+//                else throw new SAXException(org.openide.util.NbBundle.getMessage(DDUtils.class, "MSG_cannotParse"),ex);
+//            }
+//            throw new SAXException(org.openide.util.NbBundle.getMessage(DDUtils.class, "MSG_cannotFindRoot"));
+//        } catch(javax.xml.parsers.ParserConfigurationException ex) {
+//            throw new SAXException(org.openide.util.NbBundle.getMessage(DDUtils.class, "MSG_parserProblem"),ex);
+//        }
+//    }
     
-    private static class VersionHandler extends org.xml.sax.helpers.DefaultHandler {
-        public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
-            if ("WebAppBinging".equals(rawName)) { //NOI18N
-                String version = atts.getValue("version"); //NOI18N
-                throw new SAXException(EXCEPTION_PREFIX);
-            }
-        }
-    }
+//    private static class VersionHandler extends org.xml.sax.helpers.DefaultHandler {
+//        public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
+//            if ("WebAppBinging".equals(rawName)) { //NOI18N
+//                String version = atts.getValue("version"); //NOI18N
+//                throw new SAXException(EXCEPTION_PREFIX);
+//            }
+//        }
+//    }
   
     private static class DDResolver implements EntityResolver {
         static DDResolver resolver;

@@ -446,25 +446,25 @@ public class XPathModelImpl implements XPathModel {
                 String name = XPathUtils.qNameObjectToString(qName);
                 if (isAttribute) {
                     if (nsUri == null || nsUri.length() == 0) {
-                        mValidationContext.addResultItem(getRootExpression(), 
-                                ResultType.ERROR, 
-                                XPathProblem.UNKNOWN_ATTRIBUTE, name);
+//                        mValidationContext.addResultItem(getRootExpression(), 
+//                                ResultType.ERROR, 
+//                                XPathProblem.UNKNOWN_ATTRIBUTE, name);
                     } else {
-                        mValidationContext.addResultItem(getRootExpression(), 
-                                ResultType.ERROR, 
-                                XPathProblem.UNKNOWN_ATTRIBUTE_WITH_NAMESPACE, 
-                                name, nsUri);
+//                        mValidationContext.addResultItem(getRootExpression(), 
+//                                ResultType.ERROR, 
+//                                XPathProblem.UNKNOWN_ATTRIBUTE_WITH_NAMESPACE, 
+//                                name, nsUri);
                     }
                 } else {
                     if (nsUri == null || nsUri.length() == 0) {
-                        mValidationContext.addResultItem(getRootExpression(), 
-                                ResultType.ERROR, 
-                                XPathProblem.UNKNOWN_ELEMENT, name);
+//                        mValidationContext.addResultItem(getRootExpression(), 
+//                                ResultType.ERROR, 
+//                                XPathProblem.UNKNOWN_ELEMENT, name);
                     } else {
-                        mValidationContext.addResultItem(getRootExpression(), 
-                                ResultType.ERROR, 
-                                XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, 
-                                name, nsUri);
+//                        mValidationContext.addResultItem(getRootExpression(), 
+//                                ResultType.ERROR, 
+//                                XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, 
+//                                name, nsUri);
                     }
                 }
             }
@@ -888,9 +888,9 @@ public class XPathModelImpl implements XPathModel {
         //
         if (sameNameOtherPrefix.isEmpty()) {
             // The function with the required name isn't found
-            mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
-                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
-                    XPathUtils.qNameObjectToString(funcQName));
+//            mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+//                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
+//                    XPathUtils.qNameObjectToString(funcQName));
         } else {
             // The function with the required name is found, but in other namespace
             //
@@ -948,9 +948,9 @@ public class XPathModelImpl implements XPathModel {
                     && nsUri != null && nsUri.length() > 0 && 
                     !(mExternalModelResolver.isSchemaVisible(nsUri))) {
                 // Error. The required schema isn't imported
-                mValidationContext.addResultItem(getRootExpression(), 
-                        ResultType.WARNING,
-                        XPathProblem.MISSING_SCHEMA_IMPORT, nsUri);
+//                mValidationContext.addResultItem(getRootExpression(), 
+//                        ResultType.WARNING,
+//                        XPathProblem.MISSING_SCHEMA_IMPORT, nsUri);
             }
         }
         //

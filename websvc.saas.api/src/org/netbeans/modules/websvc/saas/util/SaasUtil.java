@@ -39,7 +39,6 @@
 package org.netbeans.modules.websvc.saas.util;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,9 +49,21 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.namespace.QName;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.sax.SAXSource;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
 /**
  *
@@ -60,10 +71,27 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Group;
  */
 public class SaasUtil {
 
-    public static SaasGroup loadSaasGroup(File input) throws IOException, JAXBException {
-        InputStream in = new FileInputStream(input);
+    public static <T> T loadJaxbObject(FileObject input, Class<T> type, boolean includeAware) throws IOException {
+        if (input == null) {
+            return null;
+        }
+        InputStream in = input.getInputStream();
         try {
-            return loadSaasGroup(new FileInputStream(input));
+            JAXBException jbex = null;
+            try {
+                T t = loadJaxbObject(in, type, includeAware);
+                if (t != null) {
+                    return t;
+                }
+            } catch (JAXBException ex) {
+                jbex = ex;
+            }
+            String msg = NbBundle.getMessage(SaasUtil.class, "MSG_ErrorLoadingJaxb", type.getName(), input.getPath());
+            IOException ioe = new IOException(msg);
+            if (jbex != null) {
+                ioe.initCause(jbex);
+            }
+            throw ioe;
         } finally {
             if (in != null) {
                 in.close();
@@ -71,12 +99,58 @@ public class SaasUtil {
         }
     }
 
-    public static SaasGroup loadSaasGroup(InputStream input) throws JAXBException {
-        JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
+    public static <T> T loadJaxbObject(InputStream in, Class<T> type) throws JAXBException {
+        return loadJaxbObject(in, type, false);
+    }
+    
+    public static <T> T loadJaxbObject(InputStream in, Class<T> type, boolean includeAware) throws JAXBException {
+        JAXBContext jc = JAXBContext.newInstance(type.getPackage().getName());
         Unmarshaller unmarshaller = jc.createUnmarshaller();
-        JAXBElement<Group> groupElement = (JAXBElement)unmarshaller.unmarshal(input);
-        if (groupElement != null && groupElement.getValue() != null) {
-            return new SaasGroup(null, groupElement.getValue());
+        Object o;
+        if (includeAware) {
+            SAXSource ss = getSAXSourceWithXIncludeEnabled(in);
+            o = unmarshaller.unmarshal(ss);
+        } else {
+            o = unmarshaller.unmarshal(in);
+        }
+        
+        if (type.equals(o.getClass())) {
+            return type.cast(o);
+        } else if (o instanceof JAXBElement) {
+            JAXBElement e = (JAXBElement) o;
+            return type.cast(e.getValue());
+        }
+
+        throw new IllegalArgumentException("Expect: " + type.getName() + " get: " + o.getClass().getName());
+    }
+
+    public static SAXSource getSAXSourceWithXIncludeEnabled(InputStream in) {
+        try {
+            SAXParserFactory spf = SAXParserFactory.newInstance();
+            spf.setNamespaceAware(true);
+            spf.setXIncludeAware(true);
+            SAXParser saxParser = spf.newSAXParser();
+            XMLReader xmlReader = saxParser.getXMLReader();
+            return new SAXSource(xmlReader, new InputSource(in));
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    public static SaasGroup loadSaasGroup(FileObject input) throws IOException {
+        if (input == null) {
+            return null;
+        }
+        return loadJaxbObject(input, SaasGroup.class, false);
+    }
+
+    public static SaasGroup loadSaasGroup(InputStream input) throws JAXBException {
+        Group g = loadJaxbObject(input, Group.class);
+        if (g != null) {
+            return new SaasGroup(null, g);
         }
         return null;
     }
@@ -91,13 +165,28 @@ public class SaasUtil {
             }
         }
     }
-    
     public static final QName QNAME_GROUP = new QName(Saas.NS_SAAS, "group");
-    
+
     public static void saveSaasGroup(SaasGroup saasGroup, OutputStream output) throws JAXBException {
         JAXBContext jc = JAXBContext.newInstance(Group.class.getPackage().getName());
         Marshaller marshaller = jc.createMarshaller();
         JAXBElement<Group> jbe = new JAXBElement<Group>(QNAME_GROUP, Group.class, saasGroup.getDelegate());
         marshaller.marshal(jbe, output);
+    }
+
+    public static Application loadWadl(FileObject wadlFile) throws IOException {
+        return loadJaxbObject(wadlFile, Application.class, true);
+    }
+
+    public static Application loadWadl(InputStream in) throws JAXBException {
+        return loadJaxbObject(in, Application.class, true);
+    }
+
+    public static SaasServices loadSaasServices(FileObject wadlFile) throws IOException {
+        return loadJaxbObject(wadlFile, SaasServices.class, true);
+    }
+
+    public static SaasServices loadSaasServices(InputStream in) throws JAXBException {
+        return loadJaxbObject(in, SaasServices.class, true);
     }
 }
