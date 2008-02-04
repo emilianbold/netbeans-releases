@@ -331,6 +331,9 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }
 
         public CharSequence getInsertPrefix() {
+            if ("".equals(enclName)) { // NOI18N
+                return typeName;
+            }
             return enclName + "." + typeName; // NOI18N
         }
 
