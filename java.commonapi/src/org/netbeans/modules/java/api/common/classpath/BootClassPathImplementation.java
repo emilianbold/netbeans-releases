@@ -52,7 +52,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.java.api.common.CommonProjectUtils;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.WeakListeners;
 
