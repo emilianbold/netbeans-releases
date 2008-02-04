@@ -301,8 +301,6 @@ public final class CompletionManager {
     }
 
     private static class BeansRefCompletor extends Completor {
-        
-        public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
 
         final private boolean includeGlobal;
 
@@ -333,7 +331,7 @@ public final class CompletionManager {
             if(SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "name")) { // NOI18N
                 List<String> names = StringUtils.tokenize(
                         SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "name"), 
-                        BEAN_NAME_DELIMITERS); // NOI18N
+                        SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS); // NOI18N
                 if(names != null) {
                     cNames.addAll(names);
                 }
