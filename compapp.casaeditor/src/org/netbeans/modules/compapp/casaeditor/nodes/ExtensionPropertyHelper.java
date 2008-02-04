@@ -306,42 +306,44 @@ public class ExtensionPropertyHelper {
             
             List<CasaExtensibilityElement> currentChildren = 
                     lastEE.getExtensibilityElements();
-            assert currentChildren != null && currentChildren.size() == 1;
-            CasaExtensibilityElement currentChild = currentChildren.get(0);
-            String currentChildName = currentChild.getQName().getLocalPart();
-            
-            // Build choice map.
-            Map<String, CasaExtensibilityElement> choiceMap = 
-                    new HashMap<String, CasaExtensibilityElement>();
-            List<JbiExtensionElement> childExtElements = extElement.getElements();
-            if (childExtElements != null) {
-                // Add potential children
-                for (JbiExtensionElement childElement : childExtElements) {
-                    String childElementName = childElement.getName();
-                    if (! childElementName.equals(currentChildName)) {
-                        CasaExtensibilityElement childEE = 
-                                createNonExistingProperties(node, document,
-                                childElement, extSheetSet, 
-                                casaExtPoint, null, null, namespace, false);
-                        choiceMap.put(childElementName, childEE);
+            if (currentChildren != null && currentChildren.size() > 0) {
+                assert currentChildren != null && currentChildren.size() == 1;
+                CasaExtensibilityElement currentChild = currentChildren.get(0);
+                String currentChildName = currentChild.getQName().getLocalPart();
+
+                // Build choice map.
+                Map<String, CasaExtensibilityElement> choiceMap = 
+                        new HashMap<String, CasaExtensibilityElement>();
+                List<JbiExtensionElement> childExtElements = extElement.getElements();
+                if (childExtElements != null) {
+                    // Add potential children
+                    for (JbiExtensionElement childElement : childExtElements) {
+                        String childElementName = childElement.getName();
+                        if (! childElementName.equals(currentChildName)) {
+                            CasaExtensibilityElement childEE = 
+                                    createNonExistingProperties(node, document,
+                                    childElement, extSheetSet, 
+                                    casaExtPoint, null, null, namespace, false);
+                            choiceMap.put(childElementName, childEE);
+                        }
                     }
+
+                    // Add current child
+                    CasaExtensibilityElement clonedExistingChildEE = 
+                            (CasaExtensibilityElement) currentChild.copy(lastEE);
+                    choiceMap.put(currentChildName, clonedExistingChildEE);
                 }
-                
-                // Add current child
-                CasaExtensibilityElement clonedExistingChildEE = 
-                        (CasaExtensibilityElement) currentChild.copy(lastEE);
-                choiceMap.put(currentChildName, clonedExistingChildEE);
+
+                // Add an artificial property for the choice extension element.
+                PropertyUtils.installChoiceExtensionProperty(
+                        extSheetSet, node, casaExtPoint, 
+                        firstEE, lastEE,
+                        CasaNode.ALWAYS_WRITABLE_PROPERTY, 
+                        String.class, 
+                        elementName, elementName, 
+                        "", // FIXME: description
+                        choiceMap); 
             }
-            
-            // Add an artificial property for the choice extension element.
-            PropertyUtils.installChoiceExtensionProperty(
-                    extSheetSet, node, casaExtPoint, 
-                    firstEE, lastEE,
-                    CasaNode.ALWAYS_WRITABLE_PROPERTY, 
-                    String.class, 
-                    elementName, elementName, 
-                    "", // FIXME: description
-                    choiceMap);            
         } 
         
         // Add properties for attributes of the current extenstion element.

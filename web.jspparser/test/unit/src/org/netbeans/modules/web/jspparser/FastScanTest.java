@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,21 +41,13 @@
 
 package org.netbeans.modules.web.jspparser;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.StringTokenizer;
 
-import junit.framework.*;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.JspParserFactory;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 
-/** JUnit test suite with Jemmy support
- *
+/**
  * @author pj97932
  * @version 1.0
  */
@@ -67,10 +59,16 @@ public class FastScanTest extends NbTestCase {
     public FastScanTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+        TestUtil.setup(this);
+    }
     
     public void testPage1() throws Exception {
         doFastScanTest("jspparser-data/wmroot", "subdir/Page1.jsp", new JspParserAPI.JspOpenInfo(false, "ISO-8859-1"));
-        
     }
     
     public void testXMLFromExamples1() throws Exception {
@@ -82,20 +80,10 @@ public class FastScanTest extends NbTestCase {
     }
     
     public void doFastScanTest(String wmRootPath, String path, JspParserAPI.JspOpenInfo correctInfo) throws Exception {
-        try{
-            FileObject wmRoot = TestUtil.getFileInWorkDir(wmRootPath, this);
-            StringTokenizer st = new StringTokenizer(path, "/");
-            FileObject tempFile = wmRoot;
-            String ss;
-            while (st.hasMoreTokens()) {
-                tempFile = tempFile.getFileObject(st.nextToken());
-            }
-            parseIt(wmRoot, tempFile, correctInfo);
-        }catch(RuntimeException e){
-            e.printStackTrace();
-            e.printStackTrace(getRef());
-            fail("Initialization of test failed! ->" + e);
-        }
+        FileObject wmRoot = TestUtil.getFileInWorkDir(wmRootPath, this);
+        FileObject tempFile = wmRoot.getFileObject(path);
+        assertNotNull("Path: " + wmRoot + "/" + path, tempFile);
+        parseIt(wmRoot, tempFile, correctInfo);
     }
     
     private void parseIt(FileObject root, FileObject jspFile, JspParserAPI.JspOpenInfo correctInfo) throws Exception {
@@ -105,5 +93,4 @@ public class FastScanTest extends NbTestCase {
         log("file: " + jspFile + "   enc: " + info.getEncoding() + "   isXML: " + info.isXmlSyntax());
         assertEquals(correctInfo, info);
     }
-    
 }

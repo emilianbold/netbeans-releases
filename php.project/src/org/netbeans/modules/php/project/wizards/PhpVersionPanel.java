@@ -53,7 +53,7 @@ class PhpVersionPanel extends javax.swing.JPanel {
     private static final long serialVersionUID = 2168064940970450732L;
 
     /** Creates new form PhpVersionPanel */
-    PhpVersionPanel(PhpSourcesConfigurePanel panel) {
+    PhpVersionPanel(PhpProjectConfigurePanel panel) {
         myPanel = panel;
 
         initComponents();
@@ -90,7 +90,7 @@ class PhpVersionPanel extends javax.swing.JPanel {
         myVersion.setModel(new DefaultComboBoxModel(Versions.values()));
     }
 
-    private PhpSourcesConfigurePanel getPanel() {
+    private PhpProjectConfigurePanel getPanel() {
         return myPanel;
     }
 
@@ -158,5 +158,5 @@ class PhpVersionPanel extends javax.swing.JPanel {
     private javax.swing.JLabel myLabel;
     private javax.swing.JComboBox myVersion;
     // End of variables declaration//GEN-END:variables
-    private PhpSourcesConfigurePanel myPanel;
+    private PhpProjectConfigurePanel myPanel;
 }

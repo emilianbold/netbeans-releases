@@ -44,7 +44,7 @@ made subject to such option by the copyright holder.
 
 <mconfig name="{template test config}">
 
-    <testbag testattribs="stable" executor="ide" compiler="unit-compiler" name="jspparser tests">
+    <testbag testattribs="unstable" executor="unit-executor" name="web.jspparser">
         <testset dir="unit/src">
             <patternset>
                 <include name="**/*Test.class"/>
@@ -53,9 +53,8 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
 
-<!--	<executor name="jvm" antfile="build-{testtype}.xml" target="run-in-jvm"/> -->
-        <executor name="ide" antfile="build-unit.xml" target="run-in-ide"/> 
-
     <compiler name="unit-compiler" default="true" antfile="build-unit.xml" target="unit-compiler"/>
+
+    <executor name="unit-executor" antfile="build-unit.xml" target="run-unit-test"/>
 
 </mconfig>

@@ -40,7 +40,7 @@
  */
 package org.netbeans.modules.visualweb.jsfsupport.container;
 
-import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import javax.faces.application.Application;
@@ -51,17 +51,15 @@ import javax.faces.render.RenderKitFactory;
 import javax.faces.FactoryFinder;
 //import javax.portlet.PortletContext;
 import javax.servlet.ServletContextEvent;
-import javax.xml.parsers.ParserConfigurationException;
 import org.openide.ErrorManager;
+import java.lang.reflect.Method;
 
 
 import com.sun.rave.designtime.DesignContext;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import javax.faces.component.UIComponent;
 import org.netbeans.modules.visualweb.jsfsupport.render.RaveRenderKit;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
-import org.xml.sax.SAXException;
+import org.openide.util.Lookup;
 
 /**
  * FacesContainer provides a "mock" web/servlet container environment for hosting the design of a
@@ -208,9 +206,9 @@ public class FacesContainer {
      */
     public void destroy() {
         facesContext.setDesignContext(null);
-        // NPE from component base renderer.
-        // Fix that first, before this memory leak problem
-        //facesContext.release();
+        facesContext.release();
+        FactoryFinder.releaseFactories();
+        releaseCommonsLogFactory();
     }
 
     /**
@@ -344,7 +342,10 @@ public class FacesContainer {
             exc.printStackTrace();
         } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
-        }
+        } 
+        
+        FactoryFinder.releaseFactories();
+        releaseCommonsLogFactory();
 
         // set the loader
         this.loader = loader;
@@ -360,6 +361,29 @@ public class FacesContainer {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
     }
+    
+    // Bug Fix: 125082
+    private void releaseCommonsLogFactory(){
+        ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+        try {
+            Class<?> Klass = Class.forName("com.sun.org.apache.commons.logging.LogFactory", false, classLoader);
+            Method releaseFactory = Klass.getMethod("release", ClassLoader.class);
+            releaseFactory.invoke(null, loader);
+
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     public String findComponentClass(String tagName, String taglibUri) throws JsfTagSupportException {
         String errorMessage = org.openide.util.NbBundle.getMessage(FacesContainer.class, "JSF_COMPONENT_NOT_FOUND", new Object[]{tagName, taglibUri});
@@ -368,5 +392,19 @@ public class FacesContainer {
         } catch (Exception ex) {
             throw new JsfTagSupportException(errorMessage, ex);
         }
+    }
+    
+    public boolean isComponentRendersChildren(UIComponent comp) {
+        facesContext.setCurrentInstance();
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(loader);
+            if (comp.getRendersChildren()) {
+                return true;
+            }
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+        }
+        return false;
     }
 }

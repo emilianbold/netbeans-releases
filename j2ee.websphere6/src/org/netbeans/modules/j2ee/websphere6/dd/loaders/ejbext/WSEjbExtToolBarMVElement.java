@@ -41,6 +41,8 @@
 package org.netbeans.modules.j2ee.websphere6.dd.loaders.ejbext;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.EjbExtensionsType;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.WSEjbExt;
 import org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject;
@@ -55,6 +57,9 @@ import org.netbeans.modules.xml.multiview.Error;
  * @author dlipin
  */
 public class WSEjbExtToolBarMVElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener{
+    
+    private static final Logger LOGGER = Logger.getLogger(WSEjbExtToolBarMVElement.class.getName());
+    
     private ToolBarDesignEditor comp;
     private SectionView view;
     private WSEjbExtDataObject dObj;
@@ -118,7 +123,9 @@ public class WSEjbExtToolBarMVElement extends ToolBarMultiViewElement implements
         comp.setContentView(view);
         try {
             view.openPanel(dObj.getEjbExt());
-        } catch(java.io.IOException ex){}
+        } catch(java.io.IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
         view.checkValidity();
     }
     
@@ -254,7 +261,6 @@ public class WSEjbExtToolBarMVElement extends ToolBarMultiViewElement implements
                 extensionNode.setDisplayName(extensionNode.getDisplayName()+number);
                 dObj.setChangedFromUI(true);
                 dObj.modelUpdatedFromUI();
-                EjbExtensionsType[] extensions = ejbext.getEjbExtensions();
                 SectionPanel sectionPanel=new SectionPanel(view,extensionNode,ejbExtension);
                 sectionPanel.setHeaderActions(new javax.swing.Action[]{removeExtensionAction});
                 

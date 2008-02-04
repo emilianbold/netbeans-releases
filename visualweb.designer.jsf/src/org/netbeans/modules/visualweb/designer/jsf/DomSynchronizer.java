@@ -1567,12 +1567,12 @@ FacesDndSupport.UpdateSuspender {
             Object instance = curr.getInstance();
 
             if (instance instanceof UIComponent) {
-                ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-            	try {
-                    Thread.currentThread().setContextClassLoader(InSyncServiceProvider.get().getContextClassLoader(b));
+//                ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+//            	try {
+//                    Thread.currentThread().setContextClassLoader(InSyncServiceProvider.get().getContextClassLoader(b));
                     // See #6475512. Not needed anymore.
 //                    try {
-                        if (((UIComponent)instance).getRendersChildren()) {
+                        if (InSyncServiceProvider.isComponentRendersChildren(curr)) {
                             bean = b;
 
                             // Can't break here - there could be an outer
@@ -1586,10 +1586,9 @@ FacesDndSupport.UpdateSuspender {
 //                         // XXX #6475481 Force refresh in that case.
 //                        return null;
 //                    }
-                } finally {    		
-                    Thread.currentThread().setContextClassLoader(oldContextClassLoader);
-            	}
-
+//                } finally {    		
+//                    Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+//            	}
             }
                 // Events in the <head> section typically implies a re-render
                 // on the whole document - e.g. background color changes, or
