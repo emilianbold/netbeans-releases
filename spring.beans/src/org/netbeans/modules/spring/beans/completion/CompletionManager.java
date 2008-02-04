@@ -332,9 +332,7 @@ public final class CompletionManager {
                 List<String> names = StringUtils.tokenize(
                         SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "name"), 
                         SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS); // NOI18N
-                if(names != null) {
-                    cNames.addAll(names);
-                }
+                cNames.addAll(names);
             }
             
             try {
