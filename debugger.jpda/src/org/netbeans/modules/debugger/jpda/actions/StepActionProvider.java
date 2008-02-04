@@ -47,6 +47,7 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
+import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.StepRequest;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -332,8 +333,25 @@ implements Executor {
             return true; // resume
         }
     }
+
+    public void removed(EventRequest eventRequest) {
+        if (stepWatch != null) {
+            stepWatch.done();
+            stepWatch = null;
+        }
+        if (lastMethodExitBreakpointListener != null) {
+            lastMethodExitBreakpointListener.destroy();
+            lastMethodExitBreakpointListener = null;
+        }
+    }
     
     private void setLastOperation(ThreadReference tr) {
+        Variable returnValue = null;
+        if (lastMethodExitBreakpointListener != null) {
+            returnValue = lastMethodExitBreakpointListener.getReturnValue();
+            lastMethodExitBreakpointListener.destroy();
+            lastMethodExitBreakpointListener = null;
+        }
         Location loc;
         try {
             loc = tr.frame(0).location();
@@ -366,12 +384,7 @@ implements Executor {
         } else {
             return ;
         }
-        if (lastMethodExitBreakpointListener != null) {
-            Variable returnValue = lastMethodExitBreakpointListener.getReturnValue();
-            lastMethodExitBreakpointListener.destroy();
-            lastMethodExitBreakpointListener = null;
-            lastOperation.setReturnValue(returnValue);
-        }
+        lastOperation.setReturnValue(returnValue);
         JPDAThreadImpl jtr = (JPDAThreadImpl) getDebuggerImpl().getThread(tr);
         jtr.addLastOperation(lastOperation);
         jtr.setCurrentOperation(lastOperation);
