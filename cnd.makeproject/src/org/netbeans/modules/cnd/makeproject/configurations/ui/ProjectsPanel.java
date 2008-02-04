@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -112,7 +113,7 @@ public class ProjectsPanel extends javax.swing.JPanel implements HelpCtx.Provide
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-	return getListData();
+	return new ArrayList(getListData());
     }
         
     public void propertyChange(PropertyChangeEvent evt) {

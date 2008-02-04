@@ -39,8 +39,13 @@
 package org.netbeans.modules.spring.beans.completion;
 
 import java.net.URL;
+import java.util.List;
+import javax.lang.model.element.Element;
 import javax.swing.Action;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ui.ElementJavadoc;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -50,6 +55,15 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
 
     public static SpringXMLConfigCompletionDoc getAttribValueDoc(String text) {
         return new AttribValueDoc(text);
+    }
+    
+    public static SpringXMLConfigCompletionDoc createJavaDoc(CompilationController cc, Element element) {
+        return new JavaElementDoc(ElementJavadoc.create(cc, element));
+    }
+    
+    public static SpringXMLConfigCompletionDoc getBeanRefDoc(String beanId, List<String> beanNames, 
+            String beanClassName, String filePath) {
+        return new BeanRefDoc(beanId, beanNames, beanClassName, filePath);
     }
 
     public URL getURL() {
@@ -63,7 +77,94 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
     public Action getGotoSourceAction() {
         return null;
     }
+    
+    private static class JavaElementDoc extends SpringXMLConfigCompletionDoc {
 
+        private ElementJavadoc elementJavadoc;
+
+        public JavaElementDoc(ElementJavadoc elementJavadoc) {
+            this.elementJavadoc = elementJavadoc;
+        }
+
+        @Override
+        public JavaElementDoc resolveLink(String link) {
+            ElementJavadoc doc = elementJavadoc.resolveLink(link);
+            return doc != null ? new JavaElementDoc(doc) : null;
+        }
+
+        @Override
+        public URL getURL() {
+            return elementJavadoc.getURL();
+        }
+
+        public String getText() {
+            return elementJavadoc.getText();
+        }
+
+        @Override
+        public Action getGotoSourceAction() {
+            return elementJavadoc.getGotoSourceAction();
+        }
+    }
+
+    private static class BeanRefDoc extends SpringXMLConfigCompletionDoc {
+        private String filePath;
+        private String beanClassName;
+        private String displayText;
+
+        private static final String BOLD_START = "<b>"; // NOI18N
+        private static final String BOLD_END = "</b>"; // NOI18N
+        private static final String BR = "<br>"; // NOI18N
+        private static final String COMMA = ", "; // NOI18N
+        private List<String> beanNames;
+        private String beanId;
+
+        public BeanRefDoc(String beanId, List<String> beanNames, String beanClassName, String filePath) {
+            this.beanClassName = beanClassName;
+            this.filePath = filePath;
+            this.beanId = beanId;
+            this.beanNames = beanNames;
+        }
+        
+        public String getText() {
+            if(displayText == null) {
+                StringBuilder sb = new StringBuilder();
+                addLabel(sb, NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_Id")); // NOI18N
+                sb.append(beanId);
+                sb.append(BR); 
+                if(beanNames.size() > 0) {
+                    addLabel(sb, NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_Names")); // NOI18N
+                    addBeanNames(sb);
+                    sb.append(BR); 
+                }
+                addLabel(sb, NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_Implementation_Class")); // NOI18N
+                sb.append(beanClassName);
+                sb.append(BR); 
+                addLabel(sb, NbBundle.getMessage(SpringXMLConfigCompletionDoc.class, "LBL_Bean_File_Path")); // NOI18N
+                sb.append(filePath);
+                displayText = sb.toString();
+            }
+            
+            return displayText;
+        }
+        
+        private void addBeanNames(StringBuilder sb) {
+            for(int i = 0; i < beanNames.size(); i++) {
+                sb.append(beanNames.get(i));
+                if(i != beanNames.size() - 1) {
+                    sb.append(COMMA);
+                }
+            }
+        }
+        
+        private void addLabel(StringBuilder sb, String lbl) {
+            sb.append(BOLD_START);
+            sb.append(lbl);
+            sb.append(": "); // NOI18N
+            sb.append(BOLD_END);
+        }
+    }
+    
     private static class AttribValueDoc extends SpringXMLConfigCompletionDoc {
 
         private String text;

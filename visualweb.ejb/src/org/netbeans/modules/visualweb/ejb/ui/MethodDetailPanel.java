@@ -339,7 +339,7 @@ public class MethodDetailPanel extends javax.swing.JPanel {
                 
                 // Make sure it is a legal parameter name
                 try {
-                    MethodParamValidator.validate( argName );
+                    MethodParamValidator.validate( argName, method, row );
                 }
                 catch( InvalidParameterNameException e ) {
                     NotifyDescriptor d = new NotifyDescriptor.Message( e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);

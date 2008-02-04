@@ -178,7 +178,9 @@ public final class RailsServerManager {
                 public void run() {
                     synchronized (RailsServerManager.this) {
                         status = ServerStatus.NOT_STARTED;
-                        server.removeApplication(port);
+                        if (server != null) {
+                            server.removeApplication(port);
+                        }
                         IN_USE_PORTS.remove(port);
                         if (portConflict) {
                             // Failed to start due to port conflict - notify user.
@@ -215,7 +217,14 @@ public final class RailsServerManager {
         String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         String serverId = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE);
-        RubyInstance instance = ServerRegistry.getServer(serverId, RubyPlatform.platformFor(project));
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        RubyInstance instance = ServerRegistry.getServer(serverId, platform);
+        if (instance == null) {
+            // TODO: need to inform the user somehow
+            // fall back to the first available server
+            List<? extends RubyInstance> availableServers = ServerRegistry.getServers(platform);
+            instance = availableServers.get(availableServers.size() - 1);
+        }
         if (!(instance instanceof RubyServer)){
             //XXX: handle glassfish..
             RequestProcessor.getDefault().post(finishedAction);
@@ -248,7 +257,7 @@ public final class RailsServerManager {
     
     private static String getServerTabName(RubyServer server, String projectName, int port) {
         return NbBundle.getMessage(RailsServerManager.class, 
-                "LBL_ServerTab" , server.getName(), projectName, String.valueOf(port));
+                "LBL_ServerTab" , server.getDisplayName(), projectName, String.valueOf(port));
     }
     
     private void notifyPortConflict() {

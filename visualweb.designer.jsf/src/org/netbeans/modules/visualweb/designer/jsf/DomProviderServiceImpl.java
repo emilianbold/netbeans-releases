@@ -422,21 +422,23 @@ public class DomProviderServiceImpl implements DomProviderService {
 
             if (curr.getInstance() instanceof UIComponent) {
                 // Need to set the Thread's context classloader to be the Project's ClassLoader.
-            	ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
-            	try {
+//            	ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+//            	try {
 //                    Thread.currentThread().setContextClassLoader(InSyncService.getProvider().getContextClassLoader(curr));
-                    Thread.currentThread().setContextClassLoader(InSyncServiceProvider.get().getContextClassLoader(curr.getDesignContext()));
-                    if (((UIComponent)curr.getInstance()).getRendersChildren()) {
-                    	bean = curr;
+//                    Thread.currentThread().setContextClassLoader(InSyncServiceProvider.get().getContextClassLoader(curr.getDesignContext()));
+//                    if (((UIComponent)curr.getInstance()).getRendersChildren()) {
+                if (InSyncServiceProvider.isComponentRendersChildren(curr)) {
+                    bean = curr;
 //                        // Can't break here - there could be an outer
 //                        // renders-children parent
-                        // XXX #112580 Find the closest renders-children bean.
-                        return bean;
-                    }               
-            	} finally {
-                    Thread.currentThread().setContextClassLoader(oldContextClassLoader);
-            	}                
+                    // XXX #112580 Find the closest renders-children bean.
+                    return bean;
+                }
+//            	} finally {
+//                    Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+//            	} 
             }
+        
         }
 
         return bean;

@@ -51,6 +51,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Stack;
 import java.util.concurrent.ConcurrentHashMap;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
@@ -213,7 +214,7 @@ public class LockForFile extends FileLock {
     }
 
     public File getHardLock() {
-        if (lock.exists()) {
+        if (FileChangedManager.getInstance().exists(lock)) {
             InputStream is = null;
             try {
                 is = new FileInputStream(lock);
@@ -301,7 +302,7 @@ public class LockForFile extends FileLock {
                 if (reference != null) {
                     LockForFile lockForFile = reference.get();
                     if (lockForFile != null) {
-                        if (!lockForFile.getLock().exists()) {
+                        if (!FileChangedManager.getInstance().exists(lockForFile.getLock())) {
                             lockForFile.hardLock();
                         }
                     }
