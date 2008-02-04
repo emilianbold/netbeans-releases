@@ -493,10 +493,9 @@ public final class CompletionManager {
                     Set<ElementHandle<TypeElement>> matchingTypes = ci.getDeclaredTypes(typedPrefix, 
                             NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
                     for (ElementHandle<TypeElement> eh : matchingTypes) {
-                        TypeElement typeElement = eh.resolve(cc);
-                        if (typeElement != null) {
-                            if ((typeElement.getKind() == ElementKind.CLASS) 
-                                    && typeElement.getSimpleName().toString().startsWith(typedPrefix)) {
+                        if (eh.getKind() == ElementKind.CLASS) {
+                            TypeElement typeElement = eh.resolve(cc);
+                            if (typeElement != null) {
                                 SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
                                         typeElement, (DeclaredType) typeElement.asType(), 
                                         cc.getElements().isDeprecated(typeElement));
