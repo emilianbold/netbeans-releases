@@ -77,7 +77,7 @@ public class WSStartServer extends StartServer {
     /**
      * The server's deployment manager, to be exact the plugin's wrapper for it
      */
-    private WSDeploymentManager dm;
+    private final WSDeploymentManager dm;
     
     /**
      * Current server's state. Can be either started, starting, stopping or
@@ -384,7 +384,7 @@ public class WSStartServer extends StartServer {
     public boolean isRunning() {
         // try to get an open socket to the target host/port
         try {
-            new Socket(dm.getHost(), new Integer(dm.getPort()).intValue());
+            new Socket(dm.getHost(), Integer.parseInt(dm.getPort()));
             
             // if we are successful, return true
             return true;

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xsd:schema attributeFormDefault="unqualified"
+            elementFormDefault="unqualified"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:ZillowTypes="http://www.zillow.com/static/xsd/ZillowTypes.xsd"
+            xmlns="http://www.zillow.com/static/xsd/RegionChildren.xsd" 
+            targetNamespace="http://www.zillow.com/static/xsd/RegionChildren.xsd">
+
+    <xsd:import namespace="http://www.zillow.com/static/xsd/ZillowTypes.xsd"
+    schemaLocation="ZillowTypes.xsd"/>
+
+    <xsd:element name="regionchildren" type="regionchildrenResultType" />
+	
+	<xsd:complexType name="regionchildrenResultType">
+		<xsd:sequence>
+		
+			<xsd:element name="request">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="rid" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="country" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="state" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="county" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="city" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="childtype" type="xsd:string" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			
+            <xsd:element name="message" type="ZillowTypes:Message"/>
+			
+			<xsd:element name="response" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+					
+					    <xsd:element name="region" type="ZillowTypes:RegionNames" />
+						
+						<xsd:element name="subregiontype" />
+					
+						<xsd:element name="list">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="region" minOccurs="0" maxOccurs="unbounded">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="id" type="xsd:string"/>
+												<xsd:element name="name" type="xsd:string"/>
+												<xsd:element name="zindex" minOccurs="0">
+													<xsd:complexType>
+														<xsd:simpleContent>
+															<xsd:extension base="xsd:string">
+															    <xsd:attribute name="type" type="xsd:string" />
+																<xsd:attribute name="currency" type="xsd:string" default="USD" />
+															</xsd:extension>
+														</xsd:simpleContent>
+													</xsd:complexType>
+												</xsd:element>
+												<xsd:element name="url" type="xsd:string" minOccurs="0" />
+												<xsd:element name="latitude" type="xsd:decimal" minOccurs="0" />
+												<xsd:element name="longitude" type="xsd:decimal" minOccurs="0" />
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

@@ -21,6 +21,7 @@ package org.netbeans.modules.bpel.validation.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.netbeans.modules.xml.xam.Component;
@@ -28,6 +29,7 @@ import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
 
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -46,42 +48,28 @@ public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements
     return getClass().getName();
   }
 
-  public HashSet<ResultItem> getResultItems() {
+  public Set<ResultItem> getResultItems() {
     return myResultItems;
   }
 
-  private void addMessage(String key, ResultType type, Component component, String param) {
-    String message;
-    
-    if (param == null) {
-      message = i18n(getClass(), key);
-    }
-    else {
-      message = i18n(getClass(), key, param);
-    }
-    ResultItem item = new ResultItem(this, type, component, message);
-    getResultItems().add(item);
-  }
-
-  public ValidationResult validate(Model madel, Validation validation, ValidationType type) {
+  public ValidationResult validate(Model model, Validation validation, ValidationType type) {
     myResultItems = new HashSet<ResultItem>();
     myValidation = validation;
     myType = type;
 
-    if ( !(madel instanceof BpelModel)) {
+    if ( !(model instanceof BpelModel)) {
       return null;
     }
-    final BpelModel model = (BpelModel) madel;
+    final BpelModel bpelModel = (BpelModel) model;
     
-    if (model.getState() == Model.State.NOT_WELL_FORMED) {
+    if (bpelModel.getState() == Model.State.NOT_WELL_FORMED) {
       return null;
     }
-    final ArrayList<Set<ResultItem>> collection = new ArrayList<Set<ResultItem>>(1);
-    Set<Model> models = Collections.singleton((Model) model);
+    final List<Set<ResultItem>> collection = new ArrayList<Set<ResultItem>>(1);
 
     Runnable run = new Runnable() {
         public void run() {
-            Process process = model.getProcess();
+            Process process = bpelModel.getProcess();
 
             if (process != null) {
               process.accept(Validator.this);
@@ -89,13 +77,9 @@ public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements
             collection.add(getResultItems());
         }
     };
-    model.invoke(run);
-    Set<ResultItem> results = collection.get(0);
+    bpelModel.invoke(run);
 
-    if (results == null) {
-      results = null;
-    }
-    return new ValidationResult(results, models);
+    return new ValidationResult(collection.get(0), Collections.singleton(model));
   }
 
   protected final void addWarning(String key, Component component) {
@@ -114,7 +98,20 @@ public abstract class Validator extends SimpleBpelModelVisitorAdaptor implements
     myValidation.validate(model, myType);
   }
 
+  private void addMessage(String key, ResultType type, Component component, String param) {
+    String message;
+    
+    if (param == null) {
+      message = i18n(getClass(), key);
+    }
+    else {
+      message = i18n(getClass(), key, param);
+    }
+    ResultItem item = new ResultItem(this, type, component, message);
+    getResultItems().add(item);
+  }
+
   private ValidationType myType;
   private Validation myValidation;
-  private HashSet<ResultItem> myResultItems;
+  private Set<ResultItem> myResultItems;
 }

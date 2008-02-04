@@ -78,7 +78,7 @@ public abstract class CsmFileTaskFactory {
     protected abstract PhaseRunner createTask(FileObject fo);
     
     protected abstract Collection<FileObject> getFileObjects();
-
+    
     protected final void fileObjectsChanged() {
         final List<FileObject> currentFiles = new ArrayList<FileObject>(getFileObjects());
 
@@ -166,6 +166,14 @@ public abstract class CsmFileTaskFactory {
         PhaseRunner pr = csm2task.get(file);
         
         if (pr!=null) {
+            if (!pr.isValid()) {
+                //System.err.println("CsmFileTaskFactory: invalid task detected: " + pr.getClass().toString());
+                FileObject fo = CsmUtilities.getFileObject(file);
+                pr = createTask(fo);
+                assert pr.isValid();
+                //System.err.println("CsmFileTaskFactory: new task created: " + pr.getClass().toString());
+                csm2task.put(file, pr);
+            }
             post(pr, file, phase, delay);
         }
     }
@@ -233,6 +241,7 @@ public abstract class CsmFileTaskFactory {
         
         };
         public abstract void run(Phase phase);
+        public abstract boolean isValid();
 
     }
     
@@ -248,6 +257,10 @@ public abstract class CsmFileTaskFactory {
         return new PhaseRunner() {
             public void run(Phase phase) {
                 // do nothing for all phases
+            }
+
+            public boolean isValid() {
+                return true;
             }
         };
     }

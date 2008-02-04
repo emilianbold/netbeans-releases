@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10">
+    <grammars/>
+    <resources base="https://api.facebook.com"> 
+	<doc xml:lang="en">
+	    http://developers.facebook.com/documentation.php
+	</doc>
+	<resource path="restserver.php">
+	    <method name="POST" id="facebook.auth_getSession">
+		<doc xml:lang="en">
+		    Create a facebook session, see
+		    http://developers.facebook.com/documentation.php?v=1.0&amp;method=auth.getSession
+		    
+		    Error codes
+		    1 	An unknown error occurred. Please resubmit the request.
+		    2 	The service is not available at this time.
+		    4 	The application has reached the maximum number of requests allowed. More requests are allowed once the time window has completed.
+		    5 	The request came from a remote address not allowed by this application.
+		    100 	One of the parameters specified was missing or invalid.
+		    101 	The api key submitted is not associated with any known application.
+		    104 	Incorrect signature.
+		</doc>
+		<request>
+		    <param name="api_key" type="xsd:string" style="query" required="true">
+			<doc>The key associated with the calling application.</doc>
+		    </param> 
+		    <param name="method" type="xsd:string" style="query" required="true" fixed="facebook.auth.getSession"/>
+		    <param name="callback" type="xsd:string" style="query">
+			<doc>Wrap the response inside a function call. This is 
+			primarily to enable cross-domain javascript requests 
+			using the &lt;script> tag, sometimes known as "JSONP". 
+			This works with both XML and JSON.
+			</doc>
+		    </param>
+		    <param name="v" type="xsd:string" style="query" required="true" fixed="1.0"/>
+		    <param name="auth_token" type="xsd:string" required="true" style="query">
+			<doc>The token returned by facebook.auth.createToken and passed into login.php
+			</doc>
+		    </param>
+		    <param name="sig" type="xsd:string" style="query">
+			<doc>An MD5 hash of the current request and your secret 
+			    key, as described in the facebook authentication 
+			    guide.
+			</doc>
+		    </param>		
+		</request>
+		<response>
+		</response>
+		
+		
+		      
+	    </method>
+	</resource>
+    </resources>
+</application>

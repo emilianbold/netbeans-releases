@@ -220,12 +220,12 @@ function omniture_download_link() {
         s_linkType = "d";
         s_linkName = s_siteid + option_id;
         s_events   = "event7";
-        s_products = "Downloaded Products;NetBeans IDE | " + platform_id + " | " + option_id;
+        s_products = "Downloaded Products;NetBeans IDE " + BUILD_DISPLAY_VERSION_SHORT + " | " + platform_id + " | " + option_id;
         s_eVar3    = "netbeans";
         s_eVar8    = option_id;
         s_prop19   = platform_id;
         s_prop20   = lang_id;
-        s_prop21   = BUILD_DISPLAY_VERSION;
+        s_prop21   = BUILD_DISPLAY_VERSION_SHORT;
         s_linkTrackVars   = "events,products,eVar3,eVar8,prop19,prop20,prop21";
         s_linkTrackEvents = "event7";
         s_lnk=s_co(anchorElement);

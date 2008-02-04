@@ -46,6 +46,8 @@
  */
 
 package org.netbeans.modules.visualweb.ejb.util;
+import org.netbeans.modules.visualweb.ejb.datamodel.MethodInfo;
+import org.netbeans.modules.visualweb.ejb.datamodel.MethodParam;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,7 +60,11 @@ public class MethodParamValidator {
     public MethodParamValidator() {
     }
     
-    public static void validate( String paramName ) throws InvalidParameterNameException
+    public static void validate(String paramName) throws InvalidParameterNameException {
+        validate(paramName, null, -1);
+    }
+    
+    public static void validate( String paramName, MethodInfo method, int argPos ) throws InvalidParameterNameException
     {
         // A legal parameter name 
         // - start with a letter
@@ -68,7 +74,7 @@ public class MethodParamValidator {
         // Make sure it is not one of the keywords
         if( JavaKeywords.isKeyword( paramName ) )
         {
-            throw new InvalidParameterNameException( NbBundle.getMessage(MethodParamValidator.class, "PARAMETER_NAME_NOT_UNIQUE", paramName ) );
+            throw new InvalidParameterNameException( NbBundle.getMessage(MethodParamValidator.class, "PARAMETER_NAME_IS_KEYWORD", paramName ) );
         }
         
         for( int i = 0; i < paramName.length(); i ++ )
@@ -95,22 +101,17 @@ public class MethodParamValidator {
             
             
         }
-            
-    }
-    
-    public static void main( String[] args )
-    {
-        MethodParamValidator v = new MethodParamValidator();
-        String name = "goto";
         
-        try {
-            
-            v.validate( name );
-            System.out.println( "Good parameter name: " + name );
-        } catch( InvalidParameterNameException e ) {
-            System.out.println( e.getMessage() );
+        if (method != null && argPos >= 0) {
+            java.util.ArrayList parameters = method.getParameters();
+            for (int i = 0; i < parameters.size(); i++) {
+                if (i == argPos) continue;
+                
+                MethodParam param = (MethodParam)parameters.get(i);
+                if (param.getName().equals(paramName)) {
+                    throw new InvalidParameterNameException( NbBundle.getMessage(MethodParamValidator.class, "PARAMETER_NAME_IS_DUPLICATE", paramName ) );
+                }
+            }   
         }
-        
     }
-    
 }

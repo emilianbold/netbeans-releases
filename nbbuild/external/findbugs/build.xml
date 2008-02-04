@@ -44,38 +44,45 @@ made subject to such option by the copyright holder.
 <project basedir="." default="findbugs" name="nbbuild/external/findbugs">
     
     <description>Prepares FindBugs libraries</description>
+    
     <property name="nbroot" value="../../.."/>
+    <property name="findbugs.md5" value="259d427b816e22421007625ed692c761"/>
+    
     <import file="${nbroot}/nbbuild/templates/projectized.xml"/>
 
-    <!-- reflects findbugs release 1.2.1 -->
     <target name="findbugs-init">
+        
         <condition property="findbugs.downloaded">
             <and>
                 <available file="lib/findbugs.jar"/>
+                <available file="lib/jsr305.jar"/>
                 <available file="plugin/coreplugin.jar"/>
+                
+                <checksum file="lib/findbugs.jar" property="${findbugs.md5}"/>
             </and>
         </condition>
+        
+        <property name="findbugs.name" value="findbugs-1.3.1"/>
         
         <property name="lib.dir" location="lib"/>
         <property name="plugin.dir" location="plugin"/>
         <property name="build.dir" location="build"/>
-        <property name="source.zip" location="findbugs-1.2.1-source.zip"/>
+        <property name="binary.zip" location="findbugs-1.3.1.zip"/>
     </target>
     
-    <target name="findbugs" depends="findbugs-init,-init-proxy" unless="findbugs.downloaded">
+    <target name="findbugs" depends="findbugs-init,findbugs-clean,-init-proxy" unless="findbugs.downloaded">
         
         <echo>Preparing FindBugs libraries...</echo>
         
-        <get dest="${source.zip}"
-                src="http://belnet.dl.sourceforge.net/sourceforge/findbugs/findbugs-1.2.1-source.zip"/>
+        <get dest="${binary.zip}"
+                src="http://mesh.dl.sourceforge.net/sourceforge/findbugs/findbugs-1.3.1.zip"/>
         
         <mkdir dir="${build.dir}"/>
-        <unzip src="${source.zip}" dest="${build.dir}"/>
-        <ant dir="${build.dir}/findbugs-1.2.1" inheritall="false"/>
+        <unzip src="${binary.zip}" dest="${build.dir}"/>
         
         <mkdir dir="${lib.dir}"/>
         <copy todir="${lib.dir}" overwrite="true">
-            <fileset dir="build/findbugs-1.2.1/lib">
+            <fileset dir="${build.dir}/${findbugs.name}/lib">
                 <include name="annotations.jar"/>
                 <include name="asm-3.0.jar"/>
                 <include name="asm-analysis-3.0.jar"/>
@@ -87,25 +94,26 @@ made subject to such option by the copyright holder.
                 <include name="dom4j-full.jar"/>
                 <include name="findbugs.jar"/>
                 <include name="findbugs-ant.jar"/>
+                <include name="jsr305.jar"/>
             </fileset>
         </copy>
         
         <mkdir dir="${plugin.dir}"/>
         <copy todir="${plugin.dir}" overwrite="true">
-            <fileset dir="build/findbugs-1.2.1/plugin">
+            <fileset dir="${build.dir}/${findbugs.name}/plugin">
                 <include name="coreplugin.jar"/>
             </fileset>
         </copy>        
         
+        <delete file="${binary.zip}"/>
         <delete dir="${build.dir}"/>
-        <delete file="${source.zip}"/>
     </target>
    
-    <target name="clean" depends="findbugs-init">
+    <target name="findbugs-clean" depends="findbugs-init" unless="findbugs.downloaded">
         <delete dir="${lib.dir}"/>
         <delete dir="${plugin.dir}"/>
         <delete dir="${build.dir}"/>
-        <delete file="${source.zip}"/>
+        <delete file="${binary.zip}"/>
     </target>
     
 </project>

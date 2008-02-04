@@ -423,7 +423,7 @@ public class EditorContextBridge {
             int lineNumber
         ) {
             String className = cp1.getClassName (url, lineNumber);
-            if (className != null) return className;
+            if (className != null && className.length() > 0) return className;
             return cp2.getClassName (url, lineNumber);
         }
     
@@ -461,6 +461,18 @@ public class EditorContextBridge {
             cp1.removePropertyChangeListener (propertyName, l);
             cp2.removePropertyChangeListener (propertyName, l);
         }
+
+        @Override
+        public Operation[] getOperations(String url, int lineNumber, BytecodeProvider bytecodeProvider) {
+            Operation[] operations = cp1.getOperations(url, lineNumber, bytecodeProvider);
+            if (operations != null) {
+                return operations;
+            } else {
+                return cp2.getOperations(url, lineNumber, bytecodeProvider);                
+            }
+        }
+        
+        
     }
     
     private static class CompoundAnnotation {

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.xml.wsdl.ui.wizard;
 
 import java.awt.Component;
@@ -96,15 +95,12 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
 
 public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
-    
+
     private int index;
-    
     private WizardDescriptor.Panel[] panels;
-    
     private WizardDescriptor.Panel folderPanel;
-    
     private static final Logger logger = Logger.getLogger(NewWSDLWizardIterator.class.getName());
-    
+
     /**
      * Initialize panels representing individual wizard's steps and sets
      * various properties for them influencing wizard appearance.
@@ -112,16 +108,16 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     private Panel[] createPanels(Project project, TemplateWizard wizard) {
         Sources sources = project.getLookup().lookup(org.netbeans.api.project.Sources.class);
         List<SourceGroup> roots = new ArrayList<SourceGroup>();
-        SourceGroup[] javaRoots = 
-            sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
+        SourceGroup[] javaRoots =
+                sources.getSourceGroups(ProjectConstants.JAVA_SOURCES_TYPE);
         roots.addAll(Arrays.asList(javaRoots));
         if (roots.isEmpty()) {
             SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             roots.addAll(Arrays.asList(sourceGroups));
         }
         DataFolder folder = DataFolder.findFolder(roots.get(0).getRootFolder());
-        DataFolder projectFolder = 
-            DataFolder.findFolder(project.getProjectDirectory());
+        DataFolder projectFolder =
+                DataFolder.findFolder(project.getProjectDirectory());
         try {
             if (wizard.getTargetFolder().equals(projectFolder)) {
                 wizard.setTargetFolder(folder);
@@ -132,33 +128,34 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         SourceGroup[] sourceGroups = roots.toArray(new SourceGroup[roots.size()]);
         folderPanel = new WsdlPanel(project);
         // creates simple wizard panel with bottom panel
-        WizardDescriptor.Panel firstPanel = 
-            new WizardNewWSDLStep(Templates.createSimpleTargetChooser(project, sourceGroups, folderPanel));
-        JComponent c = (JComponent)firstPanel.getComponent();
+        WizardDescriptor.Panel firstPanel =
+                new WizardNewWSDLStep(Templates.createSimpleTargetChooser(project, sourceGroups, folderPanel));
+        JComponent c = (JComponent) firstPanel.getComponent();
         // the bottom panel should listen to changes on file name text field
-        ((WsdlPanel)folderPanel).setNameTF(findFileNameField(c, Templates.getTargetName(wizard)));
-        
+        ((WsdlPanel) folderPanel).setNameTF(findFileNameField(c, Templates.getTargetName(wizard)));
+
         WizardDescriptor.Panel secondPanel = new WizardPortTypeConfigurationStep(project);
         WizardDescriptor.Panel thirdPanel = new WizardBindingConfigurationStep();
-                        
-        return new WizardDescriptor.Panel[] {
-            firstPanel,
-            secondPanel,
-            thirdPanel
-        };
+
+        return new WizardDescriptor.Panel[]{
+                    firstPanel,
+                    secondPanel,
+                    thirdPanel
+                };
     }
-    
+
     public Set<DataObject> instantiate(final TemplateWizard wiz) throws IOException {
         //Copy contents of temp model to a new file.
         //find the dataobject for the new file and return it.
-        final FileObject dir = Templates.getTargetFolder( wiz );
+        final FileObject dir = Templates.getTargetFolder(wiz);
         final String encoding = (String) wiz.getProperty(WsdlPanel.ENCODING);
-        final String name = Templates.getTargetName( wiz );
-        FileSystem filesystem = dir.getFileSystem();        
+        final String name = Templates.getTargetName(wiz);
+        FileSystem filesystem = dir.getFileSystem();
         final FileObject[] fileObject = new FileObject[1];
         FileSystem.AtomicAction fsAction = new FileSystem.AtomicAction() {
+
             public void run() throws IOException {
-                
+
                 FileObject fo = dir.createData(name, "wsdl"); //NOI18N
 
                 FileLock lock = null;
@@ -168,99 +165,95 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                     out = new BufferedOutputStream(out);
                     Writer writer = new OutputStreamWriter(out, encoding);
                     WSDLModel tempModel = (WSDLModel) wiz.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
-                    wiz.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, null);
-
 
                     DefaultProjectCatalogSupport catalogSupport = DefaultProjectCatalogSupport.getInstance(fo);
 
-                    if(tempModel != null) {
+                    if (tempModel != null) {
                         try {
-                            postProcessImports(tempModel, fo,catalogSupport);
+                            postProcessImports(tempModel, fo, catalogSupport);
                             addSchemaImport(tempModel, fo, catalogSupport);
-                        } catch(Exception ex) {
+                        } catch (Exception ex) {
                             ErrorManager.getDefault().notify(ex);
                         }
 
-                        FileObject tmpWsdlFileObject = tempModel.getModelSource().getLookup().lookup(FileObject.class);
-                        if(tmpWsdlFileObject != null) {
-                            
-                            Document doc = tempModel.getBaseDocument();
-                            try {
-                                writer.write(doc.getText(0, doc.getLength()));
-                                writer.flush();
-                            } catch (BadLocationException e) {
-                                ErrorManager.getDefault().notify(e);
-                            } finally {
-                                writer.close();
-                            }
-                            
-                            fileObject[0] = fo;
+                        Document doc = tempModel.getBaseDocument();
+                        try {
+                            writer.write(doc.getText(0, doc.getLength()));
+                            writer.flush();
+                        } catch (BadLocationException e) {
+                            ErrorManager.getDefault().notify(e);
+                        } finally {
+                            writer.close();
                         }
+
+                        fileObject[0] = fo;
                     }
                 } finally {
-                    if (lock != null) lock.releaseLock();
+                    if (lock != null) {
+                        lock.releaseLock();
+                    }
                 }
             }
         };
-        
+
         filesystem.runAtomicAction(fsAction);
 
-        Set set = new HashSet(1);                
-        DataObject createdObject = DataObject.find(fileObject[0]);        
+        Set set = new HashSet(1);
+        DataObject createdObject = DataObject.find(fileObject[0]);
         set.add(createdObject);
         return set;
-            
+
     }
 
     private void postProcessImports(WSDLModel model, FileObject fobj, DefaultProjectCatalogSupport catalogSupport) throws Exception {
         Types types = model.getDefinitions().getTypes();
-        if(types != null) {
+        if (types != null) {
             Collection<WSDLSchema> schemas = types.getExtensibilityElements(WSDLSchema.class);
-            
-            if(schemas != null) {
-                
-                if(schemas.iterator().hasNext()) {
-	                WSDLSchema wsdlSchema = schemas.iterator().next();
-	                SchemaModel sModel = wsdlSchema.getSchemaModel();
-	                if(sModel != null) {
-		                Schema schema = sModel.getSchema();
-		                if(schema != null && schema.getImports() != null) {
-		                	model.startTransaction();
-		                	Iterator<Import> it = schema.getImports().iterator();
-			                while(it.hasNext()) {
-			                    Import imp = it.next();
-			                    postProcessImport(imp, sModel, fobj, catalogSupport);
-			                }
-			                model.endTransaction();
-		                }
-		                
-	                }
+
+            if (schemas != null) {
+
+                if (schemas.iterator().hasNext()) {
+                    WSDLSchema wsdlSchema = schemas.iterator().next();
+                    SchemaModel sModel = wsdlSchema.getSchemaModel();
+                    if (sModel != null) {
+                        Schema schema = sModel.getSchema();
+                        if (schema != null && schema.getImports() != null) {
+                            model.startTransaction();
+                            Iterator<Import> it = schema.getImports().iterator();
+                            while (it.hasNext()) {
+                                Import imp = it.next();
+                                postProcessImport(imp, sModel, fobj, catalogSupport);
+                            }
+                            model.endTransaction();
+                        }
+
+                    }
                 }
             }
         }
     }
-    
+
     private void postProcessImport(Import imp, SchemaModel model, FileObject fobj, DefaultProjectCatalogSupport catalogSupport) {
         String namespace = imp.getNamespace();
         Collection<Schema> schemas = model.findSchemas(namespace);
         Iterator<Schema> it = schemas.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             Schema schema = it.next();
             SchemaModel sModel = schema.getModel();
             FileObject schemaFileObj = sModel.getModelSource().getLookup().lookup(FileObject.class);
             URI uri = null;
-            try { 
+            try {
                 uri = schemaFileObj.getURL().toURI();
             } catch (Exception e) {
-                logger.log(Level.SEVERE, "Not able to convert " + schemaFileObj.getName() + "to a valid URI", e);            
+                logger.log(Level.SEVERE, "Not able to convert " + schemaFileObj.getName() + "to a valid URI", e);
             }
             String location = getRelativePathOfSchema(fobj, uri, catalogSupport);
             imp.setSchemaLocation(location);
         }
     }
-    
+
     private void addSchemaImport(WSDLModel model, FileObject fobj, DefaultProjectCatalogSupport catalogSupport) {
-        WsdlPanel panel = (WsdlPanel)folderPanel;
+        WsdlPanel panel = (WsdlPanel) folderPanel;
         WsdlUIPanel.SchemaInfo[] infos = panel.getSchemas();
         if (panel.isImport() && infos.length > 0) {
             String targetNamespace = panel.getNS();
@@ -268,11 +261,13 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
             Schema schema = null;
             WSDLSchema wsdlSchema = null;
 
-            for (int i=0;i<infos.length;i++) {
+            for (int i = 0; i < infos.length; i++) {
                 String ns = infos[i].getNamespace();
-                if (ns.length()==0) ns = targetNamespace;//"urn:WS/types"+String.valueOf(i+1); //NOI18N
+                if (ns.length() == 0) {
+                    ns = targetNamespace;
+                }
 
-                String prefix = "ns" + String.valueOf(i+1);
+                String prefix = "ns" + String.valueOf(i + 1);
 
 
                 String relativePath = null;
@@ -292,7 +287,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                     try {
                         schemaFileURI = new URI(schemaFileName);
                     } catch (URISyntaxException e) {
-                       logger.log(Level.SEVERE, schemaFileName + "is not a valid URI", e);
+                        logger.log(Level.SEVERE, schemaFileName + "is not a valid URI", e);
                     }
                 }
                 relativePath = getRelativePathOfSchema(fobj, schemaFileURI, catalogSupport);
@@ -304,7 +299,7 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                     if (types == null) {
                         types = model.getFactory().createTypes();
                         def.setTypes(types);
-                    } 
+                    }
 
                     List<WSDLSchema> wsdlSchemas = types.getExtensibilityElements(WSDLSchema.class);
 
@@ -322,13 +317,13 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
 
 
 
-                    if(!isSchemaImportExists(relativePath, ns, schema)) {
+                    if (!isSchemaImportExists(relativePath, ns, schema)) {
                         schema.addPrefix(prefix, ns);
                         ((AbstractDocumentComponent) def).addPrefix(prefix, ns);
 
                         org.netbeans.modules.xml.schema.model.Import schemaImport =
-                            schema.getModel().getFactory().createImport();
-                        schemaImport.setNamespace(ns);       
+                                schema.getModel().getFactory().createImport();
+                        schemaImport.setNamespace(ns);
                         schemaImport.setSchemaLocation(relativePath);
 
                         schema.addExternalReference(schemaImport);
@@ -340,31 +335,30 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         }
 
     }
-    
-    
+
     private boolean isSchemaImportExists(String schemaLocation, String namespace, Schema schema) {
         boolean isImportExist = false;
         Collection<Import> imports = schema.getImports();
         Iterator<Import> it = imports.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             Import imp = it.next();
-            
+
             String sLoc = imp.getSchemaLocation();
             String ns = imp.getNamespace();
-            
-            if(ns != null && ns.equals(namespace) && sLoc != null && sLoc.equals(schemaLocation)) {
+
+            if (ns != null && ns.equals(namespace) && sLoc != null && sLoc.equals(schemaLocation)) {
                 isImportExist = true;
                 break;
             }
         }
-        
+
         return isImportExist;
     }
-    
+
     private String getRelativePathOfSchema(FileObject fo, URI schemaURI, DefaultProjectCatalogSupport catalogSupport) {
         File f = FileUtil.toFile(fo);
         FileObject schemaFO = FileUtil.toFileObject(new File(schemaURI));
-        
+
         String relativePath = null;
         if (catalogSupport != null && catalogSupport.needsCatalogEntry(fo, schemaFO)) {
 //          Remove the previous catalog entry, then create new one.
@@ -386,20 +380,20 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
         }
         return relativePath;
     }
-    
+
     public void initialize(TemplateWizard wiz) {
         index = 0;
-        Project project = Templates.getProject( wiz );
+        Project project = Templates.getProject(wiz);
         panels = createPanels(project, wiz);
-        
+
         // Creating steps.
         Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[])prop;
+            beforeSteps = (String[]) prop;
         }
         String[] steps = Utilities.createSteps(beforeSteps, panels);
-        
+
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
             if (steps[i] == null) {
@@ -416,85 +410,89 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
         }
-        
+
         String encoding = EncodingUtil.getProjectEncoding(project.getProjectDirectory());
         if (encoding == null) {
             encoding = "UTF8";
         }
         wiz.putProperty(WsdlPanel.ENCODING, encoding);
-        
+
     }
-
-
 
     public void uninitialize(TemplateWizard wiz) {
-        
-        File tempWSDLFile = (File) wiz.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE);
-        try {
-        	if(tempWSDLFile != null) {
-    	        
-        		FileObject tempFile = FileUtil.toFileObject(tempWSDLFile.getCanonicalFile());
-        		if(tempFile != null) {
-        			DataObject dObj = DataObject.find(tempFile);
-        			if(dObj != null) {
-        				dObj.delete();
-        			}
-        			
-        		}
-	        }
-        } catch(Exception ex) {
-        	ErrorManager.getDefault().notify(ex);
-        }
-        
+
         panels = null;
+        folderPanel = null;
+        wiz.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, null);
         
+        File file = (File) wiz.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE);
+        wiz.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE, null);
+        
+        if (file != null && file.exists()) {
+            file = FileUtil.normalizeFile(file);
+            FileObject fileObj = FileUtil.toFileObject(file);
+            if (fileObj != null) {
+                DataObject dobj;
+                try {
+                    dobj = DataObject.find(fileObj);
+                    dobj.delete();
+                } catch (Exception e) {
+                    //ignore.
+                }
+                
+            }
+        }
+
     }
-    
+
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
-    
+
     public String name() {
         return index + 1 + ". from " + panels.length;
     }
-    
+
     public boolean hasNext() {
         return index < panels.length - 1;
     }
-    
+
     public boolean hasPrevious() {
         return index > 0;
     }
-    
+
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
         index++;
     }
-    
+
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
         }
         index--;
     }
-    
+
     // If nothing unusual changes in the middle of the wizard, simply:
-    public void addChangeListener(ChangeListener l) {}
-    public void removeChangeListener(ChangeListener l) {}
-    
+    public void addChangeListener(ChangeListener l) {
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+    }
+
     //from schema wizard
     private JTextField findFileNameField(Component panel, String text) {
         Collection<Component> allComponents = new ArrayList<Component>();
-        getAllComponents(new Component[] {panel}, allComponents);
+        getAllComponents(new Component[]{panel}, allComponents);
         for (Component c : allComponents) {
             // we assume that the first text field is the file text field
             if (c instanceof JTextField) {
                 JTextField tf = (JTextField) c;
                 //if (text.equals(tf.getText())) {
                 return tf;
-                //}
+            //}
             }
         }
         return null;
@@ -503,16 +501,14 @@ public final class NewWSDLWizardIterator implements TemplateWizard.Iterator {
     /*
      * Recursively gets all components in the components array and puts it in allComponents
      */
-    public void getAllComponents( Component[] components, Collection<Component> allComponents ) {
-        for( int i = 0; i < components.length; i++ ) {
-            if( components[i] != null ) {
-                allComponents.add( components[i] );
-                if( ( ( Container )components[i] ).getComponentCount() != 0 ) {
-                    getAllComponents( ( ( Container )components[i] ).getComponents(), allComponents );
+    public void getAllComponents(Component[] components, Collection<Component> allComponents) {
+        for (int i = 0; i < components.length; i++) {
+            if (components[i] != null) {
+                allComponents.add(components[i]);
+                if (((Container) components[i]).getComponentCount() != 0) {
+                    getAllComponents(((Container) components[i]).getComponents(), allComponents);
                 }
             }
         }
     }
-
-    
 }

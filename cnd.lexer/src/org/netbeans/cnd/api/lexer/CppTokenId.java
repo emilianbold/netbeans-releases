@@ -241,8 +241,27 @@ public enum CppTokenId implements TokenId {
     
     // Errors
     INVALID_COMMENT_END("*/", "error"),
-    FLOAT_LITERAL_INVALID(null, "number");
+    FLOAT_LITERAL_INVALID(null, "number");    
     
+    public static final String WHITESPACE_CATEGORY = CppTokenId.WHITESPACE.primaryCategory();
+    public static final String COMMENT_CATEGORY = CppTokenId.LINE_COMMENT.primaryCategory();
+    public static final String KEYWORD_CATEGORY = CppTokenId.INT.primaryCategory();
+    public static final String KEYWORD_DIRECTIVE_CATEGORY = CppTokenId.RETURN.primaryCategory();
+    public static final String ERROR_CATEGORY = CppTokenId.ERROR.primaryCategory();
+    public static final String NUMBER_CATEGORY = CppTokenId.INT_LITERAL.primaryCategory();
+    public static final String LITERAL_CATEGORY = CppTokenId.TRUE.primaryCategory();
+    public static final String CHAR_CATEGORY = CppTokenId.CHAR_LITERAL.primaryCategory();
+    public static final String STRING_CATEGORY = CppTokenId.STRING_LITERAL.primaryCategory();
+    public static final String SEPARATOR_CATEGORY = CppTokenId.LPAREN.primaryCategory();
+    public static final String OPERATOR_CATEGORY = CppTokenId.EQ.primaryCategory();
+    public static final String SPECIAL_CATEGORY = CppTokenId.ELLIPSIS.primaryCategory();
+    public static final String PREPROCESSOR_CATEGORY = CppTokenId.PREPROCESSOR_DIRECTIVE.primaryCategory();
+    public static final String PREPROCESSOR_KEYWORD_CATEGORY = CppTokenId.PREPROCESSOR_DEFINED.primaryCategory();
+    public static final String PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY = CppTokenId.PREPROCESSOR_IF.primaryCategory();
+    public static final String PREPROCESSOR_IDENTIFIER_CATEGORY = CppTokenId.PREPROCESSOR_IDENTIFIER.primaryCategory();
+    public static final String PREPROCESSOR_USER_INCLUDE_CATEGORY = CppTokenId.PREPROCESSOR_USER_INCLUDE.primaryCategory();
+    public static final String PREPROCESSOR_SYS_INCLUDE_CATEGORY = CppTokenId.PREPROCESSOR_SYS_INCLUDE.primaryCategory();
+  
     private final String fixedText;
 
     private final String primaryCategory;
@@ -380,23 +399,4 @@ public enum CppTokenId implements TokenId {
             return null; // No embedding
         }
     }
-    
-    public static final String WHITESPACE_CATEGORY = CppTokenId.WHITESPACE.primaryCategory();
-    public static final String COMMENT_CATEGORY = CppTokenId.LINE_COMMENT.primaryCategory();
-    public static final String KEYWORD_CATEGORY = CppTokenId.INT.primaryCategory();
-    public static final String KEYWORD_DIRECTIVE_CATEGORY = CppTokenId.RETURN.primaryCategory();
-    public static final String ERROR_CATEGORY = CppTokenId.ERROR.primaryCategory();
-    public static final String NUMBER_CATEGORY = CppTokenId.INT_LITERAL.primaryCategory();
-    public static final String LITERAL_CATEGORY = CppTokenId.TRUE.primaryCategory();
-    public static final String CHAR_CATEGORY = CppTokenId.CHAR_LITERAL.primaryCategory();
-    public static final String STRING_CATEGORY = CppTokenId.STRING_LITERAL.primaryCategory();
-    public static final String SEPARATOR_CATEGORY = CppTokenId.LPAREN.primaryCategory();
-    public static final String OPERATOR_CATEGORY = CppTokenId.EQ.primaryCategory();
-    public static final String SPECIAL_CATEGORY = CppTokenId.ELLIPSIS.primaryCategory();
-    public static final String PREPROCESSOR_CATEGORY = CppTokenId.PREPROCESSOR_DIRECTIVE.primaryCategory();
-    public static final String PREPROCESSOR_KEYWORD_CATEGORY = CppTokenId.PREPROCESSOR_DEFINED.primaryCategory();
-    public static final String PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY = CppTokenId.PREPROCESSOR_IF.primaryCategory();
-    public static final String PREPROCESSOR_IDENTIFIER_CATEGORY = CppTokenId.PREPROCESSOR_IDENTIFIER.primaryCategory();
-    public static final String PREPROCESSOR_USER_INCLUDE_CATEGORY = CppTokenId.PREPROCESSOR_USER_INCLUDE.primaryCategory();
-    public static final String PREPROCESSOR_SYS_INCLUDE_CATEGORY = CppTokenId.PREPROCESSOR_SYS_INCLUDE.primaryCategory();
 }

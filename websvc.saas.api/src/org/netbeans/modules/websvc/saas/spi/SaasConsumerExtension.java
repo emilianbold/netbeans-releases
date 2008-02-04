@@ -42,11 +42,11 @@
 package org.netbeans.modules.websvc.saas.spi;
 
 import javax.swing.Action;
-import org.netbeans.modules.websvc.saas.WsdlServiceProxyDescriptor;
+import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 
 public interface SaasConsumerExtension {
     public static final Action[] EMPTY_ACTIONS = new Action[0];
     
-    public boolean wsServiceAddedExt(WsdlServiceProxyDescriptor wsMetadataDesc);
-    public boolean wsServiceRemovedExt(WsdlServiceProxyDescriptor wsMetadataDesc);
+    public boolean wsServiceAddedExt(WebServiceDescriptor wsMetadataDesc);
+    public boolean wsServiceRemovedExt(WebServiceDescriptor wsMetadataDesc);
 }
