@@ -41,6 +41,8 @@ package org.netbeans.modules.ruby.railsprojects.server;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,13 +65,17 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author peterw99, Erno Mononen
  */
-class ServerRegistry {
+class ServerRegistry implements VetoableChangeListener {
 
-    private static final ServerRegistry defaultRegistry = new ServerRegistry();
+    private static ServerRegistry defaultRegistry; 
     private ServerRegistry() {
     }
 
-    public static ServerRegistry getDefault() {
+    public synchronized static ServerRegistry getDefault() {
+        if (defaultRegistry == null) {
+            defaultRegistry = new ServerRegistry();
+            RubyPlatformManager.addVetoableChangeListener(defaultRegistry);
+        }
         return defaultRegistry;
     }
 
@@ -118,6 +124,12 @@ class ServerRegistry {
         }
         return null;
         
+    }
+    
+    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+        if (evt.getPropertyName().equals("platforms")) { //NOI18N
+            ServerInstanceProviderImpl.getInstance().fireServersChanged();
+        }
     }
 
     /**
@@ -185,4 +197,5 @@ class ServerRegistry {
             }
         }
     }
+
 }
