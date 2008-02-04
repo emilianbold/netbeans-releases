@@ -68,13 +68,13 @@ public class MoveUpCanvasAction extends MapperKeyboardAction {
 
     @Override
     public KeyStroke[] getShortcuts() {
-        KeyStroke[] a = new KeyStroke[4];
-        a[0] = KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0); 
-        a[1] = KeyStroke.getKeyStroke(KeyEvent.VK_UP, ActionEvent.SHIFT_MASK);
-        a[2] = KeyStroke.getKeyStroke(KeyEvent.VK_UP, ActionEvent.CTRL_MASK);
-        a[3] = KeyStroke.getKeyStroke(KeyEvent.VK_UP, ActionEvent.CTRL_MASK + 
-                ActionEvent.SHIFT_MASK);
-        return a;
+        return new KeyStroke[] {
+        KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), 
+        KeyStroke.getKeyStroke(KeyEvent.VK_UP, ActionEvent.SHIFT_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_UP, ActionEvent.CTRL_MASK),
+        KeyStroke.getKeyStroke(KeyEvent.VK_UP, ActionEvent.CTRL_MASK + 
+                ActionEvent.SHIFT_MASK)
+        };        
     }
 
     public void actionPerformed(ActionEvent e) {
