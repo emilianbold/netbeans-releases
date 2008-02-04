@@ -99,6 +99,7 @@ public final class LibrariesSupport {
      * Properly converts possibly relative file to URL.
      * @param f file to convert; can be relative; cannot be null
      * @return url
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
     public static URL convertFileToURL(String path) {
         try {
@@ -127,6 +128,7 @@ public final class LibrariesSupport {
      * Properly converts possibly relative URL to file.
      * @param url file URL to convert; can be relative; cannot be null
      * @return url
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
     public static String convertURLToFile(URL url) {
         if (!"file".equals(url.getProtocol())) {
@@ -153,6 +155,7 @@ public final class LibrariesSupport {
      * 
      * @param url url to test; cannot be null
      * @return is absolute
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
     public static boolean isAbsoluteURL(URL url) {
         if ("jar".equals(url.getProtocol())) { // NOI18N
@@ -167,6 +170,7 @@ public final class LibrariesSupport {
      * @param libraryLocation library location file; can be null for global libraries
      * @param libraryEntry library entry to resolve
      * @return file object
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
     public static FileObject resolveLibraryEntryFileObject(URL libraryLocation, URL libraryEntry) {
         URL u = resolveLibraryEntryURL(libraryLocation, libraryEntry);
@@ -179,6 +183,7 @@ public final class LibrariesSupport {
      * @param libraryLocation library location file; can be null for global libraries
      * @param libraryEntry library entry to resolve
      * @return absolute URL
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
     public static URL resolveLibraryEntryURL(URL libraryLocation, URL libraryEntry) {
         Parameters.notNull("libraryEntry", libraryEntry); //NOI18N

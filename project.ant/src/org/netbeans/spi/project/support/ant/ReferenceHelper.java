@@ -948,7 +948,7 @@ public final class ReferenceHelper {
     
     /**
      * Create an Ant-interpretable string referring to a file on disk. Compared
-     * to {@link #createForeignFileReference} the file does not have to be 
+     * to {@link #createForeignFileReference} the filepath does not have to be 
      * normalized (ie. it can be relative path to project base folder), no 
      * relativization or absolutization of path is done and
      * reference to file is always stored in project properties.
@@ -958,14 +958,14 @@ public final class ReferenceHelper {
      * the behavior is identical to {@link #createForeignFileReference(AntArtifact)}.
      * <p>
      * Acquires write access.
-     * @param file a file to refer to (need not currently exist)
+     * @param path a file path to refer to (need not currently exist)
      * @param expectedArtifactType the required {@link AntArtifact#getType}
      * @return a string which can refer to that file somehow
      *
      * @since org.netbeans.modules.project.ant/1 1.19
      */
-    public String createForeignFileReferenceAsIs(final String path, final String expectedArtifactType) {
-        return createForeignFileReferenceImpl(path, expectedArtifactType, false);
+    public String createForeignFileReferenceAsIs(final String filepath, final String expectedArtifactType) {
+        return createForeignFileReferenceImpl(filepath, expectedArtifactType, false);
     }
 
     private String createForeignFileReferenceImpl(final String path, final String expectedArtifactType, final boolean performHeuristics) {
@@ -1009,13 +1009,13 @@ public final class ReferenceHelper {
     
     /**
      * Create an Ant-interpretable string referring to a file on disk. Compared
-     * to {@link #createForeignFileReference} the file does not have to be 
+     * to {@link #createForeignFileReference} the file path does not have to be 
      * normalized (ie. it can be relative path to project base folder), no 
      * relativization or absolutization of path is done and
      * reference to file is always stored in project properties.
      * <p>
      * Acquires write access.
-     * @param file a file to refer to (need not currently exist)
+     * @param path a file path to refer to (need not currently exist)
      * @param fileId
      * @param propertyPrefix the prefix of the created property
      * @return a string which can refer to that file somehow
