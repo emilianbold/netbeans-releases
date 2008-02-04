@@ -76,7 +76,10 @@ public class VectorConfiguration {
     }
 
     public void setValue(List l) {
-	this.value = l;
+        if (!(l instanceof ArrayList))
+            this.value = new ArrayList(l);
+        else
+            this.value = l;
     }
     
     /*
