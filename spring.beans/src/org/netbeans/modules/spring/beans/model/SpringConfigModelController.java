@@ -178,7 +178,7 @@ public class SpringConfigModelController {
             return;
         }
         SpringConfigFileModelController fileController = file2Controller.get(file);
-        if (file2Controller != null) {
+        if (fileController != null) {
             fileController.notifyChange(fo);
         }
     }
