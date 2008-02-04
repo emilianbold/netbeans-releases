@@ -454,15 +454,14 @@ public final class CompletionManager {
                     int index = substitutionOffset;
                     String packName = typedPrefix;
                     String classPrefix = "";
-                    if(typedPrefix.contains(".")) { // NOI18N
-                        index += typedPrefix.lastIndexOf(".") + 1;  // NOI18N
-                        packName = typedPrefix.substring(0, typedPrefix.lastIndexOf(".")); // NOI18N
-                        classPrefix = typedPrefix.endsWith(".") ? "" : 
-                            typedPrefix.substring(typedPrefix.lastIndexOf(".") + 1); // NOI18N
+                    int dotIndex = typedPrefix.lastIndexOf('.'); // NOI18N
+                    if (dotIndex != -1) {
+                        index += (dotIndex + 1);  // NOI18N
+                        packName = typedPrefix.substring(0, dotIndex);
+                        classPrefix = (dotIndex + 1 < typedPrefix.length()) ? typedPrefix.substring(dotIndex + 1) : "";
                     }
                     addPackages(ci, results, typedPrefix, index);
-                    
-                    
+
                     PackageElement pkgElem = cc.getElements().getPackageElement(packName);
                     if (pkgElem == null) {
                         return;
@@ -476,7 +475,7 @@ public final class CompletionManager {
                             results.add(item);
                         }
                     }
-                    
+
                     setAnchorOffset(index);
                 }
             }, true);
