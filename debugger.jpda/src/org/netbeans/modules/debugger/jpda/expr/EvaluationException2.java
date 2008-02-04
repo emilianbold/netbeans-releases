@@ -161,7 +161,7 @@ public class EvaluationException2 extends RuntimeException {
         else if (reason.equals("notEnclosingType"))
             msgParams = new String [] { ((Identifier)params[0]).typeContext.name(),  ((Identifier)params[0]).superQualifier };
         else if (reason.equals("accessInstanceVariableFromStaticContext"))
-            msgParams = new String [] { ((Identifier)params[0]).identifier };
+            msgParams = new String [] { params[0].toString() };
         else if (reason.equals("methodCallOnNull"))
             msgParams = new String[] { params[0].toString() };
         else if (reason.equals("fieldOnNull"))
