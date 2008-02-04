@@ -141,6 +141,7 @@ public class SaasGroup {
     }
 
     public SaasGroup getChildGroup(String name) {
+        getChildrenGroups();
         return children.get(name);
     }
     

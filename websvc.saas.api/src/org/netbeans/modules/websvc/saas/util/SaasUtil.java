@@ -71,7 +71,7 @@ import org.xml.sax.XMLReader;
  */
 public class SaasUtil {
 
-    public static <T> T loadJaxbObject(FileObject input, Class<T> type) throws IOException {
+    public static <T> T loadJaxbObject(FileObject input, Class<T> type, boolean includeAware) throws IOException {
         if (input == null) {
             return null;
         }
@@ -79,7 +79,7 @@ public class SaasUtil {
         try {
             JAXBException jbex = null;
             try {
-                T t = loadJaxbObject(in, type);
+                T t = loadJaxbObject(in, type, includeAware);
                 if (t != null) {
                     return t;
                 }
@@ -144,7 +144,7 @@ public class SaasUtil {
         if (input == null) {
             return null;
         }
-        return loadJaxbObject(input, SaasGroup.class);
+        return loadJaxbObject(input, SaasGroup.class, false);
     }
 
     public static SaasGroup loadSaasGroup(InputStream input) throws JAXBException {
@@ -175,7 +175,7 @@ public class SaasUtil {
     }
 
     public static Application loadWadl(FileObject wadlFile) throws IOException {
-        return loadJaxbObject(wadlFile, Application.class);
+        return loadJaxbObject(wadlFile, Application.class, true);
     }
 
     public static Application loadWadl(InputStream in) throws JAXBException {
@@ -183,7 +183,7 @@ public class SaasUtil {
     }
 
     public static SaasServices loadSaasServices(FileObject wadlFile) throws IOException {
-        return loadJaxbObject(wadlFile, SaasServices.class);
+        return loadJaxbObject(wadlFile, SaasServices.class, true);
     }
 
     public static SaasServices loadSaasServices(InputStream in) throws JAXBException {

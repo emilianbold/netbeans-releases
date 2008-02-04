@@ -48,6 +48,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
@@ -59,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -207,14 +209,13 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             String macros = (String)wiz.getProperty("macroTextField"); // NOI18N
             if (macros != null && macros.length() > 0) {
                 StringTokenizer tokenizer = new StringTokenizer(macros, "; "); // NOI18N
-                StringBuilder macrosString = new StringBuilder();
+                ArrayList list = new ArrayList();
                 while (tokenizer.hasMoreTokens()) {
-                    macrosString.append(tokenizer.nextToken());
-                    if (tokenizer.hasMoreTokens())
-                        macrosString.append(" "); // NOI18N
+                    list.add(tokenizer.nextToken());
                 }
-                extConf.getCCompilerConfiguration().getPreprocessorConfiguration().setValue(macrosString.toString());
-                extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().setValue(macrosString.toString());
+                // FIXUP
+                extConf.getCCompilerConfiguration().getPreprocessorConfiguration().getValue().addAll(list);
+                extConf.getCCCompilerConfiguration().getPreprocessorConfiguration().getValue().addAll(list);
             }
             // Add makefile and configure script to important files
             ArrayList importantItems = new ArrayList();

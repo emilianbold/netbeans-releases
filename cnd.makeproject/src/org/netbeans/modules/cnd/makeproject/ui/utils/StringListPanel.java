@@ -57,16 +57,14 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener { 
+public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener { 
     private MyListEditorPanel myListEditorPanel;
-    private String baseDir;
     private boolean addPathPanel;
     private BooleanConfiguration inheritValues;
     private PropertyEditorSupport editor;
     private HelpCtx helpCtx;
     
-    public DirectoryChooserPanel(String baseDir, Object[] data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
-	this.baseDir = baseDir;
+    public StringListPanel(Object[] data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
 	this.addPathPanel = addPathPanel;
 	this.inheritValues = inheritValues;
         this.editor = editor;
@@ -228,40 +226,19 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 	}
 
 	public Object addAction() {
-	    String seed = null;
-	    if (FileChooser.getCurrectChooserFile() != null)
-		seed = FileChooser.getCurrectChooserFile().getPath();
-	    if (seed == null)
-		seed = baseDir;
-	    FileChooser fileChooser = new FileChooser(getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-	    PathPanel pathPanel = null;
-	    if (addPathPanel)
-		pathPanel = new PathPanel();
-	    fileChooser.setAccessory(pathPanel);
-	    int ret = fileChooser.showOpenDialog(this);
-	    if (ret == JFileChooser.CANCEL_OPTION)
-		return null;
-	    String itemPath = fileChooser.getSelectedFile().getPath();
-	    itemPath = FilePathAdaptor.mapToRemote(itemPath);
-	    itemPath = FilePathAdaptor.naturalize(itemPath);
-	    String bd = baseDir;
-	    bd = FilePathAdaptor.mapToRemote(bd);
-	    bd = FilePathAdaptor.naturalize(bd);
-	    if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS)
-		itemPath = IpeUtils.toAbsoluteOrRelativePath(bd, itemPath);
-	    else if (pathPanel != null && pathPanel.getMode() == PathPanel.REL)
-		itemPath = IpeUtils.toRelativePath(bd, itemPath);
-	    else
-		itemPath = itemPath;
-	    itemPath = FilePathAdaptor.normalize(itemPath);
-	    return itemPath;
+            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("ADD_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
+                return null;
+            String newS = notifyDescriptor.getInputText();
+            return newS;
 	}
 
 	public String getListLabelText() {
-	    return getString("DIRECTORIES_LABEL_TXT");
+	    return getString("MACROS_LABEL_TXT");
 	}
 	public char getListLabelMnemonic() {
-	    return getString("DIRECTORIES_LABEL_MN").charAt(0);
+	    return getString("MACROS_LABEL_MN").charAt(0);
 	}
     
 	public String getAddButtonText() {

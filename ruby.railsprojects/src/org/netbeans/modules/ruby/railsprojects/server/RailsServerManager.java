@@ -178,7 +178,9 @@ public final class RailsServerManager {
                 public void run() {
                     synchronized (RailsServerManager.this) {
                         status = ServerStatus.NOT_STARTED;
-                        server.removeApplication(port);
+                        if (server != null) {
+                            server.removeApplication(port);
+                        }
                         IN_USE_PORTS.remove(port);
                         if (portConflict) {
                             // Failed to start due to port conflict - notify user.
