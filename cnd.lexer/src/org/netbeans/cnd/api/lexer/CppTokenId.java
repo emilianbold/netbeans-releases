@@ -66,6 +66,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  */
 public enum CppTokenId implements TokenId {
     
+    // make sure token category names are the same used in the string
+    // constants below
+    
     ERROR(null, "error"),
     IDENTIFIER(null, "identifier"),
 
@@ -243,24 +246,25 @@ public enum CppTokenId implements TokenId {
     INVALID_COMMENT_END("*/", "error"),
     FLOAT_LITERAL_INVALID(null, "number");    
     
-    public static final String WHITESPACE_CATEGORY = CppTokenId.WHITESPACE.primaryCategory();
-    public static final String COMMENT_CATEGORY = CppTokenId.LINE_COMMENT.primaryCategory();
-    public static final String KEYWORD_CATEGORY = CppTokenId.INT.primaryCategory();
-    public static final String KEYWORD_DIRECTIVE_CATEGORY = CppTokenId.RETURN.primaryCategory();
-    public static final String ERROR_CATEGORY = CppTokenId.ERROR.primaryCategory();
-    public static final String NUMBER_CATEGORY = CppTokenId.INT_LITERAL.primaryCategory();
-    public static final String LITERAL_CATEGORY = CppTokenId.TRUE.primaryCategory();
-    public static final String CHAR_CATEGORY = CppTokenId.CHAR_LITERAL.primaryCategory();
-    public static final String STRING_CATEGORY = CppTokenId.STRING_LITERAL.primaryCategory();
-    public static final String SEPARATOR_CATEGORY = CppTokenId.LPAREN.primaryCategory();
-    public static final String OPERATOR_CATEGORY = CppTokenId.EQ.primaryCategory();
-    public static final String SPECIAL_CATEGORY = CppTokenId.ELLIPSIS.primaryCategory();
-    public static final String PREPROCESSOR_CATEGORY = CppTokenId.PREPROCESSOR_DIRECTIVE.primaryCategory();
-    public static final String PREPROCESSOR_KEYWORD_CATEGORY = CppTokenId.PREPROCESSOR_DEFINED.primaryCategory();
-    public static final String PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY = CppTokenId.PREPROCESSOR_IF.primaryCategory();
-    public static final String PREPROCESSOR_IDENTIFIER_CATEGORY = CppTokenId.PREPROCESSOR_IDENTIFIER.primaryCategory();
-    public static final String PREPROCESSOR_USER_INCLUDE_CATEGORY = CppTokenId.PREPROCESSOR_USER_INCLUDE.primaryCategory();
-    public static final String PREPROCESSOR_SYS_INCLUDE_CATEGORY = CppTokenId.PREPROCESSOR_SYS_INCLUDE.primaryCategory();
+    // make sure string names are the same used in the tokenIds above
+    public static final String WHITESPACE_CATEGORY = "whitespace"; // NOI18N
+    public static final String COMMENT_CATEGORY = "whitespace"; // NOI18N
+    public static final String KEYWORD_CATEGORY = "keyword"; // NOI18N
+    public static final String KEYWORD_DIRECTIVE_CATEGORY = "keyword-directive"; // NOI18N
+    public static final String ERROR_CATEGORY = "error"; // NOI18N
+    public static final String NUMBER_CATEGORY = "number"; // NOI18N
+    public static final String LITERAL_CATEGORY = "literal"; // NOI18N
+    public static final String CHAR_CATEGORY = "character"; // NOI18N
+    public static final String STRING_CATEGORY = "string"; // NOI18N
+    public static final String SEPARATOR_CATEGORY = "separator"; // NOI18N
+    public static final String OPERATOR_CATEGORY = "operator"; // NOI18N
+    public static final String SPECIAL_CATEGORY = "special"; // NOI18N
+    public static final String PREPROCESSOR_CATEGORY = "preprocessor"; // NOI18N
+    public static final String PREPROCESSOR_KEYWORD_CATEGORY = "preprocessor-keyword"; // NOI18N
+    public static final String PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY = "preprocessor-keyword-directive"; // NOI18N
+    public static final String PREPROCESSOR_IDENTIFIER_CATEGORY = "preprocessor-identifier"; // NOI18N
+    public static final String PREPROCESSOR_USER_INCLUDE_CATEGORY = "preprocessor-user-include-literal"; // NOI18N
+    public static final String PREPROCESSOR_SYS_INCLUDE_CATEGORY = "preprocessor-system-include-literal"; // NOI18N
   
     private final String fixedText;
 
