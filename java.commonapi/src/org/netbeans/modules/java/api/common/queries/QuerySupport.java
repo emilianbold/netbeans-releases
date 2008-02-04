@@ -133,6 +133,18 @@ public final class QuerySupport {
     }
 
     /**
+     * Create a new query to provide information about files sharability without any additional source roots. See
+     * {@link #createSharabilityQuery(AntProjectHelper, PropertyEvaluator, SourceRoots, SourceRoots, String...)
+     * createSharabilityQuery()}
+     * for more information.
+     */
+    public static SharabilityQueryImplementation createSharabilityQuery(AntProjectHelper helper,
+            PropertyEvaluator evaluator, SourceRoots srcRoots, SourceRoots testRoots) {
+
+        return createSharabilityQuery(helper, evaluator, srcRoots, testRoots, (String[]) null);
+    }
+
+    /**
      * Create a new query to find out specification source level of Java source files.
      * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties.
      * @return a {@link SourceLevelQueryImplementation} to find out specification source level of Java source files.
