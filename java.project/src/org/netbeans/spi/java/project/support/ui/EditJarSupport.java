@@ -39,7 +39,6 @@
 
 package org.netbeans.spi.java.project.support.ui;
 
-import java.io.File;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
