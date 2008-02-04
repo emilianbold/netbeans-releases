@@ -611,7 +611,7 @@ public class CustomIconEditor extends javax.swing.JPanel {
 
     private String getFileChooserDir() {
         if (lastDirectoryUsed == null && selectedPackage != null) {
-            lastDirectoryUsed = selectedPackage.getPath();
+            lastDirectoryUsed = FileUtil.toFile(selectedPackage).getPath();
         }
         return lastDirectoryUsed;
     }

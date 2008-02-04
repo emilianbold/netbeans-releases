@@ -49,6 +49,7 @@ import com.sun.jdi.event.Event;
 import com.sun.jdi.request.ClassPrepareRequest;
 import com.sun.jdi.request.ClassUnloadRequest;
 import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -280,6 +281,9 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             classUnloaded (((ClassUnloadEvent) event).className ());
         }
         return true;
+    }
+
+    public void removed(EventRequest eventRequest) {
     }
     
     protected void classLoaded (ReferenceType referenceType) {}
