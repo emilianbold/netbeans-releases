@@ -163,4 +163,23 @@ public class InstancePropertiesTest extends NbTestCase {
             // expected
         }
     }
+
+    public void testCache() {
+        InstancePropertiesManager manager = InstancePropertiesManager.getInstance();
+        assertNotNull(manager);
+
+        InstanceProperties props = manager.createProperties(PLUGIN_NAME);
+        assertNotNull(props);
+
+        List<InstanceProperties> allProps = manager.getProperties(PLUGIN_NAME);
+        assertEquals(1, allProps.size());
+
+        assertEquals(props, allProps.get(0));
+
+        props.remove();
+
+        allProps = manager.getProperties(PLUGIN_NAME);
+        assertTrue(allProps.isEmpty());
+    }
+
 }
