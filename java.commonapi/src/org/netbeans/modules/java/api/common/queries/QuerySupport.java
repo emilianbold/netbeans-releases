@@ -39,14 +39,15 @@
 
 package org.netbeans.modules.java.api.common.queries;
 
-import java.util.List;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.util.Parameters;
@@ -155,5 +156,24 @@ public final class QuerySupport {
         Parameters.notNull("testRoots", testRoots); // NOI18N
 
         return new UnitTestForSourceQueryImpl(sourceRoots, testRoots);
+    }
+
+    /**
+     * Create a new query to test whether a file can be considered to be built (up to date). The returned query
+     * listens to the changes in particular source roots.
+     * @param helper {@link AntProjectHelper} used for creating a query itself.
+     * @param evaluator {@link PropertyEvaluator} used for obtaining needed properties.
+     * @param sourceRoots a list of source roots.
+     * @param testRoots a list of test roots.
+     * @return a {@link FileBuiltQueryImplementation} to test whether a file can be considered to be built (up to date).
+     */
+    public static FileBuiltQueryImplementation createFileBuiltQuery(AntProjectHelper helper,
+            PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testRoots) {
+        Parameters.notNull("helper", helper); // NOI18N
+        Parameters.notNull("evaluator", evaluator); // NOI18N
+        Parameters.notNull("sourceRoots", sourceRoots); // NOI18N
+        Parameters.notNull("testRoots", testRoots); // NOI18N
+
+        return new FileBuiltQueryImpl(helper, evaluator, sourceRoots, testRoots);
     }
 }
