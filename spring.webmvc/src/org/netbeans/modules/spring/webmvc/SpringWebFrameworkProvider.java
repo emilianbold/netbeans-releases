@@ -59,7 +59,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * Provides WebFrameworkProvider implementation for Spring Framework
+ * Provides WebFrameworkProvider implementation for Spring Web MVC.
  *
  * @author Craig MacKay
  */
