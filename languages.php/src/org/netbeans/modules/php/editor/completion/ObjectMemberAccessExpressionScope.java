@@ -71,10 +71,9 @@ public class ObjectMemberAccessExpressionScope
         // This provider is applicble iif it possible to find referencedClass.
         if(referencedClass == null) {
             LOG.log(Level.INFO, 
-                    "{0} provider is NOT applicable. "+
-                    "referencedClass.getName() =[{1}]", 
-                new Object[] {ObjectMemberAccessExpressionScope.class.getName(), 
-                              referencedClass.getName()});
+                    "{0} provider is NOT applicable. referencedClass == null", 
+                    new Object[] {
+                            ObjectMemberAccessExpressionScope.class.getName()});
             return false;
         }
         LOG.log(Level.INFO, 
