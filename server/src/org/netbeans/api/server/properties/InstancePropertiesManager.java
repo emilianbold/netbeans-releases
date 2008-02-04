@@ -41,7 +41,9 @@ package org.netbeans.api.server.properties;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -89,6 +91,9 @@ public final class InstancePropertiesManager {
 
     private static InstancePropertiesManager manager;
 
+    /** <i>GuardedBy("this")</i> */
+    private final Map<Preferences, InstanceProperties> cache = new WeakHashMap<Preferences, InstanceProperties>();
+
     private final Random random = new Random();
 
     private InstancePropertiesManager() {
@@ -133,8 +138,12 @@ public final class InstancePropertiesManager {
                 }
                 prefs = prefs.node(id);
                 prefs.flush();
+
+                InstanceProperties created = new DefaultInstanceProperties(id, this, prefs);
+                cache.put(prefs, created);
+
+                return created;
             }
-            return new DefaultInstanceProperties(id, prefs);
         } catch (BackingStoreException ex) {
             LOGGER.log(Level.INFO, null, ex);
             throw new IllegalStateException(ex);
@@ -154,26 +163,42 @@ public final class InstancePropertiesManager {
             prefs = prefs.node(namespace);
             prefs.flush();
 
-            List<InstanceProperties> props = new ArrayList<InstanceProperties>();
+            List<InstanceProperties> allProperties = new ArrayList<InstanceProperties>();
             synchronized (this) {
                 for (String id : prefs.childrenNames()) {
-                    props.add(new DefaultInstanceProperties(id, prefs.node(id)));
+                    Preferences child = prefs.node(id);
+                    InstanceProperties props = cache.get(child);
+                    if (props == null) {
+                        props = new DefaultInstanceProperties(id, this, child);
+                        cache.put(child, props);
+                    }
+                    allProperties.add(props);
                 }
             }
-            return props;
+            return allProperties;
         } catch (BackingStoreException ex) {
             LOGGER.log(Level.INFO, null, ex);
             throw new IllegalStateException(ex);
         }
     }
 
+    private void remove(Preferences prefs) throws BackingStoreException {
+        synchronized (this) {
+            cache.remove(prefs);
+            prefs.removeNode();
+        }
+    }
+
     private static class DefaultInstanceProperties extends InstanceProperties {
+
+        private final InstancePropertiesManager manager;
 
         /** <i>GuardedBy("this")</i> */
         private Preferences prefs;
 
-        public DefaultInstanceProperties(String id, Preferences prefs) {
+        public DefaultInstanceProperties(String id, InstancePropertiesManager manager, Preferences prefs) {
             super(id);
+            this.manager = manager;
             this.prefs = prefs;
         }
 
@@ -312,7 +337,7 @@ public final class InstancePropertiesManager {
             try {
                 synchronized (this) {
                     if (prefs != null) {
-                        prefs.removeNode();
+                        manager.remove(prefs);
                         prefs = null;
                     }
                 }

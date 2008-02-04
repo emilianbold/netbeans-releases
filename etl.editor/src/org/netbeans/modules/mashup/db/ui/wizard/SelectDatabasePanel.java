@@ -5,6 +5,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.netbeans.modules.mashup.db.model.FlatfileDBConnectionDefinition;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
 import org.netbeans.modules.mashup.db.model.FlatfileDatabaseModel;
@@ -15,11 +18,11 @@ import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
 import org.openide.ErrorManager;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 
 
 public class SelectDatabasePanel extends AbstractWizardPanel {
-    
+    private static transient final Logger mLogger = LogUtil.getLogger(SelectDatabasePanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * The visual component that displays this panel. If you need to access the
      * component from this class, just use getComponent().
@@ -118,7 +121,8 @@ public class SelectDatabasePanel extends AbstractWizardPanel {
     }
     
     public String getStepLabel() {
-        return NbBundle.getMessage(SelectDatabasePanel.class, "STEP_selectdatabase");
+        String nbBundle1 = mLoc.t("PRSR001: Select Database");
+        return Localizer.parse(nbBundle1);
     }
     
     public String getTitle() {

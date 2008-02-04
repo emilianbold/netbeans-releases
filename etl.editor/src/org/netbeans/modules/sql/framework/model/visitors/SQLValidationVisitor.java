@@ -179,7 +179,8 @@ public class SQLValidationVisitor implements SQLVisitor {
         // If the resulting expression does not form a valid condition, then raise an
         // error.
         if (!condition.isValid()) {
-            String error = NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_condition_invalid");
+           String nbBundle1 = mLoc.t("PRSR001: Condition is not valid.");
+            String error = Localizer.parse(nbBundle1);
             ValidationInfo info = new ValidationInfoImpl(null, error, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(info);
         }
@@ -195,7 +196,8 @@ public class SQLValidationVisitor implements SQLVisitor {
         boolean oracleTableGroupByUse = false;
         final int execStrategy = definition.getExecutionStrategyCode().intValue();
         if ((execStrategy == SQLDefinition.EXECUTION_STRATEGY_STAGING) && definition.requiresPipelineProcess()) {
-            String desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Staging_mode_not_allowed");
+            String nbBundle2 = mLoc.t("PRSR001: Cannot execute in Staging mode, choose Best-fit or Pipeline.");
+            String desc = Localizer.parse(nbBundle2);
             ValidationInfo validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(validationInfo);
         }
@@ -228,7 +230,8 @@ public class SQLValidationVisitor implements SQLVisitor {
             try {
                 srcTables.addAll(PhysicalTable.getPhysicalTableList(targetTable.getSourceTableList()));
             } catch (BaseException e) {
-                String desc = NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_targettable_not_mapped");
+                String nbBundle3 = mLoc.t("PRSR001: Must have at least one column mapped to a literal, source column or operator.");
+                String desc = Localizer.parse(nbBundle3);
                 ValidationInfo validationInfo = new ValidationInfoImpl(targetTable, desc, ValidationInfo.VALIDATION_ERROR);
                 validationInfoList.add(validationInfo);
             }
@@ -267,7 +270,8 @@ public class SQLValidationVisitor implements SQLVisitor {
         for (it = trgtTables.iterator(); it.hasNext();) {
             PhysicalTable pt = (PhysicalTable) it.next();
             if (srcTables.contains(pt)) {
-                String desc = NbBundle.getMessage(SQLValidationVisitor.class, "WARNING_source_used_as_target", pt.getName());
+                String nbBundle4 = mLoc.t("PRSR001: {0} used as both source and target.",pt.getName());
+                String desc = Localizer.parse(nbBundle4);
                 ValidationInfo validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_WARNING);
                 validationInfoList.add(validationInfo);
             }
@@ -279,7 +283,8 @@ public class SQLValidationVisitor implements SQLVisitor {
         // as its scroll-able result set caches data at the client VM.
         // Pipeline GROUP BY processing needs scroll-able result set.
         if ((definition.requiresPipelineProcess() || (definition.getExecutionStrategyCode().intValue() == SQLDefinition.EXECUTION_STRATEGY_PIPELINE)) && (oracleTableGroupByUse)) {
-            String desc = NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_can_not_use_ora_grp_by_in_pipeline");
+            String nbBundle5 = mLoc.t("PRSR001: Can not use Oracle table as Source with Group By clause in pipeline/validation mode.");
+            String desc = Localizer.parse(nbBundle5);
             ValidationInfo validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(validationInfo);
         }
@@ -289,7 +294,8 @@ public class SQLValidationVisitor implements SQLVisitor {
         visitExpression(filter, true);
 
         if (!filter.isValid()) {
-            String descriptor = NbBundle.getMessage(SQLValidationVisitor.class, "FORMAT_parenthesis_following", filter.getDisplayName(), filter.toString());
+            String nbBundle6 = mLoc.t("PRSR001: {0} ({1})",filter.getDisplayName(), filter.toString());
+            String descriptor = Localizer.parse(nbBundle6);
             String message = buildErrorMessageWithObjectIdentifier(descriptor, "ERROR_predicate_invalid");
             ValidationInfo expValidationInfo = new ValidationInfoImpl(filter, message, ValidationInfo.VALIDATION_ERROR);
             validationInfoList.add(expValidationInfo);
@@ -297,7 +303,8 @@ public class SQLValidationVisitor implements SQLVisitor {
 
         // Check if the next SQLFilter clause, if any, has a prefix.
         if (filter.getNextFilter() != null && StringUtil.isNullString(filter.getNextFilter().getPrefix())) {
-            String descriptor = NbBundle.getMessage(SQLValidationVisitor.class, "FORMAT_parenthesis_following", filter.getNextFilter().getDisplayName(), filter.toString());
+            String nbBundle7 = mLoc.t("PRSR001: {0} {1}",filter.getNextFilter().getDisplayName(), filter.toString());
+            String descriptor = Localizer.parse(nbBundle7);
             String message = buildErrorMessageWithObjectIdentifier(descriptor, "ERROR_predicate_missing_prefix");
 
             ValidationInfo expValidationInfo = new ValidationInfoImpl(filter, message, ValidationInfo.VALIDATION_ERROR);
@@ -414,8 +421,10 @@ public class SQLValidationVisitor implements SQLVisitor {
     }
 
     private String buildErrorMessageWithObjectIdentifiers(String identifier, String errorKey, Object[] errorParams) {
-        String errorMessage = NbBundle.getMessage(SQLValidationVisitor.class, errorKey, errorParams);
-        return NbBundle.getMessage(SQLValidationVisitor.class, "FORMAT_descriptor_message", identifier, errorMessage);
+        String nbBundle12 = mLoc.t("PRSR001: {0}{1}{2}",LOG_CATEGORY,errorKey,errorParams);
+        String errorMessage = Localizer.parse(nbBundle12);
+        String nbBundle8 = mLoc.t("PRSR001: {0}: {1}",identifier,errorMessage);
+        return Localizer.parse(nbBundle8);
     }
 
     private void doJoinConditionValidation(SQLJoinOperator operator) {
@@ -635,7 +644,8 @@ public class SQLValidationVisitor implements SQLVisitor {
                 column = ((ColumnRef) sqlObject).getColumn();
 
                 if ((column.getObjectType() == SQLConstants.SOURCE_COLUMN) && !(((SQLDBColumn) column).isVisible())) {
-                    desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Column_Used_Not_Visible", sqlObject.getDisplayName());
+                    String nbBundle9 = mLoc.t("PRSR001: Column {0} used in a condition is not visible.", sqlObject.getDisplayName());
+                    desc = Localizer.parse(nbBundle9);
                     ValidationInfo validationInfo = new ValidationInfoImpl(sqlObject.getParentObject(), desc, ValidationInfo.VALIDATION_ERROR);
                     validationInfoList.add(validationInfo);
                 }
@@ -650,7 +660,8 @@ public class SQLValidationVisitor implements SQLVisitor {
                     validationInfoList.addAll(vInfos);
                 }
             } else if (!isObjectMappedToExpression(sqlObject, expObjects)) {
-                desc = NbBundle.getMessage(SQLValidationVisitor.class, "ERROR_not_mapped_to_expression", new Object[]{sqlObject.getDisplayName()});
+                String nbBundle10 = mLoc.t("PRSR001: {0} is not mapped to an expression.", new Object[]{sqlObject.getDisplayName()});
+                desc = Localizer.parse(nbBundle10);
                 ValidationInfo validationInfo = new ValidationInfoImpl(sqlObject, desc, ValidationInfo.VALIDATION_ERROR);
 
                 validationInfoList.add(validationInfo);
@@ -836,7 +847,8 @@ public class SQLValidationVisitor implements SQLVisitor {
 
             if (predicate != null) {
                 if (!predicate.hasTargetColumn()) {
-                    String desc = NbBundle.getMessage(SQLValidationVisitor.class, "MSG_Should_Have_Target_Column");
+                    String nbBundle11 = mLoc.t("PRSR001: Target/Join condition should have at least one target table column.");
+                    String desc = Localizer.parse(nbBundle11);
                     ValidationInfoImpl validationInfo = new ValidationInfoImpl(condition, desc, ValidationInfo.VALIDATION_ERROR);
                     validationInfoList.add(validationInfo);
                 }

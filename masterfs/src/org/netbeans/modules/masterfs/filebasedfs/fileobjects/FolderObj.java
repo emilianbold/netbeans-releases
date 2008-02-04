@@ -273,7 +273,6 @@ public final class FolderObj extends BaseFileObj {
         for (int i = 0; i < all.size(); i++) {
             final BaseFileObj toDel = (BaseFileObj) all.get(i);            
             final FolderObj existingParent = toDel.getExistingParent();            
-            assert existingParent == null || toDel.getParent().equals(existingParent);
             final ChildrenCache childrenCache = (existingParent != null) ? existingParent.getChildrenCache() : null;            
             if (childrenCache != null) {
                 final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
