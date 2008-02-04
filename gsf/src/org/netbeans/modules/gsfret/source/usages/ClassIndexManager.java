@@ -49,6 +49,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+//import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openide.util.Exceptions;
@@ -62,34 +63,88 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public class ClassIndexManager {
+public final class ClassIndexManager {
+    
+    private static final byte OP_ADD    = 1;
+    private static final byte OP_REMOVE = 2;
 
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
-    private ReadWriteLock lock;
+    private final ReadWriteLock lock;
+//    private final List<ClassIndexManagerListener> listeners = new CopyOnWriteArrayList<ClassIndexManagerListener> ();
     private boolean invalid;
+    private Set<URL> added;
+    private Set<URL> removed;
+    private int depth = 0;
+    private Thread owner;
+    
     
     
     private ClassIndexManager() {
         this.lock = new ReentrantReadWriteLock (false);
     }
     
-    public <T> T writeLock (final ExceptionAction<T> r) throws IOException {
+//    public void addClassIndexManagerListener (final ClassIndexManagerListener listener) {
+//        assert listener != null;
+//        this.listeners.add(listener);
+//    }
+//    
+//    public void removeClassIndexManagerListener (final ClassIndexManagerListener listener) {
+//        assert listener != null;
+//        this.listeners.remove(listener);
+//    }
+    
+    public <T> T writeLock (final ExceptionAction<T> r) throws IOException/*, InterruptedException*/ {
         this.lock.writeLock().lock();
         try {
-            return r.run();
+            if (depth == 0) {
+                this.owner = Thread.currentThread();
+            }
+            try {
+                depth++;
+                try {
+                    if (depth == 1) {
+                        this.added = new HashSet<URL>();
+                        this.removed = new HashSet<URL>();
+                    }
+                    try {
+                        return r.run();
+                    } finally {
+                        if (depth == 1) {
+                            if (!removed.isEmpty()) {
+//                                fire (removed, OP_REMOVE);
+                                removed.clear();
+                            }
+                            if (!added.isEmpty()) {
+//                                fire (added, OP_ADD);
+                                added.clear();
+                            }                
+                        }
+                    }
+                } finally {
+                    depth--;
+                }            
+            } finally {
+                if (depth == 0) {
+                    this.owner = null;
+                }
+            }
         } finally {
             this.lock.writeLock().unlock();
         }
     }
     
-    public <T> T readLock (final ExceptionAction<T> r) throws IOException {
+    public <T> T readLock (final ExceptionAction<T> r) throws IOException/*, InterruptedException*/ {
         this.lock.readLock().lock();
         try {
             return r.run();
         } finally {
             this.lock.readLock().unlock();
         }
+    }
+    
+    public boolean holdsWriteLock () {
+        return Thread.currentThread().equals(this.owner);
     }
     
     public synchronized ClassIndexImpl getUsagesQuery (final URL root) throws IOException {
@@ -117,18 +172,35 @@ public class ClassIndexManager {
         ClassIndexImpl qi = this.instances.get (root);
         if (qi == null) {  
             qi = PersistentClassIndex.create (root, Index.getDataFolder(root), source);
-            this.instances.put(root,qi);            
+            this.instances.put(root,qi);
+            if (added != null) {
+                added.add (root);
+            }
         }
+//        else if (source && !qi.isSource()){
+//            //Wrongly set up freeform project, which is common for it, prefer source
+//            qi.close ();
+//            qi = PersistentClassIndex.create (root, Index.getDataFolder(root), source);
+//            this.instances.put(root,qi);
+//            if (added != null) {
+//                added.add (root);
+//            }
+//        }
         return qi;
     }
     
     synchronized void removeRoot (final URL root) throws IOException {
+        // BEGIN TOR MODIFICATIONS
         if (bootRoots.contains(root)) {
             return;
         }
+        // END TOR MODIFICATIONS
         ClassIndexImpl ci = this.instances.remove(root);
         if (ci != null) {
             ci.close();
+            if (removed != null) {
+                removed.add (root);
+            }
         }
     }
     
@@ -144,8 +216,25 @@ public class ClassIndexManager {
     }
     
     public static interface ExceptionAction<T> {
-        public T run () throws IOException;
+        public T run () throws IOException/*, InterruptedException*/;
     }
+    
+//    private void fire (final Set<? extends URL> roots, final byte op) {
+//        if (!this.listeners.isEmpty()) {
+//            final ClassIndexManagerEvent event = new ClassIndexManagerEvent (this, roots);
+//            for (ClassIndexManagerListener listener : this.listeners) {
+//                if (op == OP_ADD) {
+//                    listener.classIndexAdded(event);
+//                }
+//                else if (op == OP_REMOVE) {
+//                    listener.classIndexRemoved(event);
+//                }
+//                else {
+//                    assert false : "Unknown op: " + op;     //NOI18N
+//                }
+//            }
+//        }
+//    }
     
     
     public static synchronized ClassIndexManager getDefault () {
@@ -153,7 +242,7 @@ public class ClassIndexManager {
             instance = new ClassIndexManager ();            
         }
         return instance;
-    }
+    }        
 
     // BEGIN TOR MODIFICATIONS
     // This is for development use only (the index browser)
