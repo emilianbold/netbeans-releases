@@ -30,6 +30,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 
 import javax.swing.JSeparator;
+import net.java.hulp.i18n.Logger;
 import org.openide.nodes.*;
 import org.openide.util.*;
 import org.openide.loaders.DataFolder;
@@ -51,9 +52,9 @@ import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectPr
 import org.netbeans.modules.compapp.projects.base.ui.IcanproLogicalViewProvider;
 import org.netbeans.modules.compapp.projects.base.IcanproConstants;
 import org.netbeans.modules.etl.project.EtlproProject;
+import org.netbeans.modules.etl.project.EtlproProjectGenerator;
 import org.netbeans.modules.etl.project.Localizer;
 import org.netbeans.modules.etl.project.LogUtil;
-import org.netbeans.modules.mashup.db.wizard.FlatfileDBViewerAction;
 import org.netbeans.modules.mashup.db.wizard.NewFlatfileDatabaseWizardAction;
 import org.netbeans.modules.mashup.db.wizard.NewFlatfileTableAction;
 import org.netbeans.modules.mashup.tables.wizard.MashupTableWizardIterator;
