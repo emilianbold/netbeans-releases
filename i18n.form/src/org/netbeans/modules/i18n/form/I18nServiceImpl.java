@@ -76,6 +76,7 @@ import org.netbeans.modules.i18n.java.JavaResourceHolder;
 
 import org.netbeans.modules.form.I18nService;
 import org.netbeans.modules.form.I18nValue;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Implementation of form module's I18nService - used by form editor to control
@@ -484,7 +485,8 @@ public class I18nServiceImpl implements I18nService {
                 FileObject root = getResourcesRoot(srcFile);
                 if (root != null) {
                     return Collections.singletonList(
-                            new File(root.getPath()+File.separator + bundleName + ".properties").toURL()); // NOI18N
+                        new File(FileUtil.toFile(root).getPath()
+                            + File.separator + bundleName + ".properties").toURL()); // NOI18N
                 }
             }
         } catch (IOException ex) {

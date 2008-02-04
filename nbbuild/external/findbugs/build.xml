@@ -46,6 +46,8 @@ made subject to such option by the copyright holder.
     <description>Prepares FindBugs libraries</description>
     
     <property name="nbroot" value="../../.."/>
+    
+    <!-- findbugs.jar checksum -->
     <property name="findbugs.md5" value="259d427b816e22421007625ed692c761"/>
     
     <import file="${nbroot}/nbbuild/templates/projectized.xml"/>
