@@ -11,7 +11,7 @@ import org.netbeans.modules.soa.mappercore.event.MapperSelectionListener;
 
 /**
  *
- * @author alex02
+ * @author AlexanderPermyacov
  */
 public class AutoScrollSelectionRightTree implements MapperSelectionListener {
     private RightTree rightTree;

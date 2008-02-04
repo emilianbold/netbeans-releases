@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+        xmlns="http://research.sun.com/wadl/2006/10">
+    <grammars/>
+    <resources base="https://www.google.com">
+	<resource path="accounts">
+	    <doc xml:lang="en">
+                This service provides a programmatic login method you can use to access Google services protected by user login. 
+                An installed application is installed on a device, such as a desktop computer or a cell phone, as opposed 
+                to a web application. Programmatic login is available when accessing services that support the 
+                Account Authentication service. With programmatic login implemented, you can log into your Google account 
+                from inside the application. The application then contacts Google with the login data and requests 
+                access to a specified Google service. Once access is authorized, you can create, read, update, or 
+                delete service data as needed by using the application interface.
+
+                For more information, see 
+		http://code.google.com/apis/accounts/AuthForInstalledApps.html
+	    </doc>
+	    <resource path="ClientLogin">
+		<method name="POST" id="google.accounts_ClientLogin">
+		    <request>
+			<representation mediaType="application/x-www-form-urlencoded">
+			    <param name="accountType" type="xsd:string" style="query" required="false">
+                                <doc xml:lang="en">
+                                   Optional. Type of account to be authenticated. Possible values are: 
+
+                                    GOOGLE (authenticate as a Google account only), 
+                                    HOSTED (authenticate as a hosted account only), 
+                                    HOSTED_OR_GOOGLE (authenticate first as a hosted account; 
+                                    if attempt fails, authenticate as a Google account). 
+                                    
+                                    Use HOSTED_OR_GOOGLE if you're not sure which type of 
+                                    account needs authentication or if you want to avoid asking for  
+                                    information from the user. If the user information matches both a 
+                                    hosted and a Google account, only the hosted account will be authenticated. 
+                                </doc>
+                            </param>    
+			    <param name="Email" type="xsd:string" style="query" required="true">
+                                <doc xml:lang="en">
+                                    User's full email address including the domain. For example, janesmith@gmail.com.
+                                </doc>
+                            </param>    
+			    <param name="Passwd" type="xsd:string" style="query" required="true">
+                                <doc xml:lang="en">
+                                    User's password.
+                                </doc>
+                            </param>    
+			    <param name="service" type="xsd:string" style="query" required="true">
+                                <doc xml:lang="en">
+                                    Name of the Google service for which authorization is requested. 
+                                    Each service that uses Google accounts is assigned a name value; 
+                                    for example, the name associated with Google Calendar is 'cl'. 
+                                    This parameter is required when accessing GData services; in this case, 
+                                    the generic service name "xapi" can be used. For specific service names, 
+                                    refer to the service documentation.
+                                </doc>
+			    </param>
+			    <param name="source" type="xsd:string" style="query" required="false">
+                                <doc xml:lang="en">
+                                    Short string identifying your application, for logging purposes. 
+                                    This string should take the form &quot;companyName-applicationName-versionID&quot;.
+                                </doc>
+			    </param>
+			</representation>
+		    </request>
+		    <response>
+			<representation mediaType="plain/text"/>
+		    </response>
+		</method>
+	    </resource>
+	</resource>
+    </resources>
+</application>

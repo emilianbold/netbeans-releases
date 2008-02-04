@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,40 +41,42 @@
 
 package org.netbeans.modules.web.jspparser;
 
-import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.IOException;
-import java.util.StringTokenizer;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.project.JavaAntLogger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.modules.web.core.jsploader.JspParserAccess;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author  pj97932
+ * @author  pj97932, Tomas Mysik
  */
-class TestUtil {
+final class TestUtil {
     
-    static FileObject getFileInWorkDir(String path, NbTestCase test) throws Exception {
-        File f = new File(Manager.getWorkDirPath());
-        FileObject workDirFO = FileUtil.fromFile(f)[0];
-        StringTokenizer st = new StringTokenizer(path, "/");
-        FileObject tempFile = workDirFO;
-        while (st.hasMoreTokens()) {
-            tempFile = tempFile.getFileObject(st.nextToken());
-        }
-        return tempFile;
+    private TestUtil() {
     }
     
-     static JspParserAPI.WebModule getWebModule(FileObject fo){
+    static void setup(NbTestCase test) throws Exception {
+        
+        File javaCluster = new File(JavaAntLogger.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
+        File enterCluster = new File(WebModule.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
+        System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath());
+        System.setProperty("org.netbeans.modules.jspparser.debug", "1");
+        Lookup.getDefault().lookup(ModuleInfo.class);
+    }
+    
+    static FileObject getFileInWorkDir(String path, NbTestCase test) throws Exception {
+        File f = test.getDataDir();
+        FileObject workDirFO = FileUtil.toFileObject(f);
+        return FileUtil.createData(workDirFO, path);
+    }
+    
+    static JspParserAPI.WebModule getWebModule(FileObject fo) {
         WebModule wm =  WebModule.getWebModule(fo);
         if (wm == null) {
             return null;
@@ -85,52 +87,4 @@ class TestUtil {
         }
         return null;
     }
-     
-    /*static JspParserAPI.WebModule getWebModule(FileObject wmRoot, FileObject jspFile) throws Exception {
-        WebModule wm = createWebModule(new UnpWarWebModuleImplementation(wmRoot));
-        return JspParserAccess.getJspParserWM(wm);
-    }
-    
-    private static WebModule createWebModule(WebModuleImplementation impl) throws Exception {
-        java.lang.reflect.Constructor c = WebModule.class.getDeclaredConstructor(
-            new Class[] {WebModuleImplementation.class});
-        c.setAccessible(true);
-        return (WebModule)c.newInstance(new Object[] {impl});
-    }
-    
-    static class UnpWarWebModuleImplementation implements WebModuleImplementation {
-        
-        private FileObject docBase;
-        private String contextPath;
-        
-        public UnpWarWebModuleImplementation(FileObject docBase) {
-            this.docBase = docBase;
-            contextPath = "";
-        }
-
-        public FileObject getDocumentBase () {
-            return docBase;
-        }
-    
-        public FileObject getJavaSourcesFolder () {
-            return docBase.getFileObject("WEB-INF/classes");
-        }
-    
-        public String getContextPath () {
-            return contextPath;
-        }
-    
-        public void setContextPath (String path) {
-            this.contextPath = path;
-        }
-        
-        public String getJ2eePlatformVersion (){
-            return "";
-        }
-        
-        public ClassPath getJavaSources (){
-            return null;
-        }
-    }*/
-    
 }

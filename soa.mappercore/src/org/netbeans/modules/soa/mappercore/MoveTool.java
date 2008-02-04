@@ -151,7 +151,7 @@ public class MoveTool extends AbstractMapperDnDTool {
                 model.copy(node.getTreePath(), graphSubSet, 
                         (graphX + step / 2) / step,
                         Math.max(0, (graphY + step / 2) / step));
-            } else {
+        } else {
                 model.move(node.getTreePath(), graphSubSet, 
                         (point.x - startPoint.x) / step, 
                         (point.y - startPoint.y) / step);

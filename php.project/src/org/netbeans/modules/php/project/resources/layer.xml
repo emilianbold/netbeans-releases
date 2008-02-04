@@ -60,7 +60,7 @@ made subject to such option by the copyright holder.
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/phpdescr.html"/>
                 <attr name="position" intvalue="520"/>
                 
-                <file name="emptyPhpPro.php" url="nbresloc:/org/netbeans/modules/php/project/templates/index.php">
+                <file name="PHPProject.php" url="nbresloc:/org/netbeans/modules/php/project/templates/index.php">
                     <attr name="position" intvalue="100"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="templateWizardIterator" 
@@ -70,23 +70,10 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.icon" 
                           urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/php_project.png"/>
                     <attr name="templateWizardURL" 
-                          urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/emptyProject.html"/>
+                          urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/PHPProject.html"/>
                     <attr name="templateCategory" stringvalue="PHP"/>
                 </file>
 
-                <file name="existingPhpPro.php">
-                    <attr name="position" intvalue="200"/>
-                    <attr name="template" boolvalue="true"/>
-                    <attr name="templateWizardIterator" 
-                          methodvalue="org.netbeans.modules.php.project.wizards.NewPhpProjectWizardIterator.existing"/>
-                    <attr name="SystemFileSystem.localizingBundle" 
-                          stringvalue="org.netbeans.modules.php.project.wizards.Bundle"/>
-                    <attr name="SystemFileSystem.icon" 
-                          urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/php_project.png"/>
-                    <attr name="templateWizardURL" 
-                          urlvalue="nbresloc:/org/netbeans/modules/php/project/resources/existingProject.html"/>
-                    <attr name="templateCategory" stringvalue="PHP"/>
-                </file>
             </folder>
         </folder>
         

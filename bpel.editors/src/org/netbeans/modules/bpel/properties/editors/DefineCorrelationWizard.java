@@ -78,6 +78,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.api.BPELElementsBuilder;
 import org.netbeans.modules.bpel.model.api.BaseCorrelation;
@@ -1330,7 +1331,8 @@ public class DefineCorrelationWizard implements WizardProperties {
                     (globalSimpleTypes == null)) return null;
                 
                 for (SchemaComponent component : componentList) {
-                    String baseTypeName = component.getAttribute(SchemaAttribute.BASE);
+                 String baseTypeName = component.getAnyAttribute(new QName(
+                     Constants.SCHEMA_COMPONENT_ATTRIBUTE_BASE));
                     if (baseTypeName != null) {
                         baseTypeName = WizardUtils.ignoreNamespace(baseTypeName);
                         NamedComponentReference<GlobalType> typeRef = findGlobalSimpleType(baseTypeName, 
@@ -1937,31 +1939,6 @@ class WizardUtils {
         }
         return false;
     }
-}
-//============================================================================//
-enum SchemaAttribute implements org.netbeans.modules.xml.xam.dom.Attribute, Constants {
-    BASE(SCHEMA_COMPONENT_ATTRIBUTE_BASE);
-    
-    private String name;
-    private Class type, subtype;
-    
-    SchemaAttribute(String name) {
-        this(name, String.class);
-    }
-    SchemaAttribute(String name, Class type) {
-        this(name, type, null);
-    }
-    SchemaAttribute(String name, Class type, Class subtype) {
-        this.name = name;
-        this.type = type;
-        this.subtype = subtype;
-    }
-    
-    public String getName() {return name;}
-    @Override
-    public String toString() {return getName();}
-    public Class getType() {return type;}
-    public Class getMemberType() {return subtype;}
 }
 //============================================================================//
 class OnMessageActivityCompositeName {

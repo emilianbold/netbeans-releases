@@ -40,31 +40,20 @@
  */
 package org.netbeans.modules.compapp.projects.common.ui.actions;
 
-import java.io.IOException;
-import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.compapp.projects.common.ImplicitCatalogValidator;
-import org.netbeans.modules.compapp.projects.common.ImplicitCatalogValidator.ResultPrinter;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
-import org.openide.windows.IOProvider;
-import org.openide.windows.OutputWriter;
 
 /**
- * This class provides the project action interface which can be used
- * to add implicit catalog validation action to the available project
- * actions.
- * User should use the #projectSensitiveAction() to create an instance
- * of this action.
+ * This class provides the project action implementation for validating the implicit catalog 
+ * in projects. This delegates the work to ValidateImplicitCatalogActionPerformer.
+ * @see ValidateImplicitCatalogActionPerformer
  * 
  * @author chikkala
  */
-public final class ValidateImplicitCatalogAction extends CookieAction implements ProjectActionPerformer {
+public final class ValidateImplicitCatalogAction extends CookieAction {
 
     /**
      * 
@@ -72,7 +61,7 @@ public final class ValidateImplicitCatalogAction extends CookieAction implements
      */
     protected void performAction(Node[] activatedNodes) {
         Project project = activatedNodes[0].getLookup().lookup(Project.class);
-        perform(project);
+        (new ValidateImplicitCatalogActionPerformer()).perform(project);
     }
 
     /**
@@ -120,48 +109,6 @@ public final class ValidateImplicitCatalogAction extends CookieAction implements
     @Override
     protected boolean asynchronous() {
         return false;
-    }
-
-    /**
-     * 
-     * @param project
-     * @return
-     */
-    public boolean enable(Project project) {
-        return true;
-    }
-
-    /**
-     * 
-     * @param project
-     */
-    public void perform(Project project) {
-        try {
-            ImplicitCatalogValidator validator = ImplicitCatalogValidator.newInstance(project);
-            ResultPrinter prn = new ResultPrinter() {
-
-                @Override
-                protected void initWriters() {
-                    OutputWriter out = IOProvider.getDefault().getStdOut();
-                    setOutWriter(out);
-                    setErrorWriter(out);
-                }
-            };
-            validator.setResultPrinter(prn);
-            validator.validate();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    /**
-     * 
-     * @return
-     */
-    public static Action projectSensitiveAction() {
-        ProjectActionPerformer performer = new ValidateImplicitCatalogAction();
-        String name = NbBundle.getMessage(ValidateImplicitCatalogAction.class, "LBL_ValidateImplicitCatalogAction");
-        return ProjectSensitiveActions.projectSensitiveAction(performer, name, null);
     }
 }
 

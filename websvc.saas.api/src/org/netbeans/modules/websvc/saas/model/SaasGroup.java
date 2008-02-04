@@ -43,31 +43,42 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  *
  * @author nam
  */
 public class SaasGroup {
+    /**
+     * Property change event names
+     */
+    public static final String PROP_CHILD_GROUP = "childGroup";
+    public static final String PROP_CHILD_SERVICE = "childService";
+
     private final Group delegate;
     private final SaasGroup parent;
-    private boolean userDefined;
-    private List<Saas> services;
-    private List<SaasGroup> children;
+    private boolean userDefined = true; //once set to false, remain false.
+    private SortedMap<String, Saas> services;
+    private SortedMap<String, SaasGroup> children;
     
     public SaasGroup(SaasGroup parent, Group group) {
         this.parent = parent;
         this.delegate = group;
-        services = Collections.synchronizedList(new ArrayList<Saas>());
-        children = Collections.synchronizedList(new ArrayList<SaasGroup>());
+        services = Collections.synchronizedSortedMap(new TreeMap<String, Saas>());
     }
 
+    public SaasGroup getParent() {
+        return parent;
+    }
+    
     public Group getDelegate() {
         return delegate;
     }
 
     public List<Saas> getServices() {
-        return Collections.unmodifiableList(services);
+        return Collections.unmodifiableList(new ArrayList<Saas>(services.values()));
     }
 
     /**
@@ -77,10 +88,10 @@ public class SaasGroup {
      * @param service saas service
      */
     public void addService(Saas service) {
-        synchronized(services) {
-            services.add(service);
-        }
+        services.put(service.getDisplayName(), service);
+        SaasServicesModel.getInstance().fireChange(PROP_CHILD_SERVICE, this, null, service);
     }
+    
     /**
      * If this is part of model mutation, caller is responsible to ensure 
      * SaasServices persists with proper Group information.
@@ -88,13 +99,20 @@ public class SaasGroup {
      * @param service saas service to remove
      */
     public boolean removeService(Saas service) {
-        synchronized(services) {
-            return services.remove(service);
+        Saas removed = services.remove(service.getDisplayName());
+        if (removed != null) {
+            SaasServicesModel.getInstance().fireChange(PROP_CHILD_SERVICE, this, removed, null);
+            return true;
         }
+        return false;
     }
 
     public void setName(String value) {
-        delegate.setName(value);
+        if (! isUserDefined()) {
+            getParent().removeChildGroup(this);
+            delegate.setName(value);
+            getParent().addChildGroup(this);
+        }
     }
 
     public String getName() {
@@ -106,34 +124,81 @@ public class SaasGroup {
     }
 
     public void setUserDefined(boolean v) {
-        userDefined = v;
-    }
-
-    public List<SaasGroup> getChildrenGroups() {
-        return Collections.unmodifiableList(children);
-    }
-
-    /**
-     * If this is part of model mutation, caller is responsible to ensure 
-     * SaasServices persists with proper Group information.
-     * 
-     * @param group saas group to remove
-     */
-    public boolean removeChildGroup(SaasGroup group) {
-        synchronized(children) {
-            return children.remove(group);
+        if (userDefined) {
+            userDefined = v;
         }
     }
 
+    public List<SaasGroup> getChildrenGroups() {
+        if (children == null) {
+            children = Collections.synchronizedSortedMap(new TreeMap<String,SaasGroup>());
+            for (Group g : delegate.getGroup()) {
+                SaasGroup sg = new SaasGroup(this, g);
+                children.put(sg.getName(), sg);
+            }
+        }
+        return Collections.unmodifiableList(new ArrayList<SaasGroup>(children.values()));
+    }
+
+    public SaasGroup getChildGroup(String name) {
+        getChildrenGroups();
+        return children.get(name);
+    }
+    
     /**
-     * If this is part of model mutation, caller is responsible to persist 
-     * group removal, whether the group is user-defined or installed.
+     * All children services and children groups also removed.
+     * Only group created by users could be removed.
+     * Caller is responsible for persisting changes.
+     * @param group saas group to remove
+     */
+    public boolean removeChildGroup(SaasGroup group) {
+        if (! group.canRemove()) {
+            return false;
+        }
+        
+        _removeChildGroup(group);
+        
+        // only fire on top-level object
+        SaasServicesModel.getInstance().fireChange(PROP_CHILD_GROUP, this, group, null);
+        return true;
+    }
+    
+    private void _removeChildGroup(SaasGroup child) {
+        if (child != null) {
+            for (Saas saas : child.getServices()) {
+                _removeSaas(saas);
+            }
+            for (SaasGroup c : child.getChildrenGroups()) {
+                _removeChildGroup(c);
+            }
+        }
+    }
+    
+    private void _removeSaas(Saas childService) {
+        services.remove(childService.getDisplayName());
+        //TODO cleanup persistence and remove local files
+    }
+    
+    public boolean canRemove() {
+        if (isUserDefined()) {
+            return false;
+        }
+        for (SaasGroup child : getChildrenGroups()) {
+            if (! child.canRemove()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * If this is part of model mutation, caller is responsible to save
+     * changes, whether the group is user-defined or pre-installed.
      * 
      * @param group saas group to add
      */
     public void addChildGroup(SaasGroup group) {
-        synchronized(children) {
-            children.add(group);
-        }
+        children.put(group.getName(), group);
+        SaasServicesModel.getInstance().fireChange(PROP_CHILD_GROUP, this, null, group);
     }
 }

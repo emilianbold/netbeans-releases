@@ -58,11 +58,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -94,6 +91,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -103,10 +101,12 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.project.classpath.WebProjectClassPathExtender;
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.customizer.LibrariesChooser;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 
@@ -172,16 +172,28 @@ final class LibrariesNode extends AbstractNode {
     }
 
     //Static Action Factory Methods
-    public static Action createAddProjectAction (Project p, String classPathId, String webModuleElementName) {
-        return new AddProjectAction (p, classPathId, webModuleElementName);
+    public static Action createAddProjectAction (WebProject p, boolean sources) {
+        if (sources) {
+            return new AddProjectAction(p, p.getSourceRoots().getRoots()[0]);
+        } else {
+            return new AddProjectAction(p, p.getTestSourceRoots().getRoots()[0]);
+        }
     }
 
-    public static Action createAddLibraryAction (Project p, String classPathId, String webModuleElementName) {
-        return new AddLibraryAction (p, classPathId, webModuleElementName);
+    public static Action createAddLibraryAction (WebProject p, boolean sources) {
+        if (sources) {
+            return new AddLibraryAction(p, p.getSourceRoots().getRoots()[0]);
+        } else {
+            return new AddLibraryAction(p, p.getTestSourceRoots().getRoots()[0]);
+        }
     }
 
-    public static Action createAddFolderAction (Project p, String classPathId, String webModuleElementName) {
-        return new AddFolderAction (p, classPathId, webModuleElementName);
+    public static Action createAddFolderAction (WebProject p, boolean sources) {
+        if (sources) {
+            return new AddFolderAction(p, p.getSourceRoots().getRoots()[0]);
+        } else {
+            return new AddFolderAction(p, p.getTestSourceRoots().getRoots()[0]);
+        }
     }
     
     /**
@@ -570,49 +582,44 @@ final class LibrariesNode extends AbstractNode {
     private static class AddProjectAction extends AbstractAction {
 
         private final Project project;
-        private final String classPathId;
-        private final String webModuleElementName;
+        private final FileObject projectSourcesArtifact;
 
-        public AddProjectAction (Project project, String classPathId, String webModuleElementName) {
+        public AddProjectAction (Project project, FileObject projectSourcesArtifact) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddProject_Action" ) );
             this.project = project;
-            this.classPathId = classPathId;
-            this.webModuleElementName = webModuleElementName;
+            this.projectSourcesArtifact = projectSourcesArtifact;
         }
 
         public void actionPerformed(ActionEvent e) {
-            ArtifactItem artifacts[] = AntArtifactChooser.showDialog(JavaProjectConstants.ARTIFACT_TYPE_JAR, project, null);
-                if ( artifacts != null ) {
-                    addArtifacts( artifacts );
+            ArtifactItem ai[] = AntArtifactChooser.showDialog(
+                    new String[] {JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER},
+                    project, null);
+                if ( ai != null ) {
+                    addArtifacts( ai );
                 }
         }
 
-        private void addArtifacts (ArtifactItem[] artifactItems) {
-            WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
-            if (cpExtender != null) {
+        private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
+            for (int i=0; i<artifactItems.length;i++) {
                 try {
-                    cpExtender.addAntArtifacts(classPathId, artifactItems, webModuleElementName);
+                    ProjectClassPathModifier.addAntArtifacts(new AntArtifact[]{artifactItems[i].getArtifact()}, 
+                            new URI[]{artifactItems[i].getArtifactURI()}, projectSourcesArtifact, ClassPath.COMPILE);
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
-            }
-            else {
-                Logger.getLogger("global").log(Level.INFO, "WebProjectClassPathExtender not found in the project lookup of project: " + project.getProjectDirectory().getPath());    //NOI18N
             }
         }
     }
 
     private static class AddLibraryAction extends AbstractAction {
 
-        private final Project project;
-        private final String classPathId;
-        private final String webModuleElementName;
+        private final WebProject project;
+        private final FileObject projectSourcesArtifact;
 
-        public AddLibraryAction (Project project, String classPathId, String webModuleElementName) {
+        public AddLibraryAction(WebProject project, FileObject projectSourcesArtifact) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddLibrary_Action" ) );
             this.project = project;
-            this.classPathId = classPathId;
-            this.webModuleElementName = webModuleElementName;
+            this.projectSourcesArtifact = projectSourcesArtifact;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -637,16 +644,13 @@ final class LibrariesNode extends AbstractNode {
         }
 
         private void addLibraries (Library[] libraries) {
-            WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
-            if (cpExtender != null) {
+            for (int i=0; i<libraries.length;i++) {
                 try {
-                    cpExtender.addLibraries(classPathId, libraries, webModuleElementName);
+                    ProjectClassPathModifier.addLibraries(new Library[]{libraries[i]}, 
+                            projectSourcesArtifact, ClassPath.COMPILE);
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
-            }
-            else {
-                Logger.getLogger("global").log(Level.INFO, "WebProjectClassPathExtender not found in the project lookup of project: " + project.getProjectDirectory().getPath());    //NOI18N
             }
         }
         
@@ -654,15 +658,13 @@ final class LibrariesNode extends AbstractNode {
 
     private static class AddFolderAction extends AbstractAction {
 
-        private final Project project;
-        private final String classPathId;
-        private final String webModuleElementName;
+        private final WebProject project;
+        private final FileObject projectSourcesArtifact;
 
-        public AddFolderAction (Project project, String classPathId, String webModuleElementName) {
+        public AddFolderAction (WebProject project, FileObject projectSourcesArtifact) {
             super( NbBundle.getMessage( LibrariesNode.class, "LBL_AddFolder_Action" ) );
             this.project = project;
-            this.classPathId = classPathId;
-            this.webModuleElementName = webModuleElementName;
+            this.projectSourcesArtifact = projectSourcesArtifact;
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -688,27 +690,18 @@ final class LibrariesNode extends AbstractNode {
         }
 
         private void addJarFiles (File[] files, FileFilter fileFilter) {
-            WebProjectClassPathExtender cpExtender = (WebProjectClassPathExtender) project.getLookup().lookup(WebProjectClassPathExtender.class);
-            if (cpExtender != null) {
-                List fileObjects = new LinkedList();
-                for (int i = 0; i < files.length; i++) {
-                    if (fileFilter.accept(files[i])) {
-                        File normalizedFile = FileUtil.normalizeFile(files[i]);
-                        FileObject fo = FileUtil.toFileObject(normalizedFile);
-                        assert fo != null : normalizedFile;
-                        fileObjects.add(fo);
-                    }
-                }
+            for (int i=0; i<files.length;i++) {
                 try {
-                    FileObject[] fileObjectArray = new FileObject[fileObjects.size()];
-                    fileObjects.toArray(fileObjectArray);
-                    cpExtender.addArchiveFiles(classPathId, fileObjectArray, webModuleElementName);                    
+                    //Check if the file is acceted by the FileFilter,
+                    //user may enter the name of non displayed file into JFileChooser
+                    if (fileFilter.accept(files[i])) {
+                        URL u = LibrariesSupport.convertFileToURL(files[i]);
+                        u = FileUtil.getArchiveRoot(u);
+                        ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
+                    }
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
-            }
-            else {
-                Logger.getLogger("global").log(Level.INFO, "WebProjectClassPathExtender not found in the project lookup of project: " + project.getProjectDirectory().getPath());    //NOI18N
             }
         }
 

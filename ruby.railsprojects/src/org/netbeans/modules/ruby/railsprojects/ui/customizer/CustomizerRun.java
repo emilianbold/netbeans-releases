@@ -41,24 +41,12 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.nio.charset.Charset;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
 import java.util.logging.Logger;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -299,9 +287,9 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .add(org.jdesktop.layout.GroupLayout.LEADING, portLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(mainPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(encoding, 0, 479, Short.MAX_VALUE)
-                    .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)
-                    .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 479, Short.MAX_VALUE)))
+                    .add(encoding, 0, 488, Short.MAX_VALUE)
+                    .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                    .add(rakeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)))
             .add(mainPanelLayout.createSequentialGroup()
                 .add(120, 120, 120)
                 .add(rakeHelpLabel)
@@ -354,6 +342,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         });
 
+        rubyPlatformLabel.setLabelFor(platforms);
         org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyPlatformLabel")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyHomeBrowse")); // NOI18N
@@ -370,7 +359,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             .add(layout.createSequentialGroup()
                 .add(configLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(configCombo, 0, 356, Short.MAX_VALUE)
+                .add(configCombo, 0, 365, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(configNew)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -382,7 +371,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(manageButton)
                 .add(68, 68, 68))
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, configSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 614, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, configSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
             .add(mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(

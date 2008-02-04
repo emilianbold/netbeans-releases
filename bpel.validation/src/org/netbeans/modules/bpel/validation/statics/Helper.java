@@ -120,7 +120,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.bpel.validation.util.ResultItem;
+import org.netbeans.modules.bpel.validation.util.ValidationItem;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -810,8 +810,8 @@ public final class Helper {
             str = MessageFormat.format(str, values );
         }
         for(Component component: collection) {
-            ResultItem resultItem = new ResultItem(getValidator(), ResultType.ERROR, component, str);
-            getValidator().getResultItems().add( resultItem );
+            ValidationItem item = new ValidationItem(getValidator(), ResultType.ERROR, component, str);
+            getValidator().getResultItems().add(item);
         }
     }
     
@@ -831,8 +831,8 @@ public final class Helper {
             str = MessageFormat.format(str, values );
         }
         for(Component component: collection) {
-            ResultItem resultItem = new ResultItem(getValidator(), ResultType.WARNING, component, str);
-            getValidator().getResultItems().add( resultItem );
+            ValidationItem item = new ValidationItem(getValidator(), ResultType.WARNING, component, str);
+            getValidator().getResultItems().add(item);
         }
     }
     
