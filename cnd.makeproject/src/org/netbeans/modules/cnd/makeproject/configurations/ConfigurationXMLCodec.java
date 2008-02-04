@@ -47,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
+import java.util.List;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
@@ -101,7 +102,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private ArchiverConfiguration currentArchiverConfiguration = null;
     private LibrariesConfiguration currentLibrariesConfiguration = null;
     private RequiredProjectsConfiguration currentRequiredProjectsConfiguration = null;
-    private Vector currentList = null;
+    private List currentList = null;
     private int defaultConf = 0;
     private Stack /*<Folder>*/ currentFolderStack = new Stack();
     private Folder currentFolder = null;

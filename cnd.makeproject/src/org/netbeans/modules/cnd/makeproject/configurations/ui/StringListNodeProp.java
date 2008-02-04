@@ -43,7 +43,8 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
@@ -61,7 +62,7 @@ public class StringListNodeProp extends PropertySupport {
     private HelpCtx helpCtx;
     
     public StringListNodeProp(VectorConfiguration vectorConfiguration, BooleanConfiguration inheritValues, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
-        super(texts[0], Vector.class, texts[1], texts[2], true, true);
+        super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;
 	this.texts = texts;
@@ -82,7 +83,7 @@ public class StringListNodeProp extends PropertySupport {
     }
     
     public void setValue(Object v) {
-        vectorConfiguration.setValue((Vector)v);
+        vectorConfiguration.setValue((List)v);
     }
     
     @Override
@@ -102,7 +103,7 @@ public class StringListNodeProp extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new StringEditor((Vector)vectorConfiguration.getValue().clone());
+	return new StringEditor((List)((ArrayList)vectorConfiguration.getValue()).clone());
     }
 
     @Override
@@ -113,10 +114,10 @@ public class StringListNodeProp extends PropertySupport {
     }
 
     private class StringEditor extends PropertyEditorSupport implements ExPropertyEditor {
-        private Vector value;
+        private List value;
         private PropertyEnv env;
         
-        public StringEditor(Vector value) {
+        public StringEditor(List value) {
             this.value = value;
         }
         
@@ -136,7 +137,7 @@ public class StringListNodeProp extends PropertySupport {
 	    for (int i = 0; i < value.size(); i++) {
 		if (addSep)
 		    ret.append(' ');
-		ret.append(IpeUtils.quoteIfNecessary((String)value.elementAt(i)));
+		ret.append(IpeUtils.quoteIfNecessary((String)value.get(i)));
 		addSep = true;
 	    }
 	    return ret.toString();

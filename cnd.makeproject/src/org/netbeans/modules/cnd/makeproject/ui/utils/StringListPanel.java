@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
@@ -108,7 +109,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-	return getListData();
+	return new ArrayList(getListData());
     }
     
     public void propertyChange(PropertyChangeEvent evt) {
