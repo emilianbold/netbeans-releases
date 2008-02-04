@@ -50,12 +50,12 @@ import org.openide.filesystems.FileUtil;
 
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
 import org.netbeans.modules.web.project.ui.customizer.AntArtifactChooser;
 
 @Deprecated
-public class WebProjectClassPathExtender implements ProjectClassPathExtender {
+@SuppressWarnings("deprecation")
+public class WebProjectClassPathExtender implements org.netbeans.spi.java.project.classpath.ProjectClassPathExtender {
     
     private static final String CP_CLASS_PATH = "javac.classpath"; //NOI18N
     private static final String DEFAULT_WEB_MODULE_ELEMENT_NAME = ClassPathSupport.TAG_WEB_MODULE_LIBRARIES;

@@ -18,19 +18,32 @@
  */
 package org.netbeans.modules.bpel.design.decoration.providers;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
 import java.util.Collection;
 import javax.swing.ButtonModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import org.netbeans.modules.bpel.core.annotations.AnnotationListener;
 import org.netbeans.modules.bpel.core.annotations.AnnotationManagerCookie;
@@ -125,6 +138,28 @@ public class DebuggerDecorationProvider extends DecorationProvider
         }
     };
     
+    private Positioner currentlyExecutingPositioner = new Positioner() {
+        public void position(
+                Pattern pattern, 
+                Collection<Component> components, 
+                double zoom){
+            
+            final FBounds fBounds = getPatternBounds(pattern);
+            final DiagramView view = pattern.getView();
+            
+            final Point p1 = view.convertDiagramToScreen(fBounds.getTopLeft());
+            final Point p2 = view.convertDiagramToScreen(fBounds.getBottomRight());
+            
+            for (Component component : components){
+                component.setBounds(
+                        p1.x, 
+                        p1.y, 
+                        p2.x - p1.x, 
+                        p2.y - p1.y);
+            }
+        }
+    };
+    
     public DebuggerDecorationProvider(
             final DesignView view) {
         
@@ -172,6 +207,11 @@ public class DebuggerDecorationProvider extends DecorationProvider
             Decoration decoration = null;
             if (type.equals(CURRENT_POSITION)){
                 decoration = DECORATE_CURRENT_POSITION;
+            } else if (type.equals(CURRENTLY_EXECUTING)) {
+                final ComponentsDescriptor cd = new ComponentsDescriptor();
+                cd.add(new InfiniteRoundProgress(), currentlyExecutingPositioner);
+                
+                decoration = new Decoration(new Descriptor[] { cd });
             } else if (type.equals(ENABLED_BREAKPOINT)) {
                 final ComponentsDescriptor cd = new ComponentsDescriptor();
                 cd.add(new BreakpointButton(
@@ -348,6 +388,159 @@ public class DebuggerDecorationProvider extends DecorationProvider
         }
         
         private static final Color BACKGROUND = new Color(0xCCFFFFFF, true);
+        
+        private static final long serialVersionUID = 1L;
+    }
+    
+    public static final class InfiniteRoundProgress extends JComponent implements HierarchyListener, ActionListener, DecorationComponent {
+        private float angleStart = (float) 0.;
+        private float angleLimit = (float) (2 * Math.PI);
+        private float angleCorrection = (float) (-Math.PI / 50.);
+        private float colorStart = 1.0F;
+        private float colorLimit = 0.0F;
+        
+        private int steps = 10;
+        
+        private Timer timer = new Timer(75, this);
+        
+        public InfiniteRoundProgress() {
+            addHierarchyListener(this);
+        }
+        
+        @Override
+        protected void paintComponent(Graphics g) {
+            final Graphics2D g2 = (Graphics2D) g;
+            
+            final RenderingHints oldHints = g2.getRenderingHints();
+            final RenderingHints newHints = new RenderingHints(
+                    RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            
+            g2.setRenderingHints(newHints);
+            
+            final java.awt.Rectangle bounds = getBounds();
+            
+            final float centerX = bounds.width / 2;
+            final float centerY = bounds.height / 2;
+            
+            final float lower = bounds.width < bounds.height ? 
+                bounds.width : bounds.height;
+            
+            final float distance = lower / 6;
+            final float length = lower / 6;
+            
+            float radius = lower / 30;
+            
+            final float angleStep = (angleLimit - angleStart) / steps;
+            final float colorStep = (colorLimit - colorStart) / steps;
+            
+            for (int i = 0; i < steps; i++) {
+                final float angle = angleStart + angleStep * i;
+                final float color = colorStart + colorStep * i;
+                
+                g2.setColor(new Color(0.F, 0.F, 0.F, color));
+                g2.setStroke(new BasicStroke(2.0F));
+                
+                paintTile(
+                        (Graphics2D) g, 
+                        centerX, 
+                        centerY, 
+                        angle, 
+                        distance, 
+                        length, 
+                        radius);
+            }
+            
+            g2.setRenderingHints(oldHints);
+        }
+        
+        private void paintTile(
+                Graphics2D g, 
+                float centerX, 
+                float centerY, 
+                float angle, 
+                float distance, 
+                float length, 
+                float radius) {
+            
+            final float sin = (float) Math.sin(angle);
+            final float cos = (float) Math.cos(angle);
+            
+            final float r2 = (float) (radius * 2.);
+            
+            final float r_sin = radius * sin;
+            final float r_cos = radius * cos;
+            
+            final float l1_sin = distance * sin;
+            final float l1_cos = distance * cos;
+            
+            final float l1_l2_sin = (distance + length) * sin;
+            final float l1_l2_cos = (distance + length) * cos;
+            
+            if (radius < 1.0F) {
+                g.draw(new Line2D.Float(
+                        centerX + l1_cos, 
+                        centerY - l1_sin, 
+                        centerX + l1_l2_cos, 
+                        centerY - l1_l2_sin));
+                return;
+            }
+            
+            final GeneralPath path = new GeneralPath();
+            path.moveTo(
+                    centerX + l1_cos + r_sin, 
+                    centerY - l1_sin + r_cos);
+            path.lineTo(
+                    centerX + l1_cos - r_sin, 
+                    centerY - l1_sin - r_cos);
+            path.lineTo(
+                    centerX + l1_l2_cos - r_sin, 
+                    centerY - l1_l2_sin - r_cos);
+            path.lineTo(
+                    centerX + l1_l2_cos + r_sin, 
+                    centerY - l1_l2_sin + r_cos);
+            path.closePath();
+            
+            final Ellipse2D ellipse1 = new Ellipse2D.Float(
+                    centerX + l1_cos - radius, 
+                    centerY - l1_sin - radius, 
+                    r2, 
+                    r2);
+            final Ellipse2D ellipse2 = new Ellipse2D.Float(
+                    centerX + l1_l2_cos - radius, 
+                    centerY - l1_l2_sin - radius, 
+                    r2, 
+                    r2);
+            
+            final Area area1 = new Area(path);
+            final Area area2 = new Area(ellipse1);
+            final Area area3 = new Area(ellipse2);
+            
+            area1.add(area2);
+            area1.add(area3);
+            
+            g.fill(area1);
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            angleLimit += angleCorrection;
+            angleStart += angleCorrection;
+            
+            invalidate();
+            repaint();
+        }
+        
+        private static final long serialVersionUID = 1L;
+
+        public void hierarchyChanged(HierarchyEvent e) {
+            if ((e.getChangeFlags() & (long) HierarchyEvent.PARENT_CHANGED) > 0) {
+                if (getParent() == null) {
+                    timer.stop();
+                } else {
+                    timer.start();
+                }
+            }
+        }
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -364,6 +557,8 @@ public class DebuggerDecorationProvider extends DecorationProvider
     public static final String FAULTED_ELEMENT = "FaultedElement";
     
     public static final String CURRENT_POSITION = "CurrentPC"; //NOI18N
+    
+    public static final String CURRENTLY_EXECUTING = "CurrentlyExecuting"; // NOI18N
     
     public static final String ENABLED_BREAKPOINT = "BpelBreakpoint_normal"; //NOI18N
     

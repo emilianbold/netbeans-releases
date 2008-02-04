@@ -430,11 +430,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         boolean projectChanged = false;
         VectorConfiguration cIncludeDirectories;
         BooleanConfiguration cInheritIncludes;
-        OptionsConfiguration cPpreprocessorOption;
+        VectorConfiguration cPpreprocessorOption;
         BooleanConfiguration cInheritMacros;
         VectorConfiguration ccIncludeDirectories;
         BooleanConfiguration ccInheritIncludes;
-        OptionsConfiguration ccPreprocessorOption;
+        VectorConfiguration ccPreprocessorOption;
         BooleanConfiguration ccInheritMacros;
         Item[] items;
         
@@ -637,7 +637,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CCCompilerConfiguration cccCompilerConfiguration = makeConfiguration.getCCCompilerConfiguration();
-            vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsList());
+            vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
         }
         return vec;
     }

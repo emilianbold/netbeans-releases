@@ -272,6 +272,7 @@ public class MethodNode extends AbstractNode implements Node.Cookie {
         if (methodInfo.getParameters() != null && methodInfo.getParameters().size() != 0) {
             for (int i = 0; i < methodInfo.getParameters().size(); i++) {
                 final MethodParam p = (MethodParam) methodInfo.getParameters().get(i);
+                final int row = i;
 
                 // Parameter name
                 paramSet.put(new PropertySupport.ReadWrite(p.getName(), String.class, NbBundle
@@ -292,7 +293,7 @@ public class MethodNode extends AbstractNode implements Node.Cookie {
 
                         // Make sure it is a legal parameter name
                         try {
-                            MethodParamValidator.validate(name);
+                            MethodParamValidator.validate(name, methodInfo, row);
                         } catch (InvalidParameterNameException e) {
                             NotifyDescriptor d = new NotifyDescriptor.Message(e.getMessage(),
                                     NotifyDescriptor.ERROR_MESSAGE);

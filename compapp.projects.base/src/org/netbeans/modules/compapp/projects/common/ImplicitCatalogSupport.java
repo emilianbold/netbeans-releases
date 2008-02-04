@@ -47,6 +47,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -355,7 +356,8 @@ public class ImplicitCatalogSupport extends ProjectCatalogSupport {
     /**
      * resolves the implicit reference to the file object using the implicit
      * catalog support. It uses both the catalog.wsdl and the catalog.xml to 
-     * resolve the reference.
+     * resolve the reference. If the type is null, it returns the fileobject
+     * corresponding to the first entry with the namespace (wsdl or xsd).
      * 
      * @param namespace  namespace to lookup
      * @param type wsdl or xsd file type correpsonding to the namespace
@@ -366,8 +368,18 @@ public class ImplicitCatalogSupport extends ProjectCatalogSupport {
     public FileObject resolveImplicitReference(String namespace, CatalogWSDL.EntryType type) throws CatalogModelException, IOException {
         FileObject refFO = null;
         CatalogWSDL catWSDL = CatalogWSDL.loadCatalogWSDL(this.mProject);
-        Entry entry = catWSDL.getEntry(type, namespace, null);
-        refFO = resolveImplicitReference(entry);
+        Entry entry = null;
+        if ( type == null ) {
+            List<Entry> entries = catWSDL.getEntries(namespace);
+            if (entries.size() > 0 ) {
+                entry = entries.get(0);
+            }
+        } else {
+            entry = catWSDL.getEntry(type, namespace, null);
+        }
+        if ( entry != null ) {
+            refFO = resolveImplicitReference(entry.getLocation());
+        }
         return refFO;
     }
 
@@ -376,19 +388,22 @@ public class ImplicitCatalogSupport extends ProjectCatalogSupport {
      * catalog support. It uses both the catalog.wsdl and the catalog.xml to 
      * resolve the reference.
      * 
-     * @param entry catalog.wsdl entry
+     * @param location location in the catalog entry
      * @return fileobject correpsonding to the namespace or null.
      * @throws org.netbeans.modules.xml.xam.locator.CatalogModelException
      * @throws java.io.IOException
      */
-    public FileObject resolveImplicitReference(CatalogWSDL.Entry entry) throws CatalogModelException, IOException {
+    public FileObject resolveImplicitReference(String location) throws CatalogModelException, IOException {
         FileObject refFO = null;
-        try {
-            URI systemId = new URI(entry.getLocation());
+        if ( location == null ) {
+            return refFO;
+        }
+        try {            
+            URI systemIdUri = new URI(location);
             CatalogWriteModel cwm =
                     CatalogWriteModelFactory.getInstance().getCatalogWriteModelForProject(
                     this.mProject.getProjectDirectory());
-            URI uriReference = cwm.searchURI(systemId);
+            URI uriReference = cwm.searchURI(systemIdUri);
 
             if (uriReference != null) {
                 refFO = resolveProjectProtocol(uriReference);
@@ -398,13 +413,12 @@ public class ImplicitCatalogSupport extends ProjectCatalogSupport {
                     refFO = resolveRelativeReference(uriReference);
                 }
                 if (refFO == null) {
-                    sLogger.fine("Can not find file object for SystemId: " + systemId + " URIReference: " + uriReference + "in catalog.xml");
+                    sLogger.fine("Can not find file object for SystemId: " + systemIdUri + " URIReference: " + uriReference + "in catalog.xml");
                 }
             } else {
-                sLogger.fine("Can not find the URI reference for SystemId" + systemId + "in catalog.xml");
+                sLogger.fine("Can not find the URI reference for SystemId" + systemIdUri + "in catalog.xml");
             }
         } catch (URISyntaxException ex) {
-            //TODO: log ex
             sLogger.log(Level.FINE, ex.getMessage(), ex);
         }
         return refFO;

@@ -136,6 +136,8 @@ public class JaxWsClientCreator implements ClientCreator {
             String mes = NbBundle.getMessage(WebServiceClientWizardIterator.class, "ERR_NoWebServiceClientSupport"); // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(desc);
+            handle.finish();
+            return;
         }
         
         String wsdlUrl = (String)wiz.getProperty(ClientWizardProperties.WSDL_DOWNLOAD_URL);

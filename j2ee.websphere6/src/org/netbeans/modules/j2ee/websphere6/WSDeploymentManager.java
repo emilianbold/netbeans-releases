@@ -107,10 +107,7 @@ public class WSDeploymentManager implements DeploymentManager {
 
     private static final Logger LOGGER = Logger.getLogger(WSDeploymentManager.class.getName());
 
-    // Websphere version
-    public enum WsVersion { WS_60, WS_61 };
-
-    private WsVersion wsVersion;
+    private final WSVersion wsVersion;
 
     /**
      * Current classloader used to work with WS classes
@@ -159,7 +156,9 @@ public class WSDeploymentManager implements DeploymentManager {
      * @param username username for connecting to the server
      * @param password password for connecting to the server
      */
-    public WSDeploymentManager(String uri, String username, String password, WsVersion wsVersion) {
+    public WSDeploymentManager(String uri, String username, String password, WSVersion wsVersion) {
+        assert wsVersion != null : "Version must not be null"; // NOI18N
+
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "WSDeploymentManager(" + uri + ", " + username + ", " + password + ")"); // NOI18N
         }
@@ -176,9 +175,14 @@ public class WSDeploymentManager implements DeploymentManager {
      *
      * @param uri the server's URI
      */
-    public WSDeploymentManager(String uri) {
-        this(uri, null, null,null);
+    public WSDeploymentManager(String uri, WSVersion version) {
+        this(uri, null, null, version);
     }
+
+    public WSVersion getVersion() {
+        return wsVersion;
+    }
+
 
     /**
      * Parses the URI and stores the parsed URI in the instance properties
@@ -186,13 +190,13 @@ public class WSDeploymentManager implements DeploymentManager {
      */
     private void parseUri() {
         // split the uri
-        String[] parts = uri.split(":"); // NOI18N
+        String[] parts = WSURIManager.getUrlWithoutPrefix(uri).split(":"); // NOI18N
 
         // set the host and port properties
         getInstanceProperties().setProperty(
-                WSDeploymentFactory.HOST_ATTR, parts[2]);
+                WSDeploymentFactory.HOST_ATTR, parts[0]);
         getInstanceProperties().setProperty(
-                WSDeploymentFactory.PORT_ATTR, parts[3]);
+                WSDeploymentFactory.PORT_ATTR, parts[1]);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -435,7 +439,8 @@ public class WSDeploymentManager implements DeploymentManager {
 
             if (factory != null) {
                 // try to get a connected deployment manager
-                dm = new SafeDeploymentManager(factory.getDeploymentManager(uri, username, password));
+                dm = new SafeDeploymentManager(factory.getDeploymentManager(
+                        WSURIManager.getRealDeploymentUrl(uri), username, password));
 
                 // set the connected marker
                 isConnected = true;
@@ -445,7 +450,8 @@ public class WSDeploymentManager implements DeploymentManager {
                 // if the connected deployment manager cannot be obtained - get
                 // a disconnected one and set the connected marker to false
                 isConnected = false;
-                dm = new SafeDeploymentManager(factory.getDisconnectedDeploymentManager(uri));
+                dm = new SafeDeploymentManager(factory.getDisconnectedDeploymentManager(
+                        WSURIManager.getRealDeploymentUrl(uri)));
             } catch (DeploymentManagerCreationException ex) {
                 LOGGER.log(Level.SEVERE, null, ex);
             }
@@ -794,7 +800,7 @@ public class WSDeploymentManager implements DeploymentManager {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "getNonRunningModules(" + moduleType + ", " + Arrays.toString(target) + ")"); // NOI18N
         }
-        
+
         // update the deployment manager
         updateDeploymentManager();
 
@@ -860,7 +866,7 @@ public class WSDeploymentManager implements DeploymentManager {
         if (LOGGER.isLoggable(Level.FINEST)) {
             LOGGER.log(Level.FINEST, "redeploy(" + Arrays.toString(targetModuleID) + ", " + file + ", " + file2 + ")"); // NOI18N
         }
-        
+
         // update the deployment manager
         updateDeploymentManager();
 
@@ -982,8 +988,9 @@ public class WSDeploymentManager implements DeploymentManager {
     private String getFullUrl(String webUrl) {
         String port = getDefaultHostPort();
         String host = getHost();
-        if(uri.indexOf(WSURIManager.WSURI) != -1) {
-            host = uri.split(":")[2];
+
+        if(uri.indexOf(WSURIManager.WSURI60) != -1 || uri.indexOf(WSURIManager.WSURI61) != -1) {
+            host = WSURIManager.getUrlWithoutPrefix(uri).split(":")[0];
         }
         StringBuilder urlBuilder = new StringBuilder();
         urlBuilder.append("http://").append(host).append(":").append(port);

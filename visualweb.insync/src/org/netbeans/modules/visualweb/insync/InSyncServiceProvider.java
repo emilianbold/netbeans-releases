@@ -44,6 +44,7 @@ package org.netbeans.modules.visualweb.insync;
 import java.net.URL;
 import java.util.List;
 
+import javax.faces.component.UIComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.visualweb.api.insync.InSyncService;
 import org.netbeans.modules.visualweb.api.insync.JsfJspDataObjectMarker;
@@ -71,6 +72,7 @@ import com.sun.rave.designtime.DesignProject;
 import com.sun.rave.designtime.DesignProperty;
 import com.sun.rave.designtime.markup.MarkupDesignBean;
 import com.sun.rave.designtime.markup.MarkupMouseRegion;
+import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
 
 /**
  * This class provides a concrete implementation of InSyncService.
@@ -760,6 +762,23 @@ public class InSyncServiceProvider extends InSyncService {
     }
     public int getUnexpandedOffset(String unexpanded, int expandedOffset) {
         return Entities.getUnexpandedOffset(unexpanded, expandedOffset);
+    }
+    
+    public static boolean isComponentRendersChildren(DesignBean designBean) {
+        DesignContext designContext = designBean.getDesignContext();
+    	if (designContext == null) {
+    		return false;
+    	}
+    	BeansUnit beansUnit = ((LiveUnit) designContext).getBeansUnit();
+    	if (beansUnit == null) {
+    	    return false;
+    	}
+        FacesModel facesModel = (FacesModel)beansUnit.getModel();
+        if (facesModel != null){
+            FacesContainer container = facesModel.getFacesModelSet().getFacesContainer();
+            return container.isComponentRendersChildren((UIComponent) designBean.getInstance());
+        }
+        return false;
     }
     
 //  Thread.currentThread().getContextClassLoader() stuff
