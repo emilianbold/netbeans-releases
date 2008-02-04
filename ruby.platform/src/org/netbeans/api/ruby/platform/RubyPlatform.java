@@ -696,6 +696,36 @@ public final class RubyPlatform {
         return info.getGemHome() != null;
     }
 
+    /**
+     * Notifies the registered listeners that are changes in this platform's gems,
+     * i.e. a gem was removed or a new gem was installed.
+     */
+    public void fireGemsChanged() {
+        pcs.firePropertyChange("gems", null, null); //NOI18N
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RubyPlatform other = (RubyPlatform) obj;
+        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + (this.id != null ? this.id.hashCode() : 0);
+        return hash;
+    }
+
     public @Override String toString() {
         return "RubyPlatform[id:" + getID() + ", label:" + getLabel() + ", " + getInterpreter() + "]"; // NOI18N
     }
