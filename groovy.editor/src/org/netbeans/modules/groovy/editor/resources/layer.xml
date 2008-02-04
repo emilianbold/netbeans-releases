@@ -76,6 +76,11 @@
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.CodeCompleter"/>
                 </file>
                 
+                <file name="structure.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.api.gsf.StructureScanner"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.StructureAnalyzer"/>
+                </file>
+                
             </folder>
         </folder>
     </folder>

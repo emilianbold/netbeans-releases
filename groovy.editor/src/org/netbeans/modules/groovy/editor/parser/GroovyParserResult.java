@@ -45,6 +45,8 @@ import org.netbeans.api.gsf.Element;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserFile;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.api.gsf.annotations.NonNull;
+import org.netbeans.modules.groovy.editor.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 
 /**
@@ -57,6 +59,7 @@ public class GroovyParserResult extends ParserResult {
     private AstTreeNode ast;
     private OffsetRange sanitizedRange = OffsetRange.NONE;
     private String sanitizedContents;
+    private StructureAnalyzer.AnalysisResult analysisResult;
     private GroovyParser.Sanitize sanitized;
 
     public GroovyParserResult(ParserFile parserFile, AstRootElement rootElement, AstTreeNode ast) {
@@ -101,5 +104,17 @@ public class GroovyParserResult extends ParserResult {
     public GroovyParser.Sanitize getSanitized() {
         return sanitized;
     }    
+
+    public void setStructure(@NonNull StructureAnalyzer.AnalysisResult result) {
+        this.analysisResult = result;
+    }
+
+    @NonNull
+    public StructureAnalyzer.AnalysisResult getStructure() {
+        if (analysisResult == null) {
+            analysisResult = new StructureAnalyzer().analyze(this);
+        }
+        return analysisResult;
+    }
 
 }
