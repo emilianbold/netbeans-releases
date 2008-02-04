@@ -63,18 +63,27 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
     }
 
     public void test1() throws IOException {
-        copyStringToFileObject(testFO,
-                "class DemoClass {\n" +
-                "int field1 = 1\n" +
-                "DemoClass(int inputval){\n" +
-                "field1 = inputval\n" +
-                "}\n" +
-                "static void main(args) {\n" +
-                "String s = 'aaa'\n" +
-                "println 'Hello, world'\n" +
-                "field1 = 2\n" +
-                "}\n" +
-                "}");
+        
+        String str =    "class DemoClass {\n" +
+                        "\tint field1 = 1\n" +
+                        "\n" +
+                        "DemoClass(int inputval){\n" +
+                        "\tfield1 = inputval\n" +
+                        "}\n" +
+                        "static void main(args) {\n" +
+                        "\tString s = 'aaa'\n" +
+                        "\tprintln 'Hello, world'\n" +
+                        "}\n" +
+                        "void dynamicmethod() {\n" +
+                        "\tfield1 = 2\n" +
+                        "\tthis.field1 = 77\n" +
+                        "}\n" +
+                        "}";
+        
+        // un-comment the line below to have cut'n'pastable 
+        // testcases for the groovy-editor
+        // System.out.println(str);
+        copyStringToFileObject(testFO, str);
         parseFile(testFO);
     }
     
