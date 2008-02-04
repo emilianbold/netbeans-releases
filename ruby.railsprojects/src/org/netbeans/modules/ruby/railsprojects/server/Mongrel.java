@@ -185,6 +185,31 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     public boolean isPlatformSupported(RubyPlatform platform) {
         return this.platform.equals(platform);
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Mongrel other = (Mongrel) obj;
+        if (this.platform != other.platform && (this.platform == null || !this.platform.equals(other.platform))) {
+            return false;
+        }
+        if (this.version != other.version && (this.version == null || !this.version.equals(other.version))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 47 * hash + (this.platform != null ? this.platform.hashCode() : 0);
+        hash = 47 * hash + (this.version != null ? this.version.hashCode() : 0);
+        return hash;
+    }
     
 }

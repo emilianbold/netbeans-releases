@@ -183,4 +183,27 @@ class WEBrick implements RubyServer, ServerInstanceImplementation {
     public boolean isPlatformSupported(RubyPlatform platform) {
         return this.platform.equals(platform);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WEBrick other = (WEBrick) obj;
+        if (this.platform != other.platform && (this.platform == null || !this.platform.equals(other.platform))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 11 * hash + (this.platform != null ? this.platform.hashCode() : 0);
+        return hash;
+    }
+    
 }
