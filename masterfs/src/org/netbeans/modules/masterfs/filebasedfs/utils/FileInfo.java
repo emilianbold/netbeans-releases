@@ -172,7 +172,7 @@ public final class FileInfo {
 
     public boolean isConvertibleToFileObject() {
         if (isConvertibleToFileObject == -1) {
-            isConvertibleToFileObject = (exists() && isSupportedFile()) ?  1 : 0;
+            isConvertibleToFileObject = (isSupportedFile() && exists()) ?  1 : 0;
         }
         
         return (isConvertibleToFileObject == 1) ? true : false;
