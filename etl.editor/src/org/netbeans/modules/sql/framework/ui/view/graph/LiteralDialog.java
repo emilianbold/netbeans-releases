@@ -228,7 +228,7 @@ public class LiteralDialog extends JDialog implements ActionListener {
                 try {
                     java.sql.Timestamp.valueOf(literalVal);
                 } catch (IllegalArgumentException e) {
-                    String nbBundle8 = mLoc.t("PRSR001: Please enter a valid timestamp string, in the form\n yyyy-mm-dd hh:mm:ss.fffffffff (fractional seconds optional).");
+                    String nbBundle8 = mLoc.t("PRSR001: Please enter a valid timestamp string, in the form yyyy-mm-dd hh:mm:ss.fffffffff (fractional seconds optional).");
                     errorMsg = Localizer.parse(nbBundle8);
                 }
                 break;

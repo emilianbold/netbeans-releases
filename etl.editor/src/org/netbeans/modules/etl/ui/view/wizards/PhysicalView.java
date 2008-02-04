@@ -228,8 +228,7 @@ public class PhysicalView {
          * DOCUMENT ME!
          */
         String nbBundle1 = mLoc.t("PRSR001: {1} - {0}", pi.getDisplayName(), dataFolder.getName());
-        static final String GROUP_NAME_PATTERN = NbBundle.getMessage(
-                PhysicalView.class, "FMT_PhysicalView_GroupName"); // NOI18N
+        final String GROUP_NAME_PATTERN =  Localizer.parse(nbBundle1); // NOI18N
 
         /**
          * Creates a new GroupNode object.

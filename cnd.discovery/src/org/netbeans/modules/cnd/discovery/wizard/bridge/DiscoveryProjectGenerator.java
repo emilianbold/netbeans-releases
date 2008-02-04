@@ -45,13 +45,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.Vector;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
@@ -320,19 +320,19 @@ public class DiscoveryProjectGenerator {
                 reConsolidatePaths(set, file);
                 macros.putAll(file.getUserMacros());
             }
-            Vector<String> vector = new Vector<String>(set);
-            Vector<String> buf = buildMacrosString(macros);
+            List<String> vector = new ArrayList<String>(set);
+            List<String> buf = buildMacrosString(macros);
             projectBridge.setupProject(vector, buf, config.getLanguageKind() == ItemProperties.LanguageKind.CPP);
         } else {
             // cleanup project configuration
-            Vector<String> vector = new Vector<String>();
-            Vector<String> buf = new Vector<String>();
+            List<String> vector = Collections.<String>emptyList();
+            List<String> buf = Collections.<String>emptyList();
             projectBridge.setupProject(vector, buf, config.getLanguageKind() == ItemProperties.LanguageKind.CPP);
         }
     }
     
-    private Vector<String> buildMacrosString(final Map<String, String> map) {
-        Vector<String> vector = new Vector<String>();
+    private List<String> buildMacrosString(final Map<String, String> map) {
+        List<String> vector = new ArrayList<String>();
         for(Map.Entry<String,String> entry : map.entrySet()){
             if (entry.getValue()!=null) {
                 vector.add(entry.getKey()+"="+entry.getValue()); // NOI18N
@@ -350,13 +350,13 @@ public class DiscoveryProjectGenerator {
             Map<String,String> macros = new HashMap<String,String>();
             reConsolidatePaths(set, config);
             macros.putAll(config.getUserMacros());
-            Vector<String> vector = new Vector<String>(set);
-            Vector<String> buf = buildMacrosString(macros);
+            List<String> vector = new ArrayList<String>(set);
+            List<String> buf = buildMacrosString(macros);
             projectBridge.setupFile(config.getCompilePath(), vector, !config.overrideIncludes(), buf, !config.overrideMacros(), item);
         } else {
             // cleanup file configuration
-            Vector<String> vector = new Vector<String>();
-            Vector<String> buf = new Vector<String>();
+            List<String> vector = Collections.<String>emptyList();
+            List<String> buf = Collections.<String>emptyList();
             projectBridge.setupFile(config.getCompilePath(), vector, true, buf, true, item);
         }
     }
@@ -430,8 +430,8 @@ public class DiscoveryProjectGenerator {
                     reConsolidatePaths(inludes, file);
                     macros.putAll(file.getUserMacros());
                 }
-                Vector<String> buf = buildMacrosString(macros);
-                Vector<String> vector = new Vector<String>(inludes);
+                List<String> buf = buildMacrosString(macros);
+                List<String> vector = new ArrayList<String>(inludes);
                 projectBridge.setupFolder(vector, false,
                         buf, false, conf.getLanguageKind()==ItemProperties.LanguageKind.CPP, folder);
             }
@@ -448,8 +448,8 @@ public class DiscoveryProjectGenerator {
                 }
             }
             for(Folder folder : folders){
-                Vector<String> buf = new Vector<String>();
-                Vector<String> vector = new Vector<String>();
+                List<String> buf = Collections.<String>emptyList();
+                List<String> vector = Collections.<String>emptyList();
                 projectBridge.setupFolder(vector, true,
                         buf, true, conf.getLanguageKind()==ItemProperties.LanguageKind.CPP, folder);
             }
