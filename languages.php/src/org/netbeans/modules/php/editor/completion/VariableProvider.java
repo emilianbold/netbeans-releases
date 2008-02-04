@@ -58,6 +58,7 @@ import org.netbeans.modules.php.model.Expression;
 import org.netbeans.modules.php.model.GlobalStatement;
 import org.netbeans.modules.php.model.InitializedDeclaration;
 import org.netbeans.modules.php.model.Literal;
+import org.netbeans.modules.php.model.Modifier;
 import org.netbeans.modules.php.model.SourceElement;
 import org.netbeans.modules.php.model.StaticStatement;
 import org.netbeans.modules.php.model.Variable;
@@ -142,7 +143,18 @@ public class VariableProvider implements CompletionResultProvider {
         if (!startsWith(var, prefix)) {
             return;
         }
-        if(!isClassDefinitionScope(context)) {
+        SourceElement e = context.getCurrentSourceElement();
+        ClassFunctionDefinition cfd = getOuterMethod(e);
+        if(cfd == null) {
+            return;
+        }
+        // See http://www.php.net/manual/en/language.oop5.static.php
+        // the pseudo variable $this is not available inside the method declared
+        // as static.
+        if(isStaticMethod(cfd)) {
+            return;
+        }
+        if(!isClassDefinitionScope(cfd)) {
             return;
         }
         list.add(new VariableItem(var,
@@ -150,12 +162,12 @@ public class VariableProvider implements CompletionResultProvider {
                         formatter, false));
     }
     
-    private static boolean isClassDefinitionScope(CodeCompletionContext context) {
-        SourceElement e = context.getCurrentSourceElement();
-        ClassFunctionDefinition cfd = getOuterMethod(e);
-        if(cfd == null) {
-            return false;
-        }
+    private static boolean isStaticMethod(ClassFunctionDefinition fd) {
+        int actualFlags = Modifier.toFlags(fd.getModifiers());
+        return Modifier.STATIC.isOn(actualFlags);
+    }
+    
+    private static boolean isClassDefinitionScope(ClassFunctionDefinition cfd) {
         ClassDefinition cd = getOuterClass(cfd);
         if(cd == null) {
             return false;

@@ -59,9 +59,28 @@ public enum Operators {
             return value().equalsIgnoreCase(value);
         }
     },
+    
+    /**
+     * The Object Member Access Operator (<code>-&gt;</code>).
+     * <p>
+     * Unfortunately, the PHP manual doesn't define this operator exactly.
+     * Nevertheless, the section "List of Parser Tokens" referes to 
+     * the section <a href="http://www.php.net/manual/en/language.oop.php">
+     * Classes and Objects (PHP 4)</a> where there are many occurences of the 
+     * operator, but there aren't a definition and descriptions.
+     * It seems the section <a href="http://www.php.net/manual/en/language.oop.php">
+     * Classes and Objects (PHP 5)</a> assumes that the operator has been 
+     * completely described in the previous sections.
+     * </p>
+     */
+    OBJECT_MEMBER_ACCESS("->") {
+        boolean equals(String value) {
+            return value().equalsIgnoreCase(value);
+        }
+    },
     ;
     
-    Operators(String value) { this.value = value; }
+   Operators(String value) { this.value = value; }
     private final String value;
     public String value() { return value; }
 

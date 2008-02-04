@@ -269,7 +269,7 @@ public class ProjectBridge {
         return resultSet;
     }
     
-    public void setupProject(Vector includes, String macros, boolean isCPP){
+    public void setupProject(Vector includes, Vector macros, boolean isCPP){
         Configuration c = makeConfigurationDescriptor.getConfs().getActive();
         if (c instanceof MakeConfiguration) {
             MakeConfiguration extConf = (MakeConfiguration)c;
@@ -288,7 +288,7 @@ public class ProjectBridge {
         makeConfigurationDescriptor.setModified();
     }
     
-    public void setupFolder(Vector includes, boolean inheriteIncludes, String macros, boolean inheriteMacros, boolean isCPP, Folder folder) {
+    public void setupFolder(Vector includes, boolean inheriteIncludes, Vector macros, boolean inheriteMacros, boolean isCPP, Folder folder) {
         MakeConfiguration makeConfiguration = (MakeConfiguration)folder.getConfigurationDescriptor().getConfs().getActive();
         //FolderConfiguration folderConfiguration = (FolderConfiguration)makeConfiguration.getAuxObject(folder.getId());
         FolderConfiguration folderConfiguration = folder.getFolderConfiguration(makeConfiguration);
@@ -355,7 +355,7 @@ public class ProjectBridge {
         }
     }
     
-    public void setupFile(String compilepath, Vector includes, boolean inheriteIncludes, String macros, boolean inheriteMacros, Item item) {
+    public void setupFile(String compilepath, Vector includes, boolean inheriteIncludes, Vector macros, boolean inheriteMacros, Item item) {
         MakeConfiguration makeConfiguration = (MakeConfiguration)item.getFolder().getConfigurationDescriptor().getConfs().getActive();
         ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(item.getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) {
