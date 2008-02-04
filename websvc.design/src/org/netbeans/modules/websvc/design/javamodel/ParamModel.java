@@ -43,7 +43,7 @@ package org.netbeans.modules.websvc.design.javamodel;
 
 import javax.jws.WebParam;
 import javax.jws.WebParam.Mode;
-import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.filesystems.FileObject;
 
@@ -60,16 +60,16 @@ public class ParamModel {
     private String targetNamespace;
     private WebParam.Mode mode = WebParam.Mode.IN;
     private String paramType;
-    private TreePathHandle paramHandle;
+    private ElementHandle methodHandle;
     
     /** Creates a new instance of MethodModel */
     ParamModel() {
     }
     
     /** Creates a new instance of MethodModel */
-    ParamModel(String name) {
+    ParamModel(String name, String javaName) {
         this.name=name;
-        javaName=name;
+        this.javaName=javaName;
     }
     
     public String getName() {
@@ -77,8 +77,8 @@ public class ParamModel {
     }
     
     public void setName(String name) {
-        if (this.name!=name) {
-            JaxWsUtils.setWebParamAttrValue(implementationClass, paramHandle, "name", name);
+        if (!this.name.equals(name)) {
+            JaxWsUtils.setWebParamAttrValue(implementationClass, methodHandle, javaName, "name", name);
             this.name=(name==null?javaName:name);
         }
     }
@@ -89,6 +89,14 @@ public class ParamModel {
     
     void setImplementationClass(FileObject impl){
         implementationClass = impl;
+    }
+
+    public ElementHandle getMethodHandle() {
+        return methodHandle;
+    }
+    
+    void setMethodHandle(ElementHandle methodHandle) {
+        this.methodHandle=methodHandle;
     }
     
     public String getTargetNamespace() {
