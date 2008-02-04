@@ -249,8 +249,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         refHelper = new ReferenceHelper(helper, aux, helper.getStandardPropertyEvaluator());
         buildExtender = AntBuildExtenderFactory.createAntExtender(new EjbExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux, genFilesHelper,
-                UpdateProjectImpl.createDefaultNotifier());
+        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux, genFilesHelper);
         this.updateHelper = new UpdateHelper(updateProject, helper);
         this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots());
         ejbModule = new EjbJarProvider(this, helper, cpProvider);

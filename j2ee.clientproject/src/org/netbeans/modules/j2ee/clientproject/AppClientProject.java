@@ -177,8 +177,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         refHelper = new ReferenceHelper(helper, aux, eval);
         buildExtender = AntBuildExtenderFactory.createAntExtender(new AppClientExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        UpdateImplementation updateProject = new UpdateProjectImpl(this, this.helper, aux,
-                UpdateProjectImpl.createDefaultNotifier());
+        UpdateImplementation updateProject = new UpdateProjectImpl(this, this.helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
         carProjectWebServicesClientSupport = new AppClientProjectWebServicesClientSupport(this, helper, refHelper);
         jaxWsClientSupport = new AppClientProjectJAXWSClientSupport(this, helper);

@@ -160,8 +160,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         buildExtender = AntBuildExtenderFactory.createAntExtender(new J2SEExtenderImplementation());
     /// TODO replace this GeneratedFilesHelper with the default one when fixing #101710
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux,
-                UpdateProjectImpl.createDefaultNotifier());
+        UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata

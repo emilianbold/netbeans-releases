@@ -84,17 +84,4 @@ public interface UpdateImplementation {
      * @see {@link UpdateHelper#getProperties(String)}
      */
     EditableProperties getUpdatedProjectProperties();
-
-    // XXX remove this? probably useless
-    /**
-     * Interface that can be used by the {@link UpdateProject} to ask user about
-     * the project update.
-     */
-    public static interface Notifier {
-        /**
-         * Ask user to update the project.
-         * @return <code>true</code> if the project could be updated.
-         */
-        boolean canUpdate();
-    }
 }

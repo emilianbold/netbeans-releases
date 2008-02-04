@@ -74,7 +74,6 @@ public class UpdateProjectImpl implements UpdateImplementation {
     private final Project project;
     private final AntProjectHelper helper;
     private final AuxiliaryConfiguration cfg;
-    private final Notifier notifier;
     private boolean alreadyAskedInWriteAccess;
     private boolean isCurrent;
     private Element cachedElement;
@@ -87,12 +86,11 @@ public class UpdateProjectImpl implements UpdateImplementation {
      * @param genFileHelper GeneratedFilesHelper
      * @param notifier used to ask user about project update
      */
-    UpdateProjectImpl(Project project, AntProjectHelper helper, AuxiliaryConfiguration cfg, Notifier notifier) {
-        assert project != null && helper != null && cfg != null && notifier != null;
+    UpdateProjectImpl(Project project, AntProjectHelper helper, AuxiliaryConfiguration cfg) {
+        assert project != null && helper != null && cfg != null;
         this.project = project;
         this.helper = helper;
         this.cfg = cfg;
-        this.notifier = notifier;
     }
 
     public boolean isCurrent() {
@@ -120,7 +118,7 @@ public class UpdateProjectImpl implements UpdateImplementation {
             return false;
         }
         else {
-            boolean canUpdate = this.notifier.canUpdate();
+            boolean canUpdate = showUpdateDialog();
             if (!canUpdate) {
                 alreadyAskedInWriteAccess = true;
                 ProjectManager.mutex().postReadRequest(new Runnable() {
@@ -236,26 +234,18 @@ public class UpdateProjectImpl implements UpdateImplementation {
         return root;
     }
     
-    /**
-     * Creates an default Notifier. The default notifier displays a dialog warning user about project update.
-     * @return notifier
-     */
-    public static Notifier createDefaultNotifier () {
-        return new Notifier() {
-            public boolean canUpdate() {
-                JButton updateOption = new JButton (NbBundle.getMessage(UpdateProjectImpl.class, "CTL_UpdateOption"));
-                updateOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(UpdateHelper.class, "AD_UpdateOption"));
-                return DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor (NbBundle.getMessage(UpdateProjectImpl.class,"TXT_ProjectUpdate", BUILD_NUMBER),
-                        NbBundle.getMessage(UpdateProjectImpl.class,"TXT_ProjectUpdateTitle"),
-                        NotifyDescriptor.DEFAULT_OPTION,
-                        NotifyDescriptor.WARNING_MESSAGE,
-                        new Object[] {
-                            updateOption,
-                            NotifyDescriptor.CANCEL_OPTION
-                        },
-                        updateOption)) == updateOption;
-            }
-        };
+    private boolean showUpdateDialog() {
+        JButton updateOption = new JButton (NbBundle.getMessage(UpdateProjectImpl.class, "CTL_UpdateOption"));
+        updateOption.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(UpdateHelper.class, "AD_UpdateOption"));
+        return DialogDisplayer.getDefault().notify(
+            new NotifyDescriptor (NbBundle.getMessage(UpdateProjectImpl.class,"TXT_ProjectUpdate", BUILD_NUMBER),
+                NbBundle.getMessage(UpdateProjectImpl.class,"TXT_ProjectUpdateTitle"),
+                NotifyDescriptor.DEFAULT_OPTION,
+                NotifyDescriptor.WARNING_MESSAGE,
+                new Object[] {
+                    updateOption,
+                    NotifyDescriptor.CANCEL_OPTION
+                },
+                updateOption)) == updateOption;
     }
 }

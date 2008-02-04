@@ -301,7 +301,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
         refHelper = new ReferenceHelper(helper, aux, eval);
         buildExtender = AntBuildExtenderFactory.createAntExtender(new WebExtenderImplementation());
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
-        updateProject = new UpdateProjectImpl(this, this.helper, aux, UpdateProjectImpl.createDefaultNotifier());
+        updateProject = new UpdateProjectImpl(this, this.helper, aux);
         this.updateHelper = new UpdateHelper(updateProject, helper);
         updateProject.setUpdateHelper(updateHelper);
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
