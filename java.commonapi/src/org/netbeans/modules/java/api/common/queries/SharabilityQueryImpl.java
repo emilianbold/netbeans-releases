@@ -46,6 +46,7 @@ import java.io.File;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.openide.util.Mutex;
@@ -69,7 +70,7 @@ class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyCh
     private SharabilityQueryImplementation delegate;
 
     public SharabilityQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots srcRoots,
-            SourceRoots testRoots, final List<String> additionalSourceRoots) {
+            SourceRoots testRoots, String... additionalSourceRoots) {
         assert helper != null;
         assert evaluator != null;
         assert srcRoots != null;
@@ -80,7 +81,7 @@ class SharabilityQueryImpl implements SharabilityQueryImplementation, PropertyCh
         this.srcRoots = srcRoots;
         this.testRoots = testRoots;
         if (additionalSourceRoots != null) {
-            this.additionalSourceRoots = Collections.unmodifiableList(new ArrayList<String>(additionalSourceRoots));
+            this.additionalSourceRoots = Collections.unmodifiableList(Arrays.asList(additionalSourceRoots));
         } else {
             this.additionalSourceRoots = Collections.<String>emptyList();
         }
