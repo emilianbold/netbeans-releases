@@ -77,9 +77,9 @@ import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
+// will be moved to j2ee.common
 /**
  *@author Tomas Zezula, Tomas Mysik
- * @since 1.21
  */
 public class J2EEProjectClassPathModifier extends ProjectClassPathModifierImplementation
         implements PropertyChangeListener {

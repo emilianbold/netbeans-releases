@@ -51,11 +51,11 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.classpath.ProjectClassPathModifierSupport.Operation;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
+// will be moved to j2ee.common
 /**
  *
  * @author Tomas Mysik
  * @deprecated
- * @since 1.21
  */
 @Deprecated
 public abstract class J2EEProjectClassPathExtender implements ProjectClassPathExtender {

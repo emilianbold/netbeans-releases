@@ -59,6 +59,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+// will be moved to j2ee.common
 /**
  *
  * @author Tomas Mysik

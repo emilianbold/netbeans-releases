@@ -60,10 +60,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+// will be moved to j2ee.common
 /**
  *
  * @author Tomas Mysik
- * @since 1.21
  */
 public final class WebClassPathSupport extends BaseClassPathSupport<WebClassPathSupport.Item> {
 

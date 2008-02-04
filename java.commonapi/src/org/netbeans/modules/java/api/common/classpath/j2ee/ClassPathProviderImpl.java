@@ -61,6 +61,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
+// will be moved to j2ee.common
 // XXX improve javadoc
 /**
  * Defines the various class paths for a web project.

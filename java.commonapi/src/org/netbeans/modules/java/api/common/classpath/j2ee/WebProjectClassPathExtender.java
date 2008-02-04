@@ -51,10 +51,10 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.classpath.ProjectClassPathModifierSupport.Operation;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 
+// will be moved to j2ee.common
 /**
  *
  * @author Tomas Mysik
- * @since 1.21
  * @deprecated
  */
 @Deprecated
