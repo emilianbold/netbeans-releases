@@ -321,27 +321,26 @@ public class DiscoveryProjectGenerator {
                 macros.putAll(file.getUserMacros());
             }
             Vector<String> vector = new Vector<String>(set);
-            String buf = buildMacrosString(macros);
+            Vector<String> buf = buildMacrosString(macros);
             projectBridge.setupProject(vector, buf, config.getLanguageKind() == ItemProperties.LanguageKind.CPP);
         } else {
             // cleanup project configuration
             Vector<String> vector = new Vector<String>();
-            String buf = "";// NOI18N
+            Vector<String> buf = new Vector<String>();
             projectBridge.setupProject(vector, buf, config.getLanguageKind() == ItemProperties.LanguageKind.CPP);
         }
     }
     
-    private String buildMacrosString(final Map<String, String> map) {
-        StringBuilder buf = new StringBuilder();
+    private Vector<String> buildMacrosString(final Map<String, String> map) {
+        Vector<String> vector = new Vector<String>();
         for(Map.Entry<String,String> entry : map.entrySet()){
-            buf.append(entry.getKey());
             if (entry.getValue()!=null) {
-                buf.append('=');
-                buf.append(entry.getValue());
+                vector.add(entry.getKey()+"="+entry.getValue()); // NOI18N
+            } else {
+                vector.add(entry.getKey());
             }
-            buf.append('\n');
         }
-        return buf.toString();
+        return vector;
     }
     
     private void setupFile(FileConfiguration config, Item item, boolean isCPP) {
@@ -352,12 +351,12 @@ public class DiscoveryProjectGenerator {
             reConsolidatePaths(set, config);
             macros.putAll(config.getUserMacros());
             Vector<String> vector = new Vector<String>(set);
-            String buf = buildMacrosString(macros);
+            Vector<String> buf = buildMacrosString(macros);
             projectBridge.setupFile(config.getCompilePath(), vector, !config.overrideIncludes(), buf, !config.overrideMacros(), item);
         } else {
             // cleanup file configuration
             Vector<String> vector = new Vector<String>();
-            String buf = "";// NOI18N
+            Vector<String> buf = new Vector<String>();
             projectBridge.setupFile(config.getCompilePath(), vector, true, buf, true, item);
         }
     }
@@ -431,7 +430,7 @@ public class DiscoveryProjectGenerator {
                     reConsolidatePaths(inludes, file);
                     macros.putAll(file.getUserMacros());
                 }
-                String buf = buildMacrosString(macros);
+                Vector<String> buf = buildMacrosString(macros);
                 Vector<String> vector = new Vector<String>(inludes);
                 projectBridge.setupFolder(vector, false,
                         buf, false, conf.getLanguageKind()==ItemProperties.LanguageKind.CPP, folder);
@@ -449,7 +448,7 @@ public class DiscoveryProjectGenerator {
                 }
             }
             for(Folder folder : folders){
-                String buf = ""; // NOI18N
+                Vector<String> buf = new Vector<String>();
                 Vector<String> vector = new Vector<String>();
                 projectBridge.setupFolder(vector, true,
                         buf, true, conf.getLanguageKind()==ItemProperties.LanguageKind.CPP, folder);

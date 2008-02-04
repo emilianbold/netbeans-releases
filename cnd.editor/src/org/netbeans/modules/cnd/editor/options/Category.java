@@ -37,39 +37,32 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.soa.mappercore;
+package org.netbeans.modules.cnd.editor.options;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
+import java.util.prefs.Preferences;
+import javax.swing.JEditorPane;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author AlexanderPermyacov
+ * 
+ * @author Alexander Simon
  */
-public class LinkConnectDone extends MapperKeyboardAction {
-    private Canvas canvas;
+public abstract class Category extends OptionsPanelController {
 
-    LinkConnectDone(Canvas canvas) {
-        this.canvas = canvas;
+    private String displayName;
+
+    public Category(String displayNameKey) {
+        super();
+        this.displayName = NbBundle.getMessage(EditorOptions.class, displayNameKey);
     }
-    
+
+    public abstract void storeTo(Preferences preferences);
+
+    public abstract void refreshPreview(JEditorPane pane, Preferences p);
+
     @Override
-    public String getActionKey() {
-        return "link-connect-done";
+    public String toString() {
+        return displayName;
     }
-
-    @Override
-    public KeyStroke[] getShortcuts() {
-        return new KeyStroke[] {KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)};
-    }
-    
-    public void actionPerformed(ActionEvent e) {
-        LinkTool linkTool = canvas.getLinkTool();
-        if (linkTool == null) { 
-            return; 
-        }
-        linkTool.done();
-    }
-
 }

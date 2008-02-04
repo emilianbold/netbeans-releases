@@ -37,39 +37,66 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.soa.mappercore;
+package org.netbeans.modules.cnd.editor.options;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import javax.swing.KeyStroke;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import javax.swing.JComponent;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author AlexanderPermyacov
+ * @author Alexander Simon
  */
-public class LinkConnectDone extends MapperKeyboardAction {
-    private Canvas canvas;
-
-    LinkConnectDone(Canvas canvas) {
-        this.canvas = canvas;
+public class EditorOptionsPanelController extends OptionsPanelController {
+    private EditorOptionsPanel panel = new EditorOptionsPanel(this);
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private boolean changed;
+                    
+    public void update() {
+        changed = false;
+	panel.load();
     }
     
-    @Override
-    public String getActionKey() {
-        return "link-connect-done";
-    }
-
-    @Override
-    public KeyStroke[] getShortcuts() {
-        return new KeyStroke[] {KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0)};
+    public void applyChanges() {
+	panel.store();
     }
     
-    public void actionPerformed(ActionEvent e) {
-        LinkTool linkTool = canvas.getLinkTool();
-        if (linkTool == null) { 
-            return; 
-        }
-        linkTool.done();
+    public void cancel() {
+	panel.cancel();
+    }
+    
+    public boolean isValid() {
+        return true;
+    }
+    
+    public boolean isChanged() {
+	return changed;
     }
 
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
+    }
+    
+    public JComponent getComponent(Lookup masterLookup) {
+        return panel;
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+	pcs.addPropertyChangeListener(l);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+	pcs.removePropertyChangeListener(l);
+    }
+        
+    void changed() {
+	if (!changed) {
+	    changed = true;
+	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
+	}
+	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    }
 }
