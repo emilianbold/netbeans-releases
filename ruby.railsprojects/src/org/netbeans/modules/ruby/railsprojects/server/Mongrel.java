@@ -166,7 +166,7 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
         return null;
     }
 
-    public boolean startServer() {
+    public boolean startServer(RubyPlatform platform) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -181,4 +181,10 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     public boolean stop(String applicationName) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    public boolean isPlatformSupported(RubyPlatform platform) {
+        return this.platform.equals(platform);
+    }
+    
+    
 }
