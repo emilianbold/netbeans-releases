@@ -73,8 +73,8 @@ public class JBIMBeanTaskResultHandler {
      *                        service assembly name, or the artifact)
      * @param result          remote invocation result
      * 
-     * @return <code>true</code> if the action is a complete success or a
-     *          partial success; <code>false</code> if it is a failure.
+     * @return <code>true</code> if the action is a complete success; 
+     *         <code>false</code> if it is a failure or a partial success.
      */
     public static boolean showRemoteInvokationResult(String actionName,
             String target, String result) {
@@ -87,8 +87,8 @@ public class JBIMBeanTaskResultHandler {
             DialogDisplayer.getDefault().notify(d); 
         } 
         
-        return message == null ||   // complete success
-                !failed;            // partial success
+        return message == null;   // complete success
+//                !failed;            // partial success
     }
     
     /**

@@ -59,31 +59,37 @@ public class CorrelationSetMainPanel extends EditorLifeCycleAdapter
                 CustomNodeEditor.PROPERTY_BINDER, NAME);
     }
     
+    @Override
     public void createContent() {
         initComponents();
         bindControls2PropertyNames();
     }
     
+    @Override
     public boolean applyNewValues() {
         // Return false because of the panel has child CSetPropertyTablePanel
         return false;
     }
     
+    @Override
     public boolean initControls() {
         // Return false because of the panel has child CSetPropertyTablePanel
         return false;
     }
     
+    @Override
     public boolean subscribeListeners() {
         // Return false because of the panel has child CSetPropertyTablePanel
         return false;
     }
     
+    @Override
     public boolean unsubscribeListeners() {
         // Return false because of the panel has child CSetPropertyTablePanel
         return false;
     }
-    
+
+    @Override
     public boolean afterClose() {
         // Return false because of the panel has child CSetPropertyTablePanel
         return false;
@@ -93,16 +99,15 @@ public class CorrelationSetMainPanel extends EditorLifeCycleAdapter
         if (myValidator == null) {
             myValidator = new DefaultValidator(myEditor, ErrorMessagesBundle.class) {
                 
-                public boolean doFastValidation() {
+                public void doFastValidation() {
                     String csName = fldCorrelationSetName.getText();
                     if (csName == null || csName.length() == 0) {
-                        addReasonKey("ERR_NAME_EMPTY"); //NOI18N
+                        addReasonKey(Severity.ERROR, "ERR_NAME_EMPTY"); //NOI18N
                     }
-                    //
-                    return isReasonsListEmpty();
                 }
                 
-                public boolean doDetailedValidation() {
+                @Override
+                public void doDetailedValidation() {
                     super.doDetailedValidation();
                     //
                     // Check that the variable name is unique
@@ -136,13 +141,12 @@ public class CorrelationSetMainPanel extends EditorLifeCycleAdapter
                             CorrelationSet[] corrSetArr = csc.getCorrelationSets();
                             for (CorrelationSet corrSet : corrSetArr) {
                                 if (csName.equals(corrSet.getName())){
-                                    addReasonKey("ERR_NOT_UNIQUE_CORRELATION_SET_NAME"); //NOI18N
+                                    addReasonKey(Severity.ERROR, 
+                                            "ERR_NOT_UNIQUE_CORRELATION_SET_NAME"); //NOI18N
                                 }
                             }
                         }
                     }
-                    //
-                    return isReasonsListEmpty();
                 }
                 
             };

@@ -201,5 +201,14 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     -->
+    <folder name="Servers">
+        <file name="ServerInstanceProviderImpl.instance">
+            <attr name="instanceCreate" methodvalue="org.netbeans.modules.ruby.railsprojects.server.ServerInstanceProviderImpl.getInstance"/>
+            <attr name="instanceClass" stringvalue="org.netbeans.modules.ruby.railsprojects.server.ServerInstanceProviderImpl"/>
+            <attr name="instanceOf" stringvalue="org.netbeans.spi.server.ServerInstanceProvider"/>
+        </file>   
+
+    </folder>
+    
     
 </filesystem>

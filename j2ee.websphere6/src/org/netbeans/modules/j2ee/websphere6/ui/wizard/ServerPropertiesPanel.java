@@ -131,7 +131,7 @@ public class ServerPropertiesPanel extends JPanel
         // the steps
         putClientProperty("WizardPanel_contentData", steps);           // NOI18N
         putClientProperty("WizardPanel_contentSelectedIndex",
-                new Integer(index));                                   // NOI18N
+                Integer.valueOf(index));                                   // NOI18N
         
         // register the supplied listener
         addChangeListener(listener);

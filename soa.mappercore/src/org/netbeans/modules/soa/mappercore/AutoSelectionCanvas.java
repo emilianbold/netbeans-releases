@@ -50,7 +50,7 @@ import org.netbeans.modules.soa.mappercore.model.Vertex;
 
 /**
  *
- * @author alex02
+ * @author AlexanderPermyacov
  */
 public class AutoSelectionCanvas implements MapperSelectionListener {
     private Canvas canvas;

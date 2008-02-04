@@ -53,7 +53,7 @@ import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.gsf.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.ruby.railsprojects.server.RailsServer;
+import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.api.project.ProjectUtils;
@@ -751,7 +751,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
     }    
 
     private void runServer(final String path, final boolean debug) {
-        RailsServer server = project.getLookup().lookup(RailsServer.class);
+        RailsServerManager server = project.getLookup().lookup(RailsServerManager.class);
         if (server != null) {
             server.setDebug(debug);
             server.showUrl(path);

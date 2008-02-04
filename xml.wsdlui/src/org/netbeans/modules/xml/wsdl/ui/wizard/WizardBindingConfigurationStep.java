@@ -77,6 +77,7 @@ import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.netbeans.modules.xml.wsdl.ui.netbeans.module.Utility;
 import org.netbeans.modules.xml.wsdl.ui.view.BindingConfigurationPanel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.newtype.OperationPanel;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -198,13 +199,12 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
 
     public void storeSettings(Object settings) {
         TemplateWizard templateWizard = (TemplateWizard)settings;
-        if(templateWizard.getValue() == TemplateWizard.CANCEL_OPTION) {
-        	DataObject dobj = ActionHelper.getDataObject(mTempModel);
-        	if (dobj != null) dobj.setModified(false);
-        	return;
+        if(templateWizard.getValue() == NotifyDescriptor.CANCEL_OPTION) {
+            cleanup();
+            return;
         }
         
-        if (templateWizard.getValue() == TemplateWizard.PREVIOUS_OPTION) {
+        if (templateWizard.getValue() == WizardDescriptor.PREVIOUS_OPTION) {
             mTempModel.startTransaction();
             cleanUpBindings();
             mTempModel.endTransaction();
@@ -229,6 +229,18 @@ public class WizardBindingConfigurationStep implements WizardDescriptor.Finishab
         templateWizard.putProperty(SERVICEPORT_NAME, servicePortName);
         
         processBindingSubType(bindingSubType);
+    }
+    
+    void cleanup() {
+        DataObject dobj = ActionHelper.getDataObject(mTempModel);
+        if (dobj != null) {
+            dobj.setModified(false);
+            try {
+                dobj.delete();
+            } catch (Exception e) {
+                //ignore
+            }
+        }
     }
     
     private void cleanUpBindings() {

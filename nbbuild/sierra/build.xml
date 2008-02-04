@@ -238,7 +238,6 @@
         <!-- xslt -->
         <antcall target="do-test-jbi"><param name="dir" value="xslt/DoXslTransformBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutBP"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="xslt/InOutBPXSLT/InOutXSLT"/></antcall>
     </target>
 
     <target name="test-4">
@@ -311,7 +310,6 @@
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/JavaEEToBPProj"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/TwoWayEjbToBP/TwoWay"/></antcall>
 
         <!-- misc -->
         <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
@@ -333,21 +331,14 @@
         <antcall target="do-test-jbi"><param name="dir" value="samples/samplesBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
 
-        <!-- scenarios -->
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CandidateSelection/SelectionProcessor"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CatalogTemplate"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CatalogWildcard"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/CatalogSelection/CDCatalog"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="scenarios/PurchaseOrder/OrderTransformer"/></antcall>
-    </target>
-
-    <target name="test-9">
         <!-- scalability -->
         <antcall target="do-test-jbi"><param name="dir" value="scalability/ScalabilityBpel"/></antcall>
 
         <!-- TerminationHandler -->
         <antcall target="do-test-jbi"><param name="dir" value="TerminationHandler/TerminationHandlerBpel"/></antcall>
+    </target>
 
+    <target name="test-9">
         <!-- wait -->
         <antcall target="do-test-jbi"><param name="dir" value="wait/WaitBpel"/></antcall>
 

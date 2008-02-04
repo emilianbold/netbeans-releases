@@ -41,10 +41,16 @@
 
 package org.netbeans.modules.spring.beans.model;
 
-import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.File;
+import java.util.logging.Logger;
+import org.netbeans.modules.spring.beans.model.ExclusiveAccess.AsyncTask;
+import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
+import java.util.logging.Level;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  * Handles the lifecycle of a single config file. Can be notified of external changes
@@ -55,31 +61,19 @@ import org.openide.util.Exceptions;
  */
 public class SpringConfigFileModelController {
 
-    private final File configFile;
+    private static final Logger LOGGER = Logger.getLogger(SpringConfigFileModelController.class.getName());
+    private static final int DELAY = 500;
+
     private final ConfigFileSpringBeanSource beanSource = new ConfigFileSpringBeanSource();
-    private Updater updater;
+    private final File file;
+
     private volatile boolean parsedAtLeastOnce = false;
 
-    public SpringConfigFileModelController(File file) {
-        this.configFile = file;
-    }
+    private AsyncTask currentUpdateTask;
+    private FileObject currentFile;
 
-    /**
-     * Makes the beans up to date, that is, if there has previously been
-     * an external change and the config file hasn't been parsed yet,
-     * it is parsed now. This method needs to be called under exclusive
-     * access.
-     */
-    public void makeUpToDate() throws IOException {
-        assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-        synchronized (this) {
-            if (updater == null && parsedAtLeastOnce) {
-                // Already up to date.
-                return;
-            }
-            updater = null;
-        }
-        parse();
+    public SpringConfigFileModelController(File file) {
+        this.file = file;
     }
 
     /**
@@ -95,41 +89,73 @@ public class SpringConfigFileModelController {
     }
 
     /**
-     * Notifies the controller that the config file has changed. This
-     * method can be called in any thread.
+     * Makes the beans up to date, that is, if there has previously been
+     * an external change and the config file hasn't been parsed yet,
+     * it is parsed now. This method needs to be called under exclusive
+     * access.
      */
-    public void notifyChange() {
+    public void makeUpToDate() throws IOException {
+        assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
+        FileObject fileToParse;
         synchronized (this) {
-            updater = new Updater();
-            ExclusiveAccess.getInstance().postTask(updater);
+            if (currentUpdateTask == null || currentUpdateTask.isFinished()) {
+                if (parsedAtLeastOnce) {
+                    // No update in progress and file already parsed,
+                    // nothing to do.
+                    return;
+                } else {
+                    // Not parsed yet, so parse now.
+                    fileToParse = FileUtil.toFileObject(file);
+                }
+            } else {
+                // An update is scheduled, so perform it now.
+                fileToParse = currentFile;
+                // Ensure the updater will not run again.
+                LOGGER.log(Level.FINE, "Canceling update task for " + currentFile);
+                currentUpdateTask.cancel();
+            }
+        }
+        if (fileToParse != null) {
+            parse(fileToParse);
         }
     }
 
-    private void parse() throws IOException {
+    public void notifyChange(FileObject configFO) {
+        Parameters.notNull("configFO", configFO);
+        LOGGER.log(Level.FINE, "Scheduling update for {0}", configFO);
+        synchronized (this) {
+            if (configFO != currentFile) {
+                // We are going to parse another file.
+                if (currentUpdateTask != null) {
+                    currentUpdateTask.cancel();
+                }
+                currentFile = configFO;
+                currentUpdateTask = ExclusiveAccess.getInstance().createAsyncTask(new Updater(configFO));
+            }
+            currentUpdateTask.schedule(DELAY);
+        }
+    }
+
+    private void parse(FileObject configFO) throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         if (!parsedAtLeastOnce) {
             parsedAtLeastOnce = true;
         }
-        beanSource.parse(configFile);
+        beanSource.parse(configFO);
     }
 
     private final class Updater implements Runnable {
 
+        private final FileObject configFile;
+
+        public Updater(FileObject configFile) {
+            this.configFile = configFile;
+        }
+
         public void run() {
             assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-            synchronized (SpringConfigFileModelController.this) {
-                // Back off if we are not the current updater -- there should
-                // be another one later in the queue.
-                if (updater != this) {
-                    return;
-                }
-                // Signal that we are updating
-                // This way, if a change event is fired while we are updating,
-                // we will update again later.
-                updater = null;
-            }
             try {
-                parse();
+                parse(configFile);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }

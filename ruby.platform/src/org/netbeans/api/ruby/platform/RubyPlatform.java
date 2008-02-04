@@ -84,8 +84,8 @@ public final class RubyPlatform {
     static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
     
     /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION = "0.1.9"; // NOI18N
-    static final String RDEBUG_BASE_VERSION = "0.9.3"; // NOI18N
+    static final String RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
+    static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
     
     private Info info;
     
@@ -586,7 +586,7 @@ public final class RubyPlatform {
     }
 
     private void checkAndReport(final String gemName, final String gemVersion, final StringBuilder errors) {
-        if (!gemManager.isGemInstalled(gemName, gemVersion)) {
+        if (!gemManager.isGemInstalledForPlatform(gemName, gemVersion)) {
             errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion));
             errors.append("<br>"); // NOI18N
         }
@@ -694,6 +694,36 @@ public final class RubyPlatform {
      */
     public boolean hasRubyGemsInstalled() {
         return info.getGemHome() != null;
+    }
+
+    /**
+     * Notifies the registered listeners that are changes in this platform's gems,
+     * i.e. a gem was removed or a new gem was installed.
+     */
+    public void fireGemsChanged() {
+        pcs.firePropertyChange("gems", null, null); //NOI18N
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RubyPlatform other = (RubyPlatform) obj;
+        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + (this.id != null ? this.id.hashCode() : 0);
+        return hash;
     }
 
     public @Override String toString() {

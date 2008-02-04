@@ -127,6 +127,7 @@ made subject to such option by the copyright holder.
     <propertyfile file="${moduleCluster.file}">
       <entry  key="${module.name}.dir" value="$${netbeans.dest.dir}/${cluster.dir}"/>
     </propertyfile>
+    <property name="${module.name}.dir" value="${netbeans.dest.dir}/${cluster.dir}"/>
   </target>
   
 </project>

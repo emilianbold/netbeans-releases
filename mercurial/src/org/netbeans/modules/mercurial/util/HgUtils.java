@@ -58,6 +58,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -114,6 +115,7 @@ public class HgUtils {
 
     private static final String MSG_TOO_MANY_LINES = "The number of output lines is greater than 500; see message log for complete output";
 
+    private static HashMap<String, Set<Pattern>> ignorePatterns;
 
     /**
      * isSolaris - check you are running onthe Solaris OS
@@ -210,6 +212,28 @@ public class HgUtils {
             return false;
     }
     
+    private static void resetIgnorePatterns(File file) {
+        if (ignorePatterns == null) {
+            return;
+        }
+        String key = file.getAbsolutePath();
+        ignorePatterns.remove(key);
+    }
+
+    private static Set<Pattern> getIgnorePatterns(File file) {
+        if (ignorePatterns == null) {
+            ignorePatterns = new HashMap<String, Set<Pattern>>();
+        }
+        String key = file.getAbsolutePath();
+        Set<Pattern> patterns = ignorePatterns.get(key);
+        if (patterns == null) {
+            patterns = new HashSet<Pattern>(5);
+            addIgnorePatterns(patterns, file);
+            ignorePatterns.put(key, patterns);
+        }
+        return patterns;
+    }
+
     /**
      * isIgnored - checks to see if this is a file Hg should ignore
      *
@@ -217,6 +241,10 @@ public class HgUtils {
      * @return boolean true - ignore, false - not ignored
      */
     public static boolean isIgnored(File file){
+        return isIgnored(file, true);
+    }
+
+    public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
         String name = file.getPath();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
@@ -234,8 +262,7 @@ public class HgUtils {
             }
         }
 
-        Set<Pattern> patterns = new HashSet<Pattern>(5);
-        addIgnorePatterns(patterns, topFile);
+        Set<Pattern> patterns = getIgnorePatterns(topFile);
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
@@ -245,8 +272,10 @@ public class HgUtils {
         }
 
         if (FILENAME_HGIGNORE.equals(name)) return false;
-        int sharability = SharabilityQuery.getSharability(file);
-        if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
+        if (checkSharability) {
+            int sharability = SharabilityQuery.getSharability(file);
+            if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
+        }
         return false;
     }
 
@@ -399,6 +428,7 @@ public class HgUtils {
         } finally {
             lock.releaseLock();
             if (w != null) w.close();
+            resetIgnorePatterns(directory);
         }
     }
 

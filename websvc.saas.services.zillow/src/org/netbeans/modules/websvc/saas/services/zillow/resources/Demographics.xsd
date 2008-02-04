@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<xsd:schema attributeFormDefault="unqualified"
+            elementFormDefault="unqualified"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+			xmlns:ZillowTypes="http://www.zillow.com/static/xsd/ZillowTypes.xsd"
+            xmlns="http://www.zillow.com/static/xsd/Demographics.xsd" 
+            targetNamespace="http://www.zillow.com/static/xsd/Demographics.xsd">
+
+    <xsd:import namespace="http://www.zillow.com/static/xsd/ZillowTypes.xsd"
+    schemaLocation="ZillowTypes.xsd"/>
+
+    <xsd:element name="demographics" type="demographicsResultType" />
+	
+	<xsd:complexType name="demographicsResultType">
+		<xsd:sequence>
+		
+			<xsd:element name="request">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="rid" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="state" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="city" type="xsd:string" minOccurs="0"/>
+						<xsd:element name="neighborhood" type="xsd:string" minOccurs="0"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+			
+            <xsd:element name="message" type="ZillowTypes:Message"/>
+			
+			<xsd:element name="response" minOccurs="0">
+				<xsd:complexType>
+					<xsd:sequence>
+					
+						<xsd:element name="region" type="ZillowTypes:RegionNames"/>
+					
+						<xsd:element name="links">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="main" type="xsd:string" minOccurs="0" />
+									<xsd:element name="affordability" type="xsd:string" minOccurs="0" />
+									<xsd:element name="homesandrealestate" type="xsd:string" minOccurs="0" />
+									<xsd:element name="people" type="xsd:string" minOccurs="0" />
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+
+						<xsd:element name="charts">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="chart" minOccurs="0" maxOccurs="unbounded">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="name" type="xsd:string" />
+												<xsd:element name="url" type="xsd:string" />
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+						
+						<xsd:element name="pages">
+							<xsd:complexType>
+								<xsd:sequence>
+									<xsd:element name="page" minOccurs="0" maxOccurs="unbounded">
+										<xsd:complexType>
+											<xsd:sequence>
+												<xsd:element name="name" type="xsd:string" />
+												<xsd:element name="tables">
+													<xsd:complexType>
+														<xsd:sequence>
+															<xsd:element name="table" minOccurs="0" maxOccurs="unbounded">
+																<xsd:complexType>
+																	<xsd:sequence>
+																		<xsd:element name="name" type="xsd:string" />
+																		<xsd:element name="data">
+																			<xsd:complexType>
+																				<xsd:sequence>
+																					<xsd:element name="attribute" maxOccurs="unbounded">
+																						<xsd:complexType>
+																							<xsd:sequence>
+																								<xsd:element name="name" type="xsd:string" />
+																								<xsd:element name="values" minOccurs="0">
+																									<xsd:complexType>
+																										<xsd:sequence>
+																											<xsd:element name="neighborhood" minOccurs="0">
+																												<xsd:complexType>
+																													<xsd:sequence>
+																														<xsd:element name="value">
+																															<xsd:complexType>
+																																<xsd:simpleContent>
+																																	<xsd:extension base="xsd:string">
+																																		<xsd:attribute name="type" type="xsd:string" />
+																																		<xsd:attribute name="currency" type="xsd:string" default="USD" />
+																																	</xsd:extension>
+																																</xsd:simpleContent>
+																															</xsd:complexType>
+																														</xsd:element>
+																													</xsd:sequence>
+																												</xsd:complexType>
+																											</xsd:element>
+																											<xsd:element name="city" minOccurs="0">
+																												<xsd:complexType>
+																													<xsd:sequence>
+																														<xsd:element name="value">
+																															<xsd:complexType>
+																																<xsd:simpleContent>
+																																	<xsd:extension base="xsd:string">
+																																		<xsd:attribute name="type" type="xsd:string" />
+																																		<xsd:attribute name="currency" type="xsd:string" default="USD" />
+																																	</xsd:extension>
+																																</xsd:simpleContent>
+																															</xsd:complexType>
+																														</xsd:element>
+																													</xsd:sequence>
+																												</xsd:complexType>
+																											</xsd:element>
+																											<xsd:element name="nation" minOccurs="0">
+																												<xsd:complexType>
+																													<xsd:sequence>
+																														<xsd:element name="value">
+																															<xsd:complexType>
+																																<xsd:simpleContent>
+																																	<xsd:extension base="xsd:string">
+																																		<xsd:attribute name="type" type="xsd:string" />
+																																		<xsd:attribute name="currency" type="xsd:string" default="USD" />
+																																	</xsd:extension>
+																																</xsd:simpleContent>
+																															</xsd:complexType>
+																														</xsd:element>
+																													</xsd:sequence>
+																												</xsd:complexType>
+																											</xsd:element>
+																										</xsd:sequence>
+																									</xsd:complexType>
+																								</xsd:element>
+																								<xsd:element name="value" minOccurs="0" maxOccurs="unbounded">
+																									<xsd:complexType>
+																										<xsd:simpleContent>
+																											<xsd:extension base="xsd:string">
+																												<xsd:attribute name="type" type="xsd:string" />
+																												<xsd:attribute name="currency" type="xsd:string" default="USD" />
+																											</xsd:extension>
+																										</xsd:simpleContent>
+																									</xsd:complexType>
+																								</xsd:element>
+																							</xsd:sequence>
+																						</xsd:complexType>
+																					</xsd:element>
+																				</xsd:sequence>
+																			</xsd:complexType>
+																		</xsd:element>
+																	</xsd:sequence>
+																</xsd:complexType>
+															</xsd:element>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+												
+												<xsd:element name="segmentation" minOccurs="0">
+													<xsd:complexType>
+														<xsd:sequence>
+													<xsd:element name="liveshere" maxOccurs="unbounded">
+																<xsd:complexType>
+																	<xsd:sequence>
+																		<xsd:element name="title" type="xsd:string"/>
+																			<xsd:element name="name" type="xsd:string"/>
+																		<xsd:element name="description" type="xsd:string"/>
+																	</xsd:sequence>
+																</xsd:complexType>
+															</xsd:element>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+									
+												<xsd:element name="uniqueness" minOccurs="0">
+													<xsd:complexType>
+														<xsd:sequence>
+															<xsd:element name="category" minOccurs="0" maxOccurs="unbounded">
+																<xsd:complexType>
+																	<xsd:sequence>
+																		<xsd:element name="characteristic" type="xsd:string" maxOccurs="unbounded" />
+																	</xsd:sequence>
+																	<xsd:attribute name="type" type="xsd:string" use="required" />								
+																</xsd:complexType>
+															</xsd:element>
+														</xsd:sequence>
+													</xsd:complexType>
+												</xsd:element>
+												
+											</xsd:sequence>
+										</xsd:complexType>
+									</xsd:element>
+								</xsd:sequence>
+							</xsd:complexType>
+						</xsd:element>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:sequence>
+	</xsd:complexType>
+</xsd:schema>

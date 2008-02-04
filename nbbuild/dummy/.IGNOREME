@@ -1,4 +1,0 @@
-This directory would normally contain web pages for this module.
-Since you have checked out a _nowww variant of the module, they are suppressed.
-This saves space, but if you want to see the web pages, delete www and cvs up -d.
-See http://www.netbeans.org/issues/show_bug.cgi?id=7850 for details.

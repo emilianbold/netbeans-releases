@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+    xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+    xmlns="http://research.sun.com/wadl/2006/10">
+    
+    <grammars/>
+    <resources base="http://travel.yahooapis.com/TripService/V1.1">
+       <resource path="tripSearch">
+            <method name="GET" id="yahoo.TripSearch">
+                <doc xml:lang="en"> 
+                    The Yahoo! Travel Trip Search service enables your applications to use a Yahoo!
+                    API to search for public trip plans that were 
+                    created with the Yahoo! Travel Trip Planner 
+                    at http://travel.yahoo.com/trip. 
+                    With this web service you can get a list of trip plans by specifying 
+                    keywords to be found in the title, description, or tags of matching plans. 
+                    
+                    To use this service, you need an application ID to identify your application. 
+                    For more informaton on application IDs, see &quot;What is An Application ID?&quot;
+                    at http://developer.yahoo.com/faq/index.html#token. 
+
+                    For more information on the tripSearch request URL and the response for developers,
+                    see http://developer.yahoo.com/travel/tripservice/V1/tripSearch.html.
+                </doc>
+                <request>
+                    <param name="appid" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                        The application ID. For more information, 
+                        see &quot;What is an Application ID?&quot;  
+                        at http://developer.yahoo.com/faq/index.html#token .
+                    </doc>
+                    </param>
+                    <param name="query" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                        Search keyword(s). Returns public trip plans containing 
+                        the keywords in the trip plans' title, description, or tags.</doc>
+                    </param>
+                    <param name="results" type="xsd:integer" style="query" required="false">        
+                    <doc xml:lang="en">
+                        The number of trip plans to return. 
+                        The default value is 10, and the maximum allowed
+                        number is 50.</doc>
+                    </param>
+                    <param name="start" type="xsd:integer" style="query" required="false">        
+                    <doc xml:lang="en">
+                        The result from which to start the block of trip plan results. 
+                        By default the results start from 1.</doc>
+                    </param>
+                    <param name="output" type="xsd:string" style="query" required="false">        
+                    <doc xml:lang="en">
+                        The output format. The default is xml. You can also specify json or php.
+                        XML format is described at http://developer.yahoo.com/travel/tripservice/V1/tripSearch.html .
+                        JSON format is described at http://developer.yahoo.com/common/json.html .
+                        Serialized PHP format is described at http://developer.yahoo.com/common/phpserial.html
+                    </doc>
+                    </param>
+                    <param name="callback" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                        If JSON is the output format, this parameter specifies 
+                        the name of the callback function to wrap around the JSON data. The following
+                        characters are allowed in the function name: A-Z a-z 0-9 . [] _ 
+
+                        If JSON hasn't been specified as the output, 
+                        this parameter is ignored. For more information on callbacks,
+                        see http://developer.yahoo.net/common/json.html#callbackparam
+                    </doc>
+                 </param>
+                </request>
+                <response> 		  
+                </response>
+                
+            </method>
+        </resource>
+		<resource path="getTrip">
+            <method name="GET" id="yahoo.getTrip">
+                <doc xml:lang="en"> 
+					The Yahoo! Travel Get Trip service enables your application to use a Yahoo! API to get detailed
+					information about a trip that were created with the Yahoo! Travel Trip Planner at
+					http://travel.yahoo.com/trip. 
+					
+					With this web service you can get information about a public trip plan including its description,
+					destinations and all the items associated with that trip.
+					
+					To use this service, you need an application ID to identify your application and the ID of the trip
+					plan you want to retrieve. For more informaton on application IDs, see "What is An Application ID?" at
+					http://developer.yahoo.com/faq/index.html#token. To find the ID of the trip plan, use the Yahoo! Travel
+					Trip Search service.
+                </doc>
+                <request>
+                    <param name="appid" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                        The application ID. For more information, 
+                        see &quot;What is an Application ID?&quot;  
+                        at http://developer.yahoo.com/faq/index.html#token.
+                    </doc>
+                    </param>
+					<param name="id" type="xsd:string" style="query" required="true">        
+                    <doc xml:lang="en">
+                        The ID of the trip plan, created with the Yahoo! Travel Trip Planner,
+						that you want to retrieve. You can find out the ID of the trip you
+						want to find using the Yahoo! Travel Trip Search service.
+                    </doc>
+                    </param>                   
+                    <param name="output" type="xsd:string" style="query" required="false">        
+                    <doc xml:lang="en">
+                        The output format. The default is xml. You can also specify json or php.
+                        XML format is described at http://developer.yahoo.com/travel/tripservice/V1/tripSearch.html .
+                        JSON format is described at http://developer.yahoo.com/common/json.html .
+                        Serialized PHP format is described at http://developer.yahoo.com/common/phpserial.html
+                    </doc>
+                    </param>
+                    <param name="callback" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                        If JSON is the output format, this parameter specifies 
+                        the name of the callback function to wrap around the JSON data. The following
+                        characters are allowed in the function name: A-Z a-z 0-9 . [] _ 
+
+                        If JSON hasn't been specified as the output, 
+                        this parameter is ignored. For more information on callbacks,
+                        see http://developer.yahoo.net/common/json.html#callbackparam
+                    </doc>
+                 </param>
+                </request>
+                <response> 
+                </response>
+                
+            </method>
+        </resource>
+    </resources>  
+
+</application>

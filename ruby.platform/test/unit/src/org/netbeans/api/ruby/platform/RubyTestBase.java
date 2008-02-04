@@ -157,11 +157,21 @@ public abstract class RubyTestBase extends NbTestCase {
         return FileUtil.toFile(interpreter);
     }
 
-    protected void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
+    protected static void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
+        String gemplaf = platform.isJRuby() ? "java" : "";
+        installFakeGem("ruby-debug-base", "0.10.0", gemplaf, platform);
+        installFakeGem("ruby-debug-ide", "0.1.10", gemplaf, platform);
+    }
+
+    protected static void installFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {
         FileObject gemHome = platform.getGemManager().getGemHomeFO();
-        FileUtil.createData(gemHome, "specifications/ruby-debug-base-0.9.3.gemspec");
-        FileUtil.createData(gemHome, "specifications/ruby-debug-ide-0.1.9.gemspec");
+        String gemplaf = actualPlatform == null ? "" : "-" + actualPlatform;
+        FileUtil.createData(gemHome, "specifications/" + name + '-' + version + gemplaf + ".gemspec");
         platform.getGemManager().reset();
+    }
+    
+    protected static void installFakeGem(final String name, final String version, final RubyPlatform platform) throws IOException {
+        installFakeGem(name, version, null, platform);
     }
 
     protected FileObject getTestFile(String relFilePath) {

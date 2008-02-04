@@ -281,7 +281,7 @@ final class CppFoldManager extends CppFoldManagerBase
                     try {
                         info.addToHierarchy(transaction);
                     } catch (BadLocationException e) {
-                        ErrorManager.getDefault().notify(e);
+                        // it is OK to skip such exceptions
                     }
                 } else {
                     blockFoldInfos.remove(orig);

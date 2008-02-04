@@ -568,7 +568,22 @@ public class JaxWsServiceCreator implements ServiceCreator {
                             Collections.<ExpressionTree>emptyList());
                     modifiersTree = make.addModifiersAnnotation(modifiersTree, onewayAn);
                 }
-
+                // parameters
+                List<? extends VariableTree> params = method.getParameters();
+                List<VariableTree> newParams = new ArrayList<VariableTree>();
+                if (params.size() > 0) {
+                    TypeElement paramEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
+                    for (VariableTree param: params) {
+                        String paramName = param.getName().toString();
+                        AssignmentTree nameAttr = make.Assignment(make.Identifier("name"), make.Literal(paramName)); //NOI18N
+                        AnnotationTree paramAn = make.Annotation(
+                                make.QualIdent(paramEl),
+                                Collections.<ExpressionTree>singletonList(nameAttr));
+                        ModifiersTree paramModifierTree = make.addModifiersAnnotation(param.getModifiers(), paramAn);
+                        newParams.add(make.Variable(paramModifierTree, param.getName(), param.getType(), null));
+                    }
+                }
+                
                 // method body
                 List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
                 for (VariableElement ve : methodEl.getParameters()) {
@@ -588,7 +603,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                         method.getName(),
                         method.getReturnType(),
                         method.getTypeParameters(),
-                        method.getParameters(),
+                        newParams,
                         method.getThrows(),
                         body,
                         null);

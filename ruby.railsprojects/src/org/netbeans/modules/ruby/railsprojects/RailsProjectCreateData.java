@@ -40,6 +40,7 @@
 package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 
 /**
  * Encapsulates data required for creating a new Rails project (empty 
@@ -49,6 +50,10 @@ import java.io.File;
  */
 public class RailsProjectCreateData {
     
+    /**
+     * The target platform for the project.
+     */
+    private final RubyPlatform platform;
     /**
      * The top-level directory for the project.
      */
@@ -75,6 +80,10 @@ public class RailsProjectCreateData {
     private final boolean deploy;
 
     /**
+     * The instance id of the project's target server.
+     */
+    private final String serverInstanceId;
+    /**
      * Constructs a new RailsProjectCreateData instance.
      * @param dir the top-level directory for the project 
      * (need not yet exist but if it does it must be empty).
@@ -86,13 +95,16 @@ public class RailsProjectCreateData {
      * @param deploy specifies whether the Rake support targets for deploying 
      * the project as a .war file should be added.
      */
-    public RailsProjectCreateData(File dir, String name, boolean create, String database, boolean jdbc, boolean deploy) {
+    public RailsProjectCreateData(RubyPlatform platform, File dir, String name, boolean create, 
+            String database, boolean jdbc, boolean deploy, String serverInstanceId) {
+        this.platform = platform;
         this.dir = dir;
         this.name = name;
         this.create = create;
         this.database = database;
         this.jdbc = jdbc;
         this.deploy = deploy;
+        this.serverInstanceId = serverInstanceId;
     }
 
     /**
@@ -136,6 +148,21 @@ public class RailsProjectCreateData {
     public String getName() {
         return name;
     }
+
+    /**
+     * @see #serverInstanceId
+     */
+    public String getServerInstanceId() {
+        return serverInstanceId;
+    }
+
+    /**
+     * @see #platform
+     */
+    public RubyPlatform getPlatform() {
+        return platform;
+    }
+
     
 }
 
