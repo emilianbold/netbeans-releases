@@ -696,6 +696,14 @@ public final class RubyPlatform {
         return info.getGemHome() != null;
     }
 
+    /**
+     * Notifies the registered listeners that are changes in this platform's gems,
+     * i.e. a gem was removed or a new gem was installed.
+     */
+    public void fireGemsChanged() {
+        pcs.firePropertyChange("gems", null, null); //NOI18N
+    }
+    
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
