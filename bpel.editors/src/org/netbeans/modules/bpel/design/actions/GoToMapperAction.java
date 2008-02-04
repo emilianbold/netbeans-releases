@@ -10,16 +10,19 @@ import javax.swing.Action;
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
 import org.netbeans.modules.bpel.nodes.actions.GoToAction;
+import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
 
 /**
  *
+ * @author Vitaly Bychkov
  * @author Alexey
+ * @version 1.0
  */
-public class GoToSourceAction extends DesignModeAction {
+public class GoToMapperAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
-        public GoToSourceAction(DesignView view){
+        public GoToMapperAction(DesignView view){
             super(view);
         }
         public void actionPerformed(ActionEvent e) {
@@ -44,8 +47,8 @@ public class GoToSourceAction extends DesignModeAction {
             for (int i = actions.length - 1; i >= 0; i--) {
                 Action action = actions[i];
                 if (action instanceof GoToAction) {
-                    org.netbeans.modules.bpel.nodes.actions.GoToSourceAction gotoAction
-                            = SystemAction.get(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.class);
+                    ShowBpelMapperAction gotoAction
+                            = SystemAction.get(ShowBpelMapperAction.class);
                     Node[] nodes = new Node[] {node};
                     if (gotoAction != null && gotoAction.enable(nodes)) {
                         gotoAction.performAction(nodes);

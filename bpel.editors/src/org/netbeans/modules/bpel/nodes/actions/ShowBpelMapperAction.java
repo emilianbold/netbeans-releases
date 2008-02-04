@@ -2,22 +2,23 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 package org.netbeans.modules.bpel.nodes.actions;
 
+import javax.swing.KeyStroke;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContextFactory;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -38,7 +39,14 @@ import org.openide.windows.WindowManager;
 public class ShowBpelMapperAction extends BpelNodeAction {
 
     private static final long serialVersionUID = 1L;
-    
+    public static final KeyStroke GOTOMAPPER_KEYSTROKE = KeyStroke.getKeyStroke(
+            NbBundle.getMessage(ShowBpelMapperAction.class,"ACT_GoToMapperAction"));// NOI18N
+
+    public ShowBpelMapperAction() {
+        super();
+        putValue(ShowBpelMapperAction.ACCELERATOR_KEY, GOTOMAPPER_KEYSTROKE);
+    }
+
     protected String getBundleName() {
         return NbBundle.getMessage(ShowBpelMapperAction.class,
                 "CTL_ShowBpelMapperAction"); // NOI18N
@@ -60,8 +68,8 @@ public class ShowBpelMapperAction extends BpelNodeAction {
         for (int i = 0; i < nodes.length; i++) {
             if (nodes[i] instanceof BpelNode) {
                 Object ref = ((BpelNode)nodes[i]).getReference();
-                
-                isEnable = ref instanceof BpelEntity 
+
+                isEnable = ref instanceof BpelEntity
                         && BpelDesignContextFactory.getInstance().isMappableEntity((BpelEntity)ref);
                 if (isEnable) {
                     break;
@@ -71,7 +79,7 @@ public class ShowBpelMapperAction extends BpelNodeAction {
                 dataNode = (DataNode)nodes[i];
             }
         }
-        
+
         // temporary hack, tc doesn't have nested mv tc activated nodes
         if (dataNode != null) {
             TopComponent activatedTc = WindowManager.getDefault().getRegistry().getActivated();
@@ -97,7 +105,7 @@ public class ShowBpelMapperAction extends BpelNodeAction {
         isDataNode = isDataNode && dataNode != null;
         return isDataNode;
     }
-    
+
     @Override
     public void performAction(Node[] nodes) {
         if (!enable(nodes)) {
@@ -106,14 +114,14 @@ public class ShowBpelMapperAction extends BpelNodeAction {
 
         if (isDataNode(nodes)) {
             nodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
-        } 
-        
+        }
+
         BpelEntity[] entities = getBpelEntities(nodes);
         if (entities != null && entities.length > 0) {
             performAction(entities);
         }
     }
-    
+
     protected void performAction(BpelEntity[] bpelEntities) {
         Util.goToBusinessRules(bpelEntities[0]);
 /**        TopComponent mapperTC = WindowManager.getDefault().
@@ -121,7 +129,7 @@ public class ShowBpelMapperAction extends BpelNodeAction {
         if (mapperTC == null) {
             return;
         }
-        
+
         if (!(mapperTC.isOpened())) {
             mapperTC.open();
         }
@@ -130,9 +138,9 @@ public class ShowBpelMapperAction extends BpelNodeAction {
  */
     }
 
-    
+
     @Override
     public boolean isChangeAction() {
         return false;
-    }    
+    }
 }

@@ -15,11 +15,13 @@ import org.openide.util.actions.SystemAction;
 
 /**
  *
+ * @author Vitaly Bychkov
  * @author Alexey
+ * @version 1.0
  */
-public class GoToSourceAction extends DesignModeAction {
+public class GoToLoggingAction extends DesignModeAction {
         private static final long serialVersionUID = 1L;
-        public GoToSourceAction(DesignView view){
+        public GoToLoggingAction(DesignView view){
             super(view);
         }
         public void actionPerformed(ActionEvent e) {
@@ -44,8 +46,8 @@ public class GoToSourceAction extends DesignModeAction {
             for (int i = actions.length - 1; i >= 0; i--) {
                 Action action = actions[i];
                 if (action instanceof GoToAction) {
-                    org.netbeans.modules.bpel.nodes.actions.GoToSourceAction gotoAction
-                            = SystemAction.get(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.class);
+                    org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction gotoAction
+                            = SystemAction.get(org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction.class);
                     Node[] nodes = new Node[] {node};
                     if (gotoAction != null && gotoAction.enable(nodes)) {
                         gotoAction.performAction(nodes);
