@@ -380,9 +380,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 @Override
                 protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
                     try {
-                        JTextComponent component = EditorRegistry.lastFocusedComponent();
-                        Document document = component.getDocument();
-                        JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(document);
+                        JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
                         if (js == null) {
                             return;
                         }
@@ -405,7 +403,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-            });
+            }, EditorRegistry.lastFocusedComponent());
         }
     }
     
