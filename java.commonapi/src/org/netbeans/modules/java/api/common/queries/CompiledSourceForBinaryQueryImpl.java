@@ -42,8 +42,6 @@ package org.netbeans.modules.java.api.common.queries;
 
 import org.netbeans.modules.java.api.common.SourceRoots;
 import java.io.File;
-import java.util.Arrays;
-import java.util.List;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -52,13 +50,11 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 
@@ -68,13 +64,11 @@ import org.openide.util.Exceptions;
  */
 class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
 
-    private static final String PROP_BUILD_DIR = "build.dir"; //NOI18N
-
     private final AntProjectHelper helper;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testRoots;
-    private Map<URL, SourceForBinaryQuery.Result> cache = new HashMap<URL, SourceForBinaryQuery.Result>();
+    private final Map<URL, SourceForBinaryQuery.Result> cache = new HashMap<URL, SourceForBinaryQuery.Result>();
 
     public CompiledSourceForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots srcRoots,
             SourceRoots testRoots) {
@@ -114,7 +108,6 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
         return res;
     }
 
-
     private boolean hasSources(URL binaryRoot, String binaryProperty) {
         try {
             String outDir = evaluator.getProperty(binaryProperty);
@@ -147,52 +140,7 @@ class CompiledSourceForBinaryQueryImpl implements SourceForBinaryQueryImplementa
         }
 
         public FileObject[] getRoots() {
-            // TODO may need to cache the result
-            List<FileObject> result = new ArrayList<FileObject>();
-            result.addAll(Arrays.asList(sourceRoots.getRoots()));
-            try {
-                String buildDir = evaluator.getProperty(PROP_BUILD_DIR);
-                if (buildDir != null) {
-                    // generated/wsclient
-                    File f =  new File(helper.resolveFile(buildDir), "generated/wsclient"); //NOI18N
-                    URL url = f.toURI().toURL();
-                    if (!f.exists()) {
-                        assert !url.toExternalForm().endsWith("/");
-                        url = new URL(url.toExternalForm() + '/'); //NOI18N
-                    }
-                    FileObject root = URLMapper.findFileObject(url);
-                    if (root != null) {
-                        result.add(root);
-                    }
-
-                    // XXX J2SEProject only!!! generated/wsimport/client
-                    f = new File(helper.resolveFile(buildDir), "generated/wsimport/client"); //NOI18N
-                    url = f.toURI().toURL();
-                    if (!f.exists()) {
-                        assert !url.toExternalForm().endsWith("/");
-                        url = new URL(url.toExternalForm() + '/'); //NOI18N
-                    }
-                    root = URLMapper.findFileObject(url);
-                    if (root != null) {
-                        result.add(root);
-                    }
-
-                    // XXX J2SEProject only!!! generated/addons/jaxb
-                    f =  new File(helper.resolveFile(buildDir), "generated/addons/jaxb"); //NOI18N
-                    url = f.toURI().toURL();
-                    if (!f.exists()) {
-                        assert !url.toExternalForm().endsWith("/");
-                        url = new URL(url.toExternalForm() + '/'); //NOI18N
-                    }
-                    root = URLMapper.findFileObject(url);
-                    if (root != null) {
-                        result.add(root);
-                    }
-                }
-            } catch (MalformedURLException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            return result.toArray(new FileObject[result.size()]);
+            return this.sourceRoots.getRoots(); // no need to cache it, SourceRoots does
         }
 
         public void addChangeListener (ChangeListener l) {

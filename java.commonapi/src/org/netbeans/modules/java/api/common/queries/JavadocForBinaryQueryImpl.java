@@ -60,7 +60,7 @@ import org.openide.util.WeakListeners;
  * @author David Konecny, Jesse Glick
  */
 class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
-    
+
     private static final String PROP_JAVADOC_DIR = "dist.javadoc.dir";  //NOI18N
 
     private final AntProjectHelper helper;
@@ -69,24 +69,24 @@ class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
     public JavadocForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
         assert helper != null;
         assert evaluator != null;
-        
+
         this.helper = helper;
         this.evaluator = evaluator;
     }
 
     public JavadocForBinaryQuery.Result findJavadoc(final URL binaryRoot) {
-        
+
         class Result implements JavadocForBinaryQuery.Result, PropertyChangeListener  {
-            
+
             private final ChangeSupport changeSupport = new ChangeSupport(this);
             private URL[] result;
             private long eventId;
-            
+
             public Result() {
                 JavadocForBinaryQueryImpl.this.evaluator.addPropertyChangeListener(
                         WeakListeners.propertyChange(this, JavadocForBinaryQueryImpl.this.evaluator));
             }
-            
+
             public URL[] getRoots() {
                 long lEventId;
                 synchronized (this) {
@@ -123,19 +123,15 @@ class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
                     return lResult;
                 }
             }
-            
+
             public void addChangeListener(final ChangeListener l) {
-                // XXX do we need assert?
-                assert l != null;
                 changeSupport.addChangeListener(l);
             }
-            
+
             public void removeChangeListener(final ChangeListener l) {
-                // XXX do we need assert?
-                assert l != null;
                 changeSupport.removeChangeListener(l);
             }
-            
+
             public void propertyChange(final PropertyChangeEvent event) {
                 if (PROP_JAVADOC_DIR.equals(event.getPropertyName())) {
                     synchronized (this) {
@@ -174,32 +170,4 @@ class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
         }
         return false;
     }
-
-//    private URL getJavadoc(URL binaryRoot, String binaryProperty, String javadocProperty) {
-//        try {
-//            if (FileUtil.getArchiveFile(binaryRoot) != null) {
-//                binaryRoot = FileUtil.getArchiveFile(binaryRoot);
-//            }
-//            String outDir = evaluator.getProperty(binaryProperty);
-//            if (outDir != null) {
-//                File f = helper.resolveFile (outDir);
-//                URL url = f.toURI().toURL();
-//                if (!f.exists() && !f.getPath().toLowerCase().endsWith(".jar")) {
-//                    assert !url.toExternalForm().endsWith("/") : f;
-//                    url = new URL(url.toExternalForm() + "/");
-//                }
-//                if (url.equals(binaryRoot) ||
-//                        binaryRoot.toExternalForm().startsWith(url.toExternalForm())) {
-//                    String javadocDir = evaluator.getProperty(javadocProperty);
-//                    if (javadocDir != null) {
-//                        f = helper.resolveFile(javadocDir);
-//                        return f.toURI().toURL();
-//                    }
-//                }
-//            }
-//        } catch (MalformedURLException malformedURL) {
-//            Exceptions.printStackTrace(malformedURL);
-//        }
-//        return null;
-//    }
 }

@@ -57,23 +57,23 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 class FileEncodingQueryImpl extends FileEncodingQueryImplementation implements PropertyChangeListener {
-    
+
     private final PropertyEvaluator eval;
     private final String sourceEncodingPropertyName;
     private Charset cache;
-    
+
     public FileEncodingQueryImpl(final PropertyEvaluator eval, final String sourceEncodingPropertyName) {
         assert eval != null;
         assert sourceEncodingPropertyName != null;
-        
+
         this.eval = eval;
         this.sourceEncodingPropertyName = sourceEncodingPropertyName;
         this.eval.addPropertyChangeListener(this);
     }
-    
+
     public Charset getEncoding(FileObject file) {
         Parameters.notNull("file", file); // NOI18N
-        
+
         synchronized (this) {
             if (cache != null) {
                 return cache;
@@ -96,7 +96,7 @@ class FileEncodingQueryImpl extends FileEncodingQueryImplementation implements P
             return cache;
         }
     }
-   
+
     public void propertyChange(PropertyChangeEvent event) {
         String propName = event.getPropertyName();
         if (propName == null || propName.equals(sourceEncodingPropertyName)) {
@@ -105,5 +105,5 @@ class FileEncodingQueryImpl extends FileEncodingQueryImplementation implements P
             }
         }
     }
-    
+
 }

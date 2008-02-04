@@ -116,7 +116,8 @@ public final class QuerySupport {
      * @param evaluator {@link PropertyEvaluator}a property evaluator to interpret paths with.
      * @param srcRoots a list of source roots to treat as sharable.
      * @param testRoots a list of test roots to treat as sharable.
-     * @param additionalSourceRoots a list of additional paths to treat as sharable.
+     * @param additionalSourceRoots a list of additional paths to treat as sharable (just pure property names, do not
+     *          use <i>${</i> and <i>}</i> characters).
      * @return a {@link SharabilityQueryImplementation} to provide information about files sharability.
      */
     public static SharabilityQueryImplementation createSharabilityQuery(AntProjectHelper helper,
