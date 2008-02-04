@@ -494,12 +494,14 @@ public final class CompletionManager {
                             NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
                     for (ElementHandle<TypeElement> eh : matchingTypes) {
                         TypeElement typeElement = eh.resolve(cc);
-                        if ((typeElement.getKind() == ElementKind.CLASS) 
-                                && typeElement.getSimpleName().toString().startsWith(typedPrefix)) {
-                            SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                    typeElement, (DeclaredType) typeElement.asType(), 
-                                    cc.getElements().isDeprecated(typeElement));
-                            results.add(item);
+                        if (typeElement != null) {
+                            if ((typeElement.getKind() == ElementKind.CLASS) 
+                                    && typeElement.getSimpleName().toString().startsWith(typedPrefix)) {
+                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
+                                        typeElement, (DeclaredType) typeElement.asType(), 
+                                        cc.getElements().isDeprecated(typeElement));
+                                results.add(item);
+                            }
                         }
                     }
                 }
