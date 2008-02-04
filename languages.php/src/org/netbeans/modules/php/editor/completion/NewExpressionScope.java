@@ -39,59 +39,59 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.languages.php.lang;
+package org.netbeans.modules.php.editor.completion;
+
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.api.gsf.CompletionProposal;
 
 /**
- * Operators.
+ * Implementation of the <code>CompletionResultProvider</code> for the 
+ * Scope Resolution Operator (::) context.
  * 
- * @author Victor G. Vasilyev
+ * <p><b>Note that this implementation is not synchronized.</b></p> 
+ * 
+ * @see PHP Manual / Example 19.12. :: from outside the class definition
+ * @see PHP Manual / Example 19.13. :: from inside the class definition
+ * 
+ * @author Victor G. Vasilyev 
  */
-public enum Operators {
-    /**
-     * The Scope Resolution Operator (<code>::</code>).
-     * 
-     * @see <a href="http://www.php.net/manual/en/language.oop5.paamayim-nekudotayim.php">
-     * PHP Manual / Part III. Language Reference / 
-     * Chapter 19. Classes and Objects (PHP 5) / Scope Resolution Operator (::)</a>
-     */
-    SCOPE_RESOLUTION("::") {
-        boolean equals(String value) {
-            return value().equalsIgnoreCase(value);
-        }
-    },
-    
-    /**
-     * The Object Member Access Operator (<code>-&gt;</code>).
-     * <p>
-     * Unfortunately, the PHP manual doesn't define this operator exactly.
-     * Nevertheless, the section "List of Parser Tokens" referes to 
-     * the section <a href="http://www.php.net/manual/en/language.oop.php">
-     * Classes and Objects (PHP 4)</a> where there are many occurences of the 
-     * operator, but there aren't a definition and descriptions.
-     * It seems the section <a href="http://www.php.net/manual/en/language.oop.php">
-     * Classes and Objects (PHP 5)</a> assumes that the operator has been 
-     * completely described in the previous sections.
-     * </p>
-     */
-    OBJECT_MEMBER_ACCESS("->") {
-        boolean equals(String value) {
-            return value().equalsIgnoreCase(value);
-        }
-    },
-    ;
-    
-   Operators(String value) { this.value = value; }
-    private final String value;
-    public String value() { return value; }
+public class NewExpressionScope extends ASTBasedProvider
+        implements CompletionResultProvider {
 
-    /**
-     * Tests if the specified <code>value</code> is the underlying 
-     * operator.
-     * 
-     * @param value any string, including <code>null</code> that will be tested. 
-     * @return <code>true</code> if the specified string is the underlying 
-     * <code>Constants</code>, otherwise - <code>false</code>.
-     */
-    abstract boolean equals(String value);
+    private List<CompletionProposal> proposals;
+    private String prefix;
+    private int insertOffset;
+
+    protected void init(CodeCompletionContext context) {
+        proposals = new LinkedList<CompletionProposal>();
+        assert context != null;
+        myContext = context;
+        prefix = context.getPrefix();
+        insertOffset = calcInsertOffset();
+    }
+
+    public boolean isApplicable(CodeCompletionContext context) {
+        return false;
+    }
+
+    public List<CompletionProposal> getProposals(CodeCompletionContext context) {
+        // if prefix == null then leading space should be added to 
+        // the isterted text of each proposal:
+        // <php_keyword="new"><php_whitespace>|<insertedText>
+        return proposals;
+    }
+    
+    private int calcInsertOffset() {
+        // TODO: Fix it!
+        // process all variants:
+        // <php_keyword="new">|
+        // <php_keyword="new"><php_whitespace>|
+        // <php_keyword="new"><php_whitespace><prefix>|
+        if (prefix == null) {
+            return myContext.getCaretOffset();
+        }
+        return myContext.getCaretOffset() - prefix.length();
+    }
 
 }
