@@ -60,6 +60,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupport;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupportListener;
@@ -286,7 +287,9 @@ public class SpringConfigModelController {
             if (fo == null){
                 return;
             }
-            notifyFileChanged(fo);
+            if (SpringXMLConfigDataLoader.REQUIRED_MIME.equals(fo.getMIMEType())) {
+                notifyFileChanged(fo);
+            }
         }
     }
 }
