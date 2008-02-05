@@ -67,7 +67,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         mySoughtNamespace = soughtNamespace;
         this.isAttribute = isAttribute;
 
-//ENABLE = (soughtName + "").equals("leafElement");
+//ENABLE = (soughtName + "").equals("service-ref");
 //out();
 //out("=== FindChildrenSchemaVisitor: " + soughtName);
     }
@@ -118,11 +118,8 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 //out("1.3");
                   DocumentComponent document = (DocumentComponent) sc;
                   String typeName = document.getPeer().getAttribute("type");
-                  int k = typeName.indexOf(":");
+                  typeName = removePrefix(typeName);
 
-                  if (k != -1) {
-                    typeName = typeName.substring(k + 1);
-                  }
                   if (typeName == null || typeName.equals("")) {
                     NodeList list = document.getPeer().getElementsByTagName("xs:extension");
 
@@ -151,11 +148,12 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         else if (sc instanceof ComplexType) {
 //out("2");
             visitChildren(sc);
-        } else if (sc instanceof Schema) {
+        }
+        else if (sc instanceof Schema) {
 //out("3");
-            // Look for a global schema object
             visitChildren(sc);
-        } else {
+        }
+        else {
 //out("4");
             // Other elements can't containg nested elements or attributes
         }
@@ -183,6 +181,19 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
           return;
         }
       }
+    }
+
+    // vlv # 105159
+    private String removePrefix(String value) {
+      if (value == null) {
+        return null;
+      }
+      int k = value.indexOf(":");
+
+      if (k == -1) {
+        return value;
+      }
+      return value.substring(k + 1);
     }
 
     // vlv # 105159
@@ -223,6 +234,18 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     protected void checkComponent(SchemaComponent sc) {
 // # 105159
 //out("check: " + sc);
+        if (sc instanceof ElementReference && sc instanceof DocumentComponent) {
+          DocumentComponent document = (DocumentComponent) sc;
+          String ref = document.getPeer().getAttribute("ref");
+          ref = removePrefix(ref);
+//out("           ref: " + ref);
+//out("  mySoughtName: " + mySoughtName);
+
+          if (mySoughtName.equals(ref)) {
+            myFound.add(sc);
+            return;
+          }
+        }
         if (sc instanceof Named) {
             String namespace = sc.getModel().getEffectiveNamespace(sc);
             String name = ((Named)sc).getName();
