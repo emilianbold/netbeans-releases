@@ -347,6 +347,10 @@ final class MagicSurroundWithTryCatchFix implements Fix {
 
     
     private static StatementTree createExceptionsStatement(CompilationInfo info, TreeMaker make, String name) {
+        if (!ErrorFixesFakeHint.isUseExceptions()) {
+            return null;
+        }
+        
         TypeElement exceptions = info.getElements().getTypeElement("org.openide.util.Exceptions");
 
         if (exceptions == null) {
@@ -357,7 +361,7 @@ final class MagicSurroundWithTryCatchFix implements Fix {
     }
 
     private static StatementTree createLogStatement(CompilationInfo info, TreeMaker make, TreePath statement, String name) {
-        if (DISABLE_JAVA_UTIL_LOGGER) {
+        if (!ErrorFixesFakeHint.isUseLogger()) {
             return null;
         }
 

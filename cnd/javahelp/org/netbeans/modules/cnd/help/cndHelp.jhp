@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/export/home1/nb60dev/cnd/core/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/home/thp/netbeans-6.1-dev/main/cnd/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -94,12 +94,6 @@
 				<file title="ProjectsWindow.html"/>
 			</directory>
 			<directory title="images">
-				<directory title="CVS">
-					<file title="Entries"/>
-					<file title="Repository"/>
-					<file title="Root"/>
-					<file title="Template"/>
-				</directory>
 				<file title="arrow.gif"/>
 				<file title="blue-ball-mid.gif"/>
 				<file title="blue-sqr-mid.gif"/>

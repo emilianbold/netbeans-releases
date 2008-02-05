@@ -178,4 +178,5 @@
 	<mapID target="GoToType" url="EditingSourceFiles/GoToType.html"/>
 	<mapID target="compiler_paths" url="CreatingMakefile/compiler_paths.html"/>
 	<mapID target="cnd.optionsDialog" url="CandC++ProjectBasics/CandC++Options.html"/>
+	<mapID target="ProjectPropsArchiverGeneral" url="WorkingWithCandC++Projects/ProjectPropsArchiverGeneral.html"/>
 </map>

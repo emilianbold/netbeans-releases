@@ -472,6 +472,7 @@ public final class GemManager {
     public void resetLocal() {
         installed = null;
         gemFiles = null;
+        platform.fireGemsChanged();
     }
     
     /**

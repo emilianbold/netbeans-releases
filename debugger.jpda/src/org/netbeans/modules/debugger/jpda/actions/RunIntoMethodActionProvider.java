@@ -46,6 +46,7 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.request.BreakpointRequest;
+import com.sun.jdi.request.EventRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
@@ -277,6 +278,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     traceLineForMethod(methodName, line);
                     return true;
                 }
+                
+                public void removed(EventRequest eventRequest) {}
             });
             brReq.setSuspendPolicy(debugger.getSuspend());
             brReq.enable();

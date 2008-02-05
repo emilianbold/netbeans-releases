@@ -115,7 +115,7 @@ public class SaasUtilTest extends NbTestCase {
         SaasMetadata metadata = SaasUtil.loadJaxbObject(in, SaasMetadata.class);
         assertEquals("YouTube", metadata.getGroup().getName());
         assertEquals("Videos", metadata.getGroup().getGroup().get(0).getName());
-        //TODO failing assertEquals("org.netbeans.modules.websvc.saas.services.youtube.Bundle", metadata.getLocalizingBundle());
+        assertEquals("org.netbeans.modules.websvc.saas.services.youtube.Bundle", metadata.getLocalizingBundle());
         assertEquals("Templates/WebServices/profile.properties", metadata.getAuthentication().getProfile());
         assertEquals("dev_id", metadata.getAuthentication().getApiKey().getId());
 
@@ -127,8 +127,7 @@ public class SaasUtilTest extends NbTestCase {
 
         InputStream in = this.getClass().getResourceAsStream("/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideos.xml");
         SaasServices ss = SaasUtil.loadSaasServices(in);
-        //TODO fix me
-        //assertEquals("YouTubeVideos", ss.getDisplayName());
+        assertEquals("YouTubeVideos", ss.getDisplayName());
         
         //TODO fixme this only works if we have absolute include/href=<absolute-URI>
         assertNotNull(ss.getSaasMetadata());

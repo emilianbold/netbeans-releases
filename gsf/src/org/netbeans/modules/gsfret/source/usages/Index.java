@@ -420,10 +420,6 @@ public abstract class Index extends org.netbeans.api.gsf.Index {
         return cacheFolder;
     }
     
-    public static boolean isTest () {
-        return getNbUserDir() == null;
-    }
-    
     /**
      * Only for unit tests!
      *

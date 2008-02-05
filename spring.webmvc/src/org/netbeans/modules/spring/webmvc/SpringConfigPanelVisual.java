@@ -48,9 +48,7 @@ import javax.swing.event.DocumentListener;
 import org.openide.util.ChangeSupport;
 
 /**
- * Provides the user interface for configuring a Spring Framework web application
- * Also implements the AtomicAction fired off when the web framework providers
- * extend method is called.
+ * Provides the user interface for configuring a Spring Web MVC web application
  *
  * @author Craig MacKay
  */

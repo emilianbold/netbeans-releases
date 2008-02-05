@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -42,6 +42,8 @@ import org.openide.util.HelpCtx;
 
 import org.openide.util.NbBundle;
 import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.nodes.actions.GoToLoggingAction;
+import org.netbeans.modules.bpel.nodes.actions.ShowBpelMapperAction;
 import org.netbeans.modules.bpel.nodes.navigator.NavigatorNodeFactory;
 
 import org.openide.explorer.ExplorerManager;
@@ -57,21 +59,27 @@ import org.openide.util.actions.SystemAction;
  * @version 1.0
  */
 public class BpelNavigatorVisualPanel extends JPanel
-        implements ExplorerManager.Provider, Lookup.Provider, HelpCtx.Provider 
+        implements ExplorerManager.Provider, Lookup.Provider, HelpCtx.Provider
 {
-    
+
     private static final long serialVersionUID = 1L;
     private static final String DELETE = "delete"; // NOI18N
     private static final KeyStroke DELETE_KEYSTROKE =
             KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0); // NOI18N
     private static final String GOTOSOURCE = "gotosource"; // NOI18N
     private static final String GOTODIAGRAMM = "gotodiagramm"; // NOI18N
+    private static final String GOTOMAPPER = "gotomapper"; // NOI18N
+    private static final String GOTOLOGGING = "gotologging"; // NOI18N
 ////    private static final String FINDUSAGES = "findusages"; // NOI18N
-    private static final KeyStroke GOTOSOURCE_KEYSTROKE =
-            KeyStroke.getKeyStroke(GoToSourceAction.GOTOSOURCE_KEYSTROKE);
+//    private static final KeyStroke GOTOSOURCE_KEYSTROKE =
+//            KeyStroke.getKeyStroke(GoToSourceAction.GOTOSOURCE_KEYSTROKE);
 //    private static final KeyStroke GOTODIAGRAMM_KEYSTROKE =
 //            KeyStroke.getKeyStroke(GoToDiagrammAction.GOTODIAGRAMM_KEYSTROKE);
-    
+//    private static final KeyStroke GOTOMAPPER_KEYSTROKE =
+//            KeyStroke.getKeyStroke(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE);
+//    private static final KeyStroke GOTOLOGGING_KEYSTROKE =
+//            KeyStroke.getKeyStroke(GoToLoggingAction.GOTOLOGGING_KEYSTROKE);
+//
     private JLabel myMsgLabel;
     //context Lookup - should contains current
     private Lookup myContextLookup;
@@ -79,26 +87,26 @@ public class BpelNavigatorVisualPanel extends JPanel
     private Lookup myLookup;
     private ExplorerManager myExplorerManager;
     private ValidationProxyListener myVpl;
-    
+
     private BpelModelLogicalBeanTree myBpelModelLogicalBeanTree;
     private boolean isRequireRepaint;
-    
-    
+
+
     public BpelNavigatorVisualPanel() {
         initComponent();
     }
-    
+
     private void initComponent() {
         setLayout(new BorderLayout());
         //init empty panel
         myMsgLabel = new JLabel();
         add(myMsgLabel, BorderLayout.CENTER);
     }
-    
+
     private void initActionMap() {
         ActionMap actionMap = getActionMap();
-        
-        
+
+
         // TODO add delete and some else actions support
 ////        actionMap.put(DefaultEditorKit.copyAction,
 ////            ExplorerUtils.actionCopy(myExplorerManager));
@@ -107,7 +115,9 @@ public class BpelNavigatorVisualPanel extends JPanel
 ////        actionMap.put(DefaultEditorKit.pasteAction,
 ////            ExplorerUtils.actionPaste(myExplorerManager));
         actionMap.put(GOTOSOURCE,SystemAction.get(GoToSourceAction.class));
-//        actionMap.put(GOTODIAGRAMM,SystemAction.get(GoToDiagrammAction.class));
+        actionMap.put(GOTODIAGRAMM,SystemAction.get(GoToDiagrammAction.class));
+        actionMap.put(GOTOMAPPER,SystemAction.get(ShowBpelMapperAction.class));
+        actionMap.put(GOTOLOGGING,SystemAction.get(GoToLoggingAction.class));
         actionMap.put(DELETE, // NOI18N
                 ExplorerUtils.actionDelete(myExplorerManager, true));
 //////        actionMap.put(FINDUSAGES, SystemAction.get(FindUsagesAction.class));
@@ -117,15 +127,17 @@ public class BpelNavigatorVisualPanel extends JPanel
 ////        keys.put(KeyStroke.getKeyStroke("control X"), DefaultEditorKit.cutAction);// NOI18N
 ////        keys.put(KeyStroke.getKeyStroke("control V"), DefaultEditorKit.pasteAction);// NOI18N
         keys.put(DELETE_KEYSTROKE, DELETE); // NOI18N
-        keys.put(GOTOSOURCE_KEYSTROKE, GOTOSOURCE); // NOI18N
-//        keys.put(GOTODIAGRAMM_KEYSTROKE, GOTODIAGRAMM); // NOI18N
+        keys.put(GoToSourceAction.GOTOSOURCE_KEYSTROKE, GOTOSOURCE); // NOI18N
+        keys.put(GoToDiagrammAction.GOTODIAGRAMM_KEYSTROKE, GOTODIAGRAMM); // NOI18N
+        keys.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, GOTOMAPPER); // NOI18N
+        keys.put(GoToLoggingAction.GOTOLOGGING_KEYSTROKE, GOTOLOGGING); // NOI18N
 //////        keys.put((KeyStroke) SystemAction.get(FindUsagesAction.class)
 //////            .getValue(FindUsagesAction.ACCELERATOR_KEY), FINDUSAGES); // NOI18N
-        
+
         // ...and initialization of lookup variable
         myLookup = ExplorerUtils.createLookup(myExplorerManager, actionMap);
     }
-    
+
     public void emptyPanel() {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -134,7 +146,7 @@ public class BpelNavigatorVisualPanel extends JPanel
             }
         });
     }
-    
+
     public void navigate(final Lookup context, final BpelModel bpelModel) {
 // get the model and create the new bpel logical tree in background
         if(bpelModel == null) {
@@ -149,12 +161,12 @@ public class BpelNavigatorVisualPanel extends JPanel
                 showNavTree();
             }
         });
-        
+
         navThread.start();
         // switch navigator to the appropriate view
         BpelNavigatorController.switchNavigatorPanel();
     }
-    
+
     private void initValidation() {
         myVpl = myContextLookup.lookup(ValidationProxyListener.class);
         if (myVpl == null) {
@@ -164,7 +176,7 @@ public class BpelNavigatorVisualPanel extends JPanel
             }
         }
     }
-    
+
     private void showNavTree(){
         myExplorerManager = new ExplorerManager();
         initActionMap();
@@ -193,9 +205,9 @@ public class BpelNavigatorVisualPanel extends JPanel
             }
         });
     }
-    
+
     public void showWaitMsg() {
-        
+
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 removeAll();
@@ -206,32 +218,32 @@ public class BpelNavigatorVisualPanel extends JPanel
                 repaint();
             }
         });
-        
+
     }
-    
-    
+
+
     public ExplorerManager getExplorerManager() {
         return myExplorerManager;
     }
-    
+
     public Lookup getLookup() {
         return myLookup;
     }
-    
+
     public void addNotify() {
         super.addNotify();
 //        ExplorerUtils.activateActions(myExplorerManager, true);
     }
-    
+
     public void removeNotify() {
 //        ExplorerUtils.activateActions(myExplorerManager, false);
         super.removeNotify();
     }
-    
+
     private Lookup getContextLookup() {
         return myContextLookup;
     }
-    
+
     public HelpCtx getHelpCtx() {
         if (myExplorerManager != null ) {
             Node[] selNodes = myExplorerManager.getSelectedNodes();
@@ -251,16 +263,16 @@ public class BpelNavigatorVisualPanel extends JPanel
         }
         return getJTree(myBpelModelLogicalBeanTree.getBeanTreeView());
     }
-    
+
     private JTree getJTree(java.awt.Component parent) {
         if (parent instanceof JTree ) {
             return (JTree)parent;
         }
-        
+
         if (! (parent instanceof java.awt.Container)) {
             return null;
         }
-        
+
         java.awt.Component[] comps = ((java.awt.Container)parent).getComponents();
         JTree tmpTree = null;
         for (java.awt.Component elem : comps) {
@@ -269,7 +281,7 @@ public class BpelNavigatorVisualPanel extends JPanel
                 return tmpTree;
             }
         }
-        
+
         return null;
     }
 }
