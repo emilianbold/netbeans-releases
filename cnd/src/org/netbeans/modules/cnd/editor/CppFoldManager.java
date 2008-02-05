@@ -281,7 +281,7 @@ final class CppFoldManager extends CppFoldManagerBase
                     try {
                         info.addToHierarchy(transaction);
                     } catch (BadLocationException e) {
-                        ErrorManager.getDefault().notify(e);
+                        // it is OK to skip such exceptions
                     }
                 } else {
                     blockFoldInfos.remove(orig);
@@ -563,7 +563,7 @@ final class CppFoldManager extends CppFoldManagerBase
 
         @Override
         public String toString() {
-            return "BlockFoldInfo:" + template.getType() + " at[" + getRealStartOffset() + "," + getRealEndOffset() + "]";
+            return "BlockFoldInfo:" + template.getType() + " at[" + getRealStartOffset() + "," + getRealEndOffset() + "]";  // NOI18N
         }
     }
 

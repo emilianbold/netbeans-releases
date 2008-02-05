@@ -78,6 +78,7 @@ import org.xml.sax.SAXException;
 import com.sun.etl.engine.impl.ETLEngineImpl;
 import com.sun.sql.framework.exception.BaseException;
 import com.sun.sql.framework.utils.RuntimeAttribute;
+import java.util.HashMap;
 import javax.wsdl.Message;
 import javax.wsdl.Part;
 import org.netbeans.modules.etl.logger.Localizer;
@@ -211,33 +212,43 @@ public class WsdlGenerator {
      * modify the wsdl template
      */
     private void modifyWsdl() {
+        try {
         modifyName();
-//        modifyMessages();
+        modifyMessages();
         modifyMessageTypes();
         modifyPortTypes();
         modifyBinding();
         modifyServices();
         modifyPartnerLink();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     private void modifyBinding() {
-        Binding b = def.getBinding(new QName(def.getTargetNamespace(), "Binding"));
+        //Binding b = def.getBinding(new QName(def.getTargetNamespace(), "Binding"));
 
+        HashMap bMap = (HashMap) def.getBindings();
+        java.util.Iterator keysIter = bMap.keySet().iterator();
+        while (keysIter.hasNext()) {
+            Binding b = (Binding) bMap.get(keysIter.next());
+            if (b != null) {
         BindingOperation bo = b.getBindingOperation("execute", null, null);
         if (getEngineInputParams().isEmpty()) {
             bo.setBindingInput(null);
         }
-
+            }
+        }
     }
 
     private void modifyMessages() {
         Map msgs = def.getMessages();
-        for (int i = 0; i < msgs.size(); i++) {
-            Object o = msgs.get(i);
-            //if (o instanceof Message) {
-            System.out.println("Message: " + ((Message) o).toString());
-            modifyMessageElementName((Message) o);
-        //}
+        java.util.Iterator keysIter = msgs.keySet().iterator();
+        while (keysIter.hasNext()) {
+            Message msg = (Message) msgs.get(keysIter.next());
+            if (msg != null) {
+				modifyMessageElementName((Message) msg);
+            }
         }
     }
 
@@ -247,6 +258,9 @@ public class WsdlGenerator {
             QName qname = new QName("http://com.sun.jbi/etl/etlengine", engineFileName + "_" + msgLocalName);
             message.setQName(qname);
         }
+		Part p = message.getPart("part");
+		QName pqname = new QName("http://com.sun.jbi/etl/etlengine", engineFileName + "_" + p.getElementName().getLocalPart());
+		p.setElementName(pqname);
     }
 
     private void modifyMessageTypes() {
@@ -270,7 +284,10 @@ public class WsdlGenerator {
         Document doc = (Document) root.getParentNode().getParentNode().getParentNode();
         Element inputItem = getElementByName(root, "inputItem");
 
-        inputItem.toString();
+		inputItem.setAttribute("name", engineFileName + "_" + "inputItem");
+
+		Element outputItem = getElementByName(root, "outputItem");
+		outputItem.setAttribute("name", engineFileName + "_" + "outputItem");
         Node sequence = inputItem.getElementsByTagName("xsd:sequence").item(0);
 
         Map inputParams = getEngineInputParams();
@@ -426,6 +443,7 @@ public class WsdlGenerator {
                 List ops = pt.getOperations();
                 for (int i = 0; i < ops.size(); i++) {
                     Operation op = (Operation) ops.get(i);
+                    op.setName("execute");
                     op.setInput(null);
                 }
             }

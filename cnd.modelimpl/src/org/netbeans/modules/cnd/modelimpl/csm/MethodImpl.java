@@ -58,7 +58,6 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
 
     private final CsmVisibility visibility;
     private int _attributes = 0;
-    private static final int STATIC = 1 << 0;
     private static final int ABSTRACT = 1 << 1;
     private static final int VIRTUAL = 1 << 2;
 
@@ -75,7 +74,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
             switch( token.getType() ) {
                 case CPPTokenTypes.LITERAL_static:
                     setStatic(true);                    
-                    break;
+                    break;                
                 case CPPTokenTypes.LITERAL_virtual:
                     setVirtual(true);
                     break;
@@ -94,10 +93,6 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
         return visibility;
     }
 
-    public boolean isStatic() {
-        return (_attributes & STATIC) == STATIC;
-    }
-    
     public boolean isAbstract() {
         return (_attributes & ABSTRACT) == ABSTRACT;
     }
@@ -107,14 +102,6 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod<T> {
             this._attributes |= ABSTRACT;
         } else {
             this._attributes &= ~ABSTRACT;
-        }
-    }
-    
-    public void setStatic(boolean _static) {
-        if (_static) {
-            this._attributes |= STATIC;
-        } else {
-            this._attributes &= ~STATIC;
         }
     }
     

@@ -202,7 +202,10 @@ public class HgCommand {
     private static final String HG_OUTGOING_CMD = "outgoing"; // NOI18N
     private static final String HG_VIEW_CMD = "view"; // NOI18N
     private static final String HG_VERBOSE_CMD = "-v"; // NOI18N
+    private static final String HG_CONFIG_OPTION_CMD = "--config"; // NOI18N
+    private static final String HG_FETCH_EXT_CMD = "extensions.fetch="; // NOI18N
     private static final String HG_FETCH_CMD = "fetch"; // NOI18N
+    public static final String HG_PROXY_ENV = "http_proxy="; // NOI18N
     
     private static final String HG_MERGE_NEEDED_ERR = "(run 'hg heads' to see heads, 'hg merge' to merge)"; // NOI18N
     public static final String HG_MERGE_CONFLICT_ERR = "conflicts detected in "; // NOI18N
@@ -234,6 +237,7 @@ public class HgCommand {
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
     private static final String HG_ABORT_PUSH_ERR = "abort: push creates new remote branches!"; // NOI18N
     private static final String HG_ABORT_NO_FILES_TO_COPY_ERR = "abort: no files to copy"; // NOI18N
+    private static final String HG_ABORT_NO_DEFAULT_PUSH_ERR = "abort: repository default-push not found!"; // NOI18N
     
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -416,7 +420,17 @@ public class HgCommand {
             command.add(from);
         }
 
-        List<String> list = exec(command);
+        List<String> list;
+        String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
+        String proxy = getGlobalProxyIfNeeded(defaultPull);
+        if(proxy != null){
+            List<String> env = new ArrayList<String>(); 
+            env.add(HG_PROXY_ENV + proxy);
+            list = execEnv(command, env);
+        }else{
+            list = exec(command);
+        }
+
         if (!list.isEmpty() && 
              isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
@@ -495,7 +509,17 @@ public class HgCommand {
             command.add(from);
         }
 
-        List<String> list = exec(command);
+        List<String> list;
+        String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
+        String proxy = getGlobalProxyIfNeeded(defaultPull);
+        if(proxy != null){
+            List<String> env = new ArrayList<String>(); 
+            env.add(HG_PROXY_ENV + proxy);
+            list = execEnv(command, env);
+        }else{
+            list = exec(command);
+        }
+
         if (!list.isEmpty() && 
              isErrorAbort(list.get(list.size() -1))) {
             handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
@@ -550,7 +574,17 @@ public class HgCommand {
         command.add(repository.getAbsolutePath());
         command.add(to);
 
-        List<String> list = exec(command);
+        List<String> list;
+        String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
+        String proxy = getGlobalProxyIfNeeded(defaultPush);
+        if(proxy != null){
+            List<String> env = new ArrayList<String>(); 
+            env.add(HG_PROXY_ENV + proxy);
+            list = execEnv(command, env);
+        }else{
+            list = exec(command);
+        }
+
 
         if (!list.isEmpty() && 
             !isErrorAbortPush(list.get(list.size() -1)) &&
@@ -598,6 +632,34 @@ public class HgCommand {
         return list;
     }
     
+    private static String getGlobalProxyIfNeeded(String defaultPath){
+        String proxy = null;
+        if(defaultPath != null && 
+                (defaultPath.startsWith("http:") || defaultPath.startsWith("https:"))){ // NOI18N
+            HgProxySettings ps = new HgProxySettings();
+            if (ps.isManualSetProxy()) {
+                if (defaultPath.startsWith("http:") && ps.getHttpHost() != null) { // NOI18N
+                    proxy = ps.getHttpHost();
+                    if (proxy != null && !proxy.equals("")) {
+                        proxy += ps.getHttpPort() > -1 ? ":" + Integer.toString(ps.getHttpPort()) : ""; // NOI18N
+                    } else {
+                        proxy = null;
+                    }                    
+                } else if (defaultPath.startsWith("https:") && ps.getHttpsHost() != null) { // NOI18N
+                    proxy = ps.getHttpsHost();
+                    if (proxy != null && !proxy.equals("")) {
+                        proxy += ps.getHttpsPort() > -1 ? ":" + Integer.toString(ps.getHttpsPort()) : ""; // NOI18N
+                    } else {
+                        proxy = null;
+                    }
+                }
+            }
+        }
+        if(proxy != null){
+            HgUtils.outputMercurialTab(NbBundle.getMessage(HgCommand.class, "MSG_USING_PROXY_INFO", proxy)); // NOI18N
+        }
+        return proxy;
+    }
     /**
      * Run the fetch extension for the specified repository
      *
@@ -607,14 +669,24 @@ public class HgCommand {
     public static List<String> doFetch(File repository) throws HgException {
         if (repository == null) return null;
         List<String> command = new ArrayList<String>();
-
+        
         command.add(getHgCommand());
+        command.add(HG_CONFIG_OPTION_CMD);
+        command.add(HG_FETCH_EXT_CMD);
         command.add(HG_FETCH_CMD);
         command.add(HG_OPT_REPOSITORY);
         command.add(repository.getAbsolutePath());
         
         List<String> list;
-        list = exec(command);
+        String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
+        String proxy = getGlobalProxyIfNeeded(defaultPull);
+        if(proxy != null){
+            List<String> env = new ArrayList<String>(); 
+            env.add(HG_PROXY_ENV + proxy);
+            list = execEnv(command, env);
+        }else{
+            list = exec(command);
+        }
 
         if (!list.isEmpty()) {
             if (isErrorAbort(list.get(list.size() -1))) {
@@ -1009,7 +1081,9 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty()) {
-            if (isErrorNoRepository(list.get(0))) {
+            if(isErrorNoDefaultPush(list.get(0))){
+                // Ignore
+            }else if (isErrorNoRepository(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
              } else if (isErrorAbort(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
@@ -2421,6 +2495,9 @@ public class HgCommand {
         return msg.indexOf(HG_NO_CHANGES_ERR) > -1;                                   // NOI18N
     }
     
+    private static boolean isErrorNoDefaultPush(String msg) {
+        return msg.indexOf(HG_ABORT_NO_DEFAULT_PUSH_ERR) > -1; // NOI18N
+    }
     private static boolean isErrorNoRepository(String msg) {
         return msg.indexOf(HG_NO_REPOSITORY_ERR) > -1 ||
                  msg.indexOf(HG_NOT_REPOSITORY_ERR) > -1 ||

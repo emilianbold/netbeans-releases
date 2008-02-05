@@ -1,0 +1,92 @@
+/*
+ * AmazonS3BucketResource.java
+ *
+ * Created on __DATE__, __TIME__
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package Templates.Classes;
+import java.io.BufferedReader;
+import java.io.File;
+import RestConnection.RequestMethod;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.activation.DataSource;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.UriTemplate;
+import javax.ws.rs.UriParam;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.ProduceMime;
+import javax.ws.rs.ConsumeMime;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpContext;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Builder;
+import javax.ws.rs.core.UriInfo;
+import javax.xml.transform.stream.StreamSource;
+
+
+/**
+ * AmazonS3 Bucket Resource
+ *
+ * @author __USER__
+ */
+public class AmazonS3BucketResource {
+    
+    private static final String HOST = "s3.amazonaws.com";
+    
+    private String accessKey = "04KK4AENM7FWVT06RF82";
+   
+    private String secretAccessKey = "5ErlY2f/TuijDabdpr2F267SHYOmDJDaDsHqF4Bb";
+
+    /**
+     * Retrieves representation of an instance of demo.BucketResource
+     * @param name resource URI parameter
+     * @return an instance of java.lang.String
+     */
+    @HttpMethod("GET")
+    @ProduceMime({"application/xml", "application/json"})
+    public String getXml(@UriParam("album")
+    String album) {
+       try {
+         return execute(RequestMethod.GET, album);
+       } catch (JAXBException ex) {
+           throw new WebApplicationException(ex);
+       }
+    }
+
+    public String execute(RequestMethod method, String bucket) {
+        String url = "http://" + bucket + "." + HOST + "/";
+         RestConnection conn = new RestConnection(url, method, 
+                new String[][] {});
+        String date = conn.getDate();
+        
+        String authorization =
+                AmazonS3BucketsResource.AmazonAuthorizationGenerator.generate(
+                accessKey, secretAccessKey,
+                method.toString(), "", "",
+                date,
+                bucket, "/");
+        
+        String[][] headers = {{"Authorization", authorization}};
+    
+        try {
+           return conn.connect(headers, null);
+        } catch (IOException ex) {;
+            throw new WebApplicationException(ex);
+        }
+    }
+}

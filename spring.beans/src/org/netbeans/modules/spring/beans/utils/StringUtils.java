@@ -42,7 +42,7 @@
 package org.netbeans.modules.spring.beans.utils;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -113,11 +113,9 @@ public final class StringUtils {
      * @see java.lang.String#trim()
      * @see #delimitedListToStringArray
      */
-    public static List<String> tokenize(
-            String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
-
+    private static List<String> tokenize(String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
         if (str == null) {
-            return null;
+            return Collections.emptyList();
         }
         StringTokenizer st = new StringTokenizer(str, delimiters);
         List<String> tokens = new ArrayList<String>();

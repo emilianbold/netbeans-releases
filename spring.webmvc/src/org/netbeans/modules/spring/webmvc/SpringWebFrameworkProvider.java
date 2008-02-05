@@ -59,7 +59,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
- * Provides WebFrameworkProvider implementation for Spring Framework
+ * Provides WebFrameworkProvider implementation for Spring Web MVC.
  *
  * @author Craig MacKay
  */
@@ -108,7 +108,7 @@ public class SpringWebFrameworkProvider extends WebFrameworkProvider {
     @Override
     public WebModuleExtender createWebModuleExtender(WebModule webModule, ExtenderController controller) {
         boolean defaultValue = (webModule == null || !isInWebModule(webModule));
-        panel = new SpringWebModuleExtender(this, controller, !defaultValue);
+        panel = new SpringWebModuleExtender(this, controller, !defaultValue, "Dispatcher", "*.htm"); // NOI18N
         // may need to use panel for setting an extended configuration
         return panel;
     }  

@@ -21,7 +21,9 @@ package org.netbeans.modules.bpel.mapper.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.soa.mappercore.icons.StringIcon2D;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.soa.mappercore.model.Constant;
 import org.netbeans.modules.soa.mappercore.model.Operation;
 import org.netbeans.modules.soa.mappercore.model.Function;
@@ -124,7 +126,7 @@ public final class VertexFactory  {
         // Create a new Vertex itself
         Function newVertex = new Function(
                 functionType, 
-                null, 
+                metadata.getIcon(), 
                 metadata.getDisplayName(), 
                 metadata.getResultType().getName());
         //
@@ -141,7 +143,7 @@ public final class VertexFactory  {
         //
         // Create a new Vertex itself
         Operation newOper = new Operation(
-                operationType, new StringIcon2D(metadata.getName()));
+                operationType, metadata.getIcon());
         //
         addVertexItems(newOper, metadata);
         //
@@ -165,7 +167,7 @@ public final class VertexFactory  {
         //
         Function newVertex = new Function(
                     metadata,
-                    null, 
+                    metadata.getIcon(), 
                     metadata.getDisplayName(), 
                     resultType.getName());
         //
@@ -176,7 +178,7 @@ public final class VertexFactory  {
 
     public Constant createNumericLiteral(Number value) { 
         Constant newVertex = new Constant(XPathNumericLiteral.class, 
-                new StringIcon2D("#")); // NOI18N
+                NUMBER_ICON);
         VertexItem contentItem = new VertexItem(newVertex, value, Number.class);
         newVertex.addItem(contentItem);
         return newVertex;
@@ -184,7 +186,7 @@ public final class VertexFactory  {
 
     public Constant createStringLiteral(String value) {
         Constant newVertex = new Constant(XPathStringLiteral.class, 
-                new StringIcon2D("str")); // NOI18N
+                STRING_ICON);
         VertexItem contentItem = new VertexItem(newVertex, value, String.class);
         newVertex.addItem(contentItem);
         return newVertex;
@@ -320,5 +322,14 @@ public final class VertexFactory  {
         return itemsList;
     }
     
+    
+    private static final Icon NUMBER_ICON = new ImageIcon(VertexFactory.class
+            .getResource(
+            "/org/netbeans/modules/bpel/mapper/palette/image/numeric.gif")); // NOI18N
+
+    private static final Icon STRING_ICON = new ImageIcon(VertexFactory.class
+            .getResource(
+            "/org/netbeans/modules/bpel/mapper/palette/image/string.gif")); // NOI18N
+
 }
     

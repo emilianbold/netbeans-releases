@@ -144,9 +144,9 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         "platform.active", // NOI18N
                         WebProjectProperties.J2EE_SERVER_INSTANCE, 
                         new Action[] {
-                            LibrariesNode.createAddProjectAction(project, WebProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES),
-                            LibrariesNode.createAddLibraryAction(project, WebProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES),
-                            LibrariesNode.createAddFolderAction(project, WebProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES),
+                            LibrariesNode.createAddProjectAction(project, true),
+                            LibrariesNode.createAddLibraryAction(project, true),
+                            LibrariesNode.createAddFolderAction(project, true),
                             null,
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
                         },
@@ -169,9 +169,9 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         null,
                         null,
                         new Action[] {
-                            LibrariesNode.createAddProjectAction(project, WebProjectProperties.JAVAC_TEST_CLASSPATH, null),
-                            LibrariesNode.createAddLibraryAction(project, WebProjectProperties.JAVAC_TEST_CLASSPATH, null),
-                            LibrariesNode.createAddFolderAction(project, WebProjectProperties.JAVAC_TEST_CLASSPATH, null),
+                            LibrariesNode.createAddProjectAction(project, false),
+                            LibrariesNode.createAddLibraryAction(project, false),
+                            LibrariesNode.createAddFolderAction(project, false),
                             null,
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
                         },

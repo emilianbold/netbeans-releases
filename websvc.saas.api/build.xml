@@ -21,13 +21,15 @@
         <xjc schema="${saas.service.xsd}"
             package="org.netbeans.modules.websvc.saas.model.jaxb"
             destdir="src">
-            <depends file="${saass-service.xsd}"/>
+            <depends file="${saas-service.xsd}"/>
             <produces dir="${saas.model.jaxb}"/>
         </xjc>
-        <!-- xjc schema="src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+        <xjc schema="src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
             package="org.netbeans.modules.websvc.saas.model.wadl"
             destdir="src">
-        </xjc-->
+            <depends file="${wadl.xsd}"/>
+            <produces dir="${saas.model.wadl}"/>
+        </xjc>
     </target>
     
     <target name="compile" depends="model-gen,projectized-common.compile"/>

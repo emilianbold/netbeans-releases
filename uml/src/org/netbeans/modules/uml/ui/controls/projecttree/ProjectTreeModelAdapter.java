@@ -307,4 +307,14 @@ public class ProjectTreeModelAdapter implements IProjectTreeModel
    {
        
    }
+
+    public ITreeItem getDiagramsRootNode(IProject project)
+    {
+        return null;
+    }
+
+    public boolean isDiagramsRootNode(ITreeItem node)
+    {
+        return false;
+    }
 }

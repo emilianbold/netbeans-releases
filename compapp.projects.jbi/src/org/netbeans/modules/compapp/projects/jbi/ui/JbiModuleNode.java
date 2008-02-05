@@ -52,7 +52,6 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiInstalledProjectPluginIn
 import org.netbeans.modules.compapp.projects.jbi.api.InternalProjectTypePlugin;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiProjectActionPerformer;
 import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.actions.DeleteAction;
 import org.openide.actions.CustomizeAction;
 
@@ -63,7 +62,6 @@ import org.openide.util.Utilities;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.filesystems.FileUtil;
-import org.openide.ErrorManager;
 
 import java.awt.*;
 import java.util.List;
@@ -102,6 +100,7 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
     }
 
     // Create the popup menu:
+    @Override
     public Action[] getActions(boolean context) {
         if (null == actions) {
             actions = new ArrayList<Action>();
@@ -115,10 +114,12 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
         return actions.toArray(new Action[actions.size()]);
     }
 
+    @Override
     public boolean canDestroy() {
         return true;
     }
 
+    @Override
     public void destroy() throws IOException {
         super.destroy();
 
@@ -139,13 +140,15 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
         deleteModuleAction.performAction(new Node[] {this});
 
         // clean up the internal plug-in project generated files..
-        JbiProject jbiProj = ((JbiModuleViewNode) this.getParentNode()).getProject();
-        if (JbiInstalledProjectPluginInfo.isInternalSubproject(jbiProj, suProj)) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    boolean ok = deleteDir(FileUtil.toFile(suProj.getProjectDirectory()));
-                }
-            });
+        if (this.getParentNode() != null) { // TMP fix for NPE
+            JbiProject jbiProj = ((JbiModuleViewNode) this.getParentNode()).getProject();
+            if (JbiInstalledProjectPluginInfo.isInternalSubproject(jbiProj, suProj)) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        boolean ok = deleteDir(FileUtil.toFile(suProj.getProjectDirectory()));
+                    }
+                });
+            }
         }
     }
 
@@ -200,6 +203,7 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Image getIcon(int type) {
         Image ret = getProjIcon();
         if (ret == null){
@@ -216,6 +220,7 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
@@ -225,6 +230,7 @@ public class JbiModuleNode extends AbstractNode implements Node.Cookie {
      *
      * @return DOCUMENT ME!
      */
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

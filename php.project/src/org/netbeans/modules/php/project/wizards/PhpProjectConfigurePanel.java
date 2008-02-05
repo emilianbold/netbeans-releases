@@ -43,12 +43,14 @@ package org.netbeans.modules.php.project.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.LinkedList;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.HelpCtx;
@@ -63,18 +65,16 @@ final class PhpProjectConfigurePanel implements Panel, WizardDescriptor.Finishab
     
     public static final String DEFAULT_PROJECT_NAME = "DefaultProjectName"; // NOI18N
     public static final String DEFAULT_NEW_FILE_NAME = "DefaultNewFileName"; // NOI18N
+    public static final String DEFAULT_SOURCE_ROOT = "DefaultSourceRootDirectory"; // NOI18N
+    public static final String DEFAULT_PHP_VERSION = "DefaultPhpVersion"; // NOI18N
     
-    PhpProjectConfigurePanel(NewPhpProjectWizardIterator.WizardType type) {
-        myType = type;
+    PhpProjectConfigurePanel() {
         init( true );
     }
     
-    public PhpProjectConfigurePanel( String title , String defaultName, 
-            boolean full, NewPhpProjectWizardIterator.WizardType type ) 
-    {
+    public PhpProjectConfigurePanel( String title , String defaultName, boolean full){
         myTitle = title;
         myDefaultName = defaultName;
-        myType = type;
         init( full );
     }
     
@@ -167,6 +167,22 @@ final class PhpProjectConfigurePanel implements Panel, WizardDescriptor.Finishab
             getString( DEFAULT_NEW_FILE_NAME );
     }
     
+    public String getDefaultSourceRoot() {
+        if ( myDefaultSourceRoot == null ) {
+            return  NbBundle.getBundle(NewPhpProjectWizardIterator.class).
+                getString( DEFAULT_SOURCE_ROOT );
+        }
+        return myDefaultSourceRoot;
+    }
+    
+    public String getDefaultPhpVersion() {
+        if ( myDefaultPhpVersion == null ) {
+            return  NbBundle.getBundle(NewPhpProjectWizardIterator.class).
+                getString( DEFAULT_PHP_VERSION );
+        }
+        return myDefaultPhpVersion;
+    }
+    
     public static File getCanonicalFile(File file) {
         try {
             return file.getCanonicalFile();
@@ -175,6 +191,41 @@ final class PhpProjectConfigurePanel implements Panel, WizardDescriptor.Finishab
         }
     }
 
+    /**
+     * Creates file object for project location. Takes value from 
+     * provided WizardDescriptor, if specified. uses default value otherwise.
+     * @param settings WizardDescriptor
+     * @return File project location directory
+     */
+    protected File getProjectLocation(WizardDescriptor settings){
+        File projectLocation = (File) settings.
+            getProperty(NewPhpProjectWizardIterator.PROJECT_DIR);
+        if (projectLocation == null) {
+            projectLocation = ProjectChooser.getProjectsFolder();
+        }
+        else {
+            projectLocation = projectLocation.getParentFile();
+        }
+        return projectLocation;
+    }
+    
+    /**
+     * Creates String with project name. Takes value from 
+     * provided WizardDescriptor, if specified. uses default value otherwise.
+     * @param settings WizardDescriptor
+     * @return String project name (default or specified by user)
+     */
+    protected String getProjectName(WizardDescriptor settings){
+        String projectName = (String) settings.getProperty(
+                NewPhpProjectWizardIterator.NAME);
+        if (projectName == null) {
+            projectName = getDefaultFreeName( getProjectLocation(settings) );
+        }
+        return projectName;
+    }
+    
+    
+    
     String getTitle() {
         return myTitle;
     }
@@ -195,6 +246,23 @@ final class PhpProjectConfigurePanel implements Panel, WizardDescriptor.Finishab
         }
     }
     
+    private String getDefaultFreeName( File projectLocation ) {
+        int i = 1;
+        String projectName;
+        do {
+            projectName = validFreeProjectName(projectLocation, i++ );
+        }
+        while ( projectName == null );
+        return projectName;
+    }
+    
+    private String validFreeProjectName(File parentFolder, int index) {
+        String name = MessageFormat.format( getDefaultName(), 
+                new Object[] {index});
+        File file = new File(parentFolder, name);
+        return file.exists() ? null : name;
+    }
+
     private PhpConfigureProjectVisual getVisualPanel() {
         return myComponent;
     }
@@ -208,24 +276,17 @@ final class PhpProjectConfigurePanel implements Panel, WizardDescriptor.Finishab
         myComponent = new PhpConfigureProjectVisual( this );
     }
 
-    public NewPhpProjectWizardIterator.WizardType getWizardType(){
-        return myType;
-    }
-    
     private PhpConfigureProjectVisual myComponent;
     
     private final Collection<ChangeListener> myListeners = 
         new LinkedList<ChangeListener>();
     
     private WizardDescriptor myDescriptor;
-    
     private String myTitle;
-    
     private boolean isFull;
     
     private String myDefaultName;
-    
-    private NewPhpProjectWizardIterator.WizardType myType;
-    
+    private String myDefaultSourceRoot;
+    private String myDefaultPhpVersion;
 
 }

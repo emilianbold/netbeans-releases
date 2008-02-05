@@ -50,7 +50,7 @@ public class IEPWSDLGenerator {
         SQL_2_XSD_MAP.put("VARBINARY", "xsd:base64Binary");
         SQL_2_XSD_MAP.put("LONGVARBINARY", "xsd:base64Binary");
         SQL_2_XSD_MAP.put("BLOB", "xsd:base64Binary");
-        SQL_2_XSD_MAP.put("CLOB", "xsd:string");
+        SQL_2_XSD_MAP.put("CLOB", "xsd:anyType");
 //        "ARRAY",
 //        "REF",
 //        "STRUCT",

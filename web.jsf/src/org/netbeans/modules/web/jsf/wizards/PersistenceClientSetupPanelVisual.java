@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 
+import java.io.IOException;
 import javax.swing.ComboBoxModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -51,13 +52,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-//TODO: RETOUCHE
-//import org.netbeans.modules.j2ee.common.FQNSearch;
-//import org.netbeans.modules.j2ee.common.JMIUtils;
-//import org.netbeans.modules.j2ee.persistence.dd.orm.model_1_0.Entity;
-//import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ChangeSupport;
-//import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupSupport;
-//import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.SourceGroupUISupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
@@ -67,6 +63,7 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -292,8 +289,8 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
         
         projectTextField.setText(ProjectUtils.getInformation(project).getDisplayName());
 
-//        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-//        SourceGroupUISupport.connect(locationComboBox, sourceGroups);
+         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);      
+         SourceGroupUISupport.connect(locationComboBox, sourceGroups);
 
         packageComboBox.setRenderer(PackageView.listRenderer());
 
@@ -320,12 +317,18 @@ public class PersistenceClientSetupPanelVisual extends javax.swing.JPanel implem
     
     void store(WizardDescriptor settings) {
         settings.putProperty(WizardProperties.JSF_FOLDER, jsfFolder.getText());
-        settings.putProperty(WizardProperties.JSF_CLASSES_PACKAGE, getPackage());
-//        try {
-////            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage()));
-//        } catch (IOException ex) {
-//            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
-//        }
+         String pkg = getPackage();
+         settings.putProperty(WizardProperties.JSF_CLASSES_PACKAGE, pkg);
+         try {
+             FileObject fo = getLocationValue().getRootFolder();
+             FileObject targetFolder = fo.getFileObject(pkg);
+             if (targetFolder == null) {
+                 targetFolder = fo.createFolder(pkg);
+             }
+             Templates.setTargetFolder(settings, targetFolder);
+         } catch (IOException ex) {
+             Exceptions.printStackTrace(ex);
+         }
     }
 
     private void updateSourceGroupPackages() {
