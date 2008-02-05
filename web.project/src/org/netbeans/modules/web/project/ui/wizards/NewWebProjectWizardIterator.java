@@ -44,7 +44,6 @@ package org.netbeans.modules.web.project.ui.wizards;
 import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
-import java.lang.StringBuffer;
 import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.List;
@@ -71,19 +70,13 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.api.progress.ProgressHandle;
 
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
-import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
-import org.netbeans.modules.j2ee.dd.api.web.WebApp;
-import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 
 /**
  * Wizard to create a new Web project.
@@ -144,6 +137,14 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         createData.setContextPath((String) wiz.getProperty(WizardProperties.CONTEXT_PATH));
         createData.setJavaPlatformName((String) wiz.getProperty(WizardProperties.JAVA_PLATFORM));
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
+        
+        String librariesDefinition = (String)wiz.getProperty(WizardProperties.SHARED_LIBRARIES);
+        if (!librariesDefinition.endsWith(File.separator)) {
+            librariesDefinition += File.separatorChar;
+        }
+        librariesDefinition += WebProjectProperties.DEFAULT_LIBRARIES_FILENAME;
+        createData.setLibrariesDefinition(librariesDefinition);
+        
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
         handle.progress(2);
         

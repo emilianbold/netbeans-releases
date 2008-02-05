@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
@@ -63,6 +65,7 @@ import org.netbeans.modules.web.project.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -89,12 +92,15 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     private final UpdateHelper helper;
     private final PropertyEvaluator eval;    
     private final ClassPathSupport cs;    
+    private ReferenceHelper refHelper;
 
     private volatile boolean projectDeleted;
 
     private boolean dontFireChange = false;
     
     private final PropertyChangeListener listener = WeakListeners.propertyChange(this, null);
+    
+    private static final Logger LOG = Logger.getLogger(WebProjectClassPathModifier.class.getName());
 
     /** Creates a new instance of J2SEProjectClassPathModifier */
     public WebProjectClassPathModifier(final WebProject project, final UpdateHelper helper, final PropertyEvaluator eval, final ReferenceHelper refHelper) {
@@ -105,10 +111,9 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
         this.project = project;
         this.helper = helper;
         this.eval = eval;
-        this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
+        this.refHelper = refHelper;
+        this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), helper,
                                         WebProjectProperties.WELL_KNOWN_PATHS, 
-                                        WebProjectProperties.LIBRARY_PREFIX, 
-                                        WebProjectProperties.LIBRARY_SUFFIX, 
                                         WebProjectProperties.ANT_ARTIFACT_PREFIX );
         
         //#56140
@@ -121,7 +126,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     }
     
     protected SourceGroup[] getExtensibleSourceGroups() {
-        Sources s = (Sources) this.project.getLookup().lookup(Sources.class);
+        Sources s = project.getLookup().lookup(Sources.class);
         assert s != null;
         return s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
     }
@@ -161,7 +166,7 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                                 if (toAdd == null) {
                                     toAdd = classPathRoots[i];
                                 }
-                                File f = FileUtil.normalizeFile( new File (URI.create(toAdd.toExternalForm())));
+                                final File f = FileUtil.normalizeFile( LibrariesSupport.convertURLToFile(toAdd));
                                 if (f == null ) {
                                     throw new IllegalArgumentException ("The file must exist on disk");     //NOI18N
                                 }
@@ -281,7 +286,25 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     boolean handleLibraries (final Library[] libraries, final String classPathProperty, final String webModuleElementName, final int operation) throws IOException, UnsupportedOperationException {
         List<ClassPathSupport.Item> items = new ArrayList<ClassPathSupport.Item>(libraries.length);
         for (int i = 0; i < libraries.length; i++) {
-            items.add(ClassPathSupport.Item.create(libraries[i], null, ClassPathSupport.Item.PATH_IN_WAR_LIB));
+            Library lib = libraries[i];
+            if (project.getAntProjectHelper().isSharableProject()) {
+                if (lib.getManager().getLocation() == null) {
+                    LOG.log(Level.INFO, "Client is adding global library ["+lib+
+                            "] to sharable project.", new Exception());
+                    // For backward compatibility just copy the library to shared one.
+                    Library l = refHelper.getProjectLibraryManager().getLibrary(lib.getName());
+                    if (l != null) {
+                        lib = l;
+                    } else {
+                        lib = refHelper.copyLibrary(lib);
+                    }
+                } else if (!lib.getManager().getLocation().equals(refHelper.getProjectLibraryManager().getLocation())) {
+                    throw new UnsupportedOperationException("Adding library '"+lib.getName()+ // NOI18N
+                        "' from '"+lib.getManager().getLocation()+"' to project '"+project.getProjectDirectory()+ // NOI18N
+                        "' is not supported because project libraries are defined in '"+refHelper.getProjectLibraryManager().getLocation()+"'"); // NOI18N
+                }
+            }
+            items.add(ClassPathSupport.Item.create(lib, null, ClassPathSupport.Item.PATH_IN_WAR_LIB));
         }
         return handleLibraryClassPathItems(items, classPathProperty, webModuleElementName, operation, true);
     }
@@ -318,13 +341,6 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
                             String itemRefs[] = cs.encodeToStrings( resources.iterator(), webModuleElementName);
                             props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                             props.setProperty(classPathProperty, itemRefs);                                
-                            if (operation == ADD) {
-                                for (ClassPathSupport.Item item : changed) {
-                                    String prop = cs.getLibraryReference(item);
-                                    prop = prop.substring(2, prop.length()-1); // XXX make a PropertyUtils method for this!
-                                    ClassPathSupport.relativizeLibraryClassPath(props, helper.getAntProjectHelper(), prop);
-                                }
-                            }
                             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                             //update lib references in private properties
                             EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);

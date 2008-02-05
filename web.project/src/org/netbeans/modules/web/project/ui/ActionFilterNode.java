@@ -271,10 +271,8 @@ class ActionFilterNode extends FilterNode {
            this.entryId = entryId;
            this.webModuleElementName = webModuleElementName;
            
-           this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), 
+           this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), helper,
                                         WebProjectProperties.WELL_KNOWN_PATHS, 
-                                        WebProjectProperties.LIBRARY_PREFIX, 
-                                        WebProjectProperties.LIBRARY_SUFFIX, 
                                         WebProjectProperties.ANT_ARTIFACT_PREFIX );        
 
        }

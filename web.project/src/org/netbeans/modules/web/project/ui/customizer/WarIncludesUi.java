@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
@@ -57,7 +56,6 @@ import javax.swing.ButtonModel;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -68,7 +66,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
@@ -80,8 +77,10 @@ import org.openide.util.Utilities;
 
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
 import org.netbeans.modules.web.project.ui.customizer.WarIncludesUiSupport.ClasspathTableModel;
@@ -98,7 +97,7 @@ public class WarIncludesUi {
 
     public static class EditMediator implements ActionListener, ListSelectionListener, TableModelListener {
                 
-        private final Project project;
+        private final WebProject project;
         private final JTable list;
         private final ClasspathTableModel listModel;
         private final ListSelectionModel selectionModel;
@@ -107,7 +106,7 @@ public class WarIncludesUi {
         private final ButtonModel addAntArtifact;
         private final ButtonModel remove;
                     
-        public EditMediator( Project project,
+        public EditMediator( WebProject project,
                              JTable list,
                              ButtonModel addJar,
                              ButtonModel addLibrary, 
@@ -131,7 +130,7 @@ public class WarIncludesUi {
             this.project = project;
         }
 
-        public static void register(Project project,
+        public static void register(WebProject project,
                                     JTable list,
                                     ButtonModel addJar,
                                     ButtonModel addLibrary, 
@@ -189,24 +188,13 @@ public class WarIncludesUi {
                         includedLibraries.add( item.getLibrary() );
                     }
                 }
-                Object[] options = new Object[] {
-                    new JButton (NbBundle.getMessage (WarIncludesUi.class,"LBL_AddLibrary")),
-                    DialogDescriptor.CANCEL_OPTION
-                };
-                ((JButton)options[0]).setEnabled(false);
-                ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WarIncludesUi.class,"AD_AddLibrary"));
-
-                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-                String j2eeVersion = wm.getJ2eePlatformVersion();
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
-                DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( WarIncludesUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
-                Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-                dlg.setVisible(true);
-                if (desc.getValue() == options[0]) {
-                   WarIncludesUiSupport.addLibraries(panel.getSelectedLibraries(), includedLibraries, list);
+                
+                Set<Library> added = LibraryChooser.showDialog(
+                    project.getReferenceHelper().getProjectLibraryManager(), null, 
+                    project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX restrict to j2se libs only?
+                if (added != null) {
+                   WarIncludesUiSupport.addLibraries(added.toArray(new Library[added.size()]), includedLibraries, list);
                 }
-                dlg.dispose();
             }
             else if ( source == addAntArtifact ) { 
                 AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(

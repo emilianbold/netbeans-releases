@@ -41,14 +41,19 @@
 
 package org.netbeans.modules.web.project.ui.wizards;
 
+import java.awt.Component;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JFileChooser;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -56,9 +61,11 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
-import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class PanelOptionsVisual extends javax.swing.JPanel {
@@ -67,6 +74,8 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private String sourceStructure;
     private boolean contextModified = false;
     private final DefaultComboBoxModel serversModel = new DefaultComboBoxModel();
+    private String currentLibrariesLocation;
+    private String projectLocation;
     
     private J2eeVersionWarningPanel warningPanel;
     
@@ -81,12 +90,18 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         initComponents();
         setJ2eeVersionWarningPanel();
         this.panel = panel;
+        currentLibrariesLocation = ".."+File.separatorChar+"libraries"; // NOI18N
+        librariesLocation.setText(currentLibrariesLocation);
         initServers(FoldersListSettings.getDefault().getLastUsedServer());
         // preselect the first item in the j2ee spec combo
         if (j2eeSpecComboBox.getModel().getSize() > 0) {
             j2eeSpecComboBox.setSelectedIndex(0);
         }
         initEnterpriseApplications();
+    }
+
+    public void setProjectLocation(String projectLocation) {
+        this.projectLocation = projectLocation;
     }
     
     protected int computeHeight() {
@@ -114,29 +129,14 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         addServerButton = new javax.swing.JButton();
         warningPlaceHolderPanel = new javax.swing.JPanel();
         setAsMainCheckBox = new javax.swing.JCheckBox();
-
-        setLayout(new java.awt.GridBagLayout());
+        sharableProject = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        librariesLocation = new javax.swing.JTextField();
+        browseLibraries = new javax.swing.JButton();
 
         jLabelEnterprise.setDisplayedMnemonic(org.openide.util.NbBundle.getBundle(PanelOptionsVisual.class).getString("LBL_NWP1_AddToEnterprise_LabelMnemonic").charAt(0));
         jLabelEnterprise.setLabelFor(jComboBoxEnterprise);
         jLabelEnterprise.setText(NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_AddToEnterprise_Label")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 11);
-        add(jLabelEnterprise, gridBagConstraints);
-        jLabelEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc")); // NOI18N
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jComboBoxEnterprise, gridBagConstraints);
-        jComboBoxEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc")); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -233,34 +233,86 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         addServerButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCN_AddServer")); // NOI18N
         addServerButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ASCD_AddServer")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
-        add(jPanel1, gridBagConstraints);
-
         warningPlaceHolderPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        add(warningPlaceHolderPanel, gridBagConstraints);
 
         setAsMainCheckBox.setMnemonic(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBoxMnemonic").charAt(0));
         setAsMainCheckBox.setSelected(true);
         setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
-        add(setAsMainCheckBox, gridBagConstraints);
+        setAsMainCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+
+        sharableProject.setMnemonic('P');
+        sharableProject.setSelected(true);
+        sharableProject.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_SharableProject_Checkbox")); // NOI18N
+        sharableProject.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        sharableProject.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sharableProjectActionPerformed(evt);
+            }
+        });
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Location_Label")); // NOI18N
+
+        librariesLocation.setEditable(false);
+
+        browseLibraries.setMnemonic('B');
+        browseLibraries.setText(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "LBL_PanelOptions_Browse_Button")); // NOI18N
+        browseLibraries.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseLibrariesActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabelEnterprise))
+                .add(11, 11, 11)
+                .add(jComboBoxEnterprise, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 464, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+            .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 618, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(sharableProject)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel1)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(librariesLocation, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(browseLibraries)))
+                .addContainerGap())
+            .add(layout.createSequentialGroup()
+                .add(setAsMainCheckBox)
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(warningPlaceHolderPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .add(3, 3, 3)
+                        .add(jLabelEnterprise))
+                    .add(jComboBoxEnterprise, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(11, 11, 11)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 257, Short.MAX_VALUE)
+                .add(setAsMainCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(sharableProject)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(browseLibraries)
+                    .add(librariesLocation, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
+        );
+
+        jLabelEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc")); // NOI18N
+        jComboBoxEnterprise.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_AddToEnterpriseComboBox_A11YDesc")); // NOI18N
         setAsMainCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACS_LBL_NWP1_SetAsMain_A11YDesc")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
@@ -319,6 +371,56 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
         contextModified = true;
     }//GEN-LAST:event_jTextFieldContextPathKeyReleased
+
+    private void sharableProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sharableProjectActionPerformed
+        librariesLocation.setEnabled(sharableProject.isSelected());
+        browseLibraries.setEnabled(sharableProject.isSelected());
+        if (sharableProject.isSelected()) {
+            librariesLocation.setText(currentLibrariesLocation);
+        } else {
+            librariesLocation.setText("");
+        }
+    }//GEN-LAST:event_sharableProjectActionPerformed
+
+    private void browseLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseLibrariesActionPerformed
+        // below folder is used just for relativization:
+        File f = FileUtil.normalizeFile(new File(projectLocation +
+                File.separatorChar + "project_folder")); // NOI18N
+        String curr = browseForLibraryLication(librariesLocation.getText().trim(), this, f);
+        if (curr != null) {
+            currentLibrariesLocation = curr;
+            if (sharableProject.isSelected()) {
+                librariesLocation.setText(currentLibrariesLocation);
+            }
+        }
+    }//GEN-LAST:event_browseLibrariesActionPerformed
+    
+    //TODO move to some api patkage to make reusable by all project types..
+    public static String browseForLibraryLication(String current, Component comp, File projectLocation) {
+        File lib = PropertyUtils.resolveFile(projectLocation, current);
+        if (!lib.exists()) {
+            lib = lib.getParentFile();
+        }
+        lib = FileUtil.normalizeFile(lib);
+        FileChooser chooser = new FileChooser(projectLocation, null);
+        chooser.setCurrentDirectory(lib);
+        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+        chooser.setDialogTitle(NbBundle.getMessage(PanelOptionsVisual.class,"LBL_Browse_Libraries_Title"));
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
+            File[] files;
+            try {
+                files = chooser.getFiles();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+            if (files.length == 1) {
+                String currentLibrariesLocation = (files[0]).getPath();
+                return currentLibrariesLocation;
+            }
+        }
+        return null;
+    }
     
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (getSelectedServer() == null) {
@@ -336,6 +438,7 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
         d.putProperty(WizardProperties.J2EE_LEVEL, getSelectedJ2eeSpec());
         d.putProperty(WizardProperties.CONTEXT_PATH, jTextFieldContextPath.getText().trim());
         d.putProperty(WizardProperties.EAR_APPLICATION, getSelectedEarApplication());
+        d.putProperty(WizardProperties.SHARED_LIBRARIES, sharableProject.isSelected() ? librariesLocation.getText() : null ); // NOI18N
         // TODO: for Java EE 5.0, warningpanel is null, 
         // but we need some check for Java SE 5.0 and higher
         if (warningPanel != null && warningPanel.getDowngradeAllowed()) {
@@ -364,16 +467,20 @@ public class PanelOptionsVisual extends javax.swing.JPanel {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addServerButton;
+    private javax.swing.JButton browseLibraries;
     private javax.swing.JComboBox j2eeSpecComboBox;
     private javax.swing.JLabel j2eeSpecLabel;
     private javax.swing.JComboBox jComboBoxEnterprise;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabelContextPath;
     private javax.swing.JLabel jLabelEnterprise;
     private javax.swing.JPanel jPanel1;
     protected javax.swing.JTextField jTextFieldContextPath;
+    private javax.swing.JTextField librariesLocation;
     private javax.swing.JComboBox serverInstanceComboBox;
     private javax.swing.JLabel serverInstanceLabel;
     private javax.swing.JCheckBox setAsMainCheckBox;
+    private javax.swing.JCheckBox sharableProject;
     private javax.swing.JPanel warningPlaceHolderPanel;
     // End of variables declaration//GEN-END:variables
 

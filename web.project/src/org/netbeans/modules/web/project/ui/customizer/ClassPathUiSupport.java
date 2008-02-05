@@ -55,11 +55,15 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.table.AbstractTableModel;
 
+import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.project.libraries.Library;
 
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.spi.java.project.support.ui.EditJarSupport;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.NbCollections;
 
 /**
  *
@@ -84,15 +88,48 @@ public class ClassPathUiSupport {
         return new ClassPathTableModel( createListModel( it ) );
     }
     
-    public static Iterator getIterator( DefaultListModel model ) {        
+    public static Iterator<ClassPathSupport.Item> getIterator( DefaultListModel model ) {        
         // XXX Better performing impl. would be nice
         return getList( model ).iterator();        
     }
     
-    public static List getList( DefaultListModel model ) {
-        return Collections.list( model.elements() );
+    public static List<ClassPathSupport.Item> getList( DefaultListModel model ) {
+        return Collections.list(NbCollections.checkedEnumerationByFilter(model.elements(), ClassPathSupport.Item.class, true));
     }
         
+    
+    public static boolean canEdit( ListSelectionModel selectionModel, DefaultListModel listModel ) {        
+        boolean can =  selectionModel.getMinSelectionIndex() == selectionModel.getMaxSelectionIndex() 
+                          && selectionModel.getMinSelectionIndex() != -1;
+        if (can) {
+            ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(selectionModel.getMinSelectionIndex());
+            can =  item.getType() == ClassPathSupport.Item.TYPE_JAR || item.getType() == ClassPathSupport.Item.TYPE_LIBRARY;
+            if (item.isBroken()) {
+                can = false;
+            }
+        }
+        return can;
+    }
+    
+    static void edit(DefaultListModel listModel, int[] selectedIndices, AntProjectHelper helper) {
+        ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.getElementAt(selectedIndices[0]);
+        if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
+            EditJarSupport.Item eji = new EditJarSupport.Item();
+            eji.setJarFile(item.getFile());
+            eji.setSourceFile(item.getSourceFile());
+            eji.setJavadocFile(item.getJavadocFile());
+            eji = EditJarSupport.showEditDialog(helper, eji);
+            if (eji != null) {
+                item.setJavadocFile(eji.getJavadocFile());
+                item.setSourceFile(eji.getSourceFile());
+            }
+        }
+        if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
+            if (item.getLibrary() != null) {
+                LibrariesCustomizer.showSingleLibraryCustomizer(item.getLibrary());
+            }
+        }
+    }
     
     /** Moves items up in the list. The indices array will contain 
      * indices to be selected after the change was done.
@@ -180,14 +217,14 @@ public class ClassPathUiSupport {
         
     }
     
-    public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, Set/*<Library>*/ alreadyIncludedLibs) {
+    public static int[] addLibraries( DefaultListModel listModel, int[] indices, Library[] libraries, Set<Library> alreadyIncludedLibs) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         for (int i = 0, j=1; i < libraries.length; i++) {
             if (!alreadyIncludedLibs.contains(libraries[i])) {
                 listModel.add( lastIndex + j++, ClassPathSupport.Item.create( libraries[i], null, ClassPathSupport.Item.PATH_IN_WAR_LIB) );
             }
         }
-        Set addedLibs = new HashSet (Arrays.asList(libraries));
+        Set<Library> addedLibs = new HashSet<Library>(Arrays.asList(libraries));
         int[] indexes = new int[libraries.length];
         for (int i=0, j=0; i<listModel.getSize(); i++) {
             ClassPathSupport.Item item = (ClassPathSupport.Item)listModel.get (i);

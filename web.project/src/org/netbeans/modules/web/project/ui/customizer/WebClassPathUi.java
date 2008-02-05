@@ -42,11 +42,13 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.BeanInfo;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
@@ -60,7 +62,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JTable;
@@ -71,10 +72,10 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.project.ProjectUtils;
 
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -85,11 +86,18 @@ import org.openide.util.Utilities;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.api.project.ant.FileChooser;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
+import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.web.project.ui.FoldersListSettings;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.util.Exceptions;
 
 /** Classes containing code speciic for handling UI of J2SE project classpath 
  *
@@ -110,6 +118,8 @@ public class WebClassPathUi {
         private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/web/project/ui/resources/projectDependencies.gif"; //NOI18N
         private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/web/project/ui/resources/referencedClasspath.gif"; //NOI18N
         private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/web/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
+        private static String RESOURCE_ICON_SOURCE_BADGE = "org/netbeans/modules/web/project/ui/resources/jarSourceBadge.png"; //NOI18N
+        private static String RESOURCE_ICON_JAVADOC_BADGE = "org/netbeans/modules/web/project/ui/resources/jarJavadocBadge.png"; //NOI18N
         
         
         private static ImageIcon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
@@ -118,12 +128,15 @@ public class WebClassPathUi {
         private static ImageIcon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
         private static ImageIcon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
         private static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
+        private static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
+        private static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
         
         private static ImageIcon ICON_BROKEN_JAR;
         private static ImageIcon ICON_BROKEN_LIBRARY;
         private static ImageIcon ICON_BROKEN_ARTIFACT;
                 
         private PropertyEvaluator evaluator;
+        private FileObject projectFolder;
         
         // Contains well known paths in the WebProject
         private static final Map WELL_KNOWN_PATHS_NAMES = new HashMap();
@@ -135,9 +148,10 @@ public class WebClassPathUi {
             WELL_KNOWN_PATHS_NAMES.put( WebProjectProperties.BUILD_TEST_CLASSES_DIR, NbBundle.getMessage (WebClassPathUi.class,"LBL_BuildTestClassesDir_DisplayName") );
         };
                 
-        public ClassPathListCellRenderer( PropertyEvaluator evaluator ) {
+        public ClassPathListCellRenderer( PropertyEvaluator evaluator, FileObject projectFolder) {
             super();
             this.evaluator = evaluator;
+            this.projectFolder = projectFolder;
         }
         
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -229,7 +243,14 @@ public class WebClassPathUi {
                     }
                     else {
                         File file = item.getFile();
-                        return file.isDirectory() ? getFolderIcon() : ICON_JAR;
+                        ImageIcon icn = file.isDirectory() ? getFolderIcon() : ICON_JAR;
+                        if (item.getSourceFile() != null) {
+                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_SOURCE_BADGE.getImage(), 8, 8 ));
+                        }
+                        if (item.getJavadocFile() != null) {
+                            icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
+                        }
+                        return icn;
                     }
                 case ClassPathSupport.Item.TYPE_CLASSPATH:
                     return ICON_CLASSPATH;
@@ -245,8 +266,16 @@ public class WebClassPathUi {
                    item.getType() == ClassPathSupport.Item.TYPE_ARTIFACT )  ) {
                 return evaluator.evaluate( item.getReference() );
             }
+            switch ( item.getType() ) {
+                case ClassPathSupport.Item.TYPE_JAR:
+                    File f = item.getFile();
+                    if (!f.isAbsolute()) {
+                        f = FileUtil.normalizeFile(new File(FileUtil.toFile(projectFolder), f.getPath()));
+                        return f.getAbsolutePath();
+                    }
+            }
             
-            return getDisplayName( item ); // XXX
+            return null;
         }
         
         private static ImageIcon getFolderIcon() {
@@ -268,6 +297,15 @@ public class WebClassPathUi {
 
         private String getLibraryName( ClassPathSupport.Item item ) {
             String ID = item.getReference();
+            if (ID == null) {
+                if (item.getLibrary() != null) {
+                    return item.getLibrary().getName();
+                }
+                //TODO HUH? happens when adding new library, then changing
+                // the library location to something that doesn't have a reference yet.
+                // why are there items without reference upfront?
+                return "XXX";
+            }
             // something in the form of "${libs.junit.classpath}"
             return ID.substring(7, ID.indexOf(".classpath")); // NOI18N
         }
@@ -287,8 +325,8 @@ public class WebClassPathUi {
         private ClassPathListCellRenderer renderer;
         private TableCellRenderer booleanRenderer;
         
-        public ClassPathTableCellItemRenderer(PropertyEvaluator evaluator) {
-            renderer = new ClassPathListCellRenderer(evaluator);
+        public ClassPathTableCellItemRenderer(PropertyEvaluator evaluator, FileObject projectFolder) {
+            renderer = new ClassPathListCellRenderer(evaluator, projectFolder);
         }
         
         public Component getTableCellRendererComponent( JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column ) {
@@ -315,7 +353,7 @@ public class WebClassPathUi {
 
     public static class EditMediator implements ActionListener, ListSelectionListener {
                 
-        private final Project project;
+        private final WebProject project;
         private final ListComponent list;
         private final DefaultListModel listModel;
         private final ListSelectionModel selectionModel;
@@ -325,8 +363,10 @@ public class WebClassPathUi {
         private final ButtonModel remove;
         private final ButtonModel moveUp;
         private final ButtonModel moveDown;
+        private final ButtonModel edit;
+        private Document libraryPath;
                     
-        public EditMediator( Project project,
+        public EditMediator( WebProject project,
                              ListComponent list,
                              ButtonModel addJar,
                              ButtonModel addLibrary, 
@@ -334,6 +374,8 @@ public class WebClassPathUi {
                              ButtonModel remove, 
                              ButtonModel moveUp,
                              ButtonModel moveDown, 
+                             ButtonModel edit,
+                             Document libPath,
                              boolean includeNewFilesInDeployment) {
                              
             // Remember all buttons
@@ -353,11 +395,13 @@ public class WebClassPathUi {
             this.remove = remove;
             this.moveUp = moveUp;
             this.moveDown = moveDown;
+            this.edit = edit;
+            this.libraryPath = libPath;
 
             this.project = project;
         }
 
-        public static void register(Project project,
+        public static void register(WebProject project,
                                     ListComponent list,
                                     ButtonModel addJar,
                                     ButtonModel addLibrary, 
@@ -365,6 +409,8 @@ public class WebClassPathUi {
                                     ButtonModel remove, 
                                     ButtonModel moveUp,
                                     ButtonModel moveDown, 
+                                    ButtonModel edit,
+                                    Document libPath,
                                     boolean includeNewFilesInDeployment) {    
             
             EditMediator em = new EditMediator( project, 
@@ -375,6 +421,8 @@ public class WebClassPathUi {
                                                 remove,    
                                                 moveUp,
                                                 moveDown,
+                                                edit,
+                                                libPath,
                                                 includeNewFilesInDeployment );
             
             // Register the listener on all buttons
@@ -384,6 +432,7 @@ public class WebClassPathUi {
             remove.addActionListener( em );
             moveUp.addActionListener( em );
             moveDown.addActionListener( em );
+            edit.addActionListener(em);
             // On list selection
             em.selectionModel.addListSelectionListener( em );
             // Set the initial state of the buttons
@@ -400,7 +449,7 @@ public class WebClassPathUi {
             
             if ( source == addJar ) { 
                 // Let user search for the Jar file
-                JFileChooser chooser = new JFileChooser();
+                FileChooser chooser = new FileChooser(project.getAntProjectHelper(), true);
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.FILES_AND_DIRECTORIES );
                 chooser.setMultiSelectionEnabled( true );
@@ -416,7 +465,14 @@ public class WebClassPathUi {
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {
                     
-                    File files[] = chooser.getSelectedFiles();
+                    File files[];
+                    try {
+                        files = chooser.getFiles();
+                    } catch (IOException ex) {
+                        // TODO: add localized message
+                        Exceptions.printStackTrace(ex);
+                        return;
+                    }
                     int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), files);
                     list.setSelectedIndices( newSelection );
                     curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
@@ -424,32 +480,50 @@ public class WebClassPathUi {
                 }
             }
             else if ( source == addLibrary ) {
-                Set/*<Library>*/includedLibraries = new HashSet ();
-                for (int i=0; i< listModel.getSize(); i++) {
-                    ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.get(i);
-                    if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY && !item.isBroken() ) {
-                        includedLibraries.add( item.getLibrary() );
+                //TODO this piece needs to go somewhere else?
+                LibraryManager manager = null;
+                boolean empty = false;
+                try {
+                    String path = libraryPath.getText(0, libraryPath.getLength());
+                    if (path != null && path.length() > 0) {
+                        File fil = PropertyUtils.resolveFile(FileUtil.toFile(project.getProjectDirectory()), path);
+                        URL url = FileUtil.normalizeFile(fil).toURI().toURL();
+                        manager = LibraryManager.forLocation(url);
+                    } else {
+                        empty = true;
                     }
+                } catch (BadLocationException ex) {
+                    empty = true;
+                    Exceptions.printStackTrace(ex);
+                } catch (MalformedURLException ex2) {
+                    Exceptions.printStackTrace(ex2);
                 }
-                Object[] options = new Object[] {
-                    new JButton (NbBundle.getMessage (WebClassPathUi.class,"LBL_AddLibrary")),
-                    DialogDescriptor.CANCEL_OPTION
-                };
-                ((JButton)options[0]).setEnabled(false);
-                ((JButton)options[0]).getAccessibleContext().setAccessibleDescription (NbBundle.getMessage (WebClassPathUi.class,"AD_AddLibrary"));
+                if (manager == null && empty) {
+                    manager = LibraryManager.getDefault();
+                }
+                if (manager == null) {
+                    //TODO some error message
+                    return;
+                }
                 
-                WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
-                String j2eeVersion = wm.getJ2eePlatformVersion();
-                LibrariesChooser panel = new LibrariesChooser ((JButton)options[0], j2eeVersion);
-                DialogDescriptor desc = new DialogDescriptor(panel,NbBundle.getMessage( WebClassPathUi.class, "LBL_CustomizeCompile_Classpath_AddLibrary" ),
-                    true, options, options[0], DialogDescriptor.DEFAULT_ALIGN,null,null);
-                Dialog dlg = DialogDisplayer.getDefault().createDialog(desc);
-                dlg.setVisible(true);
-                if (desc.getValue() == options[0]) {
-                   int[] newSelection = ClassPathUiSupport.addLibraries( listModel, list.getSelectedIndices(), panel.getSelectedLibraries(), includedLibraries);
+                Set<Library> added = LibraryChooser.showDialog(manager,
+                        null, project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX filter to j2se libs only?
+                if (added != null) {
+                    Set<Library> includedLibraries = new HashSet<Library>();
+                   int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), added.toArray(new Library[added.size()]), includedLibraries);
                    list.setSelectedIndices( newSelection );
                 }
-                dlg.dispose();
+            }
+            else if ( source == edit ) { 
+                ClassPathSupport.Item item = (Item) listModel.get(list.getSelectedIndices()[0]);
+                ClassPathUiSupport.edit( listModel, list.getSelectedIndices(),  project.getAntProjectHelper());
+                if (list instanceof JListListComponent) {
+                    ((JListListComponent)list).list.repaint();
+                } else if (list instanceof JTableListComponent) {
+                    ((JTableListComponent)list).table.repaint();
+                } else {
+                    assert false : "do not know how to handle " + list.getClass().getName();
+                }
             }
             else if ( source == addAntArtifact ) { 
                 AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
@@ -500,7 +574,7 @@ public class WebClassPathUi {
             // addJar allways enabled            
             // addLibrary allways enabled            
             // addArtifact allways enabled            
-            // editButton.setEnabled( edit );            
+            edit.setEnabled(ClassPathUiSupport.canEdit(selectionModel, listModel));            
             remove.setEnabled( canRemove );
             moveUp.setEnabled( ClassPathUiSupport.canMoveUp( selectionModel ) );
             moveDown.setEnabled( ClassPathUiSupport.canMoveDown( selectionModel, listModel.getSize() ) );       

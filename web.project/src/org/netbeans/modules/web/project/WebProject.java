@@ -135,6 +135,7 @@ import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
+import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -402,6 +403,8 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             libMod,
             new WebProjectEncodingQueryImpl(evaluator()),
             new WebTemplateAttributesProvider(this.helper),
+            ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
+            ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
@@ -884,11 +887,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
                 if (!item.isBroken() || item.getType() != ClassPathSupport.Item.TYPE_LIBRARY) {
                     continue;
                 }
-                String libraryName = item.getReference();
-                if (libraryName.startsWith(WebProjectProperties.LIBRARY_PREFIX)) {
-                    // remove the "${libs." prefix and ".classpath}" suffix
-                    libraryName = libraryName.substring(WebProjectProperties.LIBRARY_PREFIX.length(), libraryName.lastIndexOf('.'));
-                }
+                String libraryName = ClassPathSupport.getLibraryNameFromReference(item.getReference());
                 LOGGER.log(Level.FINE, "Broken reference to library: " + libraryName);
                 if (filters == null) {
                     // initializing the filters lazily because usually they will not be needed anyway
