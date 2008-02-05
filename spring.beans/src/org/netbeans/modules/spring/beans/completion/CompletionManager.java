@@ -69,6 +69,7 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.filesystems.FileObject;
@@ -567,9 +568,8 @@ public final class CompletionManager {
             Enumeration<? extends FileObject> files = fileObject.getData(false);
             while (files.hasMoreElements()) {
                 FileObject fo = files.nextElement();
-                if (fo.getName().startsWith(prefix) && fo.getMIMEType().equals("text/x-springconfig+xml")) { // NOI18N
-                    results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(),
-                            fo));
+                if (fo.getName().startsWith(prefix) && fo.getMIMEType().equals(SpringXMLConfigDataLoader.REQUIRED_MIME)) {
+                    results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(), fo));
                 }
             }
 
