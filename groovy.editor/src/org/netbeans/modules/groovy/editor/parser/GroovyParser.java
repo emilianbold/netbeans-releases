@@ -518,13 +518,16 @@ public class GroovyParser implements Parser {
             String errorMessage = e.getMessage();
             String localizedMessage = e.getLocalizedMessage();
             
-            Message message = compilationUnit.getErrorCollector().getLastError();
-            if (message instanceof SyntaxErrorMessage) {
-                SyntaxException se = ((SyntaxErrorMessage)message).getCause();
-                
-                offset = AstUtilities.getOffset(context.document, se.getStartLine(), se.getStartColumn());
-                errorMessage = se.getMessage();
-                localizedMessage = se.getLocalizedMessage();
+            ErrorCollector errorCollector = compilationUnit.getErrorCollector();
+            if (errorCollector.hasErrors()) {
+                Message message = errorCollector.getLastError();
+                if (message instanceof SyntaxErrorMessage) {
+                    SyntaxException se = ((SyntaxErrorMessage)message).getCause();
+
+                    offset = AstUtilities.getOffset(context.document, se.getStartLine(), se.getStartColumn());
+                    errorMessage = se.getMessage();
+                    localizedMessage = se.getLocalizedMessage();
+                }
             }
             
             // XXX should this be >, and = length?
