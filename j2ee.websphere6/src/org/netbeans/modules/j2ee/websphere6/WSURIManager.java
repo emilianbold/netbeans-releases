@@ -42,20 +42,59 @@ package org.netbeans.modules.j2ee.websphere6;
 
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author dlm198383
  */
 public class WSURIManager {
-    public static final String WSURI = "deployer:WebSphere:"; //NOI18N
 
-    public static String constructUrl(String host, String port, String serverRoot, String domainRoot) {
-        String url = WSURIManager.WSURI + host + ":" + port;
-        if (serverRoot != null && domainRoot != null) {
-            url += ":" + serverRoot + ":" + domainRoot;
+    private static final String WSURI = "deployer:WebSphere:"; //NOI18N
+
+    public static final String WSURI60 = WSURI; //NOI18N
+
+    public static final String WSURI61 = "deployer:WebSphere61:"; //NOI18N
+
+    public static String getRealDeploymentUrl(String url) {
+        Parameters.notNull("url", url);
+        if (url.startsWith(WSURI61)) {
+            return url.replaceFirst(WSURI61, WSURI);
         }
+
         return url;
+    }
+
+    public static String getUrlWithoutPrefix(String url) {
+        Parameters.notNull("url", url);
+        if (url.startsWith(WSURI60)) {
+            return url.substring(WSURI60.length());
+        }
+        if (url.startsWith(WSURI61)) {
+            return url.substring(WSURI61.length());
+        }
+
+        return url;
+    }
+
+    public static String constructUrl(WSVersion version, String host, String port, String serverRoot, String domainRoot) {
+        StringBuilder url = new StringBuilder();
+        // FIXME use enum method
+        switch (version) {
+            case VERSION_60:
+                url.append(WSURI60);
+                break;
+            case VERSION_61:
+                url.append(WSURI61);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid enum value"); // NOI18N
+        }
+        url.append(host).append(":").append(port);
+        if (serverRoot != null && domainRoot != null) {
+            url.append(":").append(serverRoot).append(":").append(domainRoot);
+        }
+        return url.toString();
     }
     /**
      * Returns instance properties for the server instance.
@@ -64,9 +103,9 @@ public class WSURIManager {
      * @return the InstanceProperties object, null if instance does not exists.
      */
 
-    public static InstanceProperties getInstanceProperties(String host, String port, String serverRoot, String domainRoot) {
+    public static InstanceProperties getInstanceProperties(WSVersion version, String host, String port, String serverRoot, String domainRoot) {
         InstanceProperties  instanceProperties =
-                InstanceProperties.getInstanceProperties(constructUrl(host, port, serverRoot, domainRoot));
+                InstanceProperties.getInstanceProperties(constructUrl(version, host, port, serverRoot, domainRoot));
         return instanceProperties;
     }
     /**
@@ -82,12 +121,12 @@ public class WSURIManager {
      * @exception InstanceCreationException when instance with same url already
      *            registered.
      */
-    public static InstanceProperties createInstanceProperties(String host,
+    public static InstanceProperties createInstanceProperties(WSVersion version, String host,
             String port, String serverRoot, String domainRoot, String user,
             String password, String displayName) throws InstanceCreationException {
 
         InstanceProperties  instanceProperties =
-                InstanceProperties.createInstanceProperties(constructUrl(host, port, serverRoot, domainRoot), user, password, displayName);
+                InstanceProperties.createInstanceProperties(constructUrl(version, host, port, serverRoot, domainRoot), user, password, displayName);
 
         return instanceProperties;
     }

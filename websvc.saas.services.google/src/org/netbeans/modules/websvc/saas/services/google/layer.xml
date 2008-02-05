@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
+    
+    <folder name="Templates">
+        <folder name="WebServices">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.google.Bundle"/>
+            <file name="profile.properties" url="/org/netbeans/modules/websvc/saas/services/google/resources/profile.properties">
+                <attr name="position" intvalue="0"/>
+            </file>
+        </folder>
+    </folder>
+    
+    <folder name="SaasServices">
+        <folder name="YouTube">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.google.Bundle"/>
+            <file name="GoogleAccounts.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleAccounts.xml"/>
+            <file name="GoogleAdSenseForContent.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleAdSenseForContent.xml"/>
+            <file name="GoogleGeocoder.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleGeocoder.xml"/>
+            <file name="GoogleMap.xml" url="/org/netbeans/modules/websvc/saas/services/google/resources/GoogleMap.xml"/>
+        </folder>
+    </folder>
+    
 </filesystem>

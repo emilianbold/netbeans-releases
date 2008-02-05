@@ -47,23 +47,19 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.java.ui.Icons;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * 

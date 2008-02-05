@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -144,7 +145,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-	return getListData();
+	return new ArrayList(getListData());
     }
         
     public void propertyChange(PropertyChangeEvent evt) {

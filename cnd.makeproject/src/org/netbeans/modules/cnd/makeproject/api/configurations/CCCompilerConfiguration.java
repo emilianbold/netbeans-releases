@@ -85,7 +85,7 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
         clone.setLanguageExt((IntConfiguration)getLanguageExt().clone());
         clone.setIncludeDirectories((VectorConfiguration)getIncludeDirectories().clone());
         clone.setInheritIncludes((BooleanConfiguration)getInheritIncludes().clone());
-        clone.setPreprocessorConfiguration((OptionsConfiguration)getPreprocessorConfiguration().clone());
+        clone.setPreprocessorConfiguration((VectorConfiguration)getPreprocessorConfiguration().clone());
         clone.setInheritPreprocessor((BooleanConfiguration)getInheritPreprocessor().clone());
         return clone;
     }
@@ -150,9 +150,9 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
     }
     public String getPreprocessorOptions() {
         CCCompilerConfiguration master = (CCCompilerConfiguration)getMaster();
-        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOptions("-D") + " "); // NOI18N
+        StringBuilder options = new StringBuilder(getPreprocessorConfiguration().getOption("-D") + " "); // NOI18N
         while (master != null && getInheritPreprocessor().getValue()) {
-            options.append(master.getPreprocessorConfiguration().getOptions("-D") + " "); // NOI18N
+            options.append(master.getPreprocessorConfiguration().getOption("-D") + " "); // NOI18N
             if (master.getInheritPreprocessor().getValue())
                 master = (CCCompilerConfiguration)master.getMaster();
             else

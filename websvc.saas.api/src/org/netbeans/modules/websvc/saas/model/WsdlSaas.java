@@ -39,11 +39,14 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
+import java.io.File;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
-import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -58,11 +61,29 @@ public class WsdlSaas extends Saas {
         //wsData = WebServiceListModel.getInstance().findWebServiceData(services.getUrl(), getServiceName());
     }
 
+    public WsdlSaas(SaasGroup parentGroup, String displayName, String url, String packageName) {
+        this(parentGroup, new SaasServices());
+        this.getDelegate().setDisplayName(displayName);
+        this.getDelegate().setUrl(url);
+        SaasMetadata m = this.getDelegate().getSaasMetadata();
+        if (m == null) {
+            m = new SaasMetadata();
+            this.getDelegate().setSaasMetadata(m);
+        }
+        CodeGen cg = m.getCodeGen();
+        if (cg == null) {
+            cg = new CodeGen();
+            m.setCodeGen(cg);
+        }
+        cg.setPackageName(packageName);
+        //wsData = WebServiceListModel.getInstance().findWebServiceData(services.getUrl(), getServiceName());
+    }
+    
     public WsdlService getWsdlModel() {
         return wsData.getWsdlService();
     }
 
-    public String getLocalWsdlFile() {
-        return wsData.getWsdlFile();
+    public FileObject getLocalWsdlFile() {
+        return FileUtil.toFileObject(new File(wsData.getWsdlFile()));
     }
 }
