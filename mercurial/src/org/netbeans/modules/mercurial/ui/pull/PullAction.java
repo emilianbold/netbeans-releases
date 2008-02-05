@@ -272,8 +272,13 @@ public class PullAction extends ContextAction {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
                             PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(pullPath))); // NOI18N
                 }
-                HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                        PullAction.class, "MSG_PULL_TO", toPrjName, root)); // NOI18N
+                if (toPrjName != null) {
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
+                            PullAction.class, "MSG_PULL_TO", toPrjName, root)); // NOI18N
+                } else {
+                    HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
+                            PullAction.class, "MSG_PULL_TO_NONAME", root)); // NOI18N
+                }
 
                 // Handle Merge - both automatic and merge with conflicts
                 boolean bMergeNeededDueToPull = HgCommand.isMergeNeededMsg(list.get(list.size() - 1));
