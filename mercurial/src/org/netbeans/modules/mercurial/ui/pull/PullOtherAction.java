@@ -52,6 +52,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.repository.Repository;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -65,7 +66,7 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
-public class PullOtherAction extends AbstractAction implements PropertyChangeListener {
+public class PullOtherAction extends ContextAction implements PropertyChangeListener {
     
     private final VCSContext context;
     private Repository repository = null;
@@ -77,8 +78,7 @@ public class PullOtherAction extends AbstractAction implements PropertyChangeLis
         putValue(Action.NAME, name);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
 

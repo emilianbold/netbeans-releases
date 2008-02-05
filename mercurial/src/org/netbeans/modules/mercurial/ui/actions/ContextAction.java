@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,44 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.mercurial.ui.clone;
 
-import org.netbeans.modules.versioning.spi.VCSContext;
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.io.File;
-import java.util.List;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.mercurial.HgException;
+package org.netbeans.modules.mercurial.ui.actions;
+
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgProjectUtils;
-import org.netbeans.modules.mercurial.ui.actions.ContextAction;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.mercurial.ui.wizards.CloneWizardAction;
+import javax.swing.AbstractAction;
+import org.openide.LifecycleManager;
+import java.awt.event.ActionEvent;
 
 /**
- * Clone action for mercurial: 
- * Clone an external repository. This invokes a wizard to determine the
- * location of the repository and the target location of the repository.
+ * Base for all context-sensitive Mercurial actions.
  * 
  * @author Padraig O'Briain
  */
-public class CloneExternalAction extends ContextAction {
-    private final VCSContext context;
+public abstract class ContextAction extends AbstractAction {
 
-    public CloneExternalAction(String name, VCSContext context) {
-        this.context = context;
-        putValue(Action.NAME, name);
+    /**
+     * Synchronizes memory modificatios with disk and calls
+     * {@link  #performContextAction}.
+     */
+    public void actionPerformed(final ActionEvent event) {
+        // TODO try to save files in invocation context only
+        // list somehow modified file in the context and save
+        // just them.
+        // The same (global save) logic is in CVS, no complaint
+        LifecycleManager.getDefault().saveAll();        
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        performAction(event);
     }
-    
-    public void performAction(ActionEvent ev){
-        CloneWizardAction wiz = CloneWizardAction.getInstance();
-        wiz.performAction();
-    }
+
+    protected abstract void performAction(ActionEvent event);
 }
