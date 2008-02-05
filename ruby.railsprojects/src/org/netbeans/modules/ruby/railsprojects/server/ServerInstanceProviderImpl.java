@@ -64,7 +64,7 @@ public class ServerInstanceProviderImpl implements ServerInstanceProvider {
 
     public List<ServerInstance> getInstances() {
         List<ServerInstance> result = new ArrayList<ServerInstance>();
-        for (RubyServer server : ServerRegistry.getRubyServers()) {
+        for (RubyServer server : ServerRegistry.getDefault().getRubyServers()) {
             //XXX: get rid of the cast
             ServerInstance si = ServerInstanceFactory.createServerInstance((ServerInstanceImplementation) server);
             result.add(si);
@@ -78,5 +78,9 @@ public class ServerInstanceProviderImpl implements ServerInstanceProvider {
 
     public void removeChangeListener(ChangeListener listener) {
         this.changeSupport.removeChangeListener(listener);
+    }
+    
+    void fireServersChanged() {
+        this.changeSupport.fireChange();
     }
 }

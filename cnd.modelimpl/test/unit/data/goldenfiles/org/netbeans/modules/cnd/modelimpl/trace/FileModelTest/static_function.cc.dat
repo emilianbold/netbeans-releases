@@ -65,36 +65,36 @@ FUNCTION DEFINITION foo6  [20:1/389-20:15/403] FunctionDDImpl SCOPE: $Global$
     RETURNS void TEXT=void  [20:1/389-20:5/393]
     STATEMENT COMPOUND  [20:13/401-20:15/403] SCOPE: foo6 
 NAMESPACE DEFINITOIN NS [22:1/405-42:2/864] SCOPE: static_function.cc
-    FUNCTION DEFINITION _foo1  [24:9/450-24:31/472] FunctionDDImpl SCOPE: static_function.cc
+    FUNCTION DEFINITION _foo1  [24:9/450-24:31/472] FunctionDDImpl SCOPE: NS 
         SIGNATURE _foo1()
-        UNIQUE NAME f:_foo1()
+        UNIQUE NAME f:NS::_foo1()
         DECLARATION: _foo1  [24:9/450-24:31/472]
         PARAMETERS:
         RETURNS void TEXT=void  [24:9/450-24:20/461]
         STATEMENT COMPOUND  [24:29/470-24:31/472] SCOPE: _foo1 
-    FUNCTION _foo2 [27:9/518-27:29/538] FunctionImpl SCOPE: static_function.cc
-        DEFINITION: _foo2  [6:1/114-6:23/136]
+    FUNCTION _foo2 [27:9/518-27:29/538] FunctionImpl SCOPE: NS 
+        DEFINITION: _foo2  [28:9/540-28:31/562]
         SIGNATURE _foo2()
-        UNIQUE NAME F:_foo2()
+        UNIQUE NAME F:NS::_foo2()
         PARAMETERS:
         RETURNS void TEXT=void  [27:9/518-27:20/529]
-    FUNCTION DEFINITION _foo2  [28:9/540-28:31/562] FunctionDDImpl SCOPE: static_function.cc
+    FUNCTION DEFINITION _foo2  [28:9/540-28:31/562] FunctionDDImpl SCOPE: NS 
         SIGNATURE _foo2()
-        UNIQUE NAME f:_foo2()
-        DECLARATION: _foo2  [5:1/93-5:21/113]
+        UNIQUE NAME f:NS::_foo2()
+        DECLARATION: _foo2  [27:9/518-27:29/538]
         PARAMETERS:
         RETURNS void TEXT=void  [28:9/540-28:20/551]
         STATEMENT COMPOUND  [28:29/560-28:31/562] SCOPE: _foo2 
-    FUNCTION _foo4 [35:9/717-35:29/737] FunctionImpl SCOPE: static_function.cc
-        DEFINITION: _foo4  [15:1/285-15:16/300]
+    FUNCTION _foo4 [35:9/717-35:29/737] FunctionImpl SCOPE: NS 
+        DEFINITION: _foo4  [36:9/739-36:24/754]
         SIGNATURE _foo4()
-        UNIQUE NAME F:_foo4()
+        UNIQUE NAME F:NS::_foo4()
         PARAMETERS:
         RETURNS void TEXT=void  [35:9/717-35:20/728]
-    FUNCTION DEFINITION _foo4  [36:9/739-36:24/754] FunctionDDImpl SCOPE: static_function.cc
+    FUNCTION DEFINITION _foo4  [36:9/739-36:24/754] FunctionDDImpl SCOPE: NS 
         SIGNATURE _foo4()
-        UNIQUE NAME f:_foo4()
-        DECLARATION: _foo4  [14:1/264-14:21/284]
+        UNIQUE NAME f:NS::_foo4()
+        DECLARATION: _foo4  [35:9/717-35:29/737]
         PARAMETERS:
         RETURNS void TEXT=void  [36:9/739-36:13/743]
         STATEMENT COMPOUND  [36:22/752-36:24/754] SCOPE: _foo4 

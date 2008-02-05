@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,61 +39,59 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.gsfret.source.usages;
+package org.netbeans.modules.php.editor.completion;
 
-import java.io.File;
-import java.io.IOException;
-import org.apache.lucene.store.SimpleFSLockFactory;
-import org.openide.filesystems.FileUtil;
-    
+import java.util.LinkedList;
+import java.util.List;
+import org.netbeans.api.gsf.CompletionProposal;
+
 /**
- * This file is originally from Retouche, the Java Support 
- * infrastructure in NetBeans. I have modified the file as little
- * as possible to make merging Retouche fixes back as simple as
- * possible. 
- *
- * @author Tomas Zezula
+ * Implementation of the <code>CompletionResultProvider</code> for the 
+ * Scope Resolution Operator (::) context.
+ * 
+ * <p><b>Note that this implementation is not synchronized.</b></p> 
+ * 
+ * @see PHP Manual / Example 19.12. :: from outside the class definition
+ * @see PHP Manual / Example 19.13. :: from inside the class definition
+ * 
+ * @author Victor G. Vasilyev 
  */
-public class NBLockFactory extends SimpleFSLockFactory {    
+public class NewExpressionScope extends ASTBasedProvider
+        implements CompletionResultProvider {
+
+    private List<CompletionProposal> proposals;
+    private String prefix;
+    private int insertOffset;
+
+    protected void init(CodeCompletionContext context) {
+        proposals = new LinkedList<CompletionProposal>();
+        assert context != null;
+        myContext = context;
+        prefix = context.getPrefix();
+        insertOffset = calcInsertOffset();
+    }
+
+    public boolean isApplicable(CodeCompletionContext context) {
+        return false;
+    }
+
+    public List<CompletionProposal> getProposals(CodeCompletionContext context) {
+        // if prefix == null then leading space should be added to 
+        // the isterted text of each proposal:
+        // <php_keyword="new"><php_whitespace>|<insertedText>
+        return proposals;
+    }
     
-    private static final String LOCK_DIR = "var"+File.separatorChar+"gsf-locks";     //NOI18N
-    
-    private static File lockDir;
-    
-    /** Creates a new instance of NBLockFactory 
-     * @throws java.io.IOException 
-     */
-    public NBLockFactory () throws IOException {
-        super (getLockDir());
-    }       
-    
-    /**
-     * NEVER call this method! The only place where it's save to
-     * call this method is {@link JBrowseModule.restore} to remove
-     * orphan locks from previous IDE session.
-     */
-    public static void clearLocks () {        
-        final File lockDir = getLockDir();
-        final File[] children = lockDir.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                child.delete();
-            }
+    private int calcInsertOffset() {
+        // TODO: Fix it!
+        // process all variants:
+        // <php_keyword="new">|
+        // <php_keyword="new"><php_whitespace>|
+        // <php_keyword="new"><php_whitespace><prefix>|
+        if (prefix == null) {
+            return myContext.getCaretOffset();
         }
+        return myContext.getCaretOffset() - prefix.length();
     }
-    
-    private static synchronized File getLockDir () {
-        if (lockDir == null) {
-            final String nbUserDirProp = Index.getNbUserDir();
-            assert nbUserDirProp != null;
-            File userDir = new File (nbUserDirProp);
-            lockDir = FileUtil.normalizeFile(new File (userDir, LOCK_DIR));
-            if (!lockDir.exists()) {
-                lockDir.mkdirs();
-                assert lockDir.isDirectory() && lockDir.canRead() && lockDir.canWrite();
-            }
-        }        
-        return lockDir;
-    }
-    
+
 }

@@ -301,8 +301,6 @@ public final class CompletionManager {
     }
 
     private static class BeansRefCompletor extends Completor {
-        
-        public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
 
         final private boolean includeGlobal;
 
@@ -333,10 +331,8 @@ public final class CompletionManager {
             if(SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "name")) { // NOI18N
                 List<String> names = StringUtils.tokenize(
                         SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "name"), 
-                        BEAN_NAME_DELIMITERS); // NOI18N
-                if(names != null) {
-                    cNames.addAll(names);
-                }
+                        SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS); // NOI18N
+                cNames.addAll(names);
             }
             
             try {
@@ -456,15 +452,14 @@ public final class CompletionManager {
                     int index = substitutionOffset;
                     String packName = typedPrefix;
                     String classPrefix = "";
-                    if(typedPrefix.contains(".")) { // NOI18N
-                        index += typedPrefix.lastIndexOf(".") + 1;  // NOI18N
-                        packName = typedPrefix.substring(0, typedPrefix.lastIndexOf(".")); // NOI18N
-                        classPrefix = typedPrefix.endsWith(".") ? "" : 
-                            typedPrefix.substring(typedPrefix.lastIndexOf(".") + 1); // NOI18N
+                    int dotIndex = typedPrefix.lastIndexOf('.'); // NOI18N
+                    if (dotIndex != -1) {
+                        index += (dotIndex + 1);  // NOI18N
+                        packName = typedPrefix.substring(0, dotIndex);
+                        classPrefix = (dotIndex + 1 < typedPrefix.length()) ? typedPrefix.substring(dotIndex + 1) : "";
                     }
                     addPackages(ci, results, typedPrefix, index);
-                    
-                    
+
                     PackageElement pkgElem = cc.getElements().getPackageElement(packName);
                     if (pkgElem == null) {
                         return;
@@ -478,7 +473,7 @@ public final class CompletionManager {
                             results.add(item);
                         }
                     }
-                    
+
                     setAnchorOffset(index);
                 }
             }, true);
@@ -498,13 +493,14 @@ public final class CompletionManager {
                     Set<ElementHandle<TypeElement>> matchingTypes = ci.getDeclaredTypes(typedPrefix, 
                             NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
                     for (ElementHandle<TypeElement> eh : matchingTypes) {
-                        TypeElement typeElement = eh.resolve(cc);
-                        if ((typeElement.getKind() == ElementKind.CLASS) 
-                                && typeElement.getSimpleName().toString().startsWith(typedPrefix)) {
-                            SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                    typeElement, (DeclaredType) typeElement.asType(), 
-                                    cc.getElements().isDeprecated(typeElement), true);
-                            results.add(item);
+                        if (eh.getKind() == ElementKind.CLASS) {
+                            TypeElement typeElement = eh.resolve(cc);
+                            if (typeElement != null) {
+                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
+                                        typeElement, (DeclaredType) typeElement.asType(), 
+                                        cc.getElements().isDeprecated(typeElement), true);
+                                results.add(item);
+                            }
                         }
                     }
                 }

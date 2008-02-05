@@ -122,6 +122,7 @@ implements PropertyChangeListener {
                     //S ystem.out.println("  remove request " + stepRequest);
                     erm.deleteEventRequest (stepRequest);
                     SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
+                    getDebuggerImpl().getOperator().unregister(stepRequest);
                     break;
                 }
                 //S ystem.out.println("  do not remove " + stepRequest + " : " + stepRequest.thread ());

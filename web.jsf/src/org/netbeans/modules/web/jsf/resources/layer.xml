@@ -139,10 +139,8 @@ made subject to such option by the copyright holder.
         </folder>
         <!--  Previously removed due to issue #91200. Now re-enabled. -->
         <folder name="Persistence">
-            <attr name="Entity/JsfFromDB" boolvalue="true"/>
-            <attr name="RelatedCMP/JsfFromDB" boolvalue="true"/>
-            <attr name="JsfFromDB/PersistenceUnit" boolvalue="true"/>
             <file name="JsfFromDB" url="templates/dummy.template">
+                <attr name="position" intvalue="250"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.jsf.wizards.Bundle"/>
                 <attr name="templateCategory" stringvalue="web-types-server"/>
                 <attr name="template" boolvalue="true"/>

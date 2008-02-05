@@ -98,9 +98,9 @@ public class SelectTablesCookie implements Node.Cookie {
                 helper.updateTableSelections(dataObj, sources, targets);
 
                 if (DEBUG) {
-                    mLogger.infoNoloc(mLoc.t("PRSR019: Selected source tables:\n{0}", sources));
-                    mLogger.infoNoloc(mLoc.t("PRSR020: Selected target tables:\n{0}", targets));
-                    mLogger.infoNoloc(mLoc.t("PRSR021: New state of ETL Definition:\n{0}", def.toXMLString("")));
+                    mLogger.infoNoloc(mLoc.t("PRSR019: Selected source tables:{0}", sources));
+                    mLogger.infoNoloc(mLoc.t("PRSR020: Selected target tables:{0}", targets));
+                    mLogger.infoNoloc(mLoc.t("PRSR021: New state of ETL Definition:{0}", def.toXMLString("")));
                 }
                 dataObj.getETLEditorSupport().synchDocument();
             }

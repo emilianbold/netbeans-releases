@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.xpath.ext.schema;
 
 import java.util.ArrayList;
@@ -93,7 +92,36 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                     lookForSubcomponent(gElement);
                 }
             }
-        } else if (sc instanceof ComplexType) {
+        }
+/*      // vlv # 105159
+        // DON'T REMOVE IT
+        else if (sc instanceof Element && sc instanceof ElementReference && sc instanceof DocumentComponent) {
+          DocumentComponent document = (DocumentComponent) sc;
+          String typeName = document.getPeer().getAttribute("type");
+
+          if (typeName == null || typeName.equals("")) {
+            NodeList list = document.getPeer().getElementsByTagName("xs:extension");
+
+            for (int i=0; i < list.getLength(); i++) {
+              Node node = list.item(i);
+
+              if ( !(node instanceof org.w3c.dom.Element)) {
+                continue;
+              }
+              org.w3c.dom.Element element = (org.w3c.dom.Element) node;
+              findInType(element.getAttribute("base"), sc);
+
+              if (isChildFound()) {
+                break;
+              } 
+            }
+          }
+          else {
+            findInType(typeName, sc);
+          }
+        }
+*/
+        else if (sc instanceof ComplexType) {
             visitChildren(sc);
         } else if (sc instanceof Schema) {
             // Look for a global schema object
@@ -102,8 +130,44 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             // Other elements can't containg nested elements or attributes
         }
     }
-    
+
+/*
+    // vlv # 105159
+    // DON'T REMOVE IT
+    private void findInType(final String typeName, SchemaComponent sc) {
+      if (typeName == null || typeName.equals("")) {
+        return;
+      }
+      SchemaModel model = sc.getModel();
+      Schema schema = model.getSchema();
+      myGlobalComplexType = null;
+
+      schema.accept(new DeepSchemaVisitor() {
+        @Override
+        public void visit(GlobalComplexType type) {
+          if (typeName.equals(type.getName())) {
+//out("!!!!!!! === FOUND GLOBAL Complex TYPE ==== : " + type.getName());
+            myGlobalComplexType = type;
+          }
+        }
+      });
+
+      if (myGlobalComplexType != null) {
+        myGlobalComplexType.accept(this);
+      }
+    }
+
+    private GlobalComplexType myGlobalComplexType;
+
+    private String getName(SchemaComponent component) {
+      if (component instanceof Named) {
+        return ((Named) component).getName();
+      }
+      return "";
+    }
+*/    
     protected void checkComponent(SchemaComponent sc) {
+/*vlv # 105159
         if (isAttribute && !(sc instanceof Attribute)) {
             // attribute required here!
             return;
@@ -116,6 +180,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             // Need to see deeper to the referenced element
             return;
         }
+*/
         if (sc instanceof Named) {
             String namespace = sc.getModel().getEffectiveNamespace(sc);
             String name = ((Named)sc).getName();
@@ -132,5 +197,4 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             } 
         }
     }
-
 }

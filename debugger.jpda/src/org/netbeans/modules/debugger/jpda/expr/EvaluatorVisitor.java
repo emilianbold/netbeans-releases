@@ -1148,6 +1148,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field, thisObject));
                     return thisObject.getValue(field);
                 } else {
+                    Assert2.error(arg0, "accessInstanceVariableFromStaticContext", fieldName);
                     throw new IllegalStateException("No current instance available.");
                 }
             case LOCAL_VARIABLE:
