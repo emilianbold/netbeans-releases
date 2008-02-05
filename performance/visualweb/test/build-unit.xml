@@ -44,8 +44,8 @@ made subject to such option by the copyright holder.
 <project name="Measure startup time and memory usage" basedir="." default="all">
 
     <!-- Root folders -->
-    <property name="nball.dir" location="../../../.."/>
-    <property name="nbextra.dir" location="../../../../../nbextra"/>
+    <property name="nball.dir" location="../../.."/>
+    <property name="nbextra.dir" location="../../../../nbextra"/>
     
     <!-- Import defaults for Unit tests -->
     <import file="${nball.dir}/nbbuild/templates/xtest-unit.xml"/>
