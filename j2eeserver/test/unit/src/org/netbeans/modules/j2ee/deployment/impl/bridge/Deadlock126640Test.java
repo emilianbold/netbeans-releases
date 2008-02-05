@@ -71,7 +71,7 @@ public class Deadlock126640Test extends ServerRegistryTestBase {
                  + "THREAD: INIT MSG: Entering registry initialization" // NOI18N
                  + "THREAD: LOOKUP MSG: Updating the lookup content" // NOI18N
                  + "THREAD: INIT MSG: Loading server plugins", // NOI18N
-                1000);
+                0);
 
         Thread lookupThread = new LookupThread();
         Thread initThread = new InitThread();
