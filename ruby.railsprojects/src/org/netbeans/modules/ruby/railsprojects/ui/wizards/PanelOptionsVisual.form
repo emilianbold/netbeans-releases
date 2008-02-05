@@ -23,43 +23,32 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="jSeparator1" alignment="0" pref="657" max="32767" attributes="0"/>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="setAsMainCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="1" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="rubyPlatformLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="platforms" pref="459" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="serverLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="dbLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="rubyPlatformLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="serverComboBox" pref="452" max="32767" attributes="1"/>
+                          <Component id="platforms" alignment="0" pref="452" max="32767" attributes="1"/>
+                          <Component id="dbCombo" alignment="0" pref="452" max="32767" attributes="1"/>
+                      </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="manageButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="warCheckBox" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jdbcCheckBox" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dbLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="serverLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="warCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jdbcCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="47" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dbCombo" min="-2" max="-2" attributes="0"/>
-                          <Component id="serverComboBox" min="-2" pref="452" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="80" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -70,31 +59,29 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <Component id="setAsMainCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="24" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="rubyPlatformLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="manageButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="platforms" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="serverLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="serverComboBox" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="dbLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="dbCombo" alignment="0" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="dbLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dbCombo" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jdbcCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="warCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="rubyPlatformLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="platforms" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="manageButton" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" pref="22" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="61" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -152,8 +139,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSeparator" name="jSeparator1">
-    </Component>
     <Component class="javax.swing.JLabel" name="rubyPlatformLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -185,19 +170,12 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="serverComboBox">
-      <Properties>
-        <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-          <StringArray count="4">
-            <StringItem index="0" value="Item 1"/>
-            <StringItem index="1" value="Item 2"/>
-            <StringItem index="2" value="Item 3"/>
-            <StringItem index="3" value="Item 4"/>
-          </StringArray>
-        </Property>
-      </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="serverComboBoxActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="RailsServerManager.getServerComboBox(getPlatform());"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>

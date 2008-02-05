@@ -19,7 +19,6 @@
 
 package org.netbeans.modules.bpel.mapper.predicates.editor;
 
-import java.util.Collections;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.tree.TreePath;
@@ -27,7 +26,6 @@ import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
-import org.netbeans.modules.bpel.mapper.tree.actions.AddPredicateConditionAction;
 import org.netbeans.modules.bpel.mapper.tree.models.EmptyTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeInfoProvider;
 import org.netbeans.modules.bpel.mapper.tree.models.VariableTreeModel;
@@ -51,8 +49,8 @@ public class PredicateMapperModelFactory {
                 mapperTcContext.getDesignContextController().getContext();
         //
         EmptyTreeModel sourceModel = new EmptyTreeModel();
-        VariableTreeModel variableModel = 
-                new VariableTreeModel(dContext, null, new MyTreeInfoProvider());
+        VariableTreeModel variableModel = new VariableTreeModel(
+                dContext, null, null, new MyTreeInfoProvider());
         sourceModel.addExtensionModel(variableModel);
         //
         PredicateExprTreeModel targetModel = new PredicateExprTreeModel(1);
@@ -70,8 +68,8 @@ public class PredicateMapperModelFactory {
                 mapperTcContext.getDesignContextController().getContext();
         //
         EmptyTreeModel sourceModel = new EmptyTreeModel();
-        VariableTreeModel variableModel = 
-                new VariableTreeModel(dContext, null, new MyTreeInfoProvider());
+        VariableTreeModel variableModel = new VariableTreeModel(
+                dContext, null, null, new MyTreeInfoProvider());
         sourceModel.addExtensionModel(variableModel);
         //
         XPathPredicateExpression[] predicateArr = pred.getPredicates();

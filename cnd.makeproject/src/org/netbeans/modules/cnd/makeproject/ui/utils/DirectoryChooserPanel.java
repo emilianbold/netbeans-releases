@@ -227,6 +227,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 	    getDefaultButton().setVisible(false);
 	}
 
+        @Override
 	public Object addAction() {
 	    String seed = null;
 	    if (FileChooser.getCurrectChooserFile() != null)
@@ -257,39 +258,49 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
 	    return itemPath;
 	}
 
+        @Override
 	public String getListLabelText() {
 	    return getString("DIRECTORIES_LABEL_TXT");
 	}
+        @Override
 	public char getListLabelMnemonic() {
 	    return getString("DIRECTORIES_LABEL_MN").charAt(0);
 	}
     
+        @Override
 	public String getAddButtonText() {
 	    return getString("ADD_BUTTON_TXT");
 	}
+        @Override
 	public char getAddButtonMnemonics() {
 	    return getString("ADD_BUTTON_MN").charAt(0);
 	}
     
+        @Override
 	public String getRenameButtonText() {
 	    return getString("EDIT_BUTTON_TXT");
 	}
+        @Override
 	public char getRenameButtonMnemonics() {
 	    return getString("EDIT_BUTTON_MN").charAt(0);
 	}
 
+        @Override
         public String getDownButtonText() {
             return getString("DOWN_BUTTON_TXT");
         }
         
+        @Override
         public char getDownButtonMnemonics() {
 	    return getString("DOWN_BUTTON_MN").charAt(0);
         }
         
+        @Override
 	public Object copyAction(Object o) {
 	    return new String((String)o);
 	}
 
+        @Override
 	public void editAction(Object o) {
 	    String s = (String)o;
 

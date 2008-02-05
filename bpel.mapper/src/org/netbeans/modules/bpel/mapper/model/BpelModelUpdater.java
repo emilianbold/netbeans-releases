@@ -473,10 +473,12 @@ public class BpelModelUpdater extends AbstractBpelModelUpdater {
         }
         case EXPRESSION: {
             XPathExpression xPathExpr = createVariableXPath(xPathModel, tpInfo);
-            try {
-                from.setContent(xPathExpr.getExpressionString());
-            } catch (VetoException ex) {
-                // Do nothing
+            if (xPathExpr != null) {
+                try {
+                    from.setContent(xPathExpr.getExpressionString());
+                } catch (VetoException ex) {
+                    // Do nothing
+                }
             }
             //
             from.removeVariable();

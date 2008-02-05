@@ -477,7 +477,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
                 File file = VersionsCache.getInstance().getFileRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision());
 
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 org.netbeans.modules.versioning.util.Utils.openFile(fo, drev.getLogInfoHeader().getLog().getRevision());
             } catch (IOException ex) {
                 // Ignore if file not available in cache

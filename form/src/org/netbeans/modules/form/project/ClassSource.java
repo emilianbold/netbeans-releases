@@ -214,11 +214,11 @@ public final class ClassSource {
             }
         }
         public Boolean addToProjectClassPath(FileObject projectArtifact, String classPathType) throws IOException, UnsupportedOperationException {
-            File f = FileChooser.showRelativizeFilePathCustomizer(jar, projectArtifact, true);
+            String f = FileChooser.showRelativizeFilePathCustomizer(jar, projectArtifact, true);
             if (f == null) {
                 return null;
             }
-            URL u = LibrariesSupport.convertFileToURL(f);
+            URL u = LibrariesSupport.convertFilePathToURL(f);
             if (FileUtil.isArchiveFile(FileUtil.toFileObject(jar))) {
                 u = FileUtil.getArchiveRoot(u);
             }

@@ -43,6 +43,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Collection;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -58,8 +59,10 @@ import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -189,4 +192,13 @@ public class SaasUtil {
     public static SaasServices loadSaasServices(InputStream in) throws JAXBException {
         return loadJaxbObject(in, SaasServices.class, true);
     }
+
+    private static Lookup.Result<SaasNodeActionsProvider> extensionsResult = null;
+    public static Collection<? extends SaasNodeActionsProvider> getSaasNodeActionsProviders() {
+        if (extensionsResult == null) {
+            extensionsResult = Lookup.getDefault().lookupResult(SaasNodeActionsProvider.class);
+        }
+        return extensionsResult.allInstances();
+    }
+    
 }
