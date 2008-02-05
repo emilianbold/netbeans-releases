@@ -468,8 +468,9 @@ public final class CompletionManager {
                     List<? extends Element> pkgChildren = pkgElem.getEnclosedElements();
                     for (Element pkgChild : pkgChildren) {
                         if ((pkgChild.getKind() == ElementKind.CLASS) && pkgChild.getSimpleName().toString().startsWith(classPrefix)) {
+                            TypeElement typeElement = (TypeElement) pkgChild;
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                    (TypeElement) pkgChild, (DeclaredType) pkgChild.asType(), 
+                                    typeElement, ElementHandle.create(typeElement), 
                                     cc.getElements().isDeprecated(pkgChild), false);
                             results.add(item);
                         }
@@ -498,8 +499,7 @@ public final class CompletionManager {
                             TypeElement typeElement = eh.resolve(cc);
                             if (typeElement != null) {
                                 SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                        typeElement, (DeclaredType) typeElement.asType(), 
-                                        cc.getElements().isDeprecated(typeElement), true);
+                                        typeElement, eh, cc.getElements().isDeprecated(typeElement), true);
                                 results.add(item);
                             }
                         }

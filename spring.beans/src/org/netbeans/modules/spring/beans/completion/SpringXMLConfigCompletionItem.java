@@ -109,9 +109,9 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         return new PackageItem(substitutionOffset, packageName, deprecated);
     }
     
-    public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
+    public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle, 
                 boolean deprecated, boolean displayPackage) {
-        return new ClassItem(substitutionOffset, elem, type, deprecated, displayPackage);
+        return new ClassItem(substitutionOffset, elem, elemHandle, deprecated, displayPackage);
     }
     
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
@@ -299,7 +299,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
         private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
         
-        private TypeMirrorHandle<DeclaredType> typeHandle;
+        private ElementHandle<TypeElement> elemHandle;
         private boolean deprecated;
         private String simpleName;
         private String enclName;
@@ -307,10 +307,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private String leftText;
         private boolean displayPackage;
 
-        public ClassItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
+        public ClassItem(int substitutionOffset, TypeElement elem, ElementHandle elemHandle, 
                 boolean deprecated, boolean displayPackage) {
             super(substitutionOffset);
-            this.typeHandle = TypeMirrorHandle.create(type);
+            this.elemHandle = elemHandle;
             this.deprecated = deprecated;
             this.simpleName = elem.getSimpleName().toString();
             this.enclName = getElementName(elem.getEnclosingElement(), true).toString();
@@ -384,13 +384,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         js.runUserActionTask(new Task<CompilationController>() {
                             public void run(CompilationController cc) throws Exception {
                                 cc.toPhase(Phase.RESOLVED);
-                                ElementHandle<? extends TypeElement> eh = ElementHandle.from(typeHandle);
-                                Element e = eh.resolve(cc);
-                                if(e.asType().getKind() == TypeKind.ERROR) {
+                                Element element = elemHandle.resolve(cc);
+                                if (element == null) {
                                     return;
                                 }
-                                
-                                SpringXMLConfigCompletionDoc doc = SpringXMLConfigCompletionDoc.createJavaDoc(cc, e);
+                                SpringXMLConfigCompletionDoc doc = SpringXMLConfigCompletionDoc.createJavaDoc(cc, element);
                                 resultSet.setDocumentation(doc);
                             }
                         }, false);
