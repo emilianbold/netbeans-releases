@@ -59,6 +59,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.UpdateHelper;
+import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.rubyproject.JavaClassPathUi;
 import org.netbeans.modules.ruby.rubyproject.ProjectPropertyExtender;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -140,6 +141,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     private StoreGroup privateGroup; 
     private StoreGroup projectGroup;
     private RubyPlatform platform;
+    private RubyInstance server;
     
     RailsProject getProject() {
         return project;
@@ -264,6 +266,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         EditableProperties privateProperties = updateHelper.getProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH);
 
         RailsProjectProperties.storePlatform(privateProperties, getPlatform());
+        RailsProjectProperties.storeServer(privateProperties, getServer());
 
         // Standard store of the properties
         projectGroup.store( projectProperties );        
@@ -331,6 +334,18 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         ep.setProperty("platform.active", platform.getID()); // NOI18N
     }
 
+    RubyInstance getServer() {
+        return this.server;
+    }
+    
+    void setServer(RubyInstance server) {
+        this.server = server;
+    }
+    
+    public static void storeServer(final EditableProperties ep, final RubyInstance server) {
+        ep.setProperty(RAILS_SERVERTYPE, server.getServerUri()); // NOI18N
+    }
+
     /**
      * A mess.
      */
@@ -390,7 +405,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
             String v = def.get(prop);
             EditableProperties ep = (prop.equals(RAILS_PORT) ||
                     prop.equals(RAKE_ARGS) || prop.equals(RAILS_ENV) ||
-                    prop.equals(RAILS_SERVERTYPE) || prop.equals(APPLICATION_ARGS)/* || prop.equals(RUN_WORK_DIR)*/) ?
+                    prop.equals(APPLICATION_ARGS)/* || prop.equals(RUN_WORK_DIR)*/) ?
                 privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
                 if (v != null && v.length() > 0) {
