@@ -75,6 +75,7 @@ public class PluginsOperator extends JDialogOperator {
 
     private JTabbedPaneOperator tabbedPane;
     private JButtonOperator btnClose;
+    private boolean pluginsAvailable;
     
     public static PluginsOperator getInstance() {
         display(); // check whether the appropriate dialog is opened or not
@@ -100,7 +101,8 @@ public class PluginsOperator extends JDialogOperator {
         JTableOperator pluginTable = new JTableOperator(containerOp);
         fillAvailablePluginsTable(containerOp, pluginTable);
         selectPlugins(pluginTable, pluginNames);
-        installSelectedPlugins(containerOp);
+        if (pluginsAvailable) installSelectedPlugins(containerOp);
+        else System.out.println("WARNING: Necessary plugins are absent!");
         closeDialog();
     }
     
@@ -198,6 +200,7 @@ public class PluginsOperator extends JDialogOperator {
     
     private void selectPlugins(JTableOperator pluginTable, 
         java.util.List<String> pluginNames) {
+        java.util.List<String> selectedPlugins = new ArrayList();
         int nameColumnIndex = getColumnIndexByName(pluginTable, COLUMN_TITLE_NAME);
         int installColumnIndex = getColumnIndexByName(pluginTable, COLUMN_TITLE_INSTALL),
             rowCount = pluginTable.getRowCount();
@@ -209,8 +212,11 @@ public class PluginsOperator extends JDialogOperator {
                 pluginTable.clickOnCell(rowIndex, installColumnIndex);
                 Util.wait(500);
                 new QueueTool().waitEmpty();
+                selectedPlugins.add(cellValue.toString());
             }
         }
+        if (selectedPlugins.isEmpty()) pluginsAvailable = false;
+        else pluginsAvailable = true;
     }
      
     private boolean isPluginInList(java.util.List<String> pluginNames, String checkedPluginName) {

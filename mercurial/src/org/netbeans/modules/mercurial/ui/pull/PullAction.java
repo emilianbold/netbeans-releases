@@ -54,6 +54,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
@@ -75,7 +76,7 @@ import org.netbeans.api.project.Project;
  *
  * @author John Rice
  */
-public class PullAction extends AbstractAction {
+public class PullAction extends ContextAction {
     private static final String CHANGESET_FILES_PREFIX = "files:"; //NOI18N
     
     public enum PullType {
@@ -92,8 +93,7 @@ public class PullAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
             HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PullAction.class,"MSG_PULL_TITLE")); // NOI18N

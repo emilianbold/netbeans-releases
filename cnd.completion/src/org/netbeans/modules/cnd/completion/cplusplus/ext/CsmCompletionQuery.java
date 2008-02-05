@@ -149,6 +149,10 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return query(component, doc, offset, support, openingSource, sort);
     }
 
+    public static boolean checkCondition(CsmSyntaxSupport sup, final int dot) {
+        return sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot);
+    }
+    
     public CompletionQuery.Result query(JTextComponent component, BaseDocument doc, int offset,
                                         SyntaxSupport support, boolean openingSource, boolean sort) {    
         // remember baseDocument here. it is accessible by getBaseDocument()
@@ -159,7 +163,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         CsmSyntaxSupport sup = (CsmSyntaxSupport)support.get(CsmSyntaxSupport.class);
 
-	if (sup == null || sup.isCompletionDisabled(offset)) {
+	if (!checkCondition(sup, offset)) {
 	    return null;
 	}
 	

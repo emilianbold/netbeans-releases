@@ -777,8 +777,8 @@ public class RightTree extends MapperPanel implements
             Mapper mapper = RightTree.this.getMapper();
             SelectionModel selectionModel = getSelectionModel();
             TreePath currentTreePath = selectionModel.getSelectedPath();
-            MapperNode currentNode = mapper.getNode(currentTreePath, true);
             if (currentTreePath != null) {
+                MapperNode currentNode = mapper.getNode(currentTreePath, true);
                 if (currentNode.isLeaf()) {
                     if (currentNode.getNextVisibleNode() != null) {
                         mapper.setSelectedNode(currentNode.getNextVisibleNode());

@@ -55,7 +55,18 @@
     
     <display-name>YouTubeVideos</display-name>
     
-    <xi:include href="file:/export/home/nam/main/websvc.saas.services.youtube/src/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideosMetaData.xml"/>
+    <!-- xi:include href="YouTubeVideosMetaData.xml"/ -->
+    <saas-metadata>
+        <localizing-bundle>org.netbeans.modules.websvc.saas.services.youtube.Bundle</localizing-bundle>
+        <icon16>org/netbeans/modules/websvc/saas/services/youtube/resources/youtube16.png</icon16>
+        <group name="YouTube">
+            <group name="Videos"/>
+        </group>
+
+        <authentication profile="Templates/WebServices/profile.properties">
+            <api-key id="dev_id"/>
+        </authentication>
+    </saas-metadata>
 
     <methods>
         <method name="ListByTag" href="//resource[@path='api2_rest']/method[@id='youtube.listByTag']"/>

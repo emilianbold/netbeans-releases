@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 /**
  * Custom file chooser allowing user to choose how a file will be referenced 
  * from a project - via absolute path, or relative path. Make sure you call
- * {@link #getFiles} instead of {@link #getSelectedFiles} as it returns relative
+ * {@link #getSelectedPaths} instead of {@link #getSelectedFiles} as it returns relative
  * files and performs file copying if necessary.
  * 
  * @author David Konecny
@@ -114,7 +114,7 @@ public final class FileChooser extends JFileChooser {
     }
     
     /**
-     * Returns array of files selected. The difference from 
+     * Returns array of paths selected. The difference from 
      * {@link #getSelectedFiles} is that depends on user's choice the files
      * may be relative and they may have been copied to different location.
      * 
@@ -124,7 +124,7 @@ public final class FileChooser extends JFileChooser {
      * @throws java.io.IOException any IO problem; for example during 
      *  file copying
      */
-    public File[] getFiles() throws IOException {
+    public String[] getSelectedPaths() throws IOException {
         if (accessory != null) {
             accessory.copyFilesIfNecessary();
             if (accessory.isRelative()) {
@@ -132,12 +132,19 @@ public final class FileChooser extends JFileChooser {
             }
         }
         if (isMultiSelectionEnabled()) {
-            return getSelectedFiles();
+            File[] sels = getSelectedFiles();
+            String[] toRet = new String[sels.length];
+            int index = 0;
+            for (File fil : sels) {
+                toRet[index] = fil.getAbsolutePath();
+                index++;
+            }
+            return toRet;
         } else {
             if (getSelectedFile() != null) {
-                return new File[]{getSelectedFile()};
+                return new String[]{ getSelectedFile().getAbsolutePath() };
             } else {
-                return new File[0];
+                return new String[0];
             }
         }
     }
@@ -162,7 +169,7 @@ public final class FileChooser extends JFileChooser {
      *  cannot be found for project artifact
      * @throws java.io.IOException any IO failure during file copying
      */
-    public static File showRelativizeFilePathCustomizer(File fileToReference, FileObject projectArtifact, 
+    public static String showRelativizeFilePathCustomizer(File fileToReference, FileObject projectArtifact, 
             boolean copyAllowed) throws IOException {
         Project p = FileOwnerQuery.getOwner(projectArtifact);
         if (p == null) {
@@ -194,7 +201,7 @@ public final class FileChooser extends JFileChooser {
      * @return possibly relative file; null if cancelled by user
      * @throws java.io.IOException any IO failure during file copying
      */
-    private static File showRelativizeFilePathCustomizer(File fileToReference, File baseFolder, 
+    private static String showRelativizeFilePathCustomizer(File fileToReference, File baseFolder, 
             File sharedLibrariesFolder, boolean copyAllowed) throws IOException {
         RelativizeFilePathCustomizer panel = new RelativizeFilePathCustomizer(
             fileToReference, baseFolder, sharedLibrariesFolder, copyAllowed);

@@ -88,17 +88,21 @@ public final class FileBasedFileSystem extends FileSystem {
     }
     
     public static FileBasedFileSystem getInstance(final File file) {
-        FileBasedFileSystem retVal;
-        final FileInfo fInfo = new FileInfo(file);
-        final FileInfo rootInfo = fInfo.getRoot();
+        FileBasedFileSystem retVal = null;
+        final FileInfo rootInfo = new FileInfo(file).getRoot();
+        final File rootFile = rootInfo.getFile();
 
         synchronized (FileBasedFileSystem.allInstances) {
-            final File rootFile = rootInfo.getFile();
             retVal = (FileBasedFileSystem) FileBasedFileSystem.allInstances.get(rootFile);
-            if (retVal == null) {
-                if (rootInfo.isConvertibleToFileObject()) {
-                    retVal = new FileBasedFileSystem(rootFile);
-                    FileBasedFileSystem.allInstances.put(rootFile, retVal);
+        }
+        if (retVal == null) {
+            if (rootInfo.isConvertibleToFileObject()) {           
+                synchronized (FileBasedFileSystem.allInstances) {
+                    retVal = (FileBasedFileSystem) FileBasedFileSystem.allInstances.get(rootFile);
+                    if (retVal == null) {
+                        retVal = new FileBasedFileSystem(rootFile);
+                        FileBasedFileSystem.allInstances.put(rootFile, retVal);
+                    }
                 }
             }
         }
