@@ -237,6 +237,7 @@ public class HgCommand {
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
     private static final String HG_ABORT_PUSH_ERR = "abort: push creates new remote branches!"; // NOI18N
     private static final String HG_ABORT_NO_FILES_TO_COPY_ERR = "abort: no files to copy"; // NOI18N
+    private static final String HG_ABORT_NO_DEFAULT_PUSH_ERR = "abort: repository default-push not found!"; // NOI18N
     
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -636,13 +637,21 @@ public class HgCommand {
         if(defaultPath != null && 
                 (defaultPath.startsWith("http:") || defaultPath.startsWith("https:"))){ // NOI18N
             HgProxySettings ps = new HgProxySettings();
-            if(ps.isManualSetProxy()){
-                if(defaultPath.startsWith("http:") && ps.getHttpHost() != null){ // NOI18N
+            if (ps.isManualSetProxy()) {
+                if (defaultPath.startsWith("http:") && ps.getHttpHost() != null) { // NOI18N
                     proxy = ps.getHttpHost();
-                    proxy += ps.getHttpPort() > -1 ? ":" + Integer.toString(ps.getHttpPort()): ""; // NOI18N
-                }else if(defaultPath.startsWith("https:") && ps.getHttpsHost() != null){ // NOI18N
+                    if (proxy != null && !proxy.equals("")) {
+                        proxy += ps.getHttpPort() > -1 ? ":" + Integer.toString(ps.getHttpPort()) : ""; // NOI18N
+                    } else {
+                        proxy = null;
+                    }                    
+                } else if (defaultPath.startsWith("https:") && ps.getHttpsHost() != null) { // NOI18N
                     proxy = ps.getHttpsHost();
-                    proxy += ps.getHttpsPort() > -1 ? ":" + Integer.toString(ps.getHttpsPort()): ""; // NOI18N
+                    if (proxy != null && !proxy.equals("")) {
+                        proxy += ps.getHttpsPort() > -1 ? ":" + Integer.toString(ps.getHttpsPort()) : ""; // NOI18N
+                    } else {
+                        proxy = null;
+                    }
                 }
             }
         }
@@ -1072,7 +1081,9 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty()) {
-            if (isErrorNoRepository(list.get(0))) {
+            if(isErrorNoDefaultPush(list.get(0))){
+                // Ignore
+            }else if (isErrorNoRepository(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
              } else if (isErrorAbort(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
@@ -2484,6 +2495,9 @@ public class HgCommand {
         return msg.indexOf(HG_NO_CHANGES_ERR) > -1;                                   // NOI18N
     }
     
+    private static boolean isErrorNoDefaultPush(String msg) {
+        return msg.indexOf(HG_ABORT_NO_DEFAULT_PUSH_ERR) > -1; // NOI18N
+    }
     private static boolean isErrorNoRepository(String msg) {
         return msg.indexOf(HG_NO_REPOSITORY_ERR) > -1 ||
                  msg.indexOf(HG_NOT_REPOSITORY_ERR) > -1 ||
