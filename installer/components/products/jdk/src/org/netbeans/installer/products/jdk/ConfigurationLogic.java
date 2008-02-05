@@ -65,6 +65,7 @@ import org.netbeans.installer.utils.helper.Platform;
 import org.netbeans.installer.utils.helper.RemovalMode;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.Text;
+import org.netbeans.installer.utils.helper.Version;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.WindowsNativeUtils;
@@ -265,9 +266,19 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
             SystemUtils.correctFilesPermissions(installer);
             
+            // according to Mandy Chung and Marek Slama:
+            // If NB bundles JDK 6u5, the NB installer has to be modified to add a
+            // new -noregister option to disable JDK registration.
+            // Otherwise, a browser will be popped up during NB+JDK install. 
+            final String registerOption = getProduct().getVersion().
+                    newerOrEquals(Version.getVersion("1.6.0_05")) ? 
+                        " " + NO_REGISTER_JDK_OPTION : 
+                        StringUtils.EMPTY_STRING;
+                
             String [] commands = new String [] {
                 "/bin/sh", "-c",
                 StringUtils.escapePath(installer.getAbsolutePath()) +
+                        registerOption +
                         " < " + StringUtils.escapePath(yesFile.getAbsolutePath()) +
                         loggingOption
             };
@@ -854,4 +865,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "CL.jdk.install.dir");//NOI18N
     public static final String JRE_MSI_NAME =
             "jre.msi";//NOI18N
+    public static final String NO_REGISTER_JDK_OPTION =
+            "-noregister";
 }

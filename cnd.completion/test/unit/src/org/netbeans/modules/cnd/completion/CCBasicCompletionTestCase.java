@@ -180,6 +180,11 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testErrorCompletion9() throws Exception {
         super.performTest("file.cc", 5, 1, "#");
     } 
+   
+    public void testErrorCompletion10() throws Exception {
+        // IZ#77774: Code completion list appears, when include header file
+        super.performTest("file.cc", 1, 1, "#include \"file.");
+    }
     
     public void testErrorCompletionInFun1() throws Exception {
         super.performTest("file.cc", 7, 1, "->");

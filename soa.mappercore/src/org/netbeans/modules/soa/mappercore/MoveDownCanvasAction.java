@@ -73,8 +73,8 @@ public class MoveDownCanvasAction extends MapperKeyboardAction {
          KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.SHIFT_DOWN_MASK),
          KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.CTRL_DOWN_MASK),
          KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.CTRL_DOWN_MASK + 
-                KeyEvent.SHIFT_DOWN_MASK) };
-        
+                KeyEvent.SHIFT_DOWN_MASK) 
+         };
     }
 
     public void actionPerformed(ActionEvent e) {        

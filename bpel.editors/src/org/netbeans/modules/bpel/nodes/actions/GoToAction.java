@@ -2,16 +2,16 @@
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License (the License). You may not use this file except in
  * compliance with the License.
- * 
+ *
  * You can obtain a copy of the License at http://www.netbeans.org/cddl.html
  * or http://www.netbeans.org/cddl.txt.
- * 
+ *
  * When distributing Covered Code, include this CDDL Header Notice in each file
  * and include the License file at http://www.netbeans.org/cddl.txt.
  * If applicable, add the following below the CDDL Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
@@ -38,6 +38,9 @@ import org.openide.windows.WindowManager;
  * @version 1.0
  */
 public class GoToAction extends BpelNodeAction {
+
+    private static final long serialVersionUID = 1L;
+
     private static ActSubMenuModel model = new ActSubMenuModel(null);
     private static BpelNodeAction[] GO_TO_ACTIONS = new BpelNodeAction[] {
             (BpelNodeAction)SystemAction.get(GoToDiagrammAction.class),
@@ -45,12 +48,12 @@ public class GoToAction extends BpelNodeAction {
             (BpelNodeAction)SystemAction.get(ShowBpelMapperAction.class),
             (BpelNodeAction)SystemAction.get(GoToLoggingAction.class)
     };
-    
+
     public GoToAction() {
     }
 
     public final String getBundleName() {
-        return NbBundle.getMessage(BpelNodeAction.class, "CTL_GoToAction"); // NOI18N    
+        return NbBundle.getMessage(BpelNodeAction.class, "CTL_GoToAction"); // NOI18N
     }
 
     @Override
@@ -73,7 +76,7 @@ public class GoToAction extends BpelNodeAction {
 //        if (nodes[0] instanceof BpelNode) {
 //            return true;
 //        }
-//        
+//
 //        return false;
     }
 
@@ -84,7 +87,7 @@ public class GoToAction extends BpelNodeAction {
         }
         performAction(nodes, 0);
     }
-    
+
     private static final void performAction(Node[] nodes, int index) {
         SystemAction[] gotoActions = getGoToActions(nodes);
         if (gotoActions == null || index < 0 || index > gotoActions.length) {
@@ -92,14 +95,14 @@ public class GoToAction extends BpelNodeAction {
         }
         performAction(nodes, gotoActions[index]);
     }
-    
+
     private static final void performAction(Node[] nodes, SystemAction gotoAction) {
         if (gotoAction instanceof BpelNodeAction) {
             ((BpelNodeAction)gotoAction).performAction(nodes);
-        } 
+        }
     }
 
-    // TODO m    
+    // TODO m
     public static final BpelNodeAction[] getGoToActions(Node[] nodes) {
         List<BpelNodeAction> availableGotoActions = new ArrayList<BpelNodeAction>();
         if (nodes != null && nodes.length > 0) {
@@ -112,7 +115,7 @@ public class GoToAction extends BpelNodeAction {
         }
         return null;
     }
-    
+
     @Override
     public JMenuItem getPopupPresenter() {
         return new Actions.SubMenu(this, model, true);
@@ -122,12 +125,12 @@ public class GoToAction extends BpelNodeAction {
     public JMenuItem getMenuPresenter() {
         return new Actions.SubMenu(this, model, false);
     }
-    
+
     @Override
     protected boolean asynchronous() {
         return false;
     }
-    
+
     private static final BpelNodeAction[] getGoToActions() {
         return GO_TO_ACTIONS;
     }
@@ -135,17 +138,17 @@ public class GoToAction extends BpelNodeAction {
     private static final Node[] getCurrentNodes() {
         return WindowManager.getDefault().getRegistry().getCurrentNodes();
     }
-    
+
     /** Implementation of ActSubMenuInt */
     private static class ActSubMenuModel extends EventListenerList implements Actions.SubMenuModel {
         static final long serialVersionUID = -4273674308662494596L;
 
         private Node[] nodes;
-        
+
         ActSubMenuModel(Node[] nodes) {
             this.nodes = nodes;
         }
-        
+
         private Node[] getNodes() {
             return nodes == null ? getCurrentNodes() : nodes;
         }

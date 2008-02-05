@@ -142,5 +142,6 @@ public class ClassBreakpointImpl extends ClassBasedBreakpoint {
                 null
             );
     }
+
 }
 

@@ -167,8 +167,10 @@ class SvnSearchView implements ComponentListener {
             defaultFormat = DateFormat.getDateTimeInstance();
 
             hiliteStyle = textPane.addStyle("hilite", normalStyle); // NOI18N
-            StyleConstants.setBackground(hiliteStyle, (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background));
-            StyleConstants.setForeground(hiliteStyle, (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground));
+            Color c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Background);
+            if(c != null) StyleConstants.setBackground(hiliteStyle, c);
+            c = (Color) searchHiliteAttrs.getAttribute(StyleConstants.Foreground);
+            if(c != null) StyleConstants.setForeground(hiliteStyle, c);
             
             setLayout(new BorderLayout());
             add(textPane);

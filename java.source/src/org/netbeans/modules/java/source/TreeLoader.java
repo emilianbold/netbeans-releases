@@ -113,7 +113,7 @@ public class TreeLoader extends LazyTreeLoader {
     private void dumpSymFile(ClassSymbol clazz) throws IOException {
         PrintWriter writer = null;
         try {
-            JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
+            JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
             String binaryName = null;
             if (clazz.classfile != null) {
                 binaryName = fm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);

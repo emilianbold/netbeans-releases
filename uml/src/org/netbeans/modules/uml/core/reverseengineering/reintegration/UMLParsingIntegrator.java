@@ -482,6 +482,8 @@ public class UMLParsingIntegrator
             reportHeapExceeded() ;
         }
 	
+        m_FragDocument = null;
+        m_Packages = null;
 	XMLManip.clearCachedXPaths();
         
         return m_Cancelled ? true : false;

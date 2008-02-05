@@ -144,18 +144,22 @@ public class ExecuteTestCookie implements Node.Cookie {
                 logView.appendToView(errMsg + NL);
             }
 
-            logView.appendToView(NbBundle.getMessage(ExecuteTestCookie.class, "MSG_execution_started"));
+            String nbBundle1 = mLoc.t("PRSR001: Execution started.");
+            logView.appendToView(Localizer.parse(nbBundle1));
 
             startTime = System.currentTimeMillis();
             RunEngineWorkerThread runEThread = new RunEngineWorkerThread(execModel);
             DataObjectHelper.setWaitCursor();
-            String title = NbBundle.getMessage(ExecuteTestCookie.class, "MSG_ExecuteTest");
-            String msg = NbBundle.getMessage(ExecuteTestCookie.class, "MSG_ExecuteProgress");
+            
+            String nbBundle2 = mLoc.t("PRSR001: Executing");
+            String title = Localizer.parse(nbBundle2);
+            String nbBundle3 = mLoc.t("PRSR001: Executing, please wait...");
+            String msg = Localizer.parse(nbBundle3);
             UIUtil.startProgressDialog(title, msg);
             runEThread.start();
         } catch (Exception e) {
-            String msg = NbBundle.getMessage(ExecuteTestCookie.class, "MSG_execute_failed", e.getMessage());
-
+            String nbBundle4 = mLoc.t("PRSR001: Execution failed:{0}",e.getMessage());
+            String msg = Localizer.parse(nbBundle4);
             // Ensure progress bar dialog box is removed from display even if listener
             // never gets the message that engine is done.
             SwingUtilities.invokeLater(new CloseProgressBarTask());
@@ -188,9 +192,13 @@ public class ExecuteTestCookie implements Node.Cookie {
                 try {
                     endTime = System.currentTimeMillis();
                     StringBuilder msgBuf = new StringBuilder(100);
-                    String msg = (event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) ? "MSG_executed_success" : "MSG_executed_errors"; // No I18N
-                    msgBuf.append(NbBundle.getMessage(ExecuteTestCookie.class, msg));
-                    msgBuf.append(NbBundle.getMessage(ExecuteTestCookie.class, "MSG_execution_time", new Long((endTime - startTime) / 1000), new Long((endTime - startTime) % 1000)));
+                    String nbBundle5 = mLoc.t("PRSR001: Execution completed successfully.");
+                    String msg = (event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) ? Localizer.parse(nbBundle5) : "MSG_executed_errors"; // No I18N
+                    String nbBundle11 = mLoc.t("PRSR001: Execution completed with {0,choice,0#unknown error|1#error|1<errors}:{1}");
+                    String nbBundle20 = mLoc.t("PRSR001: ExecuteTestCookie.class.getName(){0}",msg);
+                    msgBuf.append(Localizer.parse(nbBundle20));
+                    String nbBundle6 = mLoc.t("PRSR001: Execution time: {0}.{1} seconds.",new Long((endTime - startTime) / 1000),new Long((endTime - startTime) % 1000));
+                    msgBuf.append(Localizer.parse(nbBundle6));
                     logView.appendToView(msgBuf.toString());
                     if (event.getStatus() == ETLEngine.STATUS_COLLAB_COMPLETED) {
                         int rowsProcessed = 0;
@@ -214,7 +222,8 @@ public class ExecuteTestCookie implements Node.Cookie {
 
         public void updateOutputMessage(ETLEngineLogEvent evt) {
             if (evt != null && logView != null) {
-                String msg = NbBundle.getMessage(ExecuteTestCookie.class, "MSG_output_template", evt.getSourceName(), evt.getLogMessage());
+                String nbBundle7 = mLoc.t("PRSR001: {0}: {1}",evt.getSourceName(),evt.getLogMessage());
+                String msg = Localizer.parse(nbBundle7);
                 logView.appendToView(msg);
                 mLogger.infoNoloc(mLoc.t("PRSR014: evt.getLogLevel(){0}{1}", logCategory, msg));
             }
@@ -263,7 +272,8 @@ public class ExecuteTestCookie implements Node.Cookie {
                 }
             } else {
                 throwableList.add(new BaseException("No eTL collaboration model to execute"));
-                logView.appendToView(NbBundle.getMessage(ExecuteTestCookie.class, "MSG_execution_failed"));
+                String nbBundle8 = mLoc.t("PRSR001: Execution failed: ");
+                logView.appendToView(Localizer.parse(nbBundle8));
             }
 
             return "";
@@ -283,15 +293,16 @@ public class ExecuteTestCookie implements Node.Cookie {
                     Throwable t = (Throwable) iter.next();
                     String detailMsg = t.getMessage();
                     if (StringUtil.isNullString(detailMsg)) {
-                        detailMsg = NbBundle.getMessage(ExecuteTestCookie.class, "MSG_executed_error_unknown");
+                        String nbBundle9 = mLoc.t("PRSR001: Execution with unknown error.  Please review messages.log under netbeans user home directory for more details. completed with unknown error.  Please review messages.log under netbeans user home directory for more details.");
+                        detailMsg = Localizer.parse(nbBundle9);
                     }
 
                     detailMsg.trim();
                     msgBuf.append(iter.nextIndex()).append(". ").append(detailMsg).append(NL);
                 }
 
-                String msg = NbBundle.getMessage(ExecuteTestCookie.class, "MSG_executed_errors", new Integer(throwableList.size()), msgBuf.toString());
-
+                String nbBundle10 = mLoc.t("PRSR001: Execution completed with {0,choice,0#unknown error|1#error|1<errors}:{1}",new Integer(throwableList.size()),msgBuf.toString());
+                String msg = Localizer.parse(nbBundle10);
                 logView.appendToView(msg);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
             }

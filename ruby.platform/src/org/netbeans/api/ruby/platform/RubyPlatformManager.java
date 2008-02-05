@@ -38,6 +38,9 @@
  */
 package org.netbeans.api.ruby.platform;
 
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -83,6 +86,11 @@ public final class RubyPlatformManager {
     private static final Logger LOGGER = Logger.getLogger(RubyPlatformManager.class.getName());
     
     private static Set<RubyPlatform> platforms;
+    /**
+     * Change support for notifying of platform changes, using vetoable for 
+     * making it possible to prevent removing of a used platform.
+     */
+    private static final VetoableChangeSupport vetoableChangeSupport = new VetoableChangeSupport(RubyPlatformManager.class);
 
     private RubyPlatformManager() {
         // static methods only
@@ -95,6 +103,7 @@ public final class RubyPlatformManager {
      */
     static void resetPlatforms() {
         platforms = null;
+        firePlatformsChanged();
     }
     /**
      * Get a set of all registered platforms.
@@ -135,6 +144,13 @@ public final class RubyPlatformManager {
         }
     }
 
+    private static void firePlatformsChanged() {
+        try {
+            vetoableChangeSupport.fireVetoableChange("platforms", null, null); //NOI18N
+        } catch (PropertyVetoException ex) {
+            // do nothing, vetoing not implemented yet
+        }
+    }
     private static File findPlatform(final String dir, final String ruby) {
         File f = null;
         if (Utilities.isWindows()) {
@@ -306,6 +322,7 @@ public final class RubyPlatformManager {
         synchronized (RubyPlatform.class) {
             getPlatformsInternal().add(plaf);
         }
+        firePlatformsChanged();
         LOGGER.fine("RubyPlatform added: " + plaf);
         return plaf;
     }
@@ -326,6 +343,7 @@ public final class RubyPlatformManager {
         synchronized (RubyPlatform.class) {
             getPlatformsInternal().remove(plaf);
         }
+        firePlatformsChanged();
         LOGGER.fine("RubyPlatform removed: " + plaf);
     }
 
@@ -439,6 +457,14 @@ public final class RubyPlatformManager {
             LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
         }
         return info;
+    }
+    
+    public static void addVetoableChangeListener(VetoableChangeListener listener) {
+        vetoableChangeSupport.addVetoableChangeListener(listener);
+    }
+    
+    public static void removeVetoableChangeListener(VetoableChangeListener listener) {
+        vetoableChangeSupport.removeVetoableChangeListener(listener);
     }
 
 }
