@@ -554,9 +554,11 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
     public void valueChanged(TreePath treePath, VertexItem vertexItem, 
             Object newValue) 
     {
-        vertexItem.setValue(newValue);
-        fireGraphChanged(treePath);
-        mRightTreeModel.fireTreeChanged(this, treePath);
+        if (newValue != null) {
+            vertexItem.setValue(newValue);
+            fireGraphChanged(treePath);
+            mRightTreeModel.fireTreeChanged(this, treePath);
+        }
     }
     
     //===================================================================
