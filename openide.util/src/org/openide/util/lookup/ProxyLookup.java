@@ -310,31 +310,22 @@ public class ProxyLookup extends Lookup {
      * that was found (not too useful) and also to all objects found
      * (more useful).
      */
-    private final class R<T> extends WaitableResult<T> {
+    private static final class R<T> extends WaitableResult<T> {
         /** list of listeners added */
         private javax.swing.event.EventListenerList listeners;
-
-        /** template for this result */
-        private final Lookup.Template<T> template;
 
         /** collection of Objects */
         private Collection[] cache;
 
         /** weak listener & result */
         private final WeakResult<T> weakL;
+        private final Lookup.Template<T> template;
 
         /** Constructor.
          */
-        public R(Lookup.Template<T> t) {
-            template = t;
-            weakL = new WeakResult<T>(this);
-        }
-
-        /** When garbage collected, remove the template from the has map.
-         */
-        @Override
-        protected void finalize() {
-            unregisterTemplate(template);
+        public R(ProxyLookup proxy, Lookup.Template<T> t) {
+            this.weakL = new WeakResult<T>(proxy, this);
+            this.template = t;
         }
 
         @SuppressWarnings("unchecked")
@@ -347,11 +338,11 @@ public class ProxyLookup extends Lookup {
         private Result<T>[] initResults() {
             BIG_LOOP: for (;;) {
                 Lookup[] myLkps;
-                synchronized (ProxyLookup.this) {
+                synchronized (weakL.getLock()) {
                     if (weakL.getResults() != null) {
                         return weakL.getResults();
                     }
-                    myLkps = getLookups(false);
+                    myLkps = weakL.getLookups(false);
                 }
 
                 Result<T>[] arr = newResults(myLkps.length);
@@ -360,8 +351,8 @@ public class ProxyLookup extends Lookup {
                     arr[i] = myLkps[i].lookup(template);
                 }
 
-                synchronized (ProxyLookup.this) {
-                    Lookup[] currentLkps = getLookups(false);
+                synchronized (weakL.getLock()) {
+                    Lookup[] currentLkps = weakL.getLookups(false);
                     if (currentLkps.length != myLkps.length) {
                         continue BIG_LOOP;
                     }
@@ -397,7 +388,7 @@ public class ProxyLookup extends Lookup {
             Set<Lookup> added, Set<Lookup> removed, Lookup[] old, Lookup[] current, 
             Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
         ) {
-            synchronized (ProxyLookup.this) {
+            synchronized (weakL.getLock()) {
                 if (weakL.getResults() == null) {
                     // not computed yet, do not need to do anything
                     return;
@@ -442,7 +433,7 @@ public class ProxyLookup extends Lookup {
         /** Just delegates.
          */
         public void addLookupListener(LookupListener l) {
-            synchronized (ProxyLookup.this) {
+            synchronized (weakL.getLock()) {
                 if (listeners == null) {
                     listeners = new EventListenerList();
                 }
@@ -496,7 +487,7 @@ public class ProxyLookup extends Lookup {
             Lookup.Result<T>[] arr = myBeforeLookup();
 
             // if the call to beforeLookup resulted in deletion of caches
-            synchronized (ProxyLookup.this) {
+            synchronized (weakL.getLock()) {
                 if (getCache() != null) {
                     Collection result = getCache()[indexToCache];
                     if (result != null) {
@@ -538,7 +529,7 @@ public class ProxyLookup extends Lookup {
             
             
 
-            synchronized (ProxyLookup.this) {
+            synchronized (weakL.getLock()) {
                 if (getCache() == null) {
                     // initialize the cache to indicate this result is in use
                     setCache(new Collection[3]);
@@ -564,7 +555,7 @@ public class ProxyLookup extends Lookup {
             // clear cached instances
             Collection oldItems;
             Collection oldInstances;
-            synchronized (ProxyLookup.this) {
+            synchronized (weakL.getLock()) {
                 if (getCache() == null) {
                     // nobody queried the result yet
                     return;
@@ -598,7 +589,7 @@ public class ProxyLookup extends Lookup {
                         modified = false;
                     }
                 } else {
-                    synchronized (ProxyLookup.this) {
+                    synchronized (weakL.getLock()) {
                         if (getCache() == null) {
                             // we have to initialize the cache
                             // to show that the result has been initialized
@@ -618,7 +609,7 @@ public class ProxyLookup extends Lookup {
          * @return results to work on.
          */
         private Lookup.Result<T>[] myBeforeLookup() {
-            ProxyLookup.this.beforeLookup(template);
+            weakL.proxyBefore(template);
 
             Lookup.Result<T>[] arr = initResults();
 
@@ -646,7 +637,7 @@ public class ProxyLookup extends Lookup {
         }
 
         private void setCache(Collection[] cache) {
-            assert Thread.holdsLock(ProxyLookup.this);
+            assert Thread.holdsLock(weakL.getLock());
             this.cache = cache;
         }
     }
@@ -656,8 +647,11 @@ public class ProxyLookup extends Lookup {
 
         private final Reference<R> result;
         
-        public WeakResult(R r) {
-            this.result = new WeakReference<R>(r);//, Utilities.activeReferenceQueue());
+        private final Reference<ProxyLookup> proxy;
+        
+        public WeakResult(ProxyLookup proxy, R r) {
+            this.result = new RefR(r, this);
+            this.proxy = new WeakReference<ProxyLookup>(proxy);
         }
         
         protected void beforeLookup(Lookup.Template t) {
@@ -668,8 +662,44 @@ public class ProxyLookup extends Lookup {
                 removeListeners();
             }
         }
+        
+        final void unregisterTemplate() {
+            ProxyLookup p = proxy.get();
+            R r = result.get();
+            Lookup.Template<T> template = r == null ? null : r.template;
+            if (p != null && template != null) {
+                p.unregisterTemplate(template);
+            }
+        }
+        
+        final void proxyBefore(Template template) {
+            ProxyLookup p = proxy.get();
+            if (p != null) {
+                p.beforeLookup(template);
+            }
+        }
 
-        private void removeListeners() {
+        final Object getLock() {
+            ProxyLookup p = proxy.get();
+            if (p != null) {
+                return p;
+            } else {
+                // some fallback to lock on that will not change once the ProxyLookup is GCed
+                return EMPTY_ARR;
+            }
+        }
+        
+        final Lookup[] getLookups(boolean clone) {
+            ProxyLookup p = proxy.get();
+            if (p != null) {
+                return p.getLookups(clone);
+            } else {
+                return EMPTY_ARR;
+            }
+        }
+        
+
+        final void removeListeners() {
             Lookup.Result<T>[] arr = this.getResults();
             if (arr == null) {
                 return;
@@ -782,10 +812,22 @@ public class ProxyLookup extends Lookup {
                 res = new HashMap<Template<?>, Reference<R>>(oldAndNew[0].results);
             }
             
-            R<T> newR = proxy.new R<T>(template);
+            R<T> newR = new R<T>(proxy, template);
             res.put(template, new java.lang.ref.SoftReference<R>(newR));
             oldAndNew[0] = new ImmutableInternalData(res);
             return newR;
+        }
+    }
+    
+    private static final class RefR extends WeakReference<R> implements Runnable {
+        private WeakResult weakL;
+        public RefR(R r, WeakResult weakL) {
+            super(r, Utilities.activeReferenceQueue());
+            this.weakL = weakL;
+        }
+
+        public void run() {
+            weakL.unregisterTemplate();
         }
     }
 }
