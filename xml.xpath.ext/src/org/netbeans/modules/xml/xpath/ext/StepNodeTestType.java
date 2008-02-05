@@ -24,10 +24,10 @@ package org.netbeans.modules.xml.xpath.ext;
  * @author nk160297
  */
 public enum StepNodeTestType {
-    NODETYPE_NODE("node()"),  // NOI18N
-    NODETYPE_TEXT("text()"),  // NOI18N 
-    NODETYPE_COMMENT("comment()"),  // NOI18N
-    NODETYPE_PI("processing-instruction()");  // NOI18N
+    NODETYPE_NODE("node"),  // NOI18N
+    NODETYPE_TEXT("text"),  // NOI18N 
+    NODETYPE_COMMENT("comment"),  // NOI18N
+    NODETYPE_PI("processing-instruction");  // NOI18N
     
     private String mXPathText;
     
