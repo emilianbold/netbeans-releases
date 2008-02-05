@@ -115,8 +115,8 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     }
     
     public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
-                boolean isDeprecated) {
-        return new ClassItem(substitutionOffset, elem, type, isDeprecated);
+                boolean isDeprecated, boolean displayPackage) {
+        return new ClassItem(substitutionOffset, elem, type, isDeprecated, displayPackage);
     }
     
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
@@ -310,9 +310,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private String enclName;
         private String sortText;
         private String leftText;
+        private boolean displayPackage;
 
         public ClassItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
-                boolean isDeprecated) {
+                boolean isDeprecated, boolean displayPackage) {
             super(substitutionOffset);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.isDeprecated = isDeprecated;
@@ -320,6 +321,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             this.typeName = getTypeName(type, false).toString();
             this.enclName = getElementName(elem.getEnclosingElement(), true).toString();
             this.sortText = this.simpleName + getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
+            this.displayPackage = displayPackage;
         }
         
         public int getSortPriority() {
@@ -349,7 +351,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 sb.append(escape(typeName));
                 if (isDeprecated)
                     sb.append(STRIKE_END);
-                if (enclName != null && enclName.length() > 0) {
+                if (displayPackage && enclName != null && enclName.length() > 0) {
                     sb.append(COLOR_END);
                     sb.append(PKG_COLOR);
                     sb.append(" ("); //NOI18N

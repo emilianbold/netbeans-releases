@@ -474,7 +474,7 @@ public final class CompletionManager {
                         if ((pkgChild.getKind() == ElementKind.CLASS) && pkgChild.getSimpleName().toString().startsWith(classPrefix)) {
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
                                     (TypeElement) pkgChild, (DeclaredType) pkgChild.asType(), 
-                                    cc.getElements().isDeprecated(pkgChild));
+                                    cc.getElements().isDeprecated(pkgChild), false);
                             results.add(item);
                         }
                     }
@@ -503,7 +503,7 @@ public final class CompletionManager {
                                 && typeElement.getSimpleName().toString().startsWith(typedPrefix)) {
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
                                     typeElement, (DeclaredType) typeElement.asType(), 
-                                    cc.getElements().isDeprecated(typeElement));
+                                    cc.getElements().isDeprecated(typeElement), true);
                             results.add(item);
                         }
                     }
