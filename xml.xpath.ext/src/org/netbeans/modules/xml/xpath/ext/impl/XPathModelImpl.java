@@ -443,8 +443,7 @@ public class XPathModelImpl implements XPathModel {
         if (mValidationContext != null) {
             if (foundCompPairSet.isEmpty()) {
                 String name = XPathUtils.qNameObjectToString(qName);
-                if (isAttribute) {
-// vlv
+                if (isAttribute) { // vlv
                     if (nsUri == null || nsUri.length() == 0) {
                         mValidationContext.addResultItem(getRootExpression(), 
                                 ResultType.ERROR, 
@@ -887,8 +886,7 @@ public class XPathModelImpl implements XPathModel {
         }
         //
         if (sameNameOtherPrefix.isEmpty()) {
-            // The function with the required name isn't found
-// vlv
+            // The function with the required name isn't found // vlv
             mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
                     XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
                     XPathUtils.qNameObjectToString(funcQName));

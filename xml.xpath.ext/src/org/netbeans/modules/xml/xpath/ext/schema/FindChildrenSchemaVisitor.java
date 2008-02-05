@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.xpath.ext.schema;
 
 import java.util.ArrayList;
@@ -94,8 +93,8 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                 }
             }
         }
-/*         
-        // vlv # 105159
+/*      // vlv # 105159
+        // DON'T REMOVE IT
         else if (sc instanceof Element && sc instanceof ElementReference && sc instanceof DocumentComponent) {
           DocumentComponent document = (DocumentComponent) sc;
           String typeName = document.getPeer().getAttribute("type");
@@ -133,6 +132,8 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     }
 
 /*
+    // vlv # 105159
+    // DON'T REMOVE IT
     private void findInType(final String typeName, SchemaComponent sc) {
       if (typeName == null || typeName.equals("")) {
         return;
