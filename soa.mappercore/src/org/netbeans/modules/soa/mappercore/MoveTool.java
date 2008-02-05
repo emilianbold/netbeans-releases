@@ -27,11 +27,10 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.IOException;
 import javax.swing.JComponent;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -165,10 +164,12 @@ public class MoveTool extends AbstractMapperDnDTool {
                         Math.max(0, (graphY + step / 2) / step));
             } else {
                 model.move(node.getTreePath(), graphSubSet,
-                        (int)(Math.round(((double)(graphX))/step)),
-                        Math.max(0, (int)(Math.round(((double)(graphY))/step))));
+                        (int) (Math.round(((double) (graphX)) / step)),
+                        Math.max(0, (int) (Math.round(((double) (graphY)) / step))));
             }
-        }
+            TreePath treePath = getSelectionModel().getSelectedPath();
+            getSelectionModel().setSelected(treePath, graphSubSet.getVertex(0));
+         }
 
         reset();
 
