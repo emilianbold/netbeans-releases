@@ -117,6 +117,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     void setOutSearch() {
         bOutSearch = true;
         divider.setVisible(false);
+        tbSummary.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutSummary"));
+        tbDiff.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowDiff"));
     }
     
     boolean isOutSearch() {
@@ -417,7 +419,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         gridBagConstraints.weightx = 1.0;
         add(searchCriteriaPanel, gridBagConstraints);
 
-        bSearch.setToolTipText("null");
+        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/log/Bundle"); // NOI18N
+        bSearch.setToolTipText(bundle.getString("TT_Search")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -438,9 +441,8 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         buttonGroup1.add(tbSummary);
         tbSummary.setSelected(true);
-        java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/log/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(tbSummary, bundle.getString("CTL_ShowSummary")); // NOI18N
-        tbSummary.setToolTipText("null");
+        tbSummary.setToolTipText(bundle.getString("TT_Summary")); // NOI18N
         tbSummary.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onViewToggle(evt);
@@ -451,7 +453,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
 
         buttonGroup1.add(tbDiff);
         org.openide.awt.Mnemonics.setLocalizedText(tbDiff, bundle.getString("CTL_ShowDiff")); // NOI18N
-        tbDiff.setToolTipText("null");
+        tbDiff.setToolTipText(bundle.getString("TT_ShowDiff")); // NOI18N
         tbDiff.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onViewToggle(evt);
