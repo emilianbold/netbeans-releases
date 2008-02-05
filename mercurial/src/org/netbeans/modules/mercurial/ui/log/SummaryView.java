@@ -292,7 +292,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         final boolean diffToPrevEnabled = selection.length == 1;
         
         if (revision > 0) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) { // NOI18N
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
                 {
                     setEnabled(diffToPrevEnabled);
                 }
@@ -319,7 +319,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }));
         */
         if (!revisionSelected) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", revision)) { // NOI18N
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
                 {                    
                     setEnabled(rollbackToEnabled);
                 }
