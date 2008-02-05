@@ -113,7 +113,7 @@ public final class QuerySupport {
      * Create a new query to provide information about files sharability. The returned query listens to the changes
      * in particular source roots.
      * @param helper {@link AntProjectHelper} used for creating a query itself.
-     * @param evaluator {@link PropertyEvaluator}a property evaluator to interpret paths with.
+     * @param evaluator a {@link PropertyEvaluator property evaluator} to interpret paths with.
      * @param srcRoots a list of source roots to treat as sharable.
      * @param testRoots a list of test roots to treat as sharable.
      * @param additionalSourceRoots additional paths to treat as sharable (just pure property names, do not
