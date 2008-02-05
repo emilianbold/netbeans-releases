@@ -474,7 +474,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         return true;
     }
 
-    public void move(TreePath treePath, GraphSubset graphSubset, int dx, int dy) {
+    public void move(TreePath treePath, GraphSubset graphSubset, int newX, int newY) {
         if (!isConnectable(treePath)) {
             return;
         }
@@ -492,10 +492,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             }
 
             if (graph == vertex.getGraph()) {
-                int newX = vertex.getX() + dx;
-                int newY = vertex.getY() + dy;
                 vertex.setLocation(newX, newY);
-
             }
         }
         //
