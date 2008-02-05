@@ -61,6 +61,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleElementVisitor6;
 import javax.lang.model.util.SimpleTypeVisitor6;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -80,6 +81,7 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.util.SpringBeansUIs;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -215,6 +217,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private List<String> beanNames;
         private String displayName;
         private String beanLocFile;
+        private Action goToBeanAction;
         private String leftText;
         
         public BeanRefItem(int substitutionOffset, String displayName, SpringBean bean, FileObject containerFO) {
@@ -222,13 +225,14 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             this.beanId = bean.getId();
             this.beanClass = bean.getClassName();
             this.beanNames = bean.getNames();
-            if(bean.getLocation() != null) {
+            if (bean.getLocation() != null) {
                 File file = bean.getLocation().getFile();
                 FileObject fo = FileUtil.toFileObject(file);
                 if (fo != null) {
                     this.beanLocFile = FileUtil.getRelativePath(containerFO.getParent(), fo);
                 }
             }
+            goToBeanAction = SpringBeansUIs.createGoToBeanAction(bean);
             this.displayName = displayName;
         }
         
@@ -277,7 +281,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 @Override
                 protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
                     CompletionDocumentation docItem = SpringXMLConfigCompletionDoc.createBeanRefDoc(beanId, 
-                            beanNames, beanClass, beanLocFile);
+                            beanNames, beanClass, beanLocFile, goToBeanAction);
                     resultSet.setDocumentation(docItem);
                     resultSet.finish();
                 }
