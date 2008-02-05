@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,57 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.completion.impl.xref;
+package org.netbeans.modules.mercurial.ui.actions;
 
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmFile;
-import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.mercurial.Mercurial;
+import javax.swing.AbstractAction;
+import org.openide.LifecycleManager;
+import java.awt.event.ActionEvent;
 
 /**
- *
- * @author Vladimir Voskresensky
+ * Base for all context-sensitive Mercurial actions.
+ * 
+ * @author Padraig O'Briain
  */
-public class DocOffsetableImpl implements CsmOffsetable {
-    private final CsmUID<CsmFile> uidFile;
-    private final DocOffsPositionImpl pos;
-    
-    public DocOffsetableImpl(BaseDocument doc, CsmFile file, int offset) {
-        this.pos = new DocOffsPositionImpl(doc, offset);
-        assert file != null : "null file for document " + doc + " on offset " + offset;
-        this.uidFile = file.getUID();
+public abstract class ContextAction extends AbstractAction {
+
+    /**
+     * Synchronizes memory modificatios with disk and calls
+     * {@link  #performContextAction}.
+     */
+    public void actionPerformed(final ActionEvent event) {
+        // TODO try to save files in invocation context only
+        // list somehow modified file in the context and save
+        // just them.
+        // The same (global save) logic is in CVS, no complaint
+        LifecycleManager.getDefault().saveAll();        
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        performAction(event);
     }
 
-    protected BaseDocument getDocument() {
-        return pos.getDocument();
-    }
-    
-    public CsmFile getContainingFile() {
-        return this.uidFile.getObject();
-    }
-
-    public int getStartOffset() {
-        return pos.getOffset();
-    }
-
-    public int getEndOffset() {
-        return this.getStartOffset() + getText().length();
-    }
-
-    public CsmOffsetable.Position getStartPosition() {
-        return pos;
-    }
-
-    public CsmOffsetable.Position getEndPosition() {
-        return new DocOffsPositionImpl(getDocument(),  getEndOffset());
-    }
-
-    public String getText() {
-        return "";
-    }
-    
-    protected final boolean isValid() {
-        CsmFile file = getContainingFile();
-        return file != null && file.isValid();
-    }
+    protected abstract void performAction(ActionEvent event);
 }
