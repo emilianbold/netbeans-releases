@@ -369,7 +369,6 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	    return ;
 	
         //check for modifications outside the first region:
-        
         if (e.getOffset() < region.getFirstRegionStartOffset() || (e.getOffset() + e.getLength()) > region.getFirstRegionEndOffset()) {
             release();
             return;
@@ -392,7 +391,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 return;
             }
 
-            if (e.getOffset() == region.getFirstRegionStartOffset()) {
+            if (e.getOffset() == region.getFirstRegionStartOffset() && region.getFirstRegionLength() > 0) {
                 JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
                 
                 if (jdca != null && !jdca.getNextChar()) {
@@ -404,7 +403,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 return;
             }
             
-            if (e.getOffset() == region.getFirstRegionEndOffset()) {
+            if (e.getOffset() == region.getFirstRegionEndOffset() && region.getFirstRegionLength() > 0) {
             //XXX: moves the caret anyway:
 //                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
 //

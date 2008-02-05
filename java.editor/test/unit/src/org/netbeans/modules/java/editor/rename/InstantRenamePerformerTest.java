@@ -171,6 +171,16 @@ public class InstantRenamePerformerTest extends NbTestCase {
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 79 - 22, ke, 83 - 22 - 1, "package test; public class Test { public void test() {intax = 0; int y = xxx; } }", false);
     }
     
+    public void testSelection126704a() throws Exception {
+        KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
+        performTest("package test; public class Test { public void test() {int x| = 0; int y = x; } }", 81 - 22, ke, 80 - 22, "package test; public class Test { public void test() {int a = 0; int y = a; } }", true);
+    }
+    
+    public void testSelection126704b() throws Exception {
+        KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
+        performTest("package test; public class Test { public void test() {int x| = 0; int y = x; } }", 80 - 22, ke, 82 - 22 - 1, "package test; public class Test { public void test() {int a = 0; int y = a; } }", true);
+    }
+    
     private void performTest(String sourceCode, int offset, KeyEvent ke, String golden, boolean stillInRename) throws Exception {
         performTest(sourceCode, offset, ke, -1, golden, stillInRename);
     }
@@ -215,11 +225,10 @@ public class InstantRenamePerformerTest extends NbTestCase {
         
         InstantRenamePerformer.invokeInstantRename(p);
         
-        if (selectionEnd == (-1)) {
-            p.setCaretPosition(offset);
-        } else {
-            p.setSelectionStart(Math.min(offset, selectionEnd));
-            p.setSelectionEnd(Math.max(offset, selectionEnd));
+        p.setCaretPosition(offset);
+
+        if (selectionEnd != (-1)) {
+            p.moveCaretPosition(selectionEnd);
         }
         
         p.processKeyEvent(ke);
