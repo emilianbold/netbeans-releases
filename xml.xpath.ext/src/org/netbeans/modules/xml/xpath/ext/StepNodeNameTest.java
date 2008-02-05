@@ -52,7 +52,17 @@ public class StepNodeNameTest extends StepNodeTest {
     public boolean isWildcard() {
         return mNodeName.getLocalPart().equals("*"); // NOI18N
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof StepNodeNameTest) {
+            QName nodeName2 = ((StepNodeNameTest)obj).getNodeName();
+            return XPathUtils.equalsIgnorNsUri(nodeName2, mNodeName);
+        }
+        return false;
+    }
 
+    @Override
     public String toString() {
         return XPathUtils.qNameObjectToString(mNodeName);
     }
