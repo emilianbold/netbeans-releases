@@ -51,6 +51,7 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.api.gsf.ParserResult;
+import org.netbeans.editor.BaseDocument;
 import org.openide.util.Enumerations;
 
 
@@ -61,12 +62,12 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
     private final ASTNode node;
     private final AstNodeAdapter parent;
     private AstNodeAdapter[] children;
-    private String text;
+    private BaseDocument doc;
 
-    public AstNodeAdapter(AstNodeAdapter parent, ASTNode node, String text) {
+    public AstNodeAdapter(AstNodeAdapter parent, ASTNode node, BaseDocument doc) {
         this.parent = parent;
         this.node = node;
-        this.text = text;
+        this.doc = doc;
     }
 
     private void ensureChildrenInitialized() {
@@ -87,7 +88,7 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
             int index = 0;
 
             for (ASTNode child : subnodes) {
-                children[index++] = new AstNodeAdapter(this, child, text);
+                children[index++] = new AstNodeAdapter(this, child, doc);
             }
         }
     }
@@ -96,7 +97,7 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
         List<ASTNode> subnodes = AstUtilities.children(node);
 
         for (ASTNode child : subnodes) {
-            children.add(new AstNodeAdapter(this, child, text));
+            children.add(new AstNodeAdapter(this, child, doc));
         }
     }
 
@@ -185,11 +186,11 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
     }
 
     public int getStartOffset() {
-        return AstUtilities.getOffset(node.getText(), node.getLineNumber(), node.getColumnNumber());
+        return AstUtilities.getOffset(doc, node.getLineNumber(), node.getColumnNumber());
     }
 
     public int getEndOffset() {
-        return AstUtilities.getOffset(node.getText(), node.getLastLineNumber(), node.getLastColumnNumber());
+        return AstUtilities.getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
     }
 
     public Object getAstNode() {

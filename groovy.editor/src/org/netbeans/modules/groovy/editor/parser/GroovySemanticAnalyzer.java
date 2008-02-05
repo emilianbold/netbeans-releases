@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.groovy.editor.parser;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,9 +56,11 @@ import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.SemanticAnalyzer;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.AstPath;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -106,7 +109,11 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
 
         AstPath path = new AstPath();
         path.descend(root);
-        annotate(root, highlights, path, null, false, info.getText());
+        try {
+            annotate(root, highlights, path, null, false, (BaseDocument) info.getDocument());
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
         path.ascend();
 
         if (isCancelled()) {
@@ -135,10 +142,10 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
     /** Find unused local and dynamic variables */
     @SuppressWarnings("unchecked")
     private void annotate(ASTNode node, Map<OffsetRange, ColoringAttributes> highlights, AstPath path,
-        List<String> parameters, boolean isParameter, String text) {
+        List<String> parameters, boolean isParameter, BaseDocument doc) {
         
         if (node instanceof MethodNode) {
-            OffsetRange range = AstUtilities.getRange(node, text);
+            OffsetRange range = AstUtilities.getRange(node, doc);
             highlights.put(range, ColoringAttributes.METHOD);
             
             MethodNode method = (MethodNode)node;
@@ -147,7 +154,7 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
             }
             
         } else if (node instanceof FieldNode) {
-            OffsetRange range = AstUtilities.getRange(node, text);
+            OffsetRange range = AstUtilities.getRange(node, doc);
             highlights.put(range, ColoringAttributes.FIELD);
             
             FieldNode field = (FieldNode)node;
@@ -158,7 +165,7 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
             ClassNode classNode = (ClassNode)node;
             
             if(node.getLineNumber() > 0) {
-                OffsetRange range = AstUtilities.getRange(node, text);
+                OffsetRange range = AstUtilities.getRange(node, doc);
                 
                 // FIXME: the range seems to start from 0, e.g. including the
                 // keyword "class". Possible Bug elsewhere.
@@ -172,7 +179,7 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
 
             if (var instanceof FieldNode) {
                 if (node.getLineNumber() > 0) {
-                    OffsetRange range = AstUtilities.getRange(node, text);
+                    OffsetRange range = AstUtilities.getRange(node, doc);
                     highlights.put(range, ColoringAttributes.FIELD);
                 }
             }
@@ -184,7 +191,7 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         List<ASTNode> list = AstUtilities.children(node);
         for (ASTNode child : list) {
             path.descend(child);
-            annotate(child, highlights, path, parameters, isParameter, text);
+            annotate(child, highlights, path, parameters, isParameter, doc);
             path.ascend();
         }
     }

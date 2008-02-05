@@ -133,10 +133,14 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                 }
                 LOG.finest("Length of token to create: " + len);
 
+//                System.out.println("### nextToken [" + lexerInput.readText() + "], " + scanner.getInputState().guessing);
+                
                 switch (intId) {
-                    case GroovyTokenTypes.STRING_CTOR_START: intId = GroovyTokenTypes.STRING_LITERAL; break;
-                    case GroovyTokenTypes.STRING_CTOR_MIDDLE: intId = GroovyTokenTypes.STRING_LITERAL; break;
-                    case GroovyTokenTypes.STRING_CTOR_END: intId = GroovyTokenTypes.STRING_LITERAL; break;
+                    case GroovyTokenTypes.STRING_CTOR_START:
+                    case GroovyTokenTypes.STRING_CTOR_MIDDLE:
+                    case GroovyTokenTypes.STRING_CTOR_END:
+                        intId = GroovyTokenTypes.STRING_LITERAL;
+                        break;
                     case GroovyTokenTypes.EOF: return null;
                 }
                 

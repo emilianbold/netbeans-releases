@@ -77,6 +77,7 @@ import org.netbeans.api.gsf.SemanticAnalyzer;
 import org.netbeans.api.gsf.Severity;
 import org.netbeans.api.gsf.SourceFileReader;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.groovy.editor.AstNodeAdapter;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.GroovyUtils;
@@ -520,7 +521,8 @@ public class GroovyParser implements Parser {
             Message message = compilationUnit.getErrorCollector().getLastError();
             if (message instanceof SyntaxErrorMessage) {
                 SyntaxException se = ((SyntaxErrorMessage)message).getCause();
-                offset = AstUtilities.getOffset(source, se.getStartLine(), se.getStartColumn());
+                
+                offset = AstUtilities.getOffset(context.document, se.getStartLine(), se.getStartColumn());
                 errorMessage = se.getMessage();
                 localizedMessage = se.getLocalizedMessage();
             }
@@ -556,7 +558,7 @@ public class GroovyParser implements Parser {
         if (module != null) {
             context.sanitized = sanitizing;
             AstRootElement astRootElement = new AstRootElement(context.file.getFileObject(), module);
-            AstNodeAdapter ast = new AstNodeAdapter(null, module, source);
+            AstNodeAdapter ast = new AstNodeAdapter(null, module, context.document);
             GroovyParserResult r = createParseResult(context.file, astRootElement, ast);
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             return r;
@@ -611,8 +613,8 @@ public class GroovyParser implements Parser {
                         String sourceLocator = ex.getSourceLocator();
                         String name = moduleNode != null ? moduleNode.getContext().getName() : null;
                         if (sourceLocator != null && name != null && sourceLocator.equals(name)) {
-                            int startOffset = AstUtilities.getOffset(context.source, ex.getStartLine(), ex.getStartColumn());
-                            int endOffset = AstUtilities.getOffset(context.source, ex.getLine(), ex.getEndColumn());
+                            int startOffset = AstUtilities.getOffset(context.document, ex.getStartLine(), ex.getStartColumn());
+                            int endOffset = AstUtilities.getOffset(context.document, ex.getLine(), ex.getEndColumn());
                             notifyError(context, null, Severity.ERROR, ex.getMessage(), null, startOffset, endOffset, sanitizing);
                         }
                     } else if (object instanceof SimpleMessage) {
@@ -722,13 +724,14 @@ public class GroovyParser implements Parser {
         private String sanitizedContents;
         private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
+        private BaseDocument document;
         
         public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset) {
             this.file = parserFile;
             this.listener = listener;
             this.source = source;
             this.caretOffset = caretOffset;
-
+            this.document = AstUtilities.getBaseDocument(file.getFileObject(), true);
         }
         
         @Override

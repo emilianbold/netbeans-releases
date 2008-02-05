@@ -70,6 +70,7 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.SourceUnit;
+import org.netbeans.editor.Utilities;
 
 /**
  *
@@ -152,52 +153,52 @@ public class AstUtilities {
         return root;
     }
 
-    public static OffsetRange getRangeFull(ASTNode node, String text) {
+    public static OffsetRange getRangeFull(ASTNode node, BaseDocument doc) {
             if (node.getLineNumber() < 0 || node.getColumnNumber() < 0 || node.getLastLineNumber() < 0 || node.getLastColumnNumber() < 0) {
                 return OffsetRange.NONE;
             }
-            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
                 start = 0;
             }
-            int end = getOffset(text, node.getLastLineNumber(), node.getLastColumnNumber());
+            int end = getOffset(doc, node.getLastLineNumber(), node.getLastColumnNumber());
             if (end < 0) {
                 end = 0;
             }
             return new OffsetRange(start, end);
     }
     
-    public static OffsetRange getRange(ASTNode node, String text) {
+    public static OffsetRange getRange(ASTNode node, BaseDocument doc) {
         if (node instanceof MethodNode) {
-            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
                 start = 0;
             }
             MethodNode methodNode = (MethodNode) node;
             return new OffsetRange(start, start + methodNode.getName().length());
         } else if (node instanceof FieldNode) {
-            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
                 start = 0;
             }
             FieldNode fieldNode = (FieldNode) node;
             return new OffsetRange(start, start + fieldNode.getName().length());
         } else if (node instanceof ClassNode) {
-            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
                 start = 0;
             }
             ClassNode classNode = (ClassNode) node;
             return new OffsetRange(start, start + classNode.getName().length());
         } else if (node instanceof VariableExpression) {
-            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
                 start = 0;
             }
             VariableExpression variableExpression = (VariableExpression) node;
             return new OffsetRange(start, start + variableExpression.getName().length());
         } else if (node instanceof Parameter) {
-            int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
                 start = 0;
             }
@@ -257,26 +258,12 @@ public class AstUtilities {
     
     /**
      * Find offset in text for given line and column
-     * Probably terribly slow
      */
-    public static int getOffset(String text, int lineNumber, int columnNumber) {
-        assert lineNumber >= 0 : "Line number is negative: " + lineNumber;
-        assert columnNumber >= 0 : "Column number is negative: " + columnNumber;
-        // split text into lines
-        String[] lines = text.split("\r\n|\n|\r"); // NOI18N
-        
-        assert lineNumber <= lines.length : "Line number is higher than lines in text: " + lineNumber;
-        
-//        final Logger LOG = Logger.getLogger(AstUtilities.class.getName());
-//        LOG.log(Level.WARNING, "lineNumber   : " + lineNumber);
-//        LOG.log(Level.WARNING, "lines.length : " + lines.length);
-      
-        int offset = 0;
-        for (int i = 0; i < (lineNumber - 1); i++) {
-            // increase offset by length of line + new line character lost in split() action
-            offset += lines[i].length() + 1;
-        }
-        // increase offset by column number on given line
+    public static int getOffset(BaseDocument doc, int lineNumber, int columnNumber) {
+        assert lineNumber > 0 : "Line number must be at least 1 and was: " + lineNumber;
+        assert columnNumber > 0 : "Column number must be at least 1 ans was: " + columnNumber;
+
+        int offset = Utilities.getRowStartFromLineOffset(doc, lineNumber - 1);
         offset += (columnNumber - 1);
         return offset;
     }

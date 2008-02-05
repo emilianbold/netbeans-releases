@@ -239,7 +239,7 @@ public class StructureAnalyzer implements StructureScanner {
             case CLASS:
             case MODULE:
                 ASTNode node = element.getNode();
-                OffsetRange range = AstUtilities.getRangeFull(node, doc.getText(0, doc.getLength() - 1));
+                OffsetRange range = AstUtilities.getRangeFull(node, doc);
                 
 //                System.out.println("### range: " + element + ", " + range.getStart() + ", " + range.getLength());
                 

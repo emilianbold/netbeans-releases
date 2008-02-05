@@ -134,11 +134,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
                 
 //                System.out.println("### block: " + scope);
                 
-                try {
-                    highlightVariable(moduleNode, closest, scope, name, highlights, document.getText(0, document.getLength() - 1));
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
-                }
+                highlightVariable(moduleNode, closest, scope, name, highlights, (BaseDocument)document);
             }
         }
 
@@ -170,12 +166,12 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
     }
     
     private void highlightVariable(ModuleNode moduleNode, ASTNode node, ASTNode scope, String name, 
-            Map<OffsetRange, ColoringAttributes> highlights, String text) {
+            Map<OffsetRange, ColoringAttributes> highlights, BaseDocument doc) {
         
         if (scope instanceof Variable) {
             Variable variableExpression = (Variable) scope;
             if (name.equals(variableExpression.getName())) {
-                OffsetRange range = AstUtilities.getRange(scope, text);
+                OffsetRange range = AstUtilities.getRange(scope, doc);
                 highlights.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }
         } else if (scope instanceof MethodNode) {
@@ -201,7 +197,7 @@ public class GroovyOccurrencesFinder implements OccurrencesFinder {
         // TODO: should use visitor instead?
         List<ASTNode> list = AstUtilities.children(scope);
         for (ASTNode child : list) {
-            highlightVariable(moduleNode, node, child, name, highlights, text);
+            highlightVariable(moduleNode, node, child, name, highlights, doc);
         }
     }
 
