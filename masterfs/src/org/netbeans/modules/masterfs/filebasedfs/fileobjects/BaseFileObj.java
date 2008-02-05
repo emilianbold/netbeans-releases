@@ -308,13 +308,13 @@ public abstract class BaseFileObj extends FileObject {
     public Object getAttribute(final String attrName) {
         if (attrName.equals("FileSystem.rootPath")) {
             return "";//NOI18N
-        }
-        
-        if (attrName.equals("java.io.File")) {
+        } else if (attrName.equals("java.io.File")) {
             File file = getFileName().getFile();
             if (file != null && FileChangedManager.getInstance().exists(file)) {
                 return file;
             }
+        } else if (attrName.equals("ExistsParentNoPublicAPI")) {
+            return getExistingParent() != null;
         }
                 
         return BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
