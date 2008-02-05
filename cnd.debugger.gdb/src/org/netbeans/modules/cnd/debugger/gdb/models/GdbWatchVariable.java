@@ -143,7 +143,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         if (type == null || type.length() == 0) {
             type = getDebugger().requestSymbolType(watch.getExpression());
         }
-        log.fine("GWV.getType: [" + (type == null ? "<Null>" : type) + "]");
         return type;
     }
     
@@ -151,6 +150,9 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     public String getValue() {
         if (value == null || value.length() == 0) {
             value = getDebugger().requestValue(watch.getExpression());
+	    if (fields.length > 0) {
+		setModifiedValue(value);
+	    }
         }
         log.fine("GWV.getValue: [" + (value == null ? "<Null>" : value) + "]");
         return value;

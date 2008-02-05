@@ -77,6 +77,7 @@ public class TypeInfo {
         } else {
             rawInfo = debugger.requestSymbolType(var.getFullName(false));
         }
+	log.fine("TI.getTypeInfo[rawInfo]: " + var.getType() + " ==> [" + rawInfo + "]");
         
         if (rawInfo != null) {
             rawInfo = rawInfo.replace("\\n", "").trim(); // NOI18N
