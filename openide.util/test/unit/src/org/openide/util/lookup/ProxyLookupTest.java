@@ -88,7 +88,19 @@ implements AbstractLookupBaseHid.Impl {
      */
     public void testProxyListener () {
         ProxyLookup lookup = new ProxyLookup (new Lookup[0]);
-        Lookup.Result res = lookup.lookup (new Lookup.Template (Object.class));
+
+        final Lookup.Template<Object> template = new Lookup.Template<Object>(Object.class);
+        final Object[] IGNORE = {
+            ProxyLookup.EMPTY_ARR,
+            Utilities.activeReferenceQueue(),
+            
+        };
+        
+        assertSize("Pretty small", Collections.singleton(lookup), 16, IGNORE);
+        
+        Lookup.Result<Object> res = lookup.lookup (template);
+
+        assertSize("Bigger", Collections.singleton(lookup), 16, IGNORE);
         
         LL ll = new LL ();
         res.addLookupListener (ll);
