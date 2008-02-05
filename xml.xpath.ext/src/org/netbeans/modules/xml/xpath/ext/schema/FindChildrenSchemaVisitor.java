@@ -37,8 +37,11 @@ import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
+import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.netbeans.modules.xml.xam.Component;
+import java.util.Collection;
 
 /**
  * This schema visitor is inteneded to look for a children elements or attributes 
@@ -56,8 +59,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     
     private List<SchemaComponent> myFound = new ArrayList<SchemaComponent>();
     
-    public FindChildrenSchemaVisitor(String soughtName, String soughtNamespace, 
-            boolean isAttribute) {
+    public FindChildrenSchemaVisitor(String soughtName, String soughtNamespace, boolean isAttribute) {
         super();
         assert soughtName != null : "At least sought name has to be specified!"; // NOI18N
         //
@@ -65,7 +67,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         mySoughtNamespace = soughtNamespace;
         this.isAttribute = isAttribute;
 
-//ENABLE = (soughtName + "").equals("ReservationItems");
+//ENABLE = (soughtName + "").equals("leafElement");
 //out();
 //out("=== FindChildrenSchemaVisitor: " + soughtName);
     }
@@ -78,41 +80,49 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         return myFound.size() > 0;
     }
 
-    /**
-     * Start searching from the specified schema component. 
-     * Any kind of component can be used. 
-     */ 
     public void lookForSubcomponent(SchemaComponent sc) {
 //out("S E E : " + sc);
 
         if (sc instanceof Element) {
+//out("1");
             if (sc instanceof TypeContainer) {
-                NamedComponentReference<? extends GlobalType> typeRef = 
-                        ((TypeContainer)sc).getType();
+//out("1.1");
+                NamedComponentReference<? extends GlobalType> typeRef = ((TypeContainer)sc).getType();
+
                 if (typeRef != null) {
+//out("1.1.1");
                     GlobalType globalType = typeRef.get();
+                
                     if (globalType != null) {
                         globalType.accept(this);
                     }
                 }
-                //
                 LocalType localType = ((TypeContainer)sc).getInlineType();
+
                 if (localType != null) {
+//out("1.1.2");
                     localType.accept(this);
                 }
-            } else if (sc instanceof ElementReference) {
-                NamedComponentReference<GlobalElement> gElemRef = 
-                        ((ElementReference)sc).getRef();
+            }
+            else if (sc instanceof ElementReference) {
+//out("1.2");
+                NamedComponentReference<GlobalElement> gElemRef = ((ElementReference)sc).getRef();
+
                 if (gElemRef != null) {
+//out("1.2.1");
                     GlobalElement gElement = gElemRef.get();
-                    // Do recursive call here
                     lookForSubcomponent(gElement);
                 }
                 // vlv # 105159
                 else if (sc instanceof DocumentComponent) {
+//out("1.3");
                   DocumentComponent document = (DocumentComponent) sc;
                   String typeName = document.getPeer().getAttribute("type");
+                  int k = typeName.indexOf(":");
 
+                  if (k != -1) {
+                    typeName = typeName.substring(k + 1);
+                  }
                   if (typeName == null || typeName.equals("")) {
                     NodeList list = document.getPeer().getElementsByTagName("xs:extension");
 
@@ -129,6 +139,8 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                         break;
                       } 
                     }
+                    // find element
+                    findElement(mySoughtName, document, sc);
                   }
                   else {
                     findInType(typeName, sc);
@@ -137,17 +149,45 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             }
         }
         else if (sc instanceof ComplexType) {
+//out("2");
             visitChildren(sc);
         } else if (sc instanceof Schema) {
+//out("3");
             // Look for a global schema object
             visitChildren(sc);
         } else {
+//out("4");
             // Other elements can't containg nested elements or attributes
         }
+//out();
+    }
+
+    // vlv # 105159
+    private void findElement(String name, DocumentComponent document, SchemaComponent sc) {
+      if (name == null || name.equals("")) {
+        return;
+      }
+      NodeList list = document.getPeer().getElementsByTagName("xsd:element");
+      
+      for (int i=0; i < list.getLength(); i++) {
+        Node node = list.item(i);
+
+        if ( !(node instanceof org.w3c.dom.Element)) {
+          continue;
+        }
+        org.w3c.dom.Element element = (org.w3c.dom.Element) node;
+//out("--- : node : " + element.getAttribute("name"));
+        if (name.equals(element.getAttribute("name"))) {
+//out("--- : ---- : Y E S !!!! " );
+          myFound.add(sc); //!
+          return;
+        }
+      }
     }
 
     // vlv # 105159
     private void findInType(final String typeName, SchemaComponent sc) {
+//out("!! findInType: " + typeName);
       if (typeName == null || typeName.equals("")) {
         return;
       }
@@ -158,6 +198,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
       schema.accept(new DeepSchemaVisitor() {
         @Override
         public void visit(GlobalComplexType type) {
+//out("SEE TYPE : " + type.getName());
           if (typeName.equals(type.getName())) {
 //out("!!!=== FOUND GLOBAL Complex TYPE ==== : " + type.getName());
             myGlobalComplexType = type;
@@ -181,18 +222,6 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 
     protected void checkComponent(SchemaComponent sc) {
 // # 105159
-//        if (isAttribute && !(sc instanceof Attribute)) {
-//            // attribute required here!
-//            return;
-//        }
-//        if (!isAttribute && !(sc instanceof Element)) {
-//            // Element required here!
-//            return;
-//        }
-//        if (sc instanceof ElementReference) {
-//            // Need to see deeper to the referenced element
-//            return;
-//        }
 //out("check: " + sc);
         if (sc instanceof Named) {
             String namespace = sc.getModel().getEffectiveNamespace(sc);
