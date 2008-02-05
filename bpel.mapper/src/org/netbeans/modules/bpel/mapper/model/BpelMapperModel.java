@@ -490,9 +490,13 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             if (vertex.getGraph() == null) {
                 graph.addVertex(vertex);
             }
+            int x0 = graphSubset.getVertex(0).getX();
+            int y0 = graphSubset.getVertex(0).getY();
+            int xi = graphSubset.getVertex(i).getX();
+            int yi = graphSubset.getVertex(i).getY();
 
             if (graph == vertex.getGraph()) {
-                vertex.setLocation(newX, newY);
+                vertex.setLocation(xi - x0 + newX, yi - y0 + newY);
             }
         }
         //
