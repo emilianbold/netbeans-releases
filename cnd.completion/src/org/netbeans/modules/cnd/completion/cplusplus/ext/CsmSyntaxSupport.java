@@ -629,6 +629,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                 exists = false;
             } else if (len == 1) {
                 exists = ((st + len) == offset);
+            } else if (token.getTokenID().getCategory() == CCTokenContext.ERRORS) {
+                exists = ((st + len) >= offset);
             } else {
                 exists = ((st + len) > offset);
             }

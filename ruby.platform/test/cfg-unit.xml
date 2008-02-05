@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     "**/*Hid.*"
 -->
 
-<mconfig name="ruby platform">
+<mconfig name="ruby/platform">
 
     <testbag testattribs="all,stable" executor="code" name="Unit Tests">
         <testset dir="unit/src">

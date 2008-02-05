@@ -44,7 +44,10 @@ package org.netbeans.modules.j2ee.websphere6.config.sync;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.*;
+import javax.xml.transform.TransformerException;
 import javax.xml.xpath.*;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.DDXmiConstants;
 import org.w3c.dom.*;
@@ -54,8 +57,11 @@ import org.w3c.dom.*;
  * @author Dmitry Lipin
  */
 public class EjbSynchronizer extends Synchronizer{
-    private File ejbjarFile ;
-    private File ibmejbjarbndFile;
+    
+    private static final Logger LOGGER = Logger.getLogger(EjbSynchronizer.class.getName());
+    
+    private final File ejbjarFile ;
+    private final File ibmejbjarbndFile;
     private XPath xpath = null;
     
     private boolean saveEjbJarNeeded = false;
@@ -153,8 +159,14 @@ public class EjbSynchronizer extends Synchronizer{
                 if (saveIbmEjbJarBndNeeded) {
                     saveDocument(ibmejbjarbndDocument, ibmejbjarbndFile);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (XPathExpressionException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (XPathFactoryConfigurationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (TransformerException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
     }

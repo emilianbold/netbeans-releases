@@ -996,7 +996,7 @@ out:                    for (URL e : roots) {
     
     // --------------- Helper methods of getFile () -----------------------------
     private static ClassPath createClassPath (ClasspathInfo cpInfo, PathKind kind) throws MalformedURLException {
-	return ClasspathInfoAccessor.INSTANCE.getCachedClassPath(cpInfo, kind);	
+	return ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, kind);	
     }    
     
     // --------------- End of getFile () helper methods ------------------------------

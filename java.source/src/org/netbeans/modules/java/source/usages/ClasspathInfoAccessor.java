@@ -54,17 +54,24 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class ClasspathInfoAccessor {
 
-    static {
-        try {
-            Class.forName("org.netbeans.api.java.source.ClasspathInfo",true,ClasspathInfoAccessor.class.getClassLoader());
-        } catch (ClassNotFoundException cnfe) {
-            ErrorManager.getDefault().notify(cnfe);
+    public static synchronized ClasspathInfoAccessor getINSTANCE() {
+        if (INSTANCE == null) {
+            try {
+                Class.forName(ClasspathInfo.class.getName(), true, ClasspathInfo.class.getClassLoader());
+            } catch (ClassNotFoundException cnfe) {
+                ErrorManager.getDefault().notify(cnfe);
+            }
         }
+        
+        return INSTANCE;
     }
 
-    public static ClasspathInfoAccessor INSTANCE;
+    public static synchronized void setINSTANCE(ClasspathInfoAccessor aINSTANCE) {
+        INSTANCE = aINSTANCE;
+    }
+
+    private static ClasspathInfoAccessor INSTANCE;
        
-    
     public abstract JavaFileManager getFileManager(ClasspathInfo cpInfo);
     
     public abstract ClassPath getCachedClassPath (ClasspathInfo cpInfo, ClasspathInfo.PathKind kind);

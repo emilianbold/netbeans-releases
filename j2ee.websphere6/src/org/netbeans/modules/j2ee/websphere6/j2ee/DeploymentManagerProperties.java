@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.j2ee.websphere6.j2ee;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
 import org.netbeans.modules.j2ee.websphere6.WSURIManager;
@@ -77,31 +79,35 @@ public class DeploymentManagerProperties {
      * Port property, its value is used by the deployment manager.
      */
     public static final String PORT_ATTR = "port";
-    
+
+    private static final Logger LOGGER = Logger.getLogger(DeploymentManagerProperties.class.getName());
+
+    private final WSDeploymentManager WSDM;    
     
     private InstanceProperties instanceProperties;
-    private WSDeploymentManager WSDM;
+    
     /** Creates a new instance of DeploymentManagerProperties */
     public DeploymentManagerProperties(DeploymentManager dm) {
         
         WSDM = (WSDeploymentManager)dm;
         
-        instanceProperties = WSURIManager.getInstanceProperties(
+        instanceProperties = WSURIManager.getInstanceProperties(WSDM.getVersion(),
                 WSDM.getHost(), WSDM.getPort(), WSDM.getServerRoot(), WSDM.getDomainRoot());
         
-        if (instanceProperties==null){
+        if (instanceProperties == null) {
             try {
                 
                 instanceProperties = WSURIManager.createInstanceProperties(
+                        WSDM.getVersion(),
                         WSDM.getHost(),
                         WSDM.getPort(),
                         WSDM.getServerRoot(),
                         WSDM.getDomainRoot(),
                         WSDM.getUsername(),
                         WSDM.getPassword(),
-                        WSDM.getHost()+":"+WSDM.getPort());
-            } catch (InstanceCreationException e){
-                
+                        WSDM.getHost() + ":" + WSDM.getPort()); // NOI18N
+            } catch (InstanceCreationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
     }
