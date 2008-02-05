@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashMap;
 import java.util.List;
@@ -436,7 +437,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(LIST_ELEMENT)) {
             if (currentList != null) {
-                currentList.add(currentText);
+                currentList.add(getString(currentText));
             }
         } else if (element.equals(COMMAND_LINE_ELEMENT)) {
             if (currentBasicCompilerConfiguration != null)
@@ -455,8 +456,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(PREPROCESSOR_ELEMENT)) {
             // Old style preprocessor list
             if (currentCCCCompilerConfiguration != null) {
-                List list = CppUtils.tokenizeString(currentText);
-                currentCCCCompilerConfiguration.getPreprocessorConfiguration().getValue().addAll(list);
+                List<String> list = CppUtils.tokenizeString(currentText);
+                List res = new ArrayList<String>();
+                for(String val : list){
+                    res.add(this.getString(val));
+                }
+                currentCCCCompilerConfiguration.getPreprocessorConfiguration().getValue().addAll(res);
             }
         } else if (element.equals(STRIP_SYMBOLS_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);

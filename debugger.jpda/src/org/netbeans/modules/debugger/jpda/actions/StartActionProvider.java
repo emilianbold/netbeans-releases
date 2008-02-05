@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
+import com.sun.jdi.request.EventRequest;
 import java.io.IOException;
 
 import java.util.Collections;
@@ -268,6 +269,9 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
                     }
                     return false;
                 }
+
+                public void removed(EventRequest eventRequest) {}
+                
             },
             new Runnable () {
                 public void run () {

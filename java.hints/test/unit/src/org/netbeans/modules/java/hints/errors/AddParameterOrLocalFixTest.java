@@ -80,6 +80,39 @@ public class AddParameterOrLocalFixTest extends ErrorHintsTestBase {
                        "package test; public class Test {public void test() {int a; //test int bbb = 0; int c; }}");
     }
     
+    public void testAddLocalVariableNotInPlace() throws Exception {
+        parameter = false;
+        boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
+
+        try {
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(false);
+
+            performFixTest("test/Test.java",
+                    "package test; public class Test {public void test() {int a;\n |bbb = 0;\n int c; }}",
+                    "AddParameterOrLocalFix:bbb:int:false",
+                    "package test; public class Test {public void test() {int bbb; int a; bbb = 0; int c; }}");
+        } finally {
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(orig);
+        }
+    }
+
+    public void testAddLocalVariableNotInPlaceInConstr() throws Exception {
+        parameter = false;
+        
+        boolean orig = ErrorFixesFakeHint.isCreateLocalVariableInPlace();
+
+        try {
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(false);
+
+            performFixTest("test/Test.java",
+                    "package test; public class Test {public Test() {super();\n int a;\n |bbb = 0;\n int c; }}",
+                    "AddParameterOrLocalFix:bbb:int:false",
+                    "package test; public class Test {public Test() {super(); int bbb; int a; bbb = 0; int c; }}");
+        } finally {
+            ErrorFixesFakeHint.setCreateLocalVariableInPlace(orig);
+        }
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = CreateElement.analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

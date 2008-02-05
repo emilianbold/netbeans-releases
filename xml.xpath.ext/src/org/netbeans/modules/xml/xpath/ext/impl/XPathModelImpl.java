@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.xpath.ext.impl;
 
 import org.netbeans.modules.xml.xpath.ext.metadata.UnknownExtensionFunction;
@@ -444,27 +443,27 @@ public class XPathModelImpl implements XPathModel {
         if (mValidationContext != null) {
             if (foundCompPairSet.isEmpty()) {
                 String name = XPathUtils.qNameObjectToString(qName);
-                if (isAttribute) {
+                if (isAttribute) { // vlv
                     if (nsUri == null || nsUri.length() == 0) {
-//                        mValidationContext.addResultItem(getRootExpression(), 
-//                                ResultType.ERROR, 
-//                                XPathProblem.UNKNOWN_ATTRIBUTE, name);
+                        mValidationContext.addResultItem(getRootExpression(), 
+                                ResultType.ERROR, 
+                                XPathProblem.UNKNOWN_ATTRIBUTE, name);
                     } else {
-//                        mValidationContext.addResultItem(getRootExpression(), 
-//                                ResultType.ERROR, 
-//                                XPathProblem.UNKNOWN_ATTRIBUTE_WITH_NAMESPACE, 
-//                                name, nsUri);
+                          mValidationContext.addResultItem(getRootExpression(), 
+                                  ResultType.ERROR, 
+                                  XPathProblem.UNKNOWN_ATTRIBUTE_WITH_NAMESPACE, 
+                                  name, nsUri);
                     }
                 } else {
                     if (nsUri == null || nsUri.length() == 0) {
-//                        mValidationContext.addResultItem(getRootExpression(), 
-//                                ResultType.ERROR, 
-//                                XPathProblem.UNKNOWN_ELEMENT, name);
+                        mValidationContext.addResultItem(getRootExpression(), 
+                                ResultType.ERROR, 
+                                XPathProblem.UNKNOWN_ELEMENT, name);
                     } else {
-//                        mValidationContext.addResultItem(getRootExpression(), 
-//                                ResultType.ERROR, 
-//                                XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, 
-//                                name, nsUri);
+                        mValidationContext.addResultItem(getRootExpression(), 
+                                ResultType.ERROR, 
+                                XPathProblem.UNKNOWN_ELEMENT_WITH_NAMESPACE, 
+                                name, nsUri);
                     }
                 }
             }
@@ -887,10 +886,10 @@ public class XPathModelImpl implements XPathModel {
         }
         //
         if (sameNameOtherPrefix.isEmpty()) {
-            // The function with the required name isn't found
-//            mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
-//                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
-//                    XPathUtils.qNameObjectToString(funcQName));
+            // The function with the required name isn't found // vlv
+            mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
+                    XPathUtils.qNameObjectToString(funcQName));
         } else {
             // The function with the required name is found, but in other namespace
             //
@@ -1623,7 +1622,5 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
-
     }
-    
 }

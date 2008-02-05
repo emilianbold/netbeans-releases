@@ -83,8 +83,6 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
 
     private static final Logger LOGGER = Logger.getLogger(ConfigFileSpringBeanSource.class.getName());
 
-    public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
-
     private final Map<String, ConfigFileSpringBean> name2Bean = new HashMap<String, ConfigFileSpringBean>();
     private final List<ConfigFileSpringBean> beans = new ArrayList<ConfigFileSpringBean>();
 
@@ -198,7 +196,12 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             String clazz = SpringXMLConfigEditorUtils.getAttribute(node, "class"); // NOI18N
             String id = SpringXMLConfigEditorUtils.getAttribute(node, "id"); // NOI18N
             String nameAttr = SpringXMLConfigEditorUtils.getAttribute(node, "name"); // NOI18N
-            List<String> names = (nameAttr != null) ? Collections.unmodifiableList(StringUtils.tokenize(nameAttr, BEAN_NAME_DELIMITERS)) : Collections.<String>emptyList();
+            List<String> names;
+            if (nameAttr != null) {
+                names = Collections.unmodifiableList(StringUtils.tokenize(nameAttr, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS));
+            } else {
+                names = Collections.<String>emptyList();
+            }
             Tag tag = (Tag)node;
             Location location = new ConfigFileLocation(file, tag.getElementOffset());
             ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, location);

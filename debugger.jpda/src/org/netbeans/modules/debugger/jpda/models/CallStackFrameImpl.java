@@ -53,6 +53,7 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 
+import com.sun.jdi.request.EventRequest;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -319,7 +320,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                 step.setSuspendPolicy(com.sun.jdi.request.StepRequest.SUSPEND_EVENT_THREAD);
                 step.enable();
                 step.putProperty("silent", Boolean.TRUE);
-                final boolean[] stepDone = new boolean[] { false };
+                final Boolean[] stepDone = new Boolean[] { null };
                 debugger.getOperator().register(step, new Executor() {
                     public boolean exec(com.sun.jdi.event.Event event) {
                         synchronized (stepDone) {
@@ -328,13 +329,23 @@ public class CallStackFrameImpl implements CallStackFrame {
                         }
                         return false;
                     }
+
+                    public void removed(EventRequest eventRequest) {
+                        synchronized (stepDone) {
+                            stepDone[0] = false;
+                            stepDone.notify();
+                        }
+                    }
                 });
                 tr.resume();
                 synchronized (stepDone) {
-                    if (!stepDone[0]) {
+                    if (stepDone[0] == null) {
                         try {
                             stepDone.wait();
                         } catch (InterruptedException iex) {}
+                    }
+                    if (Boolean.FALSE.equals(stepDone[0])) {
+                        return null; // Step was canceled
                     }
                 }
                 StackFrame sf = null;
@@ -347,6 +358,7 @@ public class CallStackFrameImpl implements CallStackFrame {
                     return null;
                 } finally {
                     vm.eventRequestManager().deleteEventRequest(step);
+                    debugger.getOperator().unregister(step);
                     try {
                         if (sf != null) {
                             tr.popFrames(sf);
