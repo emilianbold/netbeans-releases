@@ -296,48 +296,20 @@ public class GeneratorUtils {
     public static void generateConstructor(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, ExecutableElement inheritedConstructor, int index) {
         TreeMaker make = wc.getTreeMaker();
         ClassTree clazz = (ClassTree)path.getLeaf();
-        List<VariableTree> parameters = new ArrayList<VariableTree>();
-        List<StatementTree> statements = new ArrayList<StatementTree>();
-        ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));        
-        if (inheritedConstructor != null && !inheritedConstructor.getParameters().isEmpty()) {
-            List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
-            for (VariableElement ve : inheritedConstructor.getParameters()) {
-                parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
-                arguments.add(make.Identifier(ve.getSimpleName())); //NOI18N
-            }
-            statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments)));
-        }
-        for (VariableElement ve : initFields) {
-            parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
-            statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
-        }
-        BlockTree body = make.Block(statements, false);
-        ClassTree decl = make.insertClassMember(clazz, index, make.Method(make.Modifiers(EnumSet.of(wc.getTreeUtilities().isEnum(clazz) ? Modifier.PRIVATE : Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null)); //NOI18N
+        TypeElement te = (TypeElement) wc.getTrees().getElement(path);
+        GeneratorUtilities gu = GeneratorUtilities.get(wc);
+        ClassTree decl = make.insertClassMember(clazz, index, gu.createConstructor(te, initFields, inheritedConstructor)); //NOI18N
         wc.rewrite(path.getLeaf(), decl);
     }
     
     public static void generateConstructors(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> initFields, List<? extends ExecutableElement> inheritedConstructors, int index) {
         TreeMaker make = wc.getTreeMaker();
         ClassTree clazz = (ClassTree)path.getLeaf();
+        TypeElement te = (TypeElement) wc.getTrees().getElement(path);
+        GeneratorUtilities gu = GeneratorUtilities.get(wc);
         ClassTree decl = clazz;
         for (ExecutableElement inheritedConstructor : inheritedConstructors) {
-            List<VariableTree> parameters = new ArrayList<VariableTree>();
-            List<StatementTree> statements = new ArrayList<StatementTree>();
-            ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
-            if (!inheritedConstructor.getParameters().isEmpty()) {
-                List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
-                for (VariableElement ve : inheritedConstructor.getParameters()) {
-                    parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
-                    arguments.add(make.Identifier(ve.getSimpleName())); //NOI18N
-                }
-                statements.add(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments)));
-            }
-            for (VariableElement ve : initFields) {
-                parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(ve.asType()), null));
-                statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
-            }
-            BlockTree body = make.Block(statements, false);
-            decl = make.insertClassMember(decl, index, make.Method(make.Modifiers(EnumSet.of(wc.getTreeUtilities().isEnum(clazz) ? Modifier.PRIVATE : Modifier.PUBLIC)), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null)); //NOI18N
+            decl = make.insertClassMember(decl, index, gu.createConstructor(te, initFields, inheritedConstructor)); //NOI18N
         }
         wc.rewrite(clazz, decl);
     }

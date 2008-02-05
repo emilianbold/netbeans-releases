@@ -43,6 +43,7 @@ package org.netbeans.modules.swingapp;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
 import javax.swing.JComponent;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
@@ -52,6 +53,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -102,7 +104,8 @@ public class ProjectCustomizerProvider implements ProjectCustomizer.CompositeCat
 
         Project project = context.lookup(Project.class);
         if (ProjectCustomizerPanel.fileChooserDir == null) {
-            ProjectCustomizerPanel.fileChooserDir = project.getProjectDirectory().getPath();
+            File projDir = FileUtil.toFile(project.getProjectDirectory());
+            ProjectCustomizerPanel.fileChooserDir = projDir.getPath();
         }
         DesignResourceMap resMap = ResourceUtils.getAppDesignResourceMap(project);
         panel.setVendorId(resMap.getString(KEY_VENDOR_ID));

@@ -46,6 +46,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -56,7 +57,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import javax.swing.AbstractAction;
 
 /**
  * Update action for mercurial: 
@@ -64,7 +64,7 @@ import javax.swing.AbstractAction;
  * 
  * @author John Rice
  */
-public class UpdateAction extends AbstractAction {
+public class UpdateAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -73,8 +73,7 @@ public class UpdateAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         update(context, null);
     }
     

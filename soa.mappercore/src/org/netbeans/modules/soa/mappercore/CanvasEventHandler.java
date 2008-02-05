@@ -54,19 +54,14 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
         if (searchResult != null) {
             SelectionModel selectionModel = getSelectionModel();
             if (e.isControlDown()) {
-                if (searchResult != null) {
-                    selectionModel.switchSelected(
-                            searchResult.getTreePath(),
-                            searchResult.getGraphItem());
-                }
-            } else {
-                if (selectionModel.isSelected(searchResult.getTreePath(), 
-                        searchResult.getGraphItem()))
-                {
-                    selectionModel.setSelected(
-                            searchResult.getTreePath(), 
-                            searchResult.getGraphItem());
-                }
+                selectionModel.switchSelected(searchResult.getTreePath(),
+                        searchResult.getGraphItem());
+            } else if (selectionModel.isSelected(searchResult.getTreePath(),
+                    searchResult.getGraphItem())) 
+            {
+                selectionModel.setSelected(
+                        searchResult.getTreePath(),
+                        searchResult.getGraphItem());
             }
         }
         reset();
@@ -156,7 +151,7 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             } else if (result.getGraphItem() instanceof Vertex) {
 
                 transferable = moveTool.getMoveTransferable(
-                        getSelectionModel().getSelectedSubset());
+                        getSelectionModel().getSelectedSubset(), initialEvent.getPoint());
             }
             if (transferable != null) {
                 startDrag(initialEvent, transferable, MOVE);
@@ -190,7 +185,7 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
                         searchResult.getGraphItem() == null) {
                     mapper.setExpandedGraphState(node.getTreePath(), false);
                 }
-                getLinkTool().dragDone();
+                getLinkTool().done();
             }
         }
     }

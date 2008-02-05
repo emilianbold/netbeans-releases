@@ -377,7 +377,11 @@ public class Operator {
      * @see  #register
      */
     public synchronized void unregister (EventRequest req) {
+        Executor e = (Executor) req.getProperty("executor");
         req.putProperty ("executor", null); // NOI18N
+        if (e != null) {
+            e.removed(req);
+        }
         staledRequests.remove(req);
     }
     

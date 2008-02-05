@@ -64,14 +64,14 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
     }
 
     public CsmObject getReferencedObject() {
-        if (target == null) {
+        if (isValid() && target == null) {
             target = ReferencesSupport.findReferencedObject(super.getContainingFile(), super.getDocument(), this.offset, token);
         }
         return target;
     }
 
     public CsmObject getOwner() {
-        if (owner == null) {
+        if (isValid() && owner == null) {
             owner = ReferencesSupport.findOwnerObject(super.getContainingFile(), super.getDocument(), this.offset, token);
         }
         return owner;

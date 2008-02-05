@@ -73,13 +73,6 @@ import org.openide.util.datatransfer.PasteType;
 public class SaasGroupNode extends AbstractNode implements Node.Cookie {
     private final SaasGroup group;
 
-    /**
-     * Constructor for Saas Services root node
-     */
-    public SaasGroupNode() {
-        this(SaasServicesModel.getInstance().getRootGroup());
-    }
-    
     public SaasGroupNode(SaasGroup group) {
         super(new SaasGroupNodeChildren(group));
         this.group = group;
@@ -122,8 +115,10 @@ public class SaasGroupNode extends AbstractNode implements Node.Cookie {
     
     @Override
     public void setName(String name){
-        super.setName(name);
-        group.setName(name);
+        if (group.isUserDefined()) {
+            super.setName(name);
+            group.setName(name);
+        }
     }
     
     @Override
@@ -142,7 +137,7 @@ public class SaasGroupNode extends AbstractNode implements Node.Cookie {
     
     @Override
     public boolean canDestroy() {
-        return true;
+        return group.isUserDefined();
     }
     
     @Override

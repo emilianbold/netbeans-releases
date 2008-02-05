@@ -704,7 +704,7 @@ final class LibrariesNode extends AbstractNode {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
                     if (fileFilter.accept(files[i])) {
-                        URL u = LibrariesSupport.convertFileToURL(files[i]);
+                        URL u = LibrariesSupport.convertFilePathToURL(files[i].getPath());
                         u = FileUtil.getArchiveRoot(u);
                         ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
                     }

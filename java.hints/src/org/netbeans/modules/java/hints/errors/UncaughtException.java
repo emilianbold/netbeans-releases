@@ -284,8 +284,11 @@ public final class UncaughtException implements ErrorRule<Void> {
                         fqns.add(Utilities.getTypeName(tm, true).toString());
                     }
                 }
-                result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info)));
-                result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
+                
+                if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.SURROUND_WITH_TRY_CATCH)) {
+                    result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info)));
+                    result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, ElementHandle.create(method), fqns));
+                }
             }
         }
         

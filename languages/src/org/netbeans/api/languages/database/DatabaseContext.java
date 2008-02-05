@@ -360,9 +360,9 @@ public class DatabaseContext extends DatabaseItem {
 
     public <T extends DatabaseDefinition> T getFirstDefinition(Class<T> clazz) {
         if (definitions == null) return null;
-        for (DatabaseDefinition definition : definitions) {
-            if (clazz.isInstance(definition)) {
-                return (T)definition;
+        for (DatabaseDefinition dfn : definitions) {
+            if (clazz.isInstance(dfn)) {
+                return (T) dfn;
             }
         }
         return null;
@@ -371,9 +371,9 @@ public class DatabaseContext extends DatabaseItem {
     public <T extends DatabaseDefinition> Collection<T> getDefinitions(Class<T> clazz) {
         if (definitions == null) return Collections.<T>emptyList();
         Collection<T> result = new ArrayList<T>();
-        for (DatabaseDefinition definition: definitions) {
-            if (clazz.isInstance(definition)) {
-                result.add((T)definition);
+        for (DatabaseDefinition dfn: definitions) {
+            if (clazz.isInstance(dfn)) {
+                result.add((T) dfn);
             }
         }
         return result;
@@ -391,9 +391,9 @@ public class DatabaseContext extends DatabaseItem {
     public <T extends DatabaseDefinition> T getDefinitionInScopeByName(Class<T> clazz, String name) {
         T result = null;
 	if (definitions != null) {
-	    for (DatabaseDefinition definition : definitions) {
-                if (clazz.isInstance(definition) && name.equals(definition.getName())) {
-                    result = (T) definition;
+	    for (DatabaseDefinition dfn : definitions) {
+                if (clazz.isInstance(dfn) && name.equals(dfn.getName())) {
+                    result = (T) dfn;
 		    break;
 	        }
 	    }
@@ -409,6 +409,27 @@ public class DatabaseContext extends DatabaseItem {
 	} 
     }
     
+    public <T extends DatabaseDefinition> T getEnclosingDefinition(Class<T> clazz, int offset) {
+        DatabaseContext context = getClosestContext(offset);
+        return context.getEnclosingDefinition(clazz);
+    }
+
+    public <T extends DatabaseDefinition> T getEnclosingDefinition(Class<T> clazz) {
+        /** We are searching enclosing definition, so from it's parent context */
+        DatabaseContext parentCtx = getParent();
+        if (parentCtx != null) {
+            for (DatabaseDefinition dfn : parentCtx.getDefinitions()) {
+                if (clazz.isInstance(dfn)) {
+                    /** There should be only one this type of enclosing */
+                    return (T) dfn;
+                }
+            }
+            return parentCtx.getEnclosingDefinition(clazz);
+        } else {
+            return null;
+        }
+    }
+
     
     @Override
     public String toString () {

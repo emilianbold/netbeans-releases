@@ -63,7 +63,7 @@ public class ServerWizardProviderLookup extends AbstractServerLookup<BridgingSer
 
     @Override
     protected BridgingServerWizardProvider createBridgingInstance(Server server) {
-        if (server.getOptionalFactory() != null) {
+        if (server.getOptionalFactory() != null && server.getOptionalFactory().isCommonUIRequired()) {
             return new BridgingServerWizardProvider(server, server.getOptionalFactory());
         }
         return null;

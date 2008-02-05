@@ -72,7 +72,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -81,7 +80,9 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
@@ -854,7 +855,7 @@ public class JaxWsUtils {
     /** Setter for WebParam annotation attribute, e.g. name = "x"
      *
      */
-    public static void setWebParamAttrValue(FileObject implClassFo, final TreePathHandle param, final String attrName, final String attrValue) {
+    public static void setWebParamAttrValue(FileObject implClassFo, final ElementHandle methodHandle, final String paramName, final String attrName, final String attrValue) {
         final JavaSource javaSource = JavaSource.forFileObject(implClassFo);
         final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -866,59 +867,64 @@ public class JaxWsUtils {
                     ExpressionTree attrExpr =
                             (attrValue == null?null:genUtils.createAnnotationArgument(attrName, attrValue));
                     
-                    Element paramEl = param.resolveElement(workingCopy);
-                    VariableTree paramTree = (VariableTree)workingCopy.getTrees().getTree(paramEl);
+                    Element methodEl = methodHandle.resolve(workingCopy);
+                    MethodTree methodTree = (MethodTree)workingCopy.getTrees().getTree(methodEl);
+                    List<? extends VariableTree> parameters = methodTree.getParameters();
                     
-                    ModifiersTree modif = paramTree.getModifiers();
-                    List<? extends AnnotationTree> annotations = modif.getAnnotations();
-                    List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
-                    
-                    boolean foundWebParamAn = false;
-                    
-                    for (AnnotationTree an:annotations) {
-                        IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
-                        TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
-                        TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
-                        if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebParam")) { //NOI18N
-                            foundWebParamAn = true;
-                            List<? extends ExpressionTree> expressions = an.getArguments();
-                            List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
-                            boolean attrFound=false;
-                            for (ExpressionTree expr:expressions) {
-                                AssignmentTree as = (AssignmentTree)expr;
-                                IdentifierTree id = (IdentifierTree)as.getVariable();
-                                if (id.getName().contentEquals(attrName)) {
-                                    attrFound=true;
-                                    if (attrExpr!=null) {
+                    for (VariableTree paramTree:parameters) {
+                        if (paramTree.getName().contentEquals(paramName)) {
+                            ModifiersTree modif = paramTree.getModifiers();
+                            List<? extends AnnotationTree> annotations = modif.getAnnotations();
+                            List<AnnotationTree> newAnnotations = new ArrayList<AnnotationTree>();
+
+                            boolean foundWebParamAn = false;
+
+                            for (AnnotationTree an:annotations) {
+                                IdentifierTree ident = (IdentifierTree) an.getAnnotationType();
+                                TreePath anTreePath = workingCopy.getTrees().getPath(workingCopy.getCompilationUnit(), ident);
+                                TypeElement anElement = (TypeElement)workingCopy.getTrees().getElement(anTreePath);
+                                if(anElement!=null && anElement.getQualifiedName().contentEquals("javax.jws.WebParam")) { //NOI18N
+                                    foundWebParamAn = true;
+                                    List<? extends ExpressionTree> expressions = an.getArguments();
+                                    List<ExpressionTree> newExpressions = new ArrayList<ExpressionTree>();
+                                    boolean attrFound=false;
+                                    for (ExpressionTree expr:expressions) {
+                                        AssignmentTree as = (AssignmentTree)expr;
+                                        IdentifierTree id = (IdentifierTree)as.getVariable();
+                                        if (id.getName().contentEquals(attrName)) {
+                                            attrFound=true;
+                                            if (attrExpr!=null) {
+                                                newExpressions.add(attrExpr);
+                                            }
+                                        } else {
+                                            newExpressions.add(expr);
+                                        }
+                                    }
+                                    if (!attrFound) {
                                         newExpressions.add(attrExpr);
                                     }
+
+                                    TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
+                                    AnnotationTree webParamAn = make.Annotation(make.QualIdent(webParamEl), newExpressions);
+                                    newAnnotations.add(webParamAn);
                                 } else {
-                                    newExpressions.add(expr);
+                                    newAnnotations.add(an);
                                 }
                             }
-                            if (!attrFound) {
-                                newExpressions.add(attrExpr);
+            
+                            if (!foundWebParamAn && attrExpr!=null) {
+                                TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
+                                AnnotationTree webParamAn = make.Annotation(
+                                        make.QualIdent(webParamEl),
+                                        Collections.<ExpressionTree>singletonList(attrExpr));
+                                newAnnotations.add(webParamAn);
                             }
                             
-                            TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-                            AnnotationTree webParamAn = make.Annotation(make.QualIdent(webParamEl), newExpressions);
-                            newAnnotations.add(webParamAn);
-                        } else {
-                            newAnnotations.add(an);
+                            ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
+                            workingCopy.rewrite(modif, newModifier);                            
+                            break;
                         }
                     }
-                    
-                    if (!foundWebParamAn && attrExpr!=null) {
-                        TypeElement webParamEl = workingCopy.getElements().getTypeElement("javax.jws.WebParam"); //NOI18N
-                        AnnotationTree webParamAn = make.Annotation(
-                                make.QualIdent(webParamEl),
-                                Collections.<ExpressionTree>singletonList(attrExpr));
-                        newAnnotations.add(webParamAn);
-                    }
-                    
-                    
-                    ModifiersTree newModifier = make.Modifiers(modif, newAnnotations);
-                    workingCopy.rewrite(modif, newModifier);
                 }
             }
             
@@ -1061,6 +1067,29 @@ public class JaxWsUtils {
         for(SourceGroup group:sourceGroups) {
             String resource = serviceClass.replace('.', '/')+".java"; //NOI18N
             if (group.getRootFolder().getFileObject(resource) != null) return true;
+        }
+        return false;
+    }
+    
+    /** Test if EJBs are supported in J2EE Container, e.g. in Tomcat they are not
+     * 
+     * @param project
+     * @return
+     */
+    public static boolean isEjbSupported(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
+            if (serverInstanceId == null) {
+                return false;
+            }
+            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+            if (platform == null) {
+                return false;
+            }
+            if (platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                return true;
+            }
         }
         return false;
     }

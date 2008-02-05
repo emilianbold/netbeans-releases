@@ -42,6 +42,7 @@ package org.netbeans.modules.mercurial.ui.log;
 
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -53,7 +54,7 @@ import org.openide.util.NbBundle;
  * 
  * @author John Rice
  */
-public class LogAction extends AbstractAction {
+public class LogAction extends ContextAction {
     
     private final VCSContext context;
     
@@ -62,8 +63,7 @@ public class LogAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         SearchHistoryAction.openHistory(context,
                 NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
     }

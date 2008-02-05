@@ -44,29 +44,30 @@ package org.netbeans.modules.j2ee.websphere6.config.sync;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.*;
 import javax.xml.xpath.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
-//dkumar -- import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 import org.netbeans.modules.j2ee.websphere6.config.WSWarModuleConfiguration;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.DDXmiConstants;
-import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.filesystems.FileUtil;
 import org.w3c.dom.*;
-import org.xml.sax.SAXException;
 
 /**
  *
  * @author Dmitry Lipin
  */
-public class WarSynchronizer extends Synchronizer{
-    private File ibmwebbndFile;
-    private File webxmlFile;
+public class WarSynchronizer extends Synchronizer {
+    
+    private static final Logger LOGGER = Logger.getLogger(WarSynchronizer.class.getName());
+    
+    private final File ibmwebbndFile;
+    private final File webxmlFile;
     private XPath xpath = null;
-    private  boolean saveIbmWebBndNeeded = false;
-    private  boolean saveWebXmlNeeded = false;
+    private boolean saveIbmWebBndNeeded = false;
+    private boolean saveWebXmlNeeded = false;
     
     
     /**
@@ -210,9 +211,10 @@ public class WarSynchronizer extends Synchronizer{
                     }
                 }
             }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (XPathExpressionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        } catch (XPathFactoryConfigurationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
     }
     
@@ -220,15 +222,13 @@ public class WarSynchronizer extends Synchronizer{
         if(dirList == null || dirList.length == 0) {
             return null;
         }
-        for(int i=0;i<dirList.length;i++) {
+        for (int i = 0; i < dirList.length; i++) {
             File dir = (File) dirList [i];
             File ejbJarFile = new File(dir,   "src" + File.separator+ "conf" + File.separator + "ejb-jar.xml");
             File ejbJarBndFile = new File(dir, "src" + File.separator+"conf"+File.separator+"ibm-ejb-jar-bnd.xmi");
            
             String jndiName = null;
-            BufferedReader reader = null;
             try {
-                
                 Document ejbJarDocument = loadDocument(ejbJarFile);
                 Document ibmEjbJarBndDocument = loadDocument(ejbJarBndFile);
                 Node session = (Node) xpath.
@@ -254,14 +254,6 @@ public class WarSynchronizer extends Synchronizer{
             } catch (XPathExpressionException e) {
                 // can`t evaluate XPath
                 continue;
-            } finally {
-                if(reader!=null) {
-                    try {
-                        reader.close();
-                    } catch(IOException ex) {
-                        ex=null;
-                    }
-                }
             }
             return jndiName;
         }

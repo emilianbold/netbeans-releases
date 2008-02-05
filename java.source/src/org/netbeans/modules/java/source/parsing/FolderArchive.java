@@ -56,6 +56,7 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -85,14 +86,21 @@ public class FolderArchive implements Archive {
             encoding = null;
         }
     }
-
+    
     public Iterable<JavaFileObject> getFiles(String folderName, ClassPath.Entry entry, Set<JavaFileObject.Kind> kinds, JavaFileFilterImplementation filter) throws IOException {
         assert folderName != null;
         if (folderName.length()>0) {
             folderName+='/';                                                                            //NOI18N
         }
         if (entry == null || entry.includes(folderName)) {
-            final File folder = new File (this.root, folderName.replace('/', File.separatorChar));      //NOI18N
+            File folder = new File (this.root, folderName.replace('/', File.separatorChar));      //NOI18N
+            //Issue: #126392
+            //Normalization is slow
+            //the problem when File ("A/").listFiles()[0].equals(new File("a/").listFiles[0]) returns
+            //false seems to be only on Mac.
+            if (Utilities.isMac()) {
+                folder = FileUtil.normalizeFile(folder);
+            }
             if (folder.canRead()) {
                 File[] content = folder.listFiles();            
                 if (content != null) {
