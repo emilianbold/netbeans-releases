@@ -224,11 +224,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             this.beanNames = bean.getNames();
             if(bean.getLocation() != null) {
                 File file = bean.getLocation().getFile();
-                if(file != null) {
-                    FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
                     this.beanLocFile = FileUtil.getRelativePath(containerFO.getParent(), fo);
                 }
-                
             }
             this.displayName = displayName;
         }
