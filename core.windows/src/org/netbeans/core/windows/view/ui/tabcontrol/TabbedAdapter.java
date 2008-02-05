@@ -64,6 +64,7 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.logging.Level;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
@@ -151,6 +152,10 @@ public class TabbedAdapter extends TabbedContainer implements Tabbed, Tabbed.Acc
     }
  
     public void setSelectedComponent(Component comp) {
+        if( null == comp ) {
+            Logger.getLogger( getClass().getName() ).log(Level.WARNING, "Attempting to set null as selected component.");
+            return;
+        }
         int i = indexOf (comp);
         if (i == -1) {
             throw new IllegalArgumentException (
