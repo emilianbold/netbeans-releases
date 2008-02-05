@@ -114,7 +114,31 @@ static int removeAUClustersListFile(char *userdir);
 int checkForNewUpdater(const char *basePath);
 int createProcessNoVirt(const char *exePath, char *argv[]);
 
+#define HELP_STRING \
+"Usage: launcher {options} arguments\n\
+\n\
+General options:\n\
+  --help                show this help\n\
+  --jdkhome <path>      path to JDK\n\
+  -J<jvm_option>        pass <jvm_option> to JVM\n\
+\n\
+  --cp:p <classpath>    prepend <classpath> to classpath\n\
+  --cp:a <classpath>    append <classpath> to classpath\n\
+\n"
+
 int main(int argc, char *argv[]) {
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-h") == 0
+                || strcmp(argv[i], "-help") == 0
+                || strcmp(argv[i], "--help") == 0
+                || strcmp(argv[i], "/?") == 0)
+        {
+            printf(HELP_STRING);
+            return 0;
+        }
+    }
+    
     char exepath[1024 * 4];
     char buf[1024 * 8], *pc;
   
@@ -764,27 +788,7 @@ void parseArgs(int argc, char *argv[]) {
 
 #ifdef DEBUG
             printf("parseArgs - processing %s\n", arg);
-#endif
-
-        if ((strcmp("-h", arg) == 0
-            || strcmp("-help", arg) == 0
-            || strcmp("--help", arg) == 0
-            || strcmp("/?", arg) == 0
-            ) && runnormal) {
-            fprintf(stdout, "Usage: launcher {options} arguments\n\
-\n\
-General options:\n\
-  --help                show this help\n\
-  --jdkhome <path>      path to JDK\n\
-  -J<jvm_option>        pass <jvm_option> to JVM\n\
-\n\
-  --cp:p <classpath>    prepend <classpath> to classpath\n\
-  --cp:a <classpath>    append <classpath> to classpath\n\
-\n");  
-            fflush(stdout);
-            arg = "--help";
-        }
-        
+#endif        
 
         if (0 == strcmp("--userdir", arg)) {
             if (argc > 0) {
