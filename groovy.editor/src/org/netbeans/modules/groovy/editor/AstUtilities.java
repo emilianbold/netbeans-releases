@@ -154,7 +154,6 @@ public class AstUtilities {
 
     public static OffsetRange getRangeFull(ASTNode node, String text) {
             if (node.getLineNumber() < 0 || node.getColumnNumber() < 0 || node.getLastLineNumber() < 0 || node.getLastColumnNumber() < 0) {
-                System.out.println("### NONE range for " + node);
                 return OffsetRange.NONE;
             }
             int start = getOffset(text, node.getLineNumber(), node.getColumnNumber());
