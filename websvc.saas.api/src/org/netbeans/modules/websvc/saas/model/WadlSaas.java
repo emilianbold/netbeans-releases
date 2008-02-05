@@ -40,12 +40,14 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -66,12 +68,34 @@ public class WadlSaas extends Saas {
         return wadlModel;
     }
     
-    public List<Resource> getResources() throws IOException {
-        return getWadlModel().getResources().getResource();
+    public List<Resource> getResources() {
+        try {
+            return getWadlModel().getResources().getResource();
+        } catch(Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.EMPTY_LIST;
     } 
     
     public FileObject getLocalWadlFile() {
         //TODO
         return null;
+    }
+    
+    /**
+     * Returns either a list of resources defined by associated WADL model or
+     * a list of filtered resource methods.
+     * @return
+     */
+    public List getResourcesOrMethods() {
+        if (getMethods() != null && getMethods().size() > 0) {
+            return getMethods();
+        }
+        try {
+            return getWadlModel().getResources().getResource();
+        } catch(Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.EMPTY_LIST;
     }
 }

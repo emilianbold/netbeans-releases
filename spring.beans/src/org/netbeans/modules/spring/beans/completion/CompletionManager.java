@@ -191,7 +191,7 @@ public final class CompletionManager {
         registerCompletor(MAP_TAG, MERGE_ATTRIB, completor);
         registerCompletor(PROPS_TAG, MERGE_ATTRIB, completor);
         
-        ResourceCompletor resourceCompletor = new ResourceCompletor(true);
+        ResourceCompletor resourceCompletor = new ResourceCompletor();
         registerCompletor(IMPORT_TAG, RESOURCE_ATTRIB, resourceCompletor);
 
         JavaClassCompletor javaClassCompletor = new JavaClassCompletor();
@@ -469,7 +469,7 @@ public final class CompletionManager {
                         if ((pkgChild.getKind() == ElementKind.CLASS) && pkgChild.getSimpleName().toString().startsWith(classPrefix)) {
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
                                     (TypeElement) pkgChild, (DeclaredType) pkgChild.asType(), 
-                                    cc.getElements().isDeprecated(pkgChild));
+                                    cc.getElements().isDeprecated(pkgChild), false);
                             results.add(item);
                         }
                     }
@@ -498,7 +498,7 @@ public final class CompletionManager {
                             if (typeElement != null) {
                                 SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
                                         typeElement, (DeclaredType) typeElement.asType(), 
-                                        cc.getElements().isDeprecated(typeElement));
+                                        cc.getElements().isDeprecated(typeElement), true);
                                 results.add(item);
                             }
                         }
@@ -522,10 +522,7 @@ public final class CompletionManager {
 
     private static class ResourceCompletor extends Completor {
 
-        private boolean showDirectories;
-
-        public ResourceCompletor(boolean showDirectories) {
-            this.showDirectories = showDirectories;
+        public ResourceCompletor() {
         }
 
         public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
@@ -556,16 +553,16 @@ public final class CompletionManager {
                 prefix = "";
             }
 
-            if (showDirectories) {
-                Enumeration<? extends FileObject> folders = fileObject.getFolders(false);
-                while (folders.hasMoreElements()) {
-                    FileObject fo = folders.nextElement();
-                    if (fo.getName().startsWith(prefix)) {
-                        results.add(SpringXMLConfigCompletionItem.createFolderItem(context.getCaretOffset() - prefix.length(),
-                                fo));
-                    }
+            
+            Enumeration<? extends FileObject> folders = fileObject.getFolders(false);
+            while (folders.hasMoreElements()) {
+                FileObject fo = folders.nextElement();
+                if (fo.getName().startsWith(prefix)) {
+                    results.add(SpringXMLConfigCompletionItem.createFolderItem(context.getCaretOffset() - prefix.length(),
+                            fo));
                 }
             }
+
 
             Enumeration<? extends FileObject> files = fileObject.getData(false);
             while (files.hasMoreElements()) {

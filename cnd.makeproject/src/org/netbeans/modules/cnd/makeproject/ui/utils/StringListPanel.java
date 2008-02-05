@@ -46,11 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.Vector;
 import java.util.ArrayList;
-import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.api.utils.FileChooser;
-import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -225,6 +221,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
 	    getDefaultButton().setVisible(false);
 	}
 
+        @Override
 	public Object addAction() {
             NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("ADD_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
             DialogDisplayer.getDefault().notify(notifyDescriptor);
@@ -234,39 +231,49 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
             return newS;
 	}
 
+        @Override
 	public String getListLabelText() {
 	    return getString("MACROS_LABEL_TXT");
 	}
+        @Override
 	public char getListLabelMnemonic() {
 	    return getString("MACROS_LABEL_MN").charAt(0);
 	}
     
+        @Override
 	public String getAddButtonText() {
 	    return getString("ADD_BUTTON_TXT");
 	}
+        @Override
 	public char getAddButtonMnemonics() {
 	    return getString("ADD_BUTTON_MN").charAt(0);
 	}
     
+        @Override
 	public String getRenameButtonText() {
 	    return getString("EDIT_BUTTON_TXT");
 	}
+        @Override
 	public char getRenameButtonMnemonics() {
 	    return getString("EDIT_BUTTON_MN").charAt(0);
 	}
 
+        @Override
         public String getDownButtonText() {
             return getString("DOWN_BUTTON_TXT");
         }
         
+        @Override
         public char getDownButtonMnemonics() {
 	    return getString("DOWN_BUTTON_MN").charAt(0);
         }
         
+        @Override
 	public Object copyAction(Object o) {
 	    return new String((String)o);
 	}
 
+        @Override
 	public void editAction(Object o) {
 	    String s = (String)o;
 

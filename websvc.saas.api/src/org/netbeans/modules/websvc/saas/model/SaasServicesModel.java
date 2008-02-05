@@ -155,7 +155,7 @@ public class SaasServicesModel {
         }
     }
 
-    protected SaasGroup getRootGroup() {
+    public SaasGroup getRootGroup() {
         init();
         return rootGroup;
     }
