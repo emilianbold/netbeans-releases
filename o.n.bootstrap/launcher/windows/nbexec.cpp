@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -105,11 +105,14 @@ static void normalizePath(char *userdir);
 static bool runAutoUpdater(bool firstStart, const char * root);
 static bool runAutoUpdaterOnClusters(bool firstStart);
 
-static int findHttpProxyFromRegistry(char **proxy, char **nonProxy);
+static int findProxiesFromRegistry(char **proxy, char **nonProxy, char **socksProxy);
 static int findHttpProxyFromEnv(char **proxy, char **nonProxy);
 
 static char* processAUClustersList(char *userdir);
 static int removeAUClustersListFile(char *userdir);
+
+int checkForNewUpdater(const char *basePath);
+int createProcessNoVirt(const char *exePath, char *argv[]);
 
 int main(int argc, char *argv[]) {
     char exepath[1024 * 4];
@@ -175,8 +178,8 @@ int main(int argc, char *argv[]) {
 
         newargv[i] = NULL;
             
-        // check for patches first
-
+        // check for patches first (for updater first)
+        checkForNewUpdater(plathome);
         bool runUpdater = runAutoUpdaterOnClusters(true);
 
         if (runUpdater) {
@@ -191,8 +194,8 @@ int main(int argc, char *argv[]) {
         newargv[1] = RUN_NORMAL;
         _spawnv(_P_WAIT, exepath, newargv);
 
-        // check for patches again
-        
+        // check for patches again (for updater first)
+        checkForNewUpdater(plathome);
         runUpdater = runAutoUpdaterOnClusters(false);
         if (runUpdater) {
             newargv[1] = RUN_UPDATER;
@@ -325,7 +328,8 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
     addLauncherJarsToClassPath(plathome);
     addJdkJarsToClassPath(jdkhome);
 
-    char *proxy, *nonProxyHosts;
+    char *proxy = 0, *nonProxyHosts = 0;
+    char *socksProxy = 0;
     if (0 == findHttpProxyFromEnv(&proxy, &nonProxyHosts)) {
         sprintf(buf, "-Dnetbeans.system_http_proxy=%s", proxy);
         addOption(buf);
@@ -334,13 +338,25 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
         free(proxy);
         free(nonProxyHosts);
     }
-    else if (0 == findHttpProxyFromRegistry(&proxy, &nonProxyHosts)) {
-        sprintf(buf, "-Dnetbeans.system_http_proxy=%s", proxy);
-        addOption(buf);
-        sprintf(buf, "-Dnetbeans.system_http_non_proxy_hosts=%s", nonProxyHosts);
-        addOption(buf);
-        free(proxy);
-        free(nonProxyHosts);
+    else if (0 == findProxiesFromRegistry(&proxy, &nonProxyHosts, &socksProxy)) {
+        if (proxy)
+        {
+            sprintf(buf, "-Dnetbeans.system_http_proxy=%s", proxy);
+            addOption(buf);
+            free(proxy);
+        }
+        if (nonProxyHosts)
+        {
+            sprintf(buf, "-Dnetbeans.system_http_non_proxy_hosts=%s", nonProxyHosts);
+            addOption(buf);
+            free(nonProxyHosts);
+        }
+        if (socksProxy)
+        {
+            snprintf(buf, 10240, "-Dnetbeans.system_socks_proxy=%s", socksProxy);
+            addOption(buf);            
+            free(socksProxy);
+        }
     }
 
     // see BugTraq #5043070
@@ -396,7 +412,8 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
 #ifdef DEBUG
     fflush(stdout);
 #endif
-    _spawnv(_P_WAIT, javapath, args);
+    //_spawnv(_P_WAIT, javapath, args);
+    createProcessNoVirt(javapath, args);
 }
 
 //////////
@@ -525,13 +542,13 @@ static int findJdkFromRegistry(const char* keyname, char jdkhome[])
     return rc;
 }
 
-int findHttpProxyFromRegistry(char **proxy, char **nonProxy)
+int findProxiesFromRegistry(char **proxy, char **nonProxy, char **socksProxy)
 {
     HKEY hkey = NULL;
     char *proxyServer = NULL;
     char *proxyOverrides = NULL;
     int rc = 1;
-    *proxy = NULL; *nonProxy = NULL;
+    *proxy = NULL; *nonProxy = NULL; *socksProxy = NULL;
   
     if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet settings", 0, KEY_READ, &hkey) == 0) {
         DWORD proxyEnable, size = sizeof proxyEnable;
@@ -546,7 +563,24 @@ int findHttpProxyFromRegistry(char **proxy, char **nonProxy)
                     *proxy = strdup(proxyServer);
                     rc = 0;
                 } else {
-                    char *pc = strstr(proxyServer, "http=");
+                    char *pc = strstr(proxyServer, "socks=");
+                    if (pc)
+                    {
+                        pc += strlen("socks=");
+                        if (*pc != '\0' && *pc != ';')
+                        {
+                            char *end = strchr(pc, ';');
+                            if (end)
+                            {
+                                *socksProxy = (char *) malloc(end - pc + 1);
+                                strncpy(*socksProxy, pc, end - pc);
+                            }
+                            else
+                                *socksProxy = strdup(pc);
+                            rc = 0;
+                        }
+                    }
+                    pc = strstr(proxyServer, "http=");
                     if (pc != NULL) {
                         pc += strlen("http=");
                         char *qc = strstr(pc, ";");
@@ -654,8 +688,13 @@ void addLauncherJarsToClassPath(const char *plathome)
     addAllFilesToClassPath(buf, "*.zip");
 
     if (runupdater) {
-        addToClassPath(plathome, "\\modules\\ext\\updater.jar");
-        strcat(strcpy(buf, plathome), "\\modules\\ext\\locale");
+        char userUpdater[MAX_PATH] = "";
+        _snprintf(userUpdater, MAX_PATH, "%s\\modules\\ext\\updater.jar", userdir);
+        const char *baseUpdaterPath = plathome;
+        if (fileExists(userUpdater))
+            baseUpdaterPath = userdir;
+        addToClassPath(baseUpdaterPath, "\\modules\\ext\\updater.jar");
+        strcat(strcpy(buf, baseUpdaterPath), "\\modules\\ext\\locale");
         addAllFilesToClassPath(buf, "updater_*.jar");
     }
 }
@@ -935,5 +974,82 @@ int removeAUClustersListFile(char* userdir) {
     if (remove(pPath) != 0) {
         if (errno != ENOENT) return -1; // an error while deleting
     }
+    return 0;
+}
+
+// check if new updater exists, if exists install it (replace old one) and remove ...\new_updater directory
+int checkForNewUpdater(const char *basePath)
+{
+    char srcPath[MAX_PATH] = "";
+    _snprintf(srcPath, MAX_PATH, "%s\\update\\new_updater\\updater.jar", basePath);
+    WIN32_FIND_DATA fd = {0};
+    HANDLE hFind = FindFirstFile(srcPath, &fd);
+    if (hFind != INVALID_HANDLE_VALUE)
+    {
+        FindClose(hFind);
+        char destPath[MAX_PATH] = "";
+        _snprintf(destPath, MAX_PATH, "%s\\modules\\ext", basePath);
+        if (!CreateDirectory(destPath, 0) && GetLastError() != ERROR_ALREADY_EXISTS)
+                return -1;
+        strncat(destPath, "\\updater.jar", MAX_PATH - strlen(destPath));
+        if (!MoveFileEx(srcPath, destPath, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            return -1;
+        _snprintf(srcPath, MAX_PATH, "%s\\update\\new_updater", basePath);
+        RemoveDirectory(srcPath);
+    }
+    return 0;
+}
+
+// creates process and disable virtualization (Win VISTA fix)
+int createProcessNoVirt(const char *exePath, char *argv[])
+{
+    const int maxCmdLineLen = 32*1024;
+    int filled = 0;
+    char cmdLine[maxCmdLineLen] = "";
+    int i = 0;
+    while (argv[i])
+    {
+        int len = (int) strlen(argv[i]);
+        if (len + filled + 2 > maxCmdLineLen)
+        {
+            char err[1024] = "";
+            _snprintf(err, 1024, "Command line arguments for \"%s\" exceeds 32K characters!", exePath);
+            MessageBox(NULL, err, "Error", MB_OK | MB_ICONSTOP);
+            return -1;
+        }
+        memcpy(cmdLine + filled, argv[i], len);
+        filled += len;
+        cmdLine[filled++] = ' ';
+        i++;
+    }
+    cmdLine[filled++] = '\0';
+
+    STARTUPINFO si = {0};
+    si.cb = sizeof(STARTUPINFO);
+    PROCESS_INFORMATION pi = {0};
+
+    if (!CreateProcess(NULL, cmdLine, NULL, NULL, FALSE, CREATE_SUSPENDED, NULL, NULL, &si, &pi))
+    {
+        MessageBox(NULL, "Failed to create process.", "Error", MB_OK | MB_ICONSTOP);
+        return -1;
+    }
+    HANDLE hToken;
+    if (OpenProcessToken(pi.hProcess, TOKEN_ALL_ACCESS, &hToken))
+    {
+        DWORD tokenInfoVal = 0;
+        if (!SetTokenInformation(hToken, (TOKEN_INFORMATION_CLASS) 24, &tokenInfoVal, sizeof(DWORD)))
+        {
+            // invalid token information class (24) is OK, it means there is no folder virtualization on current system
+            if (GetLastError() != ERROR_INVALID_PARAMETER)
+                MessageBox(NULL, "Failed to set token information.", "Warning", MB_OK | MB_ICONWARNING);
+        }
+        CloseHandle(hToken);
+    }
+    else
+        MessageBox(NULL, "Failed to open process token.", "Warning", MB_OK | MB_ICONWARNING);
+    ResumeThread(pi.hThread);
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
     return 0;
 }

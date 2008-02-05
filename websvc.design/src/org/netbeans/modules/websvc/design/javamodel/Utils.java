@@ -260,7 +260,7 @@ public class Utils {
                         }
                         ElementHandle methodHandle = ElementHandle.create(methods.get(i));
                         operation.setMethodHandle(methodHandle);
-                        Utils.populateOperation(controller, methods.get(i), operation, serviceModel.getTargetNamespace());
+                        Utils.populateOperation(controller, methods.get(i), methodHandle, operation, serviceModel.getTargetNamespace());
                         operations.add(operation);
                     }
                     serviceModel.operations=operations;
@@ -278,7 +278,7 @@ public class Utils {
         }
     }
     
-    private static void populateOperation(CompilationController controller, ExecutableElement methodEl, MethodModel methodModel, String targetNamespace) {
+    private static void populateOperation(CompilationController controller, ExecutableElement methodEl, ElementHandle methodHandle, MethodModel methodModel, String targetNamespace) {
         TypeElement methodAnotationEl = controller.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
         TypeElement onewayAnotationEl = controller.getElements().getTypeElement("javax.jws.Oneway"); //NOI18N
         TypeElement resultAnotationEl = controller.getElements().getTypeElement("javax.jws.WebResult"); //NOI18N
@@ -414,8 +414,9 @@ public class Utils {
         List<ParamModel> params = new ArrayList<ParamModel>();
         int i=0;
         for (VariableElement paramEl:paramElements) {
-            ParamModel param = new ParamModel("arg"+String.valueOf(i++));
+            ParamModel param = new ParamModel("arg"+String.valueOf(i++), paramEl.getSimpleName().toString());
             param.setImplementationClass(methodModel.getImplementationClass());
+            param.setMethodHandle(methodHandle);
             populateParam(controller, paramEl, param);
             params.add(param);
         }

@@ -41,6 +41,9 @@
 
 package org.netbeans.modules.debugger.jpda.util;
 
+import com.sun.jdi.event.Event;
+import com.sun.jdi.request.EventRequest;
+
 /**
 * Executor of some Event.
 *
@@ -53,5 +56,12 @@ public interface Executor {
      *
      * @return true if execution should be resumed after action.
      */
-    public boolean exec (com.sun.jdi.event.Event event);
+    public boolean exec (Event event);
+    
+    /**
+     * Called back when the executor is removed from the system,
+     * together with the event request.
+     * @param eventRequest The removed event request
+     */
+    public void removed(EventRequest eventRequest);
 }

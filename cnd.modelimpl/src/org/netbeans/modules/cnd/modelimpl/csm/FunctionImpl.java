@@ -120,7 +120,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             }
         }
         
-        if( isStatic() ) {
+        // change scope to file for static methods, but only to prevent 
+        // registration in global  namespace
+        if( isStatic() && CsmKindUtilities.isNamespace(scope) &&
+                ((CsmNamespace)scope).isGlobal()) {
             scope = file;
         }
         

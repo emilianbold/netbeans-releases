@@ -384,7 +384,7 @@ public class SourceUtilsTest extends NbTestCase {
         assertNotNull(sourceFile);
         ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new FileObject[0]), ClassPathSupport.createClassPath(new FileObject[0]),
             ClassPathSupport.createClassPath(new FileObject[]{src}));
-        FileObject cls = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(cpInfo,PathKind.OUTPUT).getRoots()[0];
+        FileObject cls = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo,PathKind.OUTPUT).getRoots()[0];
         FileObject classInDefPkg = cls.createData("Foo","class");
         assertNotNull(classInDefPkg);
         FileObject classPkg = cls.createFolder("org").createFolder("me");

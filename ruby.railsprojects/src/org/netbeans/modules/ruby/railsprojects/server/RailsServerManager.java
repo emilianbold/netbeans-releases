@@ -85,7 +85,6 @@ import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.util.ChangeSupport;
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -178,7 +177,9 @@ public final class RailsServerManager {
                 public void run() {
                     synchronized (RailsServerManager.this) {
                         status = ServerStatus.NOT_STARTED;
-                        server.removeApplication(port);
+                        if (server != null) {
+                            server.removeApplication(port);
+                        }
                         IN_USE_PORTS.remove(port);
                         if (portConflict) {
                             // Failed to start due to port conflict - notify user.
@@ -215,7 +216,20 @@ public final class RailsServerManager {
         String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         String serverId = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE);
-        RubyInstance instance = ServerRegistry.getServer(serverId, RubyPlatform.platformFor(project));
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        RubyInstance instance = ServerRegistry.getDefault().getServer(serverId, platform);
+        if (instance == null) {
+            // TODO: need to inform the user somehow
+            // fall back to the first available server
+            List<? extends RubyInstance> availableServers = ServerRegistry.getDefault().getServers();
+            for (RubyInstance each : availableServers) {
+                if (each.isPlatformSupported(platform)) {
+                    instance = each;
+                    break;
+                }
+            }
+            assert instance != null : "No servers found for " + platform;
+        }
         if (!(instance instanceof RubyServer)){
             //XXX: handle glassfish..
             RequestProcessor.getDefault().post(finishedAction);
@@ -248,7 +262,7 @@ public final class RailsServerManager {
     
     private static String getServerTabName(RubyServer server, String projectName, int port) {
         return NbBundle.getMessage(RailsServerManager.class, 
-                "LBL_ServerTab" , server.getName(), projectName, String.valueOf(port));
+                "LBL_ServerTab" , server.getDisplayName(), projectName, String.valueOf(port));
     }
     
     private void notifyPortConflict() {
@@ -440,7 +454,7 @@ public final class RailsServerManager {
         private Object selected;
 
         public ServerListModel(RubyPlatform platform) {
-            this.servers = ServerRegistry.getServers(platform);
+            this.servers = ServerRegistry.getDefault().getServers(platform);
             this.selected = servers.get(0);
         }
 

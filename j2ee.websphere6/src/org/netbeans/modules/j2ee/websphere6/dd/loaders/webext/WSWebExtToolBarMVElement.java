@@ -41,6 +41,8 @@
 package org.netbeans.modules.j2ee.websphere6.dd.loaders.webext;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.websphere6.dd.beans.*;
 import org.netbeans.modules.j2ee.websphere6.dd.loaders.WSMultiViewDataObject;
 import org.netbeans.modules.xml.multiview.*;
@@ -54,6 +56,9 @@ import org.netbeans.modules.xml.multiview.Error;
  * @author dlipin
  */
 public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener{
+    
+    private static final Logger LOGGER = Logger.getLogger(WSWebExtToolBarMVElement.class.getName());
+    
     private ToolBarDesignEditor comp;
     private SectionView view;
     private WSWebExtDataObject dObj;
@@ -64,6 +69,7 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
     private static final long serialVersionUID = 76757425329721L;
     private static final String WEBEXT_MV_ID= WSMultiViewDataObject.MULTIVIEW_WEBEXT + 
             WSMultiViewDataObject.DD_MULTIVIEW_POSTFIX;
+    
     public WSWebExtToolBarMVElement(WSWebExtDataObject dObj) {
         super(dObj);
         this.dObj=dObj;
@@ -115,7 +121,9 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
         comp.setContentView(view);
         try {
             view.openPanel(dObj.getWebExt());
-        } catch(java.io.IOException ex){}
+        } catch(java.io.IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
         view.checkValidity();
     }
     public void componentOpened() {
@@ -259,7 +267,6 @@ public class WSWebExtToolBarMVElement extends ToolBarMultiViewElement implements
                 servletNode.setDisplayName(servletNode.getDisplayName()+number);
                 
                 dObj.modelUpdatedFromUI();
-                ExtendedServletsType[] servlets = webext.getExtendedServlets();
                 SectionPanel sectionPanel=new SectionPanel(view,servletNode,es);
                 sectionPanel.setHeaderActions(new javax.swing.Action[]{removeServletAction});
                 ((WSWebExtView)view).getServletsContainer().addSection(sectionPanel,true);

@@ -40,6 +40,7 @@
 package org.netbeans.modules.ruby.railsprojects.server.spi;
 
 import java.io.File;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 
 /** 
  * ROUGH DRAFT
@@ -103,15 +104,18 @@ public interface RubyInstance {
     
     
     /**
-     * Start the server.
+     * Start the server using the given <code>platform</code>, or if a 
+     * <code>null</code> was passed, using the "default" platform of the server.
      * 
      * TODO - this method should execute asynchronously, returning a FutureTask<T>
      * instance or similar to monitor and retrieve progress and status of the
      * startup process.
      * 
+     * @param platform the platform to use or <code>null</code>.
+     * 
      * @return true if startup succeeded and server is running, false otherwise.
      */
-    public boolean startServer();
+    public boolean startServer(RubyPlatform platform);
 
     
     /**
@@ -160,5 +164,15 @@ public interface RubyInstance {
      */
     public boolean stop(String applicationName);
     
-    
+
+    /**
+     * Checks whether the given <code>platform</code> is supported by 
+     * this instance. In other words, checks whether this instance can
+     * be used for running applications with the given <code>platform</code>.
+     * 
+     * @param platform the platform to check; must not be null.
+     * @return true if the given <code>platform</code> is supported by this
+     * instances, false otherwise.
+     */
+    public boolean isPlatformSupported(RubyPlatform platform);
 }

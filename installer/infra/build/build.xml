@@ -170,7 +170,7 @@
         
         <!-- then compile all the custom ant tasks -->
         <javac 
-            srcdir="${custom.tasks.src.1}" 
+            srcdir="${custom.tasks.src.1}"
             destdir="${custom.tasks.cls}"
             classpath="${custom.tasks.cls}"
             debug="true"/>

@@ -72,6 +72,7 @@ import org.netbeans.modules.form.fakepeer.FakePeerSupport;
 import org.netbeans.modules.form.layoutsupport.*;
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.menu.MenuEditLayer;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -493,7 +494,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                                 formFile.getExt()); 
                     formDesigner.getLayoutDesigner().setModelCounter(0);
                     formDesigner.resetTopDesignComponent(true);
-                    StatusDisplayer.getDefault().setStatusText("The form was successfully copied to: " + copied.getPath()); // NOI18N
+                    StatusDisplayer.getDefault().setStatusText("The form was successfully copied to: " + FileUtil.getFileDisplayName(copied)); // NOI18N
                 } catch (IOException ioe) {
                     //TODO
                 }

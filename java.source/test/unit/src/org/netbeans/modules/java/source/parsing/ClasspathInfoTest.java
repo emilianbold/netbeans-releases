@@ -185,7 +185,7 @@ public class ClasspathInfoTest extends NbTestCase {
     
     public void testGetPackageDeclaration() throws Exception {
         ClasspathInfo ci = ClasspathInfo.create( bootPath, classPath, null);
-        JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(ci);
+        JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(ci);
         JarFile jf = new JarFile( rtJar );
         for( Enumeration entries = jf.entries(); entries.hasMoreElements(); ) {
             JarEntry je = (JarEntry)entries.nextElement();

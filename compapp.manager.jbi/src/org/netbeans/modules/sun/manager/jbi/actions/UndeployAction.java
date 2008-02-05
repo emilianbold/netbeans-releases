@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.sun.manager.jbi.actions;
 
 import java.util.HashSet;
@@ -65,120 +64,121 @@ import org.openide.util.actions.SystemAction;
  * @author jqian
  */
 public abstract class UndeployAction extends NodeAction {
-    
+
     protected void performAction(final Node[] activatedNodes) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
                     // a set of nodes that need refreshing
-                    final Set<Node> parentNodes = new HashSet<Node>(); 
-                    
+                    final Set<Node> parentNodes = new HashSet<Node>();
+
                     for (Node node : activatedNodes) {
                         Lookup lookup = node.getLookup();
                         Undeployable undeployable = lookup.lookup(Undeployable.class);
-                        
+
                         if (undeployable != null) {
-                            parentNodes.add(node.getParentNode());
+                            Node parentNode = node.getParentNode();
+                            if (parentNode != null) {
+                                parentNodes.add(node.getParentNode());
+                            }
                             undeployable.undeploy(isForceAction());
                         }
                     }
-                    
+
                     SwingUtilities.invokeLater(new Runnable() {
                         public void run() {
                             for (Node parentNode : parentNodes) {
                                 final Refreshable refreshable =
                                         parentNode.getLookup().lookup(Refreshable.class);
-                                if (refreshable != null){                                    
+                                if (refreshable != null) {
                                     refreshable.refresh();
-                                }                                
+                                }
                             }
                         }
                     });
-                } catch(RuntimeException rex) {
+                } catch (RuntimeException rex) {
                     //gobble up exception
                 }
             }
         });
     }
-    
+
     protected boolean enable(Node[] activatedNodes) {
         boolean ret = false;
-        
+
         if (activatedNodes != null && activatedNodes.length > 0) {
             ret = true;
             for (Node node : activatedNodes) {
-                Undeployable undeployable = 
-                        node.getLookup().lookup(Undeployable.class);                
+                Undeployable undeployable =
+                        node.getLookup().lookup(Undeployable.class);
                 try {
                     if (undeployable != null && !undeployable.canUndeploy()) {
                         ret = false;
                         break;
                     }
-                } catch(RuntimeException rex) {
+                } catch (RuntimeException rex) {
                     //gobble up exception
                 }
             }
         }
-        
+
         return ret;
     }
-    
+
     protected boolean asynchronous() {
         return false;
     }
-    
+
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
-    
+
     protected abstract boolean isForceAction();
-    
-    
+
     /**
      * Normal undeploy action.
      */
     public static class Normal extends UndeployAction {
-        
+
         protected boolean isForceAction() {
             return false;
         }
-        
+
         public String getName() {
             return NbBundle.getMessage(ShutdownAction.class, "LBL_UndeployAction");  // NOI18N
         }
     }
-    
+
     /**
      * Force undeploy action.
      */
     public static class Force extends UndeployAction implements Presenter.Popup {
-        
+
         public String getName() {
             return NbBundle.getMessage(ShutdownAction.class, "LBL_ForceUndeployAction");  // NOI18N
         }
-        
+
         public JMenuItem getPopupPresenter() {
             JMenu result = new JMenu(
                     NbBundle.getMessage(ShutdownAction.class, "LBL_Advanced"));  // NOI18N
-            
+
             //result.add(new JMenuItem(SystemAction.get(ShutdownAction.Force.class)));
             Action forceShutdownAction = SystemAction.get(ShutdownAction.Force.class);
             JMenuItem forceShutdownMenuItem = new JMenuItem();
             Actions.connect(forceShutdownMenuItem, forceShutdownAction, false);
             result.add(forceShutdownMenuItem);
-            
+
             //result.add(new JMenuItem(this));
             Action forceUndeployAction = SystemAction.get(UndeployAction.Force.class);
             JMenuItem forceUndeployMenuItem = new JMenuItem();
             Actions.connect(forceUndeployMenuItem, forceUndeployAction, false);
             result.add(forceUndeployMenuItem);
-            
+
             return result;
         }
-        
+
         protected boolean isForceAction() {
             return true;
         }
     }
-    
 }

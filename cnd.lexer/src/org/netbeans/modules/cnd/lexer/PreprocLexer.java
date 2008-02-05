@@ -71,9 +71,6 @@ public final class PreprocLexer extends CndLexer {
     private static final int INCLUDE_DIRECTIVE  = EXPRESSION + 1;
     private static final int OTHER              = INCLUDE_DIRECTIVE + 1;
     
-    private static final String WHITESPACE_CATEGORY = CppTokenId.WHITESPACE.primaryCategory();
-    private static final String COMMENT_CATEGORY = CppTokenId.LINE_COMMENT.primaryCategory();
-    
     private int state = INIT;
     private final Filter<CppTokenId> preprocFilter;
     private final Filter<CppTokenId> keywordsFilter;
@@ -174,8 +171,8 @@ public final class PreprocLexer extends CndLexer {
                 state = DIRECTIVE_NAME;
                 break;
             case DIRECTIVE_NAME:
-                if (!WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
-                           !COMMENT_CATEGORY.equals(id.primaryCategory())) {
+                if (!CppTokenId.WHITESPACE_CATEGORY.equals(id.primaryCategory()) &&
+                           !CppTokenId.COMMENT_CATEGORY.equals(id.primaryCategory())) {
                     switch (id) {
                         case PREPROCESSOR_IF:
                         case PREPROCESSOR_ELIF:

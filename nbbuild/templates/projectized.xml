@@ -944,9 +944,9 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         />
     </target>
 
-    <target name="findbugs-init">
+    <target name="findbugs-init" depends="build-init">       
         <property name="findbugs.home" location="${nb_all}/nbbuild/external/findbugs"/>
-        <ant dir="${findbugs.home}"/>
+        <ant dir="${findbugs.home}" inheritall="false"/>
     </target>
     
     <target name="findbugs" depends="build-init,jar,findbugs-init">
@@ -961,13 +961,14 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <path path="${cp.extra}"/>
             <path path="${cluster}/${module.jar}"/>
         </path>
-        <pathconvert refid="findbugs.class.path.ref" property="findbugs.class.path">
-            
-        </pathconvert>    
+        <pathconvert refid="findbugs.class.path.ref" property="findbugs.class.path"/>
+
         <echo>Findbugs module: ${module.name}</echo>
         <findbugs home="${findbugs.home}"
               output="xml"
-              outputFile="${report.file}">
+              outputFile="${report.file}"
+              failOnError="true"
+              jvmargs="-Xmx256m">
             <auxClasspath path="${findbugs.class.path}" />
             <sourcePath path="${src.dir}" />
             <class location="${build.classes.dir}" />
@@ -979,6 +980,7 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         </condition>
         <antcall target="findbugs.delete"/>
     </target>
+    
     <target name="findbugs.delete" if="findbugs.error">
         <delete file="${report.file}" failonerror="false"/>
     </target>

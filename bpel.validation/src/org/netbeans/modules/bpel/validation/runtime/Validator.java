@@ -74,6 +74,7 @@ import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.netbeans.modules.bpel.validation.util.ValidationItem;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -462,67 +463,57 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
     
     private void addAttributeWarning(String attributeName, Component entities) {
         String str = i18n(getClass(), FIX_ATTRIBUTE);
-        str = MessageFormat.format( str, attributeName );
-        ResultItem resultItem = new ResultItem(this, ResultType.WARNING, entities, str);
-        getResultItems().add( resultItem );
+        str = MessageFormat.format( str, attributeName);
+        getResultItems().add(new ValidationItem(this, ResultType.WARNING, entities, str));
     }
     
     private void addElementError(BpelEntity entity) {
         String str = i18n(getClass(), FIX_ELEMENT);
         str = MessageFormat.format( str,  entity.getPeer().getLocalName());
-        ResultItem resultItem = new ResultItem(this, ResultType.ERROR, (Component) entity, str);
-        getResultItems().add( resultItem );
+        getResultItems().add(new ValidationItem(this, ResultType.ERROR, (Component) entity, str));
     }
     
-    private void addElementsInParentError( BpelContainer parent ,
-            BpelEntity... entities ) {
+    private void addElementsInParentError(BpelContainer parent, BpelEntity... entities) {
         assert entities.length >0;
         String str = i18n( getClass(), FIX_ELEMENT_IN_PARENT);
         str = MessageFormat.format( str,  entities[0].getPeer().getLocalName(), parent.getPeer().getLocalName());
-        ResultItem resultItem = new ResultItem(this, ResultType.ERROR, (Component)entities[0], str);
-        getResultItems().add( resultItem );
+        getResultItems().add(new ValidationItem(this, ResultType.ERROR, (Component)entities[0], str));
     }
     
     private void addElementsInParentError( BpelContainer parent, String tagName ) {
         String str = i18n( getClass(), FIX_ELEMENT_IN_PARENT);
         str = MessageFormat.format(str, tagName,parent.getPeer().getLocalName());
-        ResultItem resultItem = new ResultItem(this, ResultType.ERROR, (Component) parent, str);
-        getResultItems().add(resultItem);
+        getResultItems().add(new ValidationItem(this, ResultType.ERROR, (Component) parent, str));
     }
     
     private boolean isAttributeValueSpecified(String value) {
-        if(value == null || value.trim().equals(""))
-            return false;
-        else
-            return true;
+        return value != null && !value.trim().equals("");
     }
     
     private void addAttributeNeededForRuntime(String attributeName, Component component) {
         String str = i18n(getClass(), FIX_ATTRIBUTE_REQUIRED_SUN_BPELSE);
         str = MessageFormat.format(str, attributeName);
-        ResultItem resultItem = new ResultItem(this, ResultType.WARNING, component, str);
-        getResultItems().add(resultItem);
+        getResultItems().add(new ValidationItem(this, ResultType.WARNING, component, str));
     }
     
     private void checkValidURI(BpelEntity bpelEntity, String attribute, String attributeValue) {
         if(attributeValue != null) {
             try {
                 new URI(attributeValue);
-            } catch (URISyntaxException ex) {
+            }
+            catch (URISyntaxException ex) {
                 String message = i18n(getClass(), FIX_INVALID_URI, attribute);
-                ResultItem resultItem = new ResultItem(this, ResultType.ERROR, bpelEntity, message);
-                getResultItems().add(resultItem);
+                getResultItems().add(new ValidationItem(this, ResultType.ERROR, bpelEntity, message));
             }
         }
     }
     
-    private BpelContainer hasParent( BpelEntity entity , 
-            Class<? extends BpelContainer>... types )
-    {
+    private BpelContainer hasParent( BpelEntity entity, Class<? extends BpelContainer>... types) {
         BpelContainer parent = entity.getParent();
+
         while( parent != null ) {
             for( Class<? extends BpelContainer> clazz :types ) {
-                if ( clazz.isInstance(parent)) {
+                if (clazz.isInstance(parent)) {
                     return parent;
                 }
             }

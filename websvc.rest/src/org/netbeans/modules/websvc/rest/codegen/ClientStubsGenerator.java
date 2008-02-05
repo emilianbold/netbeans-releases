@@ -49,6 +49,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -109,7 +110,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String PROPERTIES = "properties"; //NOI18N
     public static final String LIBS = "libs"; //NOI18N
     public static final String DJD43 = "djd43"; //NOI18N
-    public static final String JMAKI_DOJO_10_ZIP = "jmaki-dojo-1.0.zip"; //NOI18n
+    public static final String JMAKI_DOJO = "jmaki-dojo"; //NOI18n
     public static final String JMAKI_COMP_LIB = "jmakicomplib"; //NOI18n
     
     public static final String JS_SUPPORT = "Support"; //NOI18N
@@ -397,14 +398,68 @@ public class ClientStubsGenerator extends AbstractGenerator {
             throw new RuntimeException("Cannot find jMaki component folder (" + jmakiCompDir + ").");
         }
         
-        File dojoLib = new File(jmakiCompDir, JMAKI_DOJO_10_ZIP);
-        if(!dojoLib.exists()) {
-            throw new RuntimeException("Cannot find dojo library  (" + dojoLib.getAbsolutePath() + ").");
+        File dojoLib = findDojoLibrary(jmakiCompDir);
+        if(dojoLib != null) {
+            unzip(new FileInputStream(dojoLib), resourcesDir.getParent(), canOverwrite());
+        } else {
+            File src = new File(jmakiCompDir, RESOURCES+File.separator+DOJO+File.separator+RESOURCES);
+            File dst = FileUtil.toFile(dojoDir);
+            FileSystem fs = FileUtil.toFileObject(dst).getFileSystem();
+            copyDirectory(fs, src, dst);
         }
-        unzip(new FileInputStream(dojoLib), resourcesDir.getParent(), canOverwrite());
-        
         if(dojoDir.getFileObject(RESOURCES) == null)
-            new IOException("Unzip of dojo libs :"+dojoLib.getAbsolutePath()+" to "+resourcesDir.getParent()+" failed.");
+            throw new IOException("Copying dojo libs from :"+jmakiCompDir.getAbsolutePath()+" to "+resourcesDir.getParent()+" failed.");
+    }
+    
+    private File findDojoLibrary(File jmakiCompDir) {
+        File dojoLib = null;
+        FilenameFilter filter = new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                if(name != null && name.startsWith("jmaki-dojo") && name.endsWith(".zip"))
+                    return true;
+                else
+                    return false;
+            }
+        };
+        File[] dojoLibs = jmakiCompDir.listFiles(filter);
+        if(dojoLibs != null && dojoLibs.length > 0)
+            dojoLib = dojoLibs[0];
+        return dojoLib;
+    }
+    
+    public void copyDirectory(final FileSystem fs, final File src, final File dst)
+            throws IOException {
+        if (src.isDirectory()) {
+            if (!dst.exists()) {
+                dst.mkdir();
+            }
+            String files[] = src.list();
+            for (int i = 0; i < files.length; i++) {
+                copyDirectory(fs, new File(src, files[i]),
+                        new File(dst, files[i]));
+            }
+        } else {
+            if (!src.exists()) {
+                throw new IOException("File or directory does not exist.");
+            } else {
+                fs.runAtomicAction(new FileSystem.AtomicAction() {
+                    public void run() throws IOException {
+                        InputStream in = new FileInputStream(src);
+                        OutputStream out = new FileOutputStream(dst);
+                        try {
+                            byte[] buf = new byte[1024];
+                            int len;
+                            while ((len = in.read(buf)) > 0) {
+                                out.write(buf, 0, len);
+                            }
+                        } finally {
+                            in.close();
+                            out.close();
+                        }
+                    }
+                });
+            }
+        }
     }
     
     private void initJs(Project p) throws IOException {

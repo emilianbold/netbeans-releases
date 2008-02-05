@@ -46,6 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ResourceBundle;
 import java.util.Vector;
+import java.util.ArrayList;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
@@ -61,6 +62,7 @@ import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.MacOSXDynamicLibraryFileFilter;
 import org.netbeans.modules.cnd.api.utils.PeDynamicLibraryFileFilter;
+import org.netbeans.modules.cnd.api.utils.PeStaticLibraryFileFilter;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -143,7 +145,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-	return getListData();
+	return new ArrayList(getListData());
     }
         
     public void propertyChange(PropertyChangeEvent evt) {
@@ -273,7 +275,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             FileFilter[] filters;
             if (Utilities.isWindows()){
                 filters = new FileFilter[] {
-                ElfStaticLibraryFileFilter.getInstance(),
+                PeStaticLibraryFileFilter.getInstance(),
                 PeDynamicLibraryFileFilter.getInstance()};
             } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 filters = new FileFilter[] {
@@ -284,7 +286,6 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 ElfStaticLibraryFileFilter.getInstance(),
                 ElfDynamicLibraryFileFilter.getInstance()};
             }
-//	    FileFilter[] filters = new FileFilter[] {ElfDynamicLibraryFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance()};
 	    FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
 	    int ret = fileChooser.showOpenDialog(myListEditorPanel);
 	    if (ret == JFileChooser.CANCEL_OPTION)
@@ -313,7 +314,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             FileFilter[] filters;
             if (Utilities.isWindows()){
                 filters = new FileFilter[] {
-                ElfStaticLibraryFileFilter.getInstance(),
+                PeStaticLibraryFileFilter.getInstance(),
                 PeDynamicLibraryFileFilter.getInstance()};
             } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
                 filters = new FileFilter[] {
@@ -324,7 +325,6 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 ElfStaticLibraryFileFilter.getInstance(),
                 ElfDynamicLibraryFileFilter.getInstance()};
             }
-	    //FileFilter[] filters = new FileFilter[] {ElfDynamicLibraryFileFilter.getInstance(), ElfStaticLibraryFileFilter.getInstance()};
 	    FileChooser fileChooser = new FileChooser(getString("SELECT_LIBRARY_FILE_CHOOSER_TITLE"), getString("SELECT_CHOOSER_BUTTON"), JFileChooser.FILES_ONLY, filters, seed, true);
 	    PathPanel pathPanel = new PathPanel();
 	    fileChooser.setAccessory(pathPanel);
