@@ -73,6 +73,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Utilities;
 
@@ -1583,6 +1584,80 @@ public class FolderObjTest extends NbTestCase {
     }
 
     
+
+    public void testDeleteNoParent() throws IOException {
+        FileBasedFileSystem fs = FileBasedFileSystem.getInstance(testFile);
+        FileObject parent = fs.findFileObject(testFile).getParent();
+        FileObject fobj = fs.findFileObject(testFile);
+        assertNotNull(fobj);
+        //parent not exists + testFile not exists
+        EventsEvaluator ev = new EventsEvaluator(fobj.getFileSystem());
+        Reference ref = new WeakReference(parent);
+        parent = null;
+        assertGC("", ref);                                
+        fobj.delete();
+        ev.assertDeleted(1);
+    }
+    
+    private class EventsEvaluator extends FileChangeAdapter {
+        private int folderCreatedCount;
+        private int dataCreatedCount;
+        private int deletedCount;        
+        private FileSystem fs;
+        EventsEvaluator(FileSystem fs) throws FileStateInvalidException {
+            this.fs = fs;
+            fs.refresh(true);
+            fs.addFileChangeListener(this);
+        }
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            super.fileFolderCreated(fe);
+            folderCreatedCount++;
+        }
+
+        
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            super.fileDataCreated(fe);
+            dataCreatedCount++;
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            super.fileDeleted(fe);
+            deletedCount++;
+        }
+
+        public void assertFolderCreated(int count) {
+            assertEquals(this.folderCreatedCount, count);
+        }
+        
+        public void assertDataCreated(int count) {
+            assertEquals(this.dataCreatedCount, count);
+        }
+
+        public void assertDeleted(int count) {
+            assertEquals(this.deletedCount, count);
+        }
+        
+        public void resetFolderCreated() {
+            folderCreatedCount = 0;
+        }
+        
+        public void resetDataCreated() {
+            dataCreatedCount = 0;
+        }
+
+
+        public void resetDeleted() {
+            deletedCount = 0;
+        }
+        
+        public void cleanUp() throws FileStateInvalidException {
+            fs.removeFileChangeListener(this);
+        }
+    }
     
     public File getWorkDir() throws IOException {
         return super.getWorkDir();
