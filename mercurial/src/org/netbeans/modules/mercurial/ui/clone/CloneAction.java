@@ -58,6 +58,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.ui.clone.Clone;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
@@ -72,7 +73,7 @@ import org.openide.util.Utilities;
  * 
  * @author John Rice
  */
-public class CloneAction extends AbstractAction {
+public class CloneAction extends ContextAction {
     private final VCSContext context;
 
     public CloneAction(String name, VCSContext context) {
@@ -80,8 +81,7 @@ public class CloneAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent ev){
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent ev){
         if(!HgRepositoryContextCache.hasHistory(context)){
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(CloneAction.class,

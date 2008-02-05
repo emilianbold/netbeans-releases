@@ -448,6 +448,20 @@ public class CssBorder {
             return null;
         }
 
+        // XXX #126609 NPE.
+        if (topColor == null) {
+            topColor = getDefaultColor(element);
+        }
+        if (bottomColor == null) {
+            bottomColor = getDefaultColor(element);
+        }
+        if (leftColor == null) {
+            leftColor = getDefaultColor(element);
+        }
+        if (rightColor == null) {
+            rightColor = getDefaultColor(element);
+        }
+        
         return new CssBorder(topWidth, bottomWidth, rightWidth, leftWidth, topStyle, rightStyle,
             bottomStyle, leftStyle, topColor, bottomColor, rightColor, leftColor);
     }

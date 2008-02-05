@@ -74,7 +74,7 @@ public final class ClasspathInfo {
     private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
     
     static {
-        ClasspathInfoAccessor.INSTANCE = new ClasspathInfoAccessorImpl ();
+        ClasspathInfoAccessor.setINSTANCE(new ClasspathInfoAccessorImpl());
         try {
             Class.forName(ClassIndex.class.getName(), true, CompilationInfo.class.getClassLoader());
         } catch (ClassNotFoundException ex) {            

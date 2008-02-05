@@ -60,7 +60,7 @@ public class LibrariesSupportTest extends NbTestCase {
     }
 
     /**
-     * Test of convertFileToURL method, of class LibrariesSupport.
+     * Test of convertFilePathToURL method, of class LibrariesSupport.
      */
     public void testConvertFileToURL() {
         File f = new File("/aa/bb/c c.ext".replace('/', File.separatorChar));
@@ -72,14 +72,14 @@ public class LibrariesSupportTest extends NbTestCase {
     }
 
     /**
-     * Test of convertURLToFile method, of class LibrariesSupport.
+     * Test of convertURLToFilePath method, of class LibrariesSupport.
      */
     public void testConvertURLToFile() throws MalformedURLException{
         URL u = new URL("file:/aa/bb/c%20c.ext");
-        File f = LibrariesSupport.convertURLToFile(u);
+        File f = LibrariesSupport.convertURLToFilePath(u);
         assertEquals("/aa/bb/c c.ext".replace('/', File.separatorChar), f.getPath());
         u = new URL("file:../zz/re%20l.ext");
-        f = LibrariesSupport.convertURLToFile(u);
+        f = LibrariesSupport.convertURLToFilePath(u);
         assertEquals("../zz/re l.ext".replace('/', File.separatorChar), f.getPath());
     }
 

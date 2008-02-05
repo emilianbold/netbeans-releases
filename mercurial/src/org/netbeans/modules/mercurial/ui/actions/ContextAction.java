@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,61 +39,33 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.gsfret.source.usages;
+package org.netbeans.modules.mercurial.ui.actions;
 
-import java.io.File;
-import java.io.IOException;
-import org.apache.lucene.store.SimpleFSLockFactory;
-import org.openide.filesystems.FileUtil;
-    
+import org.netbeans.modules.mercurial.Mercurial;
+import javax.swing.AbstractAction;
+import org.openide.LifecycleManager;
+import java.awt.event.ActionEvent;
+
 /**
- * This file is originally from Retouche, the Java Support 
- * infrastructure in NetBeans. I have modified the file as little
- * as possible to make merging Retouche fixes back as simple as
- * possible. 
- *
- * @author Tomas Zezula
+ * Base for all context-sensitive Mercurial actions.
+ * 
+ * @author Padraig O'Briain
  */
-public class NBLockFactory extends SimpleFSLockFactory {    
-    
-    private static final String LOCK_DIR = "var"+File.separatorChar+"gsf-locks";     //NOI18N
-    
-    private static File lockDir;
-    
-    /** Creates a new instance of NBLockFactory 
-     * @throws java.io.IOException 
-     */
-    public NBLockFactory () throws IOException {
-        super (getLockDir());
-    }       
-    
+public abstract class ContextAction extends AbstractAction {
+
     /**
-     * NEVER call this method! The only place where it's save to
-     * call this method is {@link JBrowseModule.restore} to remove
-     * orphan locks from previous IDE session.
+     * Synchronizes memory modificatios with disk and calls
+     * {@link  #performContextAction}.
      */
-    public static void clearLocks () {        
-        final File lockDir = getLockDir();
-        final File[] children = lockDir.listFiles();
-        if (children != null) {
-            for (File child : children) {
-                child.delete();
-            }
-        }
+    public void actionPerformed(final ActionEvent event) {
+        // TODO try to save files in invocation context only
+        // list somehow modified file in the context and save
+        // just them.
+        // The same (global save) logic is in CVS, no complaint
+        LifecycleManager.getDefault().saveAll();        
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        performAction(event);
     }
-    
-    private static synchronized File getLockDir () {
-        if (lockDir == null) {
-            final String nbUserDirProp = Index.getNbUserDir();
-            assert nbUserDirProp != null;
-            File userDir = new File (nbUserDirProp);
-            lockDir = FileUtil.normalizeFile(new File (userDir, LOCK_DIR));
-            if (!lockDir.exists()) {
-                lockDir.mkdirs();
-                assert lockDir.isDirectory() && lockDir.canRead() && lockDir.canWrite();
-            }
-        }        
-        return lockDir;
-    }
-    
+
+    protected abstract void performAction(ActionEvent event);
 }
