@@ -105,6 +105,9 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(AttributeReference ar) {
+        // vlv # 105159
+        checkComponent(ar);
+        //
         NamedComponentReference<GlobalAttribute> gaRef = ar.getRef();
 
         if (gaRef != null) {
@@ -239,5 +242,4 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
             child.accept(this);
         }
     }
-    
 }

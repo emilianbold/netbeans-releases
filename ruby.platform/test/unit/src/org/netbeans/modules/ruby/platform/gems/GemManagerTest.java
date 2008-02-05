@@ -144,6 +144,7 @@ public class GemManagerTest extends RubyTestBase {
         installFakeGem("ruby-debug-base", "0.1.10", platform);
         assertEquals("native fast debugger available", "0.1.10", gemManager.getVersion("ruby-debug-base"));
         assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));
+        uninstallFakeGem("ruby-debug-base", "0.1.10", platform);
         installFakeGem("ruby-debug-base", "0.1.10", "java", platform);
         assertEquals("no jruby fast debugger available", "0.1.10", gemManager.getVersionForPlatform("ruby-debug-base"));
     }
