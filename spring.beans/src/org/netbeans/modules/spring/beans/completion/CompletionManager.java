@@ -426,9 +426,6 @@ public final class CompletionManager {
             try {
                 Document doc = context.getDocument();
                 final String typedChars = context.getTypedPrefix();
-                if (typedChars == null) {
-                    return Collections.emptyList();
-                }
 
                 JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
                 if (js == null) {

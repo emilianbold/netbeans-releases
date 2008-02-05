@@ -143,7 +143,6 @@ public class CompletionContext {
                         break;
                     }
                     completionType = CompletionType.ATTRIBUTE;
-                    typedChars = "";
                     break;
                 }
 
@@ -153,9 +152,7 @@ public class CompletionContext {
                         completionType = CompletionType.NONE;
                         break;
                     }
-                    if (element.getElementOffset() + 1 == this.caretOffset) {
-                        typedChars = null;
-                    } else {
+                    if (element.getElementOffset() + 1 != this.caretOffset) {
                         StartTag tag = (StartTag) element;
                         typedChars = tag.getTagName();
                     }
@@ -186,7 +183,6 @@ public class CompletionContext {
                     typedChars = token.getImage().substring(1, caretOffset - token.getOffset());
                 } else {
                     completionType = CompletionType.NONE;
-                    typedChars = "";
                 }
                 break;
 
@@ -201,7 +197,6 @@ public class CompletionContext {
                 if ((prev.getTokenID().getNumericID() == XMLDefaultTokenContext.VALUE_ID) ||
                         (prev.getTokenID().getNumericID() == XMLDefaultTokenContext.TAG_ID)) {
                     completionType = CompletionType.ATTRIBUTE;
-                    typedChars = "";
                 }
                 break;
 
