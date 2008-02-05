@@ -33,6 +33,13 @@ import org.netbeans.modules.xml.schema.model.TypeContainer;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 
+import org.netbeans.modules.xml.schema.model.SchemaModel;
+import org.netbeans.modules.xml.xam.dom.DocumentComponent;
+import org.netbeans.modules.xml.schema.model.GlobalComplexType;
+import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 /**
  * This schema visitor is inteneded to look for a children elements or attributes 
  * It looks only children at the next lavel. 
@@ -57,17 +64,27 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         mySoughtName = soughtName;
         mySoughtNamespace = soughtNamespace;
         this.isAttribute = isAttribute;
+
+//ENABLE = (soughtName + "").equals("ReservationItems");
+//out();
+//out("=== FindChildrenSchemaVisitor: " + soughtName);
     }
     
     public List<SchemaComponent> getFound() {
         return myFound;
     }
     
+    private boolean isChildFound() {
+        return myFound.size() > 0;
+    }
+
     /**
      * Start searching from the specified schema component. 
      * Any kind of component can be used. 
      */ 
     public void lookForSubcomponent(SchemaComponent sc) {
+//out("S E E : " + sc);
+
         if (sc instanceof Element) {
             if (sc instanceof TypeContainer) {
                 NamedComponentReference<? extends GlobalType> typeRef = 
@@ -91,36 +108,34 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                     // Do recursive call here
                     lookForSubcomponent(gElement);
                 }
+                // vlv # 105159
+                else if (sc instanceof DocumentComponent) {
+                  DocumentComponent document = (DocumentComponent) sc;
+                  String typeName = document.getPeer().getAttribute("type");
+
+                  if (typeName == null || typeName.equals("")) {
+                    NodeList list = document.getPeer().getElementsByTagName("xs:extension");
+
+                    for (int i=0; i < list.getLength(); i++) {
+                      Node node = list.item(i);
+
+                      if ( !(node instanceof org.w3c.dom.Element)) {
+                        continue;
+                      }
+                      org.w3c.dom.Element element = (org.w3c.dom.Element) node;
+                      findInType(element.getAttribute("base"), sc);
+
+                      if (isChildFound()) {
+                        break;
+                      } 
+                    }
+                  }
+                  else {
+                    findInType(typeName, sc);
+                  }
+                }
             }
         }
-/*      // vlv # 105159
-        // DON'T REMOVE IT
-        else if (sc instanceof Element && sc instanceof ElementReference && sc instanceof DocumentComponent) {
-          DocumentComponent document = (DocumentComponent) sc;
-          String typeName = document.getPeer().getAttribute("type");
-
-          if (typeName == null || typeName.equals("")) {
-            NodeList list = document.getPeer().getElementsByTagName("xs:extension");
-
-            for (int i=0; i < list.getLength(); i++) {
-              Node node = list.item(i);
-
-              if ( !(node instanceof org.w3c.dom.Element)) {
-                continue;
-              }
-              org.w3c.dom.Element element = (org.w3c.dom.Element) node;
-              findInType(element.getAttribute("base"), sc);
-
-              if (isChildFound()) {
-                break;
-              } 
-            }
-          }
-          else {
-            findInType(typeName, sc);
-          }
-        }
-*/
         else if (sc instanceof ComplexType) {
             visitChildren(sc);
         } else if (sc instanceof Schema) {
@@ -131,9 +146,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         }
     }
 
-/*
     // vlv # 105159
-    // DON'T REMOVE IT
     private void findInType(final String typeName, SchemaComponent sc) {
       if (typeName == null || typeName.equals("")) {
         return;
@@ -146,7 +159,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         @Override
         public void visit(GlobalComplexType type) {
           if (typeName.equals(type.getName())) {
-//out("!!!!!!! === FOUND GLOBAL Complex TYPE ==== : " + type.getName());
+//out("!!!=== FOUND GLOBAL Complex TYPE ==== : " + type.getName());
             myGlobalComplexType = type;
           }
         }
@@ -165,25 +178,26 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
       }
       return "";
     }
-*/    
+
     protected void checkComponent(SchemaComponent sc) {
-/*vlv # 105159
-        if (isAttribute && !(sc instanceof Attribute)) {
-            // attribute required here!
-            return;
-        }
-        if (!isAttribute && !(sc instanceof Element)) {
-            // Element required here!
-            return;
-        }
-        if (sc instanceof ElementReference) {
-            // Need to see deeper to the referenced element
-            return;
-        }
-*/
+// # 105159
+//        if (isAttribute && !(sc instanceof Attribute)) {
+//            // attribute required here!
+//            return;
+//        }
+//        if (!isAttribute && !(sc instanceof Element)) {
+//            // Element required here!
+//            return;
+//        }
+//        if (sc instanceof ElementReference) {
+//            // Need to see deeper to the referenced element
+//            return;
+//        }
+//out("check: " + sc);
         if (sc instanceof Named) {
             String namespace = sc.getModel().getEffectiveNamespace(sc);
             String name = ((Named)sc).getName();
+         
             if (mySoughtName.equals(name)) {
                 //
                 // Compare namespace as well if it is specified
@@ -196,5 +210,19 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                 }
             } 
         }
+    }
+
+    private boolean ENABLE;
+
+    private void out() {
+      if (ENABLE) {
+        System.out.println();
+      }
+    }
+
+    private void out(Object object) {
+      if (ENABLE) {
+        System.out.println("*** " + object);
+      }
     }
 }
