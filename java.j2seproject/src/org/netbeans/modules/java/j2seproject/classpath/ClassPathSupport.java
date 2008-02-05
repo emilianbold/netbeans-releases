@@ -206,13 +206,13 @@ public class ClassPathSupport {
                     }
                     if (reference == null) {
                         // New file
-                        String file = item.getFile();
+                        String file = item.getFilePath();
                         // pass null as expected artifact type to always get file reference
                         reference = referenceHelper.createForeignFileReferenceAsIs(file, null);
                     }
                     if (item.hasChangedSource()) {
-                        if (item.getSourceFile() != null) {
-                            referenceHelper.createExtraForeignFileReferenceAsIs(item.getSourceFile(), item.getSourceProperty());
+                        if (item.getSourceFilePath() != null) {
+                            referenceHelper.createExtraForeignFileReferenceAsIs(item.getSourceFilePath(), item.getSourceProperty());
                         } else {
                             //oh well, how do I do this otherwise??
                             EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -221,8 +221,8 @@ public class ClassPathSupport {
                         }
                     }
                     if (item.hasChangedJavadoc()) {
-                        if (item.getJavadocFile() != null) {
-                            referenceHelper.createExtraForeignFileReferenceAsIs(item.getJavadocFile(), item.getJavadocProperty());
+                        if (item.getJavadocFilePath() != null) {
+                            referenceHelper.createExtraForeignFileReferenceAsIs(item.getJavadocFilePath(), item.getJavadocProperty());
                         } else {
                             //oh well, how do I do this otherwise??
                             EditableProperties ep = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -424,7 +424,7 @@ public class ClassPathSupport {
             return (Library)object;
         }
         
-        public String getFile() {
+        public String getFilePath() {
             if ( getType() != TYPE_JAR ) {
                 throw new IllegalArgumentException( "Item is not of required type - JAR" ); // NOI18N
             }
@@ -497,7 +497,7 @@ public class ClassPathSupport {
          * 
          * @return
          */
-        public String getSourceFile() {
+        public String getSourceFilePath() {
             return sourceFile;
         }
         
@@ -506,7 +506,7 @@ public class ClassPathSupport {
          * 
          * @return
          */
-        public String getJavadocFile() {
+        public String getJavadocFilePath() {
             return javadocFile;
         }
         
@@ -515,7 +515,7 @@ public class ClassPathSupport {
          * 
          * @return
          */
-        public void setJavadocFile(String javadoc) {
+        public void setJavadocFilePath(String javadoc) {
             javadocFile = javadoc;
         }
         
@@ -524,7 +524,7 @@ public class ClassPathSupport {
          * 
          * @return
          */
-        public void setSourceFile(String source) {
+        public void setSourceFilePath(String source) {
             sourceFile = source;
         }
         

@@ -406,16 +406,17 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
         int firstIndex = this.model.getSize();
         for (int i = 0; i < files.length; i++) {
             File f = new File(files[i]);
-            //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
-            // E.g. for /foo/src it returns /foo/src/src
-            // Try to convert it back by removing last invalid name component
-            if (!f.exists()) {
-                File parent = f.getParentFile();
-                if (parent != null && f.getName().equals(parent.getName()) && parent.exists()) {
-                    f = parent;
-                }
-            }
-            URL url = LibrariesSupport.convertFileToURL(f.getPath());
+            //mkleint: issue 5075580 was fixed in 1.4 and 5.0u7(b01).
+//            //XXX: JFileChooser workaround (JDK bug #5075580), double click on folder returns wrong file
+//            // E.g. for /foo/src it returns /foo/src/src
+//            // Try to convert it back by removing last invalid name component
+//            if (!f.exists()) {
+//                File parent = f.getParentFile();
+//                if (parent != null && f.getName().equals(parent.getName()) && parent.exists()) {
+//                    f = parent;
+//                }
+//            }
+            URL url = LibrariesSupport.convertFilePathToURL(files[i]);
             File realFile = f;
             if (!f.isAbsolute()) {
                 assert area != null;
@@ -540,7 +541,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                 if (fo == null) {
                     broken = true;
                     if ("file".equals(url.getProtocol())) { //NOI18N
-                        displayName = LibrariesSupport.convertURLToFile(url);
+                        displayName = LibrariesSupport.convertURLToFilePath(url);
                     } else {
                         displayName = url.toExternalForm();
                     }
@@ -548,7 +549,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     if (LibrariesSupport.isAbsoluteURL(url)) {
                         displayName = FileUtil.getFileDisplayName(fo);
                     } else {
-                        displayName = LibrariesSupport.convertURLToFile(url);
+                        displayName = LibrariesSupport.convertURLToFilePath(url);
                         toolTip = FileUtil.getFileDisplayName(fo);
                     }
                 }

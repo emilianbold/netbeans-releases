@@ -143,13 +143,13 @@ public class ClassPathUiSupport {
         ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.getElementAt(selectedIndices[0]);
         if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
             EditJarSupport.Item eji = new EditJarSupport.Item();
-            eji.setJarFile(item.getFile());
-            eji.setSourceFile(item.getSourceFile());
-            eji.setJavadocFile(item.getJavadocFile());
+            eji.setJarFile(item.getFilePath());
+            eji.setSourceFile(item.getSourceFilePath());
+            eji.setJavadocFile(item.getJavadocFilePath());
             eji = EditJarSupport.showEditDialog(helper, eji);
             if (eji != null) {
-                item.setJavadocFile(eji.getJavadocFile());
-                item.setSourceFile(eji.getSourceFile());
+                item.setJavadocFilePath(eji.getJavadocFile());
+                item.setSourceFilePath(eji.getSourceFile());
             }
         }
         if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {

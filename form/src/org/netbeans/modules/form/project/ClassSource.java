@@ -218,7 +218,7 @@ public final class ClassSource {
             if (f == null) {
                 return null;
             }
-            URL u = LibrariesSupport.convertFileToURL(f);
+            URL u = LibrariesSupport.convertFilePathToURL(f);
             if (FileUtil.isArchiveFile(FileUtil.toFileObject(jar))) {
                 u = FileUtil.getArchiveRoot(u);
             }

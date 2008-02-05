@@ -83,9 +83,9 @@ public class FileChooserAccessory extends javax.swing.JPanel
     /**
      * Constructor for usage from RelativizeFilePathCustomizer.
      */
-    public FileChooserAccessory(File baseFolder, File sharedLibrariesFolder, boolean copyAllowed, String selectedFile) {
+    public FileChooserAccessory(File baseFolder, File sharedLibrariesFolder, boolean copyAllowed, File selectedFile) {
         this(null, baseFolder, sharedLibrariesFolder, copyAllowed);
-        usetThisFileInsteadOfOneFromChooser = PropertyUtils.resolveFile(baseFolder, selectedFile); //TODO is this correct, David?
+        usetThisFileInsteadOfOneFromChooser = selectedFile;
         enableAccessory(true);
         update(Collections.singletonList(usetThisFileInsteadOfOneFromChooser));
     }

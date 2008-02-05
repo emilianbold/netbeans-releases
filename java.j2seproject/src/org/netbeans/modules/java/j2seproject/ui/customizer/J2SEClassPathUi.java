@@ -200,7 +200,7 @@ public class J2SEClassPathUi {
                         return NbBundle.getMessage( J2SEClassPathUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
                     else {
-                        return item.getFile();
+                        return item.getFilePath();
                     }
             }
             
@@ -244,14 +244,14 @@ public class J2SEClassPathUi {
                         return ICON_BROKEN_JAR;
                     }
                     else {
-                        String file = item.getFile();
+                        String file = item.getFilePath();
 //                        File f = PropertyUtils.resolveFile(FileUtil.toFile(item.projectFolder), file);
                         
                         ImageIcon icn = /*TODO f.isDirectory()*/ false ? getFolderIcon() : ICON_JAR;
-                        if (item.getSourceFile() != null) {
+                        if (item.getSourceFilePath() != null) {
                             icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_SOURCE_BADGE.getImage(), 8, 8 ));
                         }
-                        if (item.getJavadocFile() != null) {
+                        if (item.getJavadocFilePath() != null) {
                             icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
                         }
                         return icn;
@@ -272,7 +272,7 @@ public class J2SEClassPathUi {
             }
             switch ( item.getType() ) {
                 case ClassPathSupport.Item.TYPE_JAR:
-                    String path = item.getFile();
+                    String path = item.getFilePath();
                     File f = new File(path);
                     if (!f.isAbsolute()) {
                         f = PropertyUtils.resolveFile(FileUtil.toFile(projectFolder), path);

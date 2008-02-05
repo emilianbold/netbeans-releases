@@ -101,7 +101,7 @@ public final class LibrariesSupport {
      * @return url
      * @since org.netbeans.modules.project.libraries/1 1.17
      */
-    public static URL convertFileToURL(String path) {
+    public static URL convertFilePathToURL(String path) {
         try {
             File f = new File(path);
             if (f.isAbsolute()) {
@@ -130,7 +130,7 @@ public final class LibrariesSupport {
      * @return url
      * @since org.netbeans.modules.project.libraries/1 1.17
      */
-    public static String convertURLToFile(URL url) {
+    public static String convertURLToFilePath(URL url) {
         if (!"file".equals(url.getProtocol())) {
             throw new IllegalArgumentException("not file URL "+url); //NOI18N
         }
@@ -207,7 +207,7 @@ public final class LibrariesSupport {
                 jarFolder = libraryEntry.toExternalForm().substring(libraryEntry.toExternalForm().indexOf("!/")+2); //NOI18N
                 libraryEntry = FileUtil.getArchiveFile(libraryEntry);
             }
-            String path = convertURLToFile(libraryEntry);
+            String path = convertURLToFilePath(libraryEntry);
             File f = FileUtil.normalizeFile(new File(libBase, path));
             URL u;
             try {

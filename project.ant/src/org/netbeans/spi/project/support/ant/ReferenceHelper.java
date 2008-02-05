@@ -969,7 +969,7 @@ public final class ReferenceHelper {
     }
 
     private String createForeignFileReferenceImpl(final String path, final String expectedArtifactType, final boolean performHeuristics) {
-        FileObject myProjDirFO = AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory();
+        FileObject myProjDirFO = h.getProjectDirectory();
         File myProjDir = FileUtil.toFile(myProjDirFO);
         final File normalizedFile = FileUtil.normalizeFile(PropertyUtils.resolveFile(myProjDir, path));
         return ProjectManager.mutex().writeAccess(new Mutex.Action<String>() {

@@ -63,7 +63,7 @@ public class RelativizeFilePathCustomizer extends javax.swing.JPanel {
         this.sharedLibrariesFolder = sharedLibrariesFolder;
         this.copyAllowed = copyAllowed;
         initComponents();
-        fileChooserAccessory = new FileChooserAccessory(baseFolder, sharedLibrariesFolder, copyAllowed, fileToRelativize.getAbsolutePath());
+        fileChooserAccessory = new FileChooserAccessory(baseFolder, sharedLibrariesFolder, copyAllowed, fileToRelativize);
         jPanel1.setLayout(new BorderLayout());
         jPanel1.add(fileChooserAccessory);
     }

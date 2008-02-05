@@ -439,7 +439,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                         String f = component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}"+File.separatorChar, "");
                         File normalizedFile = FileUtil.normalizeFile(new File(component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}", area.mainPropertiesFile.getParent())));
                         try {
-                            URL u = LibrariesSupport.convertFileToURL(f);
+                            URL u = LibrariesSupport.convertFilePathToURL(f);
                             if (FileUtil.isArchiveFile(normalizedFile.toURI().toURL())) {
                                 u = FileUtil.getArchiveRoot(u);
                                 if (jarFolder != null) {
@@ -588,7 +588,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 } else if (!"file".equals(entry.getProtocol())) { // NOI18N
                     throw new IllegalArgumentException(entry.toExternalForm());
                 }
-                String p = LibrariesSupport.convertURLToFile(entry);
+                String p = LibrariesSupport.convertURLToFilePath(entry);
                 File f = new File(p);
                 // store properties always separated by '/' for consistency
                 StringBuilder s = new StringBuilder();
@@ -896,7 +896,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
      */
     public static Library copyLibrary(final Library lib, final URL location, 
             final boolean generateLibraryUniqueName) throws IOException {
-        final File libBaseFolder = new File(LibrariesSupport.convertURLToFile(location)).getParentFile();
+        assert LibrariesSupport.isAbsoluteURL(location);
+        final File libBaseFolder = new File(LibrariesSupport.convertURLToFilePath(location)).getParentFile();
         FileObject sharedLibFolder;
         try {
             sharedLibFolder = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
@@ -940,7 +941,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
                     name = sharedLibFolder.getName()+File.separatorChar+newFO.getNameExt();
                 }
-                URL u = LibrariesSupport.convertFileToURL(name);
+                URL u = LibrariesSupport.convertFilePathToURL(name);
                 if (FileUtil.isArchiveFile(newFO)) {
                     u = FileUtil.getArchiveRoot(u);
                 }
