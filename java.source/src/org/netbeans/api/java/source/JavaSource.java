@@ -2590,6 +2590,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (!ci.getJavaSource().supportsReparse) {
             return false;
         }
+        if (((JCMethodDecl)orig).localEnv == null) {
+            //We are seeing interface method or abstract or native method with body.
+            //Don't do any optimalization of this broken code - has no attr env.
+            return false;
+        }
         final Phase currentPhase = ci.getPhase();
         if (Phase.PARSED.compareTo(currentPhase) > 0) {
             return false;
