@@ -100,7 +100,7 @@ implements AbstractLookupBaseHid.Impl {
         
         Lookup.Result<Object> res = lookup.lookup (template);
 
-        assertSize("Bigger", Collections.singleton(lookup), 16, IGNORE);
+        assertSize("Bigger", Collections.singleton(lookup), 336, IGNORE);
         
         LL ll = new LL ();
         res.addLookupListener (ll);
