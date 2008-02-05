@@ -73,9 +73,9 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.manager.util.ManagerUtil;
 import org.netbeans.modules.websvc.saas.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
@@ -146,7 +146,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             try {
                 List<URL> urlList = null;
                 
-                urlList = SaasUtil.buildClasspath(null, true); // NOI18N
+                urlList = ManagerUtil.buildClasspath(null, true); // NOI18N
                 
                 WsdlServiceProxyDescriptor descriptor = null;//TODO:nam wsData.getJaxWsDescriptor();
                 for (WsdlServiceProxyDescriptor.JarEntry entry : descriptor.getJars()) {

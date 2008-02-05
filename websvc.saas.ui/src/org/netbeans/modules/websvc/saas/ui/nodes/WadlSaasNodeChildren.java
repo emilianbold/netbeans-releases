@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,6 +31,10 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
@@ -45,23 +43,23 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import org.netbeans.modules.websvc.saas.model.SaasGroup;
-import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.util.WeakListeners;
 
-public class SaasGroupNodeChildren extends Children.Keys<Object> implements PropertyChangeListener {
+/**
+ *
+ * @author nam
+ */
+public class WadlSaasNodeChildren extends Children.Keys<Object> {
+    private WadlSaas wadlSaas;
     
-    private SaasGroup group;
-    
-    public SaasGroupNodeChildren(SaasGroup group) {
-        this.group = group;
-        SaasServicesModel model = SaasServicesModel.getInstance();
-        model.addPropertyChangeListener(WeakListeners.propertyChange(this, model));
+    public WadlSaasNodeChildren(WadlSaas wadlSaas) {
+        this.wadlSaas = wadlSaas;
     }
+
     
     @Override
     protected void addNotify() {
@@ -69,39 +67,27 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
         updateKeys();
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource() == group) {
-            updateKeys();
-            if (evt.getNewValue() != null) {
-                refreshKey(evt.getNewValue());
-            } else if (evt.getOldValue() != null) {
-                refreshKey(evt.getOldValue());
-            }
-        }
-    }
-    
-    private void updateKeys() {
-        ArrayList<Object> keys = new ArrayList<Object>();
-        keys.addAll(group.getServices());
-        setKeys(keys.toArray());
-    }
-    
     @Override
     protected void removeNotify() {
         java.util.List<String> emptyList = Collections.emptyList();
         setKeys(emptyList);
         super.removeNotify();
     }
+
+    private void updateKeys() {
+        ArrayList<Object> keys = new ArrayList<Object>();
+        keys.addAll(wadlSaas.getResourcesOrMethods());
+        setKeys(keys.toArray());
+    }
     
+    @Override
     protected Node[] createNodes(Object key) {
-        if (key instanceof SaasGroup) {
-            SaasGroupNode node = new SaasGroupNode((SaasGroup) key);
-            return new Node[] { node };
-        } else if (key instanceof WsdlSaas) {
-            return new Node[] { new WadlSaasNode((WadlSaas)key) };
-        } else if (key instanceof WadlSaas) {
-            //TODO
+        if (key instanceof Method) {
+            return new Node[] { new WadlSaasMethodNode(wadlSaas, (Method) key) };
+        } else if (key instanceof Resource) {
+            return new Node[] { new ResourceNode(wadlSaas, new Resource[] {(Resource) key} ) };
         }
         return new Node[0];
     }
+
 }
