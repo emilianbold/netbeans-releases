@@ -151,16 +151,7 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
         
         LOG.log(Level.FINEST, "name:toString:" + node.getClass().getName() + ":" + node.toString());
         
-        if (node instanceof MethodNode) {
-            OffsetRange range = AstUtilities.getRange(node, doc);
-            highlights.put(range, ColoringAttributes.METHOD);
-            
-            MethodNode method = (MethodNode)node;
-            if (method.isStatic()){
-                highlights.put(range, ColoringAttributes.STATIC);
-            }
-            
-        } else if (node instanceof FieldNode) {
+        if (node instanceof FieldNode) {
             OffsetRange range = AstUtilities.getRange(node, doc);
             highlights.put(range, ColoringAttributes.FIELD);
             
@@ -169,11 +160,22 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
                 highlights.put(range, ColoringAttributes.STATIC);
             }
         } else if (node instanceof ConstructorNode) {
+          // Beware, a ConstructorNode is a MethodNode as well, (see below)
+          // but we have to catch the Constructors first.
+          ConstructorNode constructor = (ConstructorNode) node;
           LOG.log(Level.FINEST, "ConstructorNode found: " + node.getClass().getName() + ":" + node.toString());
-          // FIXME: At the moment we don't see any ConstructorNodes's
-          // coming by. See: AstUtilities.children(node)
-   
+          OffsetRange range = AstUtilities.getRange(node, doc);
+          highlights.put(range, ColoringAttributes.CONSTRUCTOR);
 
+        } else if (node instanceof MethodNode) {
+            OffsetRange range = AstUtilities.getRange(node, doc);
+            highlights.put(range, ColoringAttributes.METHOD);
+            
+            MethodNode method = (MethodNode)node;
+            if (method.isStatic()){
+                highlights.put(range, ColoringAttributes.STATIC);
+            }
+            
         } else if (node instanceof PropertyExpression) {
           PropertyExpression propExpr = (PropertyExpression) node;
           

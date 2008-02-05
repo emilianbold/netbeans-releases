@@ -61,7 +61,8 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
     @Override
     protected void setUp() throws IOException {
         super.setUp();
-        Logger.getLogger(GroovySemanticAnalyzer.class.getName()).setLevel(Level.FINEST);
+        // Logger.getLogger(GroovySemanticAnalyzer.class.getName()).setLevel(Level.FINEST);
+        Logger.getLogger(org.netbeans.modules.groovy.editor.AstUtilities.class.getName()).setLevel(Level.FINEST);
     }
     
         // uncomment this to have logging from GroovyLexer

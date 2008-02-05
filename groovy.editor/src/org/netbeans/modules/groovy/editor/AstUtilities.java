@@ -57,6 +57,7 @@ import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.ConstructorNode;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
 import org.netbeans.api.gsf.ParserResult;
@@ -70,6 +71,8 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.control.SourceUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.editor.Utilities;
 
 /**
@@ -77,6 +80,8 @@ import org.netbeans.editor.Utilities;
  * @author Martin Adamek
  */
 public class AstUtilities {
+    
+    
 
     public static int getAstOffset(CompilationInfo info, int lexOffset) {
         return info.getPositionManager().getAstOffset(info.getParserResult(), lexOffset);
@@ -169,14 +174,7 @@ public class AstUtilities {
     }
     
     public static OffsetRange getRange(ASTNode node, BaseDocument doc) {
-        if (node instanceof MethodNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
-            }
-            MethodNode methodNode = (MethodNode) node;
-            return new OffsetRange(start, start + methodNode.getName().length());
-        } else if (node instanceof FieldNode) {
+        if (node instanceof FieldNode) {
             int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
                 start = 0;
@@ -190,6 +188,20 @@ public class AstUtilities {
             }
             ClassNode classNode = (ClassNode) node;
             return new OffsetRange(start, start + classNode.getName().length());
+        } else if (node instanceof ConstructorNode) {
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
+            if (start < 0) {
+                start = 0;
+            }
+            ConstructorNode constructorNode = (ConstructorNode) node;
+            return new OffsetRange(start, start + constructorNode.getDeclaringClass().getName().length());
+        } else if (node instanceof MethodNode) {
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
+            if (start < 0) {
+                start = 0;
+            }
+            MethodNode methodNode = (MethodNode) node;
+            return new OffsetRange(start, start + methodNode.getName().length());
         } else if (node instanceof VariableExpression) {
             int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
             if (start < 0) {
@@ -210,6 +222,9 @@ public class AstUtilities {
     
     @SuppressWarnings("unchecked")
     public static List<ASTNode> children(ASTNode root) {
+        
+        Logger LOG = Logger.getLogger(AstUtilities.class.getName());
+        LOG.log(Level.FINEST, "children(ASTNode):Name" + root.getClass().getName() +":"+ root.getText());
         
         List<ASTNode> children = new ArrayList<ASTNode>();
         
@@ -234,6 +249,18 @@ public class AstUtilities {
                     children.add(field);
                 }
             }
+            
+            for (Object object : classNode.getDeclaredConstructors()) {
+                ConstructorNode constructor = (ConstructorNode) object;
+                
+                if (constructor.getLineNumber() >= 0) {
+                    children.add(constructor);
+                }
+                LOG.log(Level.FINEST, "Constructor found: " + constructor.toString());
+            }
+            
+            
+            
         } else if (root instanceof MethodNode) {
             MethodNode methodNode = (MethodNode) root;
             children.add(methodNode.getCode());
@@ -253,6 +280,7 @@ public class AstUtilities {
             children = astChildrenSupport.children();
         }
         
+        LOG.log(Level.FINEST, "List:" + children.toString());
         return children;
     }
     
