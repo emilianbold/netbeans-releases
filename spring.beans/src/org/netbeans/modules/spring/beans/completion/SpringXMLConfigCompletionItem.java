@@ -277,7 +277,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             return new AsyncCompletionTask(new AsyncCompletionQuery() {
                 @Override
                 protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-                    CompletionDocumentation docItem = SpringXMLConfigCompletionDoc.getBeanRefDoc(beanId, 
+                    CompletionDocumentation docItem = SpringXMLConfigCompletionDoc.createBeanRefDoc(beanId, 
                             beanNames, beanClass, beanLocFile);
                     resultSet.setDocumentation(docItem);
                     resultSet.finish();

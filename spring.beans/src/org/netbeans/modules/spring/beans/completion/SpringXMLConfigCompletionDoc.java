@@ -61,7 +61,7 @@ public abstract class SpringXMLConfigCompletionDoc implements CompletionDocument
         return new JavaElementDoc(ElementJavadoc.create(cc, element));
     }
     
-    public static SpringXMLConfigCompletionDoc getBeanRefDoc(String beanId, List<String> beanNames, 
+    public static SpringXMLConfigCompletionDoc createBeanRefDoc(String beanId, List<String> beanNames, 
             String beanClassName, String filePath) {
         return new BeanRefDoc(beanId, beanNames, beanClassName, filePath);
     }
