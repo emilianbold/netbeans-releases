@@ -48,9 +48,13 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.ConstructorNode;
 import org.netbeans.api.gsf.ColoringAttributes;
 import org.netbeans.api.gsf.CompilationInfo;
 import org.netbeans.api.gsf.OffsetRange;
@@ -58,6 +62,8 @@ import org.netbeans.api.gsf.SemanticAnalyzer;
 import org.netbeans.modules.groovy.editor.AstPath;
 import org.netbeans.modules.groovy.editor.AstUtilities;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -67,8 +73,10 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
 
     private boolean cancelled;
     private Map<OffsetRange, ColoringAttributes> semanticHighlights;
+    private final Logger LOG = Logger.getLogger(GroovySemanticAnalyzer.class.getName());
 
     public GroovySemanticAnalyzer() {
+        
     }
 
     public Map<OffsetRange, ColoringAttributes> getHighlights() {
@@ -137,6 +145,8 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
     private void annotate(ASTNode node, Map<OffsetRange, ColoringAttributes> highlights, AstPath path,
         List<String> parameters, boolean isParameter, String text) {
         
+        LOG.log(Level.FINEST, "name:toString:" + node.getClass().getName() + ":" + node.toString());
+        
         if (node instanceof MethodNode) {
             OffsetRange range = AstUtilities.getRange(node, text);
             highlights.put(range, ColoringAttributes.METHOD);
@@ -154,6 +164,20 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
             if (field.isStatic()){
                 highlights.put(range, ColoringAttributes.STATIC);
             }
+        } else if (node instanceof ConstructorNode) {
+          LOG.log(Level.FINEST, "ConstructorNode found: " + node.getClass().getName() + ":" + node.toString());
+          // FIXME: At the moment we don't see any ConstructorNodes's
+          // coming by. See: AstUtilities.children(node)
+   
+
+        } else if (node instanceof PropertyExpression) {
+          PropertyExpression propExpr = (PropertyExpression) node;
+          
+          // FIXME: Houston, we have a problem:
+          // the PropertyExpression comes with no line/column information
+          // this is supposed to be fixed in Groovy. See:
+          // http://jira.codehaus.org/browse/GROOVY-2575
+
         } else if (node instanceof ClassNode) {
             ClassNode classNode = (ClassNode)node;
             
