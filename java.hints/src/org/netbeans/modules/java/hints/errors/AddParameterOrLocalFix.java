@@ -162,12 +162,50 @@ public class AddParameterOrLocalFix implements Fix {
 
                     working.rewrite(targetTree, result);
                 } else {
-                    resolveLocalVariable(working, tp, make, proposedType);
+                    if (ErrorFixesFakeHint.isCreateLocalVariableInPlace()) {
+                        resolveLocalVariable(working, tp, make, proposedType);
+                    } else {
+                        resolveLocalVariable55(working, tp, make, proposedType);
+                    }
                 }
             }
         }).commit();
         
         return null;
+    }
+
+    private void resolveLocalVariable55(final WorkingCopy wc, TreePath tp, TreeMaker make, TypeMirror proposedType) {
+        final String name = ((IdentifierTree) tp.getLeaf()).getName().toString();
+        
+        //find first usage of this (undeclared) variable:
+        TreePath method = findMethod(tp);
+
+        if (method == null) {
+            //TODO: probably initializer handle differently
+            return;
+        }
+        
+        int index = 0;
+        MethodTree methodTree = (MethodTree) method.getLeaf();
+        BlockTree block = methodTree.getBody();
+        
+        if (methodTree.getReturnType() == null && !block.getStatements().isEmpty()) {
+            StatementTree stat = block.getStatements().get(0);
+            
+            if (stat.getKind() == Kind.EXPRESSION_STATEMENT) {
+                Element thisMethodEl = wc.getTrees().getElement(method);
+                TreePath pathToFirst = new TreePath(new TreePath(new TreePath(method, block), stat), ((ExpressionStatementTree) stat).getExpression());
+                Element superCall = wc.getTrees().getElement(pathToFirst);
+
+                if (thisMethodEl != null && superCall != null && thisMethodEl.getKind() == ElementKind.CONSTRUCTOR && superCall.getKind() == ElementKind.CONSTRUCTOR) {
+                    index = 1;
+                }
+            }
+        }
+        
+        VariableTree vt = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(proposedType), null);
+        
+        wc.rewrite(block, wc.getTreeMaker().insertBlockStatement(block, index, vt));
     }
     
     private void resolveLocalVariable(final WorkingCopy wc, TreePath tp, TreeMaker make, TypeMirror proposedType) {
@@ -176,17 +214,9 @@ public class AddParameterOrLocalFix implements Fix {
         final Element el = wc.getTrees().getElement(tp);
         
         //find first usage of this (undeclared) variable:
-        TreePath method = tp;
+        TreePath method = findMethod(tp);
         
-        while (method.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
-            if (method.getLeaf().getKind() == Kind.METHOD) {
-                break;
-            }
-            
-            method = method.getParentPath();
-        }
-        
-        if (method.getLeaf().getKind() != Kind.METHOD) {
+        if (method == null) {
             //TODO: probably initializer handle differently
             return;
         }
@@ -288,7 +318,7 @@ public class AddParameterOrLocalFix implements Fix {
     private TreePath findMethod(TreePath tp) {
         TreePath method = tp;
         
-        while (method.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
+        while (method != null) {
             if (method.getLeaf().getKind() == Kind.METHOD) {
                 return method;
             }

@@ -159,8 +159,8 @@ public abstract class RubyTestBase extends NbTestCase {
 
     protected static void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
         String gemplaf = platform.isJRuby() ? "java" : "";
-        installFakeGem("ruby-debug-base", "0.9.3", gemplaf, platform);
-        installFakeGem("ruby-debug-ide", "0.1.9", gemplaf, platform);
+        installFakeGem("ruby-debug-base", "0.10.0", gemplaf, platform);
+        installFakeGem("ruby-debug-ide", "0.1.10", gemplaf, platform);
     }
 
     protected static void installFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {

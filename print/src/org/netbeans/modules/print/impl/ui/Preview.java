@@ -541,7 +541,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     myPaperPanel.repaint();
   }
 
-  private void createPapers() {
+  private void createPapers() { // todo start here
     PrintProvider myPrintProvider = myPrintProviders.get(0);
     PrintPage [][] pages = myPrintProvider.getPages(
       Option.getDefault().getPageWidth(),

@@ -70,15 +70,17 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
     }
     
     public void testLogPrint() throws Exception {
-        MagicSurroundWithTryCatchFix.DISABLE_JAVA_UTIL_LOGGER = true;
-        
+        boolean orig = ErrorFixesFakeHint.isUseLogger();
+
         try {
+            ErrorFixesFakeHint.setUseLogger(false);
+
             performFixTest("test/Test.java",
-                           "package test; public class Test {public void test() {|new java.io.FileInputStream(\"\");}}",
-                           "FixImpl",
-                           "package test; import java.io.FileNotFoundException; public class Test {public void test() {try { new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { ex.printStackTrace(); } }}");
+                    "package test; public class Test {public void test() {|new java.io.FileInputStream(\"\");}}",
+                    "FixImpl",
+                    "package test; import java.io.FileNotFoundException; public class Test {public void test() {try { new java.io.FileInputStream(\"\"); } catch (FileNotFoundException ex) { ex.printStackTrace(); } }}");
         } finally {
-            MagicSurroundWithTryCatchFix.DISABLE_JAVA_UTIL_LOGGER = false;
+            ErrorFixesFakeHint.setUseLogger(orig);
         }
     }
     
@@ -97,15 +99,17 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
     }
     
     public void test117085c() throws Exception {
-        MagicSurroundWithTryCatchFix.DISABLE_JAVA_UTIL_LOGGER = true;
-        
+        boolean orig = ErrorFixesFakeHint.isUseLogger();
+
         try {
+            ErrorFixesFakeHint.setUseLogger(false);
+
             performFixTest("test/Test.java",
-                           "package test; public class Test {public void test(Exception ex) {|x();} private void x() throws Exception {}}",
-                           "FixImpl",
-                           "package test; public class Test {public void test(Exception ex) {try { x(); } catch (Exception ex1) { ex1.printStackTrace(); } } private void x() throws Exception {}}");
+                    "package test; public class Test {public void test(Exception ex) {|x();} private void x() throws Exception {}}",
+                    "FixImpl",
+                    "package test; public class Test {public void test(Exception ex) {try { x(); } catch (Exception ex1) { ex1.printStackTrace(); } } private void x() throws Exception {}}");
         } finally {
-            MagicSurroundWithTryCatchFix.DISABLE_JAVA_UTIL_LOGGER = false;
+            ErrorFixesFakeHint.setUseLogger(orig);
         }
     }
     
@@ -156,5 +160,5 @@ public class MagicSurroundWithTryCatchFixTest extends ErrorHintsTestBase {
         
         return super.getExtraClassPathElements();
     }
-    
+
 }

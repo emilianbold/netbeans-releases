@@ -103,6 +103,8 @@ import org.w3c.dom.Node;
  */
 public final class SpringXMLConfigEditorUtils {
 
+    public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
+
     public enum Public {
         YES,
         NO,

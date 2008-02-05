@@ -249,16 +249,16 @@ public class PanelProjectLocationVisual extends SettingsPanel
     private boolean isValidProjectName(String text) {
         // unix allows a lot of strange names, but let's prohibit this for project
         // using symbols invalid on Windows
-        if (text.length() == 0 || text.startsWith(" ") ||
-                text.contains("\\") ||
-                text.contains("/") || 
-                text.contains(":") ||
-                text.contains("*") ||
-                text.contains("?") ||
-                text.contains("\"") ||
-                text.contains("<") ||
-                text.contains(">") ||
-                text.contains("|")) {
+        if (text.length() == 0 || text.startsWith(" ") ||  // NOI18N
+                text.contains("\\") ||  // NOI18N
+                text.contains("/") ||   // NOI18N
+                text.contains(":") ||  // NOI18N
+                text.contains("*") ||  // NOI18N
+                text.contains("?") ||  // NOI18N
+                text.contains("\"") ||  // NOI18N
+                text.contains("<") ||  // NOI18N
+                text.contains(">") ||  // NOI18N
+                text.contains("|")) {  // NOI18N
             return false;
         }
         // check ability to create file with specified name on target OS
