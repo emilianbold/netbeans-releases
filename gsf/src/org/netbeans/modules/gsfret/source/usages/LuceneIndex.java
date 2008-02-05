@@ -124,27 +124,10 @@ class LuceneIndex extends Index {
     private ClassIndexImpl classIndex;
     private File cacheRoot;
         
-    private static Set<File> indices = new HashSet<File>();
-    
     public static Index create (final File cacheRoot, ClassIndexImpl classIndex) throws IOException { 
 
-        LockFactory lockFactory = Index.isTest() ? NoLockFactory.getNoLockFactory() : new NBLockFactory();
-
-        // As of Lucene 2.1.0, Lucene will complain bitterly if it is being asked to create multiple
-        // FSDirectories over the same object IFF the lock manager is different. So if that is the
-        // case pass in null as the lock manager (as the assertion says) - it will then use the
-        // original lock manager.
-        synchronized (LuceneIndex.class) {
-            if (indices.contains(cacheRoot)) {
-                // Uh oh! This index is in use. Use the same lock as the first time.
-                // This is a Lucene 2.1.0 thing.
-                lockFactory = null;
-            }
-            indices.add(cacheRoot);
-        }
-        
         assert cacheRoot != null && cacheRoot.exists() && cacheRoot.canRead() && cacheRoot.canWrite();
-        LuceneIndex index = new LuceneIndex (getReferencesCacheFolder(cacheRoot), lockFactory);
+        LuceneIndex index = new LuceneIndex (getReferencesCacheFolder(cacheRoot));
         
         // For debugging (lucene browser) only
         index.classIndex = classIndex;
@@ -154,9 +137,9 @@ class LuceneIndex extends Index {
     }
 
     /** Creates a new instance of LuceneIndex */
-    private LuceneIndex (final File refCacheRoot, LockFactory lockFactory) throws IOException {
+    private LuceneIndex (final File refCacheRoot) throws IOException {
         assert refCacheRoot != null;
-        this.directory = FSDirectory.getDirectory(refCacheRoot, lockFactory);
+        this.directory = FSDirectory.getDirectory(refCacheRoot, NoLockFactory.getNoLockFactory());      //Locking controlled by rwlock
     }
 
     private void regExpSearch (final Pattern pattern, Term startTerm, final IndexReader in, final Set<Term> toSearch/*, final AtomicBoolean cancel*/, boolean caseSensitive) throws IOException/*, InterruptedException*/ {        
@@ -343,6 +326,7 @@ class LuceneIndex extends Index {
 
     // BEGIN TOR MODIFICATIONS
     public void gsfStore(final Set<Map<String,String>> fieldsSet,  Set<Map<String,String>> noIndexFields, final Map<String,String> toDelete) throws IOException {
+        assert ClassIndexManager.getDefault().holdsWriteLock();
         this.rootPkgCache = null;
         boolean create = !isValid(false);
         if (!create) {

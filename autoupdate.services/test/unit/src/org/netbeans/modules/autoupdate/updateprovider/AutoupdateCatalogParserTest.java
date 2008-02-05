@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,17 +42,23 @@
 package org.netbeans.modules.autoupdate.updateprovider;
 
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 /**
  *
- * @author jirka
+ * @author Jiri Rechtacek
  */
 public class AutoupdateCatalogParserTest extends NbTestCase {
     
@@ -65,31 +71,9 @@ public class AutoupdateCatalogParserTest extends NbTestCase {
     private int COUNT_OF_UPDATE_ITEMS = 285;
     private int COUNT_OF_LICENSES = 32;
     
-//    private UpdateItem TEST_UPDATE_ITEM;
-    
+    @Override
     protected void setUp () throws Exception {
         URL_TO_TEST_CATALOG = AutoupdateCatalogParserTest.class.getResource ("data/catalog.xml");
-//        Manifest manifest = new Manifest ();
-//        Attributes mfAttrs = manifest.getMainAttributes ();
-//        mfAttrs.put (new Attributes.Name ("OpenIDE-Module"), "org.myorg.module/1");
-//        mfAttrs.put (new Attributes.Name ("OpenIDE-Module-Implementation-Version"), "060216");
-//        mfAttrs.put (new Attributes.Name ("OpenIDE-Module-Long-Description"), "Real module Hello installs Hello menu item into Help menu.");
-//        mfAttrs.put (new Attributes.Name ("OpenIDE-Module-Module-Dependencies"), "org.openide.util &gt; 6.9.0.1");
-//        mfAttrs.put (new Attributes.Name ("OpenIDE-Module-Name"), "module");
-//        mfAttrs.put (new Attributes.Name ("OpenIDE-Module-Requires"), "org.openide.modules.ModuleFormat1");
-//        mfAttrs.put (new Attributes.Name ("OpenIDE-Module-Specification-Version"), "1.0");
-//        UpdateLicense lic = UpdateLicense.createUpdateLicense ("no-license", "");
-//        TEST_UPDATE_ITEM = UpdateItem.createModule ("org.myorg.module",
-//                                            "1.0",
-//                                            new URL ("http://platform.netbeans.org/org-myorg-module.nbm"),
-//                                            "Jiri Rechtacek",
-//                                            "111",
-//                                            "http://www.youorghere.org",
-//                                            manifest,
-//                                            Boolean.FALSE,
-//                                            Boolean.FALSE,
-//                                            "",
-//                                            lic);
     }
     
     public void testGetDocument () throws IOException, SAXException {
@@ -126,4 +110,42 @@ public class AutoupdateCatalogParserTest extends NbTestCase {
         assertEquals ("Right content of no-license.txt", "[NO LICENSE SPECIFIED]", licenses.get ("no-license.txt"));
     }
     
+    public void testReleasedDomDocumentAfterItems () throws Exception {
+        Document d = AutoupdateCatalogParser.getDocument (URL_TO_TEST_CATALOG, null);
+        Map<String, UpdateItem> items = AutoupdateCatalogParser.getUpdateItems (URL_TO_TEST_CATALOG, URL_TO_TEST_CATALOG);
+
+        assertFalse (SimpleItem.declaratingNodes.isEmpty ());
+
+        assertNotNull (d);
+        Reference<Document> ref = new WeakReference<Document> (d);
+        assertNotNull (ref.get ());
+
+        d = null;
+        assertGC ("Reference to org.w3c.Document is empty.", ref);
+
+        assertTrue (SimpleItem.declaratingNodes.isEmpty ());
+
+        assertNotNull (ref);
+        assertNull (ref.get ());
+    }
+
+    public void testReleasedDomDocumentAfterUnits () throws Exception {
+        Document d = AutoupdateCatalogParser.getDocument (URL_TO_TEST_CATALOG, null);
+        Collection<UpdateUnit> units = UpdateManager.getDefault ().getUpdateUnits ();
+
+        assertFalse (SimpleItem.declaratingNodes.isEmpty ());
+
+        assertNotNull (d);
+        Reference<Document> ref = new WeakReference<Document> (d);
+        assertNotNull (ref.get ());
+
+        d = null;
+        assertGC ("Reference to org.w3c.Document is empty.", ref);
+        for (Node node : SimpleItem.declaratingNodes) {
+            assertNull ("All declaratingNodes in SimpleItem are null.", node);
+        }
+
+        assertNotNull (ref);
+        assertNull (ref.get ());
+    }    
 }

@@ -61,6 +61,7 @@ import java.util.Enumeration;
 import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Enumerations;
 import org.openide.util.Utilities;
@@ -240,12 +241,12 @@ public abstract class BaseFileObj extends FileObject {
         final File parent = file.getParentFile();
 
         final File file2Rename = BaseFileObj.getFile(parent, name, ext);
-        if (parent == null || !parent.exists()) {
+        if (parent == null || !FileChangedManager.getInstance().exists(parent)) {
             FileObject parentFo = getExistingParent();
             String parentPath = (parentFo != null) ? parentFo.getPath() : file.getParentFile().getAbsolutePath();
             FSException.io("EXC_CannotRename", file.getName(), parentPath, file2Rename.getName());// NOI18N            
         }
-        boolean cannotRename = file2Rename.exists() && !file2Rename.equals(file);
+        boolean cannotRename = FileChangedManager.getInstance().exists(file2Rename) && !file2Rename.equals(file);
         //#108690
         if (cannotRename && Utilities.isMac()) {
             final File parentFile2 = file2Rename.getParentFile();
@@ -307,13 +308,13 @@ public abstract class BaseFileObj extends FileObject {
     public Object getAttribute(final String attrName) {
         if (attrName.equals("FileSystem.rootPath")) {
             return "";//NOI18N
-        }
-        
-        if (attrName.equals("java.io.File")) {
+        } else if (attrName.equals("java.io.File")) {
             File file = getFileName().getFile();
-            if (file != null && file.exists()) {
+            if (file != null && FileChangedManager.getInstance().exists(file)) {
                 return file;
             }
+        } else if (attrName.equals("ExistsParentNoPublicAPI")) {
+            return getExistingParent() != null;
         }
                 
         return BaseFileObj.attribs.readAttribute(getFileName().getFile().getAbsolutePath().replace('\\', '/'), attrName);//NOI18N
@@ -359,8 +360,7 @@ public abstract class BaseFileObj extends FileObject {
 
     public boolean isReadOnly() {
         final File f = getFileName().getFile();
-
-        return !f.canWrite() && f.exists();
+        return !f.canWrite() && FileChangedManager.getInstance().exists(f);
     }
 
     public final FileObject getParent() {
@@ -570,7 +570,7 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     void refreshExistingParent(final boolean expected, boolean fire) {
-        boolean validityFlag = getFileName().getFile().exists();
+        boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
         if (!validityFlag) {
             //fileobject is invalidated
             FolderObj parent = getExistingParent();
@@ -717,7 +717,7 @@ public abstract class BaseFileObj extends FileObject {
                 return true;
             }
 
-            if (!file.exists()) {
+            if (!FileChangedManager.getInstance().exists(file)) {
                 return false;
             }
 
@@ -788,7 +788,7 @@ public abstract class BaseFileObj extends FileObject {
     
     boolean checkCacheState(boolean exist, File file) {        
         if (getLocalFileSystem().isWarningEnabled()) {
-            boolean notsame = exist != file.exists();
+            boolean notsame = exist != FileChangedManager.getInstance().exists(file);
             if (notsame) {
                 printWarning(file);
             } 

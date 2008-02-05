@@ -851,7 +851,7 @@ public class SymbolDumperTest extends NbTestCase {
         SourceAnalyserImpl sa = new SourceAnalyserImpl(
             (JavacTaskImpl) SourceUtilsTestUtil.getJavacTaskFor(info),
             info.getCompilationUnit(),
-            ClasspathInfoAccessor.INSTANCE.getFileManager(info.getClasspathInfo()),           
+            ClasspathInfoAccessor.getINSTANCE().getFileManager(info.getClasspathInfo()),           
             info.getCompilationUnit().getSourceFile()
             );
         

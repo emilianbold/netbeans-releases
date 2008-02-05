@@ -156,7 +156,7 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
             } else if (result.getGraphItem() instanceof Vertex) {
 
                 transferable = moveTool.getMoveTransferable(
-                        getSelectionModel().getSelectedSubset());
+                        getSelectionModel().getSelectedSubset(), initialEvent.getPoint());
             }
             if (transferable != null) {
                 startDrag(initialEvent, transferable, MOVE);
@@ -190,7 +190,7 @@ public class CanvasEventHandler extends AbstractMapperEventHandler {
                         searchResult.getGraphItem() == null) {
                     mapper.setExpandedGraphState(node.getTreePath(), false);
                 }
-                getLinkTool().dragDone();
+                getLinkTool().done();
             }
         }
     }

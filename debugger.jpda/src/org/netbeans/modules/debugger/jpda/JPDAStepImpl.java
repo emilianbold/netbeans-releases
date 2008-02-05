@@ -153,6 +153,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             erm.deleteEventRequests(stepRequests);
             for (StepRequest stepRequest : stepRequests) {
                 SingleThreadedStepWatch.stepRequestDeleted(stepRequest);
+                debuggerImpl.getOperator().unregister(stepRequest);
             }
             int size = getSize();
             boolean stepAdded = false;
@@ -405,16 +406,7 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             if (eventRequest instanceof StepRequest) {
                 SingleThreadedStepWatch.stepRequestDeleted((StepRequest) eventRequest);
             }
-            if (operationBreakpoints != null) {
-                for (Iterator<BreakpointRequest> it = operationBreakpoints.iterator(); it.hasNext(); ) {
-                    erm.deleteEventRequest(it.next());
-                }
-                this.operationBreakpoints = null;
-            }
-            if (boundaryStepRequest != null) {
-                erm.deleteEventRequest(boundaryStepRequest);
-                SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
-            }
+            removed(eventRequest); // Clean-up
             int suspendPolicy = debugger.getSuspend();
             if (addExprStep) {
                 stepAdded = addOperationStep(tr, true, sourcePath,
@@ -443,6 +435,37 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             tr.holdLastOperations(false);
             return false;
         }
+    }
+    
+    public void removed(EventRequest eventRequest) {
+        if (stepWatch != null) {
+            stepWatch.done();
+            stepWatch = null;
+        }
+        if (lastMethodExitBreakpointListener != null) {
+            lastMethodExitBreakpointListener.destroy();
+            lastMethodExitBreakpointListener = null;
+        }
+        JPDADebuggerImpl debuggerImpl = (JPDADebuggerImpl)debugger;
+        VirtualMachine vm = debuggerImpl.getVirtualMachine();
+        if (vm == null) {
+            return ; // The session has finished
+        }
+        EventRequestManager erm = vm.eventRequestManager();
+        if (operationBreakpoints != null) {
+            for (Iterator<BreakpointRequest> it = operationBreakpoints.iterator(); it.hasNext(); ) {
+                BreakpointRequest br = it.next();
+                erm.deleteEventRequest(br);
+                debuggerImpl.getOperator().unregister(br);
+            }
+            this.operationBreakpoints = null;
+        }
+        if (boundaryStepRequest != null) {
+            erm.deleteEventRequest(boundaryStepRequest);
+            SingleThreadedStepWatch.stepRequestDeleted(boundaryStepRequest);
+            debuggerImpl.getOperator().unregister(boundaryStepRequest);
+        }
+        
     }
     
     /**

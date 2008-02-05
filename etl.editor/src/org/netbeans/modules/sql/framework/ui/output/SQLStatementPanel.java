@@ -160,7 +160,7 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
                 StatementContext context = new StatementContext();
 
                 if (sqlObjectLocalRef.getObjectType() == SQLConstants.SOURCE_TABLE) {
-                    String nbBundle3 = mLoc.t("PRSR001: -- Select statement for Source Table\n");
+                    String nbBundle3 = mLoc.t("PRSR001: -- Select statement for Source Table");
                     sql = Localizer.parse(nbBundle3);
                     sql += db.getStatements().getSelectStatement((SourceTable) sqlObj, context).getSQL();
                 } else {
@@ -174,7 +174,7 @@ public class SQLStatementPanel extends JPanel implements IMessageView, ETLOutput
 
             } catch (Exception exp) {
                 this.ex = exp;
-                String nbBundle4 = mLoc.t("PRSR001: Cannot evaluate SQL:\n{0}", sqlObj.getDisplayName());
+                String nbBundle4 = mLoc.t("PRSR001: Cannot evaluate SQL:{0}", sqlObj.getDisplayName());
                 sqlText = Localizer.parse(nbBundle4);
                 mLogger.errorNoloc(mLoc.t("PRSR151: Cannot evaluate SQL for{0}", sqlObj.getDisplayName()), ex);
                 mLogger.errorNoloc(mLoc.t("PRSR152: Can't get contents for table{0}", (sqlObj != null) ? sqlObj.getDisplayName() : ""), ex);

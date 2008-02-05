@@ -52,6 +52,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.util.Exceptions;
 
 /**
@@ -104,14 +105,14 @@ public class Attributes extends DefaultAttributes {
                 } else {
                     rootForAttributes = new File(System.getProperty("java.io.tmpdir"));//NOI18N
                     File tmpAttrs = new File (rootForAttributes, ATTRNAME);
-                    if (tmpAttrs.exists()) {
+                    if (FileChangedManager.getInstance().exists(tmpAttrs)) {
                         tmpAttrs.delete();   
                     }
                     tmpAttrs.deleteOnExit();
                 }
                 
                 
-                if (!rootForAttributes.exists()) {
+                if (!FileChangedManager.getInstance().exists(rootForAttributes)) {
                     rootForAttributes.mkdirs();
                 }
             }

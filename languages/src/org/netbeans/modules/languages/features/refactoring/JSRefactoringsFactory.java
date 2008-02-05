@@ -274,9 +274,9 @@ public class JSRefactoringsFactory implements RefactoringPluginFactory {
         
         public Problem checkParameters() {
             String newName = refactoring.getNewName();
-            String oldName = item instanceof DatabaseDefinition ?
-                ((DatabaseDefinition) item).getName() :
-                ((DatabaseUsage) item).getName();
+            DatabaseDefinition def = item instanceof DatabaseDefinition ?
+                (DatabaseDefinition) item : ((DatabaseUsage)item).getDefinition();
+            String oldName = def.getName();
             if (newName.equals(oldName)) {
                 return new Problem(true, getString("LBL_NameNotChanged"));
             }
@@ -292,6 +292,28 @@ public class JSRefactoringsFactory implements RefactoringPluginFactory {
                     );
                     return new Problem(true, msg);
                 }
+            }
+            Lookup lookup = refactoring.getRefactoringSource();
+            ASTPath path = (ASTPath)lookup.lookup(ASTPath.class);
+            document = (StyledDocument)lookup.lookup(StyledDocument.class);
+            dataObject = NbEditorUtilities.getDataObject(document);
+            DatabaseContext rootCtx = DatabaseManager.getRoot((ASTNode) path.getRoot());
+            DatabaseContext dbCtx = rootCtx.getClosestContext(def.getOffset());
+            DatabaseDefinition origDef = dbCtx != null ? dbCtx.getDefinition(newName, dbCtx.getOffset()) : null;
+            if (origDef != null) {
+                String itemKind = origDef.getType();
+                String itemKindName = getString("LBL_Field");
+                if ("parameter".equals(itemKind)) {
+                    itemKindName = getString("LBL_Parameter");
+                } else if ("method".equals(itemKind)) {
+                    itemKindName = getString("LBL_Method");
+                } else if ("local".equals(itemKind)) {
+                    itemKindName = getString("LBL_Variable");
+                }
+                String msg = new MessageFormat(NbBundle.getMessage(RenameRefactoringUI.class, "LBL_NameAlreadyUsed")).format (
+                    new Object[] {itemKindName, newName}
+                );
+                return new Problem(false, msg);
             }
             return null;
         }

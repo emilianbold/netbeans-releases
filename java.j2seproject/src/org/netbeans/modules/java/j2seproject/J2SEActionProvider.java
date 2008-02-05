@@ -215,14 +215,16 @@ class J2SEActionProvider implements ActionProvider {
     private final ChangeListener sourcesChangeListener = new ChangeListener() {
 
         public void stateChanged(ChangeEvent e) {
-            synchronized (this) {
+            synchronized (J2SEActionProvider.this) {
                 J2SEActionProvider.this.roots = null;
             }
         }
     };
 
     private void modification(FileObject f) {
-        for (FileObject root : getRoots()) {
+        final Iterable <? extends FileObject> roots = getRoots();
+        assert roots != null;
+        for (FileObject root : roots) {
             String path = FileUtil.getRelativePath(root, f);
             if (path != null) {
                 synchronized (this) {

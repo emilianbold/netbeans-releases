@@ -44,6 +44,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -55,9 +56,10 @@ public class Saas {
     public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
     public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
-    private SaasServices delegate;
+    private final SaasServices delegate;
     private SaasGroup parentGroup;
-        
+    private FileObject saasFile;
+
     public Saas(SaasGroup parentGroup, SaasServices services) {
         this.delegate = services;
         this.parentGroup = parentGroup;
@@ -79,6 +81,14 @@ public class Saas {
         return delegate.getUrl();
     }
 
+    public FileObject getSaasFile() {
+        return saasFile;
+    }
+
+    protected void setSaasFile(FileObject saasFile) {
+        this.saasFile = saasFile;
+    }
+        
     public SaasMetadata getSaasMetadata() {
         return delegate.getSaasMetadata();
     }

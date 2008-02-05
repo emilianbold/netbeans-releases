@@ -95,10 +95,8 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
                 portField);
         InstanceProperties ips = targetData. getInstanceProperties();
         ips.refreshServerInstance();
-        String url = (String) ips.getProperty("url"); // NOI18N
-        int dex = url.indexOf(WSURIManager.WSURI);
-        if (dex > -1)
-            url = url.substring(dex+WSURIManager.WSURI.length());
+        String url = ips.getProperty(InstanceProperties.URL_ATTR);
+        url = WSURIManager.getUrlWithoutPrefix(url);
         
         localInstancesCombo.setModel(
                 new InstancesModel(
@@ -115,10 +113,13 @@ public class ConnectionTabVisualPanel extends javax.swing.JPanel {
         //localInstancesCombo.addActionListener(tabServerProperties.getInstanceSelectionListener());
         
         
-        dex=url.indexOf(":");
-        if(dex>-1)
-            url=url.substring(0,dex);
-        hostField.setText(url);
+        int index = url.indexOf(":");
+        String host = null;
+        if (index > -1) {
+            host = url.substring(0, index);
+        }
+        
+        hostField.setText(host);
         
         
         userNameField.setText(targetData.getUserName());

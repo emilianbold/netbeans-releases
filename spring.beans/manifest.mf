@@ -5,5 +5,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/spring/beans/resources/Bu
 OpenIDE-Module-Implementation-Version: 1
 
 Name: org/netbeans/modules/spring/beans/loader/SpringXMLConfigDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
 OpenIDE-Module-Class: Loader

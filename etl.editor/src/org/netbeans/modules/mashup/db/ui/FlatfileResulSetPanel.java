@@ -174,7 +174,8 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
         public void finished() {
             try {
                 if (this.ex != null) {
-                    String errorMsg = NbBundle.getMessage(FlatfileResulSetPanel.class, "MSG_error_fetch_failed", this.ex.getMessage());
+                    String nbBundle3 = mLoc.t("PRSR001: Error fetching data for tableCause: {0}",this.ex.getMessage());
+                    String errorMsg = Localizer.parse(nbBundle3); // NOI18N
                     DialogDisplayer.getDefault().notify(new Message(errorMsg, NotifyDescriptor.ERROR_MESSAGE));
                 }
 

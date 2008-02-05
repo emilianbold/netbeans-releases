@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.openide.util.Exceptions;
 
 
@@ -70,7 +71,7 @@ public class WriteLockUtils {
         boolean isActiveLockFile = hasActiveLockFileSigns(name);
         if (isActiveLockFile) {
             final String newName = name.substring(WriteLockUtils.PREFIX.length(), (name.length() - WriteLockUtils.SUFFIX.length()));
-            isActiveLockFile = new File(file.getParentFile(), newName).exists();
+            isActiveLockFile = FileChangedManager.getInstance().exists(new File(file.getParentFile(), newName));
         }
         
         return isActiveLockFile;
@@ -100,7 +101,7 @@ public class WriteLockUtils {
         channel.read(ByteBuffer.wrap(readContent));
         
         final String retVal = new String(readContent);
-        return (new File(retVal).exists()) ? retVal : null;
+        return (FileChangedManager.getInstance().exists(new File(retVal))) ? retVal : null;
     }
     
     static String writeContentOfLckFile(final File lck, FileChannel channel) throws IOException {

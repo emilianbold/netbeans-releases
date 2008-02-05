@@ -53,6 +53,12 @@ Microsystems, Inc. All Rights Reserved.
    the services tab, server manager and server add wizard.
   </p>
   <p>
+   There is also API part of the module
+   <api group="java" name="CommonServerAPI" type="export" category="devel" url="@TOP@index.html"/>
+   that provides API representation of the server instance. API access if
+   required in future will be placed here.
+  </p>  
+  <p>
    Clients can provide its instances through the SPI. They can also provide
    wizards to define UI way for the server instance addition. It is done with
    <api group="layer" name="CommonServerLayerSPI" type="export" category="devel" url="@TOP@index.html"/>
@@ -137,9 +143,9 @@ Microsystems, Inc. All Rights Reserved.
    </p>
    <p>
     Every
-    <a href="@TOP@org/netbeans/spi/server/ServerInstance.html">ServerInstance</a>
+    <a href="@TOP@org/netbeans/spi/server/ServerInstanceImplementation.html">ServerInstance</a>
     returned by the provider is handled by this module. Some features of the
-    <a href="@TOP@org/netbeans/spi/server/ServerInstance.html">ServerInstance</a>
+    <a href="@TOP@org/netbeans/spi/server/ServerInstanceImplementation.html">ServerInstance</a>
     are not mandatory (as described in javadoc). If new instances can be added
     or removed during the lifecycle of external module it has to notify all
     listeners of the

@@ -140,11 +140,14 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
                 file = helper.resolveFile(libLocEval);
             }
             FileObject libLocFO = FileUtil.toFileObject(file);
-            FileObject libLocParent = libLocFO.getParent();
-            return libLocParent;
-        } else {
-            return null;
-        }
+            if (libLocFO != null) {
+                //#126366 this can happen when people checkout the project but not the libraries description 
+                //that is located outside the project
+                FileObject libLocParent = libLocFO.getParent();
+                return libLocParent;
+            }
+        } 
+        return null;
     }
     
     private Sources initSources() {
