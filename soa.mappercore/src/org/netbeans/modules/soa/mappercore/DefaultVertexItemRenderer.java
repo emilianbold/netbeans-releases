@@ -51,7 +51,7 @@ public class DefaultVertexItemRenderer extends JLabel
         //
         if (value != null) {
             text = value.toString();
-            if (text != null && text.length() != 0) {
+            if (text != null) {
                 Class type = vertexItem.getValueType();
                 if (Utils.equal(type, Number.class)) {
                     prepareNumberRenderer();
