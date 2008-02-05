@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -320,14 +319,9 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         }
         // fallback
         URL u = URLMapper.findURL(fo,  URLMapper.EXTERNAL);
-        String extForm = u.toExternalForm();
-        if (extForm.startsWith("jar:")
-                && extForm.endsWith("!/")) {
-            try {
-                return new URL(extForm.substring(4, extForm.length() - 2));
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        URL archiveFile = FileUtil.getArchiveFile(u);
+        if (archiveFile != null) {
+            return archiveFile;
         }
         return u;
     }
