@@ -57,25 +57,31 @@ import org.openide.util.Lookup;
  * @author  pj97932, Tomas Mysik
  */
 final class TestUtil {
-    
+
     private TestUtil() {
     }
-    
+
     static void setup(NbTestCase test) throws Exception {
-        
-        File javaCluster = new File(JavaAntLogger.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
-        File enterCluster = new File(WebModule.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParentFile().getParentFile();
+
+        test.clearWorkDir();
+
+        File javaCluster = new File(JavaAntLogger.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+                .getParentFile().getParentFile();
+        File enterCluster = new File(WebModule.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+                .getParentFile().getParentFile();
         System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath());
         System.setProperty("org.netbeans.modules.jspparser.debug", "1");
-        Lookup.getDefault().lookup(ModuleInfo.class);
+
+        // module system
+        //Lookup.getDefault().lookup(ModuleInfo.class);
     }
-    
+
     static FileObject getFileInWorkDir(String path, NbTestCase test) throws Exception {
         File f = test.getDataDir();
         FileObject workDirFO = FileUtil.toFileObject(f);
         return FileUtil.createData(workDirFO, path);
     }
-    
+
     static JspParserAPI.WebModule getWebModule(FileObject fo) {
         WebModule wm =  WebModule.getWebModule(fo);
         if (wm == null) {

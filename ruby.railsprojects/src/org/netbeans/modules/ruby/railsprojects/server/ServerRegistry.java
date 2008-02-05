@@ -65,7 +65,7 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author peterw99, Erno Mononen
  */
-class ServerRegistry implements VetoableChangeListener {
+public class ServerRegistry implements VetoableChangeListener {
 
     private static ServerRegistry defaultRegistry; 
     private ServerRegistry() {
@@ -108,7 +108,7 @@ class ServerRegistry implements VetoableChangeListener {
         return result;
     }
     
-    RubyInstance getServer(String serverId, RubyPlatform platform) {
+    public RubyInstance getServer(String serverId, RubyPlatform platform) {
 
         for (RubyInstanceProvider provider : Lookups.forPath("Servers/Ruby").lookupAll(RubyInstanceProvider.class)) {
             RubyInstance instance = provider.getInstance(serverId); 
