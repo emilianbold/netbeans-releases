@@ -26,104 +26,91 @@ import java.util.List;
 import java.util.ListIterator;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.spi.RestartableIterator;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
-import org.netbeans.modules.xml.xpath.ext.XPathUtils;
+import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.StepNodeTestType;
+import org.netbeans.modules.xml.xpath.ext.StepNodeTypeTest;
 
 /**
- * The class collects all predicate expressions which are in the edited 
- * XPath expression. Each predicate is declared in the XPath location step.
- * The location step is bound to the specific schema element or attribute.
- * The predicate manager keeps the location of predicate in term of
- * schema components' path.
+ * The class collects all special location steps expressions, which are 
+ * in the edited XPath expression. The special location step is a LocationStep 
+ * with StepNodeTest of type StepNodeTypeTest. The manager keeps the location 
+ * of the step in term of schema components' path.
  *
- * The main intention of the predicate manager is to provide showing of
- * predicates in the mapper source and destination trees.
+ * The main intention of the manager is to provide showing of the special steps
+ * the mapper source and destination trees.
  * 
  * @author nk160297
  */
-public class PredicateManager {
+public class SpecialStepManager {
     
     // The cache of predicates.
-    private LinkedList<CachedPredicate> mPredicates;
+    private LinkedList<CachedStep> mSteps;
     
-    public PredicateManager() {
-        mPredicates = new LinkedList<CachedPredicate>();
+    public SpecialStepManager() {
+        mSteps = new LinkedList<CachedStep>();
     }
     
-    public List<AbstractPredicate> getPredicates(
-            RestartableIterator<Object> parentPath, SchemaComponent sComp) {
+    public List<LocationStep> getSteps(RestartableIterator<Object> parentPath) {
         //    
-        ArrayList<AbstractPredicate> result = new ArrayList<AbstractPredicate>();
+        ArrayList<LocationStep> result = new ArrayList<LocationStep>();
         
-        for (CachedPredicate cPred : mPredicates) {
-            if (cPred.hasSameBase(sComp) && cPred.hasSameLocation(parentPath)) {
-                result.add(cPred.getPredicate());
+        for (CachedStep cStep : mSteps) {
+            if (cStep.hasSameLocation(parentPath)) {
+                result.add(cStep.getStep());
             }
         }
         //
         return result;
     }
     
-    public boolean addPredicate(List<Object> parentPath, AbstractPredicate pred) {
-        for (CachedPredicate cPred : mPredicates) {
-            if (cPred.hasSameLocation(parentPath) && cPred.hasSamePredicate(pred)) {
+    public boolean addStep(List<Object> parentPath, LocationStep newStep) {
+        for (CachedStep cStep : mSteps) {
+            if (cStep.hasSameLocation(parentPath) && 
+                    cStep.getStep().equals(newStep)) {
                 // the same predicate already in cache
                 return false;
             }
         }
         //
-        CachedPredicate cPredicate = new CachedPredicate(parentPath, pred);
-        mPredicates.add(cPredicate);
+        CachedStep cPredicate = new CachedStep(parentPath, newStep);
+        mSteps.add(cPredicate);
         return true;
     }
 
-    public boolean addPredicate(RestartableIterator<Object> parentItr, 
-            AbstractPredicate pred) {
+    public boolean addStep(RestartableIterator<Object> parentItr, 
+            LocationStep step) {
         //
         List<Object> parentPath = 
                 PathConverter.constructPredicateLocationtList(parentItr);
         //
         if (parentPath != null) {
-            return addPredicate(parentPath, pred);
+            return addStep(parentPath, step);
         }
         //
         return false;
     }
     
-    public void removePredicate(AbstractPredicate predToDelete) {
-        for (CachedPredicate cPred : mPredicates) {
-            AbstractPredicate pred = cPred.getPredicate();
-            if (pred.equals(predToDelete)) {
-                mPredicates.remove(pred);
-                break;
+    public void removeStep(RestartableIterator<Object> parentItr, 
+            LocationStep stepToDelete) {
+        List<Object> parentPath = 
+                PathConverter.constructPredicateLocationtList(parentItr);
+        //
+        if (parentPath != null) {
+            for (CachedStep cStep : mSteps) {
+                if (cStep.getStep().equals(stepToDelete) && 
+                        cStep.hasSameLocation(parentPath)) {
+                    mSteps.remove(cStep);
+                    break;
+                }
             }
-        }
-    }
-    
-    public static String toString(XPathPredicateExpression[] predicatesArr) {
-        if (predicatesArr != null && predicatesArr.length != 0) {
-            StringBuilder sb = new StringBuilder();
-            for (XPathPredicateExpression predicate : predicatesArr) {
-                sb.append(predicate.getExpressionString());
-            }
-            return sb.toString();
-        } else {
-            return "";
         }
     }
     
     /**
-     * This class holds the predicate itself (PredicatedSchemaComp) + 
+     * This class holds the special step itself (LocationStep) + 
      * its location and the flag persistent. 
-     * 
-     * ATTENTION!
-     * The location is the different notion relative to the XPathSchemaContext.
-     * The schema context consists from SchemaComponent objects only. 
-     * The location can contain a Variable, a Part, SchemaComponent and 
-     * PredicatedSchemaComp objects. 
      */
-    public static class CachedPredicate {
+    public static class CachedStep {
         // The list contains data objects from which a tree path consists of
         // It is implied that it can contain a set of SchemaComponents and 
         // PredicatedSchemaComp. And there is either a variable or 
@@ -133,8 +120,8 @@ public class PredicateManager {
         // It it held in the separate attribute mPredSComp.
         private List<Object> mParentPath;
 
-        // The Schema component which is the base for the predicate.
-        private AbstractPredicate mPred;
+        // The special location step.
+        private LocationStep mStep;
         
         // Persistense means that the instance should not be automatically
         // deleted from the cache if it is not used.
@@ -142,9 +129,11 @@ public class PredicateManager {
         // the cache automatically.
         private boolean isPersistent;
 
-        public CachedPredicate(List<Object> parentPath, AbstractPredicate pred) {
+        public CachedStep(List<Object> parentPath, LocationStep step) {
             mParentPath = parentPath;
-            mPred = pred;
+            mStep = step;
+            //
+            assert step.getNodeTest() instanceof StepNodeTypeTest;
         }
         
         public boolean isPersistent() {
@@ -155,12 +144,13 @@ public class PredicateManager {
             isPersistent = newValue;
         }
         
-        public SchemaComponent getBaseType() {
-            return mPred.getSComponent();
+        public LocationStep getStep() {
+            return mStep;
         }
         
-        public AbstractPredicate getPredicate() {
-            return mPred;
+        public StepNodeTestType getNodeType() {
+            StepNodeTypeTest sntt = (StepNodeTypeTest)mStep.getNodeTest();
+            return sntt.getNodeType();
         }
         
         /**
@@ -170,26 +160,6 @@ public class PredicateManager {
          */
         public List getParentPath() {
             return mParentPath;
-        }
-        
-        public boolean hasSameBase(SchemaComponent baseSchemaComp) {
-            return getPredicate().getSComponent().equals(baseSchemaComp);
-        }
-        
-        /**
-         * Check if the cached predicate has the same schema component 
-         * and the same predicates.
-         */
-        public boolean hasSameParams(SchemaComponent schemaComp,
-                XPathPredicateExpression[] predArr) {
-            AbstractPredicate pComp = getPredicate();
-            return pComp.getSComponent().equals(schemaComp) &&
-                    XPathUtils.samePredicatesArr(pComp.getPredicates(), predArr);
-        }
-        
-        public boolean hasSamePredicate(AbstractPredicate pred) {
-            AbstractPredicate pComp = getPredicate();
-            return pComp.equals(pred);
         }
         
         public boolean hasSameLocation(RestartableIterator parentPathItr) {
@@ -226,7 +196,8 @@ public class PredicateManager {
         
         @Override
         public String toString() {
-            String endText = mPred.toString() + " persistent=" + isPersistent; // NOI18N
+            String nodeType = getNodeType().toString();
+            String endText = nodeType + " persistent=" + isPersistent; // NOI18N
             //
             String parentPath = locationToString();
             if (parentPath == null || parentPath.length() == 0) {
@@ -255,16 +226,18 @@ public class PredicateManager {
         
         @Override
         public boolean equals(Object obj2) {
-            if (!(obj2 instanceof CachedPredicate)) {
+            if (!(obj2 instanceof CachedStep)) {
                 return false;
             }
             //
-            CachedPredicate pred2 = (CachedPredicate)obj2;
-            if (!pred2.getPredicate().equals(mPred)) {
+            // Compare the StepNodeTestType
+            CachedStep step2 = (CachedStep)obj2;
+            LocationStep lStep2 = ((CachedStep)step2).getStep();
+            if (!lStep2.equals(mStep)) {
                 return false;
             }
             //
-            List path2 = pred2.getParentPath();
+            List path2 = step2.getParentPath();
             if (path2.size() != mParentPath.size()) {
                 // Pathes have diferrent length
                 return false;
