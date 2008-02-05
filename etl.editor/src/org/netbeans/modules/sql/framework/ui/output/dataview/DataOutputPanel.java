@@ -623,9 +623,8 @@ public abstract class DataOutputPanel extends JPanel implements ETLOutputPanel {
             DialogDisplayer.getDefault().notify(new Message(msg, NotifyDescriptor.INFORMATION_MESSAGE));
         } else {
             try {
-                for (int i = 0; i < queryView.table.getSelectedRowCount(); i++) {
+                int i = queryView.table.getSelectedRow();
                     queryView.executeDeleteRow(meta, i);
-                }
                 refreshActionPerformed();
             } catch (Exception ex) {
                 String msg = "Error Deleting Row(s): " + ex.getMessage();

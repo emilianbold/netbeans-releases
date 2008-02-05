@@ -414,17 +414,16 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            // get macro definitions from project/file
             CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
             CCCCompilerConfiguration master = (CCCCompilerConfiguration)cccCompilerConfiguration.getMaster();
             while (master != null && cccCompilerConfiguration.getInheritPreprocessor().getValue()) {
-                vec.addAll(master.getPreprocessorConfiguration().getValuesAsList());
-                if (master.getInheritPreprocessor().getValue())
+                vec.addAll(master.getPreprocessorConfiguration().getValue());
+                if (master.getInheritIncludes().getValue())
                     master = (CCCCompilerConfiguration)master.getMaster();
                 else
                     master = null;
             }
-            vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValuesAsList());
+            vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
         }
         return vec;
     }

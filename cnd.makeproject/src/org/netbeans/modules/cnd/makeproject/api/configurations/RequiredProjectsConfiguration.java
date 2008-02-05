@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 
 public class RequiredProjectsConfiguration extends VectorConfiguration {
     public RequiredProjectsConfiguration() {
@@ -61,7 +62,7 @@ public class RequiredProjectsConfiguration extends VectorConfiguration {
     @Override
     public Object clone() {
 	RequiredProjectsConfiguration clone = new RequiredProjectsConfiguration();
-	clone.setValue((Vector)getValue().clone());
+	clone.setValue((List)((ArrayList)getValue()).clone());
 	return clone;
     }
 }

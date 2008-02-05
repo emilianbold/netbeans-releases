@@ -53,6 +53,13 @@ public class Localizer extends LocalizationSupport {
         }
         return instance;
     } 
+    public static String parse(String str) {
+        String s = "DM-DI-PRSR001:";
+        if (str.contains(s)) {
+            str = str.replace(s, "");
+        }
+        return str;
+    }
     /* public static Localizer get(String prefix, String bundlename) {
        
             Pattern pattern = Pattern.compile(DEFAULT_PATTERN);

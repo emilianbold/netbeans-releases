@@ -70,7 +70,6 @@ import org.netbeans.modules.mashup.db.ui.FlatfileResulSetPanel;
 import org.netbeans.modules.sql.framework.ui.output.dataview.ResultSetTablePanel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 import com.sun.sql.framework.utils.StringUtil;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
@@ -96,8 +95,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
 
     public PreviewDataPanel(FlatfileDBTable table) {
         currentTable = table;
-
-        String previewLabel = NbBundle.getMessage(TableDefinitionPanel.class, "LBL_import_preview_table");
+        String nbBundle1 = mLoc.t("PRSR001: Preview Table Content");
+        String previewLabel =  Localizer.parse(nbBundle1);
         setBorder(BorderFactory.createTitledBorder(previewLabel));
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         add(createPreviewControls());
@@ -210,8 +209,9 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             stmt.execute("DROP TABLE " + table.getTableName());
         } catch (NoSuchElementException nse) {
             String errorMsg = "ERROR: Current sample file may be corrupt, or does not match specified datatypes.";
+            String nbBundle2 = mLoc.t("PRSR001: Could not preview current sample file.One of the column datatypes may not match the sample data,or the sample file may be corrupt.Try changing a column datatype and preview again, or supply a different sample file.");
             try {
-                errorMsg = NbBundle.getMessage(TableDefinitionPanel.class, "ERROR_bad_preview");
+                errorMsg =  Localizer.parse(nbBundle2);
             } catch (MissingResourceException mre) {
                 mLogger.infoNoloc(mLoc.t("PRSR078: Could not locate resource string for ERROR_bad_preview:{0}", mre));
 
@@ -223,7 +223,8 @@ public class PreviewDataPanel extends JPanel implements ActionListener {
             String sqlExMsg = "Sample file may be corrupt, or does not match specified datatypes";
             try {
                 sqlExMsg = stripExceptionHeaderFromMessage(se);
-                errorMsg = NbBundle.getMessage(TableDefinitionPanel.class, "ERROR_bad_preview_sqlex", sqlExMsg);
+                String nbBundle3 = mLoc.t("PRSR001: Could not preview current sample file.One or more values for field length, scale, datatype, or nullability do not agree with the current sample file.Review your field specifications and click 'Preview' again.Error:{0}",sqlExMsg);
+                errorMsg = Localizer.parse(nbBundle3);
             } catch (MissingResourceException mre) {
                 mLogger.errorNoloc(mLoc.t("PRSR079: Could not locate resource string for ERROR_bad_preview {0}", LOG_CATEGORY), mre);
             }

@@ -110,13 +110,13 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     }
     
     public static SpringXMLConfigCompletionItem createPackageItem(int substitutionOffset, String packageName, 
-            boolean isDeprecated) {
-        return new PackageItem(substitutionOffset, packageName, isDeprecated);
+            boolean deprecated) {
+        return new PackageItem(substitutionOffset, packageName, deprecated);
     }
     
     public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
-                boolean isDeprecated) {
-        return new ClassItem(substitutionOffset, elem, type, isDeprecated);
+                boolean deprecated) {
+        return new ClassItem(substitutionOffset, elem, type, deprecated);
     }
     
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
@@ -304,7 +304,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
         
         private TypeMirrorHandle<DeclaredType> typeHandle;
-        private boolean isDeprecated;
+        private boolean deprecated;
         private String simpleName;
         private String typeName;
         private String enclName;
@@ -312,10 +312,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private String leftText;
 
         public ClassItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
-                boolean isDeprecated) {
+                boolean deprecated) {
             super(substitutionOffset);
             this.typeHandle = TypeMirrorHandle.create(type);
-            this.isDeprecated = isDeprecated;
+            this.deprecated = deprecated;
             this.simpleName = elem.getSimpleName().toString();
             this.typeName = getTypeName(type, false).toString();
             this.enclName = getElementName(elem.getEnclosingElement(), true).toString();
@@ -331,6 +331,9 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }
 
         public CharSequence getInsertPrefix() {
+            if ("".equals(enclName)) { // NOI18N
+                return typeName;
+            }
             return enclName + "." + typeName; // NOI18N
         }
 
@@ -344,10 +347,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             if (leftText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(getColor());
-                if (isDeprecated)
+                if (deprecated)
                     sb.append(STRIKE);
                 sb.append(escape(typeName));
-                if (isDeprecated)
+                if (deprecated)
                     sb.append(STRIKE_END);
                 if (enclName != null && enclName.length() > 0) {
                     sb.append(COLOR_END);
@@ -412,16 +415,16 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private static final String PACKAGE_COLOR = "<font color=#005600>"; //NOI18N
         private static ImageIcon icon;
         
-        private boolean isDeprecated;
+        private boolean deprecated;
         private String simpleName;
         private String sortText;
         private String leftText;
         
-        public PackageItem(int substitutionOffset, String packageFQN, boolean isDeprecated) {
+        public PackageItem(int substitutionOffset, String packageFQN, boolean deprecated) {
             super(substitutionOffset);
             int idx = packageFQN.lastIndexOf('.'); // NOI18N
             this.simpleName = idx < 0 ? packageFQN : packageFQN.substring(idx + 1);
-            this.isDeprecated = isDeprecated;
+            this.deprecated = deprecated;
             this.sortText = this.simpleName + "#" + packageFQN; //NOI18N
         }
 
@@ -462,10 +465,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             if (leftText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(PACKAGE_COLOR);
-                if (isDeprecated)
+                if (deprecated)
                     sb.append(STRIKE);
                 sb.append(simpleName);
-                if (isDeprecated)
+                if (deprecated)
                     sb.append(STRIKE_END);
                 sb.append(COLOR_END);
                 leftText = sb.toString();

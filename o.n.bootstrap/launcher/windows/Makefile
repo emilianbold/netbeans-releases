@@ -60,10 +60,10 @@ distclean : clean
 	-rm *.exe 2>NUL
 
 testinst : all
-	cp *.exe ../../../nbbuild/netbeans/platform7/lib/
+	cp *.exe ../../../nbbuild/netbeans/platform8/lib/
 
 test : testinst
-	../../../nbbuild/netbeans/platform7/lib/nbexec.exe
+	../../../nbbuild/netbeans/platform8/lib/nbexec.exe
 
 test2 : testinst
-	../../../nbbuild/netbeans/platform7/lib/nbexec.exe
+	../../../nbbuild/netbeans/platform8/lib/nbexec.exe

@@ -42,20 +42,20 @@
 package org.netbeans.modules.php.editor.completion;
 
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.gsf.CompletionProposal;
 import org.netbeans.modules.languages.php.lang.Operators;
+import org.netbeans.modules.languages.php.lang.SpecialKeywords;
 import org.netbeans.modules.php.editor.TokenUtils;
-import org.netbeans.modules.php.model.ClassBody;
-import org.netbeans.modules.php.model.ClassConst;
+import org.netbeans.modules.php.model.AttributesDeclaration;
 import org.netbeans.modules.php.model.ClassDefinition;
+import org.netbeans.modules.php.model.ClassFunctionDefinition;
 import org.netbeans.modules.php.model.ClassMemberReference;
-import org.netbeans.modules.php.model.ConstDeclaration;
 import org.netbeans.modules.php.model.Constant;
-import org.netbeans.modules.php.model.FunctionDeclaration;
-import org.netbeans.modules.php.model.FunctionDefinition;
+import org.netbeans.modules.php.model.Modifier;
 import org.netbeans.modules.php.model.ObjectDefinition;
 import org.netbeans.modules.php.model.PhpModel;
 import org.netbeans.modules.php.model.SourceElement;
@@ -71,21 +71,25 @@ import org.netbeans.modules.php.model.SourceElement;
  * 
  * @author Victor G. Vasilyev 
  */
-public class ScopeResolutionOperatorContext extends ASTBasedProvider 
+public class ScopeResolutionOperatorContext extends MemberAccessExpressionScope 
         implements CompletionResultProvider {
 
-    private ClassDefinition referencedClass;
-    private int insertOffset;
+    private static final Logger LOG = 
+            Logger.getLogger(ScopeResolutionOperatorContext.class.getName());
+
+    /**
+     * This contains a member access expression if it is defined by the context,
+     * oherwise (i.e. an incomplete expression is defined) - <code>null</code>.
+     */
+    private Constant expression;
     
-    private static final String SCOPE_RESOLUTION_OPERATOR = 
-            Operators.SCOPE_RESOLUTION.value();
 
     private static final Set<ExpectedToken> PREV_TOKENS = new HashSet<ExpectedToken>();
     static {
         PREV_TOKENS.add(new ExpectedToken(TokenUtils.PHPTokenName.OPERATOR.value(), 
-                        SCOPE_RESOLUTION_OPERATOR));
-    }   
-
+                        Operators.SCOPE_RESOLUTION.value()));
+    }
+    
     /**
      * Returns <code>true</code> iif the specified <code>context</code>
      * is applicable for completing the Scope Resolution Operator (::),
@@ -107,11 +111,16 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
      * @return
      */
     public boolean isApplicable(CodeCompletionContext context) {
-        assert context != null;
-        myContext = context; // caching context!
+        init(context);
         SourceElement e = myContext.getSourceElement();       
         if(e instanceof Constant) {
             if(!isScopeResolutionExpression(e)) {
+                expression = (Constant)e;
+                LOG.log(Level.INFO, 
+                        "{0} provider is NOT applicable." + 
+                                        " expression.getText() =[{1}]", 
+                        new Object[] {"ScopeResolutionOperatorContext", 
+                                      expression.getText()});
                 return false;
             }
             // i.e. constant expr like this: SomeClass::x
@@ -121,70 +130,152 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
         }
         // This provider is applicble iif it possible to find referencedClass.
         if(referencedClass == null) {
+            LOG.log(Level.INFO, 
+                    "{0} provider is NOT applicable. referencedClass =[{1}]", 
+                    new Object[] {"ScopeResolutionOperatorContext", 
+                                  referencedClass});
             return false;
         }
+        LOG.log(Level.INFO, 
+                "{0} provider is applicable. referencedClass.getName() =[{1}]", 
+                new Object[] {"ScopeResolutionOperatorContext", 
+                              referencedClass.getName()});
         return true;
     }
 
     @SuppressWarnings("unchecked")
     public List<CompletionProposal> getProposals(CodeCompletionContext context) {
-        if (context != myContext) {
-            throw new IllegalStateException("The isApplicable method MUST BE called before.");
-        }
-        String prefix = context.getPrefix();
-        insertOffset = calcInsertOffset();
-        List<CompletionProposal> list = new LinkedList<CompletionProposal>();
+        assert context == myContext;
+        assert referencedClass != null;
 
-        // Example 19.13. :: from inside the class definition
-        // This also applies to Constructors and Destructors, Overloading, 
-        // and Magic method definitions. 
+        // Should the static access mode be processed differently?
+        if (isInsideClassDefinition()) {
+            // Should the self access mode be processed differently?
+            
+            // Example 19.13. :: from inside the class definition
+            addConstants();
+            // This also applies to Constructors and Destructors, Overloading, 
+            // and Magic method definitions. 
+            // (private|protected|public) (static|default), i.e. ANY
+            addMethods(null);
+            // (private|protected|public) (static|default), i.e. ANY
+            addProperties(null);
 
-        // Example 19.12. :: from outside the class definition
-        // <ClassName>::<PublicStaticClassMemberOrConstant>
+        } else {
+            if (isParentAccess()) {  // i.e. parent::xxx
+                // all constants
+                addConstants();
+                // !private=(protected|public|default) (static|default) methods
+                addMethods(new Filter<ClassFunctionDefinition>() {
 
-        ClassBody cb = referencedClass.getBody();
+                    @Override
+                    public boolean isApplicable(ClassFunctionDefinition fd) {
+                        List<Modifier> modifiers = fd.getModifiers();
+                        int actualFlags = Modifier.toFlags(modifiers);
+                        if ((actualFlags & Modifier.PRIVATE.flag()) != 0) {
+                            return false;
+                        }
+                        return true;
+                    }
+                });
+                // !private=(protected|public) static properties
+                addProperties(new Filter<AttributesDeclaration>() {
 
-        // constants
-        List<ConstDeclaration> cdList = cb.getChildren(ConstDeclaration.class);
-        for (ConstDeclaration cDecl : cdList) {
-            for (ClassConst cc : cDecl.getDeclaredConstants()) {
-                String name = cc.getName();
-                if (SCOPE_RESOLUTION_OPERATOR.equals(prefix) ||
-                        startsWith(name, prefix)) {
-                    list.add(new VariableItem(name, insertOffset,
-                            VariableItem.VarTypes.CONSTANT,
-                            myContext.getFormatter(), false));
+                    @Override
+                    public boolean isApplicable(AttributesDeclaration ad) {
+                        List<Modifier> modifiers = ad.getModifiers();
+                        int actualFlags = Modifier.toFlags(modifiers);
+                        if ((actualFlags & Modifier.PRIVATE.flag()) != 0) {
+                            return false;
+                        }
+                        if ((actualFlags & Modifier.STATIC.flag()) == 0) {
+                            return false;
+                        }
+                        return true;
+                    }
+                });
 
-                }
+            } else {
+                // Example 19.12. :: from outside the class definition
+                // <ClassName>::<PublicStaticClassMemberOrConstant>
+                addConstants();
+                addMethods(new Filter<ClassFunctionDefinition>() {
+
+                    @Override
+                    public boolean isApplicable(ClassFunctionDefinition fd) {
+                        List<Modifier> modifiers = fd.getModifiers();
+                        int actualFlags = Modifier.toFlags(modifiers);
+                        int logicalFlags = Modifier.toLogicalFlags(actualFlags);
+                        int expectedFlags = Modifier.STATIC.flag() | 
+                                            Modifier.PUBLIC.flag();
+                        if (logicalFlags != expectedFlags) {
+                            return false;
+                        }
+                        return true;
+                    }
+                });
+                addProperties(new Filter<AttributesDeclaration>() {
+
+                    @Override
+                    public boolean isApplicable(AttributesDeclaration ad) {
+                        List<Modifier> modifiers = ad.getModifiers();
+                        int actualFlags = Modifier.toFlags(modifiers);
+                        int logicalFlags = Modifier.toLogicalFlags(actualFlags);
+                        int expectedFlags = Modifier.STATIC.flag() | 
+                                            Modifier.PUBLIC.flag();
+                        if (logicalFlags != expectedFlags) {
+                            return false;
+                        }
+                        return true;
+                    }
+                });
             }
         }
         
-        // public static methods
-        // It seems ClassFunctionDeclaration should be used instead.
-        // In this case, modifiers can be shown in the proposal list.
-        List<FunctionDefinition> fdList = cb.getChildren(FunctionDefinition.class);
-        for (FunctionDefinition fd : fdList) {
-            // TODO ??? select public static only
-            FunctionDeclaration decl = fd.getDeclaration();
-            String name = decl.getName();
-            if (isApplicableIncompleteExpression() || startsWith(name, prefix)) {
-                list.add(new UserDefinedMethodItem(decl,
-                        insertOffset, myContext.getFormatter()));
+        return proposals;
+    }
+       
+    /**
+     * Retirns <code>true</code> if the member access expression defines access
+     * to the parent's member via the special keyword - <code>parent</code>.
+     * @return <code>true</code> if expression in the context is like this:
+     * <code>parent::someMember</code>, otherwise <code>false</code>.
+     */
+    private boolean isParentAccess() {
+        if(expression != null) {
+            String name = expression.getClassConstant().getObjectName();
+            if(SpecialKeywords.PARENT.value().equals(name)) {
+                return true;
             }
         }
-
-        return list;
+        // try to find the "parent" word in the incomplete expression
+        SourceElement e = myContext.getSourceElement();
+        if(e != null) {
+            String text = e.getText();
+            return text.startsWith(SpecialKeywords.PARENT.value());
+        }
+        return false;
     }
-   
+    
     /**
+     * Retirns <code>true</code> if the member access expression refers to the
+     * class where it is placed itself.
+     * <p>
+     * <b>Note:</b> This method returns <code>false</code> for the expression
+     * like this:
+     * <code>parent::someMemeber</code>
+     * </p>
      * 
-     * @return <code>true</code> if a constant value is not specified after
-     * scope resolution operator.
+     * @return <code>true</code> if the context is located inside the referred
+     * class, otherwise <code>false</code>.
      */
-    private boolean isApplicableIncompleteExpression() {
-        String prefix = myContext.getPrefix();
-        if(prefix != null && prefix.endsWith(SCOPE_RESOLUTION_OPERATOR)) {
-            return true;
+    private boolean isInsideClassDefinition() {
+        SourceElement e = myContext.getSourceElement();
+        while(e!=null) {
+            if(e == referencedClass) {
+                return true;
+            }
+            e = e.getParent();
         }
         return false;
     }
@@ -204,7 +295,7 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
         // TODO implement me!
         SourceElement e = context.getSourceElement();
         String text = e.getText();
-        int opIndex = text.lastIndexOf(SCOPE_RESOLUTION_OPERATOR);
+        int opIndex = text.lastIndexOf(Operators.SCOPE_RESOLUTION.value());
         String className = null;
         if(opIndex > -1) {
           className = text.substring(0, opIndex);
@@ -219,13 +310,6 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
             return true;
         }
         return false;
-    }
-    
-    private static boolean startsWith(String name, String prefix) {
-        if(name == null || prefix == null) {
-            return false;
-        }
-        return name.toLowerCase().startsWith(prefix.toLowerCase());
     }
     
     // TODO: move to PHPModelUtil
@@ -259,12 +343,17 @@ public class ScopeResolutionOperatorContext extends ASTBasedProvider
     }
 
     
-    private int calcInsertOffset() {
-        String prefix = myContext.getPrefix();
-        if(prefix == null || SCOPE_RESOLUTION_OPERATOR.equals(prefix)) {
+    @Override
+    protected int calcInsertOffset() {
+        if(prefix == null || getOperator().equals(prefix)) {
             return myContext.getCaretOffset();
         }
-        return myContext.getCaretOffset() - myContext.getPrefix().length();
+        return myContext.getCaretOffset() - prefix.length();
+    }
+
+    @Override
+    protected String getOperator() {
+        return Operators.SCOPE_RESOLUTION.value();
     }
         
 }

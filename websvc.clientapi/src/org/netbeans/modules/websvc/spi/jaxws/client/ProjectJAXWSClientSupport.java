@@ -49,6 +49,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -76,6 +77,8 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -236,6 +239,17 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         final FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_IMPL_XML_PATH);
         final String pkgName = packageName;
         final String finalName = finalClientName;
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            openOutputWindow();
+        } else {
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    openOutputWindow();
+                }
+            });            
+        }
+                
         try {
             ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Boolean>() {
                 public Boolean run() throws IOException {
@@ -247,6 +261,13 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
         } catch (MutexException e) {
             ErrorManager.getDefault().notify(e);
         }
+    }
+    
+    private void openOutputWindow() {
+        TopComponent outputTc = WindowManager.getDefault().findTopComponent("output"); //NOI18N
+        if (outputTc != null) {
+            outputTc.open();
+        }       
     }
     
     private String findProperClientName(String name, JaxWsModel jaxWsModel) {

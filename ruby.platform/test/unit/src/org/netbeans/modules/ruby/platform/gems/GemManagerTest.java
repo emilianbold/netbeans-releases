@@ -141,10 +141,10 @@ public class GemManagerTest extends RubyTestBase {
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
         GemManager.initializeRepository(gemRepo);
         jruby.setGemHome(FileUtil.toFile(gemRepo));
-        installFakeGem("ruby-debug-base", "0.9.3", platform);
-        assertEquals("native fast debugger available", "0.9.3", gemManager.getVersion("ruby-debug-base"));
+        installFakeGem("ruby-debug-base", "0.1.10", platform);
+        assertEquals("native fast debugger available", "0.1.10", gemManager.getVersion("ruby-debug-base"));
         assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));
-        installFakeGem("ruby-debug-base", "0.9.3", "java", platform);
-        assertEquals("no jruby fast debugger available", "0.9.3", gemManager.getVersionForPlatform("ruby-debug-base"));
+        installFakeGem("ruby-debug-base", "0.1.10", "java", platform);
+        assertEquals("no jruby fast debugger available", "0.1.10", gemManager.getVersionForPlatform("ruby-debug-base"));
     }
 }

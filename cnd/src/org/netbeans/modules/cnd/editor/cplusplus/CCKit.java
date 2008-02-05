@@ -140,7 +140,7 @@ public class CCKit extends NbEditorKit {
         // in future we can make attributes per document based on used compiler info
         if (lexerAttrs == null) {
             lexerAttrs = new InputAttributes();
-            lexerAttrs.setValue(getLanguage(), "lexer-filter", getFilter(), true);
+            lexerAttrs.setValue(getLanguage(), "lexer-filter", getFilter(), true);  // NOI18N
         }
         return lexerAttrs;
     }
