@@ -42,6 +42,7 @@ package org.netbeans.modules.ruby.platform;
 
 import java.io.File;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -49,6 +50,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 public final class Util {
+    
+    private static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
     // FIXME: get rid of those proxy constants as soon as some NB Proxy API is available
     private static final String USE_PROXY_AUTHENTICATION = "useProxyAuthentication"; // NOI18N
@@ -165,9 +168,16 @@ public final class Util {
         return null;
     }
 
+    public static void notifyLocalized(Class aClass, String resName, int type, Object... params) {
+        String message = NbBundle.getMessage(aClass, resName, params);
+        if (type == NotifyDescriptor.ERROR_MESSAGE) {
+            LOGGER.severe(message);
+        }
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, type));
+    }
+    
     public static void notifyLocalized(Class aClass, String resName, Object... params) {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                NbBundle.getMessage(aClass, resName, params)));
+        notifyLocalized(aClass, resName, NotifyDescriptor.INFORMATION_MESSAGE, params);
     }
 
 }
