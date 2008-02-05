@@ -1198,6 +1198,22 @@ public class XPathModelImpl implements XPathModel {
         }
 
         @Override
+        public void visit(LocationStep locationStep) {
+            XPathSchemaContext lpInitialContext = parentSchemaContext;
+            try {
+                boolean isGlobal = parentSchemaContext == null;
+                processLocationStep(locationStep, isGlobal);
+            } catch (StopResolutionException ex) {
+                // Do nothing here
+                // ex.printStackTrace();
+            } finally {
+                //
+                // restor context
+                parentSchemaContext = lpInitialContext;
+            }
+        }
+        
+        @Override
         public void visit(XPathExpressionPath expressionPath) {
             XPathSchemaContext lpInitialContext = parentSchemaContext;
             try {
@@ -1365,7 +1381,7 @@ public class XPathModelImpl implements XPathModel {
                             //
                             schemaContext = new WildcardSchemaContext(
                                     parentSchemaContext, XPathModelImpl.this, 
-                                    false, true);
+                                    true, true);
                             break;
                         default:
                             assert false : "The axis " + axis + 
