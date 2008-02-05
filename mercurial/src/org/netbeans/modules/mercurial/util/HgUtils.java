@@ -125,7 +125,7 @@ public class HgUtils {
     public static boolean isSolaris(){
         return System.getProperty("os.name").equals("SunOS"); // NOI18N
     }
-
+    
     /**
      * isInUserPath - check if passed in name is on the Users PATH environment setting
      *

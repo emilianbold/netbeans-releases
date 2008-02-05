@@ -598,8 +598,8 @@ public final class JavaSource {
         boolean a = false;
         assert a = true;
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
-            if (warnedAboutRunInEQ.add(stackTraceElement)) {
+            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
+            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
                 LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
         }
@@ -861,8 +861,10 @@ public final class JavaSource {
         boolean a = false;
         assert a = true;        
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTrace[2]);     //NOI18N
+            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
+            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
+                LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTraceElement);     //NOI18N
+            }
         }
         
         ModificationResult result = new ModificationResult(this);
@@ -1995,7 +1997,23 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         } finally {
             currentRequest.cancelCompleted(request);
         }
-    }    
+    }
+    
+    private static StackTraceElement findCaller(StackTraceElement[] elements) {
+        for (StackTraceElement e : elements) {
+            if (JavaSource.class.getName().equals(e.getClassName())) {
+                continue;
+            }
+            
+            if (e.getClassName().startsWith("java.lang.")) {
+                continue;
+            }
+            
+            return e;
+        }
+        
+        return null;
+    }
     
     private static class SingleThreadFactory implements ThreadFactory {
         
@@ -2588,6 +2606,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     private static boolean reparseMethod (final CompilationInfoImpl ci, final MethodTree orig, final String newBody) throws IOException {        
         assert ci != null; 
         if (!ci.getJavaSource().supportsReparse) {
+            return false;
+        }
+        if (((JCMethodDecl)orig).localEnv == null) {
+            //We are seeing interface method or abstract or native method with body.
+            //Don't do any optimalization of this broken code - has no attr env.
             return false;
         }
         final Phase currentPhase = ci.getPhase();

@@ -49,6 +49,7 @@ import javax.swing.*;
 import java.io.File;
 import java.util.*;
 import org.netbeans.modules.mercurial.FileInformation;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.openide.windows.TopComponent;
 
@@ -57,7 +58,7 @@ import org.openide.windows.TopComponent;
  * 
  * @author Maros Sandor
  */
-public class SearchHistoryAction extends AbstractAction {
+public class SearchHistoryAction extends ContextAction {
     private final VCSContext context;
     static final int DIRECTORY_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
     static final int FILE_ENABLED_STATUS = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_NOTVERSIONED_EXCLUDED & ~FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY;
@@ -83,7 +84,7 @@ public class SearchHistoryAction extends AbstractAction {
         return false;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public void performAction(ActionEvent e) {
         String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", Utils.getContextDisplayName(context)); // NOI18N
         openHistory(context, title ); 
     }

@@ -53,7 +53,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -62,6 +61,7 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -137,7 +137,7 @@ public class ElementJavadoc {
             }
             JavaSource js = fo != null ? JavaSource.forFileObject(fo) : JavaSource.create(cpInfo);
             if (js != null) {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController controller) throws IOException {
                         controller.toPhase(Phase.ELEMENTS_RESOLVED);
                         if (linkDoc != null) {
@@ -176,8 +176,6 @@ public class ElementJavadoc {
                                 } 
                             }
                         }
-                    }
-                    public void cancel() {
                     }
                 }, true);
             }
