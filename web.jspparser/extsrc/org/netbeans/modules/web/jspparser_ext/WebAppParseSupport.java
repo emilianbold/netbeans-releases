@@ -457,7 +457,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             Enumeration en = webInf.getChildren(true);
             while (en.hasMoreElements()){
                 fo = (FileObject)en.nextElement();
-                if (fo.getExt().startsWith("tld")){ // NOI18N
+                if (fo.getExt().equals("tld")){ // NOI18N
                     String path;
                     if (ContextUtil.isInSubTree(wmRoot, fo)) {
                         path = "/" + ContextUtil.findRelativePath(wmRoot, fo);
@@ -508,7 +508,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             Enumeration en = webInf.getChildren(true);
             while (en.hasMoreElements()){
                 fo = (FileObject)en.nextElement();
-                if (fo.getExt().startsWith("tld")){ // NOI18N
+                if (fo.getExt().equals("tld")){ // NOI18N
                     file = FileUtil.toFile(fo);
                     checkedFiles.put (file, Long.valueOf(file.lastModified()));
                 }
