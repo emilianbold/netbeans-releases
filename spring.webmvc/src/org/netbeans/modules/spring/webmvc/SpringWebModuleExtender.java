@@ -63,15 +63,13 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
@@ -351,33 +349,19 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             return target;
         }
 
-         /**
-         * Convenience method to obtain the source root folder.
-         */
-        private FileObject getSourceRoot(Project project) {
-            if (project == null) {
-                return null;
-            }
-            // Search the ${src.dir} Source Package Folder first, use the first source group if failed.
-            Sources src = ProjectUtils.getSources(project);
-            SourceGroup[] grp = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-            for (int i = 0; i < grp.length; i++) {
-                if ("${src.dir}".equals(grp[i].getName())) { // NOI18N
-                    return grp[i].getRootFolder();
-                }
-            }
-            if (grp.length != 0) {
-                return grp[0].getRootFolder();
-            }
-            return null;
-        }
-
         protected boolean addLibrariesToWebModule(Library[] libraries, WebModule webModule) throws IOException, UnsupportedOperationException {
             FileObject fileObject = webModule.getDocumentBase();
             Project project = FileOwnerQuery.getOwner(fileObject);
+            if (project == null) {
+                return false;
+            }
             boolean addLibraryResult = false;
             try {
-                addLibraryResult = ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), ClassPath.COMPILE);
+                SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
+                if (groups.length == 0) {
+                    return false;
+                }
+                addLibraryResult = ProjectClassPathModifier.addLibraries(libraries, groups[0].getRootFolder(), ClassPath.COMPILE);
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, "Libraries required for the Spring MVC project not added", e); // NOI18N
             } catch (UnsupportedOperationException uoe) {
