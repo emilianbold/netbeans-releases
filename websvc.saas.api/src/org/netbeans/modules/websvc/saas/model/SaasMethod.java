@@ -37,25 +37,58 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.ui.nodes;
+package org.netbeans.modules.websvc.saas.model;
 
-import org.netbeans.modules.websvc.saas.model.SaasMethod;
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method.Input;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output;
+import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author nam
  */
-public class WadlSaasMethodNode extends WadlMethodNode {
-    private SaasMethod saasMethod;
+public class SaasMethod {
+    private final Method method;
+    private final Saas saas;
     
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod());
-        this.saasMethod = saasMethod;
+    public SaasMethod(Saas saas, Method method) {
+        this.saas = saas;
+        this.method = method;
     }
 
-    @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
+    public Saas getSaas() {
+        return saas;
     }
+    
+    public Method getMethod() {
+        return method;
+    }
+
+    public Output getOutput() {
+        return method.getOutput();
+    }
+
+    public String getName() {
+        return method.getName();
+    }
+
+    public Input getInput() {
+        return method.getInput();
+    }
+
+    public String getHref() {
+        return method.getHref();
+    }
+
+    public String getDocumentation() {
+        return method.getDocumentation();
+    }
+
+    
 }

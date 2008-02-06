@@ -40,87 +40,71 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import javax.xml.bind.JAXBException;
+import org.apache.commons.jxpath.JXPathException;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
-import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
-import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author nam
  */
-public class WadlSaas extends Saas {
+public class WadlSaasMethod extends SaasMethod {
+    private Resource[] path;
+    private org.netbeans.modules.websvc.saas.model.wadl.Method wadlMethod;
 
-    private Application wadlModel;
-    
-    public WadlSaas(SaasGroup parentGroup, SaasServices services) {
-        super(parentGroup, services);
+    public WadlSaasMethod(WadlSaas wadlSaas, Method method) {
+        super(wadlSaas, method);
+    }
+
+    public WadlSaas getSaas() {
+        return (WadlSaas) super.getSaas();
     }
     
-    public Application getWadlModel() throws IOException {
-        if (wadlModel == null) {
-            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(getUrl());
-            try {
-                wadlModel = SaasUtil.loadWadl(in);
-            } catch(JAXBException ex) {
-                String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getModuleLoader());
-                IOException ioe = new IOException(msg);
-                ioe.initCause(ex);
+    public Resource[] getResourcePath() {
+        if (path == null) {
+            ArrayList<Resource> result = new ArrayList<Resource>();
+            for (Resource base : getSaas().getResources()) {
+                findPathToMethod(base, result);
+                if (result.size() > 0) {
+                    break;
+                }
+            }
+            path = result.toArray(new Resource[result.size()]);
+        }
+        return path;
+    }
+
+    private void findPathToMethod(Resource current, List<Resource> resultPath) {
+        if (current.getMethodOrResource().contains(getWadlMethod())) {
+            resultPath.add(current);
+            return;
+        }
+
+        for (Object o : current.getMethodOrResource()) {
+            if (o instanceof Resource) {
+                findPathToMethod((Resource) o, resultPath);
+                if (resultPath.size() > 0) {
+                    break;
+                }
             }
         }
-        return wadlModel;
-    }
-    
-    public List<Resource> getResources() {
-        try {
-            return getWadlModel().getResources().getResource();
-        } catch(Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return Collections.EMPTY_LIST;
-    } 
-    
-    public FileObject getLocalWadlFile() {
-        //TODO
-        return null;
-    }
-    
-    /**
-     * Returns either a list of resources defined by associated WADL model or
-     * a list of filtered resource methods.
-     * @return
-     */
-    public List getResourcesOrMethods() {
-        if (getMethods() != null && getMethods().size() > 0) {
-            return getMethods();
-        }
-        try {
-            return getWadlModel().getResources().getResource();
-        } catch(Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return Collections.EMPTY_LIST;
-    }
 
-    @Override
-    protected SaasMethod createSaasMethod(Method method) {
-        return new WadlSaasMethod(this, method);
+        resultPath.add(0, current);
     }
     
-    public String getBaseURL() {
-        try {
-            return getWadlModel().getResources().getBase();
-        } catch(IOException ioe) {
-            // should not happen at this point
-            return NbBundle.getMessage(WadlSaas.class, "LBL_BAD_WADL");
+    public org.netbeans.modules.websvc.saas.model.wadl.Method getWadlMethod() {
+        if (wadlMethod == null) {
+            try {
+                wadlMethod = SaasUtil.wadlMethodFromXPath(getSaas().getWadlModel(), getHref());
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe); 
+            }
         }
+        return wadlMethod;
     }
+    
 }

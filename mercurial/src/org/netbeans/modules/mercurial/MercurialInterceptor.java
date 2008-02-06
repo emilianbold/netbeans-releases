@@ -346,8 +346,6 @@ public class MercurialInterceptor extends VCSInterceptor {
                 if (!HgUtils.isIgnored(file, false)) {
                     cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 }
-
-                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
         };
 

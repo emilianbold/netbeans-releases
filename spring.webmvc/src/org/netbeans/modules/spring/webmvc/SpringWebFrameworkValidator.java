@@ -37,25 +37,36 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.ui.nodes;
+package org.netbeans.modules.spring.webmvc;
 
-import org.netbeans.modules.websvc.saas.model.SaasMethod;
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
+import java.util.regex.Pattern;
 
 /**
  *
- * @author nam
+ * @author John Baker
  */
-public class WadlSaasMethodNode extends WadlMethodNode {
-    private SaasMethod saasMethod;
-    
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod());
-        this.saasMethod = saasMethod;
+public class SpringWebFrameworkValidator {
+    public static boolean isDispatcherNamePatternValid(String pattern) {        
+        return Pattern.matches("\\w+", pattern);
     }
-
-    @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
+    
+    public static boolean isDispatcherMappingPatternValid(String pattern){
+        // mapping validation based on the Servlet 2.4 specification,section SRV.11.2
+        if (pattern.startsWith("*.")){ // NOI18N
+            String p = pattern.substring(2);
+            if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
+                    && p.indexOf('/') == -1 && !p.trim().equals("") && !p.contains(" ") && Pattern.matches("\\w+",p)) { // NOI18N
+                return true;
+            }
+        }
+        
+        if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/") && !pattern.contains(" ")) // NOI18N
+            return true;
+        
+        if (pattern.matches("/")){ // NOI18N
+            return true;
+        }
+               
+        return false;
     }
 }
