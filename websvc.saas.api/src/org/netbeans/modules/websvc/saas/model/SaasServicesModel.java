@@ -43,11 +43,9 @@ import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.URL;
 import org.netbeans.modules.websvc.manager.api.WebServiceDescriptor;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
@@ -55,6 +53,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -67,6 +66,8 @@ public class SaasServicesModel {
     public static final String PROP_SERVICES = "services";
     public static final String ROOT_GROUP = "root";
     public static final String WEBSVC_HOME = WebServiceDescriptor.WEBSVC_HOME;
+    public static final String SERVICE_GROUP_XML = "service-groups.xml";
+    
     private SaasGroup rootGroup;
     private State state = State.UNINITIALIZED;
     private PropertyChangeSupport pps = new PropertyChangeSupport(this);
@@ -103,16 +104,18 @@ public class SaasServicesModel {
     }
 
     private void loadUserDefinedGroups() {
-        FileObject input = FileUtil.toFileObject(new File(WEBSVC_HOME));
+        FileObject input = FileUtil.toFileObject(new File(WEBSVC_HOME, SERVICE_GROUP_XML));
         try {
-            rootGroup = SaasUtil.loadSaasGroup(input);
+            if (input != null) {
+                rootGroup = SaasUtil.loadSaasGroup(input);
+            }
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
         }
         if (rootGroup == null) {
             Group g = new Group();
             g.setName(ROOT_GROUP);
-            rootGroup = new SaasGroup(null, g);
+            rootGroup = new SaasGroup((SaasGroup)null, g);
         }
     }
 
@@ -128,6 +131,14 @@ public class SaasServicesModel {
         }
     }
 
+    public void saveRootGroup() {
+        try {
+            SaasUtil.saveSaasGroup(rootGroup, new File(WEBSVC_HOME, SERVICE_GROUP_XML));
+        } catch(Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
     private void loadGroupFromDefaultFileSystemFolder(FileObject folder) {
         for (FileObject fo : folder.getChildren()) {
             try {
@@ -142,7 +153,17 @@ public class SaasServicesModel {
                     }
 
                     if (child.getChildrenGroups().size() == 0) {
-                        child.addService(new Saas(parent, ss));
+                        Saas service;
+                        if (Saas.NS_WADL.equals(ss.getType())) {
+                            service = new WadlSaas(parent, ss);
+                            //why contextclassloader only work here not later
+                            ((WadlSaas)service).getWadlModel();
+                        } else if (Saas.NS_WSDL.equals(ss.getType())) {
+                            service = new WsdlSaas(parent, ss);
+                        } else {
+                            service = new Saas(parent, ss);
+                        }
+                        child.addService(service);
                         break;
                     } else {
                         g = g.getGroup().get(0);
@@ -247,5 +268,9 @@ public class SaasServicesModel {
         init();
         parent.removeService(service);
     //TODO save
+    }
+    
+    public FileObject getWebServiceHome() {
+        return FileUtil.toFileObject(new File(WEBSVC_HOME));
     }
 }

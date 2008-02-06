@@ -48,22 +48,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.JEditorPane;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmMethod;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
@@ -86,6 +85,7 @@ import org.openide.util.Exceptions;
  * @author Vladimir Voskresensky
  */
 public class TraceXRef extends TraceModel {
+
     private String refFile = "";
     private String declarationName = "";
     private int line = 0;
@@ -341,5 +341,62 @@ public class TraceXRef extends TraceModel {
             System.err.println("ERROR: non classified function " + fun);            
         }
         return out;
-    }    
+    }   
+ 
+    private static XRefResultSet.DeclarationKind classifyDeclaration(CsmObject obj) {
+        XRefResultSet.DeclarationKind out = XRefResultSet.DeclarationKind.UNRESOLVED;
+        if (CsmKindUtilities.isClassifier(obj)) {
+            out = XRefResultSet.DeclarationKind.CLASSIFIER;
+        } else if (CsmKindUtilities.isEnumerator(obj)) {
+            out = XRefResultSet.DeclarationKind.ENUMERATOR;
+        } else if (CsmKindUtilities.isParamVariable(obj)) {
+            out = XRefResultSet.DeclarationKind.PARAMETER;
+        } else if (CsmKindUtilities.isVariable(obj)) {
+            out = XRefResultSet.DeclarationKind.VARIABLE;
+        } else if (CsmKindUtilities.isFunction(obj)) {
+            out = XRefResultSet.DeclarationKind.FUNCTION;
+        } else if (CsmKindUtilities.isNamespace(obj)) {
+            out = XRefResultSet.DeclarationKind.NAMESPACE;
+        } else if (CsmKindUtilities.isMacro(obj)) {
+            out = XRefResultSet.DeclarationKind.MACRO;
+        } else if (CsmKindUtilities.isClassForwardDeclaration(obj)) {
+            out = XRefResultSet.DeclarationKind.CLASS_FORWARD;
+        } else if (obj != null) {
+            System.err.println("ERROR: non classified declaration " + obj);            
+        }
+        return out;
+    }
+    
+    private static XRefResultSet.IncludeLevel classifyIncludeLevel(CsmObject obj, CsmFile file) {
+        XRefResultSet.IncludeLevel out = XRefResultSet.IncludeLevel.UNRESOLVED;
+        int level = 0;
+        boolean sameProject = false;
+        if (CsmKindUtilities.isOffsetable(obj)) {
+            CsmFile objFile = ((CsmOffsetable)obj).getContainingFile();
+            level = calcIncludeLevel(objFile, file, new HashSet<CsmFile>());
+        } else if (CsmKindUtilities.isNamespace(obj)) {
+            // check all namespace definitions
+            for (CsmNamespaceDefinition nsDef : ((CsmNamespace)obj).getDefinitions()) {
+                CsmFile defFile = nsDef.getContainingFile();
+                int curLevel = calcIncludeLevel(defFile, file, new HashSet<CsmFile>());
+            }
+        }
+        return out;
+    }
+    
+    private static XRefResultSet.DeclarationScope classifyDeclarationScope(CsmObject obj, CsmObject scope) {
+        XRefResultSet.DeclarationScope out = XRefResultSet.DeclarationScope.UNRESOLVED;
+        if (CsmKindUtilities.isFunction(scope)) {
+            out = classifyDeclarationScopeForFunction(obj, (CsmFunction)scope);
+        }
+        return out;
+    }
+    
+    private static XRefResultSet.DeclarationScope classifyDeclarationScopeForFunction(CsmObject obj, CsmFunction csmFunction) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+    
+    private static int calcIncludeLevel(CsmFile objFile, CsmFile file, Set<CsmFile> visited) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
 }

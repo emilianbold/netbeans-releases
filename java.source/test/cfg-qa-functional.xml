@@ -63,7 +63,22 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="full,copy_paste" name="copy_paste">
+    <testbag testattribs="all" name="All tests">
+        <testset dir="qa-functional/src">
+            <patternset>
+                <include name="org/netbeans/test/java/gui/copypaste/ClassNodeTest.class"/>
+                <include name="org/netbeans/test/java/gui/copypaste/PackageNodeTest.class"/>
+                <include name="org/netbeans/test/java/gui/errorannotations/*.class"/>
+                <include name="org/netbeans/test/java/gui/wizards/NewFileWizardTest.class"/>
+                <include name="org/netbeans/test/java/gui/parser/ParserTest.class"/>
+                <include name="org/netbeans/test/java/gui/fiximports/FixImportsTest.class"/>
+                <include name="org/netbeans/test/java/hints/*Test.class"/>
+                <include name="org/netbeans/test/java/navigation/*Test.class"/>
+            </patternset>
+        </testset>
+    </testbag>
+       
+    <testbag testattribs="copy_paste" name="copy_paste">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/java/gui/copypaste/ClassNodeTest.class"/>
@@ -72,7 +87,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="full,error_annotations" name="error_annotations">
+    <testbag testattribs="error_annotations" name="error_annotations">
         <testset dir="qa-functional/src">
             <patternset>                
                 <include name="org/netbeans/test/java/gui/errorannotations/*.class"/>
@@ -80,7 +95,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="full,wizards" name="wizards">
+    <testbag testattribs="wizards" name="wizards">
         <testset dir="qa-functional/src">
             <patternset>                
                 <include name="org/netbeans/test/java/gui/wizards/NewFileWizardTest.class"/>                
@@ -88,7 +103,7 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="parser,full" name="parser">
+    <testbag testattribs="parser" name="parser">
         <testset dir="qa-functional/src">
             <patternset>                
                 <include name="org/netbeans/test/java/gui/parser/ParserTest.class"/>
@@ -96,23 +111,23 @@ made subject to such option by the copyright holder.
         </testset>
     </testbag>
     
-    <testbag testattribs="full,fiximports" name="fiximports">
+    <testbag testattribs="fiximports" name="fiximports">
         <testset dir="qa-functional/src">
             <patternset>
-                <include name="org/netbeans/test/java/gui/fiximports/FixImportsTest.class"/>                                                
+                <include name="org/netbeans/test/java/gui/fiximports/FixImportsTest.class"/>
             </patternset>
         </testset>
     </testbag>
     
-    <testbag testattribs="full,hints" name="hints">
+    <testbag testattribs="hints" name="hints">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/java/hints/*Test.class"/>                                                
             </patternset>
         </testset>
     </testbag>
-    
-    <testbag testattribs="full,navigation" name="Naviagation">
+        
+    <testbag testattribs="navigation" name="Naviagation">
         <testset dir="qa-functional/src">
             <patternset>
                 <include name="org/netbeans/test/java/navigation/*Test.class"/>                                                
