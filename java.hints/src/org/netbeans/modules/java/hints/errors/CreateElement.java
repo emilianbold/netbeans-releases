@@ -382,7 +382,7 @@ public final class CreateElement implements ErrorRule<Void> {
                 int identifierPos = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), errorPath.getLeaf());
                 if (ee != null && fixTypes.contains(ElementKind.PARAMETER) && !Utilities.isMethodHeaderInsideGuardedBlock(info, (MethodTree) firstMethod.getLeaf()))
                     result.add(new AddParameterOrLocalFix(info, type, simpleName, true, identifierPos));
-                if (fixTypes.contains(ElementKind.LOCAL_VARIABLE))
+                if (fixTypes.contains(ElementKind.LOCAL_VARIABLE) && ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_LOCAL_VARIABLE))
                     result.add(new AddParameterOrLocalFix(info, type, simpleName, false, identifierPos));
             }
         }

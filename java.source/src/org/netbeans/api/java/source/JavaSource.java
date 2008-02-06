@@ -598,8 +598,8 @@ public final class JavaSource {
         boolean a = false;
         assert a = true;
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
-            if (warnedAboutRunInEQ.add(stackTraceElement)) {
+            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
+            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
                 LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
         }
@@ -861,8 +861,10 @@ public final class JavaSource {
         boolean a = false;
         assert a = true;        
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTrace[2]);     //NOI18N
+            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
+            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
+                LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTraceElement);     //NOI18N
+            }
         }
         
         ModificationResult result = new ModificationResult(this);
@@ -1995,7 +1997,23 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         } finally {
             currentRequest.cancelCompleted(request);
         }
-    }    
+    }
+    
+    private static StackTraceElement findCaller(StackTraceElement[] elements) {
+        for (StackTraceElement e : elements) {
+            if (JavaSource.class.getName().equals(e.getClassName())) {
+                continue;
+            }
+            
+            if (e.getClassName().startsWith("java.lang.")) {
+                continue;
+            }
+            
+            return e;
+        }
+        
+        return null;
+    }
     
     private static class SingleThreadFactory implements ThreadFactory {
         
@@ -2078,6 +2096,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             } finally {
                 javacLock.unlock();
             }
+        }
+        
+        @Override
+        public boolean isJavaCompilerLocked() {
+            return javacLock.isLocked();
         }
 
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
@@ -2590,6 +2613,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         if (!ci.getJavaSource().supportsReparse) {
             return false;
         }
+        if (((JCMethodDecl)orig).localEnv == null) {
+            //We are seeing interface method or abstract or native method with body.
+            //Don't do any optimalization of this broken code - has no attr env.
+            return false;
+        }
         final Phase currentPhase = ci.getPhase();
         if (Phase.PARSED.compareTo(currentPhase) > 0) {
             return false;
@@ -2601,6 +2629,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             final JavacTaskImpl task = ci.getJavacTask();
             final JavacTrees jt = JavacTrees.instance(task);
+            final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
+            final int origEndPos = (int) jt.getSourcePositions().getEndPosition(cu, orig.getBody());
+            if (origStartPos > origEndPos) {
+                LOGGER.warning("Javac returned startpos: "+origStartPos+" > endpos: "+origEndPos);  //NOI18N
+                return false;
+            }
             final FindAnnonVisitor fav = new FindAnnonVisitor();
             fav.scan(orig.getBody(), null);
             if (fav.hasLocalClass) {
@@ -2608,8 +2642,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             final int firstInner = fav.firstInner;
             final int noInner = fav.noInner;
-            final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
-            final int origEndPos = (int) jt.getSourcePositions().getEndPosition(cu, orig.getBody());
             final Context ctx = task.getContext();        
             final Log l = Log.instance(ctx);
             l.startPartialReparse();

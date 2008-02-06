@@ -42,11 +42,13 @@ package org.netbeans.modules.websvc.saas.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import org.apache.commons.jxpath.JXPathContext;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
+import org.netbeans.modules.websvc.saas.model.wadl.Application;
 
 /**
  *
@@ -96,6 +98,16 @@ public class SaasUtilTest extends NbTestCase {
         assertEquals("test3", result.getChildrenGroups().get(2).getName());
     }
 
+    public void testXpath() throws Exception {
+        InputStream in = this.getClass().getResourceAsStream("testwadl.xml");
+        Application app = SaasUtil.loadJaxbObject(in, Application.class);
+        assertNotNull(SaasUtil.wadlMethodFromXPath(app, "//resource[0]/method[0]"));
+        assertNotNull(SaasUtil.wadlMethodFromXPath(app, "/application//resource[0]/method[2]"));
+        assertNotNull(SaasUtil.wadlMethodFromXPath(app, "//resource[0]/method[3]"));
+        assertNull(SaasUtil.wadlMethodFromXPath(app, "//resource[1]/method[0]"));
+        assertNull(SaasUtil.wadlMethodFromXPath(app, "//resource[1]/method[0]/method[3]"));
+    }
+    
     public void testSaveSaasGroup() throws Exception {
         output = new File(getWorkDir(), "testSaveSaasGroup");
         InputStream in = this.getClass().getResourceAsStream("rootGroup.xml");
@@ -115,7 +127,7 @@ public class SaasUtilTest extends NbTestCase {
         SaasMetadata metadata = SaasUtil.loadJaxbObject(in, SaasMetadata.class);
         assertEquals("YouTube", metadata.getGroup().getName());
         assertEquals("Videos", metadata.getGroup().getGroup().get(0).getName());
-        //TODO failing assertEquals("org.netbeans.modules.websvc.saas.services.youtube.Bundle", metadata.getLocalizingBundle());
+        assertEquals("org.netbeans.modules.websvc.saas.services.youtube.Bundle", metadata.getLocalizingBundle());
         assertEquals("Templates/WebServices/profile.properties", metadata.getAuthentication().getProfile());
         assertEquals("dev_id", metadata.getAuthentication().getApiKey().getId());
 
@@ -127,8 +139,7 @@ public class SaasUtilTest extends NbTestCase {
 
         InputStream in = this.getClass().getResourceAsStream("/org/netbeans/modules/websvc/saas/services/youtube/resources/YouTubeVideos.xml");
         SaasServices ss = SaasUtil.loadSaasServices(in);
-        //TODO fix me
-        //assertEquals("YouTubeVideos", ss.getDisplayName());
+        assertEquals("YouTubeVideos", ss.getDisplayName());
         
         //TODO fixme this only works if we have absolute include/href=<absolute-URI>
         assertNotNull(ss.getSaasMetadata());

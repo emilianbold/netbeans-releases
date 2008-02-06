@@ -51,6 +51,7 @@ import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -60,7 +61,7 @@ import org.openide.util.NbBundle;
  * 
  * @author John Rice
  */
-public class DiffAction extends AbstractAction {
+public class DiffAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -69,8 +70,7 @@ public class DiffAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         String contextName = Utils.getContextDisplayName(context);
                 
         File root = HgUtils.getRootFile(context);

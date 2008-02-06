@@ -36,13 +36,13 @@ import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
 import javax.lang.model.element.Element;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -189,11 +189,7 @@ public final class ElementOpen {
         
         
         JavaSource js = JavaSource.forFileObject(fo);
-        js.runUserActionTask(new CancellableTask<CompilationController>() {
-            
-            public void cancel() {
-            }
-            
+        js.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController info) {
                 try {
                     info.toPhase(JavaSource.Phase.RESOLVED);

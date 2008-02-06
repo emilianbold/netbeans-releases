@@ -75,7 +75,7 @@ public class BridgingServerInstanceProvider implements org.netbeans.spi.server.S
     }
 
     public final void removeInstanceListener() {
-        ServerRegistry.getInstance().addInstanceListener(this);
+        ServerRegistry.getInstance().removeInstanceListener(this);
     }
 
     public void addChangeListener(ChangeListener listener) {

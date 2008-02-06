@@ -81,6 +81,16 @@ made subject to such option by the copyright holder.
                     <file name="org-netbeans-modules-java-hints-StaticAccess.instance"/>
                 </folder>    
 
+                <folder name="errors">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                    <file name="surround.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.create"/>
+                    </file>
+                    <file name="local.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.create"/>
+                    </file>
+                </folder>
+                
                 <folder name="rules15">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>                    
                     <file name="org-netbeans-modules-java-hints-AddOverrideAnnotation.instance"/>

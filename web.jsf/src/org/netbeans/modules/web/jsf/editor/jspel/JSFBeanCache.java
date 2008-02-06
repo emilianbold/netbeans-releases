@@ -71,9 +71,11 @@ public class JSFBeanCache {
                     JSFConfigModel model = ConfigurationUtils.getConfigModel(files[i], false);
                     if (model != null) {
                         FacesConfig facesConfig = model.getRootComponent();
-                        Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
-                        for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
-                            beans.add(it.next());   
+                        if (facesConfig != null) {
+                            Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
+                            for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
+                                beans.add(it.next());   
+                            }
                         }
                     }
             }

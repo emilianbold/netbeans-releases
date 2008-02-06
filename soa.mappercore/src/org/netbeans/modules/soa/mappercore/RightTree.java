@@ -777,8 +777,8 @@ public class RightTree extends MapperPanel implements
             Mapper mapper = RightTree.this.getMapper();
             SelectionModel selectionModel = getSelectionModel();
             TreePath currentTreePath = selectionModel.getSelectedPath();
-            MapperNode currentNode = mapper.getNode(currentTreePath, true);
             if (currentTreePath != null) {
+                MapperNode currentNode = mapper.getNode(currentTreePath, true);
                 if (currentNode.isLeaf()) {
                     if (currentNode.getNextVisibleNode() != null) {
                         mapper.setSelectedNode(currentNode.getNextVisibleNode());
@@ -828,7 +828,7 @@ public class RightTree extends MapperPanel implements
             if (node.isGraphCollapsed()) {
                 mapper.setExpandedGraphState(node.getTreePath(), true);
             } else {
-                getCanvas().requestFocus();
+                getCanvas().requestFocusInWindow();
                 Graph graph = node.getGraph();
                 if (graph.hasOutgoingLinks()) {
                     List<Link> links = graph.getLinks();

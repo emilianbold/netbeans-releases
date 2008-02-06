@@ -51,6 +51,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -60,7 +61,7 @@ import org.openide.NotifyDescriptor;
  * 
  * @author John Rice
  */
-public class AddAction extends AbstractAction {
+public class AddAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -78,8 +79,7 @@ public class AddAction extends AbstractAction {
         return false;
     } 
     
-    public void actionPerformed(ActionEvent ev) {     
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent ev) {     
         Mercurial hg = Mercurial.getInstance();
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if (files == null || files.length == 0) return;
