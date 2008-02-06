@@ -47,6 +47,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
@@ -182,10 +183,27 @@ public class AstUtilities {
             FieldNode fieldNode = (FieldNode) node;
             return new OffsetRange(start, start + fieldNode.getName().length());
         } else if (node instanceof ClassNode) {
-            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber());
-            if (start < 0) {
-                start = 0;
+            // ok, here we have to move the Range to the first character
+            // after the "class" keyword, plus an indefinite nuber of spaces
+            // FIXME: have to check what happens with other whitespaces between
+            // the keyword and the identifier (like newline)
+            
+            int start = getOffset(doc, node.getLineNumber(), node.getColumnNumber())
+                        + "class".length();
+            
+            try {
+                while (true) {
+                    char a[] = doc.getChars(start, 1);
+                    if (!(a[0] == ' ')) {
+                        break;
+                    }
+                    start++;
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
+            
+
             ClassNode classNode = (ClassNode) node;
             return new OffsetRange(start, start + classNode.getName().length());
         } else if (node instanceof ConstructorNode) {

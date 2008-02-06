@@ -190,10 +190,7 @@ public class GroovySemanticAnalyzer implements SemanticAnalyzer {
             if(node.getLineNumber() > 0) {
                 OffsetRange range = AstUtilities.getRange(node, doc);
                 
-                // FIXME: the range seems to start from 0, e.g. including the
-                // keyword "class". Possible Bug elsewhere.
-                
-                // highlights.put(range, ColoringAttributes.CLASS_DECLARATION);
+                highlights.put(range, ColoringAttributes.CLASS);
             }
             
         } else if (node instanceof VariableExpression) {

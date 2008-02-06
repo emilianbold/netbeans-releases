@@ -80,7 +80,7 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
         analyzer.run(info);
     }
 
-    public void testCombindeTest() throws IOException {
+    public void testCombinedTest() throws IOException {
         
         String str =    "class DemoClass {\n" +
                         "\tint field1 = 1\n" +
@@ -142,6 +142,40 @@ public class GroovySemanticAnalyzerTest extends GroovyTestBase {
         // thereby enabling the logging from the SemanticAnalyzer
         assertTrue(true);
     }
-    
+
+        public void testClassNode() throws IOException {
+        
+        String str =    "class TestClass {\n" +
+                        "\tint field1 = 1;\n" +
+                        "\n" +
+                        "\tTestClass (int f) {\n" +
+                        "\t}\n" +
+                        "}\n" +
+                        "  class  SecondTestClass {\n" +
+                        "\n" +
+                        "\nSecondTestClass (int f) {\n" +
+                        "\t}\n" +
+                        "\nSecondTestClass (String str) {\n" +
+                        "\t}\n" +
+                        "}\n" +
+                        "   class   ThirdTestClass {\n" +
+                        "\n" +
+                        "\nThirdTestClass (int f) {\n" +
+                        "\t}\n" +
+                        "\nThirdTestClass (String str) {\n" +
+                        "\t}\n" +
+                        "}\n" +
+                        "println \"End.\"\n";
+        
+        // un-comment the line below to have cut'n'pastable 
+        // testcases for the groovy-editor
+        // System.out.println(str);
+        copyStringToFileObject(testFO, str);
+        parseFile(testFO);
+        
+        // mark this below "false" to deliberately fail the test and 
+        // thereby enabling the logging from the SemanticAnalyzer
+        assertTrue(true);
+    }        
     
 }
