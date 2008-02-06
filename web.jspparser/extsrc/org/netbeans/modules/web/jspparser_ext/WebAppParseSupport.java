@@ -54,6 +54,7 @@ import java.security.PermissionCollection;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.Map;
@@ -119,7 +120,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     
     /** The mappings are cashed here. 
      */
-    private Map mappings;
+    private Map<String, String[]> mappings;
     
     /** This is flag, whether the execute and compilation classpath for the web  project is actual.
      *  The flag is set to false, when there is event, which notifies about change in the classpath.
@@ -130,7 +131,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     /** This cache contains the lib (all jars), and all tld files. It's used for
      *  checking, whether these files are not changed.
      */
-    private HashMap mappingFiles;
+    private Map<File, Long> mappingFiles;
    
     /** This is hashcode of the execution classpath, which is used for building classloader. 
      * In checkClassesAreCurrent is used for fast check, whether the classpath was not changed.
@@ -437,10 +438,10 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
      *    [0] The location
      *    [1] If the location is a jar file, this is the location of the tld.
      */
-    public synchronized Map getTaglibMap(boolean useEditor) throws IOException {
+    public synchronized Map<String, String[]> getTaglibMap(boolean useEditor) throws IOException {
         Options options = useEditor ? editorOptions : diskOptions;
         TldLocationsCache lc = options.getTldLocationsCache();
-        Map mappings = new HashMap();
+        Map<String, String[]> mappings = new HashMap<String, String[]>();
         mappings.putAll(getMappingsByReflection(lc));
         mappings.putAll(getImplicitLocation());
         return mappings;
@@ -448,8 +449,8 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     
     /** Returns map with tlds, which doesn't have defined <uri>.
      */
-    private Map getImplicitLocation(){
-        Map returnMap = new HashMap();
+    private Map<String, String[]> getImplicitLocation() {
+        Map<String, String[]> returnMap = new HashMap<String, String[]>();
         // Obtain all tld files under WEB-INF folder
         FileObject webInf = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
         FileObject fo;
@@ -482,23 +483,22 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
             return false;
         }
         
-        HashMap checkedFiles = new HashMap();
+        Map<File, Long> checkedFiles = new HashMap<File, Long>();
         // Obtain all libraries (jars).
         FileObject[] roots = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.EXECUTE).getRoots();
         FileObject fo;
         File file;
-        try{
-            for (int i = 0; i < roots.length; i++){
+        try {
+            for (int i = 0; i < roots.length; i++) {
                 if (roots[i].getURL().getProtocol().equals("jar")) { //NOI18N
                     fo = FileUtil.getArchiveFile(roots[i]);
-                    if (fo != null){
+                    if (fo != null) {
                         file = FileUtil.toFile(fo);
                         checkedFiles.put(file, Long.valueOf(file.lastModified()));
                     }
                 }
             }
-        } 
-        catch(org.openide.filesystems.FileStateInvalidException e){
+        } catch (FileStateInvalidException e){
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
         
@@ -537,7 +537,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         return true;
     }
        
-    private Map getMappingsByReflection(TldLocationsCache lc) throws IOException {
+    private Map<String, String[]> getMappingsByReflection(TldLocationsCache lc) throws IOException {
         try {
             if (!isClassPathCurrent || !checkMappingsAreCurrent()) {
                 // if the classpath was changed, create new classloaders
@@ -547,7 +547,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 mappingsF.setAccessible(true);
                 // Before new parsing, the old mappings in the TldLocationCache has to be cleared. Else there are
                 // stored the old mappings.
-                mappings = (Map)mappingsF.get(lc);
+                mappings = (Map<String, String[]>) mappingsF.get(lc);
                 // the mapping doesn't have to be initialized yet
                 if(mappings != null)
                     mappings.clear();
@@ -563,7 +563,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 }
                 
                 // obtain the current mappings after parsing. 
-                mappings = (Map)mappingsF.get(lc);
+                mappings = (Map<String, String[]>) mappingsF.get(lc);
                 //------------------------- construct the cache -----------------------------
                 // Obtain all files, which were parsed and store the lastchange time to the cache.
                 if (mappingFiles == null)
@@ -572,20 +572,18 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     // clear the old cache
                     mappingFiles.clear();
                 
-                HashMap usedFile = new HashMap();
+                Set<String> usedFile = new HashSet<String>();
                 
                 // Obtain all files which has tlds. There can be more mappings in one tld.
                 // The value of the mapping is String[file][relative tld path]
-                Iterator iter = mappings.values().iterator();
+                Iterator<String[]> iter = mappings.values().iterator();
                 while (iter.hasNext()){
-                    usedFile.put(((String[])iter.next())[0], null);
+                    usedFile.add(iter.next()[0]);
                 }
                 
                 // Store the files into the cache
-                iter = usedFile.keySet().iterator();
                 File file;
-                while (iter.hasNext()){
-                    String uri = (String)iter.next();
+                for (String uri : usedFile){
                     // usualy if the uri starts with the file, then it's a jar
                     if (!uri.startsWith("file:")){      // NoI18N
                         FileObject fo = wmRoot.getFileObject(uri);
