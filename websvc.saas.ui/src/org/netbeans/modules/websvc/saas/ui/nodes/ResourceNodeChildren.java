@@ -59,7 +59,12 @@ public class ResourceNodeChildren extends Children.Keys<Object> {
     
     public ResourceNodeChildren(WadlSaas wadlSaas, Resource[] pathToResource) {
         this.wadlSaas = wadlSaas;
+        assert pathToResource != null && pathToResource.length > 0 : "path should have at least one resource";
         this.pathToResource = Arrays.asList(pathToResource);
+    }
+    
+    public Resource getResource() {
+        return pathToResource.get(pathToResource.size()-1);
     }
     
     @Override
@@ -77,7 +82,7 @@ public class ResourceNodeChildren extends Children.Keys<Object> {
 
     private void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
-        keys.addAll(wadlSaas.getResourcesOrMethods());
+        keys.addAll(getResource().getMethodOrResource());
         setKeys(keys.toArray());
     }
     

@@ -172,13 +172,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     public void mousePressed(MouseEvent e) {
-        if (e.isPopupTrigger()) {
+        if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (e.isPopupTrigger()) {
+        if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
@@ -292,7 +292,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         final boolean diffToPrevEnabled = selection.length == 1;
         
         if (revision > 0) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) { // NOI18N
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
                 {
                     setEnabled(diffToPrevEnabled);
                 }
@@ -319,7 +319,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }));
         */
         if (!revisionSelected) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", revision)) { // NOI18N
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
                 {                    
                     setEnabled(rollbackToEnabled);
                 }
@@ -635,9 +635,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }
             
             actionsPane.setVisible(true);
-            diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
-            revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
-        }
+            if(!master.isIncomingSearch()){
+                diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
+                revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
+            }
+    }
 
         private void renderRevision(JList list, RepositoryRevision.Event dispRevision, final int index, boolean isSelected) {
             Style style;
