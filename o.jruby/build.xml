@@ -2,8 +2,8 @@
 <!-- You may freely edit this file. See harness/README in the NetBeans platform -->
 <!-- for some information on what you could do (e.g. targets to override). -->
 <!-- If you delete this file and reopen the project it will be recreated. -->
-<project name="org.jruby" default="netbeans" basedir=".">
-    <description>Builds, tests, and runs the project org.jruby</description>
+<project name="o.jruby" default="netbeans" basedir=".">
+    <description>Builds, tests, and runs the project o.jruby</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 
     <target name="init" depends="projectized.init">

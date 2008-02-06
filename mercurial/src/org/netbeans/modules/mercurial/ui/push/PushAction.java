@@ -53,6 +53,7 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.pull.PullAction;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
@@ -73,7 +74,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author John Rice
  */
-public class PushAction extends AbstractAction {
+public class PushAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -82,8 +83,7 @@ public class PushAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
             HgUtils.outputMercurialTabInRed( NbBundle.getMessage(PushAction.class,"MSG_PUSH_TITLE")); // NOI18N
@@ -205,7 +205,7 @@ public class PushAction extends AbstractAction {
 
                 HgUtils.outputMercurialTab(list);
 
-                if (toPrjName == null) {
+                if (toPrjName == null) { 
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(PushAction.class,
                             "MSG_PUSH_TO_NONAME", bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : pushPath)); // NOI18N
@@ -214,9 +214,16 @@ public class PushAction extends AbstractAction {
                             NbBundle.getMessage(PushAction.class,
                             "MSG_PUSH_TO", toPrjName, bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : pushPath)); // NOI18N
                 }
-                HgUtils.outputMercurialTabInRed(
-                        NbBundle.getMessage(PushAction.class,
-                        "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
+
+                if (fromPrjName == null ){
+                    HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(PushAction.class,
+                            "MSG_PUSH_FROM_NONAME", root)); // NOI18N
+                } else {
+                    HgUtils.outputMercurialTabInRed(
+                            NbBundle.getMessage(PushAction.class,
+                            "MSG_PUSH_FROM", fromPrjName, root)); // NOI18N
+                }
 
                 boolean bMergeNeeded = HgCommand.isHeadsCreated(list.get(list.size() - 1));
                 boolean bConfirmMerge = false;
@@ -225,11 +232,7 @@ public class PushAction extends AbstractAction {
                     if (bNoChanges) {
                         return;
                     }
-                    if (!bLocalPush) {
-                        HgUtils.outputMercurialTabInRed(
-                                NbBundle.getMessage(PushAction.class,
-                                "MSG_PUSH_UPDATE_NEEDED_NONAME", toPrjName, pushPath)); // NOI18N
-                    } else {
+                    if (bLocalPush) {
                         list = HgCommand.doUpdateAll(pushFile, false, null, false);
                         HgUtils.outputMercurialTab(list);
                         if (toPrjName != null) {

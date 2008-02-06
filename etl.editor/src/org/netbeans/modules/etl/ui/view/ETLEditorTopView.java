@@ -309,10 +309,12 @@ public class ETLEditorTopView extends BasicTopView {
                         } else {
                             msg.append(be.getMessage());
                         }
-                        this.sqlText = NbBundle.getMessage(SQLStatementPanel.class, "MSG_cant_evaluate_sql", msg);
+                        String nbBundle1 = mLoc.t("PRSR001: Cannot evaluate SQL:{0}",msg);
+                        this.sqlText =  Localizer.parse(nbBundle1);
                     } catch (Exception exp) {
+                        String nbBundle2 = mLoc.t("PRSR001: Cannot evaluate SQL:{0}",exp.getMessage());
                         mLogger.errorNoloc(mLoc.t("PRSR049: Failed to generate Core SQL{0}", ETLEditorTopView.class.getName()), ex);
-                        this.sqlText = NbBundle.getMessage(SQLStatementPanel.class, "MSG_cant_evaluate_sql", exp.getMessage());
+                        this.sqlText = Localizer.parse(nbBundle2);
                     }
                     return "";
                 }
