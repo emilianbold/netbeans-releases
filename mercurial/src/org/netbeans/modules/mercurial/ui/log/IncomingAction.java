@@ -38,50 +38,37 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.mercurial.ui.log;
 
-package org.netbeans.modules.web.jsf.editor.jspel;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.versioning.spi.VCSContext;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author Petr Pisl
+ * Log action for mercurial: 
+ * hg log - show revision history of entire repository or files
+ * 
+ * @author John Rice
  */
-public class JSFBeanCache {
+public class IncomingAction extends AbstractAction {
     
-    public static List /*<ManagedBean>*/ getBeans(WebModule webModule) {
-        ArrayList beans = new ArrayList();
-        FileObject[] files = null; 
-        
-        if (webModule != null) {
-            files = ConfigurationUtils.getFacesConfigFiles(webModule);
-        }
-        
-        if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-                    JSFConfigModel model = ConfigurationUtils.getConfigModel(files[i], false);
-                    if (model != null) {
-                        FacesConfig facesConfig = model.getRootComponent();
-                        if (facesConfig != null) {
-                            Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
-                            for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
-                                beans.add(it.next());   
-                            }
-                        }
-                    }
-            }
-        }
-        return beans;
+    private final VCSContext context;
+    
+    public IncomingAction(String name, VCSContext context) {
+        this.context = context;
+        putValue(Action.NAME, name);
     }
     
-    
-}
+    public void actionPerformed(ActionEvent e) {
+        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+        SearchHistoryAction.openIncoming(context,
+                NbBundle.getMessage(IncomingAction.class, "MSG_Incoming_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
+    }
+        
+    public boolean isEnabled() {
+        return HgUtils.getRootFile(context) != null;
+    } 
+}    
