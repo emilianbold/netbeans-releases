@@ -21,12 +21,12 @@ USERDIR=/tmp/preindexing
 #############################################################################################
 # No user-configurable parts beyond this point...
 
-RUBY1=$NBCVSHOME/nbbuild/netbeans/ruby1
+RUBY=$NBCVSHOME/nbbuild/netbeans/ruby2
 unset GEM_HOME
 
-find $RUBY1 . -name "netbeans-index*.zip" -exec rm {} \;
+find $RUBY . -name "netbeans-index*.zip" -exec rm {} \;
 find $NATIVERUBYHOME . -name "netbeans-index*.zip" -exec rm {} \;
-rm -rf $RUBY1/preindexed/lib
+rm -rf $RUBY/preindexed/lib
 
 rm -rf $USERDIR
 $NB -J-Dgsf.preindexing=true -J-Druby.computeindex --userdir $USERDIR
@@ -34,7 +34,7 @@ rm -rf $USERDIR
 $NB -J-Dgsf.preindexing=true -J-Druby.computeindex --userdir $USERDIR -J-Druby.interpreter=$NATIVERUBY
 
 # Pack preindexed.zip
-cd $RUBY1
+cd $RUBY
 rm -f preindexed-jruby.zip
 zip -r preindexed-jruby.zip `find . -name "netbeans-index*" | egrep -v "action|active|rails"`
 mv preindexed-jruby.zip $NBCVSHOME/ruby/platform/release/preindexed.zip
@@ -45,7 +45,7 @@ cd $NATIVERUBYHOME
 rm -f $SCRATCHFILE
 zip -r $SCRATCHFILE `find . -name "netbeans*.zip"` 
 
-cd $RUBY1
+cd $RUBY
 rm -rf preindexed
 mkdir preindexed
 cd preindexed

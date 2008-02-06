@@ -47,20 +47,13 @@ import java.awt.event.KeyEvent;
 import java.beans.BeanInfo;
 import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleElementVisitor6;
-import javax.lang.model.util.SimpleTypeVisitor6;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -74,7 +67,6 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.editor.BaseDocument;
@@ -94,7 +86,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
-import org.openide.xml.XMLUtil;
 
 /**
  * A completion item shown in a valid code completion request 
@@ -115,8 +106,8 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     }
     
     public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
-                boolean deprecated) {
-        return new ClassItem(substitutionOffset, elem, type, deprecated);
+                boolean deprecated, boolean displayPackage) {
+        return new ClassItem(substitutionOffset, elem, type, deprecated, displayPackage);
     }
     
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
@@ -306,20 +297,20 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private TypeMirrorHandle<DeclaredType> typeHandle;
         private boolean deprecated;
         private String simpleName;
-        private String typeName;
         private String enclName;
         private String sortText;
         private String leftText;
+        private boolean displayPackage;
 
         public ClassItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
-                boolean deprecated) {
+                boolean deprecated, boolean displayPackage) {
             super(substitutionOffset);
             this.typeHandle = TypeMirrorHandle.create(type);
             this.deprecated = deprecated;
             this.simpleName = elem.getSimpleName().toString();
-            this.typeName = getTypeName(type, false).toString();
             this.enclName = getElementName(elem.getEnclosingElement(), true).toString();
             this.sortText = this.simpleName + getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
+            this.displayPackage = displayPackage;
         }
         
         public int getSortPriority() {
@@ -332,9 +323,9 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 
         public CharSequence getInsertPrefix() {
             if ("".equals(enclName)) { // NOI18N
-                return typeName;
+                return simpleName;
             }
-            return enclName + "." + typeName; // NOI18N
+            return enclName + "." + simpleName; // NOI18N
         }
 
         @Override
@@ -349,10 +340,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 sb.append(getColor());
                 if (deprecated)
                     sb.append(STRIKE);
-                sb.append(escape(typeName));
+                sb.append(simpleName);
                 if (deprecated)
                     sb.append(STRIKE_END);
-                if (enclName != null && enclName.length() > 0) {
+                if (displayPackage && enclName != null && enclName.length() > 0) {
                     sb.append(COLOR_END);
                     sb.append(PKG_COLOR);
                     sb.append(" ("); //NOI18N
@@ -380,9 +371,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 @Override
                 protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
                     try {
-                        JTextComponent component = EditorRegistry.lastFocusedComponent();
-                        Document document = component.getDocument();
-                        JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(document);
+                        JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
                         if (js == null) {
                             return;
                         }
@@ -405,7 +394,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-            });
+            }, EditorRegistry.lastFocusedComponent());
         }
     }
     
@@ -650,124 +639,6 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }        
     }
     
-    public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
-        return getTypeName(type, fqn, false);
-    }
-    
-    public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
-	if (type == null)
-            return ""; //NOI18N
-        return new TypeNameVisitor(varArg).visit(type, fqn);
-    }
-    
-    private static final String UNKNOWN = "<unknown>"; //NOI18N
-    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
-    
-    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
-        
-        private boolean varArg;
-        
-        private TypeNameVisitor(boolean varArg) {
-            super(new StringBuilder());
-            this.varArg = varArg;
-        }
-        
-        @Override
-        public StringBuilder defaultAction(TypeMirror t, Boolean p) {
-            return DEFAULT_VALUE.append(t);
-        }
-        
-        @Override
-        public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
-            Element e = t.asElement();
-            if (e instanceof TypeElement) {
-                TypeElement te = (TypeElement)e;
-                DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
-                Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
-                if (it.hasNext()) {
-                    DEFAULT_VALUE.append("<"); //NOI18N
-                    while(it.hasNext()) {
-                        visit(it.next(), p);
-                        if (it.hasNext())
-                            DEFAULT_VALUE.append(", "); //NOI18N
-                    }
-                    DEFAULT_VALUE.append(">"); //NOI18N
-                }
-                return DEFAULT_VALUE;                
-            } else {
-                return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
-            }
-        }
-                        
-        @Override
-        public StringBuilder visitArray(ArrayType t, Boolean p) {
-            boolean isVarArg = varArg;
-            varArg = false;
-            visit(t.getComponentType(), p);
-            return DEFAULT_VALUE.append(isVarArg ? "..." : "[]"); //NOI18N
-        }
-
-        @Override
-        public StringBuilder visitTypeVariable(TypeVariable t, Boolean p) {
-            Element e = t.asElement();
-            if (e != null) {
-                String name = e.getSimpleName().toString();
-                if (!CAPTURED_WILDCARD.equals(name))
-                    return DEFAULT_VALUE.append(name);
-            }
-            DEFAULT_VALUE.append("?"); //NOI18N
-            TypeMirror bound = t.getLowerBound();
-            if (bound != null && bound.getKind() != TypeKind.NULL) {
-                DEFAULT_VALUE.append(" super "); //NOI18N
-                visit(bound, p);
-            } else {
-                bound = t.getUpperBound();
-                if (bound != null && bound.getKind() != TypeKind.NULL) {
-                    DEFAULT_VALUE.append(" extends "); //NOI18N
-                    if (bound.getKind() == TypeKind.TYPEVAR)
-                        bound = ((TypeVariable)bound).getLowerBound();
-                    visit(bound, p);
-                }
-            }
-            return DEFAULT_VALUE;
-        }
-
-        @Override
-        public StringBuilder visitWildcard(WildcardType t, Boolean p) {
-            DEFAULT_VALUE.append("?"); //NOI18N
-            TypeMirror bound = t.getSuperBound();
-            if (bound == null) {
-                bound = t.getExtendsBound();
-                if (bound != null) {
-                    DEFAULT_VALUE.append(" extends "); //NOI18N
-                    if (bound.getKind() == TypeKind.WILDCARD)
-                        bound = ((WildcardType)bound).getSuperBound();
-                    visit(bound, p);
-                } else {
-                    bound = SourceUtils.getBound(t);
-                    if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
-                        DEFAULT_VALUE.append(" extends "); //NOI18N
-                        visit(bound, p);
-                    }
-                }
-            } else {
-                DEFAULT_VALUE.append(" super "); //NOI18N
-                visit(bound, p);
-            }
-            return DEFAULT_VALUE;
-        }
-
-        @Override
-        public StringBuilder visitError(ErrorType t, Boolean p) {
-            Element e = t.asElement();
-            if (e instanceof TypeElement) {
-                TypeElement te = (TypeElement)e;
-                return DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
-            }
-            return DEFAULT_VALUE;
-        }
-    }
-    
     public static int getImportanceLevel(String fqn) {
         int weight = 50;
         if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) // NOI18N
@@ -779,14 +650,5 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) // NOI18N
             weight += 30;
         return weight;
-    }
-    
-    private static String escape(String s) {
-        if (s != null) {
-            try {
-                return XMLUtil.toAttributeValue(s);
-            } catch (Exception ex) {}
-        }
-        return s;
     }
 }

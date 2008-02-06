@@ -68,12 +68,12 @@ public class RelativizeFilePathCustomizer extends javax.swing.JPanel {
         jPanel1.add(fileChooserAccessory);
     }
     
-    public File getFile() throws IOException {
+    public String getFile() throws IOException {
         fileChooserAccessory.copyFilesIfNecessary();
         if (fileChooserAccessory.isRelative()) {
             return fileChooserAccessory.getFiles()[0];
         } else {
-            return fileToRelativize;
+            return fileToRelativize.getAbsolutePath();
         }
     }
             

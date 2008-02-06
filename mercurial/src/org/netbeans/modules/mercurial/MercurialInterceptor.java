@@ -234,9 +234,7 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
 
-        if (srcFile.isDirectory()) {
-            srcFile.renameTo(dstFile);
-        }
+        srcFile.renameTo(dstFile);
         Runnable moveImpl = new Runnable() {
             public void run() {
                 try {
@@ -244,17 +242,15 @@ public class MercurialInterceptor extends VCSInterceptor {
                         HgCommand.doRenameAfter(root, srcFile, dstFile);
                         return;
                     }
-                    int status = hg.getFileStatusCache().getStatus(srcFile).getStatus();
-        Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): Status: {0} {1}", new Object[] {srcFile, status}); // NOI18N
+                    int status = HgCommand.getSingleStatus(root, srcFile.getParent(), srcFile.getName()).getStatus();
+                    Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): Status: {0} {1}", new Object[] {srcFile, status}); // NOI18N
                     if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
                         status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
-                        srcFile.renameTo(dstFile);
                     } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
-                        srcFile.renameTo(dstFile);
                         HgCommand.doRemove(root, srcFile);
                         HgCommand.doAdd(root, dstFile);
                     } else {
-                        HgCommand.doRename(root, srcFile, dstFile);
+                        HgCommand.doRenameAfter(root, srcFile, dstFile);
                     }
                 } catch (HgException e) {
                     Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
@@ -350,8 +346,6 @@ public class MercurialInterceptor extends VCSInterceptor {
                 if (!HgUtils.isIgnored(file, false)) {
                     cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
                 }
-
-                cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
         };
 

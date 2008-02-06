@@ -248,7 +248,7 @@ public enum CppTokenId implements TokenId {
     
     // make sure string names are the same used in the tokenIds above
     public static final String WHITESPACE_CATEGORY = "whitespace"; // NOI18N
-    public static final String COMMENT_CATEGORY = "whitespace"; // NOI18N
+    public static final String COMMENT_CATEGORY = "comment"; // NOI18N
     public static final String KEYWORD_CATEGORY = "keyword"; // NOI18N
     public static final String KEYWORD_DIRECTIVE_CATEGORY = "keyword-directive"; // NOI18N
     public static final String ERROR_CATEGORY = "error"; // NOI18N

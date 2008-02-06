@@ -72,6 +72,9 @@ import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
 import org.netbeans.modules.xml.xam.spi.Validator;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -79,7 +82,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import static org.netbeans.modules.compapp.projects.jbi.JbiConstants.*;
-import static org.netbeans.modules.compapp.projects.jbi.CasaConstants.*;
 
 
 /**
@@ -201,6 +203,11 @@ public class BuildServiceAssembly extends Task {
         saInternalRouting = getBooleanProperty(p.getProperty((JbiProjectProperties.JBI_SA_INTERNAL_ROUTING)), true);
 
         // create project wsdl repository...
+        try {
+            FileUtil.toFileObject(p.getBaseDir()).getFileSystem().refresh(true);
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         mRepo = new wsdlRepository(p, this);
 
         log("Validating CompApp project...");

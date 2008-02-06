@@ -16,7 +16,6 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.xml.xpath.ext.schema;
 
 import org.netbeans.modules.xml.schema.model.All;
@@ -106,6 +105,9 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
     
     @Override
     public void visit(AttributeReference ar) {
+        // vlv # 105159
+        checkComponent(ar);
+        //
         NamedComponentReference<GlobalAttribute> gaRef = ar.getRef();
 
         if (gaRef != null) {
@@ -240,5 +242,4 @@ public abstract class AbstractSchemaSearchVisitor extends DefaultSchemaVisitor {
             child.accept(this);
         }
     }
-    
 }
