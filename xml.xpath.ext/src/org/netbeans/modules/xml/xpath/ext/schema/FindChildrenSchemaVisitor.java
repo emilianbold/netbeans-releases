@@ -23,6 +23,7 @@ import java.util.List;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.ComplexType;
 import org.netbeans.modules.xml.schema.model.Element;
+import org.netbeans.modules.xml.schema.model.Import;
 import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
@@ -38,6 +39,7 @@ import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.schema.model.GlobalComplexType;
 import org.netbeans.modules.xml.schema.model.visitor.DeepSchemaVisitor;
 import org.netbeans.modules.xml.schema.model.LocalElement;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.netbeans.modules.xml.xam.Component;
@@ -67,7 +69,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
         mySoughtNamespace = soughtNamespace;
         this.isAttribute = isAttribute;
 
-//ENABLE = (soughtName + "").equals("service-ref");
+//ENABLE = (soughtName + "").equals("street");
 //out();
 //out("=== FindChildrenSchemaVisitor: " + soughtName);
     }
@@ -162,10 +164,18 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 
     // vlv # 105159
     private void findElement(String name, DocumentComponent document, SchemaComponent sc) {
+      findElement(name, document, sc, "xs:element");
+      findElement(name, document, sc, "xsd:element");
+    }
+
+    // vlv # 105159
+    private void findElement(String name, DocumentComponent document, SchemaComponent sc, String tag) {
+//out();
+//out("--- : tag : " + tag);
       if (name == null || name.equals("")) {
         return;
       }
-      NodeList list = document.getPeer().getElementsByTagName("xsd:element");
+      NodeList list = document.getPeer().getElementsByTagName(tag);
       
       for (int i=0; i < list.getLength(); i++) {
         Node node = list.item(i);
@@ -197,13 +207,36 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
     }
 
     // vlv # 105159
-    private void findInType(final String typeName, SchemaComponent sc) {
-//out("!! findInType: " + typeName);
-      if (typeName == null || typeName.equals("")) {
+    private void findInType(String typeName, SchemaComponent sc) {
+      Schema schema = sc.getModel().getSchema();
+      boolean found = findInType(typeName, sc, schema);
+
+      if (found) {
         return;
       }
-      SchemaModel model = sc.getModel();
-      Schema schema = model.getSchema();
+      Collection<Import> imports = schema.getImports();
+
+      for (Import imp : imports) {
+        try { 
+          SchemaModel model = imp.resolveReferencedModel();
+          found = findInType(typeName, sc, model.getSchema());
+
+          if (found) {
+            return;
+          }
+        }
+        catch (CatalogModelException e) {
+          continue;
+        }
+      }
+    }
+
+    private boolean findInType(final String typeName, SchemaComponent sc, Schema schema) {
+//out("* findInType: " + typeName);
+//out("*      schema: " + schema);
+      if (typeName == null || typeName.equals("")) {
+        return false;
+      }
       myGlobalComplexType = null;
 
       schema.accept(new DeepSchemaVisitor() {
@@ -219,7 +252,9 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 
       if (myGlobalComplexType != null) {
         myGlobalComplexType.accept(this);
+        return true;
       }
+      return false;
     }
 
     private GlobalComplexType myGlobalComplexType;
