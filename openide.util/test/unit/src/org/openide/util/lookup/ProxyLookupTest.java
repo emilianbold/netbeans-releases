@@ -61,8 +61,7 @@ implements AbstractLookupBaseHid.Impl {
 
     public static Test suite() {
         return new NbTestSuite (ProxyLookupTest.class);
-        
-        //return new ProxyLookupTest("testArrayIndexWithAddRemoveListenerAsInIssue119292");
+//        return new ProxyLookupTest("testDuplicatedLookupArrayIndexWithSetLookupAsInIssue123679");
     }
     
     /** Creates an lookup for given lookup. This class just returns 
@@ -93,7 +92,9 @@ implements AbstractLookupBaseHid.Impl {
         final Object[] IGNORE = {
             ProxyLookup.EMPTY_ARR,
             Utilities.activeReferenceQueue(),
-            
+            Collections.emptyMap(),
+            Collections.emptyList(),
+            Collections.emptySet()
         };
         
         assertSize("Pretty small", Collections.singleton(lookup), 16, IGNORE);
