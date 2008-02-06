@@ -550,14 +550,16 @@ public class DesignView extends JPanel implements
             
             putClientProperty(Dimension.class, new Dimension(printWidth, printHeight));
             
-            getDecorationManager().repositionComponentsRecursive();
-            
+                       
 
             processView.revalidate();
             consumersView.revalidate();
             providersView.revalidate();
+            
             repaint();
+            
             errorPanel.uninstall();
+            
             rightStripe.repaint();
         } else {
             setToolBarEnabled(false);
