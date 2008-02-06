@@ -449,7 +449,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         @Override
         public Object getValue(String key) {
             if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(NativeExecutor.class.getResource("/org/netbeans/modules/cnd/api/execution/resources/stop.png"));
+                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/stop.png"));
             } else if (key.equals(Action.SHORT_DESCRIPTION)) {
                 return getString("TargetExecutor.StopAction.stop");
             } else {
@@ -479,7 +479,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         @Override
         public Object getValue(String key) {
             if (key.equals(Action.SMALL_ICON)) {
-                return new ImageIcon(NativeExecutor.class.getResource("/org/netbeans/modules/cnd/api/execution/resources/rerun.png"));
+                return new ImageIcon(DefaultProjectActionHandler.class.getResource("/org/netbeans/modules/cnd/makeproject/ui/resources/rerun.png"));
             } else if (key.equals(Action.SHORT_DESCRIPTION)) {
                 return getString("TargetExecutor.RerunAction.rerun");
             } else {
