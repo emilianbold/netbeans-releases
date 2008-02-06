@@ -560,8 +560,8 @@ public class PostInstallSummaryPanel extends WizardPanel {
                     new Insets(3, 6, 11, 11),         // padding
                     0, 0));                           // padx, pady - ???
             if(container instanceof SwingFrameContainer) {
-                final SwingFrameContainer sfñ = (SwingFrameContainer) container;
-                sfñ.addWindowListener(new WindowAdapter() {
+                final SwingFrameContainer sfc = (SwingFrameContainer) container;
+                sfc.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent event) {
                     SwingUi currentUi = component.getWizardUi().getSwingUi(container);
@@ -572,7 +572,7 @@ public class PostInstallSummaryPanel extends WizardPanel {
                                 container.getNextButton().isVisible() && // next button is visible
                                 container.getNextButton().isEnabled()) { // and enabled                                                                
                             currentUi.evaluateNextButtonClick();
-                            sfñ.removeWindowListener(this);
+                            sfc.removeWindowListener(this);
                         }
                     }
                 }
