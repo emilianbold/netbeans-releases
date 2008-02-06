@@ -42,6 +42,7 @@
 package org.netbeans.api.project.ui;
 
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.Future;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 import org.netbeans.modules.project.uiapi.Utilities;
@@ -111,6 +112,36 @@ public final class OpenProjects {
      */
     public Project[] getOpenProjects() {
         return trampoline.getOpenProjectsAPI();
+    }
+
+    /**
+     * Method to track progress of projects opening and closing. As the
+     * opening of a project may take long time, and as there can be multiple
+     * projects open at once, it may be necessary to be notified that the process
+     * of open project list modification started or that it has
+     * finished. This method provides a <q>future</q> that can do that.
+     * To find out that the list of open projects is currently modified use:
+     * <pre>
+     * assert openProjects().isDone() == false;
+     * </pre>
+     * To wait for the opening/closing to be finished and then obtain the result
+     * use:
+     * <pre>
+     * Project[] current = openProjects().get();
+     * </pre>
+     * This result is different that a plain call to {@link #getOpenProjects} as
+     * that methods returns the current state, whatever it is. While the call through
+     * the <q>future</q> awaits for current modifications to finish. As such wait
+     * can take a long time one can also wait for just a limited amount of time.
+     * However this waiting methods should very likely only be used from dedicated threads,
+     * where the wait does not block other essencial operations (read: do not
+     * use such methods from AWT or other known threads!).
+     * 
+     * @return future to track computation of open projects
+     * @since 1.27
+     */
+    public Future<Project[]> openProjects() {
+        return trampoline.openProjectsAPI();
     }
 
     /**
