@@ -383,12 +383,6 @@
 ^nbbuild/user\.build\.properties$
 ^nbbuild/moduledefs-tmp\.properties$
 ^nbbuild/site\.build\.properties$
-^nbbuild/changelog/moduledefs-tmp\.properties$
-^nbbuild/changelog/\.nbattrs$
-^nbbuild/changelog/.*\.jar$
-^nbbuild/changelog/src/org/netbeans/nbbuild/changelog/Log.*\.java$
-^nbbuild/changelog/src/org/netbeans/nbbuild/changelog/Bundle\.properties$
-^nbbuild/changelog/src/org/netbeans/nbbuild/changelog/\.nbattrs$
 ^nbbuild/external/findbugs/lib$
 ^nbbuild/external/findbugs/plugin$
 ^nbbuild/hudson/NBstore$
