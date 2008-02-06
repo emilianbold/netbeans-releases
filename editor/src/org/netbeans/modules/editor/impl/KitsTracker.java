@@ -207,7 +207,7 @@ public final class KitsTracker {
                         if (!kit.getContentType().equals(mimeType) && 
                             !(null != (genericMimeType = getGenericPartOfCompoundMimeType(mimeType)) && genericMimeType.equals(kit.getContentType())))
                         {
-                            LOG.warning("Inconsistent mime type declaration for the kit: " + kit + //NOI18N
+                            logOnce(Level.WARNING, "Inconsistent mime type declaration for the kit class: " + kit.getClass().getName() + //NOI18N
                                 "; mimeType from the kit is '" + kit.getContentType() + //NOI18N
                                 ", but the kit is registered for '" + mimeType + "'"); //NOI18N
                         }
