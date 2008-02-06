@@ -94,6 +94,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -103,8 +104,7 @@ import org.openide.util.NbBundle;
  *
  * @author Craig MacKay
  */
-public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {  
-    
+public class SpringWebModuleExtender extends WebModuleExtender implements ChangeListener {      
     private static final Logger LOGGER = Logger.getLogger(SpringWebModuleExtender.class.getName());
     
     private SpringConfigPanelVisual frameworkPanelVisual;
@@ -114,7 +114,8 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     private String dispatcherName; 
     private String dispatcherMapping; 
     private boolean includeJstl = true;
-
+    private ChangeSupport changeSupport = new ChangeSupport(this); 
+    
     /**
      * Creates a new instance of SpringWebModuleExtender 
      * @param framework
@@ -209,36 +210,20 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     public void storeSettings(Object settings) {
     }
 
-    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>(1);
-
     public final void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        changeSupport.addChangeListener(l);
     }
 
-    public final void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+    public final void removeChangeListener(ChangeListener l) {       
+        changeSupport.removeChangeListener(l);
     }
-    
-    private void fireStateChanged() {
-        // Fire change event to check for valid dispatcher name and mapping.        
-        ChangeEvent e = new ChangeEvent(this);
-        Object[] changeListeners = listeners.toArray();
-        for (int i = 0; i < changeListeners.length; i++) {
-            ChangeListener changeListener = (ChangeListener)changeListeners[i];
-            changeListener.stateChanged(e);
-        }        
-    }
-    
+        
     public void stateChanged(ChangeEvent e) {
         SpringConfigPanelVisual panel = ((SpringConfigPanelVisual)e.getSource());        
         dispatcherName = panel.getDispatcherName();
         dispatcherMapping = panel.getDispatcherMapping();
         includeJstl = panel.getIncludeJstl();
-        fireStateChanged();
+        changeSupport.fireChange();
     }
 
     @Override
