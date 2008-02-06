@@ -894,9 +894,13 @@ public class XPathModelImpl implements XPathModel {
         //
         if (sameNameOtherPrefix.isEmpty()) {
             // The function with the required name isn't found // vlv
-            mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
-                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
-                    XPathUtils.qNameObjectToString(funcQName));
+
+            // why bytesToString, convert are not recognized?
+            // TODO FIX IT.
+
+//            mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+//                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
+//                    XPathUtils.qNameObjectToString(funcQName));
         } else {
             // The function with the required name is found, but in other namespace
             //

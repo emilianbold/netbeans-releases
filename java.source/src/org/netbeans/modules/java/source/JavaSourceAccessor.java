@@ -122,4 +122,10 @@ public abstract class JavaSourceAccessor {
      * Expert: Unlocks java compiler. Private API for indentation engine only!
      */
     public abstract void unlockJavaCompiler ();
+    
+    /**
+     * For check confinement.
+     * @return
+     */
+    public abstract boolean isJavaCompilerLocked();
 }
