@@ -66,15 +66,16 @@ public class RefactoringTreeElement implements TreeElement {
     }
     
     public TreeElement getParent(boolean isLogical) {
+        CsmObject parent = null;
         if (isLogical) {
-            return TreeElementFactory.getTreeElement(getCsmParent());
+            parent = getCsmParent();
         } else {
-            CsmOffsetable obj = thisObject.getObject();
-            if (obj != null) {
-                return TreeElementFactory.getTreeElement(obj.getContainingFile());
+            CsmOffsetable thisObj = thisObject.getObject();
+            if (thisObj != null) {
+                parent = thisObj.getContainingFile();
             }            
         }
-        return null;
+        return parent != null ? TreeElementFactory.getTreeElement(parent) : null;
     }
     
     public Icon getIcon() {

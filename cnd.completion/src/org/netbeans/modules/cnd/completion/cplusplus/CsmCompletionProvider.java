@@ -88,7 +88,7 @@ public class CsmCompletionProvider implements CompletionProvider {
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         CsmSyntaxSupport sup = (CsmSyntaxSupport)Utilities.getSyntaxSupport(component).get(CsmSyntaxSupport.class);
         final int dot = component.getCaret().getDot();
-        if (sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot)) {
+        if (CsmCompletionQuery.checkCondition(sup, dot)) {
             try {
                 if (sup.needShowCompletionOnText(component, typedText)) {
                     return COMPLETION_QUERY_TYPE;
@@ -108,7 +108,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         CsmResultItem.setEnableInstantSubstitution(true);
         
         // do not work together with include completion
-        if (sup != null && !sup.isCompletionDisabled(dot) && sup.isIncludeCompletionDisabled(dot)) {
+        if (CsmCompletionQuery.checkCondition(sup, dot)) {
             if ((queryType & COMPLETION_QUERY_TYPE) == COMPLETION_QUERY_TYPE) {
                 return new AsyncCompletionTask(new Query(dot, queryType), component);
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
@@ -588,6 +588,6 @@ public class CsmCompletionProvider implements CompletionProvider {
         public String getItemText() {
             return str;
         }   
-    }      
+    }
 }
 

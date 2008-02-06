@@ -482,6 +482,8 @@ public class UMLParsingIntegrator
             reportHeapExceeded() ;
         }
 	
+        m_FragDocument = null;
+        m_Packages = null;
 	XMLManip.clearCachedXPaths();
         
         return m_Cancelled ? true : false;
@@ -4274,6 +4276,7 @@ public class UMLParsingIntegrator
                 setDefaultValue(pNavEnd, attr);
                 setMultiplicity(pNavEnd, attr);
                 setVisibility(pNavEnd, attr);
+                setModifiers(pNavEnd, attr);
             }
             //NameNavigableEnd(assoc, to, attr));
         }
@@ -5845,6 +5848,31 @@ public class UMLParsingIntegrator
                 {
                     scrubMultiplicities(pMultNode);
                     ((Element) pNode).add(pMultNode);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            // I just want to forward the error to the listener.
+            sendExceptionMessage(e);
+        }
+    }
+    
+    protected void setModifiers(INamedElement pElement, Node pAttr)
+    {
+        try
+        {
+            String[] modifierAttrs = {"isTransient", "isStatic", "isVolatile", "isFinal"}; // NOI18N
+            for(String modAttr : modifierAttrs) 
+            {
+                boolean isSet = XMLManip.getAttributeBooleanValue(pAttr, modAttr);
+                if (isSet)
+                {
+                    Node pNode = pElement.getNode();
+                    if (pNode != null)
+                    {
+                        XMLManip.setAttributeValue(pNode, modAttr, "true") ; // NOI18N
+                    }
                 }
             }
         }

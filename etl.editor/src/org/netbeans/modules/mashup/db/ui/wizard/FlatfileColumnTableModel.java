@@ -55,9 +55,11 @@ import org.axiondb.types.TimestampType;
 import org.netbeans.modules.mashup.db.common.SQLUtils;
 import org.netbeans.modules.mashup.db.model.FlatfileDBColumn;
 import org.netbeans.modules.mashup.db.model.FlatfileDBTable;
-import org.openide.util.NbBundle;
 
 import com.sun.sql.framework.utils.StringUtil;
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 
 /**
  * @author Jonathan Giron
@@ -66,6 +68,9 @@ import com.sun.sql.framework.utils.StringUtil;
  */
 public class FlatfileColumnTableModel extends RowEntryTableModel {
 
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileColumnTableModel.class.getName());
+    
+    private static transient final Localizer mLoc = Localizer.get();
     /**
      * Implementation of RowEntry interface that wraps around the content of a
      * FlatfileDBColumn instance.
@@ -125,40 +130,45 @@ public class FlatfileColumnTableModel extends RowEntryTableModel {
             List errorList = new ArrayList();
 
             String columnName = column.getName();
+            String nbBundle1 = mLoc.t("PRSR001: Missing column name - please enter a unique string value.");
+            String nbBundle2 = mLoc.t("PRSR001: Invalid column name - must start with an alphabetical character and contain alphanumeric characters and/or underscores.");
+            String nbBundle3 = mLoc.t("PRSR001: Invalid length - please enter a non-zero, positive integer value.");
             if (columnName == null || columnName.trim().length() == 0) {
-                String msg = NbBundle.getMessage(FlatfileColumnTableModel.class, "ERROR_fieldtablemodel_nofieldname");
+                String msg = Localizer.parse(nbBundle1);
                 errorList.add(msg);
             } else if (!StringUtil.isValid(columnName, "[A-Za-z]+[A-Za-z0-9_$#]*")) {
-                String msg = NbBundle.getMessage(FlatfileColumnTableModel.class, "ERROR_fieldtablemodel_illegalfieldname");
+                String msg = Localizer.parse(nbBundle2);
                 errorList.add(msg);
             }
 
             int precLength = column.getPrecision();
             if (precLength <= 0) {
-                String msg = NbBundle.getMessage(FlatfileColumnTableModel.class, "ERROR_fieldtablemodel_badfieldsize");
+                String msg = Localizer.parse(nbBundle3);
                 errorList.add(msg);
             }
 
             int sqlType = Integer.MIN_VALUE;
+            String nbBundle4 = mLoc.t("PRSR001: Invalid data type - please select from the list of available types.");
             if (column.getJdbcTypeString() == null) {
-                String msg = NbBundle.getMessage(FlatfileColumnTableModel.class, "ERROR_fieldtablemodel_nosqltype");
+                String msg =  Localizer.parse(nbBundle4);
                 errorList.add(msg);
             } else {
                 sqlType = column.getJdbcType();
             }
 
             int scale = column.getScale();
+            String nbBundle5 = mLoc.t("PRSR001: Invalid scale - please enter a non-negative integer value.");
+            String nbBundle6 = mLoc.t("PRSR001: Scale exceeds precision - please enter a smaller non-negative integer value.");
             if (column.getScale() < 0) {
-                String msg = NbBundle.getMessage(FlatfileColumnTableModel.class, "ERROR_fieldtablemodel_badfieldscale");
+                String msg = Localizer.parse(nbBundle5);
                 errorList.add(msg);
             } else if (Types.NUMERIC == sqlType && scale > precLength) {
-                String msg = NbBundle.getMessage(FlatfileColumnTableModel.class, "ERROR_fieldtablemodel_scaleexceedsprecision");
+                String msg = Localizer.parse(nbBundle6);
                 errorList.add(msg);
             }
-
+            String nbBundle7 = mLoc.t("PRSR001: Column #{0}:",new Integer(column.getOrdinalPosition()));
             if (!errorList.isEmpty()) {
-                String header = NbBundle.getMessage(FlatfileColumnTableModel.class, "ERROR_fieldtablemodel_fieldheader", new Integer(
-                    column.getOrdinalPosition()));
+                String header = Localizer.parse(nbBundle7);
                 errorList.add(0, header);
             }
 

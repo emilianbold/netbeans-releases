@@ -55,6 +55,7 @@ import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.ui.update.ConflictResolvedAction;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
@@ -66,7 +67,7 @@ import org.openide.NotifyDescriptor;
  * 
  * @author John Rice
  */
-public class RollbackAction extends AbstractAction {
+public class RollbackAction extends ContextAction {
     
     private final VCSContext context;
     private static File pullPath = null;
@@ -76,8 +77,7 @@ public class RollbackAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         if(!HgRepositoryContextCache.hasHistory(context)){
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(RollbackAction.class,

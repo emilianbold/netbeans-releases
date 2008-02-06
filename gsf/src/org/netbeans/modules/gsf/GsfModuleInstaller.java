@@ -53,7 +53,6 @@ import org.netbeans.napi.gsfret.source.SourceTaskFactoryManager;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.gsfret.source.ActivatedDocumentListener;
 import org.netbeans.modules.gsfret.source.usages.ClassIndexManager;
-import org.netbeans.modules.gsfret.source.usages.NBLockFactory;
 import org.netbeans.modules.gsfret.source.usages.RepositoryUpdater;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifierMBean;
 import org.netbeans.modules.gsfret.source.util.LowMemoryNotifierMBeanImpl;
@@ -73,7 +72,6 @@ public class GsfModuleInstaller extends ModuleInstall {
         Settings.addInitializer(new GsfEditorSettings());
         Settings.reset();
 
-        NBLockFactory.clearLocks();
         SourceTaskFactoryManager.register();
 
         WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
@@ -100,7 +98,7 @@ public class GsfModuleInstaller extends ModuleInstall {
             });
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
-        };            
+        }
         if (ENABLE_MBEANS) {
             unregisterMBeans();
         }
