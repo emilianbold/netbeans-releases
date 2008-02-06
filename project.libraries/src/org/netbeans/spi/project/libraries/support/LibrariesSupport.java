@@ -136,7 +136,7 @@ public final class LibrariesSupport {
         }
         try {
             if (isAbsoluteURL(url)) {
-                return new URI(url.toExternalForm()).getPath();
+                return new File(new URI(url.toExternalForm())).getPath();
             } else {
                 // workaround to decode URL path - created fake absolute URI 
                 // just to construct File instance and properly decoded path:
