@@ -47,8 +47,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.netbeans.api.project.Project;
@@ -60,6 +60,8 @@ import org.netbeans.modules.web.core.jsploader.JspParserAccess;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -81,8 +83,10 @@ final class TestUtil {
         System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath());
         System.setProperty("org.netbeans.modules.jspparser.debug", "1");
 
+        Logger.getLogger("org.netbeans.core.startup.ModuleList").setLevel(Level.OFF);
+
         // module system
-        //Lookup.getDefault().lookup(ModuleInfo.class);
+        Lookup.getDefault().lookup(ModuleInfo.class);
     }
 
     static FileObject getFileInWorkDir(String path, NbTestCase test) throws Exception {
