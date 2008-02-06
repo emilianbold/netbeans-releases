@@ -327,7 +327,7 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
     }
 
     
-    public void copy(TreePath treePath, GraphSubset graphSubset, int x, int y) {
+    public GraphSubset copy(TreePath treePath, GraphSubset graphSubset, int x, int y) {
         Object parent = treePath.getLastPathComponent();
         
         Graph graph = getGraph(treePath);
@@ -360,6 +360,7 @@ public class DemoMapperModel extends DefaultTreeModel implements MapperModel {
         } else {
             fireTreeNodesChanged(this, treePath.getPath(), null, null);
         }
+        return null;
     }
     
     

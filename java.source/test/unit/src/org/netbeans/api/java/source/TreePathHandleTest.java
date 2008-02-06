@@ -129,6 +129,31 @@ public class TreePathHandleTest extends NbTestCase {
         assertTrue(tp.getLeaf() == resolved.getLeaf());
     }
     
+    public void test126732() throws Exception {
+        FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
+        String code = "package test;\n" +
+                      "public class Test {\n" +
+                      "    public static void test() {\n" +
+                      "        return Runnable() {\n" +
+                      "                new Runnable() {\n" +
+                      "        };\n" +
+                      "    }\n" +
+                      "}";
+        
+        writeIntoFile(file,code);
+        
+        JavaSource js = JavaSource.forFileObject(file);
+        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(js, Phase.RESOLVED);
+        
+        TreePath       tp       = info.getTreeUtilities().pathFor(code.indexOf("new Runnable() {"));
+        TreePathHandle handle   = TreePathHandle.create(tp, info);
+        TreePath       resolved = handle.resolve(info);
+        
+        assertNotNull(resolved);
+        
+        assertTrue(tp.getLeaf() == resolved.getLeaf());
+    }
+    
     public void testTreePathIsNotParsing() throws Exception {
         FileObject file = FileUtil.createData(sourceRoot, "test/test.java");
         
