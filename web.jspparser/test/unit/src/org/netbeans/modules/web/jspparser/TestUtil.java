@@ -42,6 +42,17 @@
 package org.netbeans.modules.web.jspparser;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.project.JavaAntLogger;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -49,8 +60,6 @@ import org.netbeans.modules.web.core.jsploader.JspParserAccess;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -92,5 +101,65 @@ final class TestUtil {
             return JspParserAccess.getJspParserWM(WebModule.getWebModule(fo));
         }
         return null;
+    }
+
+    static FileObject getProjectFile(NbTestCase test, String projectFolderName, String filePath) throws Exception {
+        File f = new File(test.getDataDir(), projectFolderName);
+        if (!f.exists()) {
+            // maybe it's zipped
+            File archive = new File(test.getDataDir(), projectFolderName + ".zip");
+            unZip(archive, test.getDataDir());
+        }
+        NbTestCase.assertTrue("project directory has to exists: " + f, f.exists());
+        FileObject projectPath = FileUtil.toFileObject(f);
+        Project project = ProjectManager.getDefault().findProject(projectPath);
+        NbTestCase.assertNotNull("Project should exist", project);
+
+        FileObject fo = projectPath.getFileObject(filePath);
+        NbTestCase.assertNotNull("JSP file should exist", fo);
+
+        return fo;
+    }
+
+    private static void unZip(File archive, File destination) throws Exception {
+        if (!archive.exists()) {
+            throw new FileNotFoundException(archive + " does not exist.");
+        }
+        ZipFile zipFile = new ZipFile(archive);
+        Enumeration<? extends ZipEntry> all = zipFile.entries();
+        while (all.hasMoreElements()) {
+            extractFile(zipFile, all.nextElement(), destination);
+        }
+    }
+
+    private static void extractFile(ZipFile zipFile, ZipEntry e, File destination) throws IOException {
+        String zipName = e.getName();
+        if (zipName.startsWith("/")) {
+            zipName = zipName.substring(1);
+        }
+        if (zipName.endsWith("/")) {
+            return;
+        }
+        int ix = zipName.lastIndexOf('/');
+        if (ix > 0) {
+            String dirName = zipName.substring(0, ix);
+            File d = new File(destination, dirName);
+            if (!(d.exists() && d.isDirectory())) {
+                System.out.println("Creating Directory: " + dirName);
+                if (!d.mkdirs()) {
+                    System.err.println("Warning: unable to mkdir " + dirName);
+                }
+            }
+        }
+        System.err.println("Creating " + zipName);
+        FileOutputStream os = new FileOutputStream(destination.getAbsolutePath() + "/" + zipName);
+        InputStream is = zipFile.getInputStream(e);
+        int n = 0;
+        byte[] buff = new byte[8192];
+        while ((n = is.read(buff)) > 0) {
+            os.write(buff, 0, n);
+        }
+        is.close();
+        os.close();
     }
 }
