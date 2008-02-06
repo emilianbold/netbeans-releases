@@ -88,6 +88,7 @@ def upload(s, cmd, filename=None, ui=None, repo=None, **kwargs):
     full = '%s-%s' % (_sha1hash(s), n)
     cachefile = os.path.join(_cachedir(), full)
     if not os.path.exists(cachefile):
+        # XXX do not write to local cache, only upload, and if that fails, abort
         handle = open(cachefile, 'wb')
         handle.write(s)
         handle.close()
