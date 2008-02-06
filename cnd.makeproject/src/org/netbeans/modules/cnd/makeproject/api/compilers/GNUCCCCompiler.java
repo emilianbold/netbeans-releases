@@ -158,7 +158,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     
     private boolean startsWithPath(String line) {
         line = line.trim();
-        if( line.startsWith("/") ) {
+        if( line.startsWith("/") ) {  // NOI18N
             return true;
         }
         else if( System.getProperty("os.name").indexOf("Windows") >= 0 ) {

@@ -167,7 +167,7 @@ public final class VertexFactory  {
         //
         Function newVertex = new Function(
                     metadata,
-                    null, 
+                    metadata.getIcon(), 
                     metadata.getDisplayName(), 
                     resultType.getName());
         //

@@ -436,10 +436,10 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                             jarFolder = component.substring(index+2);
                             component = component.substring(0, index);
                         }
-                        File f = new File(component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}"+File.separatorChar, ""));
+                        String f = component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}"+File.separatorChar, "");
                         File normalizedFile = FileUtil.normalizeFile(new File(component.replace('/', File.separatorChar).replace('\\', File.separatorChar).replace("${base}", area.mainPropertiesFile.getParent())));
                         try {
-                            URL u = LibrariesSupport.convertFileToURL(f);
+                            URL u = LibrariesSupport.convertFilePathToURL(f);
                             if (FileUtil.isArchiveFile(normalizedFile.toURI().toURL())) {
                                 u = FileUtil.getArchiveRoot(u);
                                 if (jarFolder != null) {
@@ -588,13 +588,14 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 } else if (!"file".equals(entry.getProtocol())) { // NOI18N
                     throw new IllegalArgumentException(entry.toExternalForm());
                 }
-                File f = LibrariesSupport.convertURLToFile(entry);
+                String p = LibrariesSupport.convertURLToFilePath(entry);
+                File f = new File(p);
                 // store properties always separated by '/' for consistency
                 StringBuilder s = new StringBuilder();
                 if (f.isAbsolute()) {
                     s.append(f.getAbsolutePath().replace('\\', '/')); //NOI18N
                 } else {
-                    s.append("${base}/" + f.getPath().replace('\\', '/')); // NOI18N
+                    s.append("${base}/" + p.replace('\\', '/')); // NOI18N
                 }
                 if (jarFolder != null) {
                     s.append("!/"); // NOI18N
@@ -895,7 +896,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
      */
     public static Library copyLibrary(final Library lib, final URL location, 
             final boolean generateLibraryUniqueName) throws IOException {
-        final File libBaseFolder = LibrariesSupport.convertURLToFile(location).getParentFile();
+        assert LibrariesSupport.isAbsoluteURL(location);
+        final File libBaseFolder = new File(LibrariesSupport.convertURLToFilePath(location)).getParentFile();
         FileObject sharedLibFolder;
         try {
             sharedLibFolder = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<FileObject>() {
@@ -939,7 +941,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     newFO = FileUtil.copyFile(libEntryFO, sharedLibFolder, libEntryName);
                     name = sharedLibFolder.getName()+File.separatorChar+newFO.getNameExt();
                 }
-                URL u = LibrariesSupport.convertFileToURL(new File(name));
+                URL u = LibrariesSupport.convertFilePathToURL(name);
                 if (FileUtil.isArchiveFile(newFO)) {
                     u = FileUtil.getArchiveRoot(u);
                 }

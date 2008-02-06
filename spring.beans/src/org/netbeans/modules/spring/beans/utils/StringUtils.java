@@ -42,7 +42,7 @@
 package org.netbeans.modules.spring.beans.utils;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -113,11 +113,9 @@ public final class StringUtils {
      * @see java.lang.String#trim()
      * @see #delimitedListToStringArray
      */
-    public static List<String> tokenize(
-            String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
-
+    private static List<String> tokenize(String str, String delimiters, boolean trimTokens, boolean ignoreEmptyTokens) {
         if (str == null) {
-            return null;
+            return Collections.emptyList();
         }
         StringTokenizer st = new StringTokenizer(str, delimiters);
         List<String> tokens = new ArrayList<String>();
@@ -131,5 +129,29 @@ public final class StringUtils {
             }
         }
         return tokens;
+    }
+
+    /**
+     * Joins a list of strings.
+     *
+     * @param strings the list of strings; can be empty, but not null.
+     * @param separator a separator; can be null.
+     * @return a string containing the joined strings; never null.
+     */
+    public static String join(List<String> strings, String separator) {
+        int size = strings.size();
+        if (size == 0) {
+            return ""; // NOI18N
+        }
+        StringBuilder sb = new StringBuilder(strings.size() * strings.get(0).length());
+        int index = 0; int lastIndex = size - 1;
+        for (String string : strings) {
+            sb.append(string);
+            if (separator != null && index < lastIndex) {
+                sb.append(separator);
+            }
+            index++;
+        }
+        return sb.toString();
     }
 }

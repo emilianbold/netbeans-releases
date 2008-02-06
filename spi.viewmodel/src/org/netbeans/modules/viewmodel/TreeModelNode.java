@@ -359,9 +359,9 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static RequestProcessor requestProcessor;
-    public static RequestProcessor getRequestProcessor () {
+    static RequestProcessor getRequestProcessor () {
         if (requestProcessor == null)
-            requestProcessor = new RequestProcessor ("TreeModel", 4);
+            requestProcessor = new RequestProcessor ("TreeModel", 1);
         return requestProcessor;
     }
 

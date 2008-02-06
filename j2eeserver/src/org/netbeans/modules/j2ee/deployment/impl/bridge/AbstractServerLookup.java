@@ -44,6 +44,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.deployment.impl.Server;
 import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.openide.util.Lookup.Template;
@@ -57,11 +59,14 @@ import org.openide.util.lookup.InstanceContent;
  */
 public abstract class AbstractServerLookup<T> extends AbstractLookup implements ServerRegistry.PluginListener {
 
+    private static final Logger LOGGER = Logger.getLogger(AbstractServerLookup.class.getName());
+
     private final InstanceContent content;
 
     /** <i>GuardedBy("this")</i> */
     private final Map<Server, T> serversMap = new HashMap<Server, T>();
 
+    /** <i>GuardedBy("this")</i> */
     private boolean initialized;
 
     protected AbstractServerLookup(InstanceContent content) {
@@ -109,41 +114,52 @@ public abstract class AbstractServerLookup<T> extends AbstractLookup implements 
         super.beforeLookup(template);
     }
 
-    private final synchronized void init() {
-        if (!initialized) {
-            final ServerRegistry registry = ServerRegistry.getInstance();
-            registry.addPluginListener(WeakListeners.create(
-                    ServerRegistry.PluginListener.class, this, registry));
-            stateChanged();
+    private void init() {
+        synchronized (this) {
+            if (!initialized) {
+                final ServerRegistry registry = ServerRegistry.getInstance();
+                registry.addPluginListener(WeakListeners.create(
+                        ServerRegistry.PluginListener.class, this, registry));
 
-            initialized = true;
+                LOGGER.log(Level.FINE, "Registered bridging listener"); // NOI18N
+
+                initialized = true;
+            } else {
+                return;
+            }
         }
+
+        stateChanged();
     }
 
-    private final synchronized void stateChanged() {
+    private void stateChanged() {
+        LOGGER.log(Level.FINE, "Updating the lookup content"); // NOI18N
         Set servers = new HashSet(ServerRegistry.getInstance().getServers());
-        for (Iterator<Map.Entry<Server, T>> it = serversMap.entrySet().iterator(); it.hasNext();) {
-            Map.Entry<Server, T> entry = it.next();
-            Server server = entry.getKey();
-            if (!servers.contains(server)) {
-                beforeFinish(entry.getValue());
-                content.remove(serversMap.get(server));
-                it.remove();
+        synchronized (this) {
+            for (Iterator<Map.Entry<Server, T>> it = serversMap.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<Server, T> entry = it.next();
+                Server server = entry.getKey();
+                if (!servers.contains(server)) {
+                    beforeFinish(entry.getValue());
+                    content.remove(serversMap.get(server));
+                    it.remove();
 
-                finishBridgingInstance(server, entry.getValue());
-            } else {
-                servers.remove(server);
+                    finishBridgingInstance(server, entry.getValue());
+                } else {
+                    servers.remove(server);
+                }
+            }
+
+            for (Iterator it = servers.iterator(); it.hasNext();) {
+                Server server = (Server) it.next();
+                T instance = createBridgingInstance(server);
+                if (instance != null) {
+                    content.add(instance);
+                    serversMap.put(server, instance);
+                    afterAddition(instance);
+                }
             }
         }
-
-        for (Iterator it = servers.iterator(); it.hasNext();) {
-            Server server = (Server) it.next();
-            T instance = createBridgingInstance(server);
-            if (instance != null) {
-                content.add(instance);
-                serversMap.put(server, instance);
-                afterAddition(instance);
-            }
-        }
+        LOGGER.log(Level.FINE, "Lookup content updated"); // NOI18N
     }
 }

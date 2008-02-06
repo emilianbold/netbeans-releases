@@ -238,7 +238,7 @@ class PaletteItemDataObject extends MultiDataObject {
         FileLock lock = itemFile.lock();
         OutputStream os = itemFile.getOutputStream(lock);
         try {
-            os.write(buff.toString().getBytes());
+            os.write(buff.toString().getBytes("UTF-8")); // NOI18N
         }
         finally {
             os.close();

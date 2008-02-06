@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -59,6 +61,7 @@ public class SaasGroup {
 
     private final Group delegate;
     private final SaasGroup parent;
+    private FileObject groupFolder;
     private boolean userDefined = true; //once set to false, remain false.
     private SortedMap<String, Saas> services;
     private SortedMap<String, SaasGroup> children;
@@ -71,6 +74,23 @@ public class SaasGroup {
 
     public SaasGroup getParent() {
         return parent;
+    }
+    
+    public FileObject getGroupFolder() {
+        if (groupFolder == null) {
+            if (parent == null) {
+                return SaasServicesModel.getInstance().getWebServiceHome();
+            }
+            groupFolder = parent.getGroupFolder().getFileObject(getName(), null);
+            if (groupFolder == null) {
+                try {
+                    groupFolder = parent.getGroupFolder().createFolder(getName());
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return groupFolder;
     }
     
     public Group getDelegate() {

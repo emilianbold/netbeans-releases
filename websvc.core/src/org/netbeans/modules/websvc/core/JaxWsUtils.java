@@ -80,7 +80,9 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
@@ -1065,6 +1067,29 @@ public class JaxWsUtils {
         for(SourceGroup group:sourceGroups) {
             String resource = serviceClass.replace('.', '/')+".java"; //NOI18N
             if (group.getRootFolder().getFileObject(resource) != null) return true;
+        }
+        return false;
+    }
+    
+    /** Test if EJBs are supported in J2EE Container, e.g. in Tomcat they are not
+     * 
+     * @param project
+     * @return
+     */
+    public static boolean isEjbSupported(Project project) {
+        J2eeModuleProvider j2eeModuleProvider = project.getLookup ().lookup (J2eeModuleProvider.class);
+        if (j2eeModuleProvider != null) {
+            String serverInstanceId = j2eeModuleProvider.getServerInstanceID();
+            if (serverInstanceId == null) {
+                return false;
+            }
+            J2eePlatform platform = Deployment.getDefault().getJ2eePlatform(serverInstanceId);
+            if (platform == null) {
+                return false;
+            }
+            if (platform.getSupportedModuleTypes().contains(J2eeModule.EJB)) {
+                return true;
+            }
         }
         return false;
     }
