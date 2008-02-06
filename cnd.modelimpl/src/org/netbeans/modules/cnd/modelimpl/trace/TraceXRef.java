@@ -309,30 +309,6 @@ public class TraceXRef extends TraceModel {
         }          
     };  
 
-    private static boolean isGlobalNamespace(CsmScope scope) {
-        if (CsmKindUtilities.isNamespace(scope)) {
-            return ((CsmNamespace)scope).isGlobal();
-        }
-        return false;
-    }
-    
-    private static boolean isInlineFunction(CsmFunction fun) {
-        if (fun.isInline()) {
-            return true;
-        }
-        CsmScope outScope = fun.getScope();
-        if (outScope == null || isGlobalNamespace(outScope)) {
-            return false;
-        } else {
-            CsmFunction decl = (CsmFunction) CsmBaseUtilities.getFunctionDeclaration(fun);
-            if (decl == null || !CsmKindUtilities.isMethod(fun)) {
-                return false;
-            } else {
-                return outScope.equals(((CsmMethod)decl).getContainingClass());
-            }
-        }
-    }
-    
     private static XRefResultSet.ContextScope classifyFunctionScope(CsmFunction fun) {
         assert fun != null;
         XRefResultSet.ContextScope out = XRefResultSet.ContextScope.UNRESOLVED;
@@ -342,18 +318,18 @@ public class TraceXRef extends TraceModel {
             return out;
         }
         if (CsmKindUtilities.isConstructor(fun)) {
-            out = isInlineFunction(fun) ? 
+            out = CsmBaseUtilities.isInlineFunction(fun) ? 
                             XRefResultSet.ContextScope.INLINED_CONSTRUCTOR : 
                             XRefResultSet.ContextScope.CONSTRUCTOR;
         } else if (CsmKindUtilities.isMethod(fun)) {
-            out = isInlineFunction(fun) ? 
+            out = CsmBaseUtilities.isInlineFunction(fun) ? 
                 XRefResultSet.ContextScope.INLINED_METHOD : 
                 XRefResultSet.ContextScope.METHOD;
         } else {
             if (CsmKindUtilities.isFile(outScope)) {
                 out = XRefResultSet.ContextScope.FILE_LOCAL_FUNCTION;
             } else {
-                CsmNamespace ns = getFunctionNamespace(fun);
+                CsmNamespace ns = CsmBaseUtilities.getFunctionNamespace(fun);
                 if (ns != null) {
                     out = ns.isGlobal() ? 
                             XRefResultSet.ContextScope.GLOBAL_FUNCTION :
@@ -365,37 +341,5 @@ public class TraceXRef extends TraceModel {
             System.err.println("ERROR: non classified function " + fun);            
         }
         return out;
-    }
-    
-    private static CsmNamespace getFunctionNamespace(CsmFunction fun) {
-        if (CsmKindUtilities.isFunctionDefinition(fun)) {
-            CsmFunction decl = ((CsmFunctionDefinition) fun).getDeclaration();
-            fun = decl != null ? decl : fun;
-        }
-        if (fun != null) {
-            CsmScope scope = fun.getScope();
-            if (CsmKindUtilities.isNamespace(scope)) {
-                CsmNamespace ns = (CsmNamespace) scope;
-                return ns;
-            } else if (CsmKindUtilities.isClass(scope)) {
-                return getClassNamespace((CsmClass) scope);
-            }
-        }
-        return null;
-    }
-
-    private static CsmNamespace getClassNamespace(CsmClass cls) {
-        CsmScope scope = cls.getScope();
-        while (scope != null) {
-            if (CsmKindUtilities.isNamespace(scope)) {
-                return (CsmNamespace) scope;
-            }
-            if (CsmKindUtilities.isScopeElement(scope)) {
-                scope = ((CsmScopeElement) scope).getScope();
-            } else {
-                break;
-            }
-        }
-        return null;
     }    
 }

@@ -709,7 +709,12 @@ public class JaxWsCodeGenerator {
                 ClassTree javaClass = controller.getTrees().getTree(thisTypeEl);
                 // find if class is Injection Target
                 generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
-
+                if (generateWsRefInjection[0]) {
+                    // issue 126014 : check if J2EE Container supports EJBs (e.g. Tomcat 6 doesn't)
+                    Project project = FileOwnerQuery.getOwner(controller.getFileObject());
+                    generateWsRefInjection[0] = JaxWsUtils.isEjbSupported(project);
+                }
+                
                 insertServiceDef[0] = !generateWsRefInjection[0];
                 if (isServletClass(controller, thisTypeEl)) {
                     // PENDING Need to compute pronter name from the method

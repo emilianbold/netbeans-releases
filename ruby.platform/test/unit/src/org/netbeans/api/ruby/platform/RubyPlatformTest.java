@@ -39,6 +39,8 @@
 
 package org.netbeans.api.ruby.platform;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -121,6 +123,28 @@ public class RubyPlatformTest extends RubyTestBase {
         assertFalse("does not have fast debugger", jruby.hasFastDebuggerInstalled());
         installFakeFastRubyDebugger(jruby);
         assertTrue("does have fast debugger", jruby.hasFastDebuggerInstalled());
+    }
+    
+    public void testFireGemsChanged() throws Exception {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+
+        final boolean[] gotEvent = new boolean[1];
+        jruby.addPropertyChangeListener(new PropertyChangeListener() {
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("gems".equals(evt.getPropertyName())) {
+                    gotEvent[0] = true;
+                }
+            }
+        });
+        
+        installFakeGem("jalokivi", "9.9", jruby);
+        
+        assertTrue(gotEvent[0]);
+        
     }
 
 }
