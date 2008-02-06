@@ -30,16 +30,19 @@ package org.netbeans.test.java.hints;
 import java.awt.event.KeyEvent;
 import java.util.regex.Pattern;
 import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.junit.AssertionFailedErrorException;
+import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.test.java.JavaTestCase;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -146,6 +149,39 @@ public class HintsTestCase extends JavaTestCase {
             log(result);
             System.out.println(result);
             fail("Expected pattern not found");
+        }
+    }
+
+    protected void selectHintNode(JTreeOperator jto, String category, String hintName) {
+        int i = 0;
+        for (i = 0; i < jto.getRowCount(); i++) {
+            jto.selectRow(i);
+            jto.collapseRow(i);
+            Object lastSelectedPathComponent = jto.getLastSelectedPathComponent();
+            Object userObject = ((DefaultMutableTreeNode) lastSelectedPathComponent).getUserObject();
+            String fileName = ((FileObject) userObject).getName();            
+            if (fileName.equals(category)) {
+                break;
+            }
+        }
+        assertTrue("Category "+category+" not found", i < jto.getRowCount());
+        jto.expandRow(i);
+        Object root = jto.getLastSelectedPathComponent();
+        for(int j = 0;j<jto.getChildCount(root);j++) {
+            DefaultMutableTreeNode child = (DefaultMutableTreeNode)jto.getChild(root, j);
+            String displayName = ((AbstractHint) child.getUserObject()).getDisplayName();
+            if(displayName.equals(hintName)) {
+                jto.selectRow(i + j + 1);
+                return;
+            }
+        }
+        assertTrue("Hint "+hintName+" not found", false);     
+    }
+
+    protected void chBoxSetSelected(final JCheckBoxOperator chbox1, boolean state) {
+        if (chbox1.isSelected() != state) {
+            chbox1.doClick();
+            new EventTool().waitNoEvent(500);
         }
     }
 }
