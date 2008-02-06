@@ -86,12 +86,14 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private SummaryView             summaryView;    
     private DiffResultsView         diffView;
     private boolean                 bOutSearch;
+    private boolean                 bIncomingSearch;
     private AbstractAction nextAction;
     private AbstractAction prevAction;
 
     /** Creates new form SearchHistoryPanel */
     public SearchHistoryPanel(File [] roots, SearchCriteriaPanel criteria) {
         this.bOutSearch = false;
+        this.bIncomingSearch = false;
         this.roots = roots;
         this.repositoryUrl = null;
         this.criteria = criteria;
@@ -104,6 +106,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     
     public SearchHistoryPanel(String repositoryUrl, File localRoot, SearchCriteriaPanel criteria) {
         this.bOutSearch = false;
+        this.bIncomingSearch = false;
         this.repositoryUrl = repositoryUrl;
         this.roots = new File[] { localRoot };
         this.criteria = criteria;
@@ -120,9 +123,23 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         tbSummary.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutSummary"));
         tbDiff.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_OutShowDiff"));
     }
-    
+
     boolean isOutSearch() {
         return bOutSearch;
+    }
+
+    
+    void setIncomingSearch() {
+        bIncomingSearch = true;
+        divider.setVisible(false);
+        tbDiff.setVisible(false);
+        bNext.setVisible(false);
+        bPrev.setVisible(false);
+        tbSummary.setToolTipText(NbBundle.getMessage(SearchHistoryPanel.class,  "TT_IncomingSummary"));
+    }
+    
+    boolean isIncomingSearch() {
+        return bIncomingSearch;
     }
 
     void setSearchCriteria(boolean b) {

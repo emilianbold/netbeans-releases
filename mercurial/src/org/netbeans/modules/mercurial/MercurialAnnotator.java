@@ -69,6 +69,7 @@ import org.netbeans.modules.mercurial.ui.diff.DiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.ImportDiffAction;
 import org.netbeans.modules.mercurial.ui.ignore.IgnoreAction;
+import org.netbeans.modules.mercurial.ui.log.IncomingAction;
 import org.netbeans.modules.mercurial.ui.log.LogAction;
 import org.netbeans.modules.mercurial.ui.log.OutAction;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
@@ -360,6 +361,7 @@ public class MercurialAnnotator extends VCSAnnotator {
             }
             actions.add(new CloneExternalAction(loc.getString("CTL_PopupMenuItem_CloneOther"), ctx));     // NOI18N        
             actions.add(null);
+            actions.add(new IncomingAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"), ctx)); // NOI18N
             actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
             actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
             actions.add(null);
@@ -399,6 +401,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                 }
 
                 actions.add(null);                
+                actions.add(new IncomingAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowIncoming"), ctx)); // NOI18N
                 actions.add(new OutAction(NbBundle.getMessage(MercurialAnnotator.class, "CTL_PopupMenuItem_ShowOut"), ctx)); // NOI18N
                 actions.add(new FetchAction(NbBundle.getMessage(MercurialAnnotator.class, 
                         "CTL_PopupMenuItem_FetchLocal"), ctx)); // NOI18N
