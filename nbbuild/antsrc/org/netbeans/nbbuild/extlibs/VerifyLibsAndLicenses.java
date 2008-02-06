@@ -379,38 +379,56 @@ public class VerifyLibsAndLicenses extends Task {
         }
         pseudoTests.put("testLicenses", msg.length() > 0 ? "Some license files have incorrect headers" + msg : null);
     }
-    private static String templateMatch(final String actual, final String expected, boolean left) {
-        if (actual.matches(expected.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll(" *__[A-Z_]+__ *", ".*"))) {
-            return null;
-        } else if (expected.length() == 0) {
-            return "unexpected extra content";
-        } else if (actual.length() == 0) {
-            return "missing content";
-        } else if (!expected.startsWith("__")) {
-            if (expected.charAt(0) != actual.charAt(0)) {
-                return mismatch(actual, expected, true);
+    private static String templateMatch(String actual, String expected, boolean left) {
+        String reason = null;
+        boolean expectReason = false;
+        String mismatch = null;
+        while (true) {
+            if (actual.matches(expected.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll(" *__[A-Z_]+__ *", ".*"))) {
+                reason = null;
+                break;
+            } else if (expected.length() == 0) {
+                reason = "unexpected extra content";
+                break;
+            } else if (actual.length() == 0) {
+                reason = "missing content";
+                break;
+            } else if (!expected.startsWith("__")) {
+                if (expected.charAt(0) != actual.charAt(0)) {
+                    reason = mismatch(actual, expected, true);
+                    break;
+                } else {
+                    expectReason = true;
+                    mismatch = mismatch(actual, expected, true);
+                    actual = actual.substring(1);
+                    expected = expected.substring(1);
+                    continue;
+                }
+            } else if (!expected.endsWith("__")) {
+                if (expected.charAt(expected.length() - 1) != actual.charAt(actual.length() - 1)) {
+                    reason = mismatch(actual, expected, false);
+                    break;
+                } else {
+                    expectReason = true;
+                    mismatch = mismatch(actual, expected, false);
+                    actual = actual.substring(0, actual.length() - 1);
+                    expected = expected.substring(0, expected.length() - 1);
+                    continue;
+                }
             } else {
-                String reason = templateMatch(actual.substring(1), expected.substring(1), left);
-                assert reason != null : mismatch(actual, expected, true);
-                return reason;
+                String absorbed = expected.replaceFirst(left ? "^(__[A-Z_]+__)." : ".(__[A-Z_]+__)$", "$1");
+                assert !expected.equals(absorbed) : expected;
+                mismatch = mismatch(actual, expected, left);
+                expected = absorbed;
+                left = !left;
+                continue;
             }
-        } else if (!expected.endsWith("__")) {
-            if (expected.charAt(expected.length() - 1) != actual.charAt(actual.length() - 1)) {
-                return mismatch(actual, expected, false);
-            } else {
-                String reason = templateMatch(actual.substring(0, actual.length() - 1), expected.substring(0, expected.length() - 1), left);
-                assert reason != null : mismatch(actual, expected, false);
-                return reason;
-            }
+        }
+        if (reason == null) {
+            assert !expectReason : mismatch;
+            return mismatch;
         } else {
-            String absorbed = expected.replaceFirst(left ? "^(__[A-Z_]+__)." : ".(__[A-Z_]+__)$", "$1");
-            assert !expected.equals(absorbed) : expected;
-            String reason = templateMatch(actual, absorbed, !left);
-            if (reason != null) {
-                return reason;
-            } else {
-                return mismatch(actual, expected, left);
-            }
+            return reason;
         }
     }
     private static String mismatch(String actual, String expected, boolean useHead) {
