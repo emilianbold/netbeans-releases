@@ -81,7 +81,7 @@ final class TestUtil {
         File enterCluster = new File(WebModule.class.getProtectionDomain().getCodeSource().getLocation().toURI())
                 .getParentFile().getParentFile();
         System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath());
-        System.setProperty("org.netbeans.modules.jspparser.debug", "1");
+        System.setProperty("org.netbeans.modules.jspparser.debug", "100");
 
         Logger.getLogger("org.netbeans.core.startup.ModuleList").setLevel(Level.OFF);
 
@@ -120,7 +120,7 @@ final class TestUtil {
         NbTestCase.assertNotNull("Project should exist", project);
 
         FileObject fo = projectPath.getFileObject(filePath);
-        NbTestCase.assertNotNull("JSP file should exist", fo);
+        NbTestCase.assertNotNull("JSP file should exist: " + filePath, fo);
 
         return fo;
     }

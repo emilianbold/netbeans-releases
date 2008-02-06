@@ -343,7 +343,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     }
     
     private void registerTimeStamp(Map where, File f, boolean recursive) {
-        where.put(f, new Long(f.lastModified()));
+        where.put(f, Long.valueOf(f.lastModified()));
         if (recursive && f.isDirectory()) {
             File kids[] = f.listFiles(
                     new FileFilter() {
@@ -359,7 +359,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
     }
     
     private void registerTimeStamp(File f, boolean recursive) {
-        clRootsTimeStamps.put(f, new Long(f.lastModified()));
+        clRootsTimeStamps.put(f, Long.valueOf(f.lastModified()));
         if (recursive && f.isDirectory()) {
             File kids[] = f.listFiles(
                     new FileFilter() {
@@ -493,7 +493,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     fo = FileUtil.getArchiveFile(roots[i]);
                     if (fo != null){
                         file = FileUtil.toFile(fo);
-                        checkedFiles.put(file, new Long(file.lastModified()));
+                        checkedFiles.put(file, Long.valueOf(file.lastModified()));
                     }
                 }
             }
@@ -510,7 +510,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 fo = (FileObject)en.nextElement();
                 if (fo.getExt().startsWith("tld")){ // NOI18N
                     file = FileUtil.toFile(fo);
-                    checkedFiles.put (file, new Long(file.lastModified()));
+                    checkedFiles.put (file, Long.valueOf(file.lastModified()));
                 }
             }
         }
@@ -598,7 +598,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                         file = new File(uri);
                     }
                     if (file != null)
-                        mappingFiles.put(file, new Long(file.lastModified()));
+                        mappingFiles.put(file, Long.valueOf(file.lastModified()));
                 }
                 
                 // Add to the cache all jars, which are on the classpath. It's because
@@ -611,7 +611,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                             fo = FileUtil.getArchiveFile(roots[i]);
                             if (fo != null){
                                 file = FileUtil.toFile(fo);
-                                mappingFiles.put(file, new Long(file.lastModified()));
+                                mappingFiles.put(file, Long.valueOf(file.lastModified()));
                             }
                         }
                     }
