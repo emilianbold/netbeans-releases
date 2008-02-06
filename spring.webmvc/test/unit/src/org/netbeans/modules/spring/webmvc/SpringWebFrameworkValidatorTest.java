@@ -42,93 +42,66 @@
 package org.netbeans.modules.spring.webmvc;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.api.webmodule.ExtenderController;
 
 /**
  *
  * @author John Baker
  */
-public class SpringMVCFrameworkPatternTest extends NbTestCase {
-
-    private SpringWebModuleExtender extender;
+public class SpringWebFrameworkValidatorTest extends NbTestCase {
     
-    public SpringMVCFrameworkPatternTest(String testName) {
+    public SpringWebFrameworkValidatorTest(String testName) {
         super(testName);
     }
 
-    public void testDispatcherNameEntry_NonWordCharacterPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dis-patcher", "*.htm");
-        assertName(extender.getDispatcherName(), false);
+    public void testDispatcherNameEntry_NonWordCharacterPattern() throws Exception {       
+        assert(SpringWebFrameworkValidator.isDispatcherNamePatternValid("Dis-patcher") == false);
     }
     
     public void testDispatcherNameEntry_EmptyWordCharacterPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "", "*.htm");
-        assertName(extender.getDispatcherName(), false);
+        assert(SpringWebFrameworkValidator.isDispatcherNamePatternValid("") == false);
     }
             
     public void testDispatcherMappingEntry_ExtensionSpacePattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "*.h tm");
-        assertMapping(extender.getDispatcherMapping(), false);
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid("*.h tm") == false);
     }
     
     public void testDispatcherMappingEntry_ExtensionNonWordPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "*.h&tm");
-        assertMapping(extender.getDispatcherMapping(), false);
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid("*.h&tm") == false);
     }
     
     public void testDispatcherMappingEntry_ServletSpacePattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "/a /*");
-        assertMapping(extender.getDispatcherMapping(), false);
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid("/a /*") == false);
     }
     
     public void testDispatcherMappingEntry_PathSpacePattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", " /");
-        assertMapping(extender.getDispatcherMapping(), false);
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid(" /") == false);
     }
     
     public void testDispatcherMappingEntry_InvalidExtensionPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "*.");
-        assertMapping(extender.getDispatcherMapping(), false);
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid( "*.") == false);
     }       
      
     public void testDispatcherMappingEntry_InvalidPathPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "/a");
-        assertMapping(extender.getDispatcherMapping(), false);
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid("/a") == false);
     }
     
     public void testDispatcherMappingEntry_ValidPathPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "/");
-        assertMapping(extender.getDispatcherMapping(), true);
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid("/") == true);
     }
     
     public void testDispatcherMappingEntry_InvalidDefaultServletPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "/a*/");
-        assertMapping(extender.getDispatcherMapping(), false);
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid("/a*/") == false);
     }
     
     public void testDispatcherMappingEntry_ValidDefaultServletPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "/app/*");
-        assertMapping(extender.getDispatcherMapping(), true);
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid("/app/*") == true);
     }
-    
-    public void testDispatcherMappingAndNameEntry_InvalidPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispa tcher", "*.h tm");
-        assertMapping(extender.getDispatcherMapping(), false);
-    }
-    
-    public void testDispatcherMappingAndNameEntry_ValidPattern() throws Exception {
-        extender = new SpringWebModuleExtender(null, ExtenderController.create(), false, "Dispatcher", "*.htm");
-        assertMapping(extender.getDispatcherMapping(), true);
-    }
-    
-    private void assertMapping(String mapping, boolean valid) throws Exception {
-        assertEquals(extender.isValid(), valid);
         
-    }
+    public void testDispatcherMappingEntry_ValidPattern() throws Exception {
+        assert(SpringWebFrameworkValidator.isDispatcherMappingPatternValid("*.htm") == true);
+    }   
     
-    private void assertName(String name, boolean valid) throws Exception {
-        assertEquals(extender.isValid(), valid);
-    }
-
-
+    public void testDispatcherNameEntry_ValidPattern() throws Exception {
+        assert(SpringWebFrameworkValidator.isDispatcherNamePatternValid("Dispatcher") == true);
+    }  
 }

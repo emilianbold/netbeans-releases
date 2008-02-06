@@ -322,6 +322,7 @@ public class FileStatusCache {
     
     private FileInformation refresh(File file, FileStatus repositoryStatus, 
             boolean forceChangeEvent) {
+        Mercurial.LOG.log(Level.FINE, "refresh(): {0}", file); // NOI18N
         File dir = file.getParentFile();
         if (dir == null) {
             return FileStatusCache.FILE_INFORMATION_NOTMANAGED; //default for filesystem roots
