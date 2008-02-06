@@ -322,7 +322,7 @@ public class ZoomManager implements ActionListener {
 
             zoomValue = newZoomValue;
 
-            desingView.getDecorationManager().repositionComponentsRecursive();
+           // desingView.getDecorationManager().repositionComponentsRecursive();
 
 //            viewport.setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
         

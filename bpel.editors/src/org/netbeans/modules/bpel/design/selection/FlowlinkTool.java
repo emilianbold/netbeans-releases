@@ -210,7 +210,7 @@ public class FlowlinkTool implements DnDTool {
             }
         }
         
-        designView.getDecorationManager().repositionComponentsRecursive();
+        //FIXME designView.getDecorationManager().repositionComponentsRecursive();
         getDesignView().repaint();
     }
     

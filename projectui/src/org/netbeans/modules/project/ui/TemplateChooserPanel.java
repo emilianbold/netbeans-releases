@@ -42,6 +42,7 @@
 package org.netbeans.modules.project.ui;
 
 import java.awt.Component;
+import java.lang.ref.WeakReference;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -68,11 +69,11 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private TemplateChooserPanelGUI gui;
 
-    private Project project;
+    private WeakReference<Project> projectRef;
     // private String[] recommendedTypes;
 
     TemplateChooserPanel( Project p /*, String recommendedTypes[] */ ) {
-        this.project = p;
+        this.projectRef = new WeakReference<Project>(p);
         /* this.recommendedTypes = recommendedTypes; */
     }
 
@@ -117,7 +118,10 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
                 //Ignore and use default
             }
         }
-        panel.readValues( project, currentCategoryName, currentTemplateName );
+        Project p;
+        if ((p = projectRef.get()) != null) {
+            panel.readValues(p, currentCategoryName, currentTemplateName);
+        }
         settings.putProperty("WizardPanel_contentSelectedIndex", 0); // NOI18N
         settings.putProperty ("WizardPanel_contentData", new String[] { // NOI18N
                 NbBundle.getBundle (TemplateChooserPanel.class).getString ("LBL_TemplatesPanel_Name"), // NOI18N
@@ -134,11 +138,13 @@ final class TemplateChooserPanel implements WizardDescriptor.Panel<WizardDescrip
             try { 
 
                 Project newProject = gui.getProject ();
-                if (!project.equals (newProject)) {
-                    project = newProject;
-                    wd.putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, newProject );
+                Project currProject = projectRef.get();
+                if (currProject != null) {
+                    if (!currProject.equals (newProject)) {
+                        projectRef = new WeakReference<Project>(newProject);
+                        wd.putProperty( ProjectChooserFactory.WIZARD_KEY_PROJECT, newProject );
+                    }
                 }
-                
                 if (gui.getTemplate () == null) {
                     return ;
                 }
