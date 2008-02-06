@@ -64,7 +64,13 @@ import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.dd.api.common.CommonDDBean;
@@ -291,17 +297,21 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             }
             ddRoot.write(dd);
 
-            // ADD JSTL IF ENABLED
+            // ADD JSTL LIBRARY IF ENABLED AND SPRING LIBRARY
             if (includeJstl) {
                 Library jstlLibrary = getLibrary(JSTL_CLASS_NAME);            
-                assert jstlLibrary != null;
-                addLibraryToWebModule(jstlLibrary, webModule);                
+                assert jstlLibrary != null; 
+                Library springLibrary = getLibrary(SPRING_CLASS_NAME);
+                assert springLibrary != null;
+                Library[] libraries = {springLibrary, jstlLibrary};                
+                addLibrariesToWebModule(libraries, webModule);                
+            } else {
+                // JUST ADD SPRING LIBRARY
+                Library springLibrary = getLibrary(SPRING_CLASS_NAME);
+                assert springLibrary != null;
+                Library[] libraries = {springLibrary};
+                addLibrariesToWebModule(libraries, webModule);
             }
-
-            // ADD SPRING LIBRARY
-            Library springLibrary = getLibrary(SPRING_CLASS_NAME);
-            assert springLibrary != null;
-            addLibraryToWebModule(springLibrary, webModule);
 
             // CREATE WEB-INF/JSP FOLDER
             FileObject webInf = webModule.getWebInf();
@@ -386,9 +396,39 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
             return target;
         }
 
-        @SuppressWarnings(value = "deprecation")
-        protected void addLibraryToWebModule(Library library, WebModule webModule) throws IOException {
-            FileOwnerQuery.getOwner(webModule.getDocumentBase()).getLookup().lookup(org.netbeans.spi.java.project.classpath.ProjectClassPathExtender.class).addLibrary(library);
+         /**
+         * Convenience method to obtain the source root folder.
+         */
+        private FileObject getSourceRoot(Project project) {
+            if (project == null) {
+                return null;
+            }
+            // Search the ${src.dir} Source Package Folder first, use the first source group if failed.
+            Sources src = ProjectUtils.getSources(project);
+            SourceGroup[] grp = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            for (int i = 0; i < grp.length; i++) {
+                if ("${src.dir}".equals(grp[i].getName())) { // NOI18N
+                    return grp[i].getRootFolder();
+                }
+            }
+            if (grp.length != 0) {
+                return grp[0].getRootFolder();
+            }
+            return null;
+        }
+
+        protected boolean addLibrariesToWebModule(Library[] libraries, WebModule webModule) throws IOException, UnsupportedOperationException {
+            FileObject fileObject = webModule.getDocumentBase();
+            Project project = FileOwnerQuery.getOwner(fileObject);
+            boolean addLibraryResult = false;
+            try {
+                addLibraryResult = ProjectClassPathModifier.addLibraries(libraries, getSourceRoot(project), ClassPath.COMPILE);
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Libraries required for the Spring MVC project not added", e); // NOI18N
+            } catch (UnsupportedOperationException uoe) {
+                LOGGER.log(Level.WARNING, "This project does not support adding these types of libraries to the classpath", uoe); // NOI18N
+            }
+            return addLibraryResult;
         }
 
         protected Listener addListener(WebApp webApp, String classname) throws IOException {
