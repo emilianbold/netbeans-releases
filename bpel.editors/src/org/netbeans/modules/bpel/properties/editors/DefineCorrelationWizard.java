@@ -1748,7 +1748,9 @@ public class DefineCorrelationWizard implements WizardProperties {
                 return false;
             }
 
-            public void copy(TreePath treePath, GraphSubset graphGroup, int x, int y) {}
+            public GraphSubset copy(TreePath treePath, GraphSubset graphGroup, int x, int y) {
+                return null;
+            }
 
             public void move(TreePath treePath, GraphSubset graphGroup, int x, int y) {}
             
