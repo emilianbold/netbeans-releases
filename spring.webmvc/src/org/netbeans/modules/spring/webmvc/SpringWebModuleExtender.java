@@ -156,7 +156,6 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     }
 
     public boolean isValid() {
-        LOGGER.log(Level.INFO, "validation occurring");
         if (dispatcherName == null || dispatcherName.trim().length() == 0){
             controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NamePatternIsEmpty")); // NOI18N
             return false;
