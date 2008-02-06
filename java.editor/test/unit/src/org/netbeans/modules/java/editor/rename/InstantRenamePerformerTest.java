@@ -110,6 +110,16 @@ public class InstantRenamePerformerTest extends NbTestCase {
         performTest("package test; public class Test { public void test() {int a|bc = 0; int y = abc; } }", 83 - 22 - 1, ke, "package test; public class Test { public void test() {int ac = 0; int y = ac; } }", true);
     }
     
+    public void testSimple4() throws Exception {
+        KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_BACK_SPACE, '\0');
+        performTest("package test; public class Test { public void test() {int a|bc = 0; int y = abc; } }", 84 - 22 - 1, ke, "package test; public class Test { public void test() {int ab = 0; int y = ab; } }", true);
+    }
+    
+    public void testSimple5() throws Exception {
+        KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_PRESSED, 0, 0, KeyEvent.VK_DELETE, '\0');
+        performTest("package test; public class Test { public void test() {int a|bc = 0; int y = abc; } }", 80 - 22, ke, "package test; public class Test { public void test() {int bc = 0; int y = bc; } }", true);
+    }
+    
     public void testCancel1() throws Exception {
         KeyEvent ke = new KeyEvent(new JFrame(), KeyEvent.KEY_TYPED, 0, 0, KeyEvent.VK_UNDEFINED, 'a');
         performTest("package test; public class Test { public void test() {int x|xx = 0; int y = xxx; } }", 79 - 22, ke, "package test; public class Test { public void test() {inta xxx = 0; int y = xxx; } }", false);
@@ -218,6 +228,8 @@ public class InstantRenamePerformerTest extends NbTestCase {
         doc.putProperty(Language.class, JavaTokenId.language());
         
         C p = new C();
+        
+//        p.setEditorKit(new JavaKit());
         
         p.setDocument(doc);
         
