@@ -44,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
@@ -148,4 +149,82 @@ public class GemManagerTest extends RubyTestBase {
         installFakeGem("ruby-debug-base", "0.1.10", "java", platform);
         assertEquals("no jruby fast debugger available", "0.1.10", gemManager.getVersionForPlatform("ruby-debug-base"));
     }
+    
+    public void testCompareGemVersions() {
+        assertTrue(GemManager.compareGemVersions("1.0.0", "0.9.9") > 0);
+        assertTrue(GemManager.compareGemVersions("0.4.0", "0.3.0") > 0);
+        assertTrue(GemManager.compareGemVersions("0.4.0", "0.3.9") > 0);
+        assertTrue(GemManager.compareGemVersions("0.0.2", "0.0.1") > 0);
+        assertTrue(GemManager.compareGemVersions("0.10.0", "0.9.0") > 0);
+        assertTrue(GemManager.compareGemVersions("0.9.0", "0.10.0") < 0);
+        assertTrue(GemManager.compareGemVersions("1.0.0", "4.9.9") < 0);
+        assertTrue(GemManager.compareGemVersions("0.3.0", "0.4.0") < 0);
+        assertTrue(GemManager.compareGemVersions("0.3.9", "0.4.0") < 0);
+        assertTrue(GemManager.compareGemVersions("0.0.1", "0.0.2") < 0);
+        assertTrue(GemManager.compareGemVersions("4.4.4", "4.4.4") == 0);
+        assertTrue(GemManager.compareGemVersions("4.4.4-platform", "4.4.4") != 0);
+        assertTrue(GemManager.compareGemVersions("0.10.0-ruby", "0.9.0") > 0);
+        assertTrue(GemManager.compareGemVersions("0.9.0-ruby", "0.10.0") < 0);
+        assertTrue(GemManager.compareGemVersions("0.10.0", "0.9.0-ruby") > 0);
+        assertTrue(GemManager.compareGemVersions("0.9.0", "0.10.0-ruby") < 0);
+    }
+
+    public void testChooseGems() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        GemManager gemManager = platform.getGemManager();
+        
+        String gemLibs = gemManager.getGemHome();
+        File specs = new File(new File(gemManager.getGemHome()), "specifications");
+
+        // Put gems into the gemLibs dir
+        String[] gemDirs = new String[]{"foo-1.0.0",
+                "notagem",
+                "pdf-writer-0.1.1",
+                "mongrel-1.0.0-mswin",
+                "bar-baz-0.3.3-ruby",
+                "activerecord-1.15.1.6752",
+                "activerecord-1.15.3.6752"};
+        for (String gemDir : gemDirs) {
+            new File(gemLibs, gemDir).mkdir();
+            new File(specs, gemDir + ".gemspec").createNewFile();
+        }
+
+        // Test for 106862
+        new File(gemLibs, "sqlite-2.0.1").mkdirs();
+        new File(gemLibs, "sqlite3-ruby-1.2.0").mkdirs();
+
+        // Now introspect on the structure
+        Set<String> installedGems = gemManager.getInstalledGemsFiles();
+        assertTrue(installedGems.contains("foo"));
+        assertTrue(installedGems.contains("pdf-writer"));
+        assertTrue(installedGems.contains("mongrel"));
+        assertTrue(installedGems.contains("bar-baz"));
+        assertTrue(installedGems.contains("activerecord"));
+        assertFalse(installedGems.contains("notagem"));
+        assertFalse(installedGems.contains("whatever"));
+        assertFalse(installedGems.contains("sqlite"));
+        assertFalse(installedGems.contains("sqlite3-ruby"));
+
+        assertEquals("1.0.0", gemManager.getVersion("foo"));
+        assertEquals(null, gemManager.getVersion("notagem"));
+        assertEquals(null, gemManager.getVersion("nosuchgem"));
+        assertEquals(null, gemManager.getVersion("sqlite"));
+        assertEquals(null, gemManager.getVersion("sqlite3-ruby"));
+        assertEquals("1.0.0", gemManager.getVersion("mongrel"));
+        assertEquals("0.3.3", gemManager.getVersion("bar-baz"));
+        assertEquals("0.1.1", gemManager.getVersion("pdf-writer"));
+        assertEquals("1.15.3.6752", gemManager.getVersion("activerecord"));
+    }
+
+    // XXX
+//    public void testFindGemExecutableWith_GEM_HOME() throws Exception {
+//        File gemRepo = new File(getWorkDir(), "gemrepo");
+//        File gemRepoBinF = new File(gemRepo, "bin");
+//        gemRepoBinF.mkdirs();
+//        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(), "ruby");
+//        GemManager.TEST_GEM_HOME = gemRepo.getAbsolutePath();
+//        touch("rdebug-ide", gemRepoBinF.getAbsolutePath());
+//        assertNotNull(platform.getGemManager().findGemExecutable("rdebug-ide"));
+//    }
+
 }
