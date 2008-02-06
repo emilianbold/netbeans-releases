@@ -253,7 +253,7 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         }
         return ts == null ? null : file.getLanguageFilter().getFilteredStream( new APTCommentsFilter(ts));
     }
-    
+
     private boolean acceptReference(CsmReference ref, CsmObject targetDecl, CsmObject targetDef, boolean includeSelfDeclarations) {
         assert targetDecl != null;
         boolean accept = false;
@@ -267,6 +267,15 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return accept;
     }
     
+    public static ReferenceKind getReferenceKind(CsmReference ref) {
+        CsmObject target = ref.getReferencedObject();
+        assert target != null;
+        CsmObject[] decDef = getDefinitionDeclaration(target);
+        CsmObject targetDecl = decDef[0];
+        CsmObject targetDef = decDef[1];        
+        return getReferenceKind(ref, targetDecl, targetDef);
+    }
+
     public static ReferenceKind getReferenceKind(CsmReference ref, CsmObject targetDecl, CsmObject targetDef) {
         assert targetDecl != null;
         CsmObject owner = ref.getOwner();
@@ -282,6 +291,11 @@ public class ReferenceRepositoryImpl extends CsmReferenceRepository {
         return kind;
     }
     
+    /**
+     * 
+     * @param target
+     * @return new CsmObject[] { declaration, definion }
+     */
     public static CsmObject[] getDefinitionDeclaration(CsmObject target) {
         CsmObject decl;
         CsmObject def; 

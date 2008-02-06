@@ -118,7 +118,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
         
     protected AbstractVariable() {} // used by AbstractField instantiation...
     
-    private TypeInfo getTypeInfo() {
+    protected TypeInfo getTypeInfo() {
         if (tinfo == null) {
             tinfo = TypeInfo.getTypeInfo(getDebugger(), this);
         }

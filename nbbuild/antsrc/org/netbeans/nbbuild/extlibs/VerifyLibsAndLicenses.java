@@ -119,8 +119,8 @@ public class VerifyLibsAndLicenses extends Task {
         Map<Long,String> binaries = new HashMap<Long,String>();
         for (String module : modules) {
             File d = new File(new File(nball, module), "external");
-            Set<String> cvsFiles = findCvsControlledFiles(d, false);
-            for (String n : cvsFiles) {
+            Set<String> hgFiles = findHgControlledFiles(d);
+            for (String n : hgFiles) {
                 if (!n.endsWith(".jar") && !n.endsWith(".zip")) {
                     continue;
                 }
@@ -188,12 +188,8 @@ public class VerifyLibsAndLicenses extends Task {
         StringBuffer msg = new StringBuffer();
         for (String module : modules) {
             File d = new File(new File(nball, module), "external");
-            Set<String> textFiles = findCvsControlledFiles(d, true);
-            FILE: for (String n : findCvsControlledFiles(d, false)) {
+            FILE: for (String n : findHgControlledFiles(d)) {
                 String path = module + "/external/" + n;
-                if (textFiles.contains(n) ^ !n.matches(".*\\.(zip|jar|dll|gz)")) {
-                    msg.append("\n" + path + " may have -kb improperly (un)set");
-                }
                 if (!n.endsWith("-license.txt")) {
                     continue;
                 }
@@ -214,10 +210,6 @@ public class VerifyLibsAndLicenses extends Task {
                             continue FILE;
                         }
                         if (c == '\r') {
-                            if (System.getProperty("line.separator").equals("\n")) {
-                                msg.append("\n" + path + " uses DOS line endings on line #" + line);
-                                continue FILE;
-                            }
                             column = 0;
                         } else if (c == '\n') {
                             if (column == 0 && line > 1 && !pastHeader) {
@@ -258,9 +250,9 @@ public class VerifyLibsAndLicenses extends Task {
         StringBuffer msg = new StringBuffer();
         for (String module : modules) {
             File d = new File(new File(nball, module), "external");
-            Set<String> cvsFiles = findCvsControlledFiles(d, false);
+            Set<String> hgFiles = findHgControlledFiles(d);
             Set<String> referencedBinaries = new HashSet<String>();
-            for (String n : cvsFiles) {
+            for (String n : hgFiles) {
                 if (!n.endsWith("-license.txt")) {
                     continue;
                 }
@@ -358,7 +350,7 @@ public class VerifyLibsAndLicenses extends Task {
                 if (files != null) {
                     for (String file : files.split("[, ]+")) {
                         referencedBinaries.add(file);
-                        if (!cvsFiles.contains(file)) {
+                        if (!hgFiles.contains(file)) {
                             msg.append("\n" + path + " mentions a nonexistent binary in Files: " + file);
                         }
                     }
@@ -367,12 +359,12 @@ public class VerifyLibsAndLicenses extends Task {
                     String matchingZip = n.replaceFirst("-license\\.txt$", ".zip");
                     referencedBinaries.add(matchingJar);
                     referencedBinaries.add(matchingZip);
-                    if (!cvsFiles.contains(matchingJar) && !cvsFiles.contains(matchingZip)) {
+                    if (!hgFiles.contains(matchingJar) && !hgFiles.contains(matchingZip)) {
                         msg.append("\n" + path + " has no Files header and no corresponding " + matchingJar + " or " + matchingZip + " could be found");
                     }
                 }
             }
-            for (String n : cvsFiles) {
+            for (String n : hgFiles) {
                 if (!n.endsWith(".jar") && !n.endsWith(".zip")) {
                     continue;
                 }
@@ -387,38 +379,56 @@ public class VerifyLibsAndLicenses extends Task {
         }
         pseudoTests.put("testLicenses", msg.length() > 0 ? "Some license files have incorrect headers" + msg : null);
     }
-    private static String templateMatch(final String actual, final String expected, boolean left) {
-        if (actual.matches(expected.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll(" *__[A-Z_]+__ *", ".*"))) {
-            return null;
-        } else if (expected.length() == 0) {
-            return "unexpected extra content";
-        } else if (actual.length() == 0) {
-            return "missing content";
-        } else if (!expected.startsWith("__")) {
-            if (expected.charAt(0) != actual.charAt(0)) {
-                return mismatch(actual, expected, true);
+    private static String templateMatch(String actual, String expected, boolean left) {
+        String reason = null;
+        boolean expectReason = false;
+        String mismatch = null;
+        while (true) {
+            if (actual.matches(expected.replaceAll("([\\\\\\[\\].^$?*+{}()|])", "\\\\$1").replaceAll(" *__[A-Z_]+__ *", ".*"))) {
+                reason = null;
+                break;
+            } else if (expected.length() == 0) {
+                reason = "unexpected extra content";
+                break;
+            } else if (actual.length() == 0) {
+                reason = "missing content";
+                break;
+            } else if (!expected.startsWith("__")) {
+                if (expected.charAt(0) != actual.charAt(0)) {
+                    reason = mismatch(actual, expected, true);
+                    break;
+                } else {
+                    expectReason = true;
+                    mismatch = mismatch(actual, expected, true);
+                    actual = actual.substring(1);
+                    expected = expected.substring(1);
+                    continue;
+                }
+            } else if (!expected.endsWith("__")) {
+                if (expected.charAt(expected.length() - 1) != actual.charAt(actual.length() - 1)) {
+                    reason = mismatch(actual, expected, false);
+                    break;
+                } else {
+                    expectReason = true;
+                    mismatch = mismatch(actual, expected, false);
+                    actual = actual.substring(0, actual.length() - 1);
+                    expected = expected.substring(0, expected.length() - 1);
+                    continue;
+                }
             } else {
-                String reason = templateMatch(actual.substring(1), expected.substring(1), left);
-                assert reason != null : mismatch(actual, expected, true);
-                return reason;
+                String absorbed = expected.replaceFirst(left ? "^(__[A-Z_]+__)." : ".(__[A-Z_]+__)$", "$1");
+                assert !expected.equals(absorbed) : expected;
+                mismatch = mismatch(actual, expected, left);
+                expected = absorbed;
+                left = !left;
+                continue;
             }
-        } else if (!expected.endsWith("__")) {
-            if (expected.charAt(expected.length() - 1) != actual.charAt(actual.length() - 1)) {
-                return mismatch(actual, expected, false);
-            } else {
-                String reason = templateMatch(actual.substring(0, actual.length() - 1), expected.substring(0, expected.length() - 1), left);
-                assert reason != null : mismatch(actual, expected, false);
-                return reason;
-            }
+        }
+        if (reason == null) {
+            assert !expectReason : mismatch;
+            return mismatch;
         } else {
-            String absorbed = expected.replaceFirst(left ? "^(__[A-Z_]+__)." : ".(__[A-Z_]+__)$", "$1");
-            assert !expected.equals(absorbed) : expected;
-            String reason = templateMatch(actual, absorbed, !left);
-            if (reason != null) {
-                return reason;
-            } else {
-                return mismatch(actual, expected, left);
-            }
+            return reason;
         }
     }
     private static String mismatch(String actual, String expected, boolean useHead) {
@@ -449,14 +459,8 @@ public class VerifyLibsAndLicenses extends Task {
 
     private void testNoStrayThirdPartyBinaries() throws IOException {
         List<String> ignoredPatterns = loadPatterns("ignored-binaries");
-        Set<String> topLevelModules = new TreeSet<String>();
-        for (String module : modules) {
-            topLevelModules.add(module.replaceFirst("/.+", ""));
-        }
         Set<String> violations = new TreeSet<String>();
-        for (String module : topLevelModules) {
-            findStrayThirdPartyBinaries(new File(nball, module.replace('/', File.separatorChar)), module + "/", violations, ignoredPatterns);
-        }
+        findStrayThirdPartyBinaries(nball, "", violations, ignoredPatterns);
         if (violations.isEmpty()) {
             pseudoTests.put("testNoStrayThirdPartyBinaries", null);
         } else {
@@ -468,7 +472,7 @@ public class VerifyLibsAndLicenses extends Task {
         }
     }
     private void findStrayThirdPartyBinaries(File dir, String prefix, Set<String> violations, List<String> ignoredPatterns) throws IOException {
-        for (String n : findCvsControlledFiles(dir, false)) {
+        for (String n : findHgControlledFiles(dir)) {
             File f = new File(dir, n);
             if (f.isDirectory()) {
                 findStrayThirdPartyBinaries(f, prefix + n + "/", violations, ignoredPatterns);
@@ -495,39 +499,66 @@ public class VerifyLibsAndLicenses extends Task {
         }
     }
 
-    static Set<String> findCvsControlledFiles(File dir, boolean textOnly) throws IOException {
-        File efile = new File(new File(dir, "CVS"), "Entries");
-        File elfile = new File(new File(dir, "CVS"), "Entries.Log");
-        if (!efile.isFile() && !elfile.isFile()) {
+    private static final Map<File,List<Pattern>> hgignores = new HashMap<File,List<Pattern>>();
+    /**
+     * Find files tracked by Mercurial.
+     * Rather than actually running 'hg locate',
+     * which might be too slow and also requires hg to be in the path,
+     * try to just look for files not ignored by Mercurial.
+     * Not as precise:
+     * 1. Might be some '?' status files (though these should be fixed by someone).
+     * 2. Some tracked files/dirs might for some reason be listed as ignored.
+     */
+    static Set<String> findHgControlledFiles(File dir) throws IOException {
+        File[] kids = dir.listFiles();
+        if (kids == null) {
             return Collections.emptySet();
         }
-        List<File> files = new ArrayList<File>(2);
-        if (efile.isFile()) {
-            files.add(efile);
+        File root = dir;
+        String path = "";
+        File hgignore;
+        while (!(hgignore = new File(root, ".hgignore")).isFile()) {
+            path = root.getName() + "/" + path;
+            root = root.getParentFile();
         }
-        if (elfile.isFile()) {
-            files.add(elfile);
-        }
-        Set<String> entries = new TreeSet<String>();
-        for (File f : files){
-            Reader r = new FileReader(f);
-            try {
-                BufferedReader buf = new BufferedReader(r);
-                String line;
-                while ((line = buf.readLine()) != null) {
-                    String[] components = line.split("/");
-                    if (components.length > 1) {
-                        String n = components[1];
-                        if (new File(dir, n).exists() && !(textOnly && line.matches(".*/-kb/.*"))) {
-                            entries.add(n);
-                        }
+        List<Pattern> ignoredPatterns;
+        synchronized (hgignores) {
+            if (hgignores.containsKey(root)) {
+                ignoredPatterns = hgignores.get(root);
+            } else {
+                ignoredPatterns = new ArrayList<Pattern>();
+                Reader r = new FileReader(hgignore);
+                try {
+                    BufferedReader br = new BufferedReader(r);
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        ignoredPatterns.add(Pattern.compile(line));
                     }
+                } finally {
+                    r.close();
                 }
-            } finally {
-                r.close();
+                hgignores.put(root, ignoredPatterns);
             }
         }
-        return entries;
+        Set<String> files = new TreeSet<String>();
+        FILES: for (File f : kids) {
+            String n = f.getName();
+            if (n.equals(".hg")) {
+                continue;
+            }
+            String fullname = path + n;
+            boolean isDir = f.isDirectory();
+            if (isDir && new File(f, ".hg").isDirectory()) {
+                continue; // skip contrib, misc repos if present
+            }
+            for (Pattern p : ignoredPatterns) {
+                if (p.matcher(fullname).find() || (isDir && p.matcher(fullname + "/").find())) {
+                    continue FILES;
+                }
+            }
+            files.add(n);
+        }
+        return files;
     }
 
 }
