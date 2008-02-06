@@ -76,6 +76,7 @@
 ^dbschema/javahelp/org/netbeans/modules/dbschema/docs/JavaHelpSearch2$
 ^dbschema/src/org/netbeans/modules/dbschema/jdbcimpl/resources/templates\.jar$
 ^db/test/xtest\.properties$
+^db.sample/test/unit/.*\.properties$
 ^db/test/unit/data/db-derby-10\.2\.2\.0-bin$
 ^db/test/unit/data/ddltestdb$
 ^db/test/unit/data/derby\.log$
