@@ -212,6 +212,7 @@ public class FacesContainer {
             facesContext.release();
             FactoryFinder.releaseFactories();
             releaseCommonsLogFactory();
+            configureListener.contextDestroyed(new ServletContextEvent(context));
         } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
@@ -346,6 +347,7 @@ public class FacesContainer {
             }
             FactoryFinder.releaseFactories();
             releaseCommonsLogFactory();
+            configureListener.contextDestroyed(new ServletContextEvent(context));
         } catch (Exception exc) {
             exc.printStackTrace();
         } finally {
