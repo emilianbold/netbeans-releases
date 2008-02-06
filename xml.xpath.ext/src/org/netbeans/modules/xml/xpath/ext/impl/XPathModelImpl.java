@@ -893,14 +893,15 @@ public class XPathModelImpl implements XPathModel {
         }
         //
         if (sameNameOtherPrefix.isEmpty()) {
-            // The function with the required name isn't found // vlv
+            // The function with the required name isn't found  // vlv
 
             // why bytesToString, convert are not recognized?
             // TODO FIX IT.
 
-//            mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
-//                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
-//                    XPathUtils.qNameObjectToString(funcQName));
+            mValidationContext.addResultItem(mRootXPathExpression,
+                    ResultType.WARNING, 
+                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
+                    XPathUtils.qNameObjectToString(funcQName));
         } else {
             // The function with the required name is found, but in other namespace
             //
@@ -908,11 +909,11 @@ public class XPathModelImpl implements XPathModel {
             String nsList = prepareNamespaceList(sameNameOtherPrefix);
             //
             if (nsPrefix.length() == 0) {
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+                mValidationContext.addResultItem(mRootXPathExpression, ResultType.WARNING, // vlv
                         XPathProblem.PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsList);
             } else {
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR,
                         XPathProblem.OTHER_PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsUri, nsList);
             }
