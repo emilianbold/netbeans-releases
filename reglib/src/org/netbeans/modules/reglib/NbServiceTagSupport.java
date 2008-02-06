@@ -341,7 +341,7 @@ public class NbServiceTagSupport {
     
     /**
      * Returns the NetBeans registration data located in
-     * the NB_INST_DIR/nb6.0/servicetag/registration.xml by default. 
+     * the NB_INST_DIR/nb6.x/servicetag/registration.xml by default. 
      *
      * @throws IllegalArgumentException if the registration data
      *         is of invalid format.
