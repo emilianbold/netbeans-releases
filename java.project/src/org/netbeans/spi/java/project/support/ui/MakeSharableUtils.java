@@ -42,42 +42,89 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 
-/**public TODO make public once it gets finished.*/ final class MakeSharableUtils  {
- 
+
+public final class MakeSharableUtils {
+
     static final String PROP_LOCATION = "location"; //NOI18N
-    static final String PROP_ACTIONS  = "actions"; //NOI18N
-    static final String PROP_HELPER  = "helper"; //NOI18N
-    static final String PROP_LIBRARIES  = "libraries"; //NOI18N
+    static final String PROP_ACTIONS = "actions"; //NOI18N
+    static final String PROP_HELPER = "helper"; //NOI18N
+    static final String PROP_REFERENCE_HELPER = "refhelper"; //NOI18N
+    static final String PROP_LIBRARIES = "libraries"; //NOI18N
+    static final String PROP_JAR_REFS = "jars"; //NOI18N
 
-    public static boolean showMakeSharableWizard(AntProjectHelper helper, List<String> libraryNames) {
-        
-        WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
+    public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
+
+        final WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
-        wizardDescriptor.setTitle("Your wizard dialog title here");
+        wizardDescriptor.setTitle("Make project sharable and self-contained.");
         wizardDescriptor.putProperty(PROP_HELPER, helper);
+        wizardDescriptor.putProperty(PROP_REFERENCE_HELPER, ref);
         wizardDescriptor.putProperty(PROP_LIBRARIES, libraryNames);
+        wizardDescriptor.putProperty(PROP_JAR_REFS, jarReferences);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(wizardDescriptor);
         dialog.setVisible(true);
         dialog.toFront();
         boolean cancelled = wizardDescriptor.getValue() != WizardDescriptor.FINISH_OPTION;
         if (!cancelled) {
-            String loc = (String) wizardDescriptor.getProperty(PROP_LOCATION);
+            final String loc = (String) wizardDescriptor.getProperty(PROP_LOCATION);
             assert loc != null;
-            helper.setLibrariesLocation(loc);
-            // TODO or make just runnables?
-            List<Action> actions = (List<Action>) wizardDescriptor.getProperty(PROP_ACTIONS);
-            for (Action act : actions) {
-                act.actionPerformed(null);
+            try {
+                // create libraries property file if it does not exist:
+                File f = new File(loc);
+                if (!f.isAbsolute()) {
+                    f = new File(FileUtil.toFile(helper.getProjectDirectory()), loc);
+                }
+                f = FileUtil.normalizeFile(f);
+                if (!f.exists()) {
+                    FileUtil.createData(f);
+                }
+
+                try {
+                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
+
+                        public Object run() throws IOException {
+                            try {
+                                helper.setLibrariesLocation(loc);
+                                ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
+
+                                // TODO or make just runnables?
+                                List<Action> actions = (List<Action>) wizardDescriptor.getProperty(PROP_ACTIONS);
+                                for (Action act : actions) {
+                                    act.actionPerformed(null);
+                                }
+                            } catch (IllegalArgumentException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+
+                            return null;
+                        }
+                    });
+                } catch (MutexException ex) {
+                    throw (IOException) ex.getException();
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
+
+
         }
         return !cancelled;
     }
@@ -87,32 +134,31 @@ import org.openide.WizardDescriptor;
      * various properties for them influencing wizard appearance.
      */
     private static WizardDescriptor.Panel[] getPanels() {
-          WizardDescriptor.Panel[]  panels = new WizardDescriptor.Panel[]{
-                new MakeSharableWizardPanel1(),
-                new MakeSharableWizardPanel2()
-            };
-            String[] steps = new String[panels.length];
-            for (int i = 0; i < panels.length; i++) {
-                Component c = panels[i].getComponent();
-                // Default step name to component name of panel. Mainly useful
-                // for getting the name of the target chooser to appear in the
-                // list of steps.
-                steps[i] = c.getName();
-                if (c instanceof JComponent) { // assume Swing components
-                    JComponent jc = (JComponent) c;
-                    // Sets step number of a component
-                    jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
-                    // Sets steps names for a panel
-                    jc.putClientProperty("WizardPanel_contentData", steps);
-                    // Turn on subtitle creation on each step
-                    jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
-                    // Show steps on the left side with the image on the background
-                    jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
-                    // Turn on numbering of all steps
-                    jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
-                }
+        WizardDescriptor.Panel[] panels = new WizardDescriptor.Panel[]{
+            new MakeSharableWizardPanel1(),
+            new MakeSharableWizardPanel2()
+        };
+        String[] steps = new String[panels.length];
+        for (int i = 0; i < panels.length; i++) {
+            Component c = panels[i].getComponent();
+            // Default step name to component name of panel. Mainly useful
+            // for getting the name of the target chooser to appear in the
+            // list of steps.
+            steps[i] = c.getName();
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent) c;
+                // Sets step number of a component
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));
+                // Sets steps names for a panel
+                jc.putClientProperty("WizardPanel_contentData", steps);
+                // Turn on subtitle creation on each step
+                jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+                // Show steps on the left side with the image on the background
+                jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+                // Turn on numbering of all steps
+                jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);
             }
+        }
         return panels;
     }
-
 }

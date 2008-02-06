@@ -586,7 +586,9 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                     jarFolder = getJarFolder(entry);
                     entry = FileUtil.getArchiveFile(entry);
                 } else if (!"file".equals(entry.getProtocol())) { // NOI18N
-                    throw new IllegalArgumentException(entry.toExternalForm());
+                    value.add(entry.toString());
+                    Logger.getLogger(ProjectLibraryProvider.class.getName()).fine("Setting url=" + entry + " as content for library volume type: " + volumeType);
+                    continue;
                 }
                 String p = LibrariesSupport.convertURLToFilePath(entry);
                 File f = new File(p);
