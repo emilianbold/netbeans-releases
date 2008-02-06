@@ -446,6 +446,7 @@ public class WSDeploymentManager implements DeploymentManager {
                 isConnected = true;
             }
         } catch (DeploymentManagerCreationException e) {
+            LOGGER.log(Level.FINE, null, e);
             try {
                 // if the connected deployment manager cannot be obtained - get
                 // a disconnected one and set the connected marker to false

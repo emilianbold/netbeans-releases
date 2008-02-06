@@ -344,10 +344,8 @@ manifest-subst\.mf$
 ^php.doc/libdoc/doc\.html$
 ^lib.profiler/native/build/dist$
 ^lib.profiler/test/functional/data/projects/j2se-simple/dist$
-^o.jruby.distro/patched_source$
 ^o.jruby.distro/unpatched_source$
 ^o.jruby/patched_source$
-^o.jruby/unpatched_source$
 ^schema2beans/anttask/s2banttask\.jar$
 ^schema2beans/dev/schema2beansdev\.nbm$
 ^schema2beans/dev/schema2beansdev\.jar$
