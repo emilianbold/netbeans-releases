@@ -257,7 +257,7 @@ public class NbModuleProjectGenerator {
                     File nborg = ModuleList.findNetBeansOrg(projectDir);
                     if (nborg == null) {
                         throw new IllegalArgumentException(projectDir + " doesn't " + // NOI18N
-                                "point to directory within the netbeans.org CVS tree"); // NOI18N
+                                "point to a top-level directory within the netbeans.org main or contrib repositories"); // NOI18N
                     }
                     final FileObject dirFO = FileUtil.createFolder(projectDir);
                     if (ProjectManager.getDefault().findProject(dirFO) != null) {
