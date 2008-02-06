@@ -87,7 +87,10 @@ public class MessageHandlerWizard implements WizardDescriptor.InstantiatingItera
         SourceGroup[] sourceGroups = SourceGroups.getJavaSourceGroups(project);
 
         //create the Java Project chooser
-        firstPanel = JavaTemplates.createPackageChooser(project, sourceGroups, new BottomPanel());
+         if (sourceGroups.length == 0)
+            firstPanel = new FinishableProxyWizardPanel(Templates.createSimpleTargetChooser(project, sourceGroups, new BottomPanel()));
+        else
+            firstPanel = new FinishableProxyWizardPanel(JavaTemplates.createPackageChooser(project, sourceGroups, new BottomPanel(), true));
         JComponent c = (JComponent) firstPanel.getComponent();
         Util.changeLabelInComponent(c, NbBundle.getMessage(MessageHandlerWizard.class, "LBL_JavaTargetChooserPanelGUI_ClassName_Label"), NbBundle.getMessage(MessageHandlerWizard.class, "LBL_Handler_Name")); //NOI18N
         c.putClientProperty("WizardPanel_contentData", HANDLER_STEPS);

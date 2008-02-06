@@ -701,7 +701,9 @@ public final class RubyPlatform {
      * i.e. a gem was removed or a new gem was installed.
      */
     public void fireGemsChanged() {
-        pcs.firePropertyChange("gems", null, null); //NOI18N
+        if (pcs != null) {
+            pcs.firePropertyChange("gems", null, null); //NOI18N
+        }
     }
     
     @Override

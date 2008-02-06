@@ -81,7 +81,7 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
             if (man.getLocation() == null) {
                 continue;
             }
-            items.add(LibrariesSupport.convertURLToFile(man.getLocation()).getPath());
+            items.add(LibrariesSupport.convertURLToFilePath(man.getLocation()));
         }
         libraryManagerComboBox.setModel(new DefaultComboBoxModel(items.toArray(new String[items.size()])));
     }
@@ -141,7 +141,7 @@ class AllLibrariesCustomizer extends javax.swing.JPanel {
         } else if (index == 0) {
             librariesCustomizer.setLibraryStorageArea(null);
         } else if (index > 0) {
-            URL u = LibrariesSupport.convertFileToURL(new File ((String)libraryManagerComboBox.getModel().getSelectedItem()));
+            URL u = LibrariesSupport.convertFilePathToURL((String)libraryManagerComboBox.getModel().getSelectedItem());
             librariesCustomizer.setLibraryStorageArea(findLibraryStorageArea(u));
         }
     }//GEN-LAST:event_libraryManagerComboBoxActionPerformed
