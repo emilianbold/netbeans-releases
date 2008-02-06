@@ -432,18 +432,18 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         return mRightTreeModel.isConnectable(treePath);
     }
 
-    public boolean add(TreePath treePath, ItemHandler handler, int x, int y) {
+    public GraphSubset add(TreePath treePath, ItemHandler handler, int x, int y) {
         myHandler = handler;
         return doCopy(treePath, null, x, y);
     }
 
-    public void copy(TreePath treePath, GraphSubset graphSubset, int x, int y) {
-        doCopy(treePath, graphSubset, x, y);
+    public GraphSubset copy(TreePath treePath, GraphSubset graphSubset, int x, int y) {
+        return doCopy(treePath, graphSubset, x, y);
     }
 
-    private boolean doCopy(TreePath treePath, GraphSubset graphSubset, int x, int y) {
+    private GraphSubset doCopy(TreePath treePath, GraphSubset graphSubset, int x, int y) {
         if ( !isConnectable(treePath)) {
-            return false;
+            return null;
         }
         if (myHandler != null) {
             if (myHandler.canAddGraphSubset()) {
@@ -453,7 +453,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
             }
         }
         if (graphSubset == null) {
-            return false;
+            return null;
         }
         Graph graph = graphRequired(treePath);
         int nextX = x;
@@ -471,7 +471,7 @@ public class BpelMapperModel implements MapperModel, MapperTcContext.Provider {
         fireGraphChanged(treePath);
         mRightTreeModel.fireTreeChanged(this, treePath);
         //
-        return true;
+        return graphSubset;
     }
 
     public void move(TreePath treePath, GraphSubset graphSubset, int newX, int newY) {
