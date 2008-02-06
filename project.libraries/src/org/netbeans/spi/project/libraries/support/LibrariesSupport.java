@@ -99,15 +99,17 @@ public final class LibrariesSupport {
      * Properly converts possibly relative file to URL.
      * @param f file to convert; can be relative; cannot be null
      * @return url
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
-    public static URL convertFileToURL(File f) {
+    public static URL convertFilePathToURL(String path) {
         try {
+            File f = new File(path);
             if (f.isAbsolute()) {
                 return f.toURI().toURL();
             } else {
                 // create hierarchical relative URI (that is no schema)
                 // to encode OS characters
-                URI uri = new URI(null, null, f.getPath().replace('\\', '/'), null);
+                URI uri = new URI(null, null, path.replace('\\', '/'), null);
                 return new URL("file", null, uri.getRawPath());
             }
 
@@ -126,19 +128,20 @@ public final class LibrariesSupport {
      * Properly converts possibly relative URL to file.
      * @param url file URL to convert; can be relative; cannot be null
      * @return url
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
-    public static File convertURLToFile(URL url) {
+    public static String convertURLToFilePath(URL url) {
         if (!"file".equals(url.getProtocol())) {
             throw new IllegalArgumentException("not file URL "+url); //NOI18N
         }
         try {
             if (isAbsoluteURL(url)) {
-                return new File(new URI(url.toExternalForm()));
+                return new File(new URI(url.toExternalForm())).getPath();
             } else {
                 // workaround to decode URL path - created fake absolute URI 
                 // just to construct File instance and properly decoded path:
                 URI uri3 = new URI("file:/"+url.getPath());
-                return new File(new File(uri3).getPath().substring(1));
+                return new File(uri3).getPath().substring(1);
             }
         } catch (URISyntaxException ex) {
 	    IllegalArgumentException y = new IllegalArgumentException();
@@ -152,6 +155,7 @@ public final class LibrariesSupport {
      * 
      * @param url url to test; cannot be null
      * @return is absolute
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
     public static boolean isAbsoluteURL(URL url) {
         if ("jar".equals(url.getProtocol())) { // NOI18N
@@ -166,6 +170,7 @@ public final class LibrariesSupport {
      * @param libraryLocation library location file; can be null for global libraries
      * @param libraryEntry library entry to resolve
      * @return file object
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
     public static FileObject resolveLibraryEntryFileObject(URL libraryLocation, URL libraryEntry) {
         URL u = resolveLibraryEntryURL(libraryLocation, libraryEntry);
@@ -178,6 +183,7 @@ public final class LibrariesSupport {
      * @param libraryLocation library location file; can be null for global libraries
      * @param libraryEntry library entry to resolve
      * @return absolute URL
+     * @since org.netbeans.modules.project.libraries/1 1.17
      */
     public static URL resolveLibraryEntryURL(URL libraryLocation, URL libraryEntry) {
         Parameters.notNull("libraryEntry", libraryEntry); //NOI18N
@@ -201,8 +207,8 @@ public final class LibrariesSupport {
                 jarFolder = libraryEntry.toExternalForm().substring(libraryEntry.toExternalForm().indexOf("!/")+2); //NOI18N
                 libraryEntry = FileUtil.getArchiveFile(libraryEntry);
             }
-            File f = convertURLToFile(libraryEntry);
-            f = FileUtil.normalizeFile(new File(libBase, f.getPath()));
+            String path = convertURLToFilePath(libraryEntry);
+            File f = FileUtil.normalizeFile(new File(libBase, path));
             URL u;
             try {
                 u = f.toURI().toURL();

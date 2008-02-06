@@ -53,4 +53,32 @@ public class XPathUtils {
         }
     }
     
+    public static boolean equalsIgnorNsUri(QName qName1, QName qName2) {
+        return (qName1.getLocalPart().equals(qName2.getLocalPart())) && 
+                (qName1.getPrefix().equals(qName2.getPrefix()));
+    }
+    
+    public static boolean samePredicatesArr(
+            XPathPredicateExpression[] predArr1, 
+            XPathPredicateExpression[] predArr2) {
+        //
+        // Compare predicates count
+        int counter1 = predArr1 == null ? 0 : predArr1.length;
+        int counter2 = predArr2 == null ? 0 : predArr2.length;
+        if (counter1 != counter2) {
+            return false;
+        }
+        // Compare predicates one by one
+        for (int index = 0; index < counter1; index++) {
+            XPathPredicateExpression predicate1 = predArr1[index];
+            XPathPredicateExpression predicate2 = predArr2[index];
+            String predText1 = predicate1.getExpressionString();
+            String predText2 = predicate2.getExpressionString();
+            if (!(predText1.equals(predText2))) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
 }

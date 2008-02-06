@@ -700,26 +700,27 @@ final class LibrariesNode extends AbstractNode {
             chooser.setCurrentDirectory (curDir);
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() );
             if ( option == JFileChooser.APPROVE_OPTION ) {
-                File files[];
+                String files[];
                 try {
-                    files = chooser.getFiles();
+                    files = chooser.getSelectedPaths();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                     return;
                 }
-                addJarFiles( files, fileFilter );
+                addJarFiles(files, fileFilter , FileUtil.toFile(project.getProjectDirectory()));
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
             }
         }
 
-        private void addJarFiles (File[] files, FileFilter fileFilter) {
+        private void addJarFiles (String[] files, FileFilter fileFilter, File base) {
             for (int i=0; i<files.length;i++) {
                 try {
                     //Check if the file is acceted by the FileFilter,
                     //user may enter the name of non displayed file into JFileChooser
-                    if (fileFilter.accept(files[i])) {
-                        URL u = LibrariesSupport.convertFileToURL(files[i]);
+                    File fl = PropertyUtils.resolveFile(base, files[i]);
+                    if (fileFilter.accept(fl)) {
+                        URL u = LibrariesSupport.convertFilePathToURL(files[i]);
                         u = FileUtil.getArchiveRoot(u);
                         ProjectClassPathModifier.addRoots(new URL[]{u}, projectSourcesArtifact, ClassPath.COMPILE);
                     }
