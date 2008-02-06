@@ -41,9 +41,6 @@ package org.netbeans.modules.websvc.saas.model;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.websvc.saas.util.SetupUtil;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.Repository;
 
 /**
  *
@@ -65,15 +62,20 @@ public class SaasServicesModelTest extends NbTestCase {
         super.tearDown();
     }
 
-    public void testGetGroups() throws Exception {
+    public void testLoading() throws Exception {
         SetupUtil.commonSetUp(super.getWorkDir());
 
         SaasServicesModel instance = SaasServicesModel.getInstance();
         assertEquals("YouTube", instance.getGroups().get(0).getName());
+        SaasGroup group = instance.getGroups().get(0).getChildGroup("Videos");
+        assertNotNull(group);
+        WadlSaas service = (WadlSaas) group.getServices().get(0);
+        assertEquals("YouTubeVideos", service.getDisplayName());
+        assertNotNull(service.getWadlModel());
 
         SetupUtil.commonTearDown();
     }
-
+    
     /*public void testAddGroup() {
         System.out.println("addGroup");
         SaasGroup child = null;

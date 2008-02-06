@@ -68,7 +68,7 @@ public class ObjectMemberAccessExpressionScope
     public boolean isApplicable(CodeCompletionContext context) {
         init(context);
         SourceElement e = myContext.getSourceElement();
-        // This provider is applicble iif it possible to find referencedClass.
+        // This provider is applicable iif it possible to find referencedClass.
         if(referencedClass == null) {
             LOG.log(Level.INFO, 
                     "{0} provider is NOT applicable. referencedClass == null", 

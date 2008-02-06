@@ -49,9 +49,11 @@ import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.netbeans.modules.websvc.saas.ui.actions.TestMethodAction;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -82,18 +84,18 @@ public class WadlMethodNode extends AbstractNode {
         return method.getName();
     }
     
-    private String getSignature() {
+    static String getSignature(Method m) {
         StringBuffer sb = new StringBuffer();
-        sb.append(method.getName());
+        sb.append(m.getName());
 
-        Param[] params = method.getRequest().getParam().toArray(new Param[method.getRequest().getParam().size()]);
+        Param[] params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
         if (params.length > 0) {
             sb.append(' ');
         }
         for (int i=0 ; i < params.length; i++) {
             Param p = params[i];
             if (i > 0) {
-                sb.append(", ");
+                sb.append(",");
             }
             if (p.getStyle() == ParamStyle.TEMPLATE) {
                 sb.append('{');
@@ -119,7 +121,7 @@ public class WadlMethodNode extends AbstractNode {
     
     @Override
     public String getShortDescription() {
-        return getSignature();
+        return getSignature(method);
     }
     
     private static final java.awt.Image SERVICE_BADGE =
@@ -143,7 +145,8 @@ public class WadlMethodNode extends AbstractNode {
                 actions.add(a);
             }
         }
-        //TODO
+        //TODO maybe ???
+        actions.add(SystemAction.get(TestMethodAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
     

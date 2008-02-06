@@ -40,10 +40,19 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
+import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.netbeans.modules.websvc.saas.ui.actions.DeleteServiceAction;
+import org.netbeans.modules.websvc.saas.ui.actions.RefreshServiceAction;
+import org.netbeans.modules.websvc.saas.ui.actions.ViewApiDocAction;
+import org.netbeans.modules.websvc.saas.ui.actions.ViewWadlAction;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Node.Cookie;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -53,7 +62,37 @@ public class WadlSaasNode extends AbstractNode {
     private WadlSaas wadlSaas;
     
     public WadlSaasNode(WadlSaas wadlSaas) {
+        this(wadlSaas, new InstanceContent());
+        this.wadlSaas = wadlSaas;
+    }
+
+    public WadlSaasNode(WadlSaas wadlSaas, InstanceContent content) {
         super(new WadlSaasNodeChildren(wadlSaas));
+        this.wadlSaas = wadlSaas;
+        content.add(wadlSaas);
+    }
+
+    @Override
+    public String getDisplayName() {
+        return wadlSaas.getDisplayName();
+    }
+    
+    @Override
+    public String getShortDescription() {
+        return wadlSaas.getDescription();
+    }
+    
+    private static final java.awt.Image SERVICE_BADGE =
+            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/restservice.png" ); //NOI18N
+    
+    @Override
+    public java.awt.Image getIcon(int type) {
+        return SERVICE_BADGE;
+    }
+    
+    @Override
+    public Image getOpenedIcon(int type){
+        return getIcon( type);
     }
 
     @Override
@@ -62,18 +101,19 @@ public class WadlSaasNode extends AbstractNode {
     }
 
     @Override
-    public SystemAction[] getActions() {
-        return super.getActions();
-    }
+    public Action[] getActions(boolean context) {
+        List<Action> actions = new ArrayList<Action>();
+        for (SaasNodeActionsProvider ext : SaasUtil.getSaasNodeActionsProviders()) {
+            for (Action a : ext.getSaasActions(this.getLookup())) {
+                actions.add(a);
+            }
+        }
+        actions.add(SystemAction.get(ViewApiDocAction.class));
+        actions.add(SystemAction.get(ViewWadlAction.class));
+        actions.add(SystemAction.get(DeleteServiceAction.class));
+        actions.add(SystemAction.get(RefreshServiceAction.class));
 
-    @Override
-    public <T extends Cookie> T getCookie(Class<T> type) {
-        return super.getCookie(type);
-    }
-
-    @Override
-    public Image getIcon(int type) {
-        return super.getIcon(type);
+        return actions.toArray(new Action[actions.size()]);
     }
 
 }

@@ -191,6 +191,11 @@ class OpenedEditors implements PropertyChangeListener {
 
         for (FileObject f : files) {
             String fileMimeType = FileUtil.getMIMEType(f);
+            
+            if (fileMimeType == null) {
+                //unrecognized FileObject
+                continue;
+            }
 
             if (mimeTypesList.contains(fileMimeType)) {
                 result.add(f);
