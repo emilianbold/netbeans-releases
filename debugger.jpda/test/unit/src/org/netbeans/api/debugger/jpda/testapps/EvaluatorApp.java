@@ -815,6 +815,14 @@ public class EvaluatorApp {
         return e.ONE;
     }
     
+    public static Class testMember5() {
+        return Object.class;
+    }
+    
+    public static Class testMember6() {
+        return java.util.Collection.class;
+    }
+    
     // Method calls
     
     public static Object testMethod1() {

@@ -164,13 +164,15 @@ public class SQLOperatorInfoVisitor {
             if (this.pipelineForced || this.foundValidationCondition || this.foundJavaOperator) {
                 // Pipeline required
                 if (this.foundUserFunction) {
-                    String desc = NbBundle.getMessage(SQLOperatorInfoVisitor.class, "ERROR_can_not_use_userfx_in_pipeline");
+                    String nbBundle1 = mLoc.t("PRSR001: Can not use User function(s) in pipeline/validation mode.");
+                    String desc = Localizer.parse(nbBundle1); // NOI18N
                     ValidationInfoImpl validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_ERROR);
                     validationInfoList.add(validationInfo);
                 }
             } else {
                 if (this.foundUserFunction) {
-                    String desc = NbBundle.getMessage(SQLOperatorInfoVisitor.class, "WARNING_userfx_usage");
+                    String nbBundle2 = mLoc.t("PRSR001: One or more User function is used. Make sure the function is valid and available on appropriate source or target database. ");
+                    String desc =Localizer.parse(nbBundle2);
                     ValidationInfoImpl validationInfo = new ValidationInfoImpl(definition, desc, ValidationInfo.VALIDATION_WARNING);
                     validationInfoList.add(validationInfo);
                 }

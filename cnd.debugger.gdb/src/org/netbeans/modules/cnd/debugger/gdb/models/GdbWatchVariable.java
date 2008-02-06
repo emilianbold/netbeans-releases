@@ -112,13 +112,13 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         type = getDebugger().requestWhatis(watch.getExpression());
-                        value = getDebugger().requestValue(watch.getExpression());
+                        value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
                         model.fireTableValueChanged(ev.getSource(), null);
                     }
                 });
             } else {
                 type = getDebugger().requestWhatis(watch.getExpression());
-                value = getDebugger().requestValue(watch.getExpression());
+                value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
                 model.fireTableValueChanged(ev.getSource(), null);
             }
         } else {
@@ -141,16 +141,18 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     @Override
     public String getType() {
         if (type == null || type.length() == 0) {
-            type = getDebugger().requestSymbolType(watch.getExpression());
+            type = getDebugger().requestWhatis(watch.getExpression());
         }
-        log.fine("GWV.getType: [" + (type == null ? "<Null>" : type) + "]");
         return type;
     }
     
     @Override
     public String getValue() {
         if (value == null || value.length() == 0) {
-            value = getDebugger().requestValue(watch.getExpression());
+            value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
+	    if (fields.length > 0) {
+		setModifiedValue(value);
+	    }
         }
         log.fine("GWV.getValue: [" + (value == null ? "<Null>" : value) + "]");
         return value;

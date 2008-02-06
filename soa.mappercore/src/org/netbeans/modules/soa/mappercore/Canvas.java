@@ -62,6 +62,7 @@ import org.netbeans.modules.soa.mappercore.graphics.Grid;
 import org.netbeans.modules.soa.mappercore.graphics.VerticalGradient;
 import org.netbeans.modules.soa.mappercore.graphics.XRange;
 import org.netbeans.modules.soa.mappercore.model.Constant;
+import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.Operation;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
@@ -115,14 +116,33 @@ public class Canvas extends MapperPanel implements VertexCanvas,
         inplaceEditor = new InplaceEditor(this);
         
         getSelectionModel().addSelectionListener(this);
-                        
+                   
+//        ToolTipManager.sharedInstance().registerComponent(this);
+        
         registerAction(new StartInplaceEditor(this));
         registerAction(new MoveRightCanvasAction(this));
         registerAction(new MoveLeftCanvasAction(this));
         registerAction(new MoveUpCanvasAction(this));
         registerAction(new MoveDownCanvasAction(this));
         registerAction(new LinkConnectAction(this));
-   }
+    }
+
+//    @Override
+//    public String getToolTipText(MouseEvent event) {
+//        CanvasSearchResult searchResult = find(event.getX(), event.getY());
+//        
+//        if (searchResult == null) return null;
+//        if (searchResult.getPinItem() != null) return null;
+//        
+//        GraphItem graphItem = searchResult.getGraphItem();
+//        
+//        if (graphItem instanceof Vertex) {
+//            return ((Vertex) graphItem).getName();
+//        }
+//        
+//        return null;
+//    }
+    
     
     public void registerAction(MapperKeyboardAction action) {
         InputMap iMap = getInputMap();

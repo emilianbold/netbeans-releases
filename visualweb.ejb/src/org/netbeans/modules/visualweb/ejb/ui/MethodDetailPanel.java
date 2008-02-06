@@ -56,6 +56,7 @@ import java.net.URLClassLoader;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JTextField;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 
@@ -82,31 +83,39 @@ public class MethodDetailPanel extends javax.swing.JPanel {
     }
     
     private void displayValue() {
+        if (methodInfo != null) {
+            signatureTextArea.setText(methodInfo.toString());
+
+            // the method return type is a collection, then the combo box will be
+            // enabled to ask for the element class type.
+            if (methodInfo.getReturnType().isCollection()) {
+                returnTypeTextField.setText(methodInfo.getReturnType().getClassName());
+                classNameTextField.setEditable(true);
+                classNameTextField.setText(methodInfo.getReturnType().getElemClassName());
+            } else {
+                returnTypeTextField.setText(methodInfo.getReturnType().getClassName());
+                classNameTextField.setText(null);
+                classNameTextField.setEditable(false);
+            }
         
-        signatureTextArea.setText( methodInfo.toString() );
-        
-        // the method return type is a collection, then the combo box will be
-        // enabled to ask for the element class type.
-        if( methodInfo.getReturnType().isCollection() ) {
-            returnTypeTextField.setText( methodInfo.getReturnType().getClassName() );
-            classNameTextField.setEditable( true );
-            classNameTextField.setText( methodInfo.getReturnType().getElemClassName() );
+            // Init the table with the parameter information
+            MethodParamTableModel tableModel = new MethodParamTableModel(methodInfo);
+            paramTable.setModel(tableModel);
+
+            paramTable.setDefaultEditor(String.class, new DefaultCellEditor(new JTextField()));
+        }else {
+            paramTable.setModel(new DefaultTableModel());
+            paramTable.setDefaultEditor(String.class, new DefaultCellEditor(new JTextField()));
+            classNameTextField.setText(null);
+            returnTypeTextField.setText(null);
+            classNameTextField.setEditable(false);
         }
-        else {          
-            returnTypeTextField.setText( methodInfo.getReturnType().getClassName() );
-            classNameTextField.setText( null );
-            classNameTextField.setEditable( false );
-        }
-        
-        // Init the table with the parameter information
-        MethodParamTableModel tableModel = new MethodParamTableModel( methodInfo );
-        paramTable.setModel( tableModel );
-        
-        paramTable.setDefaultEditor( String.class,  new DefaultCellEditor( new JTextField()) );
     }
     
     public void updateColElemClassName()
     {
+        if (methodInfo == null) return;
+        
         String className = classNameTextField.getText();
         if( className != null && className.trim().length() != 0 )
         {
@@ -330,7 +339,7 @@ public class MethodDetailPanel extends javax.swing.JPanel {
                 
                 // Make sure it is a legal parameter name
                 try {
-                    MethodParamValidator.validate( argName );
+                    MethodParamValidator.validate( argName, method, row );
                 }
                 catch( InvalidParameterNameException e ) {
                     NotifyDescriptor d = new NotifyDescriptor.Message( e.getMessage(), NotifyDescriptor.ERROR_MESSAGE);

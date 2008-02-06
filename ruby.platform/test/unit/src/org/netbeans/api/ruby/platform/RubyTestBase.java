@@ -145,17 +145,45 @@ public abstract class RubyTestBase extends NbTestCase {
         props.put(Info.RUBY_PLATFORM, "abcd");
         if (withGems) {
             // Build a fake rubygems repository
-            FileObject gemsVer = FileUtil.createFolder(libRuby, "gems/" + RubyPlatform.DEFAULT_RUBY_RELEASE);
-            gemsVer.createFolder("gems");
-            gemsVer.createFolder("specifications");
-            gemsVer.createFolder("bin");
-            props.put(Info.GEM_HOME, FileUtil.toFile(gemsVer).getAbsolutePath());
-            props.put(Info.GEM_PATH, "/a/b/c");
+            FileObject gemRepo = FileUtil.createFolder(libRuby, "gems/" + RubyPlatform.DEFAULT_RUBY_RELEASE);
+            GemManager.initializeRepository(gemRepo);
+            gemRepo.createFolder("bin");
+            props.put(Info.GEM_HOME, FileUtil.toFile(gemRepo).getAbsolutePath());
+            props.put(Info.GEM_PATH, "/tmp/a/b/c");
             props.put(Info.GEM_VERSION, "0.2");
         }
 
         RubyPlatformManager.TEST_RUBY_PROPS = props;
         return FileUtil.toFile(interpreter);
+    }
+
+    protected static void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
+        String gemplaf = platform.isJRuby() ? "java" : "";
+        installFakeGem("ruby-debug-base", "0.10.0", gemplaf, platform);
+        installFakeGem("ruby-debug-ide", "0.1.10", gemplaf, platform);
+    }
+
+    protected static void uninstallFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {
+        FileObject gemHome = platform.getGemManager().getGemHomeFO();
+        String gemplaf = actualPlatform == null ? "" : "-" + actualPlatform;
+        FileObject gem = gemHome.getFileObject("specifications/" + name + '-' + version + gemplaf + ".gemspec");
+        gem.delete();
+        platform.getGemManager().reset();
+    }
+    
+    protected static void uninstallFakeGem(final String name, final String version, final RubyPlatform platform) throws IOException {
+        uninstallFakeGem(name, version, null, platform);
+    }
+
+    protected static void installFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {
+        FileObject gemHome = platform.getGemManager().getGemHomeFO();
+        String gemplaf = actualPlatform == null ? "" : "-" + actualPlatform;
+        FileUtil.createData(gemHome, "specifications/" + name + '-' + version + gemplaf + ".gemspec");
+        platform.getGemManager().reset();
+    }
+    
+    protected static void installFakeGem(final String name, final String version, final RubyPlatform platform) throws IOException {
+        installFakeGem(name, version, null, platform);
     }
 
     protected FileObject getTestFile(String relFilePath) {

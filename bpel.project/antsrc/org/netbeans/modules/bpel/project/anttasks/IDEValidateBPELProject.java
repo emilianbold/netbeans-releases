@@ -321,9 +321,10 @@ public class IDEValidateBPELProject extends Task {
         for (Iterator itr = col.iterator(); itr.hasNext();) {
           ResultItem resultItem = (ResultItem) itr.next();
 
+          System.err.println(getValidationError(bpel, resultItem));
+          System.err.println();
+
           if (resultItem.getType() == Validator.ResultType.ERROR) {
-            System.err.println(getValidationError(bpel, resultItem));
-            System.err.println();
             isError = true;
           }
         }

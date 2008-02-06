@@ -54,6 +54,7 @@ import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgCommand;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
@@ -68,7 +69,7 @@ import org.netbeans.modules.versioning.util.AccessibleJFileChooser;
  * 
  * @author Padraig O'Briain
  */
-public class ImportDiffAction extends AbstractAction {
+public class ImportDiffAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -77,20 +78,7 @@ public class ImportDiffAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
-        if(!HgRepositoryContextCache.hasHistory(context)){
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(ImportDiffAction.class,
-                    "MSG_IMPORT_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(ImportDiffAction.class,
-                    "MSG_IMPORT_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_NOTHING")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(ImportDiffAction.class, "MSG_IMPORT_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            return;
-        }
+    public void performAction(ActionEvent e) {
         importDiff(context);
     }
     

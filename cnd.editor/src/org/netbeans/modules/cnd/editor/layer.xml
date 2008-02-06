@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="OptionsDialog"> 
+        <folder name="CPlusPlus">
+            <file name="EditorOptionsPanelController.instance">
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.options.EditorOptionsPanelController"/>
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.options.OptionsPanelController"/>
+                <attr name="position" intvalue="400"/>
+            </file>
+        </folder>     
+    </folder>
+</filesystem>

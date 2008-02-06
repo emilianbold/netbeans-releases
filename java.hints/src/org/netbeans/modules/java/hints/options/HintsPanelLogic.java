@@ -259,7 +259,13 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             Preferences p = getCurrentPrefernces(hint);
             
             HintSeverity severity = HintsSettings.getSeverity(hint, p);
-            severityComboBox.setSelectedIndex(severity2index.get(severity));
+            if (severity != null) {
+                severityComboBox.setSelectedIndex(severity2index.get(severity));
+                severityComboBox.setEnabled(true);
+            } else {
+                severityComboBox.setSelectedIndex(severity2index.get(HintSeverity.ERROR));
+                severityComboBox.setEnabled(false);
+            }
             
             boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
             tasklistCheckBox.setSelected(toTasklist);
@@ -297,7 +303,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
             AbstractHint hint = (AbstractHint) o;
             Preferences p = getPreferences4Modification(hint);
             
-            if( severityComboBox.equals( e.getSource() ) )
+            if(HintsSettings.getSeverity(hint, p) != null && severityComboBox.equals( e.getSource() ) )
                 HintsSettings.setSeverity(p, index2severity(severityComboBox.getSelectedIndex()));            
         }
     }

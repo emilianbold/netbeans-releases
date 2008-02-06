@@ -43,17 +43,12 @@
 
 package org.netbeans.modules.spring.webmvc;
 
-import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 
 /**
- * Provides the user interface for configuring a Spring Framework web application
- * Also implements the AtomicAction fired off when the web framework providers
- * extend method is called.
+ * Provides the user interface for configuring a Spring Web MVC web application
  *
  * @author Craig MacKay
  */
@@ -99,55 +94,7 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
     
     public boolean getIncludeJstl() {
         return includeJstlCheckBox.isSelected();
-    }
-    
-    boolean valid() {        
-        ExtenderController controller = extender.getController();
-        String namePattern = getDispatcherName();
-        String mappingPattern = getDispatcherMapping();
-        if (namePattern == null || namePattern.trim().length() == 0){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NamePatternIsEmpty")); // NOI18N
-            return false;
-        }
-        if (!isNamePatternValid(namePattern)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NamePatternIsNotValid")); // NOI18N
-            return false;
-        }
-        if (mappingPattern == null || mappingPattern.trim().length() == 0) {
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_MappingPatternIsEmpty")); // NOI18N
-            return false;
-        }
-        if (!isMappingPatternValid(mappingPattern)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_MappingPatternIsNotValid")); // NOI18N
-            return false;
-        }
-        controller.setErrorMessage(null);
-        return true;
-    }
-    
-    private boolean isNamePatternValid(String pattern) {        
-        return Pattern.matches("\\w+", pattern);
-    }
-    
-    private boolean isMappingPatternValid(String pattern){
-        // mapping validation based on the Servlet 2.4 specification,section SRV.11.2
-        if (pattern.startsWith("*.")){ // NOI18N
-            String p = pattern.substring(2);
-            if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
-                    && p.indexOf('/') == -1 && !p.trim().equals("")) { // NOI18N
-                return true;
-            }
-        }
-        
-        if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/")) // NOI18N
-            return true;
-        
-        if (pattern.matches("/")){ // NOI18N
-            return true;
-        }
-               
-        return false;
-    }
+    }               
     
     private void fireChange() {
         changeSupport.fireChange();

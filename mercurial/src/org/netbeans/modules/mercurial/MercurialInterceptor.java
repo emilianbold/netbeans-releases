@@ -232,18 +232,25 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
 
+        Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): File: {0} {1}", new Object[] {srcFile, dstFile}); // NOI18N
+
+        srcFile.renameTo(dstFile);
         Runnable moveImpl = new Runnable() {
             public void run() {
                 try {
-                    int status = hg.getFileStatusCache().getStatus(srcFile).getStatus();
-                    if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) {
-                        srcFile.renameTo(dstFile);
+                    if (dstFile.isDirectory()) {
+                        HgCommand.doRenameAfter(root, srcFile, dstFile);
+                        return;
+                    }
+                    int status = HgCommand.getSingleStatus(root, srcFile.getParent(), srcFile.getName()).getStatus();
+                    Mercurial.LOG.log(Level.FINE, "hgMoveImplementation(): Status: {0} {1}", new Object[] {srcFile, status}); // NOI18N
+                    if (status == FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY ||
+                        status == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
                     } else if (status == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) {
-                        srcFile.renameTo(dstFile);
                         HgCommand.doRemove(root, srcFile);
                         HgCommand.doAdd(root, dstFile);
                     } else {
-                        HgCommand.doRename(root, srcFile, dstFile);
+                        HgCommand.doRenameAfter(root, srcFile, dstFile);
                     }
                 } catch (HgException e) {
                     Mercurial.LOG.log(Level.FINE, "Mercurial failed to rename: File: {0} {1}", new Object[] {srcFile.getAbsolutePath(), dstFile.getAbsolutePath()}); // NOI18N
@@ -251,7 +258,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             }
         };
 
-        rp.post(moveImpl).waitFinished();
+        rp.post(moveImpl);
     }
 
     public void afterMove(final File from, final File to) {
@@ -334,6 +341,12 @@ public class MercurialInterceptor extends VCSInterceptor {
 
         HgProgressSupport supportCreate = new HgProgressSupport() {
             public void perform() {
+                Mercurial.LOG.log(Level.FINE, "fileChangedImpl(): File: {0}", file); // NOI18N
+                // There is no point in refreshing the cache for ignored files.
+                if (!HgUtils.isIgnored(file, false)) {
+                    cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+                }
+
                 cache.refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
             }
         };

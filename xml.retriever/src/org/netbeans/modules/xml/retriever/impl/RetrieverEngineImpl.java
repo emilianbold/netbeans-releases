@@ -238,7 +238,7 @@ public class RetrieverEngineImpl extends RetrieverEngine {
         return currentSaveRootFile;
     }
     
-    public void getCurrentSaveRootFile(File currentSaveRootFile) {
+    public void setCurrentSaveRootFile(File currentSaveRootFile) {
         this.currentSaveRootFile = currentSaveRootFile;
     }
     

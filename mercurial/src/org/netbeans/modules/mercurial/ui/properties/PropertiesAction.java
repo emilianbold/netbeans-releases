@@ -42,6 +42,7 @@ package org.netbeans.modules.mercurial.ui.properties;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 
 import javax.swing.*;
 import java.io.File;
@@ -59,7 +60,7 @@ import org.openide.util.HelpCtx;
  * 
  * @author John Rice
  */
-public class PropertiesAction extends AbstractAction {
+public class PropertiesAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -68,8 +69,7 @@ public class PropertiesAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         File root = HgUtils.getRootFile(context);
         if (root == null) {
             return;
@@ -78,7 +78,7 @@ public class PropertiesAction extends AbstractAction {
 
         final PropertiesTable propTable;
 
-        propTable = new PropertiesTable(PropertiesTable.PROPERTIES_COLUMNS, new String[] { PropertiesTableModel.COLUMN_NAME_VALUE});
+        propTable = new PropertiesTable(PropertiesTable.PROPERTIES_COLUMNS);
 
         panel.setPropertiesTable(propTable);
 
@@ -105,10 +105,6 @@ public class PropertiesAction extends AbstractAction {
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         dialog.pack();
-        panel.btnRemove.setVisible(false);
-        org.openide.awt.Mnemonics.setLocalizedText(panel.btnAdd, org.openide.util.NbBundle.getMessage(PropertiesAction.class, "CTL_Properties_Action_Modify"));
-        panel.btnAdd.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "ACSN_Properties_Action_Modify")); // NOI18N
-        panel.btnAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PropertiesAction.class, "ACSD_Properties_Action_Modify")); 
         dialog.setVisible(true);
         if (dd.getValue() == okButton) {
             hgProperties.setProperties();

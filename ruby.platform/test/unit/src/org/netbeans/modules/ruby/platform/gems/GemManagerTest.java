@@ -41,6 +41,7 @@
 package org.netbeans.modules.ruby.platform.gems;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -49,6 +50,8 @@ import org.netbeans.api.ruby.platform.RubyTestBase;
 import org.netbeans.api.ruby.platform.RubyTestBase.IFL;
 import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.junit.MockServices;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class GemManagerTest extends RubyTestBase {
 
@@ -125,4 +128,24 @@ public class GemManagerTest extends RubyTestBase {
         assertTrue("one repositories in info's gempath", platform.getInfo().getGemPath().indexOf(File.pathSeparatorChar) == -1);
     }
     
+    public void testInitializeRepository() throws Exception {
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        GemManager.isValidGemHome(FileUtil.toFile(gemRepo));
+    }
+    
+    public void testGetVersionForPlatform() throws IOException {
+        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
+        GemManager.initializeRepository(gemRepo);
+        jruby.setGemHome(FileUtil.toFile(gemRepo));
+        installFakeGem("ruby-debug-base", "0.1.10", platform);
+        assertEquals("native fast debugger available", "0.1.10", gemManager.getVersion("ruby-debug-base"));
+        assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));
+        uninstallFakeGem("ruby-debug-base", "0.1.10", platform);
+        installFakeGem("ruby-debug-base", "0.1.10", "java", platform);
+        assertEquals("no jruby fast debugger available", "0.1.10", gemManager.getVersionForPlatform("ruby-debug-base"));
+    }
 }

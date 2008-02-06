@@ -350,11 +350,24 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 String results = cb.postAndWait();
                 if (results.length() > 0) {
                     List<String> list = new ArrayList<String>();
+                    StringBuilder sb = new StringBuilder();
                     for (String line : results.split("\\\\n")) { // NOI18N
-                        line = line.trim();
-                        if (line.length() > 0 && !line.startsWith("from ")) { // NOI18N
-                            list.add(line);
+                        if (line.startsWith("    ")) { // NOI18N
+                            sb.append(" " + line.replace("\\n", "").trim()); // NOI18N
+                        } else {
+                            if (sb.length() > 0) {
+                                list.add(sb.toString());
+                                sb.delete(0, sb.length());
+                            }
+                            line = line.trim();
+                            char ch = line.charAt(0);
+                            if (ch == '*' || Character.isDigit(ch)) {
+                                sb.append(line);
+                            }
                         }
+                    }
+                    if (sb.length() > 0) {
+                        list.add(sb.toString());
                     }
                     threadsList = list.toArray(new String[list.size()]);
                     return threadsList;
@@ -1506,6 +1519,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     return type;
                 }
             } else {
+		log.fine("GD.requestSymbolType[" + cb.getID() + "]: " + type + " --> [" + info + "]");
                 return info.substring(7, info.length() - 2);
             }
         } else {

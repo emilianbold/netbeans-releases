@@ -81,7 +81,8 @@ public class MessageExchangeController extends EditorLifeCycleAdapter
         this.myEditor = anEditor;
         createContent();
     }
-    
+
+    @Override
     public void createContent() {
         //
         btnChooseMsgEx = new JButton();
@@ -117,6 +118,7 @@ public class MessageExchangeController extends EditorLifeCycleAdapter
         fldMessageExchange.getDocument().addDocumentListener(docListener);
         //
         FocusListener fl = new FocusAdapter() {
+            @Override
             public void focusLost(FocusEvent e) {
                 inputDelayTimer.stop();
                 recalculateMsgEx();
@@ -185,6 +187,7 @@ public class MessageExchangeController extends EditorLifeCycleAdapter
         }
     }
     
+    @Override
     public boolean initControls() {
         try {
             Property prop = PropertyUtils.lookForPropertyByType(
@@ -205,6 +208,7 @@ public class MessageExchangeController extends EditorLifeCycleAdapter
         return true;
     }
     
+    @Override
     public boolean applyNewValues() {
         try {
             Object omRef = myEditor.getEditedObject();
@@ -246,15 +250,15 @@ public class MessageExchangeController extends EditorLifeCycleAdapter
         if (myValidator == null) {
             myValidator = new DefaultValidator(myEditor, ErrorMessagesBundle.class) {
                 
-                public boolean doFastValidation() {
+                public void doFastValidation() {
                     String newMsgExName = fldMessageExchange.getText();
                     if (myMsgEx == null && newMsgExName != null &&
                             newMsgExName.length() != 0) {
-                        addReasonKey("ERR_INCORRECT_MESSAGE_EXCHANGE"); //NOI18N
+                        addReasonKey(Severity.ERROR, 
+                                "ERR_INCORRECT_MESSAGE_EXCHANGE"); //NOI18N
                     }
-                    return isReasonsListEmpty();
                 }
-                
+
 //                public boolean doDetailedValidation() {
 //                    boolean isValid = true;
 //                    //

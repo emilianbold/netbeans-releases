@@ -98,7 +98,7 @@ made subject to such option by the copyright holder.
     <!-- Setting command line -->
     <target name="ide_command_line_suffix">
         <!--  Repeat performance test more than once -->
-        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true -J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version} -J-Dorg.netbeans.modules.tomcat.autoregister.token=1"/>
+        <property name="xtest.ide.commandline.suffix" value="-J-Dorg.netbeans.performance.repeat=4 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
 <!--
         <property name="perf.cfg" value="-J-Dorg.netbeans.performance.repeat=3 -J-Dorg.netbeans.performance.memory.usage.log=true"/>
         <property name="reg.home" value="-J-Dorg.netbeans.modules.tomcat.autoregister.catalinaHome=${xtest.tmpdir}/apache-tomcat-${tomcat_version}" />
@@ -134,17 +134,17 @@ made subject to such option by the copyright holder.
     
     <property name="tomcat.home" value="${xtest.tmpdir}/apache-tomcat-${tomcat_version}"/>
     
-    <target name="install-tomcat" depends="init">
+<!--    <target name="install-tomcat" depends="init">
         <delete dir="${tomcat.home}" quiet="true"/>
         <unzip src="${tomcat.ext.dir}/apache-tomcat-${tomcat_version}.zip" dest="${xtest.tmpdir}/"/>
         <chmod dir="${tomcat.home}/bin" perm="ugo+rx" includes="**/*.sh"/>
-    </target>
+    </target>-->
     
     <!--Executor for IDE test -->
     <!-- This target is executed from test-executor in newly created Project -->
     <!-- Name of this task is defined in cfg-xxx.xml -->
     <!-- This target executes tests inside IDE -->
-    <target name="runidesetup" depends="init,init-cp,install-tomcat,ide_command_line_suffix,unzip-test-project">
+    <target name="runidesetup" depends="init,init-cp,ide_command_line_suffix,unzip-test-project">
         <antcall target="copy_released_ide_cfg_file"/>
         <executeTests pluginName="ide">
             <classpath refid="jemmy.and.jelly.path"/>
@@ -160,7 +160,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <!-- Executor for performance tests -->
-    <target name="runide_performance" depends="init,init-cp,install-tomcat,ide_command_line_suffix">
+    <target name="runide_performance" depends="init,init-cp,ide_command_line_suffix">
         <delete dir="${xtest.workdir}/sys/ide"/>
         <copy todir="${xtest.workdir}/sys/ide">
             <fileset dir="${xtest.workdir}/sys/ide_backup"/>

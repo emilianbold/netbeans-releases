@@ -44,6 +44,7 @@ package org.netbeans.modules.mercurial.ui.ignore;
 import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.*;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -62,7 +63,7 @@ import javax.swing.*;
  *
  * @author Maros Sandor
  */
-public class IgnoreAction extends AbstractAction {
+public class IgnoreAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -118,8 +119,7 @@ public class IgnoreAction extends AbstractAction {
         return getActionStatus(files) != UNDEFINED;
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File[] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         final int actionStatus = getActionStatus(files);
 

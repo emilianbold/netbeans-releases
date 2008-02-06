@@ -125,15 +125,20 @@ public class ConfigureMethodsPanel extends JPanel{
         expandAll( true );
         
         // Programatically select a node
-        methodTree.setSelectionPath( new TreePath( nodes.geFirstNodeToBeSelected().getPath() ) );
-        methodDetailPanel = new MethodDetailPanel( ejbGroup, nodes.geFirstNodeToBeSelected().getMethod() );
+        if (nodes.geFirstNodeToBeSelected() != null) {
+            methodTree.setSelectionPath( new TreePath( nodes.geFirstNodeToBeSelected().getPath() ) );
+            methodDetailPanel = new MethodDetailPanel( ejbGroup, nodes.geFirstNodeToBeSelected().getMethod() );
+        }else {
+            methodDetailPanel = new MethodDetailPanel(ejbGroup, null);
+        }
+        
         methodPanel.add( methodDetailPanel );
         
         methodTree.addTreeSelectionListener( new TreeSelectionListener() {
             public void valueChanged( TreeSelectionEvent e ) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode)methodTree.getLastSelectedPathComponent();
                 
-                if (node == null) return;
+                if (node == null || e.getOldLeadSelectionPath() == null) return;
                 
                 // Set the element class and parameter name modification for the previous selection
                 DefaultMutableTreeNode prevNode = (DefaultMutableTreeNode)e.getOldLeadSelectionPath().getLastPathComponent();

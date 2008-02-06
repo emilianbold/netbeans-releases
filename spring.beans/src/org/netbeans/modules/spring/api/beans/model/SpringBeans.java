@@ -67,10 +67,14 @@ public interface SpringBeans {
      * Returns the list of beans in the specified beans config file.
      *
      * @param  file the beans config file.
-     * @return the list of beans.
+     * @return the list of beans; never {@code null}.
      */
     List<SpringBean> getBeans(File file);
 
-    // Probably also:
-    // List<SpringBean> getBeans();
+    /**
+     * Returns the list of beans in the Spring config model.
+     *
+     * @return the list of beans; never {@code null}.
+     */
+    List<SpringBean> getBeans();
 }

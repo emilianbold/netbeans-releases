@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,6 +85,9 @@ public final class GemManager {
 
     private static final Logger LOGGER = Logger.getLogger(GemManager.class.getName());
     
+    /** Top level directories inside the Gem repository. */
+    private static final String[] TOP_LEVEL_REPO_DIRS = { "cache", "specifications", "gems", "doc" }; // NOI18N
+    
     /** Directory inside the GEM_HOME directory. */
     private static final String SPECIFICATIONS = "specifications"; // NOI18N
     
@@ -104,6 +108,7 @@ public final class GemManager {
      */
     private static final String DOT_GEM_SPEC = ".gemspec"; // NOI18N
 
+    /** Map&lt;gemName, Map&lt;version, specFile&gt;&gt; */
     private Map<String, Map<String, File>> gemFiles;
     private Map<String, String> gemVersions;
     private Map<String, URL> gemUrls;
@@ -174,7 +179,14 @@ public final class GemManager {
         
         return null;
     }
-    
+
+    /** Initialize/creates empty Gem Repository. */
+    public static void initializeRepository(FileObject gemRepo) throws IOException {
+        for (String dir : TOP_LEVEL_REPO_DIRS) {
+            gemRepo.createFolder(dir);
+        }
+    }
+
     /** Returns main Gem repository path. */
     public String getGemHome() {
         return platform.getInfo().getGemHome();
@@ -317,6 +329,12 @@ public final class GemManager {
         return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
     }
 
+    public boolean isGemInstalledForPlatform(final String gemName, final String version) {
+        String currVersion = getVersionForPlatform(gemName);
+        return currVersion != null && GemManager.compareGemVersions(version, currVersion) <= 0;
+        
+    }
+    
     public String getVersion(String gemName) {
         // TODO - use gemVersions map instead!
         initGemList();
@@ -332,6 +350,45 @@ public final class GemManager {
         }
 
         return highestVersion.keySet().iterator().next();
+    }
+
+    public String getVersionForPlatform(String gemName) {
+        // TODO - use gemVersions map instead!
+        initGemList();
+
+        if (gemFiles == null) {
+            return null;
+        }
+
+        Map<String, File> versionsToSpecs = gemFiles.get(gemName);
+
+        if ((versionsToSpecs == null) || (versionsToSpecs.size() == 0)) {
+            return null;
+        }
+
+        // filtering
+        for (Map.Entry<String, File> versionToSpec : versionsToSpecs.entrySet()) {
+            String specName = versionToSpec.getValue().getName();
+            // filter out all java gems for non-java platforms
+            // hack until we support proper .gemspec parsing
+            if (!platform.isJRuby() && specName.endsWith("-java.gemspec")) { // NOI18N
+                continue;
+            }
+
+            // special hack for fast debugger
+            if (specName.startsWith("ruby-debug-base-")) {
+                boolean forJavaPlaf = specName.endsWith("-java.gemspec");
+                if (platform.isJRuby() && !forJavaPlaf) {
+                    continue;
+                }
+                if (!platform.isJRuby() && forJavaPlaf) {
+                    continue;
+                }
+            }
+            return versionToSpec.getKey();
+        }
+
+        return null;
     }
 
     /**
@@ -369,9 +426,9 @@ public final class GemManager {
                 if (specDir.exists()) {
                     LOGGER.finest("Initializing \"" + gemDir + "\" repository");
                     // Add each of */lib/
-                    File[] gems = specDir.listFiles();
-                    if (gems != null) {
-                        gems = chooseGems(gems, gemFiles);
+                    File[] specFiles = specDir.listFiles();
+                    if (specFiles != null) {
+                        chooseGems(specFiles, gemFiles);
                     }
                 } else {
                     LOGGER.finest("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
@@ -385,8 +442,8 @@ public final class GemManager {
      * Given a list of files that may represent gems, choose the most recent
      * version of each.
      */
-    private static File[] chooseGems(final  File[] gems, final Map<String, Map<String, File>> gemFiles) {
-        GemFilesParser gemFilesParser = new GemFilesParser(gems);
+    private static File[] chooseGems(final  File[] specFiles, final Map<String, Map<String, File>> gemFiles) {
+        GemFilesParser gemFilesParser = new GemFilesParser(specFiles);
         gemFilesParser.chooseGems();
         gemFiles.putAll(gemFilesParser.getGemMap());
         return gemFilesParser.getFiles();
@@ -403,8 +460,8 @@ public final class GemManager {
     }
 
     public void reset() {
-        installed = null;
-        remote = null;
+        resetRemote();
+        resetLocal();
         gemHomeUrl = null;
     }
     
@@ -415,6 +472,7 @@ public final class GemManager {
     public void resetLocal() {
         installed = null;
         gemFiles = null;
+        platform.fireGemsChanged();
     }
     
     /**
@@ -978,8 +1036,15 @@ public final class GemManager {
 
     static boolean isValidGemHome(final File gemHomeF) {
         Parameters.notNull("gemHomeF", gemHomeF);
-        return gemHomeF.isDirectory() && new File(gemHomeF, "gems").isDirectory()
-                && new File(gemHomeF, "specifications").isDirectory();
+        boolean valid = gemHomeF.isDirectory();
+        for (int i = 0; valid && i < TOP_LEVEL_REPO_DIRS.length; i++) {
+            String dir = TOP_LEVEL_REPO_DIRS[i];
+            File dirF = new File(gemHomeF, dir);
+            LOGGER.finest("Checking: " + dirF);
+            valid &= dirF.isDirectory();
+            LOGGER.finest("valid: " + valid);
+        }
+        return valid;
     }
 
     public static void adjustEnvironment(final RubyPlatform platform, final Map<String, String> env) {

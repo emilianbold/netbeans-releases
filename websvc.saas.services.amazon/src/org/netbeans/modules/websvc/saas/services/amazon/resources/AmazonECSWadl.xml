@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10">
+                 
+	<grammars/>
+	<resources base="http://ecs.amazonaws.com/onca">
+		<!--
+	    API documentation:
+	
+	    http://docs.amazonwebservices.com/AWSECommerceService/2007-10-29/DG
+	    
+	    This is a single WADL method for a single Amazon ECS operation.
+	    No signature is required for ECS calls, so there could be a WADL
+	    method per every operation.
+	    
+	    Perhaps WADL could be created by transforming the WSDL description 
+	    (although it has XML messages for inputs/requests):
+	    http://ecs.amazonaws.com/AWSECommerceService/AWSECommerceService.wsdl
+	    
+	-->	
+		<resource path="xml">
+			<method name="GET" id="amazonecs.ItemSearch">
+				<doc>
+Amazon E-Commerce Service (ECS) lets you search Amazon's product catalogs and
+retrieve detailed product information, including prices, images, customer reviews, 
+and more. You must sign up for the Amazon Associates program to use it. This service
+uses the ItemSearch operation of ECS.
+More at:
+http://docs.amazonwebservices.com/AWSECommerceService/2007-10-29/DG/ItemSearch.html
+				</doc>
+				<request>
+					<param name="Service" type="xsd:string" style="query" required="true" fixed="AWSECommerceService">
+<doc>A read-only parameter that specifies that the service being used is ECS. Its fixed 
+value is AWSECommerceServparam.</doc>
+					</param>
+					<param name="AWSAccessKeyId" type="xsd:string" style="query" required="true">
+<doc>Your access key, which you can obtain from Amazon when
+you register with the Amazon Associates program and specify that you want a
+key for the Amazon E-Commerce Service.</doc>
+					</param>
+					<param name="Operation" type="xsd:string" style="query" required="true" fixed="ItemSearch">
+<doc>A read-only parameter that specifies that the service is calling the ItemSearch operation.</doc>
+					</param>
+					<param name="SearchIndex" type="xsd:string" style="query" required="true">
+<doc>Specify the area of the site that will be searched. You can use All or 
+Blended to search wider areas of the site. For more information, see
+http://docs.amazonwebservices.com/AWSECommerceService/2007-10-29/DG/ItemSearch.html</doc>
+					</param>
+					<param name="Keywords" type="xsd:string" style="query" required="true">
+<doc>
+As described in the Amazon ItemSearch docs, &quot;A word or phrase associated with an item. 
+The word or phrase can be in various 
+product fields, including product title, author, artist, description, manufacturer, 
+and so forth. When, for example, the search index equals "MusicTracks," the Keywords 
+parameter enables you to search by song title. If you enter a phrase, the spaces 
+must be URL-encoded as %20.&quot;
+</doc>
+					</param>
+                                        <param name="ResponseGroup" type="xsd:string" style="query" required="false">
+<doc>
+Optional. Specifies the types of values to return. You can specify multiple 
+response groups in one request by separating them with commas. Default: Small. Response 
+groups you can enter are Accessories, BrowseNodes, EditorialReview, ItemAttributes, ItemIds, 
+Large, ListmaniaLists, Medium, MerchantItemAttributes, OfferFull, 
+Offers, OfferSummary, Reviews, SalesRank, SearchBins, Similarities, 
+Subjects, Tags, TagsSummary, Tracks, VariationMinimum, Variations, 
+VariationSummary. Links to documentation for response groups are in the ResponseGroup parameter 
+docs on the Google ItemSearch web page at 
+http://docs.amazonwebservices.com/AWSECommerceService/2007-10-29/DG/ItemSearch.html.
+For example, the doc link for the Small response group goes to 
+http://docs.amazonwebservices.com/AWSECommerceService/2007-10-29/DG/RG_Small.html</doc>
+					</param>
+				</request>
+				<response>
+					<representation/>		    
+		</response>
+	    </method>
+	</resource>
+    </resources>
+    
+</application>

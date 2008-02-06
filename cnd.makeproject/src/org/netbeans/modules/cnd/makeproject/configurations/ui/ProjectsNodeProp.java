@@ -43,7 +43,8 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
@@ -59,7 +60,7 @@ public class ProjectsNodeProp extends PropertySupport {
     String[] texts;
     
     public ProjectsNodeProp(VectorConfiguration vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
-        super(texts[0], Vector.class, texts[1], texts[2], true, true);
+        super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
 	this.project = project;
 	this.conf = conf;
@@ -80,7 +81,7 @@ public class ProjectsNodeProp extends PropertySupport {
     }
     
     public void setValue(Object v) {
-        vectorConfiguration.setValue((Vector)v);
+        vectorConfiguration.setValue((List)v);
     }
     
     @Override
@@ -100,7 +101,7 @@ public class ProjectsNodeProp extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new DirectoriesEditor((Vector)vectorConfiguration.getValue().clone());
+	return new DirectoriesEditor((List)((ArrayList)vectorConfiguration.getValue()).clone());
     }
 
     @Override
@@ -111,10 +112,10 @@ public class ProjectsNodeProp extends PropertySupport {
     }
 
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
-        private Vector value;
+        private List value;
         private PropertyEnv env;
         
-        public DirectoriesEditor(Vector value) {
+        public DirectoriesEditor(List value) {
             this.value = value;
         }
         
@@ -129,7 +130,7 @@ public class ProjectsNodeProp extends PropertySupport {
 	    for (int i = 0; i < value.size(); i++) {
 		if (addSep)
 		    ret += ", "; // NOI18N
-		ret += value.elementAt(i).toString();
+		ret += value.get(i).toString();
 		addSep = true;
 	    }
 	    return ret;

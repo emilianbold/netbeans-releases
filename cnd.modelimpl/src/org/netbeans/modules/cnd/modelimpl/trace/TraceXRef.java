@@ -43,21 +43,33 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.JEditorPane;
+import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmMethod;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -66,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -182,6 +195,7 @@ public class TraceXRef extends TraceModel {
         return super.getProject().findFile(new File(path).getAbsolutePath());
     }
     
+    @Override
     protected boolean processFlag(String flag) {
         String xRef = "xref"; // NOI18N
         if (flag.startsWith(xRef)) {
@@ -211,6 +225,17 @@ public class TraceXRef extends TraceModel {
 	    return true;
         }
         return false;
+    }
+    
+    public static void traceProjectRefsStatistics(NativeProject prj, PrintWriter out) {
+        try {
+            CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
+            out.println("analyzing project " + prj.getProjectDisplayName() + "...");
+            Thread.sleep(10000);
+            out.println("finished");
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public static void traceRefs(Collection<CsmReference> out, CsmObject target, PrintStream streamOut) {
@@ -282,5 +307,39 @@ public class TraceXRef extends TraceModel {
         public int hashCode() {
             return 11; // any dummy value
         }          
-    };    
+    };  
+
+    private static XRefResultSet.ContextScope classifyFunctionScope(CsmFunction fun) {
+        assert fun != null;
+        XRefResultSet.ContextScope out = XRefResultSet.ContextScope.UNRESOLVED;
+        CsmScope outScope = fun.getScope();
+        if (outScope == null) {
+            System.err.println("ERROR: no scope for function " + fun);
+            return out;
+        }
+        if (CsmKindUtilities.isConstructor(fun)) {
+            out = CsmBaseUtilities.isInlineFunction(fun) ? 
+                            XRefResultSet.ContextScope.INLINED_CONSTRUCTOR : 
+                            XRefResultSet.ContextScope.CONSTRUCTOR;
+        } else if (CsmKindUtilities.isMethod(fun)) {
+            out = CsmBaseUtilities.isInlineFunction(fun) ? 
+                XRefResultSet.ContextScope.INLINED_METHOD : 
+                XRefResultSet.ContextScope.METHOD;
+        } else {
+            if (CsmKindUtilities.isFile(outScope)) {
+                out = XRefResultSet.ContextScope.FILE_LOCAL_FUNCTION;
+            } else {
+                CsmNamespace ns = CsmBaseUtilities.getFunctionNamespace(fun);
+                if (ns != null) {
+                    out = ns.isGlobal() ? 
+                            XRefResultSet.ContextScope.GLOBAL_FUNCTION :
+                            XRefResultSet.ContextScope.NAMESPACE_FUNCTION;
+                }
+            }
+        }
+        if (out == XRefResultSet.ContextScope.UNRESOLVED) {
+            System.err.println("ERROR: non classified function " + fun);            
+        }
+        return out;
+    }    
 }

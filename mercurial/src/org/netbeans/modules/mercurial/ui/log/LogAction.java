@@ -40,29 +40,12 @@
  */
 package org.netbeans.modules.mercurial.ui.log;
 
-import java.io.File;
-import java.util.List;
-import org.netbeans.modules.mercurial.HgException;
-import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import org.netbeans.modules.mercurial.FileInformation;
-import org.netbeans.modules.mercurial.FileStatusCache;
-import org.netbeans.modules.mercurial.ui.merge.MergeAction;
-import org.netbeans.modules.mercurial.util.HgCommand;
-import org.netbeans.modules.mercurial.util.HgProjectUtils;
-import org.openide.util.RequestProcessor;
-import org.openide.windows.IOProvider;
-import org.openide.windows.InputOutput;
-import org.openide.windows.OutputWriter;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,7 +54,7 @@ import org.openide.util.NbBundle;
  * 
  * @author John Rice
  */
-public class LogAction extends AbstractAction {
+public class LogAction extends ContextAction {
     
     private final VCSContext context;
     
@@ -80,21 +63,9 @@ public class LogAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
-        if(!HgRepositoryContextCache.hasHistory(context)){
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(LogAction.class,
-                    "MSG_Log_Title")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(LogAction.class,
-                    "MSG_Log_Title_Sep")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(LogAction.class, "MSG_Log_Nothing")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(LogAction.class, "MSG_Log_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            return;
-        }
-        SearchHistoryAction.openHistory(context, "Mercurial History");
+    public void performAction(ActionEvent e) {
+        SearchHistoryAction.openHistory(context,
+                NbBundle.getMessage(LogAction.class, "MSG_Log_TabTitle", org.netbeans.modules.versioning.util.Utils.getContextDisplayName(context)));
     }
         
     public boolean isEnabled() {

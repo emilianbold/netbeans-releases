@@ -50,7 +50,7 @@ import org.netbeans.modules.soa.mappercore.model.Vertex;
 
 /**
  *
- * @author alex02
+ * @author AlexanderPermyacov
  */
 public class AutoSelectionCanvas implements MapperSelectionListener {
     private Canvas canvas;
@@ -65,28 +65,20 @@ public class AutoSelectionCanvas implements MapperSelectionListener {
     public void mapperSelectionChanged(MapperSelectionEvent event) {
         Mapper mapper = canvas.getMapper();
         
-        List<Vertex>  vertexes = canvas.getSelectionModel().getSelectedVerteces();
+        List<Vertex> vertexes = canvas.getSelectionModel().getSelectedVerteces();
         List<Link> links = canvas.getSelectionModel().getSelectedLinks();
         Graph graph = canvas.getSelectionModel().getSelectedGraph();
         TreePath treePath = canvas.getSelectionModel().getSelectedPath();
-        //Change graph and link
-        if (currentGraph != graph && links != null && links.size() > 0) {
-            Link link = links.get(0);
-            if (currentLink != link) {
-                currentGraph = graph;
-                mapper.setExpandedGraphState(treePath, true);
-                parentsExpand(treePath);
-            }
-        }
-        
+        //Change link
         if (links != null && links.size() > 0) {
             Link link = links.get(0);
-            if (link != currentLink &&
-                    link.getSource() instanceof TreeSourcePin) {
-                currentLink = link;
+            mapper.setExpandedGraphState(treePath, true);
+            parentsExpand(treePath);
+
+            if (link.getSource() instanceof TreeSourcePin) {
                 TreePath leftTreePath = ((TreeSourcePin) link.getSource()).getTreePath();
                 canvas.getLeftTree().setSelectionPath(leftTreePath);
-            }    
+            }
         }
         
         if (vertexes != null && vertexes.size() > 0) {

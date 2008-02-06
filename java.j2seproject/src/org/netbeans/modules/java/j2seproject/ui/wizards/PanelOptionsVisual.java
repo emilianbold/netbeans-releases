@@ -80,7 +80,7 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
     public PanelOptionsVisual(PanelConfigureProject panel, NewJ2SEProjectWizardIterator.WizardType type) {
         initComponents();
         this.panel = panel;
-        currentLibrariesLocation = ".."+File.separatorChar+"libraries"; // NOI18N
+        currentLibrariesLocation = "libraries";   //#126366 ".."+File.separatorChar+"libraries"; // NOI18N
         librariesLocation.setText(currentLibrariesLocation);
 
         switch (type) {
@@ -273,15 +273,15 @@ public class PanelOptionsVisual extends SettingsPanel implements ActionListener,
         chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
         chooser.setDialogTitle(NbBundle.getMessage(PanelOptionsVisual.class,"LBL_Browse_Libraries_Title"));
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
-            File[] files;
+            String[] files;
             try {
-                files = chooser.getFiles();
+                files = chooser.getSelectedPaths();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 return null;
             }
             if (files.length == 1) {
-                String currentLibrariesLocation = (files[0]).getPath();
+                String currentLibrariesLocation = files[0];
                 return currentLibrariesLocation;
             }
         }

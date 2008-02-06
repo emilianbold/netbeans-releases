@@ -51,6 +51,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -62,40 +64,69 @@ import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
 import org.netbeans.modules.spring.beans.model.SpringBeanSource;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.modules.xml.text.syntax.dom.Tag;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
  * An implementation of {@link SpringBeanSource} delegating to
- * a file.
+ * a file or a its document in the editor.
  *
  * @author Andrei Badea
  */
 public class ConfigFileSpringBeanSource implements SpringBeanSource {
 
-    public static final String BEAN_NAME_DELIMITERS = ",; "; // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(ConfigFileSpringBeanSource.class.getName());
 
     private final Map<String, ConfigFileSpringBean> name2Bean = new HashMap<String, ConfigFileSpringBean>();
     private final List<ConfigFileSpringBean> beans = new ArrayList<ConfigFileSpringBean>();
 
     /**
-     * Parses a given bean file.
+     * Parses a given bean file (or its document in available).
+     * Currently the implementation expects it to be a {@link BaseDocument} or null.
      *
-     * @param  file the file to parse.
-     * @throws java.io.IOException if an I/O error occured while parsing.
+     * @param  document the document to parse.
      */
-    public void parse(File file) throws IOException {
-        // XXX This is just a very very ugly hack. We should be able to parse
-        // the file without going through a document. But we have to for
-        // now, since we need to use the XML parser in xml/text-edit.
-
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) {
+    public void parse(FileObject fo) throws IOException {
+        LOGGER.log(Level.FINE, "Parsing {0}", fo);
+        File file = FileUtil.toFile(fo);
+        if (file == null) {
+            LOGGER.log(Level.WARNING, "{0} resolves to a null File, aborting", fo);
             return;
         }
+        BaseDocument doc = getOpenedDocument(fo);
+        if (doc != null) {
+            LOGGER.log(Level.FINE, "Parsing editor document for {0}", fo);
+        } else {
+            doc = getAsDocument(fo);
+            LOGGER.log(Level.FINE, "Creating fake BaseDocument for {0}", fo);
+        }
+        parse(file, doc);
+        LOGGER.log(Level.FINE, "Parsed {0}", fo);
+    }
+
+    private BaseDocument getOpenedDocument(FileObject fo) throws DataObjectNotFoundException {
+        DataObject dataObject = DataObject.find(fo);
+        EditorCookie ec = dataObject.getCookie(EditorCookie.class);
+        if (ec == null) {
+            return null;
+        }
+        Document doc = ec.getDocument();
+        if (doc instanceof BaseDocument) {
+            return (BaseDocument)doc;
+        }
+        return null;
+    }
+
+    // XXX This is just a very very ugly hack. We should be able to parse
+    // the file without going through a document. But we have to for
+    // now, since we need to use the XML parser in xml/text-edit.
+    private BaseDocument getAsDocument(FileObject fo) throws IOException {
         StringBuilder builder = new StringBuilder();
         Charset charset = FileEncodingQuery.getEncoding(fo);
         BufferedReader reader = new BufferedReader(new InputStreamReader(fo.getInputStream(), charset));
@@ -116,18 +147,13 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
         try {
             doc.insertString(0, builder.toString(), null);
         } catch (BadLocationException e) {
-            // Should not happen.
+            // Unlikely to happen.
+            LOGGER.log(Level.FINE, null, e);
         }
-        parse(file, doc);
+        return doc;
     }
 
-    /**
-     * Parses a given document. Currently the implementation expects it to
-     * be a {@link BaseDocument}.
-     *
-     * @param  document the document to parse.
-     */
-    public void parse(File file, Document document) {
+    private void parse(File file, Document document) {
         document.render(new DocumentParser(file, document));
     }
 
@@ -170,7 +196,12 @@ public class ConfigFileSpringBeanSource implements SpringBeanSource {
             String clazz = SpringXMLConfigEditorUtils.getAttribute(node, "class"); // NOI18N
             String id = SpringXMLConfigEditorUtils.getAttribute(node, "id"); // NOI18N
             String nameAttr = SpringXMLConfigEditorUtils.getAttribute(node, "name"); // NOI18N
-            List<String> names = (nameAttr != null) ? Collections.unmodifiableList(StringUtils.tokenize(nameAttr, BEAN_NAME_DELIMITERS)) : Collections.<String>emptyList();
+            List<String> names;
+            if (nameAttr != null) {
+                names = Collections.unmodifiableList(StringUtils.tokenize(nameAttr, SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS));
+            } else {
+                names = Collections.<String>emptyList();
+            }
             Tag tag = (Tag)node;
             Location location = new ConfigFileLocation(file, tag.getElementOffset());
             ConfigFileSpringBean bean = new ConfigFileSpringBean(id, names, clazz, location);

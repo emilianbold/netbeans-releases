@@ -62,4 +62,8 @@ public class ConfigFileTestCase extends NbTestCase {
         clearWorkDir();
         configFile = new File(getWorkDir(), "applicationContext.xml");
     }
+
+    protected File createConfigFileName(String name) throws IOException {
+        return new File(getWorkDir(), name);
+    }
 }

@@ -163,7 +163,7 @@ public abstract class NamespaceReferenceCreator<T extends Component>
     protected List<Node> getSelectedNodes() {
         List<Node> results = new LinkedList<Node>();
         Collection<NodeSet> sets = registeredNodes.values();
-        System.out.println("getSelectedNodes: Registered Node count : "+registeredNodes.size());
+        // System.out.println("getSelectedNodes: Registered Node count : "+registeredNodes.size());
         for (NodeSet set : sets) {
            if (set.isSelected()) {
                 List<ExternalReferenceDataNode> nodes = set.getNodes();
@@ -174,7 +174,7 @@ public abstract class NamespaceReferenceCreator<T extends Component>
                 }
            }
         }
-        System.out.println("getSelectedNodes: seletected result: "+results.size());
+        // System.out.println("getSelectedNodes: seletected result: "+results.size());
         return results;
     }
 
