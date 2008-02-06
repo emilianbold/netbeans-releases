@@ -92,6 +92,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Represents one GDB debugger session.
@@ -165,10 +166,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String firstBPfullname;
     private String firstBPfile;
     private String firstBPline;
+    private InputOutput iotab;
+    private boolean firstOutput;
         
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         pcs = new PropertyChangeSupport(this);
+        firstOutput = true;
         addPropertyChangeListener(this);
         List l = lookupProvider.lookup(null, DebuggerEngineProvider.class);
         int i, k = l.size();
@@ -198,6 +202,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         setStarting();
         try {
             pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
+            iotab = (InputOutput) lookupProvider.lookupFirst(null, InputOutput.class);
+            if (iotab != null) {
+                iotab.setErrSeparated(false);
+            }
             runDirectory = pae.getProfile().getRunDirectory().replace("\\", "/") + "/";  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             int conType = pae.getProfile().getConsoleType().getValue();
@@ -894,9 +902,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
        log.finest("GD.targetStreamOutput: " + msg);  // NOI18N
     }
     
-    /** Handle gdb output */
+    /**
+     * Handle gdb output. The only tricking thing here is that most versions of gdb on
+     * Solaris output some proc flags to stdout. So for Solaris, I skip the 1st output
+     * if it starts with "PR_" (the proc flag header).
+     */
     public void output(String msg) {
-        // FIXME - Send to output window (see if it works right)
+        if (iotab != null) {
+            if (!(firstOutput && Utilities.getOperatingSystem() == Utilities.OS_SOLARIS &&
+                    msg.startsWith("PR_"))) { // NOI18N
+                firstOutput = false;
+                iotab.getOut().println(msg);
+            }
+        }
     }
         
     private void addArgsToLocalVariables(String info) {
