@@ -106,10 +106,13 @@ public final class XRefResultSet {
         VARIABLE,
         PARAMETER,
         FUNCTION,
-        NAMESPACE
+        NAMESPACE,
+        CLASS_FORWARD,
+        MACRO,
     }
     
     public enum DeclarationScope {
+        UNRESOLVED,
         PROJECT,
         LIBRARY,
         PROJECT_NAMESPACE,
@@ -123,6 +126,7 @@ public final class XRefResultSet {
     }
     
     public enum IncludeLevel {
+        UNRESOLVED,
         PROJECT_DIRECT,
         PROJECT_DEEP,
         LIBRARY_DIRECT,

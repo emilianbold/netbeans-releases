@@ -40,6 +40,8 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.components.Product;
@@ -60,6 +62,7 @@ import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelSwingUi;
 import org.netbeans.installer.wizard.components.WizardPanel.WizardPanelUi;
 import org.netbeans.installer.wizard.containers.SwingContainer;
+import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 import org.netbeans.installer.wizard.utils.InstallationDetailsDialog;
 import org.netbeans.installer.wizard.utils.InstallationLogDialog;
 import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_SUCCESSFULLY;
@@ -556,6 +559,25 @@ public class PostInstallSummaryPanel extends WizardPanel {
                     GridBagConstraints.NONE,          // fill
                     new Insets(3, 6, 11, 11),         // padding
                     0, 0));                           // padx, pady - ???
+            if(container instanceof SwingFrameContainer) {
+                final SwingFrameContainer sfc = (SwingFrameContainer) container;
+                sfc.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent event) {
+                    SwingUi currentUi = component.getWizardUi().getSwingUi(container);
+                    if (currentUi != null) {
+                        if (!container.getCancelButton().isEnabled() &&  // cancel button is disabled
+                                !container.getCancelButton().isVisible() && // no cancel button at this panel
+                                !container.getBackButton().isVisible() && // no back button at this panel
+                                container.getNextButton().isVisible() && // next button is visible
+                                container.getNextButton().isEnabled()) { // and enabled                                                                
+                            currentUi.evaluateNextButtonClick();
+                            sfc.removeWindowListener(this);
+                        }
+                    }
+                }
+            });
+            }
         }
         
         private void viewDetailsButtonClicked() {

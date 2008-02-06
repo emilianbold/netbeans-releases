@@ -82,11 +82,11 @@ import org.openide.util.Lookup;
  */
   public abstract class TestBase extends NbTestCase {
 
-    public static final String CLUSTER_IDE = "ide8";
-    public static final String CLUSTER_PLATFORM = "platform7";
-    public static final String CLUSTER_ENTERPRISE = "enterprise4";
+    public static final String CLUSTER_IDE = "ide9";
+    public static final String CLUSTER_PLATFORM = "platform8";
+    public static final String CLUSTER_ENTERPRISE = "enterprise5";
     public static final String CLUSTER_APISUPPORT = "apisupport1";
-    public static final String CLUSTER_JAVA = "java1";
+    public static final String CLUSTER_JAVA = "java2";
 
     protected TestBase(String name) {
         super(name);

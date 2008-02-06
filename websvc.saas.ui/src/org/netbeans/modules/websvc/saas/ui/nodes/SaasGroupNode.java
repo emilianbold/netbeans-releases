@@ -44,7 +44,6 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 import java.awt.datatransfer.Transferable;
 import java.util.List;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeTransfer;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.SystemAction; 
 import java.awt.Image;
@@ -55,6 +54,7 @@ import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.netbeans.modules.websvc.saas.ui.actions.AddGroupAction;
 import org.netbeans.modules.websvc.saas.ui.actions.AddServiceAction;
 import org.netbeans.modules.websvc.saas.ui.actions.DeleteGroupAction;
 import org.netbeans.modules.websvc.saas.ui.actions.RenameGroupAction;
@@ -130,6 +130,7 @@ public class SaasGroupNode extends AbstractNode implements Node.Cookie {
             }
         }
         actions.add(SystemAction.get(AddServiceAction.class));
+        actions.add(SystemAction.get(AddGroupAction.class));
         actions.add(SystemAction.get(DeleteGroupAction.class));
         actions.add(SystemAction.get(RenameGroupAction.class));
         return actions.toArray(new Action[actions.size()]);

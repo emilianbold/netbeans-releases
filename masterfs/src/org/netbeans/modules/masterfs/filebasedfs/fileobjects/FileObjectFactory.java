@@ -145,6 +145,9 @@ public final class FileObjectFactory {
     }
 
     private boolean checkCacheState(boolean exist, File file, FileBasedFileSystem lfs, Caller caller, boolean afterRecovering) {        
+        if (!exist && (caller.equals(Caller.GetParent) || caller.equals(Caller.ToFileObject))) {
+            return true;
+        }
         if (lfs.isWarningEnabled() && caller != null && !caller.equals(Caller.GetChildern)) {
             boolean notsame = exist != file.exists();
             if (notsame) {
@@ -198,44 +201,42 @@ public final class FileObjectFactory {
             if (child != null) {
                 if (foForFile == null) {
                     exist = true;                    
-                    assert checkCacheState(true, file, lfs, caller);                    
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                         if (!exist) {
                             parent.refresh();
                         }
                     }                                
+                    assert checkCacheState(true, file, lfs, caller);
                 } else if (foForFile.isValid()) {
                     exist = true;
-                    assert checkCacheState(exist, file, lfs, caller);
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                         if (!exist) {
                             parent.refresh();
                         }
-                    }                                                    
+                    }
+                    assert checkCacheState(exist, file, lfs, caller);                    
                 } else {
                     //!!!!!!!!!!!!!!!!! inconsistence
                     exist = touchExists(file, realExists);
                     if (!exist) {
                         parent.refresh();
                     }
-                    //assert checkCacheState(exist, file, true, lfs); 
                 }
             } else {
                 if (foForFile == null) {
                     exist = false;
-                    assert checkCacheState(exist, file, lfs, caller);                    
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                     }
+                    assert checkCacheState(exist, file, lfs, caller);                                        
                 } else if (foForFile.isValid()) {
                     //!!!!!!!!!!!!!!!!! inconsistence
                     exist = touchExists(file, realExists);
                     if (!exist) {
                         foForFile.refresh();
                     }
-                    //assert checkCacheState(exist, file, true, lfs);
                 } else {
                     exist = touchExists(file, realExists);
                     if (exist) {
@@ -249,27 +250,26 @@ public final class FileObjectFactory {
             } else if (foForFile.isValid()) {
                 if (parent == null) {
                     exist = true;
-                    assert checkCacheState(exist, file, lfs, caller);
                     if (fcb.impeachExistence(file, exist)) {
                         exist = touchExists(file, realExists);
                         if (!exist) {
                             foForFile.refresh();
                         }
                     }                                                                        
+                    assert checkCacheState(exist, file, lfs, caller);                    
                 } else {
                     //!!!!!!!!!!!!!!!!! inconsistence
                     exist = touchExists(file, realExists);
                     if (!exist) {
                         foForFile.refresh();
                     }
-                    //assert checkCacheState(exist, file, true, lfs);
                 }
             } else {
                 exist = false;
-                assert checkCacheState(exist, file, lfs, caller);
                 if (fcb.impeachExistence(file, exist)) {
                     exist = touchExists(file, realExists);
                 }                                                                                        
+                assert checkCacheState(exist, file, lfs, caller);                
             }
         }
         if (!exist) {
@@ -289,15 +289,16 @@ public final class FileObjectFactory {
                             ((BaseFileObj)retval).setValid(false);
                         }
                     }                    
+                    assert checkCacheState(exist, file, lfs, caller);
                     return retval;
                 case ToFileObject:
                     //guarantee issuing for existing file
                     exist = touchExists(file, realExists);
                     if (exist && parent != null && parent.isValid()) {
                         parent.refresh();
-                        assert checkCacheState(exist, file, lfs, caller, true);//review first parameter
-                    }                    
-                    break;
+                    }     
+                    assert checkCacheState(exist, file, lfs, caller);                    
+                    break;                    
             }
         }
         //ratio 59993/507 (means 507 touches for 59993 calls)

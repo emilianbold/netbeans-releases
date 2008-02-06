@@ -235,6 +235,10 @@
                 <runtime-relative-path>ext/etl/etlengine.jar</runtime-relative-path>
                 <binary-origin>external/etlengine.jar</binary-origin>
             </class-path-extension>
+			<class-path-extension>
+                <runtime-relative-path>ext/etl/sbme.jar</runtime-relative-path>
+                <binary-origin>external/sbme.jar</binary-origin>
+            </class-path-extension>
             <public-packages>
                 <package>com.sun.axiondb.functions</package>
                 <package>com.sun.etl.engine</package>
