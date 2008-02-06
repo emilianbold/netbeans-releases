@@ -98,6 +98,7 @@ import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
+import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
@@ -209,7 +210,8 @@ public class JSFClientGenerator {
         //automatically add JSF framework if it is not added
         JSFFrameworkProvider fp = new JSFFrameworkProvider();
         if (!fp.isInWebModule(wm)) {
-            fp.extend(wm);
+            fp.createWebModuleExtender(wm, ExtenderController.create());
+            fp.extendImpl(wm);
         }
         
         controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, simpleControllerName, 
@@ -250,7 +252,7 @@ public class JSFClientGenerator {
         FileObject documentBase = wm.getDocumentBase();
         FileObject indexjsp = documentBase.getFileObject(INDEX_PAGE); //NOI18N
         String indexjspString = INDEX_PAGE;
-        String find = "<h1>JSP Page</h1>"; // NOI18N
+        String find = "<title>JSP Page</title>"; // NOI18N
         if (indexjsp == null) {
             indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
             indexjspString = "faces/" + WELCOME_JSF_PAGE;

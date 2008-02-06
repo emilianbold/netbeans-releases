@@ -171,7 +171,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
         jLabel1.setLabelFor(tfCommitMessage);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/mercurial/ui/log/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, bundle.getString("CTL_UseCommitMessage")); // NOI18N
-        jLabel1.setToolTipText("null");
+        jLabel1.setToolTipText(bundle.getString("TT_CommitMessage")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         add(jLabel1, gridBagConstraints);
@@ -189,7 +189,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         jLabel2.setLabelFor(tfUsername);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, bundle.getString("CTL_UseUsername")); // NOI18N
-        jLabel2.setToolTipText("null");
+        jLabel2.setToolTipText(bundle.getString("TT_Username")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
@@ -207,7 +207,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         jLabel3.setLabelFor(tfFrom);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, bundle.getString("CTL_UseFrom")); // NOI18N
-        jLabel3.setToolTipText("null");
+        jLabel3.setToolTipText(bundle.getString("TT_From")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
@@ -231,7 +231,7 @@ class SearchCriteriaPanel extends javax.swing.JPanel {
 
         jLabel4.setLabelFor(tfTo);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, bundle.getString("CTL_UseTo")); // NOI18N
-        jLabel4.setToolTipText("null");
+        jLabel4.setToolTipText(bundle.getString("TT_To")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
