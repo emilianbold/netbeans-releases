@@ -87,7 +87,13 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
         shp.executeSearch();
         shp.setSearchCriteria(false);
     }
-    
+
+    public void searchIncoming() {  
+        shp.setIncomingSearch();
+        shp.executeSearch();
+        shp.setSearchCriteria(false);
+    }
+
     private void initComponents(String repositoryUrl, File localRoot, long revision) {
         setLayout(new BorderLayout());
         SearchCriteriaPanel scp = new SearchCriteriaPanel(repositoryUrl);
@@ -118,7 +124,12 @@ public class SearchHistoryTopComponent extends TopComponent implements DiffSetup
     }
     
     protected String preferredID(){
-       return "Hg.SearchHistoryTopComponent";    // NOI18N
+        if (shp.isIncomingSearch()) {
+            return "Hg.IncomingSearchHistoryTopComponent";    // NOI18N
+        } else if (shp.isOutSearch()) {
+            return "Hg.OutSearchHistoryTopComponent";    // NOI18N
+        }
+        return "Hg.SearchHistoryTopComponent";    // NOI18N
     }
 
     public HelpCtx getHelpCtx() {

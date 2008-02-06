@@ -2097,6 +2097,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 javacLock.unlock();
             }
         }
+        
+        @Override
+        public boolean isJavaCompilerLocked() {
+            return javacLock.isLocked();
+        }
 
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
             return JavaSource.create(cpInfo, binding, files);
@@ -2624,6 +2629,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             final JavacTaskImpl task = ci.getJavacTask();
             final JavacTrees jt = JavacTrees.instance(task);
+            final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
+            final int origEndPos = (int) jt.getSourcePositions().getEndPosition(cu, orig.getBody());
+            if (origStartPos > origEndPos) {
+                LOGGER.warning("Javac returned startpos: "+origStartPos+" > endpos: "+origEndPos);  //NOI18N
+                return false;
+            }
             final FindAnnonVisitor fav = new FindAnnonVisitor();
             fav.scan(orig.getBody(), null);
             if (fav.hasLocalClass) {
@@ -2631,8 +2642,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             final int firstInner = fav.firstInner;
             final int noInner = fav.noInner;
-            final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
-            final int origEndPos = (int) jt.getSourcePositions().getEndPosition(cu, orig.getBody());
             final Context ctx = task.getContext();        
             final Log l = Log.instance(ctx);
             l.startPartialReparse();

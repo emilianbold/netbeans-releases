@@ -272,6 +272,12 @@ public final class GemPanel extends JPanel implements Runnable {
             default:
                 throw new IllegalArgumentException();
         }
+        boolean everythingDone = newPanel.isEnabled() && updatedPanel.isEnabled() && installedPanel.isEnabled();
+        // allow to change platform when all tabs are updated
+        platforms.setEnabled(everythingDone);
+        manageButton.setEnabled(everythingDone);
+        browseGemHome.setEnabled(everythingDone);
+        gemsTab.setEnabledAt(3, everythingDone);
     }
 
     /**

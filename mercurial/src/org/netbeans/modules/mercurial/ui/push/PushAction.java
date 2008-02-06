@@ -195,7 +195,7 @@ public class PushAction extends ContextAction {
                         if (s.indexOf(Mercurial.CHANGESET_STR) == 0) {
                             outRed.println(s);
                         } else if (!s.equals("")) { // NOI18N
-                            out.println(s);
+                            out.println(HgUtils.replaceHttpPassword(s));
                         }
                     }
                     out.println(""); // NOI18N
@@ -203,16 +203,16 @@ public class PushAction extends ContextAction {
                     outRed.close();
                 }
 
-                HgUtils.outputMercurialTab(list);
+                HgUtils.outputMercurialTab(HgUtils.replaceHttpPassword(list));
 
                 if (toPrjName == null) { 
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(PushAction.class,
-                            "MSG_PUSH_TO_NONAME", bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : pushPath)); // NOI18N
+                            "MSG_PUSH_TO_NONAME", bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : HgUtils.replaceHttpPassword(pushPath))); // NOI18N
                 } else {
                     HgUtils.outputMercurialTabInRed(
                             NbBundle.getMessage(PushAction.class,
-                            "MSG_PUSH_TO", toPrjName, bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : pushPath)); // NOI18N
+                            "MSG_PUSH_TO", toPrjName, bLocalPush ? HgUtils.stripDoubleSlash(pushPath) : HgUtils.replaceHttpPassword(pushPath))); // NOI18N
                 }
 
                 if (fromPrjName == null ){

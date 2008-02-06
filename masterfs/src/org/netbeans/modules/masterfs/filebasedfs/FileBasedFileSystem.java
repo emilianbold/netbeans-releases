@@ -86,8 +86,12 @@ public final class FileBasedFileSystem extends FileSystem {
     public static void reinitForTests() {
         FileBasedFileSystem.allInstances = new HashMap();
     }
-    
+
     public static FileBasedFileSystem getInstance(final File file) {
+        return getInstance(file, true);
+    }
+    
+    public static FileBasedFileSystem getInstance(final File file, boolean addMising) {
         FileBasedFileSystem retVal = null;
         final FileInfo rootInfo = new FileInfo(file).getRoot();
         final File rootFile = rootInfo.getFile();
@@ -95,7 +99,7 @@ public final class FileBasedFileSystem extends FileSystem {
         synchronized (FileBasedFileSystem.allInstances) {
             retVal = (FileBasedFileSystem) FileBasedFileSystem.allInstances.get(rootFile);
         }
-        if (retVal == null) {
+        if (retVal == null && addMising) {
             if (rootInfo.isConvertibleToFileObject()) {           
                 synchronized (FileBasedFileSystem.allInstances) {
                     retVal = (FileBasedFileSystem) FileBasedFileSystem.allInstances.get(rootFile);
