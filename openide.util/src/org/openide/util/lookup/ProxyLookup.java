@@ -310,7 +310,7 @@ public class ProxyLookup extends Lookup {
      * that was found (not too useful) and also to all objects found
      * (more useful).
      */
-    private final class R<T> extends WaitableResult<T> {
+    private static final class R<T> extends WaitableResult<T> {
         /** list of listeners added */
         private javax.swing.event.EventListenerList listeners;
 
@@ -322,19 +322,26 @@ public class ProxyLookup extends Lookup {
 
         /** weak listener & result */
         private final WeakResult<T> weakL;
+        
+        private ImmutableInternalData data;
 
         /** Constructor.
          */
-        public R(Lookup.Template<T> t) {
-            template = t;
-            weakL = new WeakResult<T>(this);
+        public R(ImmutableInternalData data, Lookup.Template<T> t) {
+            this.template = t;
+            this.weakL = new WeakResult<T>(this);
+            this.data = data;
+        }
+        
+        private ProxyLookup proxy() {
+            return data.proxy();
         }
 
         /** When garbage collected, remove the template from the has map.
          */
         @Override
         protected void finalize() {
-            unregisterTemplate(template);
+            proxy().unregisterTemplate(template);
         }
 
         @SuppressWarnings("unchecked")
@@ -347,11 +354,11 @@ public class ProxyLookup extends Lookup {
         private Result<T>[] initResults() {
             BIG_LOOP: for (;;) {
                 Lookup[] myLkps;
-                synchronized (ProxyLookup.this) {
+                synchronized (proxy()) {
                     if (weakL.getResults() != null) {
                         return weakL.getResults();
                     }
-                    myLkps = getLookups(false);
+                    myLkps = proxy().getLookups(false);
                 }
 
                 Result<T>[] arr = newResults(myLkps.length);
@@ -360,8 +367,8 @@ public class ProxyLookup extends Lookup {
                     arr[i] = myLkps[i].lookup(template);
                 }
 
-                synchronized (ProxyLookup.this) {
-                    Lookup[] currentLkps = getLookups(false);
+                synchronized (proxy()) {
+                    Lookup[] currentLkps = proxy().getLookups(false);
                     if (currentLkps.length != myLkps.length) {
                         continue BIG_LOOP;
                     }
@@ -397,7 +404,7 @@ public class ProxyLookup extends Lookup {
             Set<Lookup> added, Set<Lookup> removed, Lookup[] old, Lookup[] current, 
             Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
         ) {
-            synchronized (ProxyLookup.this) {
+            synchronized (proxy()) {
                 if (weakL.getResults() == null) {
                     // not computed yet, do not need to do anything
                     return;
@@ -442,7 +449,7 @@ public class ProxyLookup extends Lookup {
         /** Just delegates.
          */
         public void addLookupListener(LookupListener l) {
-            synchronized (ProxyLookup.this) {
+            synchronized (proxy()) {
                 if (listeners == null) {
                     listeners = new EventListenerList();
                 }
@@ -496,7 +503,7 @@ public class ProxyLookup extends Lookup {
             Lookup.Result<T>[] arr = myBeforeLookup();
 
             // if the call to beforeLookup resulted in deletion of caches
-            synchronized (ProxyLookup.this) {
+            synchronized (proxy()) {
                 if (getCache() != null) {
                     Collection result = getCache()[indexToCache];
                     if (result != null) {
@@ -538,7 +545,7 @@ public class ProxyLookup extends Lookup {
             
             
 
-            synchronized (ProxyLookup.this) {
+            synchronized (proxy()) {
                 if (getCache() == null) {
                     // initialize the cache to indicate this result is in use
                     setCache(new Collection[3]);
@@ -564,7 +571,7 @@ public class ProxyLookup extends Lookup {
             // clear cached instances
             Collection oldItems;
             Collection oldInstances;
-            synchronized (ProxyLookup.this) {
+            synchronized (proxy()) {
                 if (getCache() == null) {
                     // nobody queried the result yet
                     return;
@@ -598,7 +605,7 @@ public class ProxyLookup extends Lookup {
                         modified = false;
                     }
                 } else {
-                    synchronized (ProxyLookup.this) {
+                    synchronized (proxy()) {
                         if (getCache() == null) {
                             // we have to initialize the cache
                             // to show that the result has been initialized
@@ -618,7 +625,7 @@ public class ProxyLookup extends Lookup {
          * @return results to work on.
          */
         private Lookup.Result<T>[] myBeforeLookup() {
-            ProxyLookup.this.beforeLookup(template);
+            proxy().beforeLookup(template);
 
             Lookup.Result<T>[] arr = initResults();
 
@@ -646,7 +653,7 @@ public class ProxyLookup extends Lookup {
         }
 
         private void setCache(Collection[] cache) {
-            assert Thread.holdsLock(ProxyLookup.this);
+            assert Thread.holdsLock(proxy());
             this.cache = cache;
         }
     }
@@ -738,9 +745,11 @@ public class ProxyLookup extends Lookup {
     private static final class ImmutableInternalData extends Object {
         /** map of templates to currently active results */
         private final HashMap<Template<?>,Reference<R>> results;
+        private final ProxyLookup proxy;
 
-        public ImmutableInternalData(HashMap<Template<?>, Reference<ProxyLookup.R>> results) {
+        public ImmutableInternalData(ProxyLookup proxy, HashMap<Template<?>, Reference<ProxyLookup.R>> results) {
             this.results = results;
+            this.proxy = proxy;
         }
 
         final Collection<Reference<R>> references() {
@@ -756,7 +765,7 @@ public class ProxyLookup extends Lookup {
                     // thta is still alive
                     return this;
                 }
-                return new ImmutableInternalData(c);
+                return new ImmutableInternalData(proxy, c);
             } else {
                 return this;
             }
@@ -782,10 +791,14 @@ public class ProxyLookup extends Lookup {
                 res = new HashMap<Template<?>, Reference<R>>(oldAndNew[0].results);
             }
             
-            R<T> newR = proxy.new R<T>(template);
+            oldAndNew[0] = new ImmutableInternalData(proxy, res);
+            R<T> newR = new R<T>(oldAndNew[0], template);
             res.put(template, new java.lang.ref.SoftReference<R>(newR));
-            oldAndNew[0] = new ImmutableInternalData(res);
             return newR;
+        }
+
+        private ProxyLookup proxy() {
+            return proxy;
         }
     }
 }
