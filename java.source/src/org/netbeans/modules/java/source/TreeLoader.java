@@ -89,7 +89,12 @@ public class TreeLoader extends LazyTreeLoader {
 
     private Context context;
     private ClasspathInfo cpInfo;
-    private Map<ClassSymbol, StringBuilder> couplingErrors;
+    private final ThreadLocal<Map<ClassSymbol, StringBuilder>> couplingErrors = new  ThreadLocal<Map<ClassSymbol, StringBuilder>>();
+    private final ThreadLocal<Integer> recursiveDepth = new ThreadLocal<Integer>() {
+        protected Integer initialValue() {
+            return 0;
+        }
+    };
 
     private TreeLoader(Context context, ClasspathInfo cpInfo) {
         this.context = context;
@@ -98,6 +103,8 @@ public class TreeLoader extends LazyTreeLoader {
     
     @Override
     public boolean loadTreeFor(final ClassSymbol clazz) {
+        assert JavaSourceAccessor.INSTANCE.isJavaCompilerLocked();
+        
         if (clazz != null) {
             try {
                 FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
@@ -106,14 +113,27 @@ public class TreeLoader extends LazyTreeLoader {
                     Log.instance(context).nerrors = 0;
                     JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                     try {
-                        couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
+                        recursiveDepth.set(recursiveDepth.get() + 1);
+
+                        if (recursiveDepth.get() > 1) {
+                            Logger.getLogger(TreeLoader.class.getName()).log(Level.WARNING, "Recursive loadTreeFor", new Exception());
+                        }
+
+                        if (recursiveDepth.get() == 1) {
+                            couplingErrors.set(new HashMap<ClassSymbol, StringBuilder>());
+                        }
                         jti.analyze(jti.enter(jti.parse(jfo)));
                         dumpSymFile(clazz);
                         return true;
                     } finally {
-                        for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet())
-                            logCouplingError(e.getKey(), e.getValue().toString());
-                        couplingErrors = null;
+                        if (recursiveDepth.get() == 1) {
+                            for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.get().entrySet()) {
+                                logCouplingError(e.getKey(), e.getValue().toString());
+                            }
+                            couplingErrors.set(null);
+                        }
+                        
+                        recursiveDepth.set(recursiveDepth.get() - 1);
                     }
                 }
             } catch (IOException ex) {
@@ -143,6 +163,7 @@ public class TreeLoader extends LazyTreeLoader {
                 info.append("TREE: <unknown>"); //NOI18N
                 break;
         }
+        Map<ClassSymbol, StringBuilder> couplingErrors = this.couplingErrors.get();
         if (clazz != null && couplingErrors != null) {
             StringBuilder sb = couplingErrors.get(clazz);            
             if (sb != null)
