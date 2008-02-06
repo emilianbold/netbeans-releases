@@ -167,7 +167,9 @@ public class EditorListener {
             if (currentDocument == newDocument) {
                 return;
             }
-            currentDocument.removeDocumentListener(this);
+            if (currentDocument != null) {
+                currentDocument.removeDocumentListener(this);
+            }
             currentDocument = newDocument;
             if (currentDocument != null) {
                 currentDocument.addDocumentListener(this);
