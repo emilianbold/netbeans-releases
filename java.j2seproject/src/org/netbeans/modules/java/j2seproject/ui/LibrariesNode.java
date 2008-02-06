@@ -707,7 +707,7 @@ final class LibrariesNode extends AbstractNode {
                     Exceptions.printStackTrace(ex);
                     return;
                 }
-                addJarFiles( files, fileFilter , curDir);
+                addJarFiles(files, fileFilter , FileUtil.toFile(project.getProjectDirectory()));
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                 FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
             }

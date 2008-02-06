@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,51 +31,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.jsf.editor.jspel;
+package org.netbeans.spi.db.sample;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
-import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.openide.filesystems.FileObject;
+import org.netbeans.api.db.explorer.DatabaseException;
 
 /**
- *
- * @author Petr Pisl
+ * This is the interface to be implemented for providers that want to
+ * make it possible to create sample databases for NetBeans
+ * 
+ * @author davidvc
  */
-public class JSFBeanCache {
+public interface SampleDbProvider {
+    public String getJDBCDriverClass();
     
-    public static List /*<ManagedBean>*/ getBeans(WebModule webModule) {
-        ArrayList beans = new ArrayList();
-        FileObject[] files = null; 
-        
-        if (webModule != null) {
-            files = ConfigurationUtils.getFacesConfigFiles(webModule);
-        }
-        
-        if (files != null) {
-            for (int i = 0; i < files.length; i++) {
-                    JSFConfigModel model = ConfigurationUtils.getConfigModel(files[i], false);
-                    if (model != null) {
-                        FacesConfig facesConfig = model.getRootComponent();
-                        if (facesConfig != null) {
-                            Collection<ManagedBean> managedBeans = facesConfig.getManagedBeans();
-                            for (Iterator<ManagedBean> it = managedBeans.iterator(); it.hasNext();) {
-                                beans.add(it.next());   
-                            }
-                        }
-                    }
-            }
-        }
-        return beans;
-    }
+    public void dropDatabase(String sampleName, String host, String port, 
+            String user, String password) throws DatabaseException;
     
-    
+    public void createSample(String sampleName, String host, String port,
+            String user, String password);
+
 }

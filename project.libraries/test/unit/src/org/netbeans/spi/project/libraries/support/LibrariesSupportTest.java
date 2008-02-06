@@ -62,25 +62,25 @@ public class LibrariesSupportTest extends NbTestCase {
     /**
      * Test of convertFilePathToURL method, of class LibrariesSupport.
      */
-    public void testConvertFileToURL() {
-        File f = new File("/aa/bb/c c.ext".replace('/', File.separatorChar));
-        URL u = LibrariesSupport.convertFileToURL(f);
+    public void testConvertFilePathToURL() {
+        String path = "/aa/bb/c c.ext".replace('/', File.separatorChar);
+        URL u = LibrariesSupport.convertFilePathToURL(path);
         assertEquals("file:/aa/bb/c%20c.ext", u.toExternalForm());
-        f = new File("../zz/re l.ext".replace('/', File.separatorChar));
-        u = LibrariesSupport.convertFileToURL(f);
+        path = "../zz/re l.ext".replace('/', File.separatorChar);
+        u = LibrariesSupport.convertFilePathToURL(path);
         assertEquals("file:../zz/re%20l.ext", u.toExternalForm());
     }
 
     /**
      * Test of convertURLToFilePath method, of class LibrariesSupport.
      */
-    public void testConvertURLToFile() throws MalformedURLException{
+    public void testConvertURLToFilePath() throws MalformedURLException{
         URL u = new URL("file:/aa/bb/c%20c.ext");
-        File f = LibrariesSupport.convertURLToFilePath(u);
-        assertEquals("/aa/bb/c c.ext".replace('/', File.separatorChar), f.getPath());
+        String path = LibrariesSupport.convertURLToFilePath(u);
+        assertEquals("/aa/bb/c c.ext".replace('/', File.separatorChar), path);
         u = new URL("file:../zz/re%20l.ext");
-        f = LibrariesSupport.convertURLToFilePath(u);
-        assertEquals("../zz/re l.ext".replace('/', File.separatorChar), f.getPath());
+        path = LibrariesSupport.convertURLToFilePath(u);
+        assertEquals("../zz/re l.ext".replace('/', File.separatorChar), path);
     }
 
     /**
