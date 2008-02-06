@@ -52,7 +52,6 @@ import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.util.HgUtils;
-import org.netbeans.modules.mercurial.util.HgRepositoryContextCache;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.NbBundle;
@@ -128,6 +127,12 @@ public class ExportDiffAction extends ContextAction {
         } else {
             List<String> list = HgCommand.doExport(repository, revStr, outputFileName);
             HgUtils.outputMercurialTab(list); // NOI18N
+            if (!list.isEmpty() && list.size() > 1) {
+                File outFile = new File(list.get(1));
+                if (outFile != null && outFile.canRead()) {
+                    org.netbeans.modules.versioning.util.Utils.openFile(outFile);
+                }
+            }
         }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

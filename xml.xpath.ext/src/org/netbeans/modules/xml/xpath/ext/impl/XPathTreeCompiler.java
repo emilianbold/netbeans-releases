@@ -213,12 +213,13 @@ public class XPathTreeCompiler implements Compiler {
     }
 
     public Object nodeTypeTest(int nodeType) {
-        return new StepNodeTypeTest(nodeType);
+        return new StepNodeTypeTest(nodeType, null);
     }
 
     public Object processingInstructionTest(String instruction) {
         // instruction is ignored in this model
-        StepNodeTypeTest newST = new StepNodeTypeTest(StepNodeTestType.NODETYPE_PI);
+        StepNodeTypeTest newST = new StepNodeTypeTest(
+                StepNodeTestType.NODETYPE_PI, instruction);
         return newST;
     }
 

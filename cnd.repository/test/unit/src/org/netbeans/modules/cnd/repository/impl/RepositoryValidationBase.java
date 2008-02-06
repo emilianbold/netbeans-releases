@@ -46,7 +46,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     }
 
     protected static final String nimi = "ModelBuiltFromRepository"; //NOI18N
-    protected static final String moduleName = "repository";
+    protected static final String moduleName = "cnd.repository";
     protected static String workingDirectory;
 
     protected final List<String> find() throws IOException {

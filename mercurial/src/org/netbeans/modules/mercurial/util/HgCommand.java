@@ -237,6 +237,8 @@ public class HgCommand {
     private static final String HG_ABORT_ERR = "abort: "; // NOI18N
     private static final String HG_ABORT_PUSH_ERR = "abort: push creates new remote branches!"; // NOI18N
     private static final String HG_ABORT_NO_FILES_TO_COPY_ERR = "abort: no files to copy"; // NOI18N
+    private static final String HG_ABORT_NO_DEFAULT_PUSH_ERR = "abort: repository default-push not found!"; // NOI18N
+    private static final String HG_ABORT_NO_DEFAULT_ERR = "abort: repository default not found!"; // NOI18N
     
     private static final String HG_NO_CHANGE_NEEDED_ERR = "no change needed"; // NOI18N
     private static final String HG_NO_ROLLBACK_ERR = "no rollback information available"; // NOI18N
@@ -421,7 +423,7 @@ public class HgCommand {
 
         List<String> list;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
-        String proxy = getGlobalProxyIfNeeded(defaultPull);
+        String proxy = getGlobalProxyIfNeeded(defaultPull, true);
         if(proxy != null){
             List<String> env = new ArrayList<String>(); 
             env.add(HG_PROXY_ENV + proxy);
@@ -510,7 +512,7 @@ public class HgCommand {
 
         List<String> list;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
-        String proxy = getGlobalProxyIfNeeded(defaultPull);
+        String proxy = getGlobalProxyIfNeeded(defaultPull, true);
         if(proxy != null){
             List<String> env = new ArrayList<String>(); 
             env.add(HG_PROXY_ENV + proxy);
@@ -575,7 +577,7 @@ public class HgCommand {
 
         List<String> list;
         String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
-        String proxy = getGlobalProxyIfNeeded(defaultPush);
+        String proxy = getGlobalProxyIfNeeded(defaultPush, true);
         if(proxy != null){
             List<String> env = new ArrayList<String>(); 
             env.add(HG_PROXY_ENV + proxy);
@@ -631,22 +633,30 @@ public class HgCommand {
         return list;
     }
     
-    private static String getGlobalProxyIfNeeded(String defaultPath){
+    private static String getGlobalProxyIfNeeded(String defaultPath, boolean bOutputDetails){
         String proxy = null;
         if(defaultPath != null && 
                 (defaultPath.startsWith("http:") || defaultPath.startsWith("https:"))){ // NOI18N
             HgProxySettings ps = new HgProxySettings();
-            if(ps.isManualSetProxy()){
-                if(defaultPath.startsWith("http:") && ps.getHttpHost() != null){ // NOI18N
+            if (ps.isManualSetProxy()) {
+                if (defaultPath.startsWith("http:") && ps.getHttpHost() != null) { // NOI18N
                     proxy = ps.getHttpHost();
-                    proxy += ps.getHttpPort() > -1 ? ":" + Integer.toString(ps.getHttpPort()): ""; // NOI18N
-                }else if(defaultPath.startsWith("https:") && ps.getHttpsHost() != null){ // NOI18N
+                    if (proxy != null && !proxy.equals("")) {
+                        proxy += ps.getHttpPort() > -1 ? ":" + Integer.toString(ps.getHttpPort()) : ""; // NOI18N
+                    } else {
+                        proxy = null;
+                    }                    
+                } else if (defaultPath.startsWith("https:") && ps.getHttpsHost() != null) { // NOI18N
                     proxy = ps.getHttpsHost();
-                    proxy += ps.getHttpsPort() > -1 ? ":" + Integer.toString(ps.getHttpsPort()): ""; // NOI18N
+                    if (proxy != null && !proxy.equals("")) {
+                        proxy += ps.getHttpsPort() > -1 ? ":" + Integer.toString(ps.getHttpsPort()) : ""; // NOI18N
+                    } else {
+                        proxy = null;
+                    }
                 }
             }
         }
-        if(proxy != null){
+        if(proxy != null && bOutputDetails){
             HgUtils.outputMercurialTab(NbBundle.getMessage(HgCommand.class, "MSG_USING_PROXY_INFO", proxy)); // NOI18N
         }
         return proxy;
@@ -670,7 +680,7 @@ public class HgCommand {
         
         List<String> list;
         String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
-        String proxy = getGlobalProxyIfNeeded(defaultPull);
+        String proxy = getGlobalProxyIfNeeded(defaultPull, true);
         if(proxy != null){
             List<String> env = new ArrayList<String>(); 
             env.add(HG_PROXY_ENV + proxy);
@@ -727,6 +737,24 @@ public class HgCommand {
         return messages;
     }
     
+    public static HgLogMessage[] getIncomingMessages(final String rootUrl) {
+        final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
+        final File root = new File(rootUrl);
+        
+        try {
+
+            List<String> list = new LinkedList<String>();
+            list = HgCommand.doIncomingForSearch(root);
+            processLogMessages(list, messages);
+
+        } catch (HgException ex) {
+            NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
+            DialogDisplayer.getDefault().notifyLater(e);
+        }
+        
+        return messages.toArray(new HgLogMessage[0]);
+    }       
+   
     public static HgLogMessage[] getOutMessages(final String rootUrl) {
         final List<HgLogMessage> messages = new ArrayList<HgLogMessage>(0);  
         final File root = new File(rootUrl);
@@ -1072,7 +1100,9 @@ public class HgCommand {
 
         List<String> list = exec(command);
         if (!list.isEmpty()) {
-            if (isErrorNoRepository(list.get(0))) {
+            if(isErrorNoDefaultPush(list.get(0))){
+                // Ignore
+            }else if (isErrorNoRepository(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
              } else if (isErrorAbort(list.get(0))) {
                 handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
@@ -1080,6 +1110,49 @@ public class HgCommand {
         }
         return list;
     }
+
+        /**
+     * Retrives the Incoming changeset information for the specified repository
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @return List<String> list of the out entries for the specified repo.
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static List<String> doIncomingForSearch(File repository) throws HgException {
+        if (repository == null ) return null;
+        
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_INCOMING_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+        command.add(HG_LOG_DEBUG_CMD);        
+        command.add(HG_LOG_TEMPLATE_HISTORY_CMD);
+
+        List<String> list = exec(command);
+        String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
+        String proxy = getGlobalProxyIfNeeded(defaultPull, false);
+        if(proxy != null){
+            List<String> env = new ArrayList<String>(); 
+            env.add(HG_PROXY_ENV + proxy);
+            list = execEnv(command, env);
+        }else{
+            list = exec(command);
+        }
+
+        if (!list.isEmpty()) {
+            if (isErrorNoDefaultPath(list.get(0))) {
+            // Ignore
+            } else if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"));
+            } else if (isErrorAbort(list.get(0)) || isErrorAbort(list.get(list.size() - 1))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"));
+            }
+        }
+        return list;
+    }
+
     private static String handleRevDates(String from, String to, String headRev){
         // Check for Date range:
         Date fromDate = null;
@@ -2482,6 +2555,14 @@ public class HgCommand {
      
     public static boolean isNoChanges(String msg) {
         return msg.indexOf(HG_NO_CHANGES_ERR) > -1;                                   // NOI18N
+    }
+    
+    private static boolean isErrorNoDefaultPush(String msg) {
+        return msg.indexOf(HG_ABORT_NO_DEFAULT_PUSH_ERR) > -1; // NOI18N
+    }
+    
+    private static boolean isErrorNoDefaultPath(String msg) {
+        return msg.indexOf(HG_ABORT_NO_DEFAULT_ERR) > -1; // NOI18N
     }
     
     private static boolean isErrorNoRepository(String msg) {
