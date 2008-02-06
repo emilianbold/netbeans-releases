@@ -47,11 +47,11 @@ import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.execution.ExecutionListener;
@@ -70,6 +70,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
@@ -123,6 +124,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         ExecutorTask executorTask = null;
         StopAction sa = null;
         RerunAction ra = null;
+        ProgressHandle progressHandle = null;
         
         private String getTabName(ProjectActionEvent[] paes) {
             String projectName = ProjectUtils.getInformation(paes[0].getProject()).getName();
@@ -152,6 +154,21 @@ public class DefaultProjectActionHandler implements ActionListener {
             return reuseTab;
         }
         
+        private ProgressHandle createPogressHandle() {
+            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(tabNameSeq, new Cancellable() {
+                public boolean cancel() {
+                    sa.actionPerformed(null);
+                    return true;
+                }
+            }, new AbstractAction() {
+                public void actionPerformed(ActionEvent e) {
+                    getTab().select();
+                }
+            });
+            progressHandle.setInitialDelay(0);
+            return progressHandle;
+        }
+        
         private InputOutput getIOTab(String tabName) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
@@ -160,6 +177,10 @@ public class DefaultProjectActionHandler implements ActionListener {
                 tab.getOut().reset();
             } catch (IOException ioe) {
             }
+            
+            progressHandle = createPogressHandle();
+            progressHandle.start();
+        
             return tab;
         }
         
@@ -198,7 +219,7 @@ public class DefaultProjectActionHandler implements ActionListener {
             }
         }
         
-        public void reset() {
+        public void reRun() {
             currentAction = 0;
             getTab().closeInputOutput();
             tabNames.add(tabNameSeq);
@@ -206,6 +227,9 @@ public class DefaultProjectActionHandler implements ActionListener {
                 getTab().getOut().reset();
             } catch (IOException ioe) {
             }
+            progressHandle = createPogressHandle();
+            progressHandle.start();
+            go();
         }
         
         public void go() {
@@ -369,6 +393,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                 tabNames.remove(tabNameSeq);
                 sa.setEnabled(false);
                 ra.setEnabled(true);
+                progressHandle.finish();
                 return;
             }
             if (rc == 0) {
@@ -489,8 +514,7 @@ public class DefaultProjectActionHandler implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
             //setEnabled(false);
-            handleEvents.reset();
-            handleEvents.go();
+            handleEvents.reRun();
         }
 
     }
