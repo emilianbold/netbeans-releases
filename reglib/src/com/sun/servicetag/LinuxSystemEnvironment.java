@@ -41,14 +41,14 @@
 
 package com.sun.servicetag;
 
-// This class is equivalent to the com.sun.scn.servicetags.LinuxSystemEnvironment
-// class in the Sun Connection source.
+// This class is a copy of the com.sun.scn.servicetags.LinuxSystemEnvironment
+// class from the Sun Connection source.
 //
 // The Service Tags team maintains the latest version of the implementation
-// for system environment data collection.  JDK will include a copy of 
-// the most recent released version for a JDK release.  We rename 
-// the package to com.sun.servicetag so that the Sun Connection 
-// product always uses the latest version from the com.sun.scn.servicetags 
+// for system environment data collection.  JDK will include a copy of
+// the most recent released version for a JDK release.	We rename
+// the package to com.sun.servicetag so that the Sun Connection
+// product always uses the latest version from the com.sun.scn.servicetags
 // package. JDK and users of the com.sun.servicetag API
 // (e.g. NetBeans and SunStudio) will use the version in JDK.
 //
@@ -58,10 +58,6 @@ import java.io.*;
 
 /**
  * Linux implementation of the SystemEnvironment class.
- *
- * JDK includes a copy of this class with the package renamed to 
- * "com.sun.servicetag".  Please add java-servicetag@sun.com in any
- * bug or RFE for this system environment data collection implementation.
  */
 class LinuxSystemEnvironment extends SystemEnvironment {
     LinuxSystemEnvironment() {
@@ -71,6 +67,7 @@ class LinuxSystemEnvironment extends SystemEnvironment {
         setCpuManufacturer(getLinuxCpuManufacturer());
         setSerialNumber(getLinuxSN());
     }
+    private String dmiInfo = null;
 
     private static final int SN	 = 1;
     private static final int SYS = 2;
@@ -96,13 +93,13 @@ class LinuxSystemEnvironment extends SystemEnvironment {
         }
 
         String contents = getFileContent("/proc/cpuinfo");
-        for (String l : contents.split("\n")) {
-            if (l.contains("vendor_id")) {
-                String[] ss = l.split(":", 2);
+        for (String line : contents.split("\n")) {
+            if (line.contains("vendor_id")) {
+                String[] ss = line.split(":", 2);
                 if (ss.length > 1) {
                     return ss[1].trim();
                 }
-            } 
+            }
         }
 
         // returns an empty string if it can't be found or an error happened
@@ -164,13 +161,33 @@ class LinuxSystemEnvironment extends SystemEnvironment {
     //                 UUID: 3091D719-B25B-D911-959D-6D1B12C7686E
     //                 Wake-up Type: Power Switch
 
-    private String getLinuxDMIInfo(String dmiType, String target) {
-        String output = getCommandOutput("/usr/sbin/dmidecode");
-        if (output.length() == 0) {
-            return output;
+    private synchronized String getLinuxDMIInfo(String dmiType, String target) {
+        // only try to get dmidecode information once, after that, we can
+        // reuse the output
+        if (dmiInfo == null) {
+            Thread dmidecodeThread = new Thread() {
+                public void run() {
+                    dmiInfo = getCommandOutput("/usr/sbin/dmidecode");
+                }
+            };
+            dmidecodeThread.start();
+
+            try {
+                dmidecodeThread.join(2000);
+                if (dmidecodeThread.isAlive()) {
+                    dmidecodeThread.interrupt();
+                    dmiInfo = "";
+                }
+            } catch (InterruptedException ie) {
+                dmidecodeThread.interrupt();
+            }
+        }
+
+        if (dmiInfo.length() == 0) {
+            return "";
         }
         boolean dmiFlag = false;
-        for (String s : output.split("\n")) {
+        for (String s : dmiInfo.split("\n")) {
             String line = s.toLowerCase();
             if (dmiFlag) {
                 if (line.contains(target)) {

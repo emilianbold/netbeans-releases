@@ -40,13 +40,13 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="nameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="mappingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="dispatcherNameLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="dispatcherMappingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="nameText" pref="471" max="32767" attributes="0"/>
-                          <Component id="mappingText" alignment="0" pref="471" max="32767" attributes="0"/>
+                          <Component id="dispatcherNameText" pref="471" max="32767" attributes="0"/>
+                          <Component id="dispatcherMappingText" alignment="0" pref="471" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -57,13 +57,13 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="nameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="nameText" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="dispatcherNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="dispatcherNameText" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="mappingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="mappingText" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="dispatcherMappingLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="dispatcherMappingText" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace pref="334" max="32767" attributes="0"/>
                   </Group>
@@ -71,23 +71,23 @@
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JTextField" name="nameText">
+            <Component class="javax.swing.JTextField" name="dispatcherNameText">
             </Component>
-            <Component class="javax.swing.JLabel" name="nameLabel">
+            <Component class="javax.swing.JLabel" name="dispatcherNameLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/spring/webmvc/Bundle.properties" key="LBL_DispatcherName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
             </Component>
-            <Component class="javax.swing.JLabel" name="mappingLabel">
+            <Component class="javax.swing.JLabel" name="dispatcherMappingLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
                   <ResourceString bundle="org/netbeans/modules/spring/webmvc/Bundle.properties" key="LBL_DispatcherMapping" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
             </Component>
-            <Component class="javax.swing.JTextField" name="mappingText">
+            <Component class="javax.swing.JTextField" name="dispatcherMappingText">
             </Component>
           </SubComponents>
         </Container>

@@ -25,6 +25,7 @@ import org.netbeans.modules.bpel.model.api.PartnerLink;
 import org.netbeans.modules.bpel.model.api.Process;
 import org.netbeans.modules.bpel.model.api.PartnerLinkContainer;
 import org.netbeans.modules.bpel.model.api.references.WSDLReference;
+import org.netbeans.modules.bpel.properties.ImportRegistrationHelper;
 import org.netbeans.modules.soa.ui.UserNotification;
 import org.netbeans.modules.soa.ui.form.CustomNodeEditor;
 import org.netbeans.modules.websvc.core.WebServiceReference;
@@ -187,6 +188,8 @@ public class PartnerlinkPlaceholder extends PlaceHolder {
                                             pLink.createWSDLReference(plt, PartnerLinkType.class);
                                     
                                     pLink.setPartnerLinkType(plt_ref);
+                                    new ImportRegistrationHelper(pLink.getBpelModel())
+                                            .addImport(plt.getModel());
                                 }
 
                                 PartnerLinkHelper.setPartnerlinkRole(pLink,

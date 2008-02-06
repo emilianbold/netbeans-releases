@@ -38,6 +38,8 @@ package org.netbeans.installer.wizard.components.panels.netbeans;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.installer.product.Registry;
@@ -50,6 +52,7 @@ import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
 import org.netbeans.installer.wizard.components.WizardPanel;
 import org.netbeans.installer.wizard.containers.SwingContainer;
+import org.netbeans.installer.wizard.containers.SwingFrameContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
 import static org.netbeans.installer.utils.helper.DetailedStatus.INSTALLED_SUCCESSFULLY;
@@ -171,7 +174,7 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
             
             // set up the cancel button
             container.getCancelButton().setVisible(false);
-            container.getCancelButton().setEnabled(false);
+            container.getCancelButton().setEnabled(false);            
         }
         
         @Override
@@ -304,6 +307,26 @@ public class NbPostInstallSummaryPanel extends WizardPanel {
                     GridBagConstraints.BOTH,          // fill
                     new Insets(11, 11, 11, 11),       // padding
                     0, 0));                           // padx, pady - ???
+            
+            if (container instanceof SwingFrameContainer) {
+                final SwingFrameContainer sfс = (SwingFrameContainer) container;
+                sfс.addWindowListener(new WindowAdapter() {
+                    @Override
+                    public void windowClosing(WindowEvent event) {
+                        SwingUi currentUi = component.getWizardUi().getSwingUi(container);
+                        if (currentUi != null) {
+                            if (!container.getCancelButton().isEnabled() && // cancel button is disabled
+                                    !container.getCancelButton().isVisible() && // no cancel button at this panel
+                                    !container.getBackButton().isVisible() && // no back button at this panel
+                                    container.getNextButton().isVisible() && // next button is visible
+                                    container.getNextButton().isEnabled()) { // and enabled                                                                
+                                currentUi.evaluateNextButtonClick();
+                                sfс.removeWindowListener(this);
+                            }
+                        }
+                    }
+                });
+            }
         }
     }
     
