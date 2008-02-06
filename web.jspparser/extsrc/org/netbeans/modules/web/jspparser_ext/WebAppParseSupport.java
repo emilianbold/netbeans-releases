@@ -217,7 +217,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         
         //web.xml
         FileObject webInf = org.netbeans.modules.web.api.webmodule.WebModule.getWebModule(wmRoot).getWebInf();
-        FileObject webxml = ContextUtil.findRelativeFileObject(webInf, "web.xml"); //NOI18N
+        FileObject webxml = webInf.getFileObject("web.xml"); //NOI18N
         if (webxml !=null ){
             registerTimeStamp(webxml, false);
         }
@@ -230,7 +230,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
         
         Hashtable<URL, URL> tomcatTable = new Hashtable<URL, URL>();
         Hashtable<URL, URL> loadingTable = new Hashtable<URL, URL>();
-        FileObject libDir = ContextUtil.findRelativeFileObject(webInf, "lib");  //NOI18N
+        FileObject libDir = webInf.getFileObject("lib");  //NOI18N
         URL helpurl;
         
         if (libDir != null) {
@@ -281,7 +281,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                 }
             }
         }
-        FileObject classesDir = ContextUtil.findRelativeFileObject(webInf, "classes");  //NOI18N
+        FileObject classesDir = webInf.getFileObject("classes");  //NOI18N
         if (classesDir != null && loadingTable.get(helpurl = findInternalURL(classesDir)) == null){
             loadingTable.put(helpurl, helpurl);
             tomcatTable.put(helpurl, helpurl);
@@ -588,7 +588,7 @@ public class WebAppParseSupport implements WebAppParseProxy, PropertyChangeListe
                     String uri = (String)iter.next();
                     // usualy if the uri starts with the file, then it's a jar
                     if (!uri.startsWith("file:")){      // NoI18N
-                        FileObject fo = ContextUtil.findRelativeFileObject(wmRoot, uri);
+                        FileObject fo = wmRoot.getFileObject(uri);
                         if (fo != null)
                             file = FileUtil.toFile(fo);
                         else
@@ -877,7 +877,7 @@ System.out.println("--------ENDSTACK------");        */
             errorRes = errorRes.replace(File.separatorChar, '/');
             if (errorRes.startsWith("/")) // NOI18N
                 errorRes = errorRes.substring(1);
-            FileObject errorTemp = ContextUtil.findRelativeFileObject(wmRoot, errorRes);
+            FileObject errorTemp = wmRoot.getFileObject(errorRes);
             if (errorTemp != null)
                 errorFile = errorTemp;
         }
