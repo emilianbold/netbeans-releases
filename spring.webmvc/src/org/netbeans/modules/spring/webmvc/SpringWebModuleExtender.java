@@ -60,7 +60,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -153,11 +152,11 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
     public boolean isValid() {
         if (dispatcherName == null || dispatcherName.trim().length() == 0){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNamePatternIsEmpty")); // NOI18N
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsEmpty")); // NOI18N
             return false;
         }
-        if (!SpringWebFrameworkValidator.isDispatcherNamePatternValid(dispatcherName)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNamePatternIsNotValid")); // NOI18N
+        if (!SpringWebFrameworkValidator.isDispatcherNameValid(dispatcherName)){
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNameIsNotValid")); // NOI18N
             return false;
         }
         if (dispatcherMapping == null || dispatcherMapping.trim().length() == 0) {
@@ -191,10 +190,9 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     }
         
     public void stateChanged(ChangeEvent e) {
-        SpringConfigPanelVisual panel = ((SpringConfigPanelVisual)e.getSource());        
-        dispatcherName = panel.getDispatcherName();
-        dispatcherMapping = panel.getDispatcherMapping();
-        includeJstl = panel.getIncludeJstl();
+        dispatcherName = getComponent().getDispatcherName();
+        dispatcherMapping = getComponent().getDispatcherMapping();
+        includeJstl = getComponent().getIncludeJstl();
         changeSupport.fireChange();
     }
 
