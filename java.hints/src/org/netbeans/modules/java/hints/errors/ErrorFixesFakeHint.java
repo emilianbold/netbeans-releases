@@ -134,16 +134,16 @@ public class ErrorFixesFakeHint extends AbstractHint {
         return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_USE_EXCEPTIONS, true);
     }
     
-    public static void setUseExceptions(boolean v) {
-        getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).putBoolean(SURROUND_USE_EXCEPTIONS, v);
+    public static void setUseExceptions(Preferences p, boolean v) {
+        p.putBoolean(SURROUND_USE_EXCEPTIONS, v);
     }
     
     public static boolean isUseLogger() {
         return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_USE_JAVA_LOGGER, true);
     }
     
-    public static void setUseLogger(boolean v) {
-        getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).putBoolean(SURROUND_USE_JAVA_LOGGER, v);
+    public static void setUseLogger(Preferences p, boolean v) {
+        p.putBoolean(SURROUND_USE_JAVA_LOGGER, v);
     }
     
     public static final String LOCAL_VARIABLES_INPLACE = "create-local-variables-in-place";

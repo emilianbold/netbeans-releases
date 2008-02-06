@@ -41,13 +41,15 @@
 
 package com.sun.servicetag;
 
-// This class is equivalent to the com.sun.scn.servicetags.SystemEnvironment
-// class in the Sun Connection source.  The Service Tags team maintains
-// the latest version of the implementation for system environment data
-// collection.  JDK will include a copy of the most recent released version
-// for a JDK release.  We will rename the package to com.sun.servicetag
-// so that the Sun Connection product always uses the latest version from the
-// com.sun.scn.servicetags package. JDK and users of the com.sun.servicetag API
+// This class is a copy of the com.sun.scn.servicetags.SystemEnvironment
+// class from the Sun Connection source.
+//
+// The Service Tags team maintains the latest version of the implementation
+// for system environment data collection.  JDK will include a copy of
+// the most recent released version for a JDK release.	We rename
+// the package to com.sun.servicetag so that the Sun Connection
+// product always uses the latest version from the com.sun.scn.servicetags
+// package. JDK and users of the com.sun.servicetag API
 // (e.g. NetBeans and SunStudio) will use the version in JDK.
 
 import java.io.*;
@@ -57,10 +59,6 @@ import java.net.UnknownHostException;
 /**
  * SystemEnvironment class collects the environment data with the
  * best effort from the underlying platform.
- *
- * JDK includes a copy of this class and its subclasses with the package
- * renamed to "com.sun.servicetag".  Please add java-servicetag@sun.com 
- * in any bug or RFE for this system environment data collection implementation.
  */
 public class SystemEnvironment {
     private String hostname;
@@ -261,9 +259,10 @@ public class SystemEnvironment {
     protected String getCommandOutput(String... command) {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
+        Process p = null;
         try {
             ProcessBuilder pb = new ProcessBuilder(command);
-            Process p = pb.start();
+            p = pb.start();
             p.waitFor();
 
             if (p.exitValue() == 0) {
@@ -280,10 +279,34 @@ public class SystemEnvironment {
                 }
             }
             return sb.toString();
+        } catch (InterruptedException ie) {
+            // in case the command hangs
+            if (p != null) {
+                p.destroy();
+            }
+            return "";
         } catch (Exception e) {
             // ignore exception
             return "";
         } finally {
+            if (p != null) {
+                try {
+                    p.getErrorStream().close();
+                } catch (IOException e) {
+                    // ignore
+                }
+                try {
+                    p.getInputStream().close();
+                } catch (IOException e) {
+                    // ignore
+                }
+                try {
+                    p.getOutputStream().close();
+                } catch (IOException e) {
+                    // ignore
+                }
+                p = null;
+            }
             if (br != null) {
                 try {
                     br.close();

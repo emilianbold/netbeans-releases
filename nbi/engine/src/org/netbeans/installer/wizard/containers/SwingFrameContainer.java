@@ -314,11 +314,6 @@ public class SwingFrameContainer extends NbiFrame implements SwingContainer {
                     if (currentUi != null) {
                         if (contentPane.getCancelButton().isEnabled()) {
                             currentUi.evaluateCancelButtonClick();
-                        } else if (!contentPane.getCancelButton().isVisible() && // no cancel button at this panel
-                                !contentPane.getBackButton().isVisible() && // no back button at this panel
-                                contentPane.getNextButton().isVisible() && // next button is visible
-                                contentPane.getNextButton().isEnabled()) { // and enabled                                                                
-                            currentUi.evaluateNextButtonClick();
                         }
                     }
                 }

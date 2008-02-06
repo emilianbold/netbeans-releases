@@ -2097,6 +2097,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 javacLock.unlock();
             }
         }
+        
+        @Override
+        public boolean isJavaCompilerLocked() {
+            return javacLock.isLocked();
+        }
 
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
             return JavaSource.create(cpInfo, binding, files);
