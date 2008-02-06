@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
+import java.awt.Image;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -53,4 +55,18 @@ public class SaasServicesRootNode extends SaasGroupNode {
         setDisplayName(NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services"));
         setShortDescription(NbBundle.getMessage(SaasServicesRootNode.class, "Web_Services_Desc"));
     }
+
+    static final java.awt.Image SERVICE_BADGE =
+            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/webservicegroup.png" ); //NOI18N
+    
+    @Override
+    public Image getIcon(int type){
+        return SERVICE_BADGE;
+    }
+    
+    @Override
+    public Image getOpenedIcon(int type){
+        return SERVICE_BADGE;
+    }
+    
 }

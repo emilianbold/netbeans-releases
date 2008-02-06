@@ -34,63 +34,61 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.ide;
+package org.netbeans.modules.websvc.saas.model;
 
-import java.lang.reflect.Method;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import junit.framework.Assert;
-import org.netbeans.junit.Log;
-import org.openide.util.Lookup;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method.Input;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output;
+import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.util.SaasUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Jaroslav Tulach <jtulach@netbeans.org>
+ * @author nam
  */
-final class WatchProjects {
-    private static Logger LOG = Logger.getLogger(WatchProjects.class.getName());
+public class SaasMethod {
+    private final Method method;
+    private final Saas saas;
     
-    
-    private static Method getProjects;
-    private static Method closeProjects;
-    private static Object projectManager;
-    
-    private WatchProjects() {
+    public SaasMethod(Saas saas, Method method) {
+        this.saas = saas;
+        this.method = method;
+    }
+
+    public Saas getSaas() {
+        return saas;
     }
     
-    public static void initialize() throws Exception {
-        Log.enableInstances(Logger.getLogger("TIMER"), "Project", Level.FINEST);
-        
-        final ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-        Assert.assertNotNull("Classloader must exists", loader);
-        LOG.fine("Classloader: " + loader);
-        Class pmClass = Class.forName(
-            "org.netbeans.api.project.ui.OpenProjects", false, loader); //NOI18N
-        LOG.fine("class: " + pmClass);
-        Method getDefault = pmClass.getMethod("getDefault");
-        LOG.fine("  getDefault: " + getDefault);
-        projectManager = getDefault.invoke(null);
-             
-        getProjects = pmClass.getMethod("getOpenProjects");
-        LOG.fine("getOpenProjects: " + getProjects);
-        
-        Class projectArray = Class.forName("[Lorg.netbeans.api.project.Project;");
-        
-        closeProjects = pmClass.getMethod("close", projectArray);
-        LOG.fine("getOpenProjects: " + getProjects);
+    public Method getMethod() {
+        return method;
     }
+
+    public Output getOutput() {
+        return method.getOutput();
+    }
+
+    public String getName() {
+        return method.getName();
+    }
+
+    public Input getInput() {
+        return method.getInput();
+    }
+
+    public String getHref() {
+        return method.getHref();
+    }
+
+    public String getDocumentation() {
+        return method.getDocumentation();
+    }
+
     
-    public static void assertProjects() throws Exception {
-        closeProjects.invoke(
-            projectManager,
-            getProjects.invoke(projectManager)
-        );
-        
-        System.setProperty("assertgc.paths", "20");
-     // disabled due to issue 124038
-       Log.assertInstances("Checking if all projects are really garbage collected");
-    }
 }
