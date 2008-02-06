@@ -84,8 +84,18 @@ public final class RubyPlatform {
     static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
     
     /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
-    static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
+    static final String RDEBUG_IDE_VERSION;
+    static final String RDEBUG_BASE_VERSION;
+    
+    static {
+        if (Utilities.isWindows()) {
+            RDEBUG_IDE_VERSION = "0.1.9"; // NOI18N
+            RDEBUG_BASE_VERSION = "0.9.3"; // NOI18N
+        } else {
+            RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
+            RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
+        }
+    }
     
     private Info info;
     

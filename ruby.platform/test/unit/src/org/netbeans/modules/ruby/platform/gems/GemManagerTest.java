@@ -53,6 +53,7 @@ import org.netbeans.api.ruby.platform.TestUtil;
 import org.netbeans.junit.MockServices;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 public class GemManagerTest extends RubyTestBase {
 
@@ -142,12 +143,13 @@ public class GemManagerTest extends RubyTestBase {
         FileObject gemRepo = FileUtil.toFileObject(getWorkDir()).createFolder("gem-repo");
         GemManager.initializeRepository(gemRepo);
         jruby.setGemHome(FileUtil.toFile(gemRepo));
-        installFakeGem("ruby-debug-base", "0.1.10", platform);
-        assertEquals("native fast debugger available", "0.1.10", gemManager.getVersion("ruby-debug-base"));
+        String version = Utilities.isWindows() ? "0.9.3" : "0.1.10";
+        installFakeGem("ruby-debug-base", version, platform);
+        assertEquals("native fast debugger available", version, gemManager.getVersion("ruby-debug-base"));
         assertNull("no jruby fast debugger available", gemManager.getVersionForPlatform("ruby-debug-base"));
-        uninstallFakeGem("ruby-debug-base", "0.1.10", platform);
-        installFakeGem("ruby-debug-base", "0.1.10", "java", platform);
-        assertEquals("no jruby fast debugger available", "0.1.10", gemManager.getVersionForPlatform("ruby-debug-base"));
+        uninstallFakeGem("ruby-debug-base", version, platform);
+        installFakeGem("ruby-debug-base", version, "java", platform);
+        assertEquals("no jruby fast debugger available", version, gemManager.getVersionForPlatform("ruby-debug-base"));
     }
     
     public void testCompareGemVersions() {
