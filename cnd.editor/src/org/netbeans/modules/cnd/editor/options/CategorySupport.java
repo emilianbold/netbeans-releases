@@ -88,10 +88,13 @@ public class CategorySupport extends Category implements ActionListener, Documen
     private Map<String, Object> forcedOptions;
     private boolean changed = false;
     private JPanel panel;
+    private CodeStyle.Language language;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    public CategorySupport(String nameKey, JPanel panel, String previewText, Map<String, Object> forcedOptions) {
+    public CategorySupport(CodeStyle.Language language, 
+            String nameKey, JPanel panel, String previewText, Map<String, Object> forcedOptions) {
         super(nameKey);
+        this.language = language;
         this.panel = panel;
         this.previewText = previewText == null ? this.previewText : previewText;
         this.forcedOptions = forcedOptions;
@@ -126,7 +129,7 @@ public class CategorySupport extends Category implements ActionListener, Documen
             }
         }
         pane.setText(previewText);
-        CodeStyle codeStyle = EditorOptions.createCodeStyle(p);
+        CodeStyle codeStyle = EditorOptions.createCodeStyle(language, p);
         BaseDocument bd = (BaseDocument) pane.getDocument();
         try {
             new Reformatter(bd, codeStyle).reformat();
@@ -228,7 +231,7 @@ public class CategorySupport extends Category implements ActionListener, Documen
     /** Very smart method which tries to set the values in the components correctly
      */
     private void loadData(JComponent jc, String optionID) {
-        Preferences node = EditorOptions.getPreferences(EditorOptions.getCurrentProfileId());
+        Preferences node = EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language));
         if (jc instanceof JTextField) {
             JTextField field = (JTextField)jc;                
             field.setText(node.get(optionID, EditorOptions.getDefault(optionID).toString()));
@@ -246,14 +249,14 @@ public class CategorySupport extends Category implements ActionListener, Documen
     }
 
     private void storeData(JComponent jc, String optionID, Preferences p) {
-        Preferences node = p == null ? EditorOptions.getPreferences(EditorOptions.getCurrentProfileId()) : p;
+        Preferences node = p == null ? EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)) : p;
         if (jc instanceof JTextField) {
             JTextField field = (JTextField)jc;
             try {
                 int i = Integer.parseInt(field.getText());
                 node.putInt(optionID,i);
             } catch (NumberFormatException e) {
-                node.put(optionID, EditorOptions.getLastValue(optionID).toString());
+                node.put(optionID, EditorOptions.getLastValue(language, optionID).toString());
             }
         } else if (jc instanceof JCheckBox) {
             JCheckBox checkBox = (JCheckBox)jc;

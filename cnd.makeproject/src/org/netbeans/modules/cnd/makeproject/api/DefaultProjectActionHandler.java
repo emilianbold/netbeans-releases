@@ -359,7 +359,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                     projectExecutor.setExitValueOverride(rcfile);
                 }
                 try {
-                    sa.setEnabled(true);
+                    sa.setEnabled(pae.getID() != ProjectActionEvent.RUN || showInput);
                     ra.setEnabled(false);
                     executorTask = projectExecutor.execute(getTab());
                 } catch (java.io.IOException ioe) {
@@ -490,9 +490,9 @@ public class DefaultProjectActionHandler implements ActionListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            //setEnabled(false); // discourage repeated clicking
-            //System.out.println("handleEvents 2 " + handleEvents);
-            //System.out.println("executorTask 2 " + handleEvents.getExecutorTask());
+            if (!isEnabled())
+                return;
+            setEnabled(false);
             if (handleEvents.getExecutorTask() != null) {
                 handleEvents.getExecutorTask().stop();
             }
@@ -520,7 +520,7 @@ public class DefaultProjectActionHandler implements ActionListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-            //setEnabled(false);
+            setEnabled(false);
             handleEvents.reRun();
         }
 
