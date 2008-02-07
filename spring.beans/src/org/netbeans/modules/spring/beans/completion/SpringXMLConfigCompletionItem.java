@@ -326,7 +326,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             sb.append(elem.getSimpleName().toString());
             Element parent = elem.getEnclosingElement();
             while(parent.getKind() != ElementKind.PACKAGE) {
-                sb.insert(0, parent.getSimpleName().toString() + "."); // NOI18N
+                sb.insert(0, parent.getSimpleName().toString() + "$"); // NOI18N
                 parent = parent.getEnclosingElement();
             }
             
