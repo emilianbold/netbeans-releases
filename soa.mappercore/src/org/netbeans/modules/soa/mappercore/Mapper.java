@@ -428,7 +428,7 @@ public class Mapper extends JPanel {
             setExpandedGraphState(treePath, true);
         }
     }
-    
+
     public List<TreePath> getExpandedPathes() {
         List<TreePath> result = new ArrayList<TreePath>();
         MapperNode rootNode = getRoot();
@@ -514,9 +514,8 @@ public class Mapper extends JPanel {
                 }
             }
         }
-    }
+    }    
 
-    
     public void hideOtherPathes(int expandedLevel) {
         if (model == null) return;
         if (root == null) return;
@@ -807,7 +806,6 @@ public class Mapper extends JPanel {
                 return null;
             }
             if (model.getIndexOfChild(node.getValue(), path[i]) == -1) {
-                System.out.println("Blah");
             }
             node = node.getChild(model.getIndexOfChild(node.getValue(), path[i]));
         }

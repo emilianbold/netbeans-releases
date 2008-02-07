@@ -47,7 +47,7 @@
     <target name="hudson" depends="run-daily,all"/>
 
     <target name="unit-test" depends="test"/>
-    <target name="bpel-test" depends="test-0,test-1,test-2,test-3,test-4,test-5,test-6,test-7,test-8,test-9"/>
+    <target name="bpel-test" depends="test-0,test-1,test-2,test-3,test-4,test-5,test-6,test-7,test-8"/>
     
     <target name="init">
         <property name="env.BUILD_NUMBER" value=""/>
@@ -266,6 +266,7 @@
         <!-- correlation -->
         <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL2"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="correlation/outoforder"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/CorrelationOnePropBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/CorrelationTwoPropBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/FlowAsStartActivity"/></antcall>
@@ -281,14 +282,12 @@
 
         <!-- exit -->
         <antcall target="do-test-jbi"><param name="dir" value="exit/ExitBpel"/></antcall>
+
+        <!-- faulthandling -->
+        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
     </target>
 
     <target name="test-6">
-        <!-- faulthandling -->
-        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/StandardFaultsBpel"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/SystemFaultsBpel"/></antcall>
-
         <!-- flow -->
         <antcall target="do-test-jbi"><param name="dir" value="flow/FlowBpel"/></antcall>
 
@@ -301,6 +300,12 @@
         <!-- implementMultiOperations -->
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/MultipleBPELs"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/OneBPEL"/></antcall>
+
+        <!-- repeatuntil -->
+        <antcall target="do-test-jbi"><param name="dir" value="repeatuntil/RepeatUntilBpel"/></antcall>
+
+        <!-- rethrow -->
+        <antcall target="do-test-jbi"><param name="dir" value="rethrow/Rethrow"/></antcall>
     </target>
         
     <target name="test-7">
@@ -311,34 +316,23 @@
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/JavaEEToBP/JavaEEToBPProj"/></antcall>
 
+        <!-- samples -->
+        <antcall target="do-test-jbi"><param name="dir" value="samples/AsynchronousSample"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="samples/EndToEndScenario"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="samples/samplesBPEL"/></antcall>
+        <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
+    </target>
+
+    <target name="test-8">
         <!-- misc -->
         <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
 
         <!-- pick -->
         <antcall target="do-test-jbi"><param name="dir" value="pick/PickBpel"/></antcall>
 
-        <!-- repeatuntil -->
-        <antcall target="do-test-jbi"><param name="dir" value="repeatuntil/RepeatUntilBpel"/></antcall>
-
-        <!-- rethrow -->
-        <antcall target="do-test-jbi"><param name="dir" value="rethrow/Rethrow"/></antcall>
-    </target>
-
-    <target name="test-8">
-        <!-- samples -->
-        <antcall target="do-test-jbi"><param name="dir" value="samples/AsynchronousSample"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="samples/EndToEndScenario"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="samples/samplesBPEL"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
-
-        <!-- scalability -->
-        <antcall target="do-test-jbi"><param name="dir" value="scalability/ScalabilityBpel"/></antcall>
-
         <!-- TerminationHandler -->
         <antcall target="do-test-jbi"><param name="dir" value="TerminationHandler/TerminationHandlerBpel"/></antcall>
-    </target>
 
-    <target name="test-9">
         <!-- wait -->
         <antcall target="do-test-jbi"><param name="dir" value="wait/WaitBpel"/></antcall>
 

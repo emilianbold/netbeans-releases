@@ -60,7 +60,7 @@ public class GdbActionHandler implements CustomProjectActionHandler {
     
     private ArrayList<ExecutionListener> listeners = new ArrayList<ExecutionListener>();
     
-    public void execute(final ProjectActionEvent ev, InputOutput io) {
+    public void execute(final ProjectActionEvent ev, final InputOutput io) {
         GdbProfile profile = (GdbProfile) ev.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
         if (profile != null) { // profile can be null if dbxgui is enabled
             String gdb = profile.getGdbPath(profile.getGdbCommand(), ev.getProfile().getRunDirectory());
@@ -70,10 +70,12 @@ public class GdbActionHandler implements CustomProjectActionHandler {
                     public void run() {
                         if (ev.getID() == ProjectActionEvent.DEBUG) {
                             DebuggerManager.getDebuggerManager().startDebugging(
-                                    DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
+                                    DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
+                                    new Object[] {ev, io}));
                         } else if (ev.getID() == ProjectActionEvent.DEBUG_STEPINTO) {
                             DebuggerManager.getDebuggerManager().startDebugging(
-                                    DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID, new Object[] {ev}));
+                                    DebuggerInfo.create(GdbDebugger.SESSION_PROVIDER_ID,
+                                    new Object[] {ev, io}));
                         }
                     }
                 };

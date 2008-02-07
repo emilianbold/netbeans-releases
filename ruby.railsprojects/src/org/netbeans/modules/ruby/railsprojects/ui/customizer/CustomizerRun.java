@@ -261,6 +261,13 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private void initComponents() {
 
         configSep = new javax.swing.JSeparator();
+        configLabel = new javax.swing.JLabel();
+        configCombo = new javax.swing.JComboBox();
+        configNew = new javax.swing.JButton();
+        configDel = new javax.swing.JButton();
+        rubyPlatformLabel = new javax.swing.JLabel();
+        platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
+        manageButton = new javax.swing.JButton();
         mainPanel = new javax.swing.JPanel();
         portLabel = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
@@ -269,15 +276,48 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         rakeLabel = new javax.swing.JLabel();
         rakeTextField = new javax.swing.JTextField();
         rakeHelpLabel = new javax.swing.JLabel();
-        serverLabel = new javax.swing.JLabel();
-        configLabel = new javax.swing.JLabel();
-        configCombo = new javax.swing.JComboBox();
-        configNew = new javax.swing.JButton();
-        configDel = new javax.swing.JButton();
-        rubyPlatformLabel = new javax.swing.JLabel();
-        platforms = org.netbeans.modules.ruby.platform.PlatformComponentFactory.getRubyPlatformsComboxBox();
         serverComboBox = RailsServerManager.getServerComboBox(getPlatform());
-        manageButton = new javax.swing.JButton();
+        serverLabel = new javax.swing.JLabel();
+
+        configLabel.setLabelFor(configCombo);
+        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel")); // NOI18N
+
+        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
+        configCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configComboActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(configNew, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configNew")); // NOI18N
+        configNew.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configNewActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(configDel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configDelete")); // NOI18N
+        configDel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configDelActionPerformed(evt);
+            }
+        });
+
+        rubyPlatformLabel.setLabelFor(platforms);
+        org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyPlatformLabel")); // NOI18N
+
+        platforms.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                platformsActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyHomeBrowse")); // NOI18N
+        manageButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                manageButtonActionPerformed(evt);
+            }
+        });
 
         portLabel.setLabelFor(portField);
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Run_Args_JLabel")); // NOI18N
@@ -296,14 +336,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(rakeHelpLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RakeArgsEx")); // NOI18N
 
-        serverLabel.setLabelFor(serverComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(serverLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ServerLabel")); // NOI18N
-
-        platforms.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                initServerComboBox();
-            }
-        });
 
         org.jdesktop.layout.GroupLayout mainPanelLayout = new org.jdesktop.layout.GroupLayout(mainPanel);
         mainPanel.setLayout(mainPanelLayout);
@@ -357,69 +390,37 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         encoding.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_Encoding")); // NOI18N
         rakeTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "AD_RakeArguments")); // NOI18N
 
-        configLabel.setLabelFor(configCombo);
-        org.openide.awt.Mnemonics.setLocalizedText(configLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configLabel")); // NOI18N
-
-        configCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default>" }));
-        configCombo.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configComboActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(configNew, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configNew")); // NOI18N
-        configNew.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configNewActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(configDel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "CustomizerRun.configDelete")); // NOI18N
-        configDel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configDelActionPerformed(evt);
-            }
-        });
-
-        rubyPlatformLabel.setLabelFor(platforms);
-        org.openide.awt.Mnemonics.setLocalizedText(rubyPlatformLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyPlatformLabel")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(manageButton, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "RubyHomeBrowse")); // NOI18N
-        manageButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                manageButtonActionPerformed(evt);
-            }
-        });
-
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(configLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(configCombo, 0, 414, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(configNew)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(configDel))
-            .add(layout.createSequentialGroup()
-                .add(rubyPlatformLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(platforms, 0, 378, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(manageButton)
-                .add(68, 68, 68))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, configSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 632, Short.MAX_VALUE)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, mainPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(configLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(configCombo, 0, 414, Short.MAX_VALUE))
+                    .add(layout.createSequentialGroup()
+                        .add(rubyPlatformLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(platforms, 0, 410, Short.MAX_VALUE)))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(manageButton)
+                    .add(layout.createSequentialGroup()
+                        .add(configNew)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(configDel))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(rubyPlatformLabel)
-                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(manageButton))
+                    .add(manageButton)
+                    .add(platforms, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(7, 7, 7)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(configDel)
@@ -485,6 +486,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
         RubyPlatformCustomizer.manage(platforms);
     }//GEN-LAST:event_manageButtonActionPerformed
+
+private void platformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformsActionPerformed
+    initServerComboBox();
+}//GEN-LAST:event_platformsActionPerformed
 
     private void initServerComboBox(){
         serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));

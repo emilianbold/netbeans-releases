@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.autoupdate.ui;
 
@@ -45,6 +45,7 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.StyledEditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.openide.util.NbBundle;
@@ -60,6 +61,7 @@ public class DetailsPanel extends JTextPane  {
     private JButton button;
     private JButton button2;
     private JPanel rightCornerHeader;
+    private HyperlinkListener hyperlinkListener;
     
     public DetailsPanel() {
         initComponents2();
@@ -105,7 +107,15 @@ public class DetailsPanel extends JTextPane  {
         getScrollPane();
     }
     
-    
+    @Override
+    public void removeNotify () {
+        setEditorKit (new StyledEditorKit ());
+        if (hyperlinkListener != null) {
+            removeHyperlinkListener (hyperlinkListener);
+        }
+        scrollPane = null;
+        super.removeNotify ();
+    }
     
     JScrollPane getScrollPane() {
         if (scrollPane == null) {

@@ -22,10 +22,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 import java.util.EventObject;
-import java.util.List;
-import java.util.Set;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
@@ -36,15 +33,6 @@ import org.netbeans.modules.bpel.model.api.BpelModel;
 import org.netbeans.modules.bpel.model.api.events.ChangeEvent;
 import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.netbeans.modules.xml.schema.model.GlobalElement;
-import org.netbeans.modules.xml.schema.model.GlobalType;
-import org.netbeans.modules.xml.schema.model.SchemaComponent;
-import org.netbeans.modules.xml.schema.model.SchemaModel;
-import org.netbeans.modules.xml.wsdl.model.Message;
-import org.netbeans.modules.xml.wsdl.model.Part;
-import org.netbeans.modules.xml.wsdl.model.WSDLModel;
-import org.netbeans.modules.xml.xam.ComponentEvent;
-import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.modules.xml.xam.Nameable;
 import org.openide.nodes.Node;
@@ -64,9 +52,11 @@ import org.openide.windows.TopComponent;
  *
  */
 public class DesignContextControllerImpl2
-        implements DesignContextController, PropertyChangeListener {
+        implements DesignContextController, PropertyChangeListener
+{
 
     private BpelDesignContext mContext;
+
     private MapperTcContext mMapperTcContext;
     private BpelModelSynchListener mBpelModelSynchListener;
     private BpelModel myBpelModel;
@@ -136,13 +126,16 @@ public class DesignContextControllerImpl2
         BpelEntity newEntity = newContext.getSelectedEntity();
 
         // avoid entities from another BpelModel
-        if ((newEntity != null && !myBpelModel.equals(newEntity.getBpelModel())) || newEntity == null) {
+        if ((newEntity != null && !myBpelModel.equals(newEntity.getBpelModel()))
+                || newEntity == null)
+        {
             return;
         }
 
         // the context have to be updated just if context changes,
         // in case the bpel model changes doesn't need to update context
-        if (newContext.equals(mContext)) {
+        if (newContext.equals(mContext))
+        {
             return;
         }
 
@@ -155,9 +148,7 @@ public class DesignContextControllerImpl2
     }
 
     // TODO m
-    public synchronized void reloadMapper(EventObject event) {
-        assert EventQueue.isDispatchThread();
-
+    public void reloadMapper(EventObject event) {
         //
         // Ignore reload if it has been initiated by the mapper itself
         if (event.getSource() == getBpelModelUpdateSource()) {
@@ -167,12 +158,27 @@ public class DesignContextControllerImpl2
         if (myPreviousTask != null) {
             myPreviousTask.cancel();
         }
-        if (myPreviousTask != null && !myPreviousTask.isFinished() && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125439
+        if (myPreviousTask != null && !myPreviousTask.isFinished()
+                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125439
         {
             myPreviousTask.waitFinished();
             myPreviousTask = null;
         }
 
+        if (!EventQueue.isDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    performReloadMapperInAwt();
+                }
+            });
+        } else {
+            performReloadMapperInAwt();
+        }
+    }
+
+    synchronized void performReloadMapperInAwt() {
+        assert EventQueue.isDispatchThread();
         if (!DesignContextUtil.isValidContext(mContext)) {
             setDelay(0);
             updateContext(-1);
@@ -244,7 +250,8 @@ public class DesignContextControllerImpl2
         if (myPreviousTask != null) {
             myPreviousTask.cancel();
         }
-        if (myPreviousTask != null && !myPreviousTask.isFinished() && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125439
+        if (myPreviousTask != null && !myPreviousTask.isFinished()
+                && RequestProcessor.getDefault().isRequestProcessorThread()) // issue 125439
         {
             myPreviousTask.waitFinished();
             myPreviousTask = null;
@@ -255,17 +262,15 @@ public class DesignContextControllerImpl2
         } else {
             myPreviousTask = RequestProcessor.getDefault().post(
                     new Runnable() {
-
+                public void run() {
+    //                BpelDesignContext newBpelContext = DesignContextChangeListener.getActivatedContext(myBpelModel);
+                    SwingUtilities.invokeLater(new  Runnable() {
                         public void run() {
-                            //                BpelDesignContext newBpelContext = DesignContextChangeListener.getActivatedContext(myBpelModel);
-                            SwingUtilities.invokeLater(new Runnable() {
-
-                                public void run() {
-                                    setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
-                                }
-                            });
+                            setContext(BpelDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
                         }
-                    }, delay);
+                    });
+                }
+            }, delay);
         }
     }
 
@@ -309,13 +314,14 @@ public class DesignContextControllerImpl2
             if (forceReload || !newContextEntity.equals(oldContextEntity)) {
                 myMapperStateManager.storeOldEntityContext(mContext);
                 //
-                MapperModel newMapperModel = new BpelMapperModelFactory().constructModel(mMapperTcContext, newContext);
+                MapperModel newMapperModel = new BpelMapperModelFactory().
+                        constructModel(mMapperTcContext, newContext);
                 //
 
                 mContext = newContext;
                 setMapperModel(newMapperModel);
                 myMapperStateManager.restoreOldEntityContext(mContext);
-            //
+                //
             }
 
             SwingUtilities.invokeLater(new Runnable() {
@@ -327,18 +333,18 @@ public class DesignContextControllerImpl2
         //
 //            mMapperTcContext.showMapperTcGroup(true);
         }
-    /*
-    else {
-    //
-    boolean needReload;
-    synchronized(DesignContextControllerImpl2.this) {
-    needReload = mNeedReload;
-    }
-    if (needReload) {
-    reloadMapperImpl();
-    }
-    }
-     */
+/*
+        else {
+            //
+            boolean needReload;
+            synchronized(DesignContextControllerImpl2.this) {
+                needReload = mNeedReload;
+            }
+            if (needReload) {
+                reloadMapperImpl();
+            }
+        }
+*/
     }
 
     private void reloadMapperImpl() {
@@ -358,7 +364,8 @@ public class DesignContextControllerImpl2
 //        }
 //
 //
-        MapperModel newMapperModel = new BpelMapperModelFactory().constructModel(mMapperTcContext, mContext);
+        MapperModel newMapperModel = new BpelMapperModelFactory().
+                constructModel(mMapperTcContext, mContext);
 
         myMapperStateManager.storeOldEntityContext(mContext);
         setMapperModel(newMapperModel);

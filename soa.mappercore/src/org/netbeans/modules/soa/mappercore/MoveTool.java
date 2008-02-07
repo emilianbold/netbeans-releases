@@ -159,7 +159,7 @@ public class MoveTool extends AbstractMapperDnDTool {
             int graphY = node.yToNode(point.y - delta.y);
             int graphX = canvas.toGraph(point.x - delta.x);
             if (dtde.getDropAction() == DnDConstants.ACTION_COPY || graphSubSet.getGraph() == null) {
-                model.copy(node.getTreePath(), graphSubSet,
+                graphSubSet = model.copy(node.getTreePath(), graphSubSet,
                         (graphX + step / 2) / step,
                         Math.max(0, (graphY + step / 2) / step));
             } else {
@@ -167,8 +167,15 @@ public class MoveTool extends AbstractMapperDnDTool {
                         (int) (Math.round(((double) (graphX)) / step)),
                         Math.max(0, (int) (Math.round(((double) (graphY)) / step))));
             }
-            TreePath treePath = getSelectionModel().getSelectedPath();
-            getSelectionModel().setSelected(treePath, graphSubSet.getVertex(0));
+            
+            getCanvas().requestFocusInWindow();
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath treePath = selectionModel.getSelectedPath();
+            if (graphSubSet.getVertexCount() > 0 &&
+                    !selectionModel.isSelected(treePath, graphSubSet.getVertex(0)))
+            {
+                selectionModel.setSelected(treePath, graphSubSet.getVertex(0));
+            }
          }
 
         reset();

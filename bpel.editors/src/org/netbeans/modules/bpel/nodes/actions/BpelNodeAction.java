@@ -112,11 +112,19 @@ public abstract class BpelNodeAction extends NodeAction {
             return enable(getBpelEntities(nodes));
         }
         try {
-            return model.invoke(new Callable<Boolean>() {
-                public Boolean call() throws Exception {
-                    return new Boolean(enable(getBpelEntities(nodes)));
+            class CheckEnabled implements Runnable {
+                public boolean enabled = false;
+                public void run() {
+                    this.enabled = enable(getBpelEntities(nodes));
                 }
-            }, this);
+            }
+        
+            CheckEnabled check = new CheckEnabled();
+            
+            model.invoke(check);
+            
+            return check.enabled;
+
         } catch (Exception ex) {
             ErrorManager.getDefault().notify(ex);
         }

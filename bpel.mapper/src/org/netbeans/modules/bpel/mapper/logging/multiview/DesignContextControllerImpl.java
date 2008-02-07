@@ -30,6 +30,7 @@ import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.multiview.BpelModelSynchListener;
 import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
 import org.netbeans.modules.bpel.mapper.tree.TreeExpandedState;
+import org.netbeans.modules.bpel.mapper.tree.TreeExpandedStateImpl;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
 import org.netbeans.modules.bpel.model.api.BpelModel;
@@ -250,11 +251,11 @@ public class DesignContextControllerImpl implements DesignContextController {
             TreeExpandedState leftTreeState = null;
             Mapper mapper = mMapperTcContext.getMapper();
             if (mapper != null) {
-                JTree leftTree = mapper.getLeftTree();
-                if (leftTree != null) {
-                    leftTreeState = new TreeExpandedState(leftTree);
+//                JTree leftTree = mapper.getLeftTree();
+//                if (leftTree != null) {
+                    leftTreeState = new TreeExpandedStateImpl(mapper);
                     leftTreeState.save();
-                }
+//                }
             }
             //
             setMapperModel(newMapperModel);
