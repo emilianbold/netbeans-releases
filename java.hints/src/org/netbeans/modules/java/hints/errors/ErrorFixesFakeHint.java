@@ -127,11 +127,19 @@ public class ErrorFixesFakeHint extends AbstractHint {
     }
     
     public static void setCreateLocalVariableInPlace(boolean v) {
-        getHint(FixKind.CREATE_LOCAL_VARIABLE).getPreferences(null).putBoolean(LOCAL_VARIABLES_INPLACE, v);
+        setCreateLocalVariableInPlace(getHint(FixKind.CREATE_LOCAL_VARIABLE).getPreferences(null), v);
+    }
+    
+    public static void setCreateLocalVariableInPlace(Preferences p, boolean v) {
+        p.putBoolean(LOCAL_VARIABLES_INPLACE, v);
     }
     
     public static boolean isUseExceptions() {
         return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_USE_EXCEPTIONS, true);
+    }
+    
+    public static void setUseExceptions(boolean v) {
+        setUseExceptions(getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null), v);
     }
     
     public static void setUseExceptions(Preferences p, boolean v) {
@@ -140,6 +148,10 @@ public class ErrorFixesFakeHint extends AbstractHint {
     
     public static boolean isUseLogger() {
         return getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).getBoolean(SURROUND_USE_JAVA_LOGGER, true);
+    }
+    
+    public static void setUseLogger(boolean v) {
+        setUseLogger(getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null), v);
     }
     
     public static void setUseLogger(Preferences p, boolean v) {

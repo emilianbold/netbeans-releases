@@ -12,6 +12,7 @@ package org.netbeans.modules.editor.impl;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -95,6 +96,11 @@ public final class KitsTracker {
      */
     public String findMimeType(Class kitClass) {
         if (kitClass != null) {
+            if (WELL_KNOWN_PARENTS.contains(kitClass.getName())) {
+                // these classes are not directly registered as a kit for any mime type
+                return null;
+            }
+            
             List mimeTypes = getMimeTypesForKitClass(kitClass);
             if (mimeTypes.size() == 0) {
                 if (LOG.isLoggable(Level.WARNING)) {
@@ -144,6 +150,15 @@ public final class KitsTracker {
     private List<FileObject> eventSources = null;
     private boolean needsReloading = true;
     private final PropertyChangeSupport PCS = new PropertyChangeSupport(this);
+
+    private static final Set<String> WELL_KNOWN_PARENTS = new HashSet<String>(Arrays.asList(new String [] {
+        "java.lang.Object", //NOI18N
+        "javax.swing.text.EditorKit", //NOI18N
+        "javax.swing.text.DefaultEditorKit", //NOI18N
+        "org.netbeans.editor.BaseKit", //NOI18N
+        "org.netbeans.editor.ext.ExtKit", //NOI18N
+        "org.netbeans.modules.editor.NbEditorKit", //NOI18N
+    }));
     
     private final FileChangeListener fcl = new FileChangeAdapter() {
         @Override
@@ -170,6 +185,12 @@ public final class KitsTracker {
 
     }
 
+    private static final ThreadLocal<Boolean> inReload = new  ThreadLocal<Boolean>() {
+        protected @Override Boolean initialValue() {
+            return false;
+        }
+    };
+    
     /**
      * Scans fonlders under 'Editors' and finds <code>EditorKit</code>s for
      * each mime type.
@@ -179,6 +200,17 @@ public final class KitsTracker {
      *   Changes in these folders mean that the map may need to be recalculated.
      */
     private static void reload(Map<String, Class> map, Set<String> set, List<FileObject> eventSources) {
+        assert !inReload.get() : "Re-entering KitsTracker.reload() is prohibited. This situation usually indicates wrong initialization of some setting."; //NOI18N
+        
+        inReload.set(true);
+        try {
+            _reload(map, set, eventSources);
+        } finally {
+            inReload.set(false);
+        }
+    }
+    
+    private static void _reload(Map<String, Class> map, Set<String> set, List<FileObject> eventSources) {
         // Get the root of the MimeLookup registry
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
 

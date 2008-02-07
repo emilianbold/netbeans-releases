@@ -71,7 +71,7 @@ public class DataProviderGenerator {
     };
     
     private static String[] PRIMITIVE_WRAPPERS = {
-        "Character", "Byte", "Short", "Integer", "Long", "Float", "Double", "Boolean"
+        "java.lang.Character", "java.lang.Byte", "java.lang.Short", "java.lang.Integer", "java.lang.Long", "java.lang.Float", "java.lang.Double", "java.lang.Boolean"
     };
     
     private String packageName;
@@ -161,6 +161,9 @@ public class DataProviderGenerator {
                     classDir + File.separator + className + "$ResultBean.class",
                     true);
             
+            String qualifiedClassName = packageName + "." + className;
+            String qualifiedClientWrapperName = packageName + "." + clientWrapperClassName;
+            
             // Generate java code
             
             PrintWriter out = new PrintWriter( new FileOutputStream(javaFile) );
@@ -177,16 +180,8 @@ public class DataProviderGenerator {
             out.println( " */" );
             out.println();
             
-            // Import
-            out.println( "import com.sun.data.provider.*;" );
-            out.println( "import com.sun.data.provider.impl.*;" );
-            out.println( "import java.lang.reflect.Method;" );
-            out.println( "import java.beans.*;" );
-            out.println( "import java.util.ArrayList;" );
-            out.println();
-            
             // start of class
-            String dpSuperClassName = "MethodResultTableDataProvider";
+            String dpSuperClassName = "com.sun.data.provider.impl.MethodResultTableDataProvider";
             //String dpSuperClassName = "MethodResultDataProvider";
             
             out.println( "public class " + className + " extends " + dpSuperClassName + " {" );
@@ -194,7 +189,7 @@ public class DataProviderGenerator {
             
             // Memeber variables
             String clientWrapperClassVar = Util.decapitalize( clientWrapperClassName );
-            out.println( "    protected " + clientWrapperClassName + " " + clientWrapperClassVar + ";" );
+            out.println( "    protected " + qualifiedClientWrapperName + " " + clientWrapperClassVar + ";" );
             out.println( "    // Properties. One per method parameter." );
             ArrayList methodParams = methodInfo.getParameters();
             for( int i = 0; i < methodParams.size(); i ++ ) {
@@ -211,7 +206,7 @@ public class DataProviderGenerator {
             out.println();
             
             // Getter and setter for the client wrapper class
-            out.println( "    public " + clientWrapperClassName + " get" + clientWrapperClassName + "() {" );
+            out.println( "    public " + qualifiedClientWrapperName + " get" + clientWrapperClassName + "() {" );
             out.println( "        return  this." + clientWrapperClassVar + ";" );
             out.println( "    }" );
             out.println();
@@ -225,7 +220,7 @@ public class DataProviderGenerator {
                 usePrimitiveWrapper = true;
                 out.println("        super.setDataClassInstance( this );");
                 out.println("        try { ");
-                out.println("            originalDataMethod = " + clientWrapperClassName + ".class.getMethod(" );
+                out.println("            originalDataMethod = " + qualifiedClientWrapperName + ".class.getMethod(" );
                 out.println("                    \"" + methodInfo.getName() + "\", new Class[] {" + getMethodParamTypes() + "} );");
                 out.println("            super.setDataMethod( getWrapperMethod() ); ");
                 out.println("        }catch (java.lang.NoSuchMethodException ne) {");
@@ -250,7 +245,7 @@ public class DataProviderGenerator {
 
                 // Set the method where the data is retrieved
                 out.println("        try { ");
-                out.println("            super.setDataMethod( " + clientWrapperClassName + ".class.getMethod(");
+                out.println("            super.setDataMethod( " + qualifiedClientWrapperName + ".class.getMethod(");
                 out.println("                \"" + methodInfo.getName() + "\", new Class[] {" + getMethodParamTypes() + "} ) );");
                 out.println("        } catch( java.lang.NoSuchMethodException ne ) { ");
                 out.println("            ne.printStackTrace();");
@@ -279,15 +274,15 @@ public class DataProviderGenerator {
             
             // Implement abstract method from super class - getDataMethodArguments()
             if (usePrimitiveWrapper) {
-                out.println( "    private Object[] getOriginalDataMethodArguments() {");
+                out.println( "    private java.lang.Object[] getOriginalDataMethodArguments() {");
             }else {
-                out.println( "    public Object[] getDataMethodArguments() {" );
+                out.println( "    public java.lang.Object[] getDataMethodArguments() {" );
             }
             
             int methodArgSize = (methodInfo.getParameters() == null) ? 0 : methodInfo.getParameters().size();
 
             out.println("        try { ");
-            out.println("            Object[] values = new Object[" + methodArgSize + "];");
+            out.println("            java.lang.Object[] values = new java.lang.Object[" + methodArgSize + "];");
             out.println();
 
             for (int i = 0; i < methodArgSize; i++) {
@@ -298,7 +293,7 @@ public class DataProviderGenerator {
             }
 
             out.println("            return values;");
-            out.println("        } catch( Exception e ) { ");
+            out.println("        } catch( java.lang.Exception e ) { ");
             out.println("            e.printStackTrace();");
             out.println("            return null; ");
             out.println("        }");
@@ -308,37 +303,39 @@ public class DataProviderGenerator {
             out.println();
             
             // Override getFieldKeys() method to filter out the class field
-            out.println( "    public FieldKey[] getFieldKeys() throws DataProviderException {" );
-            out.println( "        FieldKey[] fieldKeys = super.getFieldKeys(); " );
-            out.println( "        ArrayList finalKeys = new ArrayList(); " );
+            out.println( "    public com.sun.data.provider.FieldKey[] getFieldKeys() throws com.sun.data.provider.DataProviderException {" );
+            out.println( "        com.sun.data.provider.FieldKey[] fieldKeys = super.getFieldKeys(); " );
+            out.println( "        java.util.ArrayList finalKeys = new java.util.ArrayList(); " );
             out.println( "        for( int i = 0; i < fieldKeys.length; i ++ ) { " );
             out.println( "            if( !fieldKeys[i].getFieldId().equals( \"class\" ) )" );
             out.println( "                finalKeys.add( fieldKeys[i] ); " );
             out.println( "        } " );
-            out.println( "        return (FieldKey[])finalKeys.toArray( new FieldKey[0] ); " );
+            out.println( "        return (com.sun.data.provider.FieldKey[])finalKeys.toArray( new com.sun.data.provider.FieldKey[0] ); " );
             out.println( "    } " );
 
             
             // helper methods for primitive return types
             if (usePrimitiveWrapper) {
                 String mrt = methodInfo.getReturnType().getClassName();
+                String resultBeanName = qualifiedClassName + ".ResultBean";
+                
                 out.println("");
-                out.println("    private Method originalDataMethod; ");
+                out.println("    private java.lang.reflect.Method originalDataMethod; ");
                 out.println("");
-                out.println("    public ResultBean invokeMethod() {");
+                out.println("    public " + resultBeanName + " invokeMethod() {");
                 out.println("        try { ");
                 out.println("            " + mrt + " result = (" + mrt + ")originalDataMethod.invoke(" + clientWrapperClassVar + ", getOriginalDataMethodArguments()); ");
-                out.println("            ResultBean methodResult = new ResultBean(); ");
+                out.println("            " + resultBeanName + " methodResult = new " + resultBeanName + "(); ");
                 out.println("            methodResult.setMethodResult(result); ");
                 out.println("            return methodResult; ");
-                out.println("        }catch (Exception ex) { ");
+                out.println("        }catch (java.lang.Exception ex) { ");
                 out.println("            ex.printStackTrace(); ");
                 out.println("            return null; ");
                 out.println("        }");
                 out.println("    } ");
                 out.println("");
-                out.println("    private Method getWrapperMethod() throws NoSuchMethodException {");
-                out.println("        return this.getClass().getMethod(\"invokeMethod\", new Class[0]); ");
+                out.println("    private java.lang.reflect.Method getWrapperMethod() throws java.lang.NoSuchMethodException {");
+                out.println("        return this.getClass().getMethod(\"invokeMethod\", new java.lang.Class[0]); ");
                 out.println("    } ");
                 out.println("");
                 out.println("    public static final class ResultBean { ");
@@ -408,7 +405,6 @@ public class DataProviderGenerator {
                 else
                     buf.append( ", " );
                 
-                // TODO need to handle primitive type
                 buf.append( p.getType() );
                 buf.append( ".class" ); // NOI18N
             }
