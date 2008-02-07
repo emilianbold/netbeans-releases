@@ -121,7 +121,7 @@ final class TestUtil {
         NbTestCase.assertNotNull("Project should exist", project);
 
         FileObject fo = projectPath.getFileObject(filePath);
-        NbTestCase.assertNotNull("JSP file should exist: " + filePath, fo);
+        NbTestCase.assertNotNull("Project file should exist: " + filePath, fo);
 
         return fo;
     }
