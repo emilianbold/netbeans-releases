@@ -558,7 +558,8 @@ public class WSStartServer extends StartServer {
                 
                 // if the server did not start in the designated time limits
                 // we consider the startup as failed and kill the process
-                serverProgress.notifyStart(StateType.FAILED, "");      // NOI18N
+                serverProgress.notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WSStartServer.class, "MSG_StartFailed"));
                 serverProcess.destroy();
                 
                 // set the state to stopped
@@ -827,7 +828,8 @@ public class WSStartServer extends StartServer {
                 
                 // if the server did not stop in the designated time limits
                 // we consider the stop process as failed and kill the process
-                serverProgress.notifyStop(StateType.FAILED, ""); // NOI18N
+                serverProgress.notifyStop(StateType.FAILED,
+                        NbBundle.getMessage(WSStartServer.class, "MSG_StartFailed"));
                 serverProcess.destroy();
                 
                 // set the state to started

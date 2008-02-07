@@ -60,6 +60,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
+import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.cookies.OpenCookie;
@@ -67,7 +68,6 @@ import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 
@@ -119,11 +119,9 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
     }
 
     public Set instantiate() throws IOException {
-        FileObject targetFolder = Templates.getTargetFolder(wizard);
-        DataFolder targetDataFolder = DataFolder.findFolder(targetFolder);
+        final FileObject targetFolder = Templates.getTargetFolder(wizard);
+        FileSystem fs = targetFolder.getFileSystem();
         String targetName = Templates.getTargetName(wizard);
-        FileObject templateFileObject = Templates.getTemplate(wizard);
-        DataObject templateDataObject = DataObject.find(templateFileObject);
 
         final String extension = "xml"; // NOI18N
 
@@ -140,19 +138,25 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         }
         final String name = uniqueTargetName;
 
-        DataObject newOne = templateDataObject.createFromTemplate(targetDataFolder, name);
-        FileObject createdFile = newOne.getPrimaryFile();
+        final FileObject[] createdFile = { null };
+        final DataObject[] createdDataObj = { null };
 
-        String[] incNamespaces = (String[]) wizard.getProperty(BeansConfigNamespacesWizardPanel.INCLUDED_NAMESPACES);
+        fs.runAtomicAction(new FileSystem.AtomicAction() {
 
-        generateFileContents(createdFile, incNamespaces);
+            public void run() throws IOException {
+                createdFile[0] = targetFolder.createData(name, extension);
+                String[] incNamespaces = (String[]) wizard.getProperty(BeansConfigNamespacesWizardPanel.INCLUDED_NAMESPACES);
+                generateFileContents(createdFile[0], incNamespaces);
+                createdDataObj[0] = DataObject.find(createdFile[0]);
+            }
+        });
 
-        OpenCookie open = (OpenCookie) newOne.getCookie(OpenCookie.class);
+        OpenCookie open = (OpenCookie) createdDataObj[0].getCookie(OpenCookie.class);
         if (open != null) {
             open.open();
         }
 
-        return Collections.singleton(createdFile);
+        return Collections.singleton(createdFile[0]);
     }
 
     public void initialize(WizardDescriptor wizard) {
@@ -230,7 +234,7 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         StringBuilder sb = generateXML(incNamespaces);
 
         try {
-            JEditorPane ep = new JEditorPane("text/x-springconfig+xml", ""); // NOI18N
+            JEditorPane ep = new JEditorPane(SpringXMLConfigDataLoader.REQUIRED_MIME, ""); // NOI18N
             BaseDocument doc = new BaseDocument(ep.getEditorKit().getClass(), false);
             Formatter f = Formatter.getFormatter(ep.getEditorKit().getClass());
             
@@ -251,21 +255,15 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             sb.replace(0, sb.length(), doc.getText(0, doc.getLength()));
             final String text = sb.toString();
 
-            FileSystem fs = targetFile.getFileSystem();
-            fs.runAtomicAction(new FileSystem.AtomicAction() {
-                public void run() throws IOException {
-                    FileLock lock = targetFile.lock();
-                    try {
-                        BufferedWriter bw 
-                                = new BufferedWriter(new OutputStreamWriter(
-                                targetFile.getOutputStream(lock)));
-                        bw.write(text);
-                        bw.close();
-                    } finally {
-                        lock.releaseLock();
-                    }
-                }
-            });
+            FileLock lock = targetFile.lock();
+            try {
+                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
+                        targetFile.getOutputStream(lock)));
+                bw.write(text);
+                bw.close();
+            } finally {
+                lock.releaseLock();
+            }
         } catch (FileAlreadyLockedException ex) {
             Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
