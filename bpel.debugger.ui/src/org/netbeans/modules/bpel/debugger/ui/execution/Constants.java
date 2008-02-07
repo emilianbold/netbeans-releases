@@ -79,6 +79,21 @@ public class Constants {
         }
     }
     
+    public static boolean isBold(PemEntity pemEntity) {
+        final String currentBranchId = 
+                pemEntity.getModel().getCurrentBranch().getId();
+        final String pemBranchId = pemEntity.getBranchId();
+        final boolean isInCurrentBranch = pemBranchId != null ?
+                pemBranchId.equals(currentBranchId) : false;
+        
+        if (isInCurrentBranch && 
+                (pemEntity.getState() == PemEntity.State.STARTED)) {
+            return true;
+        }
+        
+        return false;
+    }
+    
     public static String makeLabel(String tag, String name) {
         String label;
         if (name != null && !name.equals("")) {

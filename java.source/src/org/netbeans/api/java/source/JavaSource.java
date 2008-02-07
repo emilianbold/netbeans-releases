@@ -270,7 +270,7 @@ public final class JavaSource {
      * Init the maps
      */
     static {
-        JavaSourceAccessor.INSTANCE = new JavaSourceAccessorImpl ();
+        JavaSourceAccessor.setINSTANCE (new JavaSourceAccessorImpl ());
         phase2Message.put (Phase.PARSED,"Parsed");                              //NOI18N
         phase2Message.put (Phase.ELEMENTS_RESOLVED,"Signatures Attributed");    //NOI18N
         phase2Message.put (Phase.RESOLVED, "Attributed");                       //NOI18N
