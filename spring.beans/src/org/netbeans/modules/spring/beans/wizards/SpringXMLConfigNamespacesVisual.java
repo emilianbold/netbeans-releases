@@ -37,25 +37,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
-  *
+ *
  * Portions Copyrighted 2008 Craig MacKay.
-*/
+ */
 
 package org.netbeans.modules.spring.beans.wizards;
 
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import org.openide.util.NbBundle;
 
 public final class SpringXMLConfigNamespacesVisual extends JPanel {
 
-    /** Creates new form NewBeansContextVisualPanel1 */
     public SpringXMLConfigNamespacesVisual() {
         initComponents();
-        
+        // set the color of the table's JViewport
+        includesTable.getParent().setBackground(includesTable.getBackground());
+        ((DefaultTableModel)includesTable.getModel()).setColumnIdentifiers(new String[] {
+            NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_Include"),
+            NbBundle.getMessage(SpringXMLConfigNamespacesVisual.class, "LBL_Namespace"),
+        });
         TableColumn col1 = includesTable.getColumnModel().getColumn(0);
         col1.setMaxWidth(60);
         includesTable.revalidate();
@@ -74,7 +79,7 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane1 = new javax.swing.JScrollPane();
+        includesScrollPane = new javax.swing.JScrollPane();
         includesTable = new javax.swing.JTable();
 
         includesTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -112,7 +117,7 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
         includesTable.setShowGrid(false);
         includesTable.setDragEnabled(false);
         includesTable.setIntercellSpacing(new java.awt.Dimension(0, 0));
-        jScrollPane1.setViewportView(includesTable);
+        includesScrollPane.setViewportView(includesTable);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -120,20 +125,20 @@ public final class SpringXMLConfigNamespacesVisual extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 547, Short.MAX_VALUE)
+                .add(includesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 371, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
+                .add(includesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JScrollPane includesScrollPane;
     private javax.swing.JTable includesTable;
-    private javax.swing.JScrollPane jScrollPane1;
     // End of variables declaration//GEN-END:variables
     
     public String[] getIncludedNamespaces() {
