@@ -65,6 +65,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsDebugAction;
@@ -300,7 +301,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-ruby-rubyproject/Nodes"), 
                   Lookups.singleton(project));
             setIconBaseWithExtension("org/netbeans/modules/ruby/rubyproject/ui/resources/jruby.png");
-            super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
+            super.setName(ProjectUtils.getInformation(project).getDisplayName());
             if (hasBrokenLinks()) {
                 broken = true;
             }
@@ -310,7 +311,15 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
             //brokenLinksAction = new BrokenLinksAction();
             setProjectFiles(project);
         }
-        
+
+        public @Override String getShortDescription() {
+            String platformDesc = RubyPlatform.platformDescriptionFor(project);
+            if (platformDesc == null) {
+                platformDesc = NbBundle.getMessage(RubyLogicalViewProvider.class, "RubyLogicalViewProvider.PlatformNotFound");
+            }
+            String dirName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(RubyLogicalViewProvider.class, "RubyLogicalViewProvider.ProjectTooltipDescription", dirName, platformDesc);
+        }
         
         protected final void setProjectFiles(Project project) {
             Sources sources = ProjectUtils.getSources(project);  // returns singleton
@@ -473,6 +482,7 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
         // sources change
         public void stateChanged(ChangeEvent e) {
             setProjectFiles(project);
+            fireShortDescriptionChange(null, null);
         }
         
         // group change

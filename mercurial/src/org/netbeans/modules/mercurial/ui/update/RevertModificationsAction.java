@@ -158,6 +158,14 @@ public class RevertModificationsAction extends ContextAction {
             DialogDisplayer.getDefault().notifyLater(e);
         }
 
+        if (revStr == null) {
+            for (File file : revertFiles) {
+                HgUtils.forceStatusRefresh(file);
+            }
+        } else {
+            HgUtils.forceStatusRefresh(revertFiles.get(0));
+        }
+
         // refresh filesystem to take account of changes
         FileObject rootObj = FileUtil.toFileObject(repository);
         try {

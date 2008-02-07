@@ -42,6 +42,7 @@ package org.netbeans.modules.cnd.editor.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -51,10 +52,15 @@ import org.openide.util.Lookup;
  * @author Alexander Simon
  */
 public class EditorOptionsPanelController extends OptionsPanelController {
-    private EditorOptionsPanel panel = new EditorOptionsPanel(this);
+    private EditorOptionsPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean changed;
-                    
+
+    
+    public EditorOptionsPanelController(CodeStyle.Language language){
+         panel = new EditorOptionsPanel(language, this);
+    }
+    
     public void update() {
         changed = false;
 	panel.load();
@@ -98,5 +104,17 @@ public class EditorOptionsPanelController extends OptionsPanelController {
 	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
 	}
 	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    }
+
+    public static class CEditorOptionsPanelController extends EditorOptionsPanelController {
+        public CEditorOptionsPanelController(){
+            super(CodeStyle.Language.C);
+        }
+    }
+
+    public static class CppEditorOptionsPanelController extends EditorOptionsPanelController {
+        public CppEditorOptionsPanelController(){
+            super(CodeStyle.Language.CPP);
+        }
     }
 }
