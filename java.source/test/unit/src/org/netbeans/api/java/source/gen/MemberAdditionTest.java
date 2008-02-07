@@ -106,7 +106,7 @@ public class MemberAdditionTest extends NbTestCase {
             }
         }).commit();
 
-        JavaSourceAccessor.INSTANCE.revalidate(source);
+        JavaSourceAccessor.getINSTANCE().revalidate(source);
         
         CompilationInfo check = SourceUtilsTestUtil.getCompilationInfo(source, Phase.RESOLVED);
         CompilationUnitTree cu = check.getCompilationUnit();
@@ -132,7 +132,7 @@ public class MemberAdditionTest extends NbTestCase {
             }
         }).commit();
 
-        JavaSourceAccessor.INSTANCE.revalidate(source);
+        JavaSourceAccessor.getINSTANCE().revalidate(source);
 
         CompilationInfo check = SourceUtilsTestUtil.getCompilationInfo(source, Phase.RESOLVED);
         CompilationUnitTree cu = check.getCompilationUnit();
@@ -158,7 +158,7 @@ public class MemberAdditionTest extends NbTestCase {
             }
         }).commit();
 
-        JavaSourceAccessor.INSTANCE.revalidate(source);
+        JavaSourceAccessor.getINSTANCE().revalidate(source);
         
         CompilationInfo check = SourceUtilsTestUtil.getCompilationInfo(source, Phase.RESOLVED);
         CompilationUnitTree cu = check.getCompilationUnit();
@@ -193,7 +193,7 @@ public class MemberAdditionTest extends NbTestCase {
             }
         }).commit();
 
-        JavaSourceAccessor.INSTANCE.revalidate(source);
+        JavaSourceAccessor.getINSTANCE().revalidate(source);
 
         CompilationInfo check = SourceUtilsTestUtil.getCompilationInfo(source, Phase.RESOLVED);
         CompilationUnitTree cu = check.getCompilationUnit();
