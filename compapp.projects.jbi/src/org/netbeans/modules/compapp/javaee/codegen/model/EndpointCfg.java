@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,37 +31,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-
 package org.netbeans.modules.compapp.javaee.codegen.model;
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
 
 /**
  *
  * @author gpatil
- **/
-public interface JavaEEProject {
-    public enum ProjectType {EJB, WEB, ENT};
-    
-    public void setProjectDir(String dir);
-    public void setJarPath(String dir);
-    public void setProjectType(ProjectType type);
-    public void isDeployThruCA(boolean depThruCA);
-    public boolean isDeployThruCA();    
+ */
+public class EndpointCfg extends Endpoint{
+    private boolean activateForNMR = true;   
+    private boolean activateJavaEEHttpPort = true; // Applicable only to Provider
 
-    public void setEndpointOverrides(List<EndpointCfg> epCfgs);
-    public List<EndpointCfg> getEndpointOverrides();
-    public List<Endpoint> getEndpoints();
-    
-    public ProjectType getProjectType();    
-    public void setClassPathURLs(List<URL> classpathURLs);
-    public void addSubproject(JavaEEProject subProj);    
-    public List<Endpoint> getWebservicesEndpoints() throws IOException;
-    public String getJarName();
-    public String createJar(String jarDestDir, String additionalJbiFileDir) throws Exception;
-    public void setResourceFolder(String resourceFolder);
+    public boolean isActivateForNMR() {
+        return activateForNMR;
+    }
+
+    public void setActivateForNMR(boolean activateForNMR) {
+        this.activateForNMR = activateForNMR;
+    }
+
+    public boolean isActivateJavaEEHttpPort() {
+        return activateJavaEEHttpPort;
+    }
+
+    public void setActivateJavaEEHttpPort(boolean activateJavaEEHttpPort) {
+        this.activateJavaEEHttpPort = activateJavaEEHttpPort;
+    }
+
+//   DO NOT OVERRIDE EQUALs, it used to check EndpointCfg and Endpoint objects match.    
+//    public boolean equals(Object obj) {
+//        return super.equals(obj);
+//    }
 }
