@@ -547,11 +547,13 @@ implements AbstractLookupBaseHid.Impl {
             
             @Override
             public <T> T lookup(Class<T> clazz) {
+                assertFalse("No lock on proxy lookup", Thread.holdsLock(pl));
                 return l.lookup(clazz);
             }
 
             @Override
             public <T> Result<T> lookup(Template<T> template) {
+                assertFalse("No lock on proxy lookup", Thread.holdsLock(pl));
                 cnt[0]++;
                 if (set != null) {
                     pl.setLookups(set);

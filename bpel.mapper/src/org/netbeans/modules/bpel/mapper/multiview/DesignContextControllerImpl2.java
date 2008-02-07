@@ -151,9 +151,7 @@ public class DesignContextControllerImpl2
     }
 
     // TODO m
-    public synchronized void reloadMapper(ChangeEvent event) {
-        assert EventQueue.isDispatchThread();
-
+    public void reloadMapper(ChangeEvent event) {
         //
         // Ignore reload if it has been initiated by the mapper itself
         if (event.getSource() == getBpelModelUpdateSource()) {
@@ -170,6 +168,20 @@ public class DesignContextControllerImpl2
             myPreviousTask = null;
         }
 
+        if (!EventQueue.isDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                public void run() {
+                    performReloadMapperInAwt();
+                }
+            });
+        } else {
+            performReloadMapperInAwt();
+        }
+    }
+
+    synchronized void performReloadMapperInAwt() {
+        assert EventQueue.isDispatchThread();
         if (!DesignContextUtil.isValidContext(mContext)) {
             setDelay(0);
             updateContext(-1);

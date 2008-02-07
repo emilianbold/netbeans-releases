@@ -83,7 +83,7 @@
             <xsd:element name="methods" type="saas:Methods"/>
         </xsd:sequence>
         <xsd:attribute name="type" type="xsd:string" use="required"/>
-        <xsd:attribute name="url" type="xsd:string" use="required"/>
+        <xsd:attribute name="url" type="xsd:string" use="optional"/>
         <xsd:attribute name="api-doc" type="xsd:string" use="required"/>
     </xsd:complexType>
         
