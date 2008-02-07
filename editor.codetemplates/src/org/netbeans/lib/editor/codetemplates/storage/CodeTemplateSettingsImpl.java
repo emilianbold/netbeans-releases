@@ -128,11 +128,7 @@ public final class CodeTemplateSettingsImpl {
     }
 
     public Object createInstanceForLookup() {
-        Map<String, CodeTemplateDescription> map = getCodeTemplates();
-        return new Immutable(
-            Collections.unmodifiableList(new ArrayList<CodeTemplateDescription>(map.values())), 
-            getExpandKey()
-        );
+        return new Immutable(mimePath);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -186,19 +182,28 @@ public final class CodeTemplateSettingsImpl {
     
     private static final class Immutable extends CodeTemplateSettings {
         
-        private final List<CodeTemplateDescription> codeTemplates;
-        private final KeyStroke expansionKey;
+        private final MimePath mimePath;
+        private List<CodeTemplateDescription> codeTemplates;
+        private KeyStroke expansionKey;
         
-        public Immutable(List<CodeTemplateDescription> codeTemplates, KeyStroke expansionKey) {
-            this.codeTemplates = codeTemplates;
-            this.expansionKey = expansionKey;
+        public Immutable(MimePath mimePath) {
+            this.mimePath = mimePath;
         }
         
         public List<CodeTemplateDescription> getCodeTemplateDescriptions() {
+            if (codeTemplates == null) {
+                CodeTemplateSettingsImpl ctsi = CodeTemplateSettingsImpl.get(mimePath);
+                Map<String, CodeTemplateDescription> map = ctsi.getCodeTemplates();
+                codeTemplates = Collections.unmodifiableList(new ArrayList<CodeTemplateDescription>(map.values()));
+            }
             return codeTemplates;
         }
 
         public KeyStroke getExpandKey() {
+            if (expansionKey == null) {
+                CodeTemplateSettingsImpl ctsi = CodeTemplateSettingsImpl.get(mimePath);
+                expansionKey = ctsi.getExpandKey();
+            }
             return expansionKey;
         }
     } // End of Immutable class

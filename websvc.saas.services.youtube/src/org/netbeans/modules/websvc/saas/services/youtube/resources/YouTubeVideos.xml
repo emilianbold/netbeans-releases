@@ -69,9 +69,9 @@
     </saas-metadata>
 
     <methods>
-        <method name="ListByTag" href="//resource[1]/method[1]"/>
-        <method name="ListFeatured" href="//resource[1]/method[2]"/>
-        <method name="ListPopular" href="//resource[1]/method[3]"/>
+        <method name="ListByTag" href="#youtube.listByTag"/>
+        <method name="ListFeatured" href="#youtube.listFeatured"/>
+        <method name="ListPopular" href="#youtube.listPopular"/>
     </methods>
 
 </saas-services>

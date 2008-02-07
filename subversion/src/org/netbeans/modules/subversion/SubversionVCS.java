@@ -45,7 +45,11 @@ import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.util.VersioningEvent;
+import org.netbeans.modules.subversion.util.SvnUtils;
+import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.openide.util.NbBundle;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
+import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 import java.io.File;
 import java.util.*;
@@ -57,7 +61,7 @@ import java.beans.PropertyChangeEvent;
 /**
  * @author Maros Sandor
  */
-public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
+public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener, CollocationQueryImplementation {
 
     public SubversionVCS() {
         putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_DisplayName"));
@@ -83,6 +87,25 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         Subversion.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
+    public boolean areCollocated(File a, File b) {
+        File fra = getTopmostManagedAncestor(a);
+        File frb = getTopmostManagedAncestor(b);
+        if (fra == null || !fra.equals(frb)) return false;
+        try {
+            SVNUrl ra = SvnUtils.getRepositoryRootUrl(a);
+            SVNUrl rb = SvnUtils.getRepositoryRootUrl(b);
+            SVNUrl rr = SvnUtils.getRepositoryRootUrl(fra);
+            return ra.equals(rb) && ra.equals(rr);
+        } catch (SVNClientException e) {
+            // root not found
+            return false;
+        }
+    }
+
+    public File findRoot(File file) {
+        return getTopmostManagedAncestor(file);
+    }
+    
     public void versioningEvent(VersioningEvent event) {
         if (event.getId() == FileStatusCache.EVENT_FILE_STATUS_CHANGED) {
             File file = (File) event.getParams()[0];

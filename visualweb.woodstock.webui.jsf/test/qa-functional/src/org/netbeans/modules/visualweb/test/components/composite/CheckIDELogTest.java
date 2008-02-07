@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,40 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.visualweb.test.components.composite;
 
-package org.netbeans.core.actions;
+import java.io.IOException;
+import org.netbeans.modules.visualweb.gravy.RaveTestCase;
+import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
 
-import org.openide.DialogDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+/**
+ * @author Martin Schovanek (Martin.Schovanek@sun.com)
+ */
+public class CheckIDELogTest extends RaveTestCase {
 
-/** The action that shows the Configere Shortcuts dialog.
-*
-* @author Ian Formanek
-*/
-public class ConfigureShortcutsAction extends org.openide.util.actions.CallableSystemAction {
-
-    public ConfigureShortcutsAction() {
-        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+    public CheckIDELogTest(String testName) {
+        super(testName);
+        dumpScreen = false;
     }
 
-    public void performAction () {
+    /** method called before each testcase
+     */
+    @Override
+    protected void setUp() {
+        System.out.println(">> Running Test: " + getName() + " >>>>>>>>>>>>>>>");
     }
 
-    protected boolean asynchronous() {
-        return false;
+    /** method called after each testcase
+     */
+    @Override
+    protected void tearDown() {
+        log("<< Finished Test: " + getName() + " <<<<<<<<<<<<<<<<<");
     }
-
-    public String iconResource () {
-        return "org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
+    
+    public void testCheckIDELog() {
+        try {
+            String err = ComponentUtils.hasUnexpectedException();
+            assertTrue("Unexpected  exceptions found in message.log:\n" + err, err.equals(""));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            fail(ioe);
+        }
     }
-
-    public HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx (ConfigureShortcutsAction.class);
-    }
-
-    public String getName() {
-        return NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts");
-    }
-
 }
