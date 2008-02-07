@@ -55,6 +55,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import org.netbeans.modules.mercurial.HgProgressSupport;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.openide.util.NbBundle;
 
@@ -71,7 +72,7 @@ import org.openide.util.NbBundle;
  * 
  * @author John Rice
  */
-public class FetchAction extends AbstractAction {
+public class FetchAction extends ContextAction {
     
     private final VCSContext context;
 
@@ -80,8 +81,7 @@ public class FetchAction extends AbstractAction {
         putValue(Action.NAME, name);
     }
     
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) return;
         
@@ -96,26 +96,6 @@ public class FetchAction extends AbstractAction {
         try {
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE")); // NOI18N
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(FetchAction.class, "MSG_FETCH_TITLE_SEP")); // NOI18N
-
-            boolean bFetchPropExists = HgConfigFiles.getInstance().containsProperty(
-                            HgConfigFiles.HG_EXTENSIONS, HgConfigFiles.HG_EXTENSIONS_FETCH);
-            
-            if(!bFetchPropExists){
-                boolean bConfirmSetFetchProp = false;
-                bConfirmSetFetchProp = HgUtils.confirmDialog(
-                        FetchAction.class, "MSG_FETCH_SETFETCH_PROP_CONFIRM_TITLE", // NOI18N
-                        "MSG_FETCH_SETFETCH_PROP_CONFIRM_QUERY"); // NOI18N                
-                if (bConfirmSetFetchProp) {
-                    HgUtils.outputMercurialTabInRed(
-                            NbBundle.getMessage(FetchAction.class, "MSG_FETCH_SETHGK_PROP_DO_INFO")); // NOI18N
-                    HgConfigFiles.getInstance().setProperty(HgConfigFiles.HG_EXTENSIONS_FETCH, ""); // NOI18N
-                }else{
-                    HgUtils.outputMercurialTabInRed(
-                            NbBundle.getMessage(FetchAction.class, "MSG_FETCH_NOTSETHGK_PROP_INFO")); // NOI18N
-                    HgUtils.outputMercurialTab(""); // NOI18N
-                    return;
-                }
-            }
             
             HgUtils.outputMercurialTabInRed(NbBundle.getMessage(FetchAction.class, 
                     "MSG_FETCH_LAUNCH_INFO", root.getAbsolutePath())); // NOI18N
@@ -124,7 +104,7 @@ public class FetchAction extends AbstractAction {
             list = HgCommand.doFetch(root);
             
             if (list != null && !list.isEmpty()) {
-                HgUtils.outputMercurialTab(list);
+                HgUtils.outputMercurialTab(HgUtils.replaceHttpPassword(list));
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

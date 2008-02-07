@@ -27,6 +27,7 @@ import java.util.Set;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
+import org.netbeans.modules.bpel.mapper.predicates.SpecialStepManager;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeExtensionModel;
 import org.netbeans.modules.bpel.mapper.tree.spi.TreeItemInfoProvider;
 import org.netbeans.modules.bpel.model.api.AbstractVariableDeclaration;
@@ -47,6 +48,9 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.wsdl.model.Message;
 import org.netbeans.modules.xml.wsdl.model.Part;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
+import org.netbeans.modules.xml.xpath.ext.LocationStep;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext.SchemaCompPair;
 
 /**
  * The implementation of the MapperTreeModel for the variables' tree.
@@ -62,20 +66,25 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
     private Set<VariableDeclaration> mOverriddenVariables;
     private BpelDesignContext mDesignContext;
     private PredicateManager mPredManager;
+    private SpecialStepManager mSStepManager;
     private TreeItemInfoProvider mTreeInfoProvider;
     
     public VariableTreeModel(BpelDesignContext context) {
-        this(context, new PredicateManager());
-    }
-    
-    public VariableTreeModel(BpelDesignContext context, PredicateManager predManager) {
-        this(context, predManager, VariableTreeInfoProvider.getInstance());
+        this(context, new PredicateManager(), new SpecialStepManager());
     }
     
     public VariableTreeModel(BpelDesignContext context, 
-            PredicateManager predManager, TreeItemInfoProvider treeInfoProvider) {
+            PredicateManager predManager, SpecialStepManager stepManager) {
+        this(context, predManager, stepManager, 
+                VariableTreeInfoProvider.getInstance());
+    }
+    
+    public VariableTreeModel(BpelDesignContext context, 
+            PredicateManager predManager, SpecialStepManager stepManager, 
+            TreeItemInfoProvider treeInfoProvider) {
         mDesignContext = context;
         mPredManager = predManager;
+        mSStepManager = stepManager;
         mTreeInfoProvider = treeInfoProvider;
         //
         mVisScope = new VisibilityScope(context.getSelectedEntity());
@@ -185,6 +194,18 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
             if (sComp != null) {
                 return loadSchemaComponents(dataObjectPathItr, sComp);
             }
+        } else if (parent instanceof LocationStep) {
+            LocationStep step = (LocationStep)parent;
+            XPathSchemaContext context = step.getSchemaContext();
+            if (context != null) {
+                Set<SchemaCompPair> sCompPairs = context.getSchemaCompPairs();
+                ArrayList result = new ArrayList();
+                for (SchemaCompPair sCompPair : sCompPairs) {
+                    SchemaComponent sComp = sCompPair.getComp();
+                    result.addAll(loadSchemaComponents(dataObjectPathItr, sComp));
+                }
+                return result;
+            }
         }
         //
         return null;
@@ -194,6 +215,10 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
         return mPredManager;
     }
     
+    public SpecialStepManager getSStepManager() {
+        return mSStepManager;
+    }
+    
     private List loadSchemaComponents(
             RestartableIterator<Object> dataObjectPathItr, 
             SchemaComponent parent) {
@@ -201,18 +226,29 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
         sSchemaSearcher.lookForSubcomponents(parent);
         List<SchemaComponent> childrenComp = sSchemaSearcher.getFound();
         //
-        if (mPredManager == null) {
+        if (mPredManager == null && mSStepManager == null) {
             return childrenComp;
         }
         //
-        List<Object> allChildren = new ArrayList<Object>(childrenComp.size() + 2);
-        for (SchemaComponent sComp : childrenComp) {
-            allChildren.add(sComp);
+        List<Object> allChildren = new ArrayList<Object>(childrenComp.size() + 5);
+        if (mSStepManager != null) {
             //
-            // Look for the corresponding predicated nodes.
-            List<AbstractPredicate> predicates = 
-                    mPredManager.getPredicates(dataObjectPathItr, sComp);
-            allChildren.addAll(predicates);
+            // Look for the corresponding special nodes (text(), node(), comment()).
+            List<LocationStep> step = 
+                    mSStepManager.getSteps(dataObjectPathItr);
+            if (step != null && !step.isEmpty()) {
+                allChildren.addAll(step);
+            }
+        }
+        if (mPredManager != null) {
+            for (SchemaComponent sComp : childrenComp) {
+                allChildren.add(sComp);
+                //
+                // Look for the corresponding predicated nodes.
+                List<AbstractPredicate> predicates = 
+                        mPredManager.getPredicates(dataObjectPathItr, sComp);
+                allChildren.addAll(predicates);
+            }
         }
         //
         return allChildren;
@@ -226,7 +262,8 @@ public class VariableTreeModel implements MapperTreeExtensionModel<Object> {
         if (node instanceof Element || 
                 node instanceof Attribute ||
                 node instanceof Part || 
-                node instanceof AbstractPredicate) {
+                node instanceof AbstractPredicate ||
+                node instanceof LocationStep) {
             return Boolean.TRUE;
         }
         //

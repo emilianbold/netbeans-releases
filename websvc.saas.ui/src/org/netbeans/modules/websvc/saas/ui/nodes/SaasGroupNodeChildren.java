@@ -82,6 +82,7 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
     
     private void updateKeys() {
         ArrayList<Object> keys = new ArrayList<Object>();
+        keys.addAll(group.getChildrenGroups());
         keys.addAll(group.getServices());
         setKeys(keys.toArray());
     }
@@ -97,9 +98,9 @@ public class SaasGroupNodeChildren extends Children.Keys<Object> implements Prop
         if (key instanceof SaasGroup) {
             SaasGroupNode node = new SaasGroupNode((SaasGroup) key);
             return new Node[] { node };
-        } else if (key instanceof WsdlSaas) {
-            return new Node[] { new WadlSaasNode((WadlSaas)key) };
         } else if (key instanceof WadlSaas) {
+            return new Node[] { new WadlSaasNode((WadlSaas)key) };
+        } else if (key instanceof WsdlSaas) {
             //TODO
         }
         return new Node[0];

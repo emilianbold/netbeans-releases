@@ -41,12 +41,12 @@
 
 package com.sun.servicetag;
 
-// This class is equivalent to the com.sun.scn.servicetags.WindowsSystemEnvironment
-// class in the Sun Connection source.
+// This class is a copy of the com.sun.scn.servicetags.WindowsSystemEnvironment
+// class from the Sun Connection source.
 //
 // The Service Tags team maintains the latest version of the implementation
 // for system environment data collection.  JDK will include a copy of
-// the most recent released version for a JDK release.  We rename
+// the most recent released version for a JDK release.	We rename
 // the package to com.sun.servicetag so that the Sun Connection
 // product always uses the latest version from the com.sun.scn.servicetags
 // package. JDK and users of the com.sun.servicetag API
@@ -60,10 +60,6 @@ import java.util.List;
 
 /**
  * Windows implementation of the SystemEnvironment class.
- *
- * JDK includes a copy of this class with the package renamed to 
- * "com.sun.servicetag".  Please add java-servicetag@sun.com in any
- * bug or RFE for this system environment data collection implementation.
  */
 class WindowsSystemEnvironment extends SystemEnvironment {
     WindowsSystemEnvironment() {
@@ -85,10 +81,21 @@ class WindowsSystemEnvironment extends SystemEnvironment {
             String procId = System.getenv("processor_identifer");
             if (procId != null) {
                 String[] s = procId.split(",");
-                cpuMfr = s[s.length - 1];
+                cpuMfr = s[s.length - 1].trim();
             }
         }
         setCpuManufacturer(cpuMfr);
+
+        // try to remove the temp file that gets created from running wmic cmds
+        try {
+            // look in the current working directory
+            File f = new File("TempWmicBatchFile.bat");
+            if (f.exists()) {
+                f.delete();
+            }
+        } catch (Exception e) {
+            // ignore the exception
+        }
     }
 
 
@@ -121,10 +128,10 @@ class WindowsSystemEnvironment extends SystemEnvironment {
             bw.write(13);
             bw.flush();
             bw.close();
-            
+
             p.waitFor();
             if (p.exitValue() == 0) {
-		in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                in = new BufferedReader(new InputStreamReader(p.getInputStream()));
                 String line = null;
                 while ((line = in.readLine()) != null) {
                     line = line.trim();
@@ -136,6 +143,7 @@ class WindowsSystemEnvironment extends SystemEnvironment {
                 // return the *last* line read
                 return res;
             }
+
         } catch (Exception e) {
             // ignore the exception
         } finally {
@@ -147,6 +155,6 @@ class WindowsSystemEnvironment extends SystemEnvironment {
                 }
             }
         }
-        return res;
+        return res.trim();
     }
 }

@@ -74,12 +74,14 @@ public class ResourceNode extends AbstractNode {
     
     @Override
     public String getDisplayName() {
-        return getResource().getPath();
+        return "[" + getResource().getPath() + "]";
     }
     
     @Override
     public String getShortDescription() {
         StringBuffer sb = new StringBuffer();
+        sb.append(wadlSaas.getBaseURL());
+        sb.append('/');
         for (Resource r : pathToResource) {
             sb.append(r.getPath());
             sb.append('/');

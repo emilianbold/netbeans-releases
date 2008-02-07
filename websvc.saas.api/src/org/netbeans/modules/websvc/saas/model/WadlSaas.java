@@ -40,14 +40,18 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
+import javax.xml.bind.JAXBException;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,7 +67,14 @@ public class WadlSaas extends Saas {
     
     public Application getWadlModel() throws IOException {
         if (wadlModel == null) {
-            wadlModel = SaasUtil.loadWadl(getLocalWadlFile());
+            InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream(getUrl());
+            try {
+                wadlModel = SaasUtil.loadWadl(in);
+            } catch(JAXBException ex) {
+                String msg = NbBundle.getMessage(WadlSaas.class, "MSG_ErrorLoadingWadl", getModuleLoader());
+                IOException ioe = new IOException(msg);
+                ioe.initCause(ex);
+            }
         }
         return wadlModel;
     }
@@ -97,5 +108,19 @@ public class WadlSaas extends Saas {
             Exceptions.printStackTrace(ex);
         }
         return Collections.EMPTY_LIST;
+    }
+
+    @Override
+    protected SaasMethod createSaasMethod(Method method) {
+        return new WadlSaasMethod(this, method);
+    }
+    
+    public String getBaseURL() {
+        try {
+            return getWadlModel().getResources().getBase();
+        } catch(IOException ioe) {
+            // should not happen at this point
+            return NbBundle.getMessage(WadlSaas.class, "LBL_BAD_WADL");
+        }
     }
 }

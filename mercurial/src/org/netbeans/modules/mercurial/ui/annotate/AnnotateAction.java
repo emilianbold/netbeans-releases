@@ -57,6 +57,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.FileInformation;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -75,7 +76,7 @@ import org.openide.NotifyDescriptor;
  * 
  * @author John Rice
  */
-public class AnnotateAction extends AbstractAction {
+public class AnnotateAction extends ContextAction {
     
     private final VCSContext context;
     
@@ -104,8 +105,7 @@ public class AnnotateAction extends AbstractAction {
         } 
     } 
 
-    public void actionPerformed(ActionEvent e) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent e) {
         Node [] nodes = context.getElements().lookupAll(Node.class).toArray(new Node[0]);
         if (visible(nodes)) {
             JEditorPane pane = activatedEditorPane(nodes);

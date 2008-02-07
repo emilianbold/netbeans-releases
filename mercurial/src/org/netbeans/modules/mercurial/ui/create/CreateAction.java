@@ -59,7 +59,7 @@ import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
-import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -74,7 +74,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author John Rice
  */
-public class CreateAction extends AbstractAction {
+public class CreateAction extends ContextAction {
     
     private final VCSContext context;
     Map<File, FileInformation> repositoryFiles = new HashMap<File, FileInformation>();
@@ -127,9 +127,8 @@ public class CreateAction extends AbstractAction {
         return f1;
     }
 
-    public void actionPerformed(ActionEvent e) {
+    public void performAction(ActionEvent e) {
         final Mercurial hg = Mercurial.getInstance();
-        if(!hg.isGoodVersionAndNotify()) return;
 
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if(files == null || files.length == 0) return;

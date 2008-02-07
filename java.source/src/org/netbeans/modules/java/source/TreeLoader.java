@@ -41,6 +41,11 @@
 
 package org.netbeans.modules.java.source;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
@@ -49,12 +54,15 @@ import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.TransTypes;
 import com.sun.tools.javac.model.LazyTreeLoader;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
@@ -63,7 +71,6 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.Index;
-import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.usages.SymbolDumper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -78,8 +85,16 @@ public class TreeLoader extends LazyTreeLoader {
         context.put(lazyTreeLoaderKey, new TreeLoader(context, cpInfo));
     }
     
+    private static final Logger LOGGER = Logger.getLogger(TreeLoader.class.getName());
+
     private Context context;
     private ClasspathInfo cpInfo;
+    private final ThreadLocal<Map<ClassSymbol, StringBuilder>> couplingErrors = new  ThreadLocal<Map<ClassSymbol, StringBuilder>>();
+    private final ThreadLocal<Integer> recursiveDepth = new ThreadLocal<Integer>() {
+        protected Integer initialValue() {
+            return 0;
+        }
+    };
 
     private TreeLoader(Context context, ClasspathInfo cpInfo) {
         this.context = context;
@@ -88,6 +103,8 @@ public class TreeLoader extends LazyTreeLoader {
     
     @Override
     public boolean loadTreeFor(final ClassSymbol clazz) {
+        assert JavaSourceAccessor.INSTANCE.isJavaCompilerLocked();
+        
         if (clazz != null) {
             try {
                 FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
@@ -96,11 +113,27 @@ public class TreeLoader extends LazyTreeLoader {
                     Log.instance(context).nerrors = 0;
                     JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
                     try {
+                        recursiveDepth.set(recursiveDepth.get() + 1);
+
+                        if (recursiveDepth.get() > 1) {
+                            Logger.getLogger(TreeLoader.class.getName()).log(Level.WARNING, "Recursive loadTreeFor", new Exception());
+                        }
+
+                        if (recursiveDepth.get() == 1) {
+                            couplingErrors.set(new HashMap<ClassSymbol, StringBuilder>());
+                        }
                         jti.analyze(jti.enter(jti.parse(jfo)));
                         dumpSymFile(clazz);
-                        return true;                        
-                    } catch (CouplingAbort ca) {
-                        RepositoryUpdater.couplingAbort(ca, jfo);
+                        return true;
+                    } finally {
+                        if (recursiveDepth.get() == 1) {
+                            for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.get().entrySet()) {
+                                logCouplingError(e.getKey(), e.getValue().toString());
+                            }
+                            couplingErrors.set(null);
+                        }
+                        
+                        recursiveDepth.set(recursiveDepth.get() - 1);
                     }
                 }
             } catch (IOException ex) {
@@ -108,6 +141,46 @@ public class TreeLoader extends LazyTreeLoader {
             }
         }
         return false;
+    }
+
+    @Override
+    public void couplingError(ClassSymbol clazz, Tree t) {
+        StringBuilder info = new StringBuilder("\n"); //NOI18N
+        switch (t.getKind()) {
+            case CLASS:
+                info.append("CLASS: ").append(((ClassTree)t).getSimpleName().toString()); //NOI18N
+                break;
+            case VARIABLE:
+                info.append("VARIABLE: ").append(((VariableTree)t).getName().toString()); //NOI18N
+                break;
+            case METHOD:
+                info.append("METHOD: ").append(((MethodTree)t).getName().toString()); //NOI18N
+                break;
+            case TYPE_PARAMETER:
+                info.append("TYPE_PARAMETER: ").append(((TypeParameterTree)t).getName().toString()); //NOI18N
+                break;
+            default:
+                info.append("TREE: <unknown>"); //NOI18N
+                break;
+        }
+        Map<ClassSymbol, StringBuilder> couplingErrors = this.couplingErrors.get();
+        if (clazz != null && couplingErrors != null) {
+            StringBuilder sb = couplingErrors.get(clazz);            
+            if (sb != null)
+                sb.append(info);
+            else
+                couplingErrors.put(clazz, info);
+        } else {
+            logCouplingError(clazz, info.toString());
+        }
+    }
+    
+    private void logCouplingError(ClassSymbol clazz, String info) {
+        JavaFileObject classFile = clazz != null ? clazz.classfile : null;
+        String cfURI = classFile != null ? classFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
+        JavaFileObject sourceFile = clazz != null ? clazz.sourcefile : null;
+        String sfURI = classFile != null ? sourceFile.toUri().toASCIIString() : "<unknown>"; //NOI18N
+        LOGGER.log(Level.WARNING, "Coupling error:\nclass file: {0}\nsource file: {1}{2}\n", new Object[] {cfURI, sfURI, info});
     }
 
     private void dumpSymFile(ClassSymbol clazz) throws IOException {
