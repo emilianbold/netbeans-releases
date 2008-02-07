@@ -235,7 +235,9 @@
         <antcall target="do-test-jbi"><param name="dir" value="correlation/FlowAsStartActivity"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/MatchingInstanceTwoCorrBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/ThreeCorrSetsBpel"/></antcall>
-
+    </target>
+        
+    <target name="test-4">
         <!-- dynamicpartnerlink -->
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/dynamicPartnerLinkBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/justhttpAndBPEL"/></antcall>
@@ -243,9 +245,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/sendCallBackInfo"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/SyncSampleEPRAssign"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/SyncSampleEPRLiteral"/></antcall>
-    </target>
-        
-    <target name="test-4">
+
         <!-- empty -->
         <antcall target="do-test-jbi"><param name="dir" value="empty/EmptyBpel"/></antcall>
 
@@ -258,7 +258,9 @@
 
         <!-- faulthandling -->
         <antcall target="do-test-jbi"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
+    </target>
 
+    <target name="test-5">
         <!-- flow -->
         <antcall target="do-test-jbi"><param name="dir" value="flow/FlowBpel"/></antcall>
 
@@ -271,9 +273,7 @@
         <!-- implementMultiOperations -->
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/MultipleBPELs"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="implementMultiOperations/OneBPEL"/></antcall>
-    </target>
 
-    <target name="test-5">
         <!-- JavaEEIntegration -->
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/BPToJavaEE/JavaEEFault/FaultBP"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="JavaEEIntegration/DirectElem/MsgDirectElem"/></antcall>
@@ -283,7 +283,9 @@
         
         <!-- MessageExchange -->
         <antcall target="do-test-jbi"><param name="dir" value="MessageExchange/MessageExchangeBpel"/></antcall>
+    </target>
 
+    <target name="test-6">
         <!-- misc -->
         <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
 
@@ -294,9 +296,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/PLTLocalNamespace"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPDuplicateImpl"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="PartnerLinks/TwoBPs"/></antcall>
-    </target>
 
-    <target name="test-6">
         <!-- pick -->
         <antcall target="do-test-jbi"><param name="dir" value="pick/PickBpel"/></antcall>
 
@@ -305,30 +305,30 @@
 
         <!-- rethrow -->
         <antcall target="do-test-jbi"><param name="dir" value="rethrow/Rethrow"/></antcall>
-
+    </target>
+        
+    <target name="test-7">
         <!-- samples -->
         <antcall target="do-test-jbi"><param name="dir" value="samples/AsynchronousSample"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/EndToEndScenario"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/samplesBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/SynchronousSample"/></antcall>
-    </target>
-        
-    <target name="test-7">
+
         <!-- SchemaElemDecl -->
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithElemRef"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithMsgElement"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithMsgElemQualified"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithNestedElem"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithNestedElemQualified"/></antcall>
-        
+    </target>
+
+    <target name="test-8">
         <!-- ScopeTermination -->
         <antcall target="do-test-jbi"><param name="dir" value="ScopeTermination/ScopeTerminationBpel"/></antcall>
         
         <!-- TerminationHandler -->
         <antcall target="do-test-jbi"><param name="dir" value="TerminationHandler/TerminationHandlerBpel"/></antcall>
-    </target>
 
-    <target name="test-8">
         <!-- wait -->
         <antcall target="do-test-jbi"><param name="dir" value="wait/WaitBpel"/></antcall>
 
