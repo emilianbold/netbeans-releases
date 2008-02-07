@@ -189,9 +189,14 @@ public class CopyToProcessor {
                 toExpr = constructExpression(contextEntity, copyTo);
             }
             //
-            if (toExpr != null && toExpr instanceof AbstractLocationPath) {
-                finderList.addAll(FinderListBuilder.build(
-                        (AbstractLocationPath)toExpr));
+            if (toExpr != null) {
+                if (toExpr instanceof AbstractLocationPath) {
+                    finderList.addAll(FinderListBuilder.build(
+                            (AbstractLocationPath)toExpr));
+                } else if (toExpr instanceof XPathVariableReference) {
+                    finderList.addAll(FinderListBuilder.build(
+                            (XPathVariableReference)toExpr));
+                }
             }
             //
             break;

@@ -77,7 +77,7 @@ public class WSStartServer extends StartServer {
     /**
      * The server's deployment manager, to be exact the plugin's wrapper for it
      */
-    private WSDeploymentManager dm;
+    private final WSDeploymentManager dm;
     
     /**
      * Current server's state. Can be either started, starting, stopping or
@@ -225,8 +225,9 @@ public class WSStartServer extends StartServer {
      */
     public boolean supportsStartDeploymentManager() {
         // if the server is local we can start it
-        if (dm.getInstanceProperties().getProperty(
-                WSDeploymentFactory.IS_LOCAL_ATTR).equals("true")) {   // NOI18N
+        InstanceProperties ip = dm.getInstanceProperties();
+        if (ip != null && Boolean.parseBoolean(ip.getProperty(
+                WSDeploymentFactory.IS_LOCAL_ATTR))) {   // NOI18N
             return true;
         } else {
             return false;
@@ -383,7 +384,7 @@ public class WSStartServer extends StartServer {
     public boolean isRunning() {
         // try to get an open socket to the target host/port
         try {
-            new Socket(dm.getHost(), new Integer(dm.getPort()).intValue());
+            new Socket(dm.getHost(), Integer.parseInt(dm.getPort()));
             
             // if we are successful, return true
             return true;
@@ -557,7 +558,8 @@ public class WSStartServer extends StartServer {
                 
                 // if the server did not start in the designated time limits
                 // we consider the startup as failed and kill the process
-                serverProgress.notifyStart(StateType.FAILED, "");      // NOI18N
+                serverProgress.notifyStart(StateType.FAILED,
+                        NbBundle.getMessage(WSStartServer.class, "MSG_StartFailed"));
                 serverProcess.destroy();
                 
                 // set the state to stopped
@@ -826,7 +828,8 @@ public class WSStartServer extends StartServer {
                 
                 // if the server did not stop in the designated time limits
                 // we consider the stop process as failed and kill the process
-                serverProgress.notifyStop(StateType.FAILED, ""); // NOI18N
+                serverProgress.notifyStop(StateType.FAILED,
+                        NbBundle.getMessage(WSStartServer.class, "MSG_StartFailed"));
                 serverProcess.destroy();
                 
                 // set the state to started

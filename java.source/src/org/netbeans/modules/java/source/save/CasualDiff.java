@@ -1063,9 +1063,20 @@ public class CasualDiff {
         copyTo(localPointer, condBounds[0]);
         localPointer = diffTree(oldT.cond, newT.cond, condBounds);
         // detail
-        int[] detailBounds = getBounds(oldT.detail);
-        copyTo(localPointer, detailBounds[0]);
-        localPointer = diffTree(oldT.detail, newT.detail, detailBounds);
+        if (oldT.detail != newT.detail) {
+            if (oldT.detail == null) {
+                printer.print(" : ");
+                printer.print(newT.detail);
+            } else {
+                int[] detailBounds = getBounds(oldT.detail);
+                if (newT.detail == null) {
+                    localPointer = detailBounds[1];
+                } else {
+                    copyTo(localPointer, detailBounds[0]);
+                    localPointer = diffTree(oldT.detail, newT.detail, detailBounds);
+                }
+            }
+        }
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];

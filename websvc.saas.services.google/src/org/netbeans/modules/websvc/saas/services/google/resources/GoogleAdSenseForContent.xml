@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<saas-services
+    xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
+    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'    
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"             
+    xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
+    url="https://sandbox.google.com/api/adsense/v2/AdSenseForContentService?wsdl"
+    type="http://schemas.xmlsoap.org/wsdl/"
+    api-doc="http://code.google.com/apis/adsense/">
+    
+    <!-- This is the description for this SaaS component. It is not localized. -->
+    <description>Enables a developer to obtain a code snippet that adds the 
+        Google search box to a publisher's web page. The search can be a full web search 
+        or restricted to one of several domains. When an end user performs a search, 
+        ads are displayed.  When a user clicks through, Google credits a payment.
+    </description>
+    
+    <display-name>GoogleAdSenseForContent</display-name>
+
+    <saas-metadata>
+        <localizing-bundle>org.netbeans.modules.websvc.components.google.Bundle</localizing-bundle>
+        <icon16>org/netbeans/modules/websvc/components/google/resources/google16.png</icon16>
+        <icon32>....</icon32>
+        <group name="Google">
+            <group name="..."/>
+        </group>
+        <code-gen>
+            <artifacts targets="java,servlet">
+                <artifact id="GoogleLib" type="library" url="location_of_libarry_jar"/>
+                <artifact id="GoogleUtil" type="template" requires="GoogleLib"
+                    url="Templates/WebServices/GoogleUtil.java"/>
+                <artifact id="GoogleMapResource" type="template" requires="GoogleUtil,GoogleLib"
+                    url="Templates/WebServices/GoogleMapResource.java"/>
+            </artifacts>
+        </code-gen>
+        <!-- http-basic, api-key, custom -->
+        <authentication profile="Templates/WebServices/profile.properties">
+            <api-key id="zwsid"/>
+        </authentication>
+    </saas-metadata>
+
+    <!-- The method elements are used to specified a subset of important operations
+         in cases where the wsdl contains a large number of operations. -->
+    <!-- TODO -->     
+    <methods/>
+    
+</saas-services>

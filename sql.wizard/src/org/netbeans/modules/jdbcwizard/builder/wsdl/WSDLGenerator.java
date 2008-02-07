@@ -59,6 +59,7 @@ import org.netbeans.modules.jdbcwizard.builder.model.OracleQueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.DB2QueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.SQLServerQueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.model.JdbcQueryGenerator;
+import org.netbeans.modules.jdbcwizard.builder.model.MySQLQueryGenerator;
 import org.netbeans.modules.jdbcwizard.builder.util.XMLCharUtil;
 
 
@@ -773,6 +774,8 @@ public class WSDLGenerator {
             objDataAccess = DB2QueryGenerator.getInstance();
         } else if (this.mDBType.equalsIgnoreCase("SQLServer")) {
             objDataAccess = SQLServerQueryGenerator.getInstance();
+        } else if (this.mDBType.equalsIgnoreCase("MYSQL")) {
+            objDataAccess = MySQLQueryGenerator.getInstance();
         }else {
             objDataAccess = JdbcQueryGenerator.getInstance();
         }

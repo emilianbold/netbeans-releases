@@ -58,6 +58,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.naming.NamingFactory;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileChangedManager;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.util.Utilities;
 
@@ -73,8 +74,6 @@ public final class FolderObj extends BaseFileObj {
     boolean valid = true;    
     private int bitmask = 0;
     //#43278 section
-    static final String LIGHTWEIGHT_LOCK_SET = "LIGHTWEIGHT_LOCK_SET";//NOI18N
-    private static int LIGHTWEIGHT_LOCK = 1 << 0;
 
     /**
      * Creates a new instance of FolderImpl
@@ -182,7 +181,7 @@ public final class FolderObj extends BaseFileObj {
         if (!isSupported) { 
             extensions.createFailure(this, folder2Create.getName(), true);
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N   
-        } else if (folder2Create.exists()) {
+        } else if (FileChangedManager.getInstance().exists(folder2Create)) {
             extensions.createFailure(this, folder2Create.getName(), true);            
             throw new SyncFailedException(folder2Create.getAbsolutePath());// NOI18N               
         } else if (!folder2Create.mkdirs()) {
@@ -245,7 +244,7 @@ public final class FolderObj extends BaseFileObj {
         if (!isSupported) {             
             extensions.createFailure(this, file2Create.getName(), false);
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
-        } else if (file2Create.exists()) {
+        } else if (FileChangedManager.getInstance().exists(file2Create)) {
             extensions.createFailure(this, file2Create.getName(), false);
             throw new SyncFailedException(file2Create.getAbsolutePath());// NOI18N               
         } else if (!file2Create.createNewFile()) {
@@ -272,7 +271,6 @@ public final class FolderObj extends BaseFileObj {
         for (int i = 0; i < all.size(); i++) {
             final BaseFileObj toDel = (BaseFileObj) all.get(i);            
             final FolderObj existingParent = toDel.getExistingParent();            
-            assert existingParent == null || toDel.getParent().equals(existingParent);
             final ChildrenCache childrenCache = (existingParent != null) ? existingParent.getChildrenCache() : null;            
             if (childrenCache != null) {
                 final Mutex.Privileged mutexPrivileged = (childrenCache != null) ? childrenCache.getMutexPrivileged() : null;
@@ -372,7 +370,7 @@ public final class FolderObj extends BaseFileObj {
             }
 
         }
-        boolean validityFlag = getFileName().getFile().exists();
+        boolean validityFlag = FileChangedManager.getInstance().exists(getFileName().getFile());
         if (!validityFlag) {
             //fileobject is invalidated                
             setValid(false);
@@ -398,7 +396,7 @@ public final class FolderObj extends BaseFileObj {
             return true;
         }
 
-        if (!file.exists()) {
+        if (!FileChangedManager.getInstance().exists(file)) {
             return false;
         }
 
@@ -471,24 +469,6 @@ public final class FolderObj extends BaseFileObj {
             folderChildren = new FolderChildrenCache();
         }
         return folderChildren;
-    }
-
-    public Object getAttribute(final String attrName) {
-        if (attrName.equals(LIGHTWEIGHT_LOCK_SET)) {
-            bitmask |= LIGHTWEIGHT_LOCK;
-            return new FileLock() {
-                public void releaseLock() {
-                    super.releaseLock();
-                    bitmask &= ~LIGHTWEIGHT_LOCK;
-                }
-                
-            };
-        } 
-        return super.getAttribute(attrName);
-    }
-    
-    boolean isLightWeightLockRequired() {
-        return (bitmask & LIGHTWEIGHT_LOCK) == LIGHTWEIGHT_LOCK; 
     }
 
     public final class FolderChildrenCache implements ChildrenCache {

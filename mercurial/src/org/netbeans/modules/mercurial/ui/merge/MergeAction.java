@@ -50,6 +50,7 @@ import java.awt.event.ActionEvent;
 import java.util.Set;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -64,7 +65,7 @@ import org.openide.windows.OutputWriter;
  *
  * @author John Rice
  */
-public class MergeAction extends AbstractAction {
+public class MergeAction extends ContextAction {
 
     private final VCSContext context;
     private String revStr;
@@ -82,8 +83,7 @@ public class MergeAction extends AbstractAction {
         return true; // #121293: Speed up menu display, warn user if nothing to merge when Merge selected
     }
 
-    public void actionPerformed(ActionEvent ev) {
-        if(!Mercurial.getInstance().isGoodVersionAndNotify()) return;
+    public void performAction(ActionEvent ev) {
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
             HgUtils.outputMercurialTabInRed( NbBundle.getMessage(MergeAction.class,"MSG_MERGE_TITLE")); // NOI18N

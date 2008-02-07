@@ -65,7 +65,10 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  * @version 1.00
  */
 public enum CppTokenId implements TokenId {
-
+    
+    // make sure token category names are the same used in the string
+    // constants below
+    
     ERROR(null, "error"),
     IDENTIFIER(null, "identifier"),
 
@@ -241,8 +244,28 @@ public enum CppTokenId implements TokenId {
     
     // Errors
     INVALID_COMMENT_END("*/", "error"),
-    FLOAT_LITERAL_INVALID(null, "number");
+    FLOAT_LITERAL_INVALID(null, "number");    
     
+    // make sure string names are the same used in the tokenIds above
+    public static final String WHITESPACE_CATEGORY = "whitespace"; // NOI18N
+    public static final String COMMENT_CATEGORY = "comment"; // NOI18N
+    public static final String KEYWORD_CATEGORY = "keyword"; // NOI18N
+    public static final String KEYWORD_DIRECTIVE_CATEGORY = "keyword-directive"; // NOI18N
+    public static final String ERROR_CATEGORY = "error"; // NOI18N
+    public static final String NUMBER_CATEGORY = "number"; // NOI18N
+    public static final String LITERAL_CATEGORY = "literal"; // NOI18N
+    public static final String CHAR_CATEGORY = "character"; // NOI18N
+    public static final String STRING_CATEGORY = "string"; // NOI18N
+    public static final String SEPARATOR_CATEGORY = "separator"; // NOI18N
+    public static final String OPERATOR_CATEGORY = "operator"; // NOI18N
+    public static final String SPECIAL_CATEGORY = "special"; // NOI18N
+    public static final String PREPROCESSOR_CATEGORY = "preprocessor"; // NOI18N
+    public static final String PREPROCESSOR_KEYWORD_CATEGORY = "preprocessor-keyword"; // NOI18N
+    public static final String PREPROCESSOR_KEYWORD_DIRECTIVE_CATEGORY = "preprocessor-keyword-directive"; // NOI18N
+    public static final String PREPROCESSOR_IDENTIFIER_CATEGORY = "preprocessor-identifier"; // NOI18N
+    public static final String PREPROCESSOR_USER_INCLUDE_CATEGORY = "preprocessor-user-include-literal"; // NOI18N
+    public static final String PREPROCESSOR_SYS_INCLUDE_CATEGORY = "preprocessor-system-include-literal"; // NOI18N
+  
     private final String fixedText;
 
     private final String primaryCategory;
@@ -320,7 +343,7 @@ public enum CppTokenId implements TokenId {
         protected Map<String,Collection<CppTokenId>> createTokenCategories() {
             Map<String,Collection<CppTokenId>> cats = new HashMap<String,Collection<CppTokenId>>();
             // Additional literals being a lexical error
-            cats.put("error", EnumSet.of(
+            cats.put(ERROR_CATEGORY, EnumSet.of(
                 CppTokenId.FLOAT_LITERAL_INVALID
             ));
             // Literals category
@@ -333,7 +356,7 @@ public enum CppTokenId implements TokenId {
                 CppTokenId.CHAR_LITERAL,
                 CppTokenId.STRING_LITERAL
             );
-            cats.put("literal", l);
+            cats.put(LITERAL_CATEGORY, l);
 
             // Preprocessor category
 //            EnumSet<CppTokenId> p = EnumSet.of(

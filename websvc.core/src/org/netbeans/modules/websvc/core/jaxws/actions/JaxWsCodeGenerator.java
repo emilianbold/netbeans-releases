@@ -365,29 +365,41 @@ public class JaxWsCodeGenerator {
      * @param targetFile FileObject containing the class that declares the type
      */
     private static String resolveInitValue(final String type, FileObject targetFile) {
-        if ("int".equals(type) || "long".equals(type) || "short".equals(type) || "byte".equals(type)) //NOI18N
-        {
-            return "0;";
-        } //NOI18N
-        if ("boolean".equals(type)) //NOI18N
-        {
-            return "false;";
-        } //NOI18N
-        if ("float".equals(type) || "double".equals(type)) //NOI18N
-        {
-            return "0.0;";
-        } //NOI18N
-        if ("java.lang.String".equals(type)) //NOI18N
-        {
-            return "\"\";";
-        } //NOI18N
-        if (type.endsWith("CallbackHandler")) { //NOI18N
+        if ("int".equals(type)) { //NOI18N
+            return "0;"; //NOI18N
+        } else if ("long".equals(type)) { //NOI18N
+            return "0L;"; //NOI18N
+        } else if ("float".equals(type)) { //NOI18N
+            return "0.0f;"; //NOI18N
+        } else if ("double".equals(type)) { //NOI18N
+            return "0.0d;"; //NOI18N
+        } else if ("short".equals(type)) { //NOI18N
+            return "(short)0;"; //NOI18N
+        } else if ("byte".equals(type)) { //NOI18N
+            return "(byte)0;"; //NOI18N
+        } else if ("boolean".equals(type)) { //NOI18N
+            return "false;"; //NOI18N
+        } else if ("java.lang.String".equals(type)) { //NOI18N
+            return "\"\";"; //NOI18N
+        } else if ("java.lang.Integer".equals(type)) { //NOI18N
+            return "Integer.valueOf(0);"; //NOI18N
+        } else if ("java.lang.Long".equals(type)) { //NOI18N
+            return "Long.valueOf(0L);"; //NOI18N
+        } else if ("java.lang.Float".equals(type)) { //NOI18N
+            return "Float.valueOf(0.0f);"; //NOI18N
+        } else if ("java.lang.Double".equals(type)) { //NOI18N
+            return "Double.valueOf(0.0d);"; //NOI18N
+        } else if ("java.lang.Short".equals(type)) { //NOI18N
+            return "Short.valueOf((short)0);"; //NOI18N
+        } else if ("java.lang.Byte".equals(type)) { //NOI18N
+            return "Byte.valueOf((byte)0);"; //NOI18N
+        } else if ("java.lang.Boolean".equals(type)) { //NOI18N
+            return "Boolean.FALSE;"; //NOI18N
+        } else if (type.endsWith("CallbackHandler")) { //NOI18N
             return "new " + type + "();"; //NOI18N
-        }
-        if (type.startsWith("javax.xml.ws.AsyncHandler")) { //NOI18N
+        } else if (type.startsWith("javax.xml.ws.AsyncHandler")) { //NOI18N
             return "new " + type + "() {"; //NOI18N
         }
-
 
         ResultHolder<String> result = new ResultHolder<String>("");
         getInitValue(type, targetFile, result);
@@ -709,7 +721,12 @@ public class JaxWsCodeGenerator {
                 ClassTree javaClass = controller.getTrees().getTree(thisTypeEl);
                 // find if class is Injection Target
                 generateWsRefInjection[0] = InjectionTargetQuery.isInjectionTarget(controller, thisTypeEl);
-
+                if (generateWsRefInjection[0]) {
+                    // issue 126014 : check if J2EE Container supports EJBs (e.g. Tomcat 6 doesn't)
+                    Project project = FileOwnerQuery.getOwner(controller.getFileObject());
+                    generateWsRefInjection[0] = JaxWsUtils.isEjbSupported(project);
+                }
+                
                 insertServiceDef[0] = !generateWsRefInjection[0];
                 if (isServletClass(controller, thisTypeEl)) {
                     // PENDING Need to compute pronter name from the method

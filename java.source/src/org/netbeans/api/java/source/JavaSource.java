@@ -53,7 +53,6 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Source;
-import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.parser.DocCommentScanner;
@@ -117,8 +116,6 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -168,7 +165,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -333,6 +329,7 @@ public final class JavaSource {
     private FilterListener filterListener;
     
     private PositionConverter binding;
+    private final boolean supportsReparse;
     
     private static final Logger LOGGER = Logger.getLogger(JavaSource.class.getName());
         
@@ -508,6 +505,7 @@ public final class JavaSource {
         this.files = Collections.unmodifiableList(new ArrayList<FileObject>(files));   //Create a defensive copy, prevent modification
         this.fileChangeListener = new FileChangeListenerImpl ();
         this.binding = binding;
+        this.supportsReparse = this.binding == null;
         boolean multipleSources = this.files.size() > 1, filterAssigned = false;
         for (Iterator<? extends FileObject> it = this.files.iterator(); it.hasNext();) {
             FileObject file = it.next();
@@ -562,6 +560,7 @@ public final class JavaSource {
         this.rootFo = root;
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
         this.flags|= IS_CLASS_FILE;
+        this.supportsReparse = false;
         this.binding = new PositionConverter(classFileObject, null);
     }
        
@@ -595,8 +594,8 @@ public final class JavaSource {
         boolean a = false;
         assert a = true;
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement stackTraceElement = Thread.currentThread().getStackTrace()[2];
-            if (warnedAboutRunInEQ.add(stackTraceElement)) {
+            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
+            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
                 LOGGER.warning("JavaSource.runUserActionTask called in AWT event thread by: " + stackTraceElement); // NOI18N
             }
         }
@@ -858,8 +857,10 @@ public final class JavaSource {
         boolean a = false;
         assert a = true;        
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTrace[2]);     //NOI18N
+            StackTraceElement stackTraceElement = findCaller(Thread.currentThread().getStackTrace());
+            if (stackTraceElement != null && warnedAboutRunInEQ.add(stackTraceElement)) {
+                LOGGER.warning("JavaSource.runModificationTask called in AWT event thread by: " + stackTraceElement);     //NOI18N
+            }
         }
         
         ModificationResult result = new ModificationResult(this);
@@ -1236,7 +1237,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 currentInfo.setCompilationUnit(unit);
                 assert !it.hasNext();
                 final Document doc = currentInfo.javaSource.listener == null ? null : currentInfo.javaSource.listener.document;
-                if (doc != null) {
+                if (doc != null && currentInfo.javaSource.supportsReparse) {
                     FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions());
                     v.visit(unit, null);
                     synchronized (currentInfo.javaSource.positions) {
@@ -1753,54 +1754,56 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         public void stateChanged(ChangeEvent e) {
             JavaSource.this.resetState(true, false);
         }
-
+        
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             Pair<DocPositionRegion,MethodTree> changedMethod = null;
             if (evt.type() == TokenHierarchyEventType.MODIFICATION) {
-                int start = evt.affectedStartOffset();
-                int end = evt.affectedEndOffset();                                                                
-                synchronized (positions) {
-                    for (Pair<DocPositionRegion,MethodTree> pe : positions) {
-                        PositionRegion p = pe.first;
-                        if (start > p.getStartOffset() && end < p.getEndOffset()) {
-                            changedMethod = pe;
-                            break;
+                if (supportsReparse) {
+                    int start = evt.affectedStartOffset();
+                    int end = evt.affectedEndOffset();                                                                
+                    synchronized (positions) {
+                        for (Pair<DocPositionRegion,MethodTree> pe : positions) {
+                            PositionRegion p = pe.first;
+                            if (start > p.getStartOffset() && end < p.getEndOffset()) {
+                                changedMethod = pe;
+                                break;
+                            }
                         }
-                    }
-                    if (changedMethod != null) {
-                        TokenChange<JavaTokenId> change = evt.tokenChange(JavaTokenId.language());
-                        if (change != null) {
-                            TokenSequence<JavaTokenId> ts = change.removedTokenSequence();
-                            if (ts != null) {
-                                while (ts.moveNext()) {
-                                    switch (ts.token().id()) {
-                                        case LBRACE:
-                                        case RBRACE:
-                                            changedMethod = null;
-                                            break;
+                        if (changedMethod != null) {
+                            TokenChange<JavaTokenId> change = evt.tokenChange(JavaTokenId.language());
+                            if (change != null) {
+                                TokenSequence<JavaTokenId> ts = change.removedTokenSequence();
+                                if (ts != null) {
+                                    while (ts.moveNext()) {
+                                        switch (ts.token().id()) {
+                                            case LBRACE:
+                                            case RBRACE:
+                                                changedMethod = null;
+                                                break;
+                                        }
+                                    }
+                                }
+                                if (changedMethod != null) {
+                                    TokenSequence<JavaTokenId> current = change.currentTokenSequence();                
+                                    current.moveIndex(change.index());
+                                    for (int i=0; i< change.addedTokenCount(); i++) {
+                                        current.moveNext();
+                                        switch (current.token().id()) {
+                                            case LBRACE:
+                                            case RBRACE:
+                                                changedMethod = null;
+                                                break;
+                                            }
                                     }
                                 }
                             }
-                            if (changedMethod != null) {
-                                TokenSequence<JavaTokenId> current = change.currentTokenSequence();                
-                                current.moveIndex(change.index());
-                                for (int i=0; i< change.addedTokenCount(); i++) {
-                                    current.moveNext();
-                                    switch (current.token().id()) {
-                                        case LBRACE:
-                                        case RBRACE:
-                                            changedMethod = null;
-                                            break;
-                                        }
-                                }
-                            }
+                        }
+                        positions.clear();
+                        if (changedMethod!=null) {
+                            positions.add (changedMethod);
                         }
                     }
-                    positions.clear();
-                    if (changedMethod!=null) {
-                        positions.add (changedMethod);
-                    }
-                }                
+                }
             }
             JavaSource.this.resetState(true, changedMethod==null, changedMethod);
         }        
@@ -1990,7 +1993,23 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         } finally {
             currentRequest.cancelCompleted(request);
         }
-    }    
+    }
+    
+    private static StackTraceElement findCaller(StackTraceElement[] elements) {
+        for (StackTraceElement e : elements) {
+            if (JavaSource.class.getName().equals(e.getClassName())) {
+                continue;
+            }
+            
+            if (e.getClassName().startsWith("java.lang.")) {
+                continue;
+            }
+            
+            return e;
+        }
+        
+        return null;
+    }
     
     private static class SingleThreadFactory implements ThreadFactory {
         
@@ -2073,6 +2092,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             } finally {
                 javacLock.unlock();
             }
+        }
+        
+        @Override
+        public boolean isJavaCompilerLocked() {
+            return javacLock.isLocked();
         }
 
         public JavaSource create(ClasspathInfo cpInfo, PositionConverter binding, Collection<? extends FileObject> files) throws IllegalArgumentException {
@@ -2582,6 +2606,14 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private static boolean reparseMethod (final CompilationInfoImpl ci, final MethodTree orig, final String newBody) throws IOException {        
         assert ci != null; 
+        if (!ci.getJavaSource().supportsReparse) {
+            return false;
+        }
+        if (((JCMethodDecl)orig).localEnv == null) {
+            //We are seeing interface method or abstract or native method with body.
+            //Don't do any optimalization of this broken code - has no attr env.
+            return false;
+        }
         final Phase currentPhase = ci.getPhase();
         if (Phase.PARSED.compareTo(currentPhase) > 0) {
             return false;
@@ -2593,6 +2625,12 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             final JavacTaskImpl task = ci.getJavacTask();
             final JavacTrees jt = JavacTrees.instance(task);
+            final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
+            final int origEndPos = (int) jt.getSourcePositions().getEndPosition(cu, orig.getBody());
+            if (origStartPos > origEndPos) {
+                LOGGER.warning("Javac returned startpos: "+origStartPos+" > endpos: "+origEndPos);  //NOI18N
+                return false;
+            }
             final FindAnnonVisitor fav = new FindAnnonVisitor();
             fav.scan(orig.getBody(), null);
             if (fav.hasLocalClass) {
@@ -2600,8 +2638,6 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             }
             final int firstInner = fav.firstInner;
             final int noInner = fav.noInner;
-            final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
-            final int origEndPos = (int) jt.getSourcePositions().getEndPosition(cu, orig.getBody());
             final Context ctx = task.getContext();        
             final Log l = Log.instance(ctx);
             l.startPartialReparse();
@@ -2671,7 +2707,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 hasLocalClass = true;
             }
             noInner++;
-            return null;
+            return super.visitClass(node, p);
         }                
         
     }

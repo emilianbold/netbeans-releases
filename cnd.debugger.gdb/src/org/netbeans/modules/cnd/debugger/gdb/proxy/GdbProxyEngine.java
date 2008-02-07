@@ -329,15 +329,16 @@ public class GdbProxyEngine {
                 break;
             }
         }
-        return msg.substring(i);
+        char ch = msg.charAt(i);
+        if (ch == '^' || ch == '*' || ch == '+' || ch == '=') {
+            return msg.substring(i);
+        } else {
+            return msg;
+        }
     }
     
     private GdbLogger getLogger() {
         return gdbProxy.getLogger();
-    }
-    
-    class TokenList extends LinkedList {
-        
     }
     
     private static class CommandInfo {

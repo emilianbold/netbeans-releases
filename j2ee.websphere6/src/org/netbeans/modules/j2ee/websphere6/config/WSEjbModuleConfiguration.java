@@ -201,18 +201,6 @@ public class WSEjbModuleConfiguration extends WSModuleConfiguration
     public DataObject [] getDataObject() {
         return dataObjects.clone();
     }
-        
-    private class EjbJarNSC implements NamespaceContext {
-        public String getPrefix(String namespaceURI) {
-            return "ejbbnd";
-        }
-        public String getNamespaceURI(String prefix) {
-            return "ejbbnd.xmi";
-        }
-        public Iterator getPrefixes(String namespaceURI) {
-            return null;
-        }
-    }
     
     public void save(OutputStream outputStream) throws ConfigurationException {
         WSEjbBnd  wsEjbBnd = getWSEjbJarBnd();
@@ -229,13 +217,14 @@ public class WSEjbModuleConfiguration extends WSModuleConfiguration
         }
     }
 
-    public void propertyChange(PropertyChangeEvent evt) {        
-        
-    if (evt.getPropertyName().equals(DataObject.PROP_MODIFIED) &&
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (evt.getPropertyName().equals(DataObject.PROP_MODIFIED) &&
                 evt.getNewValue() == Boolean.FALSE) {
             // dataobject has been modified, ibmWebApp graph is out of sync
-             WSEjbJarBnd = null;
-             WSEjbJarExt = null;
+            synchronized (this) {
+                WSEjbJarBnd = null;
+                WSEjbJarExt = null;
+            }
         }
     }
 

@@ -225,6 +225,10 @@ public class GdbProxy implements GdbMiDefinitions {
     public int data_evaluate_expression(String string) {
         return engine.sendCommand("-data-evaluate-expression " + string); // NOI18N
     }
+    
+    public int print(String expression) {
+        return engine.sendCommand("print " + expression);
+    }
 
     /**
      * Send "-file-list-exec-source-file" to the debugger

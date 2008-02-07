@@ -109,6 +109,8 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class InstantRenamePerformer implements DocumentListener, KeyListener {
     
+    private static final Logger LOG = Logger.getLogger(InstantRenamePerformer.class.getName());
+    
     private SyncDocumentRegion region;
     private int span;
     private Document doc;
@@ -369,7 +371,6 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	    return ;
 	
         //check for modifications outside the first region:
-        
         if (e.getOffset() < region.getFirstRegionStartOffset() || (e.getOffset() + e.getLength()) > region.getFirstRegionEndOffset()) {
             release();
             return;
@@ -392,7 +393,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 return;
             }
 
-            if (e.getOffset() == region.getFirstRegionStartOffset()) {
+            if (e.getOffset() == region.getFirstRegionStartOffset() && region.getFirstRegionLength() > 0 && region.getFirstRegionLength() == span) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("e.getOffset()=" + e.getOffset());
+                    LOG.fine("region.getFirstRegionStartOffset()=" + region.getFirstRegionStartOffset());
+                    LOG.fine("region.getFirstRegionEndOffset()=" + region.getFirstRegionEndOffset());
+                    LOG.fine("span= " + span);
+                }
                 JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
                 
                 if (jdca != null && !jdca.getNextChar()) {
@@ -404,7 +411,13 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                 return;
             }
             
-            if (e.getOffset() == region.getFirstRegionEndOffset()) {
+            if (e.getOffset() == region.getFirstRegionEndOffset() && region.getFirstRegionLength() > 0 && region.getFirstRegionLength() == span) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("e.getOffset()=" + e.getOffset());
+                    LOG.fine("region.getFirstRegionStartOffset()=" + region.getFirstRegionStartOffset());
+                    LOG.fine("region.getFirstRegionEndOffset()=" + region.getFirstRegionEndOffset());
+                    LOG.fine("span= " + span);
+                }
             //XXX: moves the caret anyway:
 //                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
 //

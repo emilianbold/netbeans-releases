@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="utf-8"?>
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:ZillowTypes="http://www.zillow.com/vstatic/2/static/xsd/ZillowTypes.xsd"
+             xmlns:Zestimate="http://www.zillow.com/vstatic/3/static/xsd/Zestimate.xsd"        
+             xmlns:Chart="http://www.zillow.com/vstatic/3/static/xsd/Chart.xsd"  
+             xmlns:RegionChart="http://www.zillow.com/vstatic/2/static/xsd/RegionChart.xsd"  
+             xmlns:Comps="http://www.zillow.com/vstatic/3/static/xsd/Comps.xsd"
+             xmlns:Demographics="http://www.zillow.com/static/xsd/Demographics.xsd"
+             xmlns:RegionChildren="http://www.zillow.com/static/xsd/RegionChildren.xsd"
+             xmlns:SearchResults="http://www.zillow.com/static/xsd/SearchResults.xsd">
+    <grammars/>
+    <resources base="http://www.zillow.com/webservice">	
+        <resource path="GetChart.htm">
+            <method name="GET" id="zillow.homevaluation_GetChart">
+                <doc xml:lang="en">
+                    Returns a URL for an image file displaying historical Zestimates for a  
+                    property specified by Zillow property ID. The chart can show  
+                    percentage or dollar value change, and you can constrain the size of the image. 
+                    The historical data can cover periods of 1, 5, or 10 years. 
+       
+                    API documentation:  http://www.zillow.com/howto/api/GetChart.htm
+                </doc>
+                <request>
+                    <param name="zws-id" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The Zillow Web Service Identifier. Each subscriber to Zillow Web
+                            Services is uniquely identified by an ID sequence and every 
+                            request to Web services requires this ID. Go here to get yours: 
+                            http://www.zillow.com/webservice/Registration.htm
+                        </doc>
+                    </param>                    
+                    
+                    <param name="zpid" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The Zillow Property ID for the property, an integer value that
+                            you can obtain by calling the GetSearchResults method.
+                        </doc>
+                    </param>
+                    
+                    <param name="unit-type" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            A string value of &quot;percent&quot; or &quot;dollar&quot;
+                            that specifies whether to show the change as a percentage or
+                            a dollar value.
+                        </doc>
+                    </param>
+                    <param name="width" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
+                            Optional. The width of the generated image, an integer from 200 to 600.
+                        </doc>
+                    </param>
+                    <param name="height" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
+                            Optional. The height of the generated image, an integer from 100 to 300.
+                        </doc>
+                    </param>
+                    <param name="chartduration" type="xsd:string" style="query" required="false">
+                        <doc xml:lang="en">
+                            Optional. The period for which data is shown in the chart. Defaults to 1 year.
+                            Values can be "1year", "5years", or "10years". 
+                        </doc>
+                    </param>                    
+                </request>
+                <response>
+                    <representation mediaType="text/xml">
+                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
+                    </representation>	                  		
+                </response>
+                
+            </method>
+        </resource>
+        <resource path="GetComps.htm">
+            <method name="GET" id="zillow.homevaluation_GetComps">
+                <doc xml:lang="en">
+                    Returns a list of comparable recent sales for a property. The results include the address, 
+                    the Zillow property ID, and the Zestimate for the comparable properties and 
+                    the principal property. 
+                    API documentation : http://www.zillow.com/howto/api/GetComps.htm 
+                </doc>
+                <request>
+                    <param name="zws-id" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The Zillow Web Service Identifier. Each subscriber to Zillow Web
+                            Services is uniquely identified by an ID sequence and every 
+                            request to Web services requires this ID. Go here to get yours: 
+                            http://www.zillow.com/webservice/Registration.htm
+                        </doc>
+                    </param>                    
+                    
+                    <param name="zpid" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The Zillow Property ID for the property for which to
+                            obtain information; the parameter type is an integer
+                        </doc>
+                    </param>
+                    <param name="count" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The number of comparable recent sales to obtain.
+                        </doc>
+                    </param>                    
+                </request>
+                <response>
+                    <representation mediaType="text/xml">
+                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
+                    </representation>				                                 
+                </response>
+                
+            </method>
+        </resource> 
+        <resource path="GetDeepComps.htm">
+            <method name="GET" id="zillow.propertydetails_GetDeepComps">
+                <doc xml:lang="en">
+                    Returns a list of comparable recent sales for a property. 
+                    The results include the address, the Zillow property identifier, and the Zestimate 
+                    for the comparable properties and the principal property, as well as
+                    extensive property data for the comparable properties.
+                    
+                    API documentation : http://www.zillow.com/howto/api/GetDeepComps.htm 
+                    
+                </doc>
+                <request>
+                    <param name="zws-id" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The Zillow Web Service Identifier. Each subscriber to Zillow Web
+                            Services is uniquely identified by an ID sequence and every 
+                            request to Web services requires this ID. Go here to get yours: 
+                            http://www.zillow.com/webservice/Registration.htm
+                        </doc>
+                    </param>                    
+                    
+                    <param name="zpid" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                             The Zillow Property ID for the property, an integer value that
+                            you can obtain by calling the GetSearchResults method.
+                        </doc>
+                    </param>
+                    <param name="count" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The number of comparable recent sales to obtain.
+                        </doc>
+                    </param>                    
+                </request>
+                <response>
+                    <representation mediaType="text/xml">
+                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
+                    </representation>
+                </response>
+                
+            </method>
+        </resource>
+        <resource path="GetDeepSearchResults.htm">
+            <method name="GET" id="zillow.propertydetails_GetDeepSearchResults">
+                <doc xml:lang="en">
+                    Finds a property given an address. The returned intormation includes the address 
+                    for the property or properties, the Zillow Property ID (ZPID, the current 
+                    Zestimate, the date the Zestimate was computed, a valuation range, 
+                    and the Zestimate ranking for the property within its ZIP code. If no exact address match 
+                    for a property is found, a match for nearby properties is returned. This deep search
+                    also provides detailed property data like lot size, year built, bath/beds, last sale details,
+                    and so on.
+                    
+                    API documentation : http://www.zillow.com/howto/api/GetDeepSearchResults.htm 
+                </doc>
+                <request>
+                    <param name="zws-id" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The Zillow Web Service Identifier. Each subscriber to Zillow Web
+                            Services is uniquely identified by an ID sequence and every 
+                            request to Web services requires this ID. Go here to get yours: 
+                            http://www.zillow.com/webservice/Registration.htm
+                        </doc>
+                    </param>                    
+                    
+                    <param name="address" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The address of the property to search. This string 
+                            should be URL encoded.
+                        </doc>
+                    </param>
+                    <param name="citystatezip" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The city+state combination and/or ZIP code for which
+                            to search. This string should be URL encoded. Note 
+                            that giving both city and state is required. Using
+                            just one will not work.
+                        </doc>
+                    </param>                     
+                </request>
+                <response>
+                    <representation mediaType="text/xml">
+                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
+                    </representation>
+                </response>
+                
+            </method>
+        </resource> 
+        <resource path="GetRegionChart.htm">
+        <method name="GET" id="zillow.homevaluation_GetRegionChart">
+            <doc xml:lang="en">
+                Returns a URL for an image file displaying historical Zestimates for a  
+                region specified by city, state, and/or zipcode. The chart can show  
+                percentage or dollar value change, and you can constrain the size of the image. 
+                The historical data can cover periods of 1, 5, or 10 years.                
+                
+                API documentation : http://www.zillow.com/howto/api/GetRegionChart.htm 
+            </doc>
+            <request>
+                <param name="zws-id" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                            The Zillow Web Service Identifier. Each subscriber to Zillow Web
+                            Services is uniquely identified by an ID sequence and every 
+                            request to Web services requires this ID. Go here to get yours: 
+                            http://www.zillow.com/webservice/Registration.htm
+                    </doc>
+                </param>                    
+                
+                <param name="unit-type" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                        A string value of &quot;percent&quot; or &quot;dollar&quot;
+                        that specifies whether to show the change as a percentage or
+                        a dollar value.
+                    </doc>
+                </param>
+                <param name="city" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                        Optional. The name of a city.
+                    </doc>
+                </param>
+                <param name="state" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                        Optional. The two-letter abbrivation of a state.
+                        For a list of abbreviations,
+                        see: http://en.wikipedia.org/wiki/State_codes
+                    </doc>
+                </param>
+                <param name="ZIP" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                        Optional. The 5-digit ZIP code.
+                    </doc>
+                </param>
+                
+                <param name="width" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                        Optional. The width of the generated image, an integer from 200 to 600.
+                    </doc>
+                </param>
+                <param name="height" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                        Optional. The height of the generated image, an integer from 100 to 300.                    </doc>
+                </param>
+                <param name="Chartduration" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                        Optional. The period for which data is shown in the chart. Defaults to 1 year.
+                        Values can be "1year", "5years", or "10years". 
+                    </doc>
+                </param>                    
+            </request>
+            <response>
+                <representation mediaType="text/xml">
+                    <param name="format" type="xsd:string" style="query" fixed="XML"/>
+                </representation>				                  
+            </response>
+            
+        </method>
+    </resource>
+    <resource path="GetSearchResults.htm">
+            <method name="GET" id="zillow.homevaluation_GetSearchResults">
+                <doc xml:lang="en"> 
+                    Finds a property given an address. The returned intormation includes the address 
+                    for the property or properties, the Zillow Property ID (ZPID, the current 
+                    Zestimate, the date the Zestimate was computed, a valuation range, 
+                    and the Zestimate ranking for the property within its ZIP code. If no exact address match 
+                    for a property is found, a match for nearby properties is returned. 
+                    
+                    API documentation : http://www.zillow.com/howto/api/GetSearchResults.htm
+                </doc>
+                <request>
+                    <param name="zws-id" type="xsd:string" style="query" required="true" >
+                        <doc xml:lang="en">
+                            The Zillow Web Service Identifier. Each subscriber to Zillow Web
+                            Services is uniquely identified by an ID sequence and every 
+                            request to Web services requires this ID. Go here to get yours: 
+                            http://www.zillow.com/webservice/Registration.htm
+                        </doc>
+                    </param>
+                    <param name="address" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The address of the property to search for. This string should be URL encoded. 
+                        </doc>
+                    </param>
+                    <param name="citystatezip" type="xsd:string" style="query" required="true">
+                        <doc xml:lang="en">
+                            The city+state combination and/or ZIP code for which to search. 
+                            This string should be URL encoded. Note that giving both city 
+                            and state is required. Using just one will not work. 
+                            
+                            For more  
+                            information on URL encoding and a quick way to encode your URLs,
+                            see http://www.w3schools.com/tags/ref_urlencode.asp.
+                        </doc>
+                    </param>
+                </request>
+                <response>
+                    <representation mediaType="text/xml">
+                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
+                    </representation>				
+                </response>
+                
+            </method>
+        </resource>  
+        <resource path="GetZestimate.htm">
+            <method name="GET" id="zillow.homevaluation_GetZestimate">
+                <doc xml:lang="en">  
+                    For a specified Zillow property identifier (zpid), 
+                    returns the most recent property Zestimate, 
+                    the date the Zestimate was computed, the valuation range, 
+                    the Zestimate ranking within the property's ZIP code, 
+                    the full property address and geographic location (latitude/longitude), 
+                    and a set of identifiers that uniquely represent the region 
+                    (ZIP code, city, county, and state) of the property. If a request is 
+                    made for a property that has no Zestimate, an error code is returned 
+                    (502 if a property is found, but there is no Zestimate).
+                    
+                    API documentation:  http://www.zillow.com/howto/api/GetZestimate.htm  
+                </doc>
+                <request>
+                    <param name="zws-id" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                            The Zillow Web Service Identifier. Each subscriber to Zillow Web
+                            Services is uniquely identified by an ID sequence and every 
+                            request to Web services requires this ID. Go here to get yours: 
+                            http://www.zillow.com/webservice/Registration.htm
+                    </doc>
+                    </param>
+                    <param name="zpid" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                            The Zillow Property ID for the property, an integer value that
+                            you can obtain by calling the GetSearchResults method.
+                    </doc>  
+                    </param>
+                </request>
+                <response>
+                    <representation mediaType="text/xml">
+                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
+                    </representation>										                   
+                </response>
+                
+            </method>
+        </resource>
+		<resource path="GetDemographics.htm">
+            <method name="GET" id="zillow.homevaluation_GetDemographics">
+                <doc xml:lang="en">  
+					For a specified region, returns a set of demographic data which includes
+					a URL linking to the corresponding demographics pages at Zillow.com,
+					census information organized into affordability, homes and real estate and people
+					categories, who lives here, and what's unique about the people.
+                    
+					A region can be specified either through its respective region ID or by providing
+					state, city or neighborhood. The neighborhood parameter	can be omitted if demographic
+					data on a city is desired. The state and city parameter	are always required.
+					
+                    API documentation:  http://www.zillow.com/howto/api/GetDemographics.htm  
+                </doc>
+                <request>
+                    <param name="zws-id" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                            The Zillow Web Service Identifier. Each subscriber to Zillow Web
+                            Services is uniquely identified by an ID sequence and every 
+                            request to Web services requires this ID. Go here to get yours: 
+                            http://www.zillow.com/webservice/Registration.htm
+                    </doc>
+                    </param>
+                    <param name="rid" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+							The regionId of the region to retrieve data from.
+                    </doc>  
+                    </param>
+					<param name="state" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                           The state of the region to retrieve data from. 
+                    </doc>  
+                    </param>
+					<param name="city" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                            The city of the region to retrieve data from.
+                    </doc>  
+                    </param>
+					<param name="neighborhood" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                            The neighborhood of the region to retrieve data from.
+                    </doc>  
+                    </param>
+                </request>
+                <response>
+                    <representation mediaType="text/xml">
+                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
+                    </representation>				
+                </response>
+                
+            </method>
+        </resource>		
+	    <resource path="GetRegionChildren.htm">
+            <method name="GET" id="zillow.homevaluation_GetRegionChildren">
+                <doc xml:lang="en">  
+					For a specified region, returns a list of subregions which includes
+					subregion type, region IDs, region names, URL to corresponding Zillow page
+					(only for cities and neighborhoods), latitudes and longitudes.
+					
+					A region can be specified at various levels of the region hierarchy.
+					Allowable region types are country, state, county, and city. Country and county
+					are optional parameters unless they are the region to be specified.
+					An optional childtype parameter can also be specified to return subregions of a specific type.
+					
+                    API documentation:  http://www.zillow.com/howto/api/GetRegionChildren.htm  
+                </doc>
+                <request>
+                    <param name="zws-id" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+                            The Zillow Web Service Identifier. Each subscriber to Zillow Web
+                            Services is uniquely identified by an ID sequence and every 
+                            request to Web services requires this ID. Go here to get yours: 
+                            http://www.zillow.com/webservice/Registration.htm
+                    </doc>
+                    </param>
+                    <param name="rid" type="xsd:string" style="query" required="true">
+                    <doc xml:lang="en">
+							The regionId of the region to retrieve subregions from.
+                    </doc>  
+                    </param>
+					<param name="country" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                           The country of the region to retrieve subregions from. 
+                    </doc>  
+                    </param>
+					<param name="state" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                           The state of the region to retrieve subregions from. 
+                    </doc>  
+                    </param>
+					<param name="county" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                            The county of the region to retrieve subregions from.
+                    </doc>  
+                    </param>
+					<param name="city" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                            The city of the region to retrieve subregions from.
+                    </doc>  
+                    </param>
+					<param name="childType" type="xsd:string" style="query" required="false">
+                    <doc xml:lang="en">
+                            The type of subregions to retrieve (available types: state, county, city,
+							zipcode, and neighborhood).
+                    </doc>  
+                    </param>                    
+                </request>
+                <response>
+                    <representation mediaType="text/xml">
+                        <param name="format" type="xsd:string" style="query" fixed="XML"/>
+                    </representation>
+                </response>
+                
+            </method>
+        </resource>				
+    </resources>     
+</application>

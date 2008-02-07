@@ -228,7 +228,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                             final SourceAnalyser sa = getSourceAnalyser();
                                             long st = System.currentTimeMillis();
                                             sa.analyseUnitAndStore(compilationInfo.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(compilationInfo),
-                                                ClasspathInfoAccessor.INSTANCE.getFileManager(compilationInfo.getClasspathInfo()));
+                                                ClasspathInfoAccessor.getINSTANCE().getFileManager(compilationInfo.getClasspathInfo()));
                                             long et = System.currentTimeMillis();
                                             }
                                         return null;
@@ -254,7 +254,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                                     final SourceAnalyser sa = getSourceAnalyser();
                                                     long st = System.currentTimeMillis();
                                                     sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.INSTANCE.getJavacTask(controller),
-                                                    ClasspathInfoAccessor.INSTANCE.getFileManager(controller.getClasspathInfo()));
+                                                    ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
                                                     long et = System.currentTimeMillis();
                                                     return null;
                                                 }

@@ -64,24 +64,22 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     private final List<RailsApplication> applications;
     private final RubyPlatform platform;
     private Node node;
+    private final String version;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    Mongrel(RubyPlatform platform) {
+    Mongrel(RubyPlatform platform, String version) {
         this.platform = platform;
+        this.version = version;
         this.applications = new ArrayList<RailsApplication>();
     }
 
-    public String getName() {
-        return NbBundle.getMessage(Mongrel.class, "LBL_Mongrel");
+    // RubyServer  methods
+    public String getNodeName() {
+        return NbBundle.getMessage(Mongrel.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
 
-    // RubyServer  methods
     public String getStartupParam() {
         return null;
-    }
-
-    public String getDisplayName() {
-        return NbBundle.getMessage(Mongrel.class, "LBL_ServerDisplayName", getName(), platform.getLabel());
     }
 
     public String getServerPath() {
@@ -125,7 +123,7 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
 
     // ServerInstanceImplementation methods
     public String getServerDisplayName() {
-        return NbBundle.getMessage(Mongrel.class, "LBL_ServerDisplayName", getDisplayName(), platform.getLabel());
+        return NbBundle.getMessage(Mongrel.class, "LBL_ServerNodeName", getDisplayName(), platform.getLabel());
     }
 
     public Node getFullNode() {
@@ -159,12 +157,16 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
         return "MONGREL";
     }
 
+    public String getDisplayName() {
+        return NbBundle.getMessage(Mongrel.class, "LBL_Mongrel", version);
+    }
+
     public String getServerState() {
         // TODO: currently handled in Rails project
         return null;
     }
 
-    public boolean startServer() {
+    public boolean startServer(RubyPlatform platform) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -179,4 +181,35 @@ class Mongrel implements RubyServer, ServerInstanceImplementation {
     public boolean stop(String applicationName) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    public boolean isPlatformSupported(RubyPlatform platform) {
+        return this.platform.equals(platform);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Mongrel other = (Mongrel) obj;
+        if (this.platform != other.platform && (this.platform == null || !this.platform.equals(other.platform))) {
+            return false;
+        }
+        if (this.version != other.version && (this.version == null || !this.version.equals(other.version))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 47 * hash + (this.platform != null ? this.platform.hashCode() : 0);
+        hash = 47 * hash + (this.version != null ? this.version.hashCode() : 0);
+        return hash;
+    }
+    
 }

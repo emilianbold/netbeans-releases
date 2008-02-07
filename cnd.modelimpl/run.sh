@@ -118,6 +118,9 @@ do
     shift
 done
 
+DEFAULT_NB="${CND}/../nbbuild/netbeans"
+NBDIST="${NBDIST-${DEFAULT_NB}}"
+
 if [ -z "${NBDIST}" ]; then
 	echo "Please specify NBDIST environment variable; it should point to Netbeans installation"
         exit 1;
@@ -128,7 +131,7 @@ else
 	fi
 fi
 
-DEFAULT_CND="${CND}/../nbbuild/netbeans/cnd2"
+DEFAULT_CND="${DEFAULT_NB}/cnd2"
 CNDDIST="${CNDDIST-${DEFAULT_CND}}"
 
 if [ -z "${CNDDIST}" ]; then
