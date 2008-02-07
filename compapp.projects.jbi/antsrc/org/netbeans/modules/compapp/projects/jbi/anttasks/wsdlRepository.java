@@ -386,7 +386,7 @@ public class wsdlRepository {
                                     if (DUMMY_SOAP_LOCATION.equals(location)) {
                                         task.log("INFO: WSDL Port with dummy SOAP address \"REPLACE_WITH_ACTUAL_URL\" is ignored: " +
                                                 sQName + ":" + p.getName());
-                                        continue;
+                                        //continue;
                                     }
                                 }
                                 
