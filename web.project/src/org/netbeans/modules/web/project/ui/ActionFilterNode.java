@@ -306,14 +306,11 @@ class ActionFilterNode extends FilterNode {
                 String[] itemRefs = cs.encodeToStrings(resources.iterator(), webModuleElementName);
                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                 props.setProperty (classPathId, itemRefs);
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                //update lib references in private properties
-                EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                 ArrayList l = new ArrayList ();
                 l.addAll(resources);
                 l.addAll(cs.itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-                WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
-                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+                WebProjectProperties.storeLibrariesLocations(l.iterator(), props, helper.getAntProjectHelper().getProjectDirectory());
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
                return FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
            } else {
                return null;

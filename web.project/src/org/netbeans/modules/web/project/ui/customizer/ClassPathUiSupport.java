@@ -63,6 +63,7 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.NbCollections;
 
 /**
@@ -115,13 +116,13 @@ public class ClassPathUiSupport {
         ClassPathSupport.Item item = (ClassPathSupport.Item) listModel.getElementAt(selectedIndices[0]);
         if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
             EditJarSupport.Item eji = new EditJarSupport.Item();
-            eji.setJarFile(item.getFile());
-            eji.setSourceFile(item.getSourceFile());
-            eji.setJavadocFile(item.getJavadocFile());
+            eji.setJarFile(item.getFilePath());
+            eji.setSourceFile(item.getSourceFilePath());
+            eji.setJavadocFile(item.getJavadocFilePath());
             eji = EditJarSupport.showEditDialog(helper, eji);
             if (eji != null) {
-                item.setJavadocFile(eji.getJavadocFile());
-                item.setSourceFile(eji.getSourceFile());
+                item.setJavadocFilePath(eji.getJavadocFile());
+                item.setSourceFilePath(eji.getSourceFile());
             }
         }
         if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
@@ -237,14 +238,14 @@ public class ClassPathUiSupport {
         return indexes;        
     }
 
-    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, File files[]) {
+    public static int[] addJarFiles( DefaultListModel listModel, int[] indices, String filePaths[], File base) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
-        int[] indexes = new int[files.length];
-        for( int i = 0, delta = 0; i+delta < files.length; ) {            
+        int[] indexes = new int[filePaths.length];
+        for( int i = 0, delta = 0; i+delta < filePaths.length; ) {            
             int current = lastIndex + 1 + i;
-            File f = files[i+delta];
+            File f = PropertyUtils.resolveFile(base, filePaths[i]);
             String pathInWar = (f.isDirectory() ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB);
-            ClassPathSupport.Item item = ClassPathSupport.Item.create( f, null, pathInWar);
+            ClassPathSupport.Item item = ClassPathSupport.Item.create( filePaths[i], base, null, pathInWar);
             if ( !listModel.contains( item ) ) {
                 listModel.add( current, item );
                 indexes[delta + i] = current;
@@ -337,7 +338,7 @@ public class ClassPathUiSupport {
             
             if (value == Boolean.TRUE) {
                 ClassPathSupport.Item item = getItem(row);
-                String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getFile().isDirectory()) ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB;
+                String pathInWar = (item.getType() == ClassPathSupport.Item.TYPE_JAR && item.getResolvedFile().isDirectory()) ? ClassPathSupport.Item.PATH_IN_WAR_DIR : ClassPathSupport.Item.PATH_IN_WAR_LIB;
                 item.setPathInWAR(pathInWar);
             } else
                 getItem(row).setPathInWAR(ClassPathSupport.Item.PATH_IN_WAR_NONE);

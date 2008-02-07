@@ -198,7 +198,7 @@ public class WebClassPathUi {
                         return NbBundle.getMessage( WebClassPathUi.class, "LBL_MISSING_FILE", getFileRefName( item ) );
                     }
                     else {
-                        return item.getFile().getPath();
+                        return item.getFilePath();
                     }
             }
             
@@ -242,12 +242,12 @@ public class WebClassPathUi {
                         return ICON_BROKEN_JAR;
                     }
                     else {
-                        File file = item.getFile();
+                        File file = item.getResolvedFile();
                         ImageIcon icn = file.isDirectory() ? getFolderIcon() : ICON_JAR;
-                        if (item.getSourceFile() != null) {
+                        if (item.getSourceFilePath() != null) {
                             icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_SOURCE_BADGE.getImage(), 8, 8 ));
                         }
-                        if (item.getJavadocFile() != null) {
+                        if (item.getJavadocFilePath() != null) {
                             icn =  new ImageIcon( Utilities.mergeImages( icn.getImage(), ICON_JAVADOC_BADGE.getImage(), 8, 0 ));
                         }
                         return icn;
@@ -268,10 +268,10 @@ public class WebClassPathUi {
             }
             switch ( item.getType() ) {
                 case ClassPathSupport.Item.TYPE_JAR:
-                    File f = item.getFile();
-                    if (!f.isAbsolute()) {
-                        f = FileUtil.normalizeFile(new File(FileUtil.toFile(projectFolder), f.getPath()));
-                        return f.getAbsolutePath();
+                    File f = item.getResolvedFile();
+                    // if not absolute path:
+                    if (!f.getPath().equals(item.getFilePath())) {
+                        return f.getPath();
                     }
             }
             
@@ -465,15 +465,15 @@ public class WebClassPathUi {
                 
                 if ( option == JFileChooser.APPROVE_OPTION ) {
                     
-                    File files[];
+                    String filePaths[];
                     try {
-                        files = chooser.getFiles();
+                        filePaths = chooser.getSelectedPaths();
                     } catch (IOException ex) {
                         // TODO: add localized message
                         Exceptions.printStackTrace(ex);
                         return;
                     }
-                    int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), files);
+                    int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), filePaths, FileUtil.toFile(project.getProjectDirectory()));
                     list.setSelectedIndices( newSelection );
                     curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
                     FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);

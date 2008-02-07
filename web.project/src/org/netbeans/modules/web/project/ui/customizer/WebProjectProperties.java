@@ -91,6 +91,7 @@ import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -589,7 +590,7 @@ public class WebProjectProperties {
         libs.addAll(ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel()));
         libs.addAll(WarIncludesUiSupport.getList(WAR_CONTENT_ADDITIONAL_MODEL));
         
-        storeLibrariesLocations (libs.iterator(), privateProperties);
+        storeLibrariesLocations (libs.iterator(), projectProperties, project.getProjectDirectory());
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
@@ -940,7 +941,7 @@ public class WebProjectProperties {
      * It removes all properties that match this format that were in the {@link #properties}
      * but are not in the {@link #classpath}.
      */
-    public static void storeLibrariesLocations (Iterator /*<Item>*/ classpath, EditableProperties privateProps) {
+    public static void storeLibrariesLocations (Iterator<Item> classpath, EditableProperties privateProps, FileObject projectFolder) {
         ArrayList exLibs = new ArrayList ();
         Iterator propKeys = privateProps.keySet().iterator();
         while (propKeys.hasNext()) {
@@ -952,25 +953,25 @@ public class WebProjectProperties {
         }
         while (classpath.hasNext()) {
             ClassPathSupport.Item item = (Item)classpath.next();
-            ArrayList /*File*/ files = new ArrayList ();
-            ArrayList /*File*/ dirs = new ArrayList ();
-            getFilesForItem (item, files, dirs);
+            ArrayList<String> files = new ArrayList<String>();
+            ArrayList<String> dirs = new ArrayList<String>();
+            getFilesForItem (item, files, dirs, projectFolder);
             String key;
             if (files.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
                 for (int i = 0; i < files.size(); i++) {
-                    File f = (File) files.get(i);
+                    String path = files.get(i);
                     key = getAntPropertyName(ref)+".libfile." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
+                    privateProps.setProperty (key, "" + path); //NOI18N
                     exLibs.remove(key);
                 }
             }
             if (dirs.size() > 1 || (files.size()>0 && dirs.size()>0)) {
                 String ref = item.getType() == ClassPathSupport.Item.TYPE_LIBRARY ? item.getRaw() : item.getReference();
                 for (int i = 0; i < dirs.size(); i++) {
-                    File f = (File) dirs.get(i);
+                    String path = dirs.get(i);
                     key = getAntPropertyName(ref)+".libdir." + (i+1); //NOI18N
-                    privateProps.setProperty (key, "" + f.getAbsolutePath()); //NOI18N
+                    privateProps.setProperty (key, "" + path); //NOI18N
                     exLibs.remove(key);
                 }
             }
@@ -981,15 +982,14 @@ public class WebProjectProperties {
         }
     }
     
-    public static final void getFilesForItem (ClassPathSupport.Item item, List/*File*/ files, List/*File*/ dirs) {
+    public static final void getFilesForItem (ClassPathSupport.Item item, List<String> files, List<String> dirs, FileObject projectFolder) {
         if (item.isBroken()) {
             return ;
         }
         if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY) {
-            List/*<URL>*/ roots = item.getLibrary().getContent("classpath");  //NOI18N
-            for (Iterator it = roots.iterator(); it.hasNext();) {
-                URL rootUrl = (URL) it.next();
-                FileObject root = URLMapper.findFileObject (rootUrl);
+            List<URL> roots = item.getLibrary().getContent("classpath");  //NOI18N
+            for (URL rootUrl : roots) {
+                FileObject root = LibrariesSupport.resolveLibraryEntryFileObject(item.getLibrary().getManager().getLocation(), rootUrl);
                 
                 //file inside library is broken
                 if (root == null)
@@ -999,22 +999,29 @@ public class WebProjectProperties {
                     root = FileUtil.getArchiveFile (root);
                 }
                 File f = FileUtil.toFile(root);
+                String path;
+                // if global library use absolute path otherwise relative
+                if (item.getLibrary().getManager().getLocation() == null) {
+                    path = f.getPath();
+                } else {
+                    path = PropertyUtils.relativizeFile(FileUtil.toFile(projectFolder), FileUtil.toFile(root));
+                }
                 if (f != null) {
                     if (f.isFile()) {
-                        files.add(f); 
+                        files.add(path); 
                     } else {
-                        dirs.add(f);
+                        dirs.add(path);
                     }
                 }
             }
         }
         if (item.getType() == ClassPathSupport.Item.TYPE_JAR) {
-            File root = item.getFile();
+            File root = item.getResolvedFile();
             if (root != null) {
                 if (root.isFile()) {
-                    files.add(root); 
+                    files.add(item.getFilePath()); 
                 } else {
-                    dirs.add(root);
+                    dirs.add(item.getFilePath());
                 }
             }
         }
@@ -1024,9 +1031,9 @@ public class WebProjectProperties {
             for (int i = 0; i < roots.length; i++) {
                 String root = artifactFolder + File.separator + roots [i];
                 if (root.endsWith(File.separator)) {
-                    dirs.add(new File (root));
+                    dirs.add(root);
                 } else {
-                    files.add(new File (root));
+                    files.add(root);
                 }
             }
         }

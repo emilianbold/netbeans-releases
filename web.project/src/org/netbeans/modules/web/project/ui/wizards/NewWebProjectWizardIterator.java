@@ -139,11 +139,13 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
         createData.setSourceLevel((String) wiz.getProperty(WizardProperties.SOURCE_LEVEL));
         
         String librariesDefinition = (String)wiz.getProperty(WizardProperties.SHARED_LIBRARIES);
-        if (!librariesDefinition.endsWith(File.separator)) {
-            librariesDefinition += File.separatorChar;
+        if (librariesDefinition != null) {
+            if (!librariesDefinition.endsWith(File.separator)) {
+                librariesDefinition += File.separatorChar;
+            }
+            librariesDefinition += WebProjectProperties.DEFAULT_LIBRARIES_FILENAME;
+            createData.setLibrariesDefinition(librariesDefinition);
         }
-        librariesDefinition += WebProjectProperties.DEFAULT_LIBRARIES_FILENAME;
-        createData.setLibrariesDefinition(librariesDefinition);
         
         AntProjectHelper h = WebProjectUtilities.createProject(createData);
         handle.progress(2);

@@ -819,7 +819,7 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             ArrayList l = new ArrayList();
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
             l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-            WebProjectProperties.storeLibrariesLocations(l.iterator(), ep);
+            WebProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
 
             //add webinf.dir required by 6.0 projects
             if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
@@ -1337,13 +1337,11 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
                 public void run() {
 		    if (ProjectManager.getDefault().isValid(((ProjectInformation) getLookup().lookup(ProjectInformation.class)).getProject())) {
 			EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
-			//update lib references in private properties
-			EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
 			ArrayList l = new ArrayList ();
 			l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.JAVAC_CLASSPATH),  WebProjectProperties.TAG_WEB_MODULE_LIBRARIES));
 			l.addAll(cpMod.getClassPathSupport().itemsList(props.getProperty(WebProjectProperties.WAR_CONTENT_ADDITIONAL),  WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES));
-			WebProjectProperties.storeLibrariesLocations(l.iterator(), privateProps);
-			helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
+			WebProjectProperties.storeLibrariesLocations(l.iterator(), props, getProjectDirectory());
+			helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 		    }
                 }
             });
