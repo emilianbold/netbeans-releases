@@ -39,15 +39,14 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -82,10 +81,17 @@ public class WadlSaasNodeChildren extends Children.Keys<Object> {
     
     @Override
     protected Node[] createNodes(Object key) {
-        if (key instanceof Method) {
-            return new Node[] { new WadlSaasMethodNode(wadlSaas, (Method) key) };
-        } else if (key instanceof Resource) {
-            return new Node[] { new ResourceNode(wadlSaas, new Resource[] {(Resource) key} ) };
+        try {
+            if (key instanceof WadlSaasMethod) {
+                WadlSaasMethod wsm = (WadlSaasMethod) key;
+                if (wsm.getWadlMethod() != null) {
+                    return new Node[] { new WadlSaasMethodNode(wsm) };
+                }
+            } else if (key instanceof Resource) {
+                return new Node[] { new ResourceNode(wadlSaas, new Resource[] {(Resource) key} ) };
+            }
+        } catch(Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
         return new Node[0];
     }

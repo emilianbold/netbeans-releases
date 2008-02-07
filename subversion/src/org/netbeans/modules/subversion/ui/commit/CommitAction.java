@@ -745,15 +745,40 @@ public class CommitAction extends ContextAction {
     private static List<File> getRecursiveCommits(List<File> nonRecursiveComits, List<File> removeCandidates) {
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         List<File> recursiveCommits = new ArrayList<File>();
-        // deleted and copied directories have to be commited recursively 
+        
+        // 1. if there is at least one directory which isn't removed or copied
+        //    we have to commit it nonrecursively ...           
+        boolean nonRecursiveDirs = false;
         for(File file : nonRecursiveComits) {
-            if(file.isDirectory() && 
-                ( removeCandidates.contains(file) ||
-                  file.isDirectory() && cache.getStatus(file).getEntry(file).isCopied() )) 
-            {
-                recursiveCommits.add(file); 
-            }            
-        }                
+            if( file.isDirectory() &&
+                !( removeCandidates.contains(file) || 
+                   cache.getStatus(file).getEntry(file).isCopied()) )
+            {               
+                nonRecursiveDirs = true;
+                break;
+            }                        
+        }
+        if(!nonRecursiveDirs) {            
+            // 2. ... otherwise we may commit all files recursivelly
+            recursiveCommits.addAll(recursiveCommits);
+            recursiveCommits.addAll(nonRecursiveComits);
+        } else {
+            // 3. ... well, this is the worst case. we have folders which were deleted or copied 
+            //        and such have to be commited recursively (svn restriction). On the other hand, 
+            //        there are also folders which have to be commited and doing it recursivelly 
+            //        could cause that the commit would also apply to files which because of exclusion or 
+            //        the (bloody) flat-folder loginc aren't supposed to be commited at all =>
+            //        => the commit has to be split in two parts. 
+            for(File file : nonRecursiveComits) {
+                if(file.isDirectory() && 
+                    ( removeCandidates.contains(file) ||
+                      cache.getStatus(file).getEntry(file).isCopied() )) 
+                {
+                    recursiveCommits.add(file); 
+                }                
+            }                    
+        }        
+        
         return recursiveCommits;
     }
     

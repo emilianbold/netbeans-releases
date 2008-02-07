@@ -41,12 +41,12 @@
 
 package com.sun.servicetag;
 
-// This class is equivalent to the com.sun.scn.servicetags.SolarisSystemEnvironment
-// class in the Sun Connection source.
+// This class is a copy of the com.sun.scn.servicetags.SolarisSystemEnvironment
+// class from the Sun Connection source.
 //
 // The Service Tags team maintains the latest version of the implementation
 // for system environment data collection.  JDK will include a copy of
-// the most recent released version for a JDK release.  We rename
+// the most recent released version for a JDK release.	We rename
 // the package to com.sun.servicetag so that the Sun Connection
 // product always uses the latest version from the com.sun.scn.servicetags
 // package. JDK and users of the com.sun.servicetag API
@@ -58,10 +58,6 @@ import java.io.*;
 
 /**
  * Solaris implementation of the SystemEnvironment class.
- *
- * JDK includes a copy of this class with the package renamed to 
- * "com.sun.servicetag".  Please add java-servicetag@sun.com in any
- * bug or RFE for this system environment data collection implementation.
  */
 class SolarisSystemEnvironment extends SystemEnvironment {
     SolarisSystemEnvironment() {
@@ -148,8 +144,9 @@ class SolarisSystemEnvironment extends SystemEnvironment {
                 int indx = s.indexOf(target) + target.length();
                 if (indx < s.length()) {
                     String tmp = s.substring(indx).trim();
-                    if (!tmp.equalsIgnoreCase("not available")
-                            && !tmp.equalsIgnoreCase("to be filled by o.e.m.")) {
+                    String lowerCaseStr = tmp.toLowerCase();
+                    if (!lowerCaseStr.startsWith("not available")
+                            && !lowerCaseStr.startsWith("to be filled by o.e.m")) {
                         return tmp;
                     }
                 }

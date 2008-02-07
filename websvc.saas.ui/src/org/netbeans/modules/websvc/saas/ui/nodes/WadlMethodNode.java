@@ -41,17 +41,23 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.Action;
+import javax.xml.bind.JAXBElement;
 import org.netbeans.modules.websvc.saas.model.WadlSaas;
 import org.netbeans.modules.websvc.saas.model.wadl.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
+import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
+import org.netbeans.modules.websvc.saas.ui.actions.TestMethodAction;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -60,6 +66,11 @@ import org.openide.util.lookup.InstanceContent;
  * @author nam
  */
 public class WadlMethodNode extends AbstractNode {
+    public static final String GET = "GET";
+    public static final String POST = "POST";
+    public static final String PUT = "PUT";
+    public static final String DELETE = "DELETE";
+    
     private Method method;
     private Resource[] path;
     private WadlSaas wadlSaas;
@@ -79,21 +90,50 @@ public class WadlMethodNode extends AbstractNode {
 
     @Override
     public String getDisplayName() {
-        return method.getName();
+        String name = method.getName();
+        String displayName = name;
+        if (GET.equals(name)) {
+            Set<String> medias = getMediaTypes(method.getResponse().getRepresentationOrFault());
+            if (medias != null && medias.size() > 0) {
+                displayName += medias.toString();
+            }
+        } else if (PUT.equals(name) || POST.equals(name)) {
+            Set<String> medias = getMediaTypes(method.getRequest().getRepresentation());
+            if (medias != null && medias.size() > 0) {
+                displayName += medias;
+            }
+        }
+        return displayName;
     }
     
-    private String getSignature() {
+    private Set<String> getMediaTypes(List<JAXBElement<RepresentationType>> repElements) {
+        Set<String> result = new HashSet<String>();
+        for (JAXBElement<RepresentationType> repElement : repElements) {
+            result.add(repElement.getValue().getMediaType());
+        }
+        return result;
+    }
+    
+    private Set<String> getMediaTypes(List<RepresentationType> repTypes) {
+        Set<String> result = new HashSet<String>();
+        for (RepresentationType repType : repTypes) {
+            result.add(repType.getMediaType());
+        }
+        return result;
+    }
+    
+    static String getSignature(Method m) {
         StringBuffer sb = new StringBuffer();
-        sb.append(method.getName());
+        sb.append(m.getName());
 
-        Param[] params = method.getRequest().getParam().toArray(new Param[method.getRequest().getParam().size()]);
+        Param[] params = m.getRequest().getParam().toArray(new Param[m.getRequest().getParam().size()]);
         if (params.length > 0) {
             sb.append(' ');
         }
         for (int i=0 ; i < params.length; i++) {
             Param p = params[i];
             if (i > 0) {
-                sb.append(", ");
+                sb.append(",");
             }
             if (p.getStyle() == ParamStyle.TEMPLATE) {
                 sb.append('{');
@@ -119,7 +159,7 @@ public class WadlMethodNode extends AbstractNode {
     
     @Override
     public String getShortDescription() {
-        return getSignature();
+        return getSignature(method);
     }
     
     private static final java.awt.Image SERVICE_BADGE =
@@ -143,7 +183,8 @@ public class WadlMethodNode extends AbstractNode {
                 actions.add(a);
             }
         }
-        //TODO
+        //TODO maybe ???
+        actions.add(SystemAction.get(TestMethodAction.class));
         return actions.toArray(new Action[actions.size()]);
     }
     
