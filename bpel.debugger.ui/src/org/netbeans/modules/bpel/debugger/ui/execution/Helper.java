@@ -50,7 +50,7 @@ public final class Helper {
             
             if (showHtml) {
                 return HtmlUtil.toHtml(
-                        label, false, false, NEVER_EXECUTED_COLOR);
+                        label, false, false, NOT_YET_EXECUTED);
             } else {
                 return label;
             }
@@ -59,10 +59,11 @@ public final class Helper {
         if (object instanceof PemEntity) {
             final PemEntity pemEntity = (PemEntity) object;
             final PsmEntity psmEntity = pemEntity.getPsmEntity();
-            final PemEntity lastStarted = 
-                    pemEntity.getModel().getLastStartedEntity();
-            final boolean isInCurrentTree =
-                    (lastStarted != null) && (lastStarted.isInTree(pemEntity));
+            final String currentBranchId = 
+                    pemEntity.getModel().getCurrentBranch().getId();
+            final String pemBranchId = pemEntity.getBranchId();
+            final boolean isInCurrentBranch = pemBranchId != null ?
+                    pemBranchId.equals(currentBranchId) : false;
             
             String label = makeLabel(psmEntity.getTag(), psmEntity.getName());
             
@@ -73,7 +74,7 @@ public final class Helper {
             
             if (showHtml) {
                 label = HtmlUtil.highlight(
-                        label, isInCurrentTree, false, getColor(pemEntity));
+                        label, isInCurrentBranch, false, getColor(pemEntity));
                 
                 return HtmlUtil.html(label);
             } else {
