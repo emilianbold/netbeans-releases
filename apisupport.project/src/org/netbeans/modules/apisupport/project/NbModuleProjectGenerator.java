@@ -269,6 +269,7 @@ public class NbModuleProjectGenerator {
                     createBundle(dirFO, bundlePath, name);
                     createLayerInSrc(dirFO, layerPath);
                     createEmptyTestDir(dirFO);
+                    createInitialProperties(dirFO);
                     ModuleList.refresh();
                     ProjectManager.getDefault().clearNonProjectCache();
                     return null;
