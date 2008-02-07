@@ -70,18 +70,53 @@ public class LocalsTreeModel implements TreeModel {
             final Object object, 
             final int from, 
             final int to) throws UnknownTypeException {
+        
+        if (myDebugger.getCurrentPosition() == null) {
+            if (ROOT.equals(object)) {
+                return new Object[] {
+                    new Dummy()
+                };
+            }
+            
+            if (object instanceof Dummy) {
+                return new Object[0];
+            }
+        }
+        
         return myHelper.getChildren(object);
     }
 
     /**{@inheritDoc}*/
     public int getChildrenCount(
             final Object object) throws UnknownTypeException {
+        
+        if (myDebugger.getCurrentPosition() == null) {
+            if (ROOT.equals(object)) {
+                return 1;
+            }
+            
+            if (object instanceof Dummy) {
+                return 0;
+            }
+        }
+        
         return getChildren(object, 0, 0).length;
     }
 
     /**{@inheritDoc}*/
     public boolean isLeaf(
             final Object object) throws UnknownTypeException {
+        
+        if (myDebugger.getCurrentPosition() == null) {
+            if (ROOT.equals(object)) {
+                return false;
+            }
+            
+            if (object instanceof Dummy) {
+                return true;
+            }
+        }
+        
         return getChildrenCount(object) == 0;
     }
 
@@ -183,5 +218,9 @@ public class LocalsTreeModel implements TreeModel {
                 }, 500);
             }
         }
+    }
+    
+    static class Dummy {
+        // Empty, stub class
     }
 }

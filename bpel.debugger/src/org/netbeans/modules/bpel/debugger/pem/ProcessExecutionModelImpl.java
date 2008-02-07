@@ -239,8 +239,9 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         final BranchImpl newBranch = 
                 new BranchImpl(record.getBranchId(), parentBranch);
         
-        if (((newBranch.getParent() == null) && (myCurrentBranch == null)) || 
-                newBranch.getParent().equals(myCurrentBranch)) {
+        final Branch parent = newBranch.getParent();
+        if (((parent == null) && (myCurrentBranch == null)) || 
+                ((parent != null) && (parent.equals(myCurrentBranch)))) {
             myCurrentBranch = newBranch;
         }
         
@@ -389,7 +390,8 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
         
         public void activityStarted(final PsmEntity psmEntity) {
             final PsmEntity psmParent = psmEntity.getParent();
-            final PemEntityImpl pemEntity = createEntity(psmEntity, myId, true);
+            
+            PemEntityImpl pemEntity = createEntity(psmEntity, myId, true);
             
             if (!myCallStack.empty()) {
                 final PemEntityImpl pemParent = myCallStack.peek();
@@ -496,9 +498,15 @@ public class ProcessExecutionModelImpl implements ProcessExecutionModel {
                             handlersPem = pems[0];
                         }
                         
-                        // Then we need to attach the current (<onAlarm> or 
-                        // <onEvent>) entity to this
-                        handlersPem.addChild(pemEntity);
+                        // If the handlers PEM entity does not contain a child 
+                        // of this type (<onAlarm> or <onEvent>) -- add it. 
+                        // Otherwise, just reuse the existing one.
+                        pems = handlersPem.getChildren(psmEntity);
+                        if (pems.length == 0) {
+                            handlersPem.addChild(pemEntity);
+                        } else {
+                            pemEntity = pems[0];
+                        }
                         
                         myCallStack.push(handlersPem);
                     } else {
