@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.EventObject;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.logging.model.LoggingMapperModelFactory;
@@ -91,7 +92,7 @@ public class DesignContextControllerImpl2
         myBpelModel = mapperTc.getLookup().lookup(BpelModel.class);
         assert myBpelModel != null;
         mBpelModelSynchListener = new BpelModelSynchListener(this);
-        myBpelModel.addEntityChangeListener(mBpelModelSynchListener);
+        mBpelModelSynchListener.register(myBpelModel);
         
         TopComponent.getRegistry().addPropertyChangeListener(this);
         
@@ -100,7 +101,7 @@ public class DesignContextControllerImpl2
     
     public void cleanup() {
         TopComponent.getRegistry().removePropertyChangeListener(this);
-        myBpelModel.removeEntityChangeListener(mBpelModelSynchListener);
+        mBpelModelSynchListener.unregisterAll();
         myBpelModel = null;
         mMapperTcContext = null;
     }
@@ -158,7 +159,7 @@ public class DesignContextControllerImpl2
     }
     
     // TODO m
-    public synchronized void reloadMapper(ChangeEvent event) {
+    public synchronized void reloadMapper(EventObject event) {
         assert EventQueue.isDispatchThread();
                 
         //
@@ -451,4 +452,7 @@ public class DesignContextControllerImpl2
         return false; // Consider the model valid by default
     }
 
+    public void processDataObject(Object dataObject) {
+        mBpelModelSynchListener.processDataObject(dataObject);
+    }
 }
