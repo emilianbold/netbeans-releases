@@ -170,6 +170,12 @@ public final class KitsTracker {
 
     }
 
+    private static final ThreadLocal<Boolean> inReload = new  ThreadLocal<Boolean>() {
+        protected @Override Boolean initialValue() {
+            return false;
+        }
+    };
+    
     /**
      * Scans fonlders under 'Editors' and finds <code>EditorKit</code>s for
      * each mime type.
@@ -179,6 +185,17 @@ public final class KitsTracker {
      *   Changes in these folders mean that the map may need to be recalculated.
      */
     private static void reload(Map<String, Class> map, Set<String> set, List<FileObject> eventSources) {
+        assert !inReload.get() : "Re-entering KitsTracker.reload() is prohibited. This situation usually indicates wrong initialization of some setting."; //NOI18N
+        
+        inReload.set(true);
+        try {
+            _reload(map, set, eventSources);
+        } finally {
+            inReload.set(false);
+        }
+    }
+    
+    private static void _reload(Map<String, Class> map, Set<String> set, List<FileObject> eventSources) {
         // Get the root of the MimeLookup registry
         FileObject fo = Repository.getDefault().getDefaultFileSystem().findResource("Editors"); //NOI18N
 
