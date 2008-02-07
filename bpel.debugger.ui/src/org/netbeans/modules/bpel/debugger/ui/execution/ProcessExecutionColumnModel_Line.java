@@ -17,7 +17,7 @@
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.bpel.debugger.ui.callstack;
+package org.netbeans.modules.bpel.debugger.ui.execution;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
@@ -29,8 +29,8 @@ import org.openide.explorer.propertysheet.PropertyEnv;
  * 
  * @author Kirill Sorokin
  */
-public final class CallStackColumnModel_Line extends AbstractColumn {
-    public CallStackColumnModel_Line() {
+public final class ProcessExecutionColumnModel_Line extends AbstractColumn {
+    public ProcessExecutionColumnModel_Line() {
         super();
         
         myId = COLUMN_ID;
