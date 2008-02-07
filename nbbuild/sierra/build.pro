@@ -129,7 +129,6 @@
         ${test.cvs.path}/samples/EndToEndScenario
         ${test.cvs.path}/samples/samplesBPEL
         ${test.cvs.path}/samples/SynchronousSample
-        ${test.cvs.path}/scalability/ScalabilityBpel
         ${test.cvs.path}/TerminationHandler/TerminationHandlerBpel
         ${test.cvs.path}/wait/WaitBpel
         ${test.cvs.path}/while/WhileBpel
