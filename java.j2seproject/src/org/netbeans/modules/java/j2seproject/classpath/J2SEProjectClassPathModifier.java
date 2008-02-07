@@ -273,8 +273,6 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 Library lib = libraries[i];
                                 if (project.getAntProjectHelper().isSharableProject()) {
                                     if (lib.getManager().getLocation() == null) {
-                                        LOG.log(Level.INFO, "Client is adding global library ["+lib+
-                                                "] to sharable project.", new Exception());
                                         // For backward compatibility just copy the library to shared one.
                                         Library l = refHelper.getProjectLibraryManager().getLibrary(lib.getName());
                                         if (l != null) {

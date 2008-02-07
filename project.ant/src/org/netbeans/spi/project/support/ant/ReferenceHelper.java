@@ -1483,7 +1483,9 @@ public final class ReferenceHelper {
 
     /**
      * Copy global IDE library to sharable libraries definition associated with
-     * this project. Does nothing if project is not sharable.
+     * this project. Does nothing if project is not sharable. 
+     * When a library with same name already exists in sharable location, the new one 
+     * is copied with generated unique name.
      * 
      * <p>Library creation is done under write access of ProjectManager.mutex().
      * 
@@ -1491,8 +1493,6 @@ public final class ReferenceHelper {
      * @return newly created sharable version of library in case of sharable
      *  project or given global library in case of non-sharable project
      * @throws java.io.IOException if there was problem copying files
-     * @throws IllegalArgumentException if library is not global one or library
-     *  with this name already exists in sharable libraries definition
      * @since org.netbeans.modules.project.ant/1 1.19
      */
     public Library copyLibrary(Library lib) throws IOException {
@@ -1504,7 +1504,7 @@ public final class ReferenceHelper {
             return lib;
         }
         File mainPropertiesFile = h.resolveFile(h.getLibrariesLocation());
-        return ProjectLibraryProvider.copyLibrary(lib, mainPropertiesFile.toURI().toURL(), false);
+        return ProjectLibraryProvider.copyLibrary(lib, mainPropertiesFile.toURI().toURL(), true);
     }
     
     /**
