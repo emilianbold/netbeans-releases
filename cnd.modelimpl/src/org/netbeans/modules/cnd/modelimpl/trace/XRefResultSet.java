@@ -83,11 +83,11 @@ public final class XRefResultSet {
         return out;
     }
 
-    public final double getNumberOfContexts(ContextScope contextScope, boolean relative) {
-        double num = scopes.get(contextScope);
+    public final int getNumberOfContexts(ContextScope contextScope, boolean relative) {
+        int num = scopes.get(contextScope);
         if (relative && (num != 0)) {
             assert num > 0;
-            num /= getNumberOfAllContexts();
+            num = (num * 100) / getNumberOfAllContexts();
         }
         return num;
     }
