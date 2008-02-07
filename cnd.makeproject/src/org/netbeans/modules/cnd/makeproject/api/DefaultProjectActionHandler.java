@@ -91,15 +91,15 @@ public class DefaultProjectActionHandler implements ActionListener {
     }
     
     public void setCustomBuildActionHandlerProvider(CustomProjectActionHandlerProvider customBuildActionHandlerProvider) {
-        this.customBuildActionHandlerProvider = customBuildActionHandlerProvider;
+        DefaultProjectActionHandler.customBuildActionHandlerProvider = customBuildActionHandlerProvider;
     }
     
     public void setCustomRunActionHandlerProvider(CustomProjectActionHandlerProvider customRunActionHandlerProvider) {
-        this.customRunActionHandlerProvider = customRunActionHandlerProvider;
+        DefaultProjectActionHandler.customRunActionHandlerProvider = customRunActionHandlerProvider;
     }
     
     public void setCustomDebugActionHandlerProvider(CustomProjectActionHandlerProvider customDebugActionHandlerProvider) {
-        this.customDebugActionHandlerProvider = customDebugActionHandlerProvider;
+        DefaultProjectActionHandler.customDebugActionHandlerProvider = customDebugActionHandlerProvider;
     }
     
     public void setCustomActionHandlerProvider(CustomProjectActionHandler customActionHandlerProvider) {
@@ -116,46 +116,47 @@ public class DefaultProjectActionHandler implements ActionListener {
     private static ArrayList tabNames = new ArrayList();
     
     class HandleEvents implements ExecutionListener {
-        private InputOutput reuseTab = null;
+        private InputOutput ioTab = null;
         private ProjectActionEvent[] paes;
         private String tabName;
         private String tabNameSeq;
         int currentAction = 0;
-        ExecutorTask executorTask = null;
-        StopAction sa = null;
-        RerunAction ra = null;
-        ProgressHandle progressHandle = null;
+        private ExecutorTask executorTask = null;
+        private StopAction sa = null;
+        private RerunAction ra = null;
+        private ProgressHandle progressHandle = null;
+        private Object lock = new Object();
         
         private String getTabName(ProjectActionEvent[] paes) {
             String projectName = ProjectUtils.getInformation(paes[0].getProject()).getName();
-            String tabName = projectName + " ("; // NOI18N
+            String name = projectName + " ("; // NOI18N
             for (int i = 0; i < paes.length; i++) {
                 if (i >= 2) {
-                    tabName += "..."; // NOI18N
+                    name += "..."; // NOI18N
                     break;
                 }
-                tabName += paes[i].getActionName();
+                name += paes[i].getActionName();
                 if (i < paes.length-1)
-                    tabName += ", "; // NOI18N
+                    name += ", "; // NOI18N
             }
-            tabName += ")"; // NOI18N
-            return tabName;
+            name += ")"; // NOI18N
+            return name;
         }
         
         private String getTabName(ProjectActionEvent pae) {
             String projectName = ProjectUtils.getInformation(pae.getProject()).getName();
-            String tabName = projectName + " ("; // NOI18N
-            tabName += pae.getActionName();
-            tabName += ")"; // NOI18N
-            return tabName;
+            String name = projectName + " ("; // NOI18N
+            name += pae.getActionName();
+            name += ")"; // NOI18N
+            return name;
         }
         
         private InputOutput getTab() {
-            return reuseTab;
+            return ioTab;
         }
         
         private ProgressHandle createPogressHandle() {
-            ProgressHandle progressHandle = ProgressHandleFactory.createHandle(tabNameSeq, new Cancellable() {
+            ProgressHandle handle = ProgressHandleFactory.createHandle(tabNameSeq, new Cancellable() {
                 public boolean cancel() {
                     sa.actionPerformed(null);
                     return true;
@@ -165,14 +166,16 @@ public class DefaultProjectActionHandler implements ActionListener {
                     getTab().select();
                 }
             });
-            progressHandle.setInitialDelay(0);
-            return progressHandle;
+            handle.setInitialDelay(0);
+            return handle;
         }
         
-        private InputOutput getIOTab(String tabName) {
+        private InputOutput getIOTab(String name) {
             sa = new StopAction(this);
             ra = new RerunAction(this);
-            InputOutput tab = IOProvider.getDefault().getIO(tabNameSeq, new Action[] {ra, sa});
+            InputOutput tab = IOProvider.getDefault().getIO(name, false); // This will (sometimes!) find an existing one.
+            tab.closeInputOutput(); // Close it...
+            tab = IOProvider.getDefault().getIO(name, new Action[] {ra, sa}); // Create a new ...
             try {
                 tab.getOut().reset();
             } catch (IOException ioe) {
@@ -189,40 +192,44 @@ public class DefaultProjectActionHandler implements ActionListener {
             currentAction = 0;
             
             if (MakeOptions.getInstance().getReuse()) {
-                if (mainTabHandler == null && mainTab != null /*&& !mainTab.isClosed()*/) {
-                    mainTab.closeInputOutput();
-                    mainTab = null;
-                }
-                tabName = getTabName(paes);
-                tabNameSeq = tabName;
-                if (tabNames.contains(tabName)) {
-                    int seq = 2;
-                    while (true) {
-                        tabNameSeq = tabName + " #" + seq;
-                        if (!tabNames.contains(tabNameSeq)) {
-                            break;
-                        }
-                        seq++;
+                synchronized(lock) {
+                    if (mainTabHandler == null && mainTab != null /*&& !mainTab.isClosed()*/) {
+                        mainTab.closeInputOutput();
+                        mainTab = null;
                     }
-                }
-                tabNames.add(tabNameSeq);
-                reuseTab = getIOTab(tabNameSeq);
-                if (mainTabHandler == null) {
-                    mainTab = reuseTab;
-                    mainTabHandler = this;
+                    tabName = getTabName(paes);
+                    tabNameSeq = tabName;
+                    if (tabNames.contains(tabName)) {
+                        int seq = 2;
+                        while (true) {
+                            tabNameSeq = tabName + " #" + seq;
+                            if (!tabNames.contains(tabNameSeq)) {
+                                break;
+                            }
+                            seq++;
+                        }
+                    }
+                    tabNames.add(tabNameSeq);
+                    ioTab = getIOTab(tabNameSeq);
+                    if (mainTabHandler == null) {
+                        mainTab = ioTab;
+                        mainTabHandler = this;
+                    }
                 }
             }
             else {
                 tabName = getTabName(paes);
                 tabNameSeq = tabName;
-                reuseTab = getIOTab(tabName);
+                ioTab = getIOTab(tabName);
             }
         }
         
         public void reRun() {
             currentAction = 0;
             getTab().closeInputOutput();
-            tabNames.add(tabNameSeq);
+            synchronized(lock) {
+                tabNames.add(tabNameSeq);
+            }
             try {
                 getTab().getOut().reset();
             } catch (IOException ioe) {
@@ -355,8 +362,6 @@ public class DefaultProjectActionHandler implements ActionListener {
                     sa.setEnabled(true);
                     ra.setEnabled(false);
                     executorTask = projectExecutor.execute(getTab());
-//                    System.out.println("handleEvents 0 " + this);
-//                    System.out.println("executorTask 0 " + executorTask);
                 } catch (java.io.IOException ioe) {
                 }
             } else if (pae.getID() == ProjectActionEvent.CUSTOM_ACTION) {
@@ -388,9 +393,11 @@ public class DefaultProjectActionHandler implements ActionListener {
                 }
             }
             if (currentAction >= paes.length-1 || rc != 0) {
-                if (mainTabHandler == this)
-                    mainTabHandler = null;
-                tabNames.remove(tabNameSeq);
+                synchronized(lock) {
+                    if (mainTabHandler == this)
+                        mainTabHandler = null;
+                    tabNames.remove(tabNameSeq);
+                }
                 sa.setEnabled(false);
                 ra.setEnabled(true);
                 progressHandle.finish();
