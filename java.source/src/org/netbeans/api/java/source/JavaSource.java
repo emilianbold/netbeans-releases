@@ -2679,7 +2679,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (t instanceof ThreadDeath) {
                 throw (ThreadDeath) t;
             }
-            Exceptions.printStackTrace(t);
+            dumpSource(ci, t);
             return false;
         }
         return true;
