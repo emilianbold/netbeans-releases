@@ -1097,16 +1097,7 @@ public final class ClassPath {
                 FileSystem fs;
                 try {
                     fs = random.getFileSystem();
-                    allRoots.add(fs);
-                    
-                    /*Because there is MasterFileSystem impl. that provides conversion to FileObject for all File.listRoots
-                    (except floppy drives and empty CD). Then there is useless to convert all roots into FileObjects including
-                    net drives that might cause performance regression.
-                    */
-                    
-                    if (fs != null) {
-                        break;
-                    }
+                    allRoots.add(fs);                    
                 } catch (FileStateInvalidException e) {
                     throw new AssertionError(e);
                 }

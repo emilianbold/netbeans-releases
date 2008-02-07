@@ -59,28 +59,39 @@
         things to invoke whatever service it needs to (rest, jax-ws, jpa, ejb etc.,)
 -->
 
-<component xmlns="http://xml.netbeans.org/websvc/rest/component/1.0"
-           xmlns:tns="http://xml.netbeans.org/websvc/rest/component/1.0/amazon/buckets"
+<saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
+           xmlns:tns="http://xml.netbeans.org/websvc/rest/component/1.0/amazon/amazon-map"
            xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
-           xsi:schemaLocation='http://xml.netbeans.org/websvc/rest/component/1.0 component.xsd'           
-           name="AmazonS3Buckets"
-           category="/Amazon"
-           nameKey="AmazonS3Buckets_Name"
-           categoryKey="Amazon_Name"
-           bundle="org.netbeans.modules.websvc.components.amazon.Bundle">
+           xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+           ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd' 
+           type="custom"
+           api-doc="http://developers.amazon.com/TBD"
+           >
     
-    <description key="AmazonS3Buckets_Desc" 
-                 bundle="org.netbeans.modules.websvc.components.amazon.Bundle"/>
+    <description>AmazonS3Buckets Service</description>
+    <display-name>AmazonS3Buckets</display-name>
     
-    <icons>
-        <icon url="org/netbeans/modules/websvc/components/amazon/resources/amazon16.png" size="16"/>
-        <icon url="org/netbeans/modules/websvc/components/amazon/resources/amazon32.png" size="32"/>
-    </icons>
+    <saas-metadata>
+
+        <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
+        <icon16>"org/netbeans/modules/websvc/components/amazon/resources/amazon16.png</icon16>
+
+        <group name="Amazon"/>
+        <code-gen packageName="org.netbeans.saas.services.amazon">
+            <artifacts targets="java">
+                <artifact requires="true" type="java"
+                    url="Templates/WebServices/AmazonS3BucketsResource.java"/>
+            </artifacts>
+        </code-gen>
+        <authentication profile="Templates/WebServices/profile.properties">
+            <http-basic/>
+        </authentication>
+
+    </saas-metadata>
     
-    <service name="AmazonS3Buckets">
-        <method name="generateAmazonS3BucketsCode"
-                type="custom"
-                url="Templates/WebServices/AmazonS3BucketsResource.java">                      
+    
+    <methods>
+        <method name="generateAmazonS3BucketsCode" >
             <documentation>
                 Allows a developer to generate code to access Amazon S3 Buckets.
             </documentation>
@@ -91,6 +102,6 @@
                 <media type="text/html"/>
             </output>
         </method>
-    </service>
+    </methods>
 
-</component>
+</saas-services>

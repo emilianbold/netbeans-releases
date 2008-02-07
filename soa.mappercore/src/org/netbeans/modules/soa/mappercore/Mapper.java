@@ -429,7 +429,93 @@ public class Mapper extends JPanel {
         }
     }
 
+    public List<TreePath> getExpandedPathes() {
+        List<TreePath> result = new ArrayList<TreePath>();
+        MapperNode rootNode = getRoot();
+        
+        if (root != null) {
+            collectExpandedPathes(rootNode, result);
+        }
+        
+        return result;
+    }
     
+    private void collectExpandedPathes(MapperNode node, List<TreePath> result) {
+        if (node.isLeaf()) return;
+        
+        if (node.isExpanded()) {
+            result.add(node.getTreePath());
+        }
+        
+        if (node.isLoaded()) {
+            for (int i = node.getChildCount() - 1; i >= 0; i--) {
+                collectExpandedPathes(node.getChild(i), result);
+            }
+        }
+    }
+    
+    public List<TreePath> getExpandedGraphsPathes() {
+        List<TreePath> result = new ArrayList<TreePath>();
+        
+        MapperModel model = getModel();
+        MapperNode rootNode = getRoot();
+        
+        if (model != null && root != null) {
+            collectExpandedGraphsPathes(model, rootNode, result);
+        }
+        
+        return result;
+    }
+    
+    private void collectExpandedGraphsPathes(MapperModel model, MapperNode node, 
+            List<TreePath> result) 
+    {
+        Graph graph = node.getGraph();
+        if (graph != null && !graph.isEmpty() && node.isGraphExpanded()) {
+            result.add(node.getTreePath());
+        }
+        
+        if (node.isLeaf()) return;
+        if (!model.searchGraphsInside(node.getTreePath())) return;
+        
+        if (node.isLoaded()) {
+            for (int i = node.getChildCount() - 1; i >= 0; i--) {
+                collectExpandedGraphsPathes(model, node.getChild(i), result);
+            }
+        }
+    }
+    
+    
+    public void applyExpandedPathes(List<TreePath> rightTreePathes) {
+        if (rightTreePathes == null || rightTreePathes.isEmpty()) return;
+
+        for (TreePath treePath : rightTreePathes) {
+            MapperNode node = getNode(treePath, true);
+            if (node != null && !node.isLeaf() && node.isCollapsed()) {
+                node.setExpanded(true);
+                fireNodeExpanded(treePath);
+            }
+        }
+    }
+    
+    public void applyExpandedGraphsPathes(List<TreePath> rightTreePathes) {
+        if (rightTreePathes == null || rightTreePathes.isEmpty()) return;
+
+        MapperModel model = getModel();
+        
+        if (model == null) return;
+        
+        for (TreePath treePath : rightTreePathes) {
+            Graph graph = model.getGraph(treePath);
+            if (graph != null && !graph.isEmpty()) {
+                MapperNode node = getNode(treePath, true);
+                if (node != null && node.isGraphCollapsed()) {
+                    node.setGraphExpanded(true);
+                }
+            }
+        }
+    }    
+
     public void hideOtherPathes(int expandedLevel) {
         if (model == null) return;
         if (root == null) return;

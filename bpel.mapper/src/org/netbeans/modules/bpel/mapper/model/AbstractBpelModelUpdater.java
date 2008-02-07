@@ -241,27 +241,6 @@ public class AbstractBpelModelUpdater {
             return null;
         }
         //
-        String componentName = ((Named)sComp).getName();
-        QName sCompQName = null;
-        //
-        if (BpelMapperUtils.isPrefixRequired(sComp)) {
-            //
-            String nsPrefix = null;
-            String namespaceURI = sComp.getModel().getEffectiveNamespace(sComp);
-            NamespaceContext nsContext = xPathModel.getNamespaceContext();
-            if (nsContext != null) {
-                nsPrefix = nsContext.getPrefix(namespaceURI);
-            }
-            //
-            if (nsPrefix == null || nsPrefix.length() == 0) {
-                sCompQName = new QName(componentName);
-            } else {
-                sCompQName = new QName(namespaceURI, componentName, nsPrefix);
-            }
-        } else {
-            sCompQName = new QName(componentName);
-        }
-        //
         XPathAxis axis = null;
         if (sComp instanceof Attribute) {
             axis = XPathAxis.ATTRIBUTE;
@@ -269,7 +248,7 @@ public class AbstractBpelModelUpdater {
             axis = XPathAxis.CHILD;
         }
         //
-        StepNodeNameTest nameTest = new StepNodeNameTest(sCompQName);
+        StepNodeNameTest nameTest = new StepNodeNameTest(xPathModel, sComp);
         LocationStep newLocationStep = xPathModel.getFactory().
                 newLocationStep(axis, nameTest, predArr);
         //

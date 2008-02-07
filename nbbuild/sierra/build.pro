@@ -111,8 +111,6 @@
         ${test.cvs.path}/eventHandlers/onEvent
         ${test.cvs.path}/exit/ExitBpel
         ${test.cvs.path}/faulthandling/FaultHandlingBpel
-        ${test.cvs.path}/faulthandling/StandardFaultsBpel
-        ${test.cvs.path}/faulthandling/SystemFaultsBpel
         ${test.cvs.path}/flow/FlowBpel
         ${test.cvs.path}/foreach-bpel20/ForEachBpel
         ${test.cvs.path}/if/ifBpel
