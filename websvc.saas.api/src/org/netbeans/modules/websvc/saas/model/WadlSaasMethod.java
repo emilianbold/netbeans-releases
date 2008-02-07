@@ -42,7 +42,6 @@ package org.netbeans.modules.websvc.saas.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.jxpath.JXPathException;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
@@ -97,9 +96,13 @@ public class WadlSaasMethod extends SaasMethod {
     }
     
     public org.netbeans.modules.websvc.saas.model.wadl.Method getWadlMethod() {
-        if (wadlMethod == null) {
+        if (wadlMethod == null && getHref() != null) {
             try {
-                wadlMethod = SaasUtil.wadlMethodFromXPath(getSaas().getWadlModel(), getHref());
+                if (getHref().charAt(0) == '/') {
+                    wadlMethod = SaasUtil.wadlMethodFromXPath(getSaas().getWadlModel(), getHref());
+                } else {
+                    wadlMethod = SaasUtil.wadlMethodFromIdRef(getSaas().getWadlModel(), getHref());
+                }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe); 
             }
