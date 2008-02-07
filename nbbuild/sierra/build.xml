@@ -47,7 +47,7 @@
     <target name="hudson" depends="run-daily,all"/>
 
     <target name="unit-test" depends="test"/>
-    <target name="bpel-test" depends="test-0,test-1,test-2,test-3,test-4,test-5,test-6,test-7,test-8,test-9"/>
+    <target name="bpel-test" depends="test-0,test-1,test-2,test-3,test-4,test-5,test-6,test-7,test-8,test-9,test-10"/>
     
     <target name="init">
         <property name="env.BUILD_NUMBER" value=""/>
@@ -202,6 +202,10 @@
         <antcall target="do-test-jbi"><param name="dir" value="benchmark/Ericsson/AlarmIRPBpel2"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="benchmark/purchaseOrderCoordinator"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="benchmark/PurchaseOrderService"/></antcall>
+    </target>
+        
+    <target name="test-3">
+        <!-- benchmark -->
         <antcall target="do-test-jbi"><param name="dir" value="benchmark/TravelReservationService/TravelReservationService"/></antcall>
 
         <!-- blueprints -->
@@ -211,8 +215,8 @@
         <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp4/BluePrint4"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="blueprints/bp5/BluePrint5"/></antcall>
     </target>
-        
-    <target name="test-3">
+
+    <target name="test-4">
         <!-- BpelToBpel -->
         <antcall target="do-test-jbi"><param name="dir" value="BpelToBpel/ClientEmployeeInfo"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="BpelToBpel/EmployeeInfo"/></antcall>
@@ -227,7 +231,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="compensation/NestedScope"/></antcall>
     </target>
         
-    <target name="test-4">
+    <target name="test-5">
         <!-- correlation -->
         <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="correlation/correlationBPEL2"/></antcall>
@@ -239,7 +243,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="correlation/ThreeCorrSetsBpel"/></antcall>
     </target>
 
-    <target name="test-5">
+    <target name="test-6">
         <!-- dynamicpartnerlink -->
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/dynamicPartnerLinkBPEL"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="dynamicpartnerlink/justhttpAndBPEL"/></antcall>
@@ -262,7 +266,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
     </target>
 
-    <target name="test-6">
+    <target name="test-7">
         <!-- flow -->
         <antcall target="do-test-jbi"><param name="dir" value="flow/FlowBpel"/></antcall>
 
@@ -287,7 +291,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="MessageExchange/MessageExchangeBpel"/></antcall>
     </target>
 
-    <target name="test-7">
+    <target name="test-8">
         <!-- misc -->
         <antcall target="do-test-jbi"><param name="dir" value="misc/MiscBpel"/></antcall>
 
@@ -309,7 +313,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="rethrow/Rethrow"/></antcall>
     </target>
         
-    <target name="test-8">
+    <target name="test-9">
         <!-- samples -->
         <antcall target="do-test-jbi"><param name="dir" value="samples/AsynchronousSample"/></antcall>
         <antcall target="do-test-jbi"><param name="dir" value="samples/EndToEndScenario"/></antcall>
@@ -324,7 +328,7 @@
         <antcall target="do-test-jbi"><param name="dir" value="SchemaElemDecl/BPwithNestedElemQualified"/></antcall>
     </target>
 
-    <target name="test-9">
+    <target name="test-10">
         <!-- ScopeTermination -->
         <antcall target="do-test-jbi"><param name="dir" value="ScopeTermination/ScopeTerminationBpel"/></antcall>
         
