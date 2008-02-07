@@ -256,6 +256,10 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Menu">
         <folder name="Refactoring">
+            <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
+                <attr name="position" intvalue="1050"/>
+            </file>
             <file name="org-netbeans-modules-java-hints-introduce-separatorBefore.instance">
                 <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                 <attr name="position" intvalue="1300"/>
@@ -275,11 +279,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance"/>
                 <attr name="position" intvalue="1700"/>
-            </file>
-            <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance"/>
-                <attr name="position" intvalue="1800"/>
-            </file>
+            </file>            
             </folder>
     </folder>
     
