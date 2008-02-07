@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.IOException;
 import javax.swing.JEditorPane;
+import javax.swing.text.Caret;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -89,7 +90,8 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
         if (cookie != null) {
             JEditorPane[] panes = CsmUtilities.getOpenedPanesInEQ(cookie);
             if (panes != null && panes.length>0) {
-                int offset = panes[0].getCaret().getMark();
+                Caret caret = panes[0].getCaret();
+                int offset = Math.min(caret.getMark(), caret.getDot());
                 CsmFile file = CsmUtilities.getCsmFile(activatedNode,false);
                 StyledDocument doc = null;
                 try {

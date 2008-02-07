@@ -910,7 +910,7 @@ public final class ModuleManager {
             // They all were OK so far; add to system classloader and install them.
             if (classLoader != null) {
                 Util.err.fine("enable: adding to system classloader");
-                List<ClassLoader> nueclassloaders = new ArrayList<ClassLoader>(toEnable.size());
+                LinkedList<ClassLoader> nueclassloaders = new LinkedList<ClassLoader>();
                 if (moduleFactory.removeBaseClassLoader()) {
                     ClassLoader base = ModuleManager.class.getClassLoader();
                     nueclassloaders.add(moduleFactory.getClasspathDelegateClassLoader(this, base));
@@ -922,7 +922,11 @@ public final class ModuleManager {
                     }
                 } else {
                     for (Module m : toEnable) {
-                        nueclassloaders.add(m.getClassLoader());
+                        if (m.getClassLoader() == ClassLoader.getSystemClassLoader()) {
+                            nueclassloaders.addFirst(m.getClassLoader());
+                        } else {
+                            nueclassloaders.add(m.getClassLoader());
+                        }
                     }
                 }
                 classLoader.append((nueclassloaders.toArray(new ClassLoader[nueclassloaders.size()])), toEnable);
