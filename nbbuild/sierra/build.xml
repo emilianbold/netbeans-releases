@@ -287,8 +287,6 @@
     <target name="test-6">
         <!-- faulthandling -->
         <antcall target="do-test-jbi"><param name="dir" value="faulthandling/FaultHandlingBpel"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/StandardFaultsBpel"/></antcall>
-        <antcall target="do-test-jbi"><param name="dir" value="faulthandling/SystemFaultsBpel"/></antcall>
 
         <!-- flow -->
         <antcall target="do-test-jbi"><param name="dir" value="flow/FlowBpel"/></antcall>
