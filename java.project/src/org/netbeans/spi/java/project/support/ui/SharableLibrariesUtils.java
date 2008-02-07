@@ -55,8 +55,10 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
@@ -72,9 +74,10 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
 
 
-public final class MakeSharableUtils {
+public final class SharableLibrariesUtils {
 
     static final String PROP_LOCATION = "location"; //NOI18N
     static final String PROP_ACTIONS = "actions"; //NOI18N
@@ -82,6 +85,46 @@ public final class MakeSharableUtils {
     static final String PROP_REFERENCE_HELPER = "refhelper"; //NOI18N
     static final String PROP_LIBRARIES = "libraries"; //NOI18N
     static final String PROP_JAR_REFS = "jars"; //NOI18N
+    
+    /**
+     * The default filename for sharable library definition file.
+     */
+    public static final String DEFAULT_LIBRARIES_FILENAME = "nblibraries.properties";
+    
+    
+    
+    /**
+     * File chooser implementation for browsing for shared library location.
+     * @param current
+     * @param comp
+     * @param projectLocation
+     * @return relative or absolute path to project libraries folder.
+     */
+    public static String browseForLibraryLocation(String current, Component comp, File projectLocation) {
+        File lib = PropertyUtils.resolveFile(projectLocation, current);
+        if (!lib.exists()) {
+            lib = lib.getParentFile();
+        }
+        lib = FileUtil.normalizeFile(lib);
+        FileChooser chooser = new FileChooser(projectLocation, null);
+        chooser.setCurrentDirectory(lib);
+        chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+        chooser.setDialogTitle(NbBundle.getMessage(SharableLibrariesUtils.class,"LBL_Browse_Libraries_Title"));
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(comp)) {
+            String[] files;
+            try {
+                files = chooser.getSelectedPaths();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+            if (files.length == 1) {
+                String currentLibrariesLocation = files[0];
+                return currentLibrariesLocation;
+            }
+        }
+        return null;
+    }    
 
     public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
 

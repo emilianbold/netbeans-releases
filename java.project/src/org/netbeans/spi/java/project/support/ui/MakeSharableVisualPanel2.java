@@ -102,11 +102,11 @@ final class MakeSharableVisualPanel2 extends JPanel {
 
     void readSettings(WizardDescriptor wiz) {
         System.out.println("readsettings..");
-        String loc = (String) wiz.getProperty(MakeSharableUtils.PROP_LOCATION);
+        String loc = (String) wiz.getProperty(SharableLibrariesUtils.PROP_LOCATION);
         System.out.println("loc=" + loc);
-        AntProjectHelper helper = (AntProjectHelper) wiz.getProperty(MakeSharableUtils.PROP_HELPER);
-        List<String> libraries = (List<String>) wiz.getProperty(MakeSharableUtils.PROP_LIBRARIES);
-        List<String> jars = (List<String>) wiz.getProperty(MakeSharableUtils.PROP_JAR_REFS);
+        AntProjectHelper helper = (AntProjectHelper) wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
+        List<String> libraries = (List<String>) wiz.getProperty(SharableLibrariesUtils.PROP_LIBRARIES);
+        List<String> jars = (List<String>) wiz.getProperty(SharableLibrariesUtils.PROP_JAR_REFS);
         if (!loc.equals(location)) {
             location = loc;
             populateTable(helper, libraries, jars);
@@ -115,8 +115,8 @@ final class MakeSharableVisualPanel2 extends JPanel {
     }
 
     void storeSettings(WizardDescriptor wiz) {
-        ReferenceHelper helper = (ReferenceHelper) wiz.getProperty(MakeSharableUtils.PROP_REFERENCE_HELPER);
-        AntProjectHelper anthelper = (AntProjectHelper) wiz.getProperty(MakeSharableUtils.PROP_HELPER);
+        ReferenceHelper helper = (ReferenceHelper) wiz.getProperty(SharableLibrariesUtils.PROP_REFERENCE_HELPER);
+        AntProjectHelper anthelper = (AntProjectHelper) wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
 
         List<Action> actions = new ArrayList<Action>();
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -125,11 +125,11 @@ final class MakeSharableVisualPanel2 extends JPanel {
             if (item instanceof Library) {
                 Library lib = (Library)item;
                 if (ACTION_ABSOLUTE.equals(action)) {
-                    actions.add(new MakeSharableUtils.KeepLibraryAtLocation(lib, false, anthelper));
+                    actions.add(new SharableLibrariesUtils.KeepLibraryAtLocation(lib, false, anthelper));
                 } else if (ACTION_RELATIVE.equals(action)) {
-                    actions.add(new MakeSharableUtils.KeepLibraryAtLocation(lib, true, anthelper));
+                    actions.add(new SharableLibrariesUtils.KeepLibraryAtLocation(lib, true, anthelper));
                 } else if (ACTION_COPY.equals(action)) {
-                    actions.add(new MakeSharableUtils.CopyLibraryJars(helper, lib));
+                    actions.add(new SharableLibrariesUtils.CopyLibraryJars(helper, lib));
                 } else if (ACTION_USE_LOCAL_LIBRARY.equals(action)) {
                     //do nothing
                 } else {
@@ -141,7 +141,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 //project dependency
             }
         }
-        wiz.putProperty(MakeSharableUtils.PROP_ACTIONS, actions);
+        wiz.putProperty(SharableLibrariesUtils.PROP_ACTIONS, actions);
         
     }
 
@@ -303,6 +303,8 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 Library library = oldmanager.getLibrary(lib);
                 Library newLib = newmanager.getLibrary(lib);
                 String action = ACTION_COPY;
+                //TODO when library contents inside the same SCM or relative to new library location,
+                // use the relative path as default..
                 if (newLib != null) {
                     action = ACTION_USE_LOCAL_LIBRARY;
                 }
@@ -311,7 +313,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 } 
             }
             for (String jar : jars) {
-                
+                model.addRow( new Object[] {jar, ACTION_COPY});
             }
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
@@ -329,9 +331,7 @@ final class MakeSharableVisualPanel2 extends JPanel {
             String[] volumes = provider.getSupportedVolumeTypes();
             StringBuffer contents = new StringBuffer();
             for (String vol : volumes) {
-                //TODO
                 List<URL> urls = lib.getContent(vol);
-                boolean any = false;
                 for (URL url : urls) {
                     FileObject fo = URLMapper.findFileObject(url);
                     if (fo != null) {
@@ -340,7 +340,6 @@ final class MakeSharableVisualPanel2 extends JPanel {
                         }
                     }
                     contents.append(url).append("\n");
-                    any = true;
                 }
             }
             taDetails.setText("Type:" + typeString + 
