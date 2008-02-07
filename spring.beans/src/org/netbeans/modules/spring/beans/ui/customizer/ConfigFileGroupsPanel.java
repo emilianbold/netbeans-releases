@@ -140,6 +140,7 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
         groupsScrollPane = new javax.swing.JScrollPane();
         groupsList = new javax.swing.JList();
         addGroupButton = new javax.swing.JButton();
+        editGroupButton = new javax.swing.JButton();
         removeGroupButton = new javax.swing.JButton();
         groupFilesLabel = new javax.swing.JLabel();
         groupFilesScrollPane = new javax.swing.JScrollPane();
@@ -156,6 +157,13 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
         addGroupButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addGroupButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(editGroupButton, org.openide.util.NbBundle.getMessage(ConfigFileGroupsPanel.class, "LBL_EditGroup")); // NOI18N
+        editGroupButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editGroupButtonActionPerformed(evt);
             }
         });
 
@@ -198,14 +206,15 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
                 .addContainerGap())
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, groupFilesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE))
+                    .add(groupFilesScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, groupsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 390, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, addGroupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, removeGroupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(removeGroupButton, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(editGroupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, addFileButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, removeFileButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, removeFileButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, addGroupButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -215,6 +224,8 @@ public class ConfigFileGroupsPanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(addGroupButton)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(editGroupButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeGroupButton))
                     .add(groupsScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 155, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -282,10 +293,26 @@ private void removeFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         groupFilesList.setSelectedIndex(oldFileIndex);
 }//GEN-LAST:event_removeFileButtonActionPerformed
 
+private void editGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editGroupButtonActionPerformed
+        InputLine input = new InputLine(
+                NbBundle.getMessage(ConfigFileGroupsPanel.class, "LBL_GroupName"),
+                NbBundle.getMessage(ConfigFileGroupsPanel.class, "LBL_EditConfigFileGroup"));
+        String currentName = currentGroup.getName();
+        if (currentName != null) {
+            input.setInputText(currentName);
+        }
+        DialogDisplayer.getDefault().notify(input);
+        if (input.getValue() == NotifyDescriptor.OK_OPTION) {
+            ConfigFileGroup newGroup = ConfigFileGroup.create(input.getInputText(), currentGroup.getFiles());
+            replaceCurrentGroup(newGroup);
+        }
+}//GEN-LAST:event_editGroupButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addFileButton;
     private javax.swing.JButton addGroupButton;
+    private javax.swing.JButton editGroupButton;
     private javax.swing.JLabel groupFilesLabel;
     private javax.swing.JList groupFilesList;
     private javax.swing.JScrollPane groupFilesScrollPane;
