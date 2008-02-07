@@ -81,9 +81,10 @@ final class TestUtil {
         File enterCluster = new File(WebModule.class.getProtectionDomain().getCodeSource().getLocation().toURI())
                 .getParentFile().getParentFile();
         System.setProperty("netbeans.dirs", javaCluster.getPath() + File.pathSeparator + enterCluster.getPath());
-        System.setProperty("org.netbeans.modules.jspparser.debug", "100");
 
         Logger.getLogger("org.netbeans.core.startup.ModuleList").setLevel(Level.OFF);
+
+        Logger.getLogger("org.netbeans.modules.web.jspparser_ext").setLevel(Level.FINE);
 
         // module system
         Lookup.getDefault().lookup(ModuleInfo.class);
