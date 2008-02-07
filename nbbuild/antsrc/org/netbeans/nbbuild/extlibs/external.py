@@ -68,6 +68,7 @@ def _download_to_cache(url, ui, sha1, filename, cachefile):
     return data
 
 def download(s, cmd, ui=None, filename=None, **kwargs):
+    cmd = re.sub(r'^download: *', '', cmd)
     filename = _filename(filename)
     ui = _ui(ui)
     n = _trim(filename)
@@ -96,6 +97,7 @@ def download(s, cmd, ui=None, filename=None, **kwargs):
     return data
 
 def upload(s, cmd, ui=None, repo=None, filename=None, **kwargs):
+    cmd = re.sub(r'^upload: *', '', cmd)
     filename = _filename(filename)
     ui = _ui(ui)
     repo = _repo(repo)
