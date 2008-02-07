@@ -77,6 +77,8 @@ import org.openide.util.NbBundle;
 final class MakeSharableVisualPanel2 extends JPanel {
     DefaultTableModel model;
     private String location = null;
+    AntProjectHelper helper;
+    private ReferenceHelper refhelper;
     
     String ACTION_COPY = "copy"; //NOI18N
     String ACTION_RELATIVE = "keep"; //NOI18N
@@ -101,10 +103,9 @@ final class MakeSharableVisualPanel2 extends JPanel {
     }
 
     void readSettings(WizardDescriptor wiz) {
-        System.out.println("readsettings..");
         String loc = (String) wiz.getProperty(SharableLibrariesUtils.PROP_LOCATION);
-        System.out.println("loc=" + loc);
-        AntProjectHelper helper = (AntProjectHelper) wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
+        helper = (AntProjectHelper) wiz.getProperty(SharableLibrariesUtils.PROP_HELPER);
+        refhelper = (ReferenceHelper) wiz.getProperty(SharableLibrariesUtils.PROP_REFERENCE_HELPER);
         List<String> libraries = (List<String>) wiz.getProperty(SharableLibrariesUtils.PROP_LIBRARIES);
         List<String> jars = (List<String>) wiz.getProperty(SharableLibrariesUtils.PROP_JAR_REFS);
         if (!loc.equals(location)) {
@@ -137,8 +138,18 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 }
             } else if (item instanceof String) {
                 //file reference
+                String ref = (String)item;
+                if (ACTION_ABSOLUTE.equals(action)) {
+//                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, false, anthelper, helper));
+                } else if (ACTION_RELATIVE.equals(action)) {
+//                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, true, anthelper, helper));
+                } else if (ACTION_COPY.equals(action)) {
+//                    actions.add(new SharableLibrariesUtils.CopyLibraryJars(helper, anthelper, ref));
+                } else {
+                    assert false: "no handling defined for action: " + action;
+                }
             } else if (item instanceof AntArtifact) {
-                //project dependency
+                //project dependency.. do we want to handle? proably not..
             }
         }
         wiz.putProperty(SharableLibrariesUtils.PROP_ACTIONS, actions);
@@ -168,7 +179,9 @@ final class MakeSharableVisualPanel2 extends JPanel {
                     Library lib = (Library)value;
                     text = lib.getDisplayName();
                 } else if (value instanceof String) {
-                    text = (String)value;
+                    String v = helper.getStandardPropertyEvaluator().evaluate((String)value);
+                    File absFile = helper.resolveFile(v);
+                    text = absFile.getAbsolutePath();
                 }
                 
                 return super.getTableCellRendererComponent(table, text, isSelected, hasFocus, row, column);
@@ -323,27 +336,51 @@ final class MakeSharableVisualPanel2 extends JPanel {
     private void populateDescriptionField() {
         int row = tblJars.getSelectedRow();
         if (row != -1) {
-            Library lib = (Library)tblJars.getModel().getValueAt(row, 0);
-            String type = lib.getType();
-            LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(type);
-            assert provider != null;
-            String typeString = provider.getDisplayName();
-            String[] volumes = provider.getSupportedVolumeTypes();
-            StringBuffer contents = new StringBuffer();
-            for (String vol : volumes) {
-                List<URL> urls = lib.getContent(vol);
-                for (URL url : urls) {
-                    FileObject fo = URLMapper.findFileObject(url);
-                    if (fo != null) {
-                        if (FileUtil.getArchiveFile(fo) != null) {
-                            url = URLMapper.findURL(FileUtil.getArchiveFile(fo), URLMapper.EXTERNAL);
+            Object val = tblJars.getModel().getValueAt(row, 0);
+            if (val instanceof Library) {
+                Library lib = (Library)val;
+                String type = lib.getType();
+                LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(type);
+                assert provider != null;
+                String typeString = provider.getDisplayName();
+                String[] volumes = provider.getSupportedVolumeTypes();
+                StringBuffer contents = new StringBuffer();
+                for (String vol : volumes) {
+                    List<URL> urls = lib.getContent(vol);
+                    for (URL url : urls) {
+                        FileObject fo = URLMapper.findFileObject(url);
+                        if (fo != null) {
+                            if (FileUtil.getArchiveFile(fo) != null) {
+                                url = URLMapper.findURL(FileUtil.getArchiveFile(fo), URLMapper.EXTERNAL);
+                            }
                         }
+                        contents.append(url).append("\n");
                     }
-                    contents.append(url).append("\n");
                 }
+                taDetails.setText("Library (" + typeString  + ")\n"+ 
+                        "Contents:\n" + contents);   
+            } else if (val instanceof String) {
+                String ref = (String) val;
+                String text = "Jar/Folder\nBinary:";
+                String value = helper.getStandardPropertyEvaluator().evaluate(ref);
+                File absFile = helper.resolveFile(value);
+                text = text + absFile.getAbsolutePath();
+                String source = ref.replace("${file.reference", "${source.reference"); //NOI18N
+                value = helper.getStandardPropertyEvaluator().evaluate(source);
+                if (!value.startsWith("${source.")) { //NOI18N
+                    absFile = helper.resolveFile(value);
+                    text = text + "\nSources:" + absFile.getAbsolutePath();
+                }
+                String javadoc = ref.replace("${file.reference", "${javadoc.reference"); //NOI18N
+                value = helper.getStandardPropertyEvaluator().evaluate(javadoc);
+                if (!value.startsWith("${javadoc.")) { //NOI18N
+                    absFile = helper.resolveFile(value);
+                    text = text + "\nJavadoc:" + absFile.getAbsolutePath();
+                }
+                
+                
+                taDetails.setText(text);
             }
-            taDetails.setText("Type:" + typeString + 
-                    "\nContents:\n" + contents);   
         } else {
             taDetails.setText("<No items selected>");
         }
