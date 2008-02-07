@@ -219,7 +219,8 @@ public class TestProjectReferencesAction extends NodeAction {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(task);
         handle.start();
         final PrintWriter out = io.getOut();
-        long time = System.currentTimeMillis();
+        final long[] time = new long[2];
+        time[0] = System.currentTimeMillis();
         TraceXRef.traceProjectRefsStatistics(p, out, new CsmProgressAdapter() {
             private int handled = 0;
             @Override
@@ -232,10 +233,13 @@ public class TestProjectReferencesAction extends NodeAction {
             public void fileParsingStarted(CsmFile file) {
                 handle.progress("Analyzing " + file.getName(), handled++); // NOI18N
             }
-            
+
+            @Override
+            public void projectParsingFinished(CsmProject project) {
+                time[1] = System.currentTimeMillis();
+            }
         });
         handle.finish();
-        time = System.currentTimeMillis() - time;
-        out.println("Analyzing " + p.getProjectDisplayName() + " took " + time + "ms");
+        out.println("Analyzing " + p.getProjectDisplayName() + " took " + (time[1]-time[0]) + "ms");
     }
 }

@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
+import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.openide.filesystems.FileUtil;
 
@@ -237,7 +238,7 @@ public class TraceXRef extends TraceModel {
         return false;
     }
     
-    public static void traceProjectRefsStatistics(NativeProject prj, PrintWriter out, CsmProgressListener callback) {
+    public static void traceProjectRefsStatistics(NativeProject prj, PrintWriter printOut, CsmProgressListener callback) {
         CsmProject csmPrj = CsmModelAccessor.getModel().getProject(prj);
         XRefResultSet bag = new XRefResultSet();
         Collection<CsmFile> allFiles = csmPrj.getAllFiles();
@@ -248,8 +249,12 @@ public class TraceXRef extends TraceModel {
             if (callback != null) {
                 callback.fileParsingStarted(file);
             }
-            analyzeFile(file, bag, out);
+            analyzeFile(file, bag, printOut);
         }
+        if (callback != null) {
+            callback.projectParsingFinished(csmPrj);
+        }
+        traceStatistics(bag, printOut);
     }
     
     public static void traceRefs(Collection<CsmReference> out, CsmObject target, PrintStream streamOut) {
@@ -569,6 +574,28 @@ public class TraceXRef extends TraceModel {
             }
         }
         return null;
+    }
+
+    private static void traceStatistics(XRefResultSet bag, PrintWriter printOut) {
+        printOut.println("Number of contexts " + bag.getNumberOfAllContexts());
+        for (XRefResultSet.ContextScope scope : XRefResultSet.ContextScope.values()) {
+            printOut.println(scope + " " + bag.getNumberOfContexts(scope, false) + 
+                    " (" + bag.getNumberOfContexts(scope, true) + "%)");
+            traceEntriesStatistics(bag.getEntries(scope), printOut);
+            printOut.println();
+        }
+    }
+    
+    private static void traceEntriesStatistics(Collection<ContextEntry> entries, PrintWriter printOut) {
+        printOut.println("\tscope has " + entries.size() + " entries");
+        int unresolved = 0;
+        for (ContextEntry contextEntry : entries) {
+            if (contextEntry.declaration == XRefResultSet.DeclarationKind.UNRESOLVED) {
+                unresolved++;
+            }
+        }
+        printOut.println("\t\tresolved: " + (entries.size() - unresolved));
+        printOut.println("\t\tunresolved: " + unresolved);
     }
     
     private static <T extends CsmObject> ObjectContext<T> createContextObject(T obj, PrintWriter printOut) {
