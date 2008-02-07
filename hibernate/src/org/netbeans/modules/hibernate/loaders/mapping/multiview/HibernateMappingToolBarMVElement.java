@@ -44,6 +44,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject;
 import org.netbeans.modules.hibernate.mapping.model.HibernateMapping;
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
+import org.netbeans.modules.hibernate.mapping.model.Resultset;
+import org.netbeans.modules.hibernate.mapping.model.Typedef;
 import org.netbeans.modules.xml.multiview.ToolBarMultiViewElement;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
 import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
@@ -64,35 +66,20 @@ import org.openide.util.NbBundle;
  */
 public class HibernateMappingToolBarMVElement extends ToolBarMultiViewElement {
 
-    public static final String PROPERTIES = "Properties";
-    public static final String JDBC_PROPS = "JDBC Properties";
-    public static final String DATASOURCE_PROPS = "Datasource Properties";
-    public static final String OPTIONAL_PROPS = "Optional Properties";
-    public static final String CONFIGURATION_PROPS = "Configuration Properties";
-    public static final String JDBC_CONNECTION_PROPS = "JDBC and Connection Properties";
-    public static final String CACHE_PROPS = "Cache Properties";
-    public static final String TRANSACTION_PROPS = "Transaction Properties";
-    public static final String MISCELLANEOUS_PROPS = "Miscellaneous Properties";
-    public static final String MAPPINGS = "Mappings";
-    public static final String CLASS_CACHE = "Class Cache";
-    public static final String COLLECTION_CACHE = "Collection Cache";
-    public static final String CACHE = "Cache";
-    public static final String EVENTS = "Events";
-    public static final String EVENT = "Event";
-    public static final String SECURITY = "Security";
+    public static final String META_DATA = "Meta";
+    public static final String IMPORT_ELEMENT="Import";
+    public static final String RETURN_SCALAR= "Return Scalar";
+    
     private MappingView view;
     private ToolBarDesignEditor comp;
     private HibernateMappingDataObject mappingDataObject;
     private HibernateMappingPanelFactory factory;
     private Project project;
-    private Action addClassAction, removeClassAction;
 
     public HibernateMappingToolBarMVElement(HibernateMappingDataObject dObj) {
         super(dObj);
         this.mappingDataObject = dObj;
         this.project = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
-        addClassAction = new AddClassAction(NbBundle.getMessage(HibernateMappingToolBarMVElement.class, "LBL_Add"));
-        removeClassAction = new RemoveClassAction(NbBundle.getMessage(HibernateMappingToolBarMVElement.class, "LBL_Remove"));
 
         comp = new ToolBarDesignEditor();
         factory = new HibernateMappingPanelFactory(comp, dObj);
@@ -154,8 +141,13 @@ public class HibernateMappingToolBarMVElement extends ToolBarMultiViewElement {
         private HibernateMappingDataObject mappingDataObject;
         
         private Node classesContainerNode;
-        
         private SectionContainer classesCont;
+        
+        private Node typedefContainerNode;
+        private SectionContainer typedefCont;
+        
+        private Node resultsetsContainerNode;
+        private SectionContainer resultsetsCont;
 
         public SectionContainer getClassesContainer() {
             return classesCont;
@@ -178,50 +170,53 @@ public class HibernateMappingToolBarMVElement extends ToolBarMultiViewElement {
             HibernateMapping mapping = mappingDataObject.getHibernateMapping();
 
             // Node meta
-            // Node typedef
+            Node metaNode = new ElementLeafNode("Mapping Meta Data"); // TODO: I18N
+            SectionPanel metaSectionPanel = new SectionPanel(this, metaNode, metaNode.getDisplayName(), HibernateMappingToolBarMVElement.META_DATA, false, false);
+
+            // Add section for typedef elements
+            TypedefElementsHelper typedefHelper = new TypedefElementsHelper(this, mapping.getTypedef());
+            typedefContainerNode = typedefHelper.getTypedefsContainerNode();
+            typedefCont = typedefHelper.getTypedefsContainer();
+            
             // Node import
+            Node importNode = new ElementLeafNode("Import"); // TODO: I18N
+            SectionPanel importSectionPanel = new SectionPanel(this, importNode, importNode.getDisplayName(), HibernateMappingToolBarMVElement.IMPORT_ELEMENT, false, false);
 
-            // Node for class | subclass | jointed-class | union-sublcass
-            MyClass[] myClasses = mapping.getMyClass();
+            // Add the section for the class elements
+            ClassElementsHelper clsHelper = new ClassElementsHelper(this,mapping.getMyClass());
+            classesContainerNode = clsHelper.getClassesContainerNode();
+            classesCont = clsHelper.getClassesContainer();
 
-            // Nodes for each class
-            Node classNodes[] = new Node[myClasses.length];
-            for (int i = 0; i < myClasses.length; i++) {
-                 // Use the class Name as the node display name
-                String name = myClasses[i].getAttributeValue("Name"); // NOI18N
-                classNodes[i] = new ElementLeafNode(name);
-            }
-            Children classesCh = new Children.Array();
-            classesCh.add(classNodes);
-            
-            // Container Node for the classes 
-            classesContainerNode = new SectionContainerNode(classesCh);
-            classesContainerNode.setDisplayName(NbBundle.getMessage(HibernateMappingToolBarMVElement.class, "LBL_Classes"));
-            classesCont = new SectionContainer(this, classesContainerNode,
-                    NbBundle.getMessage(HibernateMappingToolBarMVElement.class, "LBL_Classes"));
-            classesCont.setHeaderActions(new javax.swing.Action[]{addClassAction});
-            SectionPanel classPanels[] = new SectionPanel[myClasses.length];
-            for (int i = 0; i < myClasses.length; i++) {
-                classPanels[i] = new SectionPanel(this, classNodes[i], classNodes[i].getDisplayName(), myClasses[i], false, false);
-                classPanels[i].setHeaderActions(new javax.swing.Action[]{removeClassAction});
-                classesCont.addSection(classPanels[i]);
-            }
+            // Add the section for the resultsets
+            ResultsetElementsHelper resultsetsHelper = new ResultsetElementsHelper(this,mapping.getResultset());
+            resultsetsContainerNode = resultsetsHelper.getResultsetsContainerNode();
+            resultsetsCont = resultsetsHelper.getResultsetsContianer();
             
 
-            // Node resultset
             // Node for query | sql-query
+            Node queryNode = new ElementLeafNode("Query");
+
             // Node filter-def
+            Node filterDefNode = new ElementLeafNode("FilterDef");
+
             // Node for database-object
+            Node databaseObjectNode = new ElementLeafNode("Database Object");
 
+            // Add top level nodes to the root
             Children rootChildren = new Children.Array();
-            rootChildren.add(new Node[]{classesContainerNode});
+            rootChildren.add(new Node[]{metaNode, typedefContainerNode, importNode, classesContainerNode,
+                resultsetsContainerNode, queryNode, filterDefNode, databaseObjectNode
+            });
             Node root = new AbstractNode(rootChildren);
-            
-             // Add sections for the nodes
-            addSection(classesCont);
-            
-            setRoot(root);
 
+            // Add sections for the nodes
+            addSection(metaSectionPanel);
+            addSection(typedefCont);
+            addSection(importSectionPanel);
+            addSection(classesCont);
+            addSection(resultsetsCont);
+
+            setRoot(root);
         }
 
         @Override
@@ -230,8 +225,8 @@ public class HibernateMappingToolBarMVElement extends ToolBarMultiViewElement {
             return null;
         }
     }
-
-    private class ElementLeafNode extends org.openide.nodes.AbstractNode {
+    
+    public static class ElementLeafNode extends org.openide.nodes.AbstractNode {
 
         ElementLeafNode(String displayName) {
             super(org.openide.nodes.Children.LEAF);
@@ -245,65 +240,4 @@ public class HibernateMappingToolBarMVElement extends ToolBarMultiViewElement {
         }
     }
 
-    /**
-     * For adding a new event in the configuration
-     */
-    private class AddClassAction extends javax.swing.AbstractAction {
-
-        AddClassAction(String actionName) {
-            super(actionName);
-        }
-
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-
-        /*NewEventPanel dialogPanel = new NewEventPanel();
-        EditDialog dialog = new EditDialog(dialogPanel, NbBundle.getMessage(HibernateMappingToolBarMVElement.class, "LBL_Event"), true) {
-        protected String validate() {
-        // Nothing to validate
-        return null;
-        }
-        };
-        java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
-        d.setVisible(true);
-        if (dialog.getValue().equals(EditDialog.OK_OPTION)) {
-        String eventType = dialogPanel.getEventType();
-        Event event = new Event();
-        event.setAttributeValue("Type", eventType);
-        configDataObject.getHibernateConfiguration().getSessionFactory().addEvent(event);
-        configDataObject.modelUpdatedFromUI();
-        ConfigurationView view = (ConfigurationView) comp.getContentView();
-        Node eventNode = new ElementLeafNode(eventType);
-        view.getEventsContainerNode().getChildren().add(new Node[]{eventNode});
-        SectionPanel pan = new SectionPanel(view, eventNode, eventNode.getDisplayName(), event, false, false);
-        pan.setHeaderActions(new javax.swing.Action[]{removeEventAction});
-        view.getEventsContainer().addSection(pan, true);
-        }*/
-        }
-    }
-
-    /**
-     * For removing an event from the configuration
-     */
-    private class RemoveClassAction extends javax.swing.AbstractAction {
-
-        RemoveClassAction(String actionName) {
-            super(actionName);
-        }
-
-        public void actionPerformed(java.awt.event.ActionEvent evt) {
-
-        /*SectionPanel sectionPanel = ((SectionPanel.HeaderButton) evt.getSource()).getSectionPanel();
-        Event event = (Event) sectionPanel.getKey();
-        org.openide.DialogDescriptor desc = new ConfirmDialog(NbBundle.getMessage(HibernateMappingToolBarMVElement.class,
-        "TXT_Remove_Event",
-        event.getAttributeValue("Type"))); // NOI18N
-        java.awt.Dialog dialog = org.openide.DialogDisplayer.getDefault().createDialog(desc);
-        dialog.setVisible(true);
-        if (org.openide.DialogDescriptor.OK_OPTION.equals(desc.getValue())) {
-        sectionPanel.getSectionView().removeSection(sectionPanel.getNode());
-        configDataObject.getHibernateConfiguration().getSessionFactory().removeEvent(event);
-        configDataObject.modelUpdatedFromUI();
-        }*/
-        }
-    }
     }

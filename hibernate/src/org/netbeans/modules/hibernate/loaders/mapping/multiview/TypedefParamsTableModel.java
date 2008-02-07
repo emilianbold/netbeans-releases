@@ -39,55 +39,90 @@
 package org.netbeans.modules.hibernate.loaders.mapping.multiview;
 
 import org.netbeans.modules.hibernate.loaders.cfg.multiview.*;
-import org.netbeans.modules.hibernate.loaders.cfg.*;
-import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject;
-import org.netbeans.modules.hibernate.mapping.model.Id;
-import org.netbeans.modules.hibernate.mapping.model.MyClass;
-import org.netbeans.modules.hibernate.mapping.model.Resultset;
-import org.netbeans.modules.hibernate.mapping.model.Return;
+import javax.swing.table.AbstractTableModel;
+
 import org.netbeans.modules.hibernate.mapping.model.Typedef;
-import org.netbeans.modules.xml.multiview.ui.InnerPanelFactory;
-import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
-import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.ToolBarDesignEditor;
 
 /**
- * Factory for creating section panels for displaying and/or editing Hibernate configuration file
  * 
  * @author Dongmei Cao
  */
-public class HibernateMappingPanelFactory implements InnerPanelFactory {
+public class TypedefParamsTableModel extends AbstractTableModel {
 
-    private HibernateMappingDataObject dObj;
-    private ToolBarDesignEditor editor;
+    private static final String[] columnNames = { "Name", "Value"
+        //NbBundle.getMessage(TypedefTableModel.class, "LBL_Meta_Attribute"),
+       // NbBundle.getMessage(TypedefTableModel.class, "LBL_Meta_Inherit"),
+        //NbBundle.getMessage(TypedefTableModel.class, "LBL_Meta_Value")
+    
+    };
+    // Matches the attribute name used in org.netbeans.modules.hibernate.mapping.model.HibernateMapping
+    private static final String attrName = "Name";
+    
+    private Typedef typedef;
 
-    /** Creates a new instance of ServletPanelFactory */
-    HibernateMappingPanelFactory(ToolBarDesignEditor editor, HibernateMappingDataObject dObj) {
-        this.dObj = dObj;
-        this.editor = editor;
+    public TypedefParamsTableModel(Typedef typedef) {
+        this.typedef = typedef;   
     }
 
-    public SectionInnerPanel createInnerPanel(Object key) {
+    @Override
+    public String getColumnName(int column) {
+        return columnNames[column];
+    }
 
-        if (key instanceof Typedef) {
-            return new TypedefPanel((SectionView) editor.getContentView(), dObj, (Typedef) key);
-        } else if (key instanceof Resultset) {
-            return new ReturnScalarElementsPanel((SectionView) editor.getContentView(), dObj, (Resultset)key);
-        } else if (key instanceof Return) {
-            return new ReturnElementPanel((SectionView) editor.getContentView(), dObj, (Return)key);
-        } else if (key instanceof Id) {
-            return new IdElementPanel((SectionView) editor.getContentView(), dObj, (Id)key);
-        } 
-        else if (key instanceof String) {
-            if (((String) key).equals(HibernateMappingToolBarMVElement.META_DATA)) {
-                return new MetaDataPanel((SectionView) editor.getContentView(), dObj);
-            } else if (((String) key).equals(HibernateMappingToolBarMVElement.IMPORT_ELEMENT)) {
-                return new ImportElementsPanel((SectionView) editor.getContentView(), dObj);
-            } else {
-                return null;
-            }
-        } else {
+    @Override
+    public void setValueAt(Object value, int row, int column) {
+    // TODO
+    }
+
+    public Object getValueAt(int row, int column) {
+
+        if (typedef == null) {
             return null;
+        } else {
+            if (column == 0 ) { // name
+                return typedef.getAttributeValue(Typedef.PARAM, row, attrName);
+            } else {
+                return typedef.getParam(row);
+            }
         }
+    }
+
+    public int getRowCount() {
+        if (typedef == null) {
+            return 0;
+        } else {
+            return typedef.sizeParam();
+        }
+    }
+
+    public int getColumnCount() {
+        return columnNames.length;
+    }
+
+    @Override
+    public boolean isCellEditable(int row, int column) {
+        return (false);
+    }
+
+    public void addRow(String paramName, String paramValue) {
+
+        int index = typedef.addParam(paramValue);
+        typedef.setAttributeValue(Typedef.PARAM, index, attrName, paramName);
+        
+        fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
+    }
+
+    public void editRow(int row, String paramName, String paramValue) {
+        typedef.setParam(row, paramValue);
+        typedef.setAttributeValue(Typedef.PARAM, row, attrName, paramName);
+
+        fireTableRowsUpdated(row, row);
+    }
+
+    public void removeRow(int row) {
+        String value = typedef.getParam(row);
+        typedef.removeParam(value);
+
+        fireTableRowsDeleted(row, row);
     }
 }
