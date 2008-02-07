@@ -10,6 +10,13 @@
 package org.netbeans.modules.xml.xpath.ext;
 
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.schema.model.ElementReference;
+import org.netbeans.modules.xml.schema.model.Form;
+import org.netbeans.modules.xml.schema.model.GlobalAttribute;
+import org.netbeans.modules.xml.schema.model.GlobalElement;
+import org.netbeans.modules.xml.schema.model.LocalAttribute;
+import org.netbeans.modules.xml.schema.model.LocalElement;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
 
 /**
  * Utility class.
@@ -81,4 +88,36 @@ public class XPathUtils {
         return true;
     }
     
+    /**
+     * Determines if a namespace prefix is required for the specified schema component. 
+     * @param sComp
+     * @return
+     */
+    public static boolean isPrefixRequired(SchemaComponent sComp) {
+        if (sComp instanceof LocalElement) {
+            Form form = ((LocalElement)sComp).getFormEffective();
+            if (form == Form.QUALIFIED) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (sComp instanceof GlobalElement) {
+            return true;
+        } else if (sComp instanceof LocalAttribute) {
+            Form form = ((LocalAttribute)sComp).getFormEffective();
+            if (form == Form.QUALIFIED) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (sComp instanceof GlobalElement || 
+                sComp instanceof ElementReference || 
+                sComp instanceof GlobalAttribute) {
+            // all global objects have to be with a prefix
+            return true;
+        }
+        //
+        assert true : "Unsupported schema component in the BPEL mapper tree!"; // NOI18N
+        return false;
+    }
 }
