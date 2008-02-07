@@ -54,11 +54,11 @@ public class SpringWebFrameworkValidatorTest extends NbTestCase {
     }
 
     public void testDispatcherNameEntry_NonWordCharacterPattern() throws Exception {       
-        assert(SpringWebFrameworkValidator.isDispatcherNamePatternValid("Dis-patcher") == false);
+        assert(SpringWebFrameworkValidator.isDispatcherNameValid("Dis-patcher") == false);
     }
     
     public void testDispatcherNameEntry_EmptyWordCharacterPattern() throws Exception {
-        assert(SpringWebFrameworkValidator.isDispatcherNamePatternValid("") == false);
+        assert(SpringWebFrameworkValidator.isDispatcherNameValid("") == false);
     }
             
     public void testDispatcherMappingEntry_ExtensionSpacePattern() throws Exception {
@@ -102,6 +102,6 @@ public class SpringWebFrameworkValidatorTest extends NbTestCase {
     }   
     
     public void testDispatcherNameEntry_ValidPattern() throws Exception {
-        assert(SpringWebFrameworkValidator.isDispatcherNamePatternValid("Dispatcher") == true);
+        assert(SpringWebFrameworkValidator.isDispatcherNameValid("Dispatcher") == true);
     }  
 }
