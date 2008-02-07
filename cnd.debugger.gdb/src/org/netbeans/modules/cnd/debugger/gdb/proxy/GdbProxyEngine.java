@@ -341,10 +341,6 @@ public class GdbProxyEngine {
         return gdbProxy.getLogger();
     }
     
-    class TokenList extends LinkedList {
-        
-    }
-    
     private static class CommandInfo {
         
         private int token;
