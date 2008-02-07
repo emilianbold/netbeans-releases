@@ -89,6 +89,7 @@ public class CompileSingleAction extends NodeAction {
 	return null;
     }
 
+    @Override
     protected boolean asynchronous() {
 	return false;
     }

@@ -144,39 +144,39 @@
                 can use them in ant tasks. for now we need to add the jars of this modules 
                 -->
       <path id="ant.task.classpath.models">
-          <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/> 
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/> 
-          <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
-          <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
-          <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
-          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
-          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-model.jar"/>
-          <pathelement location="${{netbeans.home}}/../xml1/modules/org-netbeans-modules-xml-xpath-ext.jar"/>
-          <pathelement location="${{netbeans.home}}/../xml1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/ext/resolver-1_1_nb.jar"/> 
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-apache-xml-resolver.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-netbeans-modules-xml-xam.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-netbeans-modules-xml-schema-model.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-netbeans-modules-xml-retriever.jar"/> 
+          <pathelement location="${{netbeans.home}}/platform8/lib/org-openide-util.jar"/>
+          <pathelement location="${{netbeans.home}}/platform8/modules/org-openide-loaders.jar"/>                       
+          <pathelement location="${{netbeans.home}}/soa2/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
+          <pathelement location="${{netbeans.home}}/soa2/modules/org-netbeans-modules-bpel-project.jar"/>
+          <pathelement location="${{netbeans.home}}/soa2/modules/org-netbeans-modules-bpel-model.jar"/>
+          <pathelement location="${{netbeans.home}}/xml2/modules/org-netbeans-modules-xml-xpath-ext.jar"/>
+          <pathelement location="${{netbeans.home}}/xml2/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
       </path>
       <path id="ant.task.classpath.validation">
-          <pathelement location="${{netbeans.home}}/../ide8/modules/ext/resolver-1_1_nb.jar"/>            
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-apache-xml-resolver.jar"/>
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-xam.jar"/>
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-schema-model.jar"/>
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
-          <pathelement location="${{netbeans.home}}/../ide8/modules/org-netbeans-modules-xml-retriever.jar"/>      
-          <pathelement location="${{netbeans.home}}/../platform7/lib/org-openide-util.jar"/>
-          <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-dialogs.jar"/>
-          <pathelement location="${{netbeans.home}}/../platform7/modules/org-openide-loaders.jar"/>                       
-          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-soa-ui.jar"/>
-          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-model.jar"/>
-          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-project.jar"/>
-          <pathelement location="${{netbeans.home}}/../soa1/modules/org-netbeans-modules-bpel-validation.jar"/>
-          <pathelement location="${{netbeans.home}}/../soa1/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
-          <pathelement location="${{netbeans.home}}/../xml1/modules/ext/jxpath/jxpath1.1.jar"/>
-          <pathelement location="${{netbeans.home}}/../xml1/modules/org-netbeans-modules-xml-xpath.jar"/>
-          <pathelement location="${{netbeans.home}}/../xml1/modules/org-netbeans-modules-xml-xpath-ext.jar"/>
-          <pathelement location="${{netbeans.home}}/../xml1/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/ext/resolver-1_1_nb.jar"/>            
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-apache-xml-resolver.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-netbeans-modules-xml-xam.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-netbeans-modules-xml-schema-model.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-netbeans-modules-xml-wsdl-model.jar"/>
+          <pathelement location="${{netbeans.home}}/ide9/modules/org-netbeans-modules-xml-retriever.jar"/>      
+          <pathelement location="${{netbeans.home}}/platform8/lib/org-openide-util.jar"/>
+          <pathelement location="${{netbeans.home}}/platform8/modules/org-openide-dialogs.jar"/>
+          <pathelement location="${{netbeans.home}}/platform8/modules/org-openide-loaders.jar"/>                       
+          <pathelement location="${{netbeans.home}}/soa2/modules/org-netbeans-modules-soa-ui.jar"/>
+          <pathelement location="${{netbeans.home}}/soa2/modules/org-netbeans-modules-bpel-model.jar"/>
+          <pathelement location="${{netbeans.home}}/soa2/modules/org-netbeans-modules-bpel-project.jar"/>
+          <pathelement location="${{netbeans.home}}/soa2/modules/org-netbeans-modules-bpel-validation.jar"/>
+          <pathelement location="${{netbeans.home}}/soa2/ant/nblib/org-netbeans-modules-bpel-project.jar"/>
+          <pathelement location="${{netbeans.home}}/xml2/modules/ext/jxpath/jxpath1.1.jar"/>
+          <pathelement location="${{netbeans.home}}/xml2/modules/org-netbeans-modules-xml-xpath.jar"/>
+          <pathelement location="${{netbeans.home}}/xml2/modules/org-netbeans-modules-xml-xpath-ext.jar"/>
+          <pathelement location="${{netbeans.home}}/xml2/modules/org-netbeans-modules-xml-wsdl-extensions.jar"/>
       </path>        
                 
                 <!--

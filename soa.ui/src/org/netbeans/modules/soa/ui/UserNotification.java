@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  * Utility for showing notification dialogs to the user
@@ -39,8 +40,8 @@ public class UserNotification {
     }
     
     public static void showMessage(String message) {
-        Object[] options = new Object[] {NotifyDescriptor.CLOSED_OPTION};
         NotifyDescriptor descriptor = new NotifyDescriptor.Message(message);
+        descriptor.setOptionType(NotifyDescriptor.DEFAULT_OPTION);
         DialogDisplayer.getDefault().notify(descriptor);
     }
     
@@ -50,6 +51,27 @@ public class UserNotification {
                 showMessage(message);
             }
         });
+    }
+    
+    /**
+     * Shows a warning message.
+     * @param message
+     * @return the user's decision. 
+     * If the user ignores the warning then the true is returned.
+     */
+    public static boolean showWarningMessage(String message) {
+        String lineSeparator = System.getProperty("line.separator"); // NOI18N
+        String warningMsg = 
+                NbBundle.getMessage(UserNotification.class, "LBL_WarningMsg"); // NOI18N
+        String ignoreMsg = 
+                NbBundle.getMessage(UserNotification.class, "LBL_IgnoreMsg"); // NOI18N
+        String msg = warningMsg + lineSeparator + message + 
+                lineSeparator + lineSeparator + ignoreMsg;
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(msg);
+        descriptor.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+        descriptor.setMessageType(NotifyDescriptor.WARNING_MESSAGE);
+        DialogDisplayer.getDefault().notify(descriptor);
+        return descriptor.getValue() == NotifyDescriptor.OK_OPTION;
     }
     
 }

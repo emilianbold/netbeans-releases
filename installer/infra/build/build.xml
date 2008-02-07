@@ -170,7 +170,7 @@
         
         <!-- then compile all the custom ant tasks -->
         <javac 
-            srcdir="${custom.tasks.src.1}" 
+            srcdir="${custom.tasks.src.1}"
             destdir="${custom.tasks.cls}"
             classpath="${custom.tasks.cls}"
             debug="true"/>
@@ -266,6 +266,7 @@
 
         <set property="jdk.bundle.files.suffix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
+	<!--
         <get
             src="${glassfish.builds.host}/java/re/glassfish/9.1_01/promoted/fcs/latest/bundles/"
             dest="${temp.file}"/>
@@ -275,17 +276,17 @@
         <glassfish-buildnumber 
             file="${temp.file}" 
             prefix="sjsas"/>
-	<!--
-        <set property="glassfish.milestone.number" value="58"/>
-        <set property="glassfish.milestone.number.real" value="58g"/>
+	-->
+        <set property="glassfish.milestone.number" value="09"/>
+        <set property="glassfish.milestone.number.real" value="09d"/>
         <set property="glassfish.build.type" value="fcs"/>
-        <set property="glassfish.build.number" value="20070907"/>
+        <set property="glassfish.build.number" value="20071206"/>
 
-	<set property="sjsas.milestone.number" value="58"/>
-        <set property="sjsas.milestone.number.real" value="58g"/>
+	<set property="sjsas.milestone.number" value="09"/>
+        <set property="sjsas.milestone.number.real" value="09d"/>
         <set property="sjsas.build.type" value="fcs"/>
-        <set property="sjsas.build.number" value="20070907"/>
-        
+        <set property="sjsas.build.number" value="20071206"/>
+        <!--
         -->
         <!--
         <set property="openesb.build.number" value="2008012302"/>                       

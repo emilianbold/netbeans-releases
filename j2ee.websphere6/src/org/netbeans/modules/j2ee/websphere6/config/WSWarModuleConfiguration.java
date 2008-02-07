@@ -285,8 +285,10 @@ public class WSWarModuleConfiguration extends WSModuleConfiguration
         if (evt.getPropertyName().equals(DataObject.PROP_MODIFIED) &&
                 evt.getNewValue() == Boolean.FALSE) {
             // dataobject has been modified, ibmWebApp graph is out of sync
-             wsWebBnd = null;
-             wsWebExt = null;
+            synchronized (this) { 
+                wsWebBnd = null;
+                wsWebExt = null;
+            }
         }
     }
 

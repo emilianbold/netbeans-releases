@@ -83,14 +83,14 @@ public class RSpecSupport {
     }
     
     public boolean isRSpecInstalled() {
-        if (getVersion(RSPEC_GEM_NAME) != null) { // NOI18N
+        if (getVersion(RSPEC_GEM_NAME) != null) {
             return true;
         }
 
         // Rails plugin
         if (project != null) {
             FileObject projectDir = project.getProjectDirectory();
-            if ((projectDir != null) && (projectDir.getFileObject(PLUGIN_SPEC_PATH) != null)) { // NOI18N
+            if ((projectDir != null) && (projectDir.getFileObject(PLUGIN_SPEC_PATH) != null)) {
 
                 return true;
             }
@@ -112,7 +112,7 @@ public class RSpecSupport {
 
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
 
-        String version = gemManager.getVersion(RSPEC_GEM_NAME); // NOI18N
+        String version = getVersion(RSPEC_GEM_NAME);
 
         if (version != null) {
             String libGemDir = gemManager.getGemHome();
@@ -136,7 +136,7 @@ public class RSpecSupport {
         if (project != null) {
             FileObject projectDir = project.getProjectDirectory();
             if (projectDir != null) {
-                FileObject rspec = projectDir.getFileObject(PLUGIN_SPEC_PATH); // NOI18N
+                FileObject rspec = projectDir.getFileObject(PLUGIN_SPEC_PATH);
 
                 if (rspec != null) {
                     return FileUtil.toFile(rspec).getAbsolutePath();
@@ -196,10 +196,10 @@ public class RSpecSupport {
             // First look for a NetBeans-specific options file, in case you want different
             // options when running under the IDE (for example, no --color since the 
             // color escape codes don't work under our terminal)
-            FileObject specOpts = projectDir.getFileObject(NETBEANS_SPEC_OPTS); // NOI18N
+            FileObject specOpts = projectDir.getFileObject(NETBEANS_SPEC_OPTS);
 
             if (specOpts == null) {
-                specOpts = projectDir.getFileObject(SPEC_OPTS); // NOI18N
+                specOpts = projectDir.getFileObject(SPEC_OPTS);
             }
 
             if (specOpts != null) {
@@ -237,14 +237,12 @@ public class RSpecSupport {
                 desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
                 
                 // Override args
-                desc.additionalArgs(additionalArgs.toArray(
-                            new String[additionalArgs.size()])); // NOI18N
+                desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
             }
         } else {
             desc = new ExecutionDescriptor(platform, displayName, pwd, spec);
 
-            desc. additionalArgs(additionalArgs.toArray(
-                        new String[additionalArgs.size()])); // NOI18N
+            desc. additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
             desc.debug(debug);
             desc.allowInput();
             desc.fileLocator(fileLocator);

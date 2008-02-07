@@ -69,6 +69,7 @@ import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.cookies.EditorCookie;
@@ -147,7 +148,34 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
         return new HelpCtx(WsdlPanel.class);
     }
 
-    
+    void cleanup() {
+        WSDLModel tempModel = (WSDLModel) templateWizard.getProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL);
+        if (tempModel != null) {
+            DataObject dobj = ActionHelper.getDataObject(tempModel);
+            if (dobj != null) {
+                dobj.setModified(false);
+                try {
+                    dobj.delete();
+                } catch (Exception e) {
+                    //ignore
+                }
+            }
+        }
+        templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, null);
+
+        if (mTempWSDLModel != null) {
+            DataObject dobj = ActionHelper.getDataObject(mTempWSDLModel);
+            if (dobj != null) {
+                dobj.setModified(false);
+                try {
+                    dobj.delete();
+                } catch (Exception e) {
+                    //ignore
+                }
+            }
+            mTempWSDLModel = null;
+        }
+    }
     
     public boolean isValid() {
         if(templateWizard != null) {
@@ -183,26 +211,20 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
 
     public void readSettings( Object settings ) {
         templateWizard = (TemplateWizard)settings;
-        
-        
+
         //if user come to first panel we need to discard out temp wsdl model
-        templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLMODEL, null);
+        cleanup();
+
         templateWizard.putProperty(WizardPortTypeConfigurationStep.TEMP_WSDLFILE, null);
+        tempWSDLFile = null;
         
     }
 
     public void storeSettings(Object settings) {
         TemplateWizard wiz = (TemplateWizard) settings;
-        
-        if(wiz.getValue() == TemplateWizard.CANCEL_OPTION) {
-            if (mTempWSDLModel != null) {
-                DataObject dobj = ActionHelper.getDataObject(mTempWSDLModel);
-                if (dobj != null) dobj.setModified(false);
-            }
-            return;
-        }
-        
-        if (WizardDescriptor.PREVIOUS_OPTION.equals(((WizardDescriptor) settings).getValue())) {
+        Object option = wiz.getValue();
+        if(option == NotifyDescriptor.CANCEL_OPTION || option == WizardDescriptor.PREVIOUS_OPTION) {
+            cleanup();
             return;
         }
         
@@ -298,8 +320,8 @@ final class WsdlPanel implements WizardDescriptor.FinishablePanel {
      * @return  the model.
      */
     WSDLModel prepareModelFromFile(File file, String definitionName) {
-        file = FileUtil.normalizeFile(file);
-        FileObject fobj = FileUtil.toFileObject(file);
+        File f = FileUtil.normalizeFile(file);
+        FileObject fobj = FileUtil.toFileObject(f);
         ModelSource modelSource = org.netbeans.modules.xml.retriever.
                 catalog.Utilities.getModelSource(fobj, fobj.canWrite());
         WSDLModel model = WSDLModelFactory.getDefault().getModel(modelSource);

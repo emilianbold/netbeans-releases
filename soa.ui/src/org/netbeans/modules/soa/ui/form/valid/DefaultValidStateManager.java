@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import org.netbeans.modules.soa.ui.SoaConstants;
 import org.netbeans.modules.soa.ui.form.valid.ValidStateManager.ValidStateListener;
+import org.netbeans.modules.soa.ui.form.valid.Validator.Reason;
+import org.netbeans.modules.soa.ui.form.valid.Validator.Severity;
 
 /**
  *
@@ -36,12 +38,12 @@ public class DefaultValidStateManager implements ValidStateManager {
     private static String NBSP = "&nbsp;"; // NOI18N
     private static String HTML = "<html>"; // NOI18N
     
-    private HashMap<Validator, List<String>> myProblems;
+    private HashMap<Validator, List<Reason>> myProblems;
     private List<ValidStateListener> myListeners;
     private List<Validator> validatorsToIgnor;
     
     public DefaultValidStateManager() {
-        myProblems = new HashMap<Validator, List<String>>();
+        myProblems = new HashMap<Validator, List<Reason>>();
         myListeners = new ArrayList<ValidStateListener>();
         validatorsToIgnor = new ArrayList<Validator>();
     }
@@ -54,11 +56,12 @@ public class DefaultValidStateManager implements ValidStateManager {
         }
     }
     
-    public void setValid(Validator validator, boolean flag, List<String> reasons) {
+    public void processValidationResults(Validator validator) {
+        List<Reason> reasons = validator.getReasons();
         if (isIgnorValidator(validator)) {
             return;
         }
-        if (flag) {
+        if (!validator.hasReasons(null)) {
             if (myProblems.containsKey(validator)) {
                 myProblems.remove(validator);
                 fireStateChanged();
@@ -67,7 +70,7 @@ public class DefaultValidStateManager implements ValidStateManager {
             boolean needUpdateReasons = false;
             //
             if (myProblems.containsKey(validator)) {
-                List<String> currReasons = myProblems.get(validator);
+                List<Reason> currReasons = myProblems.get(validator);
                 if (!equals(currReasons, reasons)) {
                     needUpdateReasons = true;
                 }
@@ -77,25 +80,9 @@ public class DefaultValidStateManager implements ValidStateManager {
             //
             if (needUpdateReasons) {
                 // It's necessary to copy reasons' list here!!!
-                myProblems.put(validator, new ArrayList<String>(reasons));
+                myProblems.put(validator, new ArrayList<Reason>(reasons));
                 fireStateChanged();
             }
-        }
-    }
-    
-    public void setValid(Validator validator, boolean flag, String reason) {
-        setValid(validator, flag, Collections.singletonList(reason));
-    }
-    
-    public void setValid(Validator validator, boolean flag) {
-        if (isIgnorValidator(validator)) {
-            return;
-        }
-        List<String> reasons = validator.getReasons();
-        if (reasons == null || reasons.size() == 0) {
-            setValid(validator, flag, SoaConstants.NOT_ASSIGNED);
-        } else {
-            setValid(validator, flag, validator.getReasons());
         }
     }
     
@@ -128,22 +115,39 @@ public class DefaultValidStateManager implements ValidStateManager {
     }
     
     public boolean isValid() {
-        return myProblems.size() == 0;
+        return myProblems.isEmpty();
     }
     
-    public String getReason() {
-        List<String> reasons = getReasons();
-        if (reasons.size() > 0) {
-            return reasons.get(0);
+    public Reason getFistReason(Severity severity) {
+        for (List<Reason> reasonsList : myProblems.values()) {
+            if (reasonsList != null && reasonsList.size() > 0) {
+                if (severity == null) {
+                    return reasonsList.get(0);
+                } else {
+                    for (Reason reason : reasonsList) {
+                        if (reason.getSeverity() == severity) {
+                            return reason;
+                        }
+                    }
+                }
+            }
         }
         return null;
     }
     
-    public List<String> getReasons() {
-        ArrayList<String> result = new ArrayList<String>();
-        for (List<String> reasonsList : myProblems.values()) {
+    public List<Reason> getReasons(Severity severity) {
+        ArrayList<Reason> result = new ArrayList<Reason>();
+        for (List<Reason> reasonsList : myProblems.values()) {
             if (reasonsList != null && reasonsList.size() > 0) {
-                result.addAll(reasonsList);
+                if (severity == null) {
+                    result.addAll(reasonsList);
+                } else {
+                    for (Reason reason : reasonsList) {
+                        if (reason.getSeverity() == severity) {
+                            result.add(reason);
+                        }
+                    }
+                }
             }
         }
         return result;
@@ -157,14 +161,17 @@ public class DefaultValidStateManager implements ValidStateManager {
         //
         // The following line is necessary to provide text wrapping in JLable controls
         sb.append(HTML);
-        List<String> reasons = getReasons();
-        if (!reasons.isEmpty()) {
-            String firstReason = reasons.get(0);
-            if (firstReason.startsWith(HTML)) {
+        Reason firstReason = getFistReason(Severity.ERROR);
+        if (firstReason == null) {
+            firstReason = getFistReason(Severity.WARNING);
+        }
+        if (firstReason == null) {
+            String text = firstReason.getText();
+            if (text.startsWith(HTML)) {
                 // cut out the <html> tag from the reason text if it present
-                firstReason = firstReason.substring(HTML.length());
+                text = text.substring(HTML.length());
             }
-            sb.append(firstReason);
+            sb.append(text);
         }
         //
         return sb.toString();
@@ -203,7 +210,7 @@ public class DefaultValidStateManager implements ValidStateManager {
         }
     }
     
-    private boolean equals(List<String> list1, List<String> list2) {
+    private boolean equals(List<Reason> list1, List<Reason> list2) {
         if (list1 == null && list2 == null) {
             return true;
         } else if (list1 == null && list2 != null) {
@@ -219,15 +226,15 @@ public class DefaultValidStateManager implements ValidStateManager {
             //
             // Both lists has the same size
             for (int index = 0; index < list1.size(); index ++) {
-                String str1 = list1.get(index);
-                String str2 = list2.get(index);
+                Reason rsn1 = list1.get(index);
+                Reason rsn2 = list2.get(index);
                 //
-                if (str1 != null) {
-                    if (!str1.equals(str2)) {
+                if (rsn1 != null) {
+                    if (!rsn1.equals(rsn2)) {
                         return false;
                     }
-                } else if (str2 != null) {
-                    if (!str2.equals(str1)) {
+                } else if (rsn2 != null) {
+                    if (!rsn2.equals(rsn1)) {
                         return false;
                     }
                 } else {
@@ -258,12 +265,8 @@ public class DefaultValidStateManager implements ValidStateManager {
             }
             if (validator != null && !vsm.isIgnorValidator(validator)) {
                 validator.clearReasons();
-                boolean isValid = fast ?
-                    validator.doFastValidation() :
-                    validator.doDetailedValidation();
-                if (!isValid) {
-                    vsm.setValid(validator, false, validator.getReason());
-                }
+                validator.doValidation(fast);
+                vsm.processValidationResults(validator);
             }
             if (comp instanceof Container) {
                 validateChildrenControls(vsm, (Container)comp, fast);
@@ -295,4 +298,5 @@ public class DefaultValidStateManager implements ValidStateManager {
         }
         
     }
+
 }

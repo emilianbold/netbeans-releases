@@ -291,6 +291,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         } else {
             nbroot = null;
         }
+        String codeNameBase = project.getCodeNameBase();
         if (ml != null) {
             // Register *.dir for nb.org modules. There is no equivalent for external modules.
             for (ModuleEntry e : ml.getAllEntriesSoft()) {
@@ -300,7 +301,7 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                     stock.put((nborgPath + ".dir").intern(), e.getClusterDirectory().getAbsolutePath().intern()); // NOI18N
                 }
             }
-            ModuleEntry thisEntry = ml.getEntry(project.getCodeNameBase());
+            ModuleEntry thisEntry = ml.getEntry(codeNameBase);
             if (thisEntry != null) { // can be null e.g. for a broken suite component module
                 assert nbroot == null ^ thisEntry.getNetBeansOrgPath() != null : thisEntry;
                 File clusterDir = thisEntry.getClusterDirectory();
@@ -358,7 +359,9 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         providers.add(project.getHelper().getPropertyProvider(AntProjectHelper.PRIVATE_PROPERTIES_PATH));
         providers.add(project.getHelper().getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
         Map<String,String> defaults = new HashMap<String,String>();
-        defaults.put("code.name.base.dashes", project.getCodeNameBase().replace('.', '-')); // NOI18N
+        if (codeNameBase != null) { // #121856
+            defaults.put("code.name.base.dashes", codeNameBase.replace('.', '-')); // NOI18N
+        }
         defaults.put("module.jar.dir", "modules"); // NOI18N
         defaults.put("module.jar.basename", "${code.name.base.dashes}.jar"); // NOI18N
         defaults.put("module.jar", "${module.jar.dir}/${module.jar.basename}"); // NOI18N
@@ -396,15 +399,15 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         "${test.unit.lib.cp}:" + // NOI18N
                         // XXX this is ugly, try to look for the JAR using wildcards instead
                         "${netbeans.dest.dir}/ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
-                        "${netbeans.dest.dir}/java1/modules/ext/junit-3.8.2.jar:" + // NOI18N
-                        "${netbeans.dest.dir}/java1/modules/ext/junit-4.1.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/java2/modules/ext/junit-3.8.2.jar:" + // NOI18N
+                        "${netbeans.dest.dir}/java2/modules/ext/junit-4.1.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/ext/insanelib.jar:" + // NOI18N
                         "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0
                         "${netbeans.dest.dir}/testtools/modules/org-netbeans-modules-nbjunit-ide.jar:" + // NOI18N, new for 6.0
                         "${netbeans.home}/../ide6/modules/ext/junit-3.8.1.jar:" + // NOI18N
-                        "${netbeans.home}/../java1/modules/ext/junit-3.8.2.jar:" + // NOI18N
-                        "${netbeans.home}/../java1/modules/ext/junit-4.1.jar:" + // NOI18N
+                        "${netbeans.home}/../java2/modules/ext/junit-3.8.2.jar:" + // NOI18N
+                        "${netbeans.home}/../java2/modules/ext/junit-4.1.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/nbjunit.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/ext/insanelib.jar:" + // NOI18N
                         "${netbeans.home}/../testtools/modules/org-netbeans-modules-nbjunit.jar:" + // NOI18N, new for 6.0

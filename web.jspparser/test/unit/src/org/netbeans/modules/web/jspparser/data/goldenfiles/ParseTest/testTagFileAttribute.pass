@@ -8,7 +8,7 @@
       dependants:
       taglibsMap:
         tag library: http://java.sun.com/jsp/jstl/core
-            tlibversion : null
+            tlibversion : 1.1
             jspversion  : 2.0
             shortname   : c
             urn         : http://java.sun.com/jsp/jstl/core

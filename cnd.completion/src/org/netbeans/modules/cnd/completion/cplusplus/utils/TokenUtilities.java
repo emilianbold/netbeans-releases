@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.completion.cplusplus.utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -66,7 +67,7 @@ public final class TokenUtilities {
     
     public static List<Token> getTokens(Document doc) {
         if (!(doc instanceof BaseDocument))
-            return null;
+            return Collections.<Token>emptyList();
         
         try {
             SyntaxSupport sup = ((BaseDocument) doc).getSyntaxSupport();
@@ -79,8 +80,8 @@ public final class TokenUtilities {
             nbSyntaxSup.tokenizeText(tp, 0, doc.getLength(), true);
             return tp.getTokens();
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
-            return null;
+            // there could be some modifications in document
+            return Collections.<Token>emptyList();
         }
     }
     
@@ -102,7 +103,7 @@ public final class TokenUtilities {
             
             return token;
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(e);
+            // there could be some modifications in document
             return null;
         }
     }
@@ -150,7 +151,7 @@ public final class TokenUtilities {
                 }
             }
         } catch (BadLocationException e) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            // there could be some modifications in document
         }
         return origOffset;
     }

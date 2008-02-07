@@ -21,9 +21,15 @@ package org.netbeans.modules.bpel.debugger.ui.process;
 
 import javax.swing.JToolTip;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.BpelProcess;
 import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
+import org.netbeans.modules.bpel.debugger.api.Fault;
 import org.netbeans.modules.bpel.debugger.api.ProcessInstance;
+import org.netbeans.modules.bpel.debugger.api.WaitingCorrelatedMessage;
+import org.netbeans.modules.bpel.debugger.ui.process.ProcessesTreeModel.FaultsWrapper;
+import org.netbeans.modules.bpel.debugger.ui.util.VariablesUtil;
+import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TreeModel;
@@ -37,6 +43,23 @@ import org.openide.util.NbBundle;
  * @version 2005.10.24
  */
 public class ProcessesTableModel implements TableModel {
+    
+    private BpelDebugger myDebugger;
+    private VariablesUtil myVariablesUtil;
+    
+    /**
+     * Creates a new instance of ProcessesTableModel.
+     *
+     * @param lookupProvider debugger context
+     */
+    public ProcessesTableModel(
+            final ContextProvider lookupProvider) {
+        
+        myDebugger = (BpelDebugger)
+                lookupProvider.lookupFirst(null, BpelDebugger.class);
+        myVariablesUtil = new VariablesUtil(myDebugger);
+    }
+    
     /**{@inheritDoc}*/
     public Object getValueAt(
             final Object stuff, 
@@ -108,6 +131,26 @@ public class ProcessesTableModel implements TableModel {
             if (object instanceof CorrelationSet.Property) {
                 return "";
             }
+            
+            if (object instanceof ProcessesTreeModel.WaitingMessagesWrapper) {
+                return "";
+            }
+            
+            if (object instanceof WaitingCorrelatedMessage) {
+                return "";
+            }
+            
+            if (object instanceof FaultsWrapper) {
+                return "";
+            }
+            
+            if (object instanceof Fault) {
+                return "";
+            }
+            
+            return ""; // We return an empty string for everything, to be
+                       // able to list all possible types which occur in the
+                       // variable-based children of a fault. Pure lazyness.
         }
         
         if (column.equals(ProcessesColumnModel_Type.COLUMN_ID)) {
@@ -153,6 +196,26 @@ public class ProcessesTableModel implements TableModel {
                     }
                 }
             }
+            
+            if (object instanceof ProcessesTreeModel.WaitingMessagesWrapper) {
+                return "";
+            }
+            
+            if (object instanceof WaitingCorrelatedMessage) {
+                return "";
+            }
+            
+            if (object instanceof FaultsWrapper) {
+                return "";
+            }
+            
+            if (object instanceof Fault) {
+                return "";
+            }
+            
+            final String type = myVariablesUtil.getType(object);
+            
+            return type == null ? "" : type;
         }
         
         if (column.equals(ProcessesColumnModel_Value.COLUMN_ID)) {
@@ -176,7 +239,10 @@ public class ProcessesTableModel implements TableModel {
                 final String value = ((CorrelationSet) object).getValue();
                 
                 if (value == null) {
-                    return "> Correlation set " + ((CorrelationSet) object).getName() + " has not yet been initialized <";
+                    return NbBundle.getMessage(
+                            ProcessesTableModel.class, 
+                            "ERR_Corr_Set_Uninitialized", 
+                            ((CorrelationSet) object).getName()); // NOI18N
                 } else {
                     return value;
                 }
@@ -185,6 +251,24 @@ public class ProcessesTableModel implements TableModel {
             if (object instanceof CorrelationSet.Property) {
                 return ((CorrelationSet.Property) object).getValue();
             }
+            
+            if (object instanceof ProcessesTreeModel.WaitingMessagesWrapper) {
+                return "";
+            }
+            
+            if (object instanceof WaitingCorrelatedMessage) {
+                return "";
+            }
+            
+            if (object instanceof FaultsWrapper) {
+                return "";
+            }
+            
+            if (object instanceof Fault) {
+                return "";
+            }
+            
+            return object;
         }
         
         throw new UnknownTypeException(object);

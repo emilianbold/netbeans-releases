@@ -291,7 +291,10 @@ public abstract class DocumentBox extends ContainerBox {
             ErrorManager.getDefault().notify(e);
             e.printStackTrace();
             layoutValid = false;
-            pane.repaint();
+            // XXX #126314 Possible NPE.
+            if (pane != null) {
+                pane.repaint();
+            }
 
             return;
         }
@@ -733,6 +736,12 @@ public abstract class DocumentBox extends ContainerBox {
             }
         }
 
+        // XXX #126648 There are issues when inserting into the line, rather redo the layout completelly.
+        if (prevBox != null && prevBox.isInlineBox() && nextBox != null && nextBox.isInlineBox()) {
+            redoLayout(true);
+            return;
+        }
+        
         try {
             parentBox.addNode(cc, node, null, prevBox, nextBox);
         } catch (Throwable ex) { // want to catch assertions too

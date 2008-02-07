@@ -130,21 +130,31 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
                 return null;
             }
             t = doc.getText(lineStartOffset, lineLen);
-            int identStart = col;
-            while (identStart > 0 && (Character.isJavaIdentifierPart(t.charAt(identStart - 1)) || (t.charAt(identStart - 1) == '.'))) {
-                identStart--;
-            }
-            int identEnd = col;
-            while (identEnd < lineLen && Character.isJavaIdentifierPart(t.charAt(identEnd))) {
-                identEnd++;
-            }
-            if (identStart == identEnd) { return null; }
-            return t.substring(identStart, identEnd);
+            return getExpressionToEvaluate(t, col);
         } catch (BadLocationException e) {
             return null;
         }
     }
+
+    static String getExpressionToEvaluate(String text, int col) {
+        int identStart = col;
+        while (identStart > 0 && (isRubyIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.'))) {
+            identStart--;
+        }
+        int identEnd = col;
+        while (identEnd < text.length() && Character.isJavaIdentifierPart(text.charAt(identEnd))) {
+            identEnd++;
+        }
+        if (identStart == identEnd) {
+            return null;
+        }
+        return text.substring(identStart, identEnd);
+    }
     
+    static boolean isRubyIdentifier(char ch) {
+        return ch == '@' || Character.isJavaIdentifierPart(ch);
+    }
+
     /** Returns current editor component instance. */
     private static JEditorPane getCurrentEditor_() {
         EditorCookie e = getCurrentEditorCookie();

@@ -1720,9 +1720,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final ClasspathInfo cpInfo;
             if (!this.ignoreExcludes.contains(root)) {
                 entry = getClassPathEntry(sourcePath, root);
-                cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath,filter,true,false);
+                cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath,sourcePath,filter,true,false);
             } else {
-                cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath,filter,true,true);
+                cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath,sourcePath,filter,true,true);
             }
             
             LOGGER.fine("Initial value of clean: "+clean);
@@ -2015,7 +2015,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 try {
                     uqImpl.setDirty(null);
                     final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
-                    ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (fo, filter, true, false);
+                    ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (fo, filter, true, false);
                     final File rootFile = FileUtil.toFile(rootFo);
                     final File fileFile = FileUtil.toFile(fo);
                     final File classCache = Index.getClassFolder (rootFile);
@@ -2058,7 +2058,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     if (entry == null || entry.includes(fo)) {
                         String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
                         final CompilerListener listener = new CompilerListener ();
-                        final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);                
+                        final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);                
                         JavaFileObject active = FileObjects.nbFileObject(fo, rootFo, filter, false);
                         JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
                         jt.setTaskListener(listener);
@@ -2187,7 +2187,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 FileObject rootFO = FileUtil.toFileObject(rootFile);
                 if (rootFO != null) {
                     final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
-                    ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create(rootFO, filter, true, false);
+                    ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(rootFO, filter, true, false);
                     toReparse = RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), removed);
                 }
                 //actually delete the sig files:
@@ -2455,9 +2455,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
      private static String classPathToString(ClasspathInfo info) throws FileStateInvalidException {
-         ClassPath bootPath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.BOOT);
-         ClassPath compilePath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.COMPILE);
-         ClassPath sourcePath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.SOURCE);
+         ClassPath bootPath = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(info, ClasspathInfo.PathKind.BOOT);
+         ClassPath compilePath = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(info, ClasspathInfo.PathKind.COMPILE);
+         ClassPath sourcePath = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(info, ClasspathInfo.PathKind.SOURCE);
 
          StringBuilder sb = new StringBuilder();
 
@@ -2662,7 +2662,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         JavaFileObject active = null;
         File           activeFile = null;
         Pair<JavaFileObject, File> activePair = null;
-        final JavaFileManager fileManager = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
+        final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         final CompilerListener listener = new CompilerListener ();    
         Set<URL> toRefresh = new HashSet<URL>();
         LowMemoryNotifier.getDefault().addLowMemoryListener(listener);
@@ -2803,7 +2803,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         if (sa != null) {
-                            sa.analyse(trees,jt, ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo), active, added);
+                            sa.analyse(trees,jt, ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), active, added);
                         }                                
                         List<Diagnostic> diag = new ArrayList<Diagnostic>();
                         URI u = active.toUri();

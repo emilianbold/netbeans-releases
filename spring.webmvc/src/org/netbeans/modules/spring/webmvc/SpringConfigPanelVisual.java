@@ -43,17 +43,12 @@
 
 package org.netbeans.modules.spring.webmvc;
 
-import java.util.regex.Pattern;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.openide.util.ChangeSupport;
-import org.openide.util.NbBundle;
 
 /**
- * Provides the user interface for configuring a Spring Framework web application
- * Also implements the AtomicAction fired off when the web framework providers
- * extend method is called.
+ * Provides the user interface for configuring a Spring Web MVC web application
  *
  * @author Craig MacKay
  */
@@ -79,10 +74,10 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
     public SpringConfigPanelVisual(SpringWebModuleExtender extender) {
         this.extender = extender;
         initComponents();
-        nameText.setText(extender.getDispatcherName());
-        nameText.getDocument().addDocumentListener(docListener);
-        mappingText.setText(extender.getDispatcherMapping());
-        mappingText.getDocument().addDocumentListener(docListener);
+        dispatcherNameText.setText(extender.getDispatcherName());
+        dispatcherNameText.getDocument().addDocumentListener(docListener);
+        dispatcherMappingText.setText(extender.getDispatcherMapping());
+        dispatcherMappingText.getDocument().addDocumentListener(docListener);
         includeJstlCheckBox.setSelected(extender.getIncludeJstl());
         // Only add the listener at the end to make sure no events are
         // fired while initializing the UI.
@@ -90,64 +85,16 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
     }
     
     public String getDispatcherName() {
-        return nameText.getText();
+        return dispatcherNameText.getText();
     }
     
     public String getDispatcherMapping() {
-        return mappingText.getText();
+        return dispatcherMappingText.getText();
     }
     
     public boolean getIncludeJstl() {
         return includeJstlCheckBox.isSelected();
-    }
-    
-    boolean valid() {        
-        ExtenderController controller = extender.getController();
-        String namePattern = getDispatcherName();
-        String mappingPattern = getDispatcherMapping();
-        if (namePattern == null || namePattern.trim().length() == 0){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NamePatternIsEmpty")); // NOI18N
-            return false;
-        }
-        if (!isNamePatternValid(namePattern)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NamePatternIsNotValid")); // NOI18N
-            return false;
-        }
-        if (mappingPattern == null || mappingPattern.trim().length() == 0) {
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_MappingPatternIsEmpty")); // NOI18N
-            return false;
-        }
-        if (!isMappingPatternValid(mappingPattern)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_MappingPatternIsNotValid")); // NOI18N
-            return false;
-        }
-        controller.setErrorMessage(null);
-        return true;
-    }
-    
-    private boolean isNamePatternValid(String pattern) {        
-        return Pattern.matches("\\w+", pattern);
-    }
-    
-    private boolean isMappingPatternValid(String pattern){
-        // mapping validation based on the Servlet 2.4 specification,section SRV.11.2
-        if (pattern.startsWith("*.")){ // NOI18N
-            String p = pattern.substring(2);
-            if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
-                    && p.indexOf('/') == -1 && !p.trim().equals("")) { // NOI18N
-                return true;
-            }
-        }
-        
-        if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/")) // NOI18N
-            return true;
-        
-        if (pattern.matches("/")){ // NOI18N
-            return true;
-        }
-               
-        return false;
-    }
+    }               
     
     private void fireChange() {
         changeSupport.fireChange();
@@ -163,18 +110,18 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
 
         tabbedPanel = new javax.swing.JTabbedPane();
         standardPanel = new javax.swing.JPanel();
-        nameText = new javax.swing.JTextField();
-        nameLabel = new javax.swing.JLabel();
-        mappingLabel = new javax.swing.JLabel();
-        mappingText = new javax.swing.JTextField();
+        dispatcherNameText = new javax.swing.JTextField();
+        dispatcherNameLabel = new javax.swing.JLabel();
+        dispatcherMappingLabel = new javax.swing.JLabel();
+        dispatcherMappingText = new javax.swing.JTextField();
         libPanel = new javax.swing.JPanel();
         includeJstlCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherName")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dispatcherNameLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherName")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(mappingLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherMapping")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dispatcherMappingLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_DispatcherMapping")); // NOI18N
 
         org.jdesktop.layout.GroupLayout standardPanelLayout = new org.jdesktop.layout.GroupLayout(standardPanel);
         standardPanel.setLayout(standardPanelLayout);
@@ -183,12 +130,12 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             .add(standardPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(nameLabel)
-                    .add(mappingLabel))
+                    .add(dispatcherNameLabel)
+                    .add(dispatcherMappingLabel))
                 .add(8, 8, 8)
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(nameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE)
-                    .add(mappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
+                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE)
+                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 471, Short.MAX_VALUE))
                 .addContainerGap())
         );
         standardPanelLayout.setVerticalGroup(
@@ -196,13 +143,13 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             .add(standardPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(nameLabel)
-                    .add(nameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                    .add(dispatcherNameLabel)
+                    .add(dispatcherNameText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(standardPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(mappingLabel)
-                    .add(mappingText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(337, Short.MAX_VALUE))
+                    .add(dispatcherMappingLabel)
+                    .add(dispatcherMappingText, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(334, Short.MAX_VALUE))
         );
 
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Configuration"), standardPanel); // NOI18N
@@ -224,14 +171,14 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
             .add(libPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .add(includeJstlCheckBox)
-                .addContainerGap(500, Short.MAX_VALUE))
+                .addContainerGap(506, Short.MAX_VALUE))
         );
         libPanelLayout.setVerticalGroup(
             libPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(libPanelLayout.createSequentialGroup()
                 .add(15, 15, 15)
                 .add(includeJstlCheckBox)
-                .addContainerGap(354, Short.MAX_VALUE))
+                .addContainerGap(351, Short.MAX_VALUE))
         );
 
         tabbedPanel.addTab(org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "LBL_Libraries"), libPanel); // NOI18N
@@ -245,20 +192,20 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
 
     public void enableComponents(boolean enabled) {
         standardPanel.setEnabled(enabled);
-        mappingLabel.setEnabled(enabled);
-        mappingText.setEnabled(enabled);
-        nameLabel.setEnabled(enabled);
-        nameText.setEnabled(enabled);
+        dispatcherMappingLabel.setEnabled(enabled);
+        dispatcherMappingText.setEnabled(enabled);
+        dispatcherNameLabel.setEnabled(enabled);
+        dispatcherNameText.setEnabled(enabled);
         tabbedPanel.setEnabled(enabled);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel dispatcherMappingLabel;
+    private javax.swing.JTextField dispatcherMappingText;
+    private javax.swing.JLabel dispatcherNameLabel;
+    private javax.swing.JTextField dispatcherNameText;
     private javax.swing.JCheckBox includeJstlCheckBox;
     private javax.swing.JPanel libPanel;
-    private javax.swing.JLabel mappingLabel;
-    private javax.swing.JTextField mappingText;
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JTextField nameText;
     private javax.swing.JPanel standardPanel;
     private javax.swing.JTabbedPane tabbedPanel;
     // End of variables declaration//GEN-END:variables

@@ -47,229 +47,105 @@
     <property name="netbeans.path" value="hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip"/>
     <property name="netbeans.dir" value=".netbeans/dev"/>
 
-    <property name="env.NB_USER" value="anoncvs"/>
-    <property name="sierra.dir"  value=".netbeans/sierra"/>
-
-    <property name="modules.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
-    <property name="modules.cvs.branch" value="-A"/>
-    <property name="modules.cvs.modules" value="
-      print
-      enterprise/bpel
-      enterprise/compapp
-      enterprise/dataintegrator/eTLEditor
-      enterprise/dataintegrator/etlpro
-      enterprise/iep
-      enterprise/libs
-      enterprise/openesbaddons/configextension
-      enterprise/openesbaddons/ftp
-      enterprise/openesbaddons/snmp
-      enterprise/soa
-      enterprise/sql
-      enterprise/wsdlextensions
-      enterprise/xslt
-    "/>
-    <property name="sources.cvs.root" value=":pserver:${env.NB_USER}@cvs.netbeans.org:/cvs"/>
-    <property name="sources.cvs.branch" value="-A"/>
-    <property name="sources.cvs.modules" value="
-        ant/browsetask/nbproject
-        ant/nbproject
-        ant/project/nbproject
-        apisupport/harness/external
-        classfile/nbproject
-        core/bootstrap/nbproject
-        core/javahelp/external
-        core/javahelp/nbproject
-        core/multiview/nbproject
-        core/navigator/nbproject
-        core/nbproject
-        core/options/keymap/nbproject
-        core/options/nbproject
-        core/palette/nbproject
-        core/progress/nbproject
-        core/settings/nbproject
-        core/startup/nbproject
-        core/swing/plaf/nbproject
-        core/swing/tabcontrol/nbproject
-        core/tasklist/api/nbproject
-        db/model/nbproject
-        db/nbproject
-        debuggercore/api/nbproject
-        debuggercore/nbproject
-        debuggercore/viewmodel/nbproject
-        debuggerjpda/ant/nbproject
-        debuggerjpda/api/nbproject
-        diff/nbproject
-        editor/codetemplates/nbproject
-        editor/completion/nbproject
-        editor/errorstripe/api/nbproject
-        editor/errorstripe/nbproject
-        editor/fold/nbproject
-        editor/guards/nbproject
-        editor/hints/highlights/nbproject
-        editor/hints/nbproject
-        editor/indent/nbproject
-        editor/lib/nbproject
-        editor/lib2/nbproject
-        editor/mimelookup/nbproject
-        editor/nbproject
-        editor/options/nbproject
-        editor/settings/nbproject
-        editor/settings/storage/nbproject
-        editor/util/nbproject
-        graph/lib/nbproject
-        j2ee/core/utilities/nbproject
-        j2ee/ddapi/nbproject
-        j2ee/ejbapi/nbproject
-        j2ee/metadata/nbproject
-        j2ee/metadata/support/nbproject
-        j2ee/persistenceapi/nbproject
-        j2ee/utilities/nbproject
-        j2eeserver/j2eeapis/external
-        j2eeserver/j2eeapis/nbproject
-        j2eeserver/nbproject
-        java/api/nbproject
-        java/editor/lib/nbproject
-        java/j2seproject/nbproject
-        java/lexer/nbproject
-        java/platform/nbproject
-        java/project/nbproject
-        java/source/javacapi/nbproject
-        java/source/javacimpl/nbproject
-        java/source/nbproject
-        java/source/preprocessorbridge/nbproject
-        java/sourceui/nbproject
-        junit
-        lexer/nbproject
-        libs/jsr223/nbproject
-        libs/lucene/nbproject
-        libs/resolver/external
-        libs/resolver/nbproject
-        libs/swing-layout/external
-        libs/swing-layout/nbproject
-        libs/xerces/external
-        libs/xerces/nbproject
-        openide/actions/nbproject
-        openide/awt/nbproject
-        openide/dialogs/nbproject
-        openide/execution/nbproject
-        openide/explorer/nbproject
-        openide/fs/nbproject
-        openide/io/nbproject
-        openide/loaders/nbproject
-        openide/masterfs/nbproject
-        openide/modules/nbproject
-        openide/nodes/nbproject
-        openide/options/nbproject
-        openide/templates/nbproject
-        openide/text/nbproject
-        openide/util/nbproject
-        openide/windows/nbproject
-        openidex/nbproject
-        performance/insanelibmodule
-        projects/libraries/nbproject
-        projects/projectapi/nbproject
-        projects/projectuiapi/nbproject
-        projects/queries/nbproject
-        refactoring/api/nbproject
-        schema2beans/rt/nbproject
-        serverplugins/server/nbproject
-        serverplugins/sun/appsrv/nbproject
-        serverplugins/sun/sunddapi/nbproject
-        utilities/gototest/nbproject
-        utilities/jumpto/nbproject
-        web/webapi/nbproject
-        websvc/clientapi/nbproject
-        websvc/core/nbproject
-        websvc/design/nbproject
-        websvc/jaxws21/jaxws21api/nbproject
-        websvc/jaxws21/nbproject
-        websvc/jaxwsapi/nbproject
-        websvc/jaxwsmodel/nbproject
-        websvc/utilities/nbproject
-        websvc/websvcapi/nbproject
-        websvc/websvcddapi/nbproject
-        websvc/wsitconf/nbproject
-        websvc/wsitmodelext/nbproject
-        xml/api/nbproject
-        xml/axi/nbproject
-        xml/catalog/nbproject
-        xml/catalogsupport/nbproject
-        xml/core/nbproject
-        xml/jxpath/nbproject
-        xml/lexer/nbproject
-        xml/libs/jxpath/nbproject
-        xml/multiview/nbproject
-        xml/nbprefuse/nbproject
-        xml/prefuse/nbproject
-        xml/refactoring/nbproject
-        xml/retriever/nbproject
-        xml/schema/api/nbproject
-        xml/schema/completion/nbproject
-        xml/schema/schemaui/nbproject
-        xml/tageditorsupport/nbproject
-        xml/text-edit/nbproject
-        xml/validation/nbproject
-        xml/wsdl/api/nbproject
-        xml/wsdl/refactoring/nbproject
-        xml/wsdlbindingsupport/api/nbproject
-        xml/wsdlbindingsupport/nbproject
-        xml/wsdlext/nbproject
-        xml/wsdlui/nbproject
-        xml/xam/nbproject
-        xml/xamui/nbproject
-        xml/xdm/nbproject
-        xml/xpath/ext/nbproject
-        xml/xpath/nbproject
-        xtest
-    "/>
     <property name="test.cvs.root" value=":pserver:guest@cvs.dev.java.net:/cvs"/>
     <property name="test.cvs.path" value="open-jbi-components/driver-tests/bpelse"/>
     <property name="test.cvs.branch" value="-A"/>
     <property name="test.cvs.modules" value="
-        ${test.cvs.path}/assign
-        ${test.cvs.path}/benchmark
-        ${test.cvs.path}/blueprints
-        ${test.cvs.path}/BpelToBpel
-        ${test.cvs.path}/clusterSupport
-        ${test.cvs.path}/compensation
-        ${test.cvs.path}/correlation
-        ${test.cvs.path}/dynamicpartnerlink
-        ${test.cvs.path}/empty
-        ${test.cvs.path}/eventHandlers
-        ${test.cvs.path}/exit
-        ${test.cvs.path}/faulthandling
-        ${test.cvs.path}/flow
-        ${test.cvs.path}/foreach-bpel20
-        ${test.cvs.path}/if
-        ${test.cvs.path}/implementMultiOperations
-        ${test.cvs.path}/JavaEEIntegration
-        ${test.cvs.path}/MessageExchange
-        ${test.cvs.path}/misc
-        ${test.cvs.path}/PartnerLinks
-        ${test.cvs.path}/pick
-        ${test.cvs.path}/repeatuntil
-        ${test.cvs.path}/rethrow
-        ${test.cvs.path}/samples
-        ${test.cvs.path}/scalability
-        ${test.cvs.path}/scenarios
-        ${test.cvs.path}/SchemaElemDecl
-        ${test.cvs.path}/ScopeTermination
-        ${test.cvs.path}/TerminationHandler
-        ${test.cvs.path}/wait
-        ${test.cvs.path}/while
-        ${test.cvs.path}/xpathfunctions
-        ${test.cvs.path}/xsddatatypes
-        ${test.cvs.path}/xslt
+        ${test.cvs.path}/assign/ActivateBilling_Simple
+        ${test.cvs.path}/assign/AssignBpel
+        ${test.cvs.path}/assign/AssignNamespaces
+        ${test.cvs.path}/assign/AtomicAssign
+        ${test.cvs.path}/assign/CopyByValue/CopyByValueBpel
+        ${test.cvs.path}/assign/DataTypes
+        ${test.cvs.path}/assign/MessageWithNoParts
+        ${test.cvs.path}/assign/predicates
+        ${test.cvs.path}/assign/VariableAssignments
+        ${test.cvs.path}/benchmark/BenchmarkBpel
+        ${test.cvs.path}/benchmark/Ericsson/AlarmIRPBpel2
+        ${test.cvs.path}/benchmark/purchaseOrderCoordinator
+        ${test.cvs.path}/benchmark/PurchaseOrderService
+        ${test.cvs.path}/benchmark/TravelReservationService/TravelReservationService
+        ${test.cvs.path}/dynamicpartnerlink/dynamicPartnerLinkBPEL
+        ${test.cvs.path}/dynamicpartnerlink/justhttpAndBPEL
+        ${test.cvs.path}/dynamicpartnerlink/JustHTTPandBPEL2
+        ${test.cvs.path}/dynamicpartnerlink/sendCallBackInfo
+        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRAssign
+        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRLiteral
+        ${test.cvs.path}/MessageExchange/MessageExchangeBpel
+        ${test.cvs.path}/PartnerLinks/DuplicateProject1
+        ${test.cvs.path}/PartnerLinks/DuplicateProject2
+        ${test.cvs.path}/PartnerLinks/OneBP
+        ${test.cvs.path}/PartnerLinks/PLTLocalNamespace
+        ${test.cvs.path}/PartnerLinks/TwoBPDuplicateImpl
+        ${test.cvs.path}/PartnerLinks/TwoBPs
+        ${test.cvs.path}/SchemaElemDecl/BPwithElemRef
+        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElement
+        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElemQualified
+        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElem
+        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElemQualified
+        ${test.cvs.path}/ScopeTermination/ScopeTerminationBpel
+        ${test.cvs.path}/xslt/DoXslTransformBPEL
+        ${test.cvs.path}/xslt/InOutBPXSLT/InOutBP
+        ${test.cvs.path}/blueprints/bp1/BluePrint1
+        ${test.cvs.path}/blueprints/bp2/BluePrint2
+        ${test.cvs.path}/blueprints/bp3/BluePrint3
+        ${test.cvs.path}/blueprints/bp4/BluePrint4
+        ${test.cvs.path}/blueprints/bp5/BluePrint5
+        ${test.cvs.path}/BpelToBpel/ClientEmployeeInfo
+        ${test.cvs.path}/BpelToBpel/EmployeeInfo
+        ${test.cvs.path}/BpelToBpel/InAServiceUnit
+        ${test.cvs.path}/BpelToBpel/RemoteClientEmployeeInfo
+        ${test.cvs.path}/clusterSupport/ClusterBPEL
+        ${test.cvs.path}/compensation/IterativeScopes
+        ${test.cvs.path}/compensation/NestedScope
+        ${test.cvs.path}/correlation/correlationBPEL
+        ${test.cvs.path}/correlation/correlationBPEL2
+        ${test.cvs.path}/correlation/outoforder
+        ${test.cvs.path}/correlation/CorrelationOnePropBPEL
+        ${test.cvs.path}/correlation/CorrelationTwoPropBPEL
+        ${test.cvs.path}/correlation/FlowAsStartActivity
+        ${test.cvs.path}/correlation/MatchingInstanceTwoCorrBPEL
+        ${test.cvs.path}/correlation/ThreeCorrSetsBpel
+        ${test.cvs.path}/empty/EmptyBpel
+        ${test.cvs.path}/eventHandlers/onAlarm
+        ${test.cvs.path}/eventHandlers/onEvent
+        ${test.cvs.path}/exit/ExitBpel
+        ${test.cvs.path}/faulthandling/FaultHandlingBpel
+        ${test.cvs.path}/flow/FlowBpel
+        ${test.cvs.path}/foreach-bpel20/ForEachBpel
+        ${test.cvs.path}/if/ifBpel
+        ${test.cvs.path}/implementMultiOperations/MultipleBPELs
+        ${test.cvs.path}/implementMultiOperations/OneBPEL
+        ${test.cvs.path}/JavaEEIntegration/BPToJavaEE/JavaEEFault/FaultBP
+        ${test.cvs.path}/JavaEEIntegration/DirectElem/MsgDirectElem
+        ${test.cvs.path}/JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP
+        ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService
+        ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/JavaEEToBPProj
+        ${test.cvs.path}/misc/MiscBpel
+        ${test.cvs.path}/pick/PickBpel
+        ${test.cvs.path}/repeatuntil/RepeatUntilBpel
+        ${test.cvs.path}/rethrow/Rethrow
+        ${test.cvs.path}/samples/AsynchronousSample
+        ${test.cvs.path}/samples/EndToEndScenario
+        ${test.cvs.path}/samples/samplesBPEL
+        ${test.cvs.path}/samples/SynchronousSample
+        ${test.cvs.path}/scalability/ScalabilityBpel
+        ${test.cvs.path}/TerminationHandler/TerminationHandlerBpel
+        ${test.cvs.path}/wait/WaitBpel
+        ${test.cvs.path}/while/WhileBpel
+        ${test.cvs.path}/xpathfunctions/XPathFunctionsBpel
+        ${test.cvs.path}/xpathfunctions/XSDFunctions
+        ${test.cvs.path}/xsddatatypes/XSDDataTypesBpel
     "/>
     <property name="home" value="../.."/>
-    <property name="cache" value="${home}/.cache"/>
+    <property name="cache" value="${home}/../cache"/>
     <property name="dist" value="${cache}/dist"/>
     <property name="lock" value="${cache}/lock"/>
     <property name="test" value="${cache}/test"/>
     <property name="jbi" location="${test}/${test.cvs.path}"/>
     <property name="latest" value="${cache}/latest"/>
     <property name="netbeans" value="${cache}/netbeans"/>
-    <property name="enterprise" value="${home}/enterprise"/>
-    <property name="soa" value="${home}/enterprise/bpel/samples/resources"/>
-    <property name="build.number" value="${home}/nbbuild/netbeans/platform7/build_number"/>
+    <property name="sierra.dir"  value=".netbeans/sierra"/>
+    <property name="samples" value="${home}/bpel.samples/resources"/>
+    <property name="build.number" value="${home}/nbbuild/netbeans/platform8/build_number"/>
 </project>

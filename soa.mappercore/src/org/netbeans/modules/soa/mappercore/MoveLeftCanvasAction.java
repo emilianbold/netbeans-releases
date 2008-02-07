@@ -74,11 +74,11 @@ public class MoveLeftCanvasAction extends MapperKeyboardAction {
 
     @Override
     public KeyStroke[] getShortcuts() {
-        KeyStroke[] a = new KeyStroke[3];
-        a[0] = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0); 
-        a[1] = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, ActionEvent.SHIFT_MASK);
-        a[2] = KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, ActionEvent.CTRL_MASK);
-        return a;
+        return new KeyStroke[]{
+            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, 0),
+            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, ActionEvent.SHIFT_MASK),
+            KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, ActionEvent.CTRL_MASK)
+        };
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -104,7 +104,7 @@ public class MoveLeftCanvasAction extends MapperKeyboardAction {
             
         Graph graph = selectionModel.getSelectedGraph();
         if (graph == null || graph.isEmpty()) {
-            canvas.getRightTree().requestFocus();
+            canvas.getLeftTree().requestFocus();
             return;
         }
 
@@ -122,33 +122,38 @@ public class MoveLeftCanvasAction extends MapperKeyboardAction {
                     Link link = vertex.getItem(i).getIngoingLink();
                     if (link != null) {
                         selectionModel.setSelected(treePath, link);
-                        break;
+                        return;
                     }
                 }
+                if (vertex.getGraph().getPrevVertex(vertex) == vertex) {
+                    canvas.getLeftTree().requestFocus();
+                } 
                 return;
             }
             // Link is select
             if (sLinks != null && sLinks.size() > 0) {
                 Link link = sLinks.get(0);
                 
-                if (link.getSource() instanceof Vertex ||
-                        link.getSource() instanceof Function ||
-                        link.getSource() instanceof Operation ||
-                        link.getSource() instanceof Constant)
-                {
-                    Vertex vertex = (Vertex) link.getSource();
-                    if (vertex == null) return;
-                                                            
-                    selectionModel.setSelected(treePath, vertex);
-                } else {
+                if (link.getSource() instanceof TreeSourcePin) {
+                    TreePath leftTreePath = ((TreeSourcePin) link.getSource()).getTreePath();
+                    canvas.getLeftTree().setSelectionPath(leftTreePath);
                     canvas.getLeftTree().requestFocus();
+
+                } else {
+                    Vertex vertex = (Vertex) link.getSource();
+                    if (vertex == null) { return; }
+
+                    selectionModel.setSelected(treePath, vertex);
                 }
                 return;
             }
             // vertexItem is select
             if (sVertexItem != null) {
                 Link link = sVertexItem.getIngoingLink();
-                if (link == null) return;
+                if (link == null) { 
+                    selectionModel.setSelected(treePath, sVertexItem.getVertex());
+                    return; 
+                }
                 
                 selectionModel.setSelected(treePath, link);
                 return;
@@ -171,19 +176,16 @@ public class MoveLeftCanvasAction extends MapperKeyboardAction {
             if (sLinks != null && sLinks.size() > 0) {
                 Link link = sLinks.get(0);
                 
-                if (link.getSource().getClass() == Vertex.class ||
-                        link.getSource().getClass() == Function.class ||
-                        link.getSource().getClass() == Operation.class ||
-                        link.getSource().getClass() == Constant.class)
-                {
-                    Vertex vertex = (Vertex) link.getSource();
-                    if (vertex == null)  return;
-                    
-                    selectionModel.setSelected(treePath, vertex);
-                } else {
+                if (link.getSource() instanceof TreeSourcePin) {
                     TreePath leftTreePath = ((TreeSourcePin) link.getSource()).getTreePath();
                     canvas.getLeftTree().setSelectionPath(leftTreePath);
                     canvas.getLeftTree().requestFocus();
+
+                } else {
+                    Vertex vertex = (Vertex) link.getSource();
+                    if (vertex == null) { return; }
+
+                    selectionModel.setSelected(treePath, vertex);
                 }
                 return;
             }

@@ -20,7 +20,9 @@ fi
 DIST=$PWD/nbbuild/dist
 rm -rf $DIST/
 
-# YYYYMMDDhhmmss timestamp corresponding to cvs tag
+# XXX should use hg id as the build number; timestamp is useless!
+
+# YYYYMMDDhhmmss timestamp
 BUILDNUMBER=`echo $BUILD_ID | tr -d _-` 
 BUILDNUM=$BUILD_TAG
 

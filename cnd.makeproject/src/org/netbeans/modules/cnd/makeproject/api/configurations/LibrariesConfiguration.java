@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 
 public class LibrariesConfiguration extends VectorConfiguration {
     public LibrariesConfiguration() {
@@ -75,7 +76,7 @@ public class LibrariesConfiguration extends VectorConfiguration {
     public Object clone() {
 	LibrariesConfiguration clone = new LibrariesConfiguration();
 	// From VectorConfiguration
-	clone.setValue((Vector)getValue().clone());
+	clone.setValue((List)((ArrayList)getValue()).clone());
 	// From LibrariesConfiguration
 	return clone;
     }

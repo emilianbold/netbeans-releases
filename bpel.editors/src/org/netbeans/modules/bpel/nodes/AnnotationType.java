@@ -36,9 +36,9 @@ public enum AnnotationType {
         private static Map<String,AnnotationType> NAME_TYPE_MAP 
                 = new HashMap<String,AnnotationType>();
         static {
-            NAME_TYPE_MAP.put("Breakpoint", AnnotationType.BREAKPOINT); // NOI18N
+            NAME_TYPE_MAP.put("BpelBreakpoint_normal", AnnotationType.BREAKPOINT); // NOI18N
             NAME_TYPE_MAP.put("CurrentPC", AnnotationType.CURRENT_POSITION); // NOI18N
-            NAME_TYPE_MAP.put("DisabledBreakpoint", AnnotationType.DISABLED_BREAKPOINT); // NOI18N
+            NAME_TYPE_MAP.put("BpelBreakpoint_disabled", AnnotationType.DISABLED_BREAKPOINT); // NOI18N
         }
         
         public static AnnotationType getAnnotationType(String type) {

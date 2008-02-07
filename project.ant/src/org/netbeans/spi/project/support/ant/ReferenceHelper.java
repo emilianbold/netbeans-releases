@@ -367,12 +367,12 @@ public final class ReferenceHelper {
      * the given name and with (possibly relative) path value.
      * @return was there any change or not
      */
-    private boolean setPathProperty(File path, String propertyName) {
+    private boolean setPathProperty(String path, String propertyName) {
         String[] propertiesFiles = new String[] {
             AntProjectHelper.PROJECT_PROPERTIES_PATH
         };
         String[] values = new String[] {
-            path.getPath()
+            path
         };
         return setPathPropertyImpl(propertyName, values, propertiesFiles);
     }
@@ -943,12 +943,12 @@ public final class ReferenceHelper {
             throw new IllegalArgumentException("Parameter file was not "+  // NOI18N
                 "normalized. Was "+file+" instead of "+FileUtil.normalizeFile(file));  // NOI18N
         }
-        return createForeignFileReferenceImpl(file, expectedArtifactType, true);
+        return createForeignFileReferenceImpl(file.getAbsolutePath(), expectedArtifactType, true);
     }
     
     /**
      * Create an Ant-interpretable string referring to a file on disk. Compared
-     * to {@link #createForeignFileReference} the file does not have to be 
+     * to {@link #createForeignFileReference} the filepath does not have to be 
      * normalized (ie. it can be relative path to project base folder), no 
      * relativization or absolutization of path is done and
      * reference to file is always stored in project properties.
@@ -958,18 +958,20 @@ public final class ReferenceHelper {
      * the behavior is identical to {@link #createForeignFileReference(AntArtifact)}.
      * <p>
      * Acquires write access.
-     * @param file a file to refer to (need not currently exist)
+     * @param path a file path to refer to (need not currently exist)
      * @param expectedArtifactType the required {@link AntArtifact#getType}
      * @return a string which can refer to that file somehow
      *
      * @since org.netbeans.modules.project.ant/1 1.19
      */
-    public String createForeignFileReferenceAsIs(final File file, final String expectedArtifactType) {
-        return createForeignFileReferenceImpl(file, expectedArtifactType, false);
+    public String createForeignFileReferenceAsIs(final String filepath, final String expectedArtifactType) {
+        return createForeignFileReferenceImpl(filepath, expectedArtifactType, false);
     }
 
-    private String createForeignFileReferenceImpl(final File file, final String expectedArtifactType, final boolean performHeuristics) {
-        final File normalizedFile = FileUtil.normalizeFile(file);
+    private String createForeignFileReferenceImpl(final String path, final String expectedArtifactType, final boolean performHeuristics) {
+        FileObject myProjDirFO = h.getProjectDirectory();
+        File myProjDir = FileUtil.toFile(myProjDirFO);
+        final File normalizedFile = FileUtil.normalizeFile(PropertyUtils.resolveFile(myProjDir, path));
         return ProjectManager.mutex().writeAccess(new Mutex.Action<String>() {
             public String run() {
                 AntArtifact art = AntArtifactQuery.findArtifactFromFile(normalizedFile);
@@ -981,13 +983,13 @@ public final class ReferenceHelper {
                     }
                 } else {
                     File myProjDir = FileUtil.toFile(AntBasedProjectFactorySingleton.getProjectFor(h).getProjectDirectory());
-                    String fileID = file.getName();
+                    String fileID = normalizedFile.getName();
                     // if the file is folder then add to ID string also parent folder name,
                     // i.e. if external source folder name is "src" the ID will
                     // be a bit more selfdescribing, e.g. project-src in case
                     // of ID for ant/project/src directory.
-                    if (file.isDirectory() && file.getParentFile() != null) {
-                        fileID = file.getParentFile().getName()+"-"+file.getName();
+                    if (normalizedFile.isDirectory() && normalizedFile.getParentFile() != null) {
+                        fileID = normalizedFile.getParentFile().getName()+"-"+normalizedFile.getName();
                     }
                     fileID = PropertyUtils.getUsablePropertyName(fileID);
                     String prop = findReferenceID(fileID, "file.reference.", normalizedFile.getAbsolutePath()); // NOI18N
@@ -997,7 +999,7 @@ public final class ReferenceHelper {
                     if (performHeuristics) {
                         setPathProperty(myProjDir, normalizedFile, "file.reference." + prop);
                     } else {
-                        setPathProperty(file, "file.reference." + prop);
+                        setPathProperty(path, "file.reference." + prop);
                     }
                     return "${file.reference." + prop + '}'; // NOI18N
                 }
@@ -1007,23 +1009,23 @@ public final class ReferenceHelper {
     
     /**
      * Create an Ant-interpretable string referring to a file on disk. Compared
-     * to {@link #createForeignFileReference} the file does not have to be 
+     * to {@link #createForeignFileReference} the file path does not have to be 
      * normalized (ie. it can be relative path to project base folder), no 
      * relativization or absolutization of path is done and
      * reference to file is always stored in project properties.
      * <p>
      * Acquires write access.
-     * @param file a file to refer to (need not currently exist)
+     * @param path a file path to refer to (need not currently exist)
      * @param fileId
      * @param propertyPrefix the prefix of the created property
      * @return a string which can refer to that file somehow
      *
      * @since org.netbeans.modules.project.ant/1 1.19
      */
-    public String createExtraForeignFileReferenceAsIs(final File file, final String property) {
+    public String createExtraForeignFileReferenceAsIs(final String path, final String property) {
         return ProjectManager.mutex().writeAccess(new Mutex.Action<String>() {
             public String run() {
-                    setPathProperty(file, property);
+                    setPathProperty(path, property);
                     return "${" + property + '}'; // NOI18N
                 }
         });

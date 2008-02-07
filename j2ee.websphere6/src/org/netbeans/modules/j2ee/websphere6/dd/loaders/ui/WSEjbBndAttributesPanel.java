@@ -60,8 +60,8 @@ public class WSEjbBndAttributesPanel extends SectionInnerPanel implements java.a
     private javax.swing.JTextField cmpConnectionFactoryJndiNameField;
     private javax.swing.JCheckBox  cmpConnectionFactoryCheckBox;
     private javax.swing.JComboBox  cmpConnectionFactoryAuthType;
-    private final String FACTORY_NAME="Default CMP Connection Factory Name"; //NOI18N
-    private final String FACTORY_JNDI_NAME="Default CMP Connection Factory JNDI Name"; //NOI18N
+    private static final String FACTORY_NAME="Default CMP Connection Factory Name"; //NOI18N
+    private static final String FACTORY_JNDI_NAME="Default CMP Connection Factory JNDI Name"; //NOI18N
     
     
     /** Creates new form WSEjbBndAttributesPanel */

@@ -47,10 +47,8 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.JComponent;
 import org.netbeans.modules.compapp.casaeditor.design.CasaModelGraphUtilities;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildListener;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiBuildTask;
@@ -100,6 +98,7 @@ public class CasaDataObject extends MultiDataObject {
         return new CasaDataNode(this);
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(CasaDataObject.class);
     }

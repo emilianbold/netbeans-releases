@@ -52,6 +52,9 @@ TOKEN:s_p:( "\\" ["0"-"9"] ["0"-"9"] ["0"-"9"] )
 
 TOKEN:s_string:( [^ "\\"]+ )
 
+COMPLETE "\":\""
+COMPLETE "':'"
+
 COLOR:s_p: {
     default_coloring: "string";
     font_type: "bold";

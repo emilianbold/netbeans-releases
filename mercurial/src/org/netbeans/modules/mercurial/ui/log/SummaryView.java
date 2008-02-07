@@ -172,13 +172,13 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
     }
 
     public void mousePressed(MouseEvent e) {
-        if (e.isPopupTrigger()) {
+        if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
 
     public void mouseReleased(MouseEvent e) {
-        if (e.isPopupTrigger()) {
+        if (!master.isIncomingSearch() && e.isPopupTrigger()) {
             onPopup(e);
         }
     }
@@ -292,7 +292,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         final boolean diffToPrevEnabled = selection.length == 1;
         
         if (revision > 0) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", previousRevision)) { // NOI18N
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_DiffToPrevious", "" + previousRevision )) { // NOI18N
                 {
                     setEnabled(diffToPrevEnabled);
                 }
@@ -319,7 +319,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         }));
         */
         if (!revisionSelected) {
-            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", revision)) { // NOI18N
+            menu.add(new JMenuItem(new AbstractAction(NbBundle.getMessage(SummaryView.class, "CTL_SummaryView_RollbackTo", "" + revision)) { // NOI18N
                 {                    
                     setEnabled(rollbackToEnabled);
                 }
@@ -477,7 +477,7 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 RepositoryRevision.Event drev = (RepositoryRevision.Event) o;
                 File file = VersionsCache.getInstance().getFileRevision(drev.getFile(), drev.getLogInfoHeader().getLog().getRevision());
 
-                FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 org.netbeans.modules.versioning.util.Utils.openFile(fo, drev.getLogInfoHeader().getLog().getRevision());
             } catch (IOException ex) {
                 // Ignore if file not available in cache
@@ -607,7 +607,8 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
                 sd.remove(0, sd.getLength());
                 sd.setParagraphAttributes(0, sd.getLength(), noindentStyle, false);
 
-                sd.insertString(0, container.getLog().getRevision(), null);
+                sd.insertString(0, container.getLog().getRevision() + 
+                        " (" + container.getLog().getCSetShortID() + ")", null); // NOI18N
                 sd.setCharacterAttributes(0, sd.getLength(), filenameStyle, false);
                 sd.insertString(sd.getLength(), FIELDS_SEPARATOR + container.getLog().getAuthor(), null);                
                 sd.insertString(sd.getLength(), FIELDS_SEPARATOR + defaultFormat.format(container.getLog().getDate()), null);
@@ -634,9 +635,11 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             }
             
             actionsPane.setVisible(true);
-            diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
-            revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
-        }
+            if(!master.isIncomingSearch()){
+                diffLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Diff"), foregroundColor, backgroundColor);
+                revertLink.set(NbBundle.getMessage(SummaryView.class, "CTL_Action_Revert"), foregroundColor, backgroundColor); // NOI18N
+            }
+    }
 
         private void renderRevision(JList list, RepositoryRevision.Event dispRevision, final int index, boolean isSelected) {
             Style style;

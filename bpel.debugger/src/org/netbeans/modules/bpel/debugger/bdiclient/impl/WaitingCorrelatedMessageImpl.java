@@ -19,7 +19,10 @@
 
 package org.netbeans.modules.bpel.debugger.bdiclient.impl;
 
+import javax.xml.namespace.QName;
+import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
 import org.netbeans.modules.bpel.debugger.api.WaitingCorrelatedMessage;
+import org.netbeans.modules.bpel.debuggerbdi.rmi.api.WaitingCorrelatedEvent;
 
 /**
  *
@@ -27,14 +30,55 @@ import org.netbeans.modules.bpel.debugger.api.WaitingCorrelatedMessage;
  */
 public class WaitingCorrelatedMessageImpl implements WaitingCorrelatedMessage {
     
-    private String myName;
+    private WaitingCorrelatedEvent myEvent;
+    private BpelProcessImpl myProcess;
+    private CorrelationSet[] myCorrelationSets;
     
-    public WaitingCorrelatedMessageImpl(final String name) {
-        myName = name;
+    public WaitingCorrelatedMessageImpl(
+            final BpelProcessImpl process, 
+            final WaitingCorrelatedEvent event) {
+        myEvent = event;
+        myProcess = process;
+        
+        String[] setNames = myEvent.getCorrelationSetNames();
+        
+        myCorrelationSets = new CorrelationSet[setNames.length];
+        
+        for (int i = 0; i < setNames.length; i++) {
+            final String setName = setNames[i];
+            
+            String[] names = myEvent.getCorrelationSetPropertyNames(setName);
+            String[] types = myEvent.getCorrelationSetPropertyTypes(setName);
+            
+            QName[] realNames = new QName[names.length];
+            QName[] realTypes = new QName[names.length];
+            
+            for (int j = 0; j < names.length; j++) {
+                String[] temp;
+                
+                temp = names[j].split("\n");
+                realNames[j] = new QName(temp[0], temp[2], temp[1]);
+                
+                temp = types[j].split("\n");
+                realTypes[j] = new QName(temp[0], temp[2], temp[1]);
+            }
+            
+            
+            myCorrelationSets[i] = new CorrelationSetImpl(
+                    setName, 
+                    myProcess.getProcessRef().getCorrelationSetId(setName), 
+                    myEvent.getCorrelationSetValue(setName), 
+                    realNames,
+                    realTypes,
+                    myEvent.getCorrelationSetPropertyValues(setName));
+        }
     }
     
     public String getName() {
-        return myName;
+        return myEvent.getPartnerLinkName() + "(#" + myEvent.getId() + ")";
     }
-    
+
+    public CorrelationSet[] getCorrelationSets() {
+        return myCorrelationSets;
+    }
 }

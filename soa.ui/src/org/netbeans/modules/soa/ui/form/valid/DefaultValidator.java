@@ -30,7 +30,7 @@ import org.openide.util.NbBundle;
 public abstract class DefaultValidator implements Validator {
 
     private ValidStateManager.Provider myVSMProvider;
-    private List<String> myReasons;
+    private List<Reason> myReasons;
     private Class myBundleLocator;
     
     public DefaultValidator(Component comp, Class bundleLocator) {
@@ -47,94 +47,115 @@ public abstract class DefaultValidator implements Validator {
         ValidStateManager vsm = myVSMProvider.getValidStateManager(fast);
         if (vsm != null) {
             clearReasons();
-            boolean isValid = fast ? doFastValidation() : doDetailedValidation();
-            vsm.setValid(this, isValid, myReasons);
+            doValidation(fast);
+            vsm.processValidationResults(this);
+        }
+    }
+    
+    public void doValidation(boolean fast) {
+        if (fast) {
+            doFastValidation();
+        } else {
+            doDetailedValidation();
         }
     }
     
     public void clearReasons() {
-        if (myReasons != null) {
+        if (!(myReasons == null || myReasons.isEmpty())) {
             myReasons.clear();
         }
     }
     
-    public String getReason() {
-        if (myReasons != null && myReasons.size() > 0) {
+    public Reason getReason() {
+        if (!(myReasons == null || myReasons.isEmpty())) {
             return myReasons.get(0);
         }
         return null;
     }
     
-    public List<String> getReasons() {
+    public List<Reason> getReasons() {
         return myReasons;
     }
     
-    public void setReasons(List<String> newReasons) {
-        myReasons = newReasons;
+    public List<Reason> getReasons(Severity severity) {
+        if (myReasons == null) {
+            return null;
+        }
+        //
+        ArrayList<Reason> result = new ArrayList<Reason>();
+        //
+        for (Reason reason : myReasons) {
+            if (reason.getSeverity() == severity) {
+                result.add(reason);
+            }
+        }
+        //
+        return result;
     }
     
-    public void addReason(String newReason) {
+    public boolean hasReasons(Severity severity) {
+        if (severity == null) {
+            return !(myReasons == null || myReasons.isEmpty());
+        }
+        //
+        if (myReasons != null) {
+            for (Reason reason : myReasons) {
+                if (reason.getSeverity() == severity) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public void addReason(Reason newReason) {
         if (myReasons == null) {
-            myReasons = new ArrayList<String>();
+            myReasons = new ArrayList<Reason>();
         }
         //
         myReasons.add(newReason);
     }
     
-    public void addReasons(List<String> reasons) {
+    public void addReasons(List<Reason> reasons) {
         myReasons.addAll(reasons);
     }
     
-    public void setReason(String newReason) {
-        myReasons = new ArrayList<String>();
+    public void setReason(Reason newReason) {
+        myReasons = new ArrayList<Reason>();
         myReasons.add(newReason);
-    }
-    
-    /**
-     * It's a helpful method to understand if the validator has the valid status or not. 
-     */
-    public boolean isReasonsListEmpty() {
-        return myReasons == null || myReasons.isEmpty();
     }
     
     /**
      * Takes the text resource by the specified key and set it as an error reason.
      */
-    public void setReasonKey(String key) {
-        String reason = NbBundle.getMessage(myBundleLocator, key);
+    public void setReasonKey(Severity severity, String key) {
+        String text = NbBundle.getMessage(myBundleLocator, key);
+        Reason reason = new Reason(severity, text);
         setReason(reason);
     }
     
     /**
      * Takes the text resource by the specified key and add it as an error reason.
      */
-    public void addReasonKey(String key) {
-        String reason = NbBundle.getMessage(myBundleLocator, key);
+    public void addReasonKey(Severity severity, String key) {
+        String text = NbBundle.getMessage(myBundleLocator, key);
+        Reason reason = new Reason(severity, text);
         addReason(reason);
     }
     
     /**
      * Takes the text resource by the specified key and add it as an error reason.
      */
-    public void addReasonKey(String key, String... params) {
-        String reason = NbBundle.getMessage(myBundleLocator, key, params);
+    public void addReasonKey(Severity severity, String key, String... params) {
+        String text = NbBundle.getMessage(myBundleLocator, key, params);
+        Reason reason = new Reason(severity, text);
         addReason(reason);
-    }
-    
-    /**
-     * Takes the text resources by the specified keys and set them as error reasons.
-     */
-    public void setReasonKeys(String... keys) {
-        for (String key : keys) {
-            String reason = NbBundle.getMessage(myBundleLocator, key);
-            addReason(reason);
-        }
     }
     
     /**
      * The default implementation which calls the fast validation.
      */
-    public boolean doDetailedValidation() {
-        return doFastValidation();
+    public void doDetailedValidation() {
+        doFastValidation();
     }
 }

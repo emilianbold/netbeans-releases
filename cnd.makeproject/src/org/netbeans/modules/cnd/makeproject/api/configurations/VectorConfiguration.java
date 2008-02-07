@@ -1,3 +1,4 @@
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -41,18 +42,20 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 
 public class VectorConfiguration {
     private VectorConfiguration master;
 
-    private Vector value;
+    private List value;
     private boolean dirty = false;
 
     public VectorConfiguration(VectorConfiguration master) {
 	this.master = master;
-	value = new Vector();
+	value = new ArrayList();
 	reset();
     }
 
@@ -72,11 +75,23 @@ public class VectorConfiguration {
 	getValue().add(o);
     }
 
-    public void setValue(Vector b) {
-	this.value = b;
+    public void setValue(List l) {
+        if (!(l instanceof ArrayList))
+            this.value = new ArrayList(l);
+        else
+            this.value = l;
+    }
+    
+    /*
+     * @deprecated use setValue(List l)
+     * See IZ 122300
+     */
+    public void setValue(String s) {
+        List list = CppUtils.tokenizeString(s);
+        setValue(list);
     }
 
-    public Vector getValue() {
+    public List getValue() {
 	return value;
 	/*
 	if (master != null && !getModified())
@@ -95,7 +110,9 @@ public class VectorConfiguration {
     }
 
     public void reset() {
-	value.removeAllElements();
+	//value.removeAll(); // FIXUP
+	value = new ArrayList();
+        
     }
 
     public String getOption(String prependOption) {
@@ -128,9 +145,10 @@ public class VectorConfiguration {
         return eq;
     }
 
+    @Override
     public Object clone() {
 	VectorConfiguration clone = new VectorConfiguration(master);
-	clone.setValue((Vector)getValue().clone());
+	clone.setValue((List)((ArrayList)getValue()).clone());
 	return clone;
     }
 }

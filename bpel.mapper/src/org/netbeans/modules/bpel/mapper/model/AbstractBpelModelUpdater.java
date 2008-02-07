@@ -44,11 +44,9 @@ import org.netbeans.modules.bpel.model.api.support.Roles;
 import org.netbeans.modules.bpel.model.api.support.XPathModelFactory;
 import org.netbeans.modules.bpel.model.api.support.XPathBpelVariable;
 import org.netbeans.modules.soa.mappercore.model.Constant;
-import org.netbeans.modules.soa.mappercore.model.Graph;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.SourcePin;
-import org.netbeans.modules.soa.mappercore.model.TargetPin;
 import org.netbeans.modules.soa.mappercore.model.TreeSourcePin;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
 import org.netbeans.modules.soa.mappercore.model.VertexItem;
@@ -215,6 +213,11 @@ public class AbstractBpelModelUpdater {
                 XPathPredicateExpression[] predArr = pred.getPredicates();
                 SchemaComponent sComp = pred.getSComponent();
                 newLocationStep = constructLStep(xPathModel, sComp, predArr);
+            } else if (stepObj instanceof LocationStep) {
+                //
+                // TODO: It would be more correct to do a copy of the stepObj
+                // because of it is owned by another XPathModel. 
+                newLocationStep = (LocationStep)stepObj;
             }
             //
             if (newLocationStep != null) {
@@ -238,27 +241,6 @@ public class AbstractBpelModelUpdater {
             return null;
         }
         //
-        String componentName = ((Named)sComp).getName();
-        QName sCompQName = null;
-        //
-        if (BpelMapperUtils.isPrefixRequired(sComp)) {
-            //
-            String nsPrefix = null;
-            String namespaceURI = sComp.getModel().getEffectiveNamespace(sComp);
-            NamespaceContext nsContext = xPathModel.getNamespaceContext();
-            if (nsContext != null) {
-                nsPrefix = nsContext.getPrefix(namespaceURI);
-            }
-            //
-            if (nsPrefix == null || nsPrefix.length() == 0) {
-                sCompQName = new QName(componentName);
-            } else {
-                sCompQName = new QName(namespaceURI, componentName, nsPrefix);
-            }
-        } else {
-            sCompQName = new QName(componentName);
-        }
-        //
         XPathAxis axis = null;
         if (sComp instanceof Attribute) {
             axis = XPathAxis.ATTRIBUTE;
@@ -266,7 +248,7 @@ public class AbstractBpelModelUpdater {
             axis = XPathAxis.CHILD;
         }
         //
-        StepNodeNameTest nameTest = new StepNodeNameTest(sCompQName);
+        StepNodeNameTest nameTest = new StepNodeNameTest(xPathModel, sComp);
         LocationStep newLocationStep = xPathModel.getFactory().
                 newLocationStep(axis, nameTest, predArr);
         //
@@ -291,11 +273,10 @@ public class AbstractBpelModelUpdater {
         for (Object item : objectPath) {
             //
             if (item instanceof SchemaComponent || 
-                    item instanceof AbstractPredicate) {
+                    item instanceof AbstractPredicate ||
+                    item instanceof LocationStep) {
                 sourceInfo.schemaCompList.add(item);
-            }
-            //
-            if (item instanceof AbstractVariableDeclaration) {
+            } else if (item instanceof AbstractVariableDeclaration) {
                 if (item instanceof VariableDeclarationScope) {
                     continue;
                 } else if (item instanceof VariableDeclarationWrapper) {
@@ -303,17 +284,11 @@ public class AbstractBpelModelUpdater {
                 } else if (item instanceof VariableDeclaration) {
                     sourceInfo.varDecl = (VariableDeclaration)item;
                 }
-            }
-            //
-            if (item instanceof Part) {
+            } else if (item instanceof Part) {
                 sourceInfo.part = (Part)item;
-            }
-            //
-            if (item instanceof PartnerLink) {
+            } else if (item instanceof PartnerLink) {
                 sourceInfo.pLink = (PartnerLink)item;
-            }
-            //
-            if (item instanceof Roles) {
+            } else if (item instanceof Roles) {
                 sourceInfo.roles = (Roles)item;
             }
         }
@@ -521,99 +496,6 @@ public class AbstractBpelModelUpdater {
         public Roles roles;
     }
     
-    /**
-     * An internal class which collects information about a graph, which 
-     * is used for preparing changes to BPEL model. 
-     */
-    protected class GraphInfoCollector {
-        
-        private Graph mGraph;
-        
-        // Contains vertex roots which are connected to the right tree
-        private ArrayList<Vertex> mPrimaryRoots;
-        
-        // Contains vertex roots which are unconnected to the right tree
-        private ArrayList<Vertex> mSecondryRoots;
-        
-        // Contains links from the left to the right tree
-        private ArrayList<Link> mTransitLink;
-        
-        public GraphInfoCollector(Graph graph) {
-            mGraph = graph;
-        }
-        
-        public ArrayList<Vertex> getPrimaryRoots() {
-            if (mPrimaryRoots == null) {
-                calculate();
-            }
-            return mPrimaryRoots;
-        }
-        
-        public ArrayList<Vertex> getSecondryRoots() {
-            if (mSecondryRoots == null) {
-                calculate();
-            }
-            return mSecondryRoots;
-        }
-        
-        public ArrayList<Link> getTransitLinks() {
-            if (mTransitLink == null) {
-                calculate();
-            }
-            return mTransitLink;
-        }
-        
-        /**
-         * Indicates if there isn't any links between the left and right trees.
-         * @return
-         */
-        public boolean noLinksAtAll() {
-            return getSecondryRoots().isEmpty() && 
-                   getPrimaryRoots().isEmpty() && 
-                   getTransitLinks().isEmpty();
-        }
-        
-        /**
-         * Indicates if there is the only one link between the left and right trees.
-         * @return
-         */
-        public boolean onlyOneTransitLink() {
-            return getSecondryRoots().isEmpty() && 
-                   getPrimaryRoots().isEmpty() && 
-                   getTransitLinks().size() == 1;
-        }
-
-        private void calculate() {
-            //
-            mPrimaryRoots = new ArrayList<Vertex>();
-            mSecondryRoots = new ArrayList<Vertex>();
-            mTransitLink = new ArrayList<Link>();
-            //
-            // Calculate roots
-            mSecondryRoots = new ArrayList<Vertex>();
-            mPrimaryRoots = new ArrayList<Vertex>();
-            for (Vertex vertex : mGraph.getVerteces()) {
-                Link link = vertex.getOutgoingLink();
-                if (link == null) {
-                    mSecondryRoots.add(vertex);
-                } else if (link.getTarget() == mGraph) {
-                    mPrimaryRoots.add(vertex);
-                }
-            }
-            //
-            // Calculate links from the left to the right tree
-            mTransitLink = new ArrayList<Link>();
-            for (Link link : mGraph.getLinks()) {
-                SourcePin linkSource = link.getSource();
-                TargetPin linkTarget = link.getTarget();
-                //
-                if (linkSource instanceof TreeSourcePin && linkTarget == mGraph) {
-                    mTransitLink.add(link);
-                }
-            }
-        }
-    }
-
     /**
      * The object is a result of converting a Graph content to the XPath form 
      */

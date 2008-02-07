@@ -300,7 +300,12 @@ public class UnitTab extends javax.swing.JPanel {
             tfSearch.removeFocusListener(flForSearch);
         }
         flForSearch = null;
-        
+        Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate");//NOI18N
+        if (preferenceChangeListener != null) {
+            p.removePreferenceChangeListener (preferenceChangeListener);
+            preferenceChangeListener = null;
+        }
+        manager = null;
     }
     
     

@@ -74,6 +74,7 @@ public class VCSContextTest extends TestCase {
     public void testForEmptyNodes() {
         VCSContext ctx = VCSContext.forNodes(new Node[0]);
         assertTrue(ctx.getRootFiles().size() == 0);
+        assertTrue(ctx.getFiles().size() == 0);
         assertTrue(ctx.getExclusions().size() == 0);
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 0);
     }
@@ -81,28 +82,39 @@ public class VCSContextTest extends TestCase {
     public void testForFileNodes() {
         VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(dataRootDir) });
         assertTrue(ctx.getRootFiles().size() == 1);
+        assertTrue(ctx.getFiles().size() == 1);
         assertTrue(ctx.getExclusions().size() == 0);
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);
 
         ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(dataRootDir), new DummyFileNode(dataRootDir) });
         assertTrue(ctx.getRootFiles().size() == 1);
+        assertTrue(ctx.getFiles().size() == 1);
         assertTrue(ctx.getExclusions().size() == 0);
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);
 
         ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(dataRootDir), new DummyFileNode(new File(dataRootDir, "dummy")) });
         assertTrue(ctx.getRootFiles().size() == 1);
+        assertTrue(ctx.getFiles().size() == 2);
         assertTrue(ctx.getExclusions().size() == 0);
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);
 
         ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(new File(dataRootDir, "dummy2")), new DummyFileNode(new File(dataRootDir, "dummy")) });
         assertTrue(ctx.getRootFiles().size() == 2);
+        assertTrue(ctx.getFiles().size() == 2);
         assertTrue(ctx.getExclusions().size() == 0);
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 2);
+        
+        ctx = VCSContext.forNodes(new Node[] { new DummyFileNode(new File(dataRootDir, "workdir/root")), new DummyFileNode(new File(dataRootDir, "workdir/root/a.txt")) });
+        assertTrue(ctx.getRootFiles().size() == 1);
+        assertTrue(ctx.getFiles().size() == 2);
+        assertTrue(ctx.getExclusions().size() == 0);
+        assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);        
     }
 
     public void testForProjectNodes() {
         VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyProjectNode(new File(dataRootDir, "workdir/root")) });
         assertTrue(ctx.getRootFiles().size() == 1);
+        assertTrue(ctx.getFiles().size() == 1);
         assertTrue(ctx.getExclusions().size() == 1);
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 0);
     }

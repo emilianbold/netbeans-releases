@@ -59,6 +59,10 @@ Contributor(s):
                 <attr name="originalFile" stringvalue="Actions/View/org.netbeans.modules.cnd.modelui.switcher.SwitchProjectAction.instance"/>
                 <attr name="position" intvalue="100"/>
             </file>
+	    <file name="org.netbeans.modules.cnd.modelui.switcher.TestProjectReferencesAction.instance">
+		<attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.modelui.switcher.TestProjectReferencesAction"/>
+                <attr name="position" intvalue="1300"/>
+	    </file>            
         </folder>
    </folder>     
 
@@ -70,5 +74,5 @@ Contributor(s):
             </file>
         </folder>
    </folder>     
-    
+
 </filesystem>
