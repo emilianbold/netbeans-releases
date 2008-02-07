@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,50 +38,43 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.visualweb.test.components.composite;
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+import java.io.IOException;
+import org.netbeans.modules.visualweb.gravy.RaveTestCase;
+import org.netbeans.modules.visualweb.test.components.util.ComponentUtils;
 
-import java.util.MissingResourceException;
+/**
+ * @author Martin Schovanek (Martin.Schovanek@sun.com)
+ */
+public class CheckIDELogTest extends RaveTestCase {
 
-import org.openide.util.NbBundle;
-import org.netbeans.modules.editor.options.BaseOptionsBeanInfo;
-
-/** BeanInfo for CC editor options */
-public class CCOptionsBeanInfo extends BaseOptionsBeanInfo {
-
-    private static final String[] EXPERT_PROP_NAMES = new String[] {
-        CCOptions.COMPLETION_CASE_SENSITIVE_PROP,
-        CCOptions.COMPLETION_INSTANT_SUBSTITUTION_PROP,
-        CCOptions.JAVADOC_AUTO_POPUP_PROP,
-        CCOptions.JAVADOC_AUTO_POPUP_DELAY_PROP,
-        CCOptions.JAVADOC_PREFERRED_SIZE_PROP,
-        CCOptions.JAVADOC_BGCOLOR,
-        CCOptions.CODE_FOLDING_UPDATE_TIMEOUT_PROP
-    };
-    
-    public CCOptionsBeanInfo() {
-	super("/org/netbeans/modules/cnd/editor/cplusplus/CCIcon"); //NOI18N
-    }
-    
-    protected @Override String[] getPropNames() {
-        // already merged on initialization
-        return CCOptions.CC_PROP_NAMES;
+    public CheckIDELogTest(String testName) {
+        super(testName);
+        dumpScreen = false;
     }
 
-    protected @Override void updatePropertyDescriptors() {
-        super.updatePropertyDescriptors();
-        setExpert(EXPERT_PROP_NAMES);
-    }    
-    
-    protected @Override Class getBeanClass() {
-	return CCOptions.class;
+    /** method called before each testcase
+     */
+    @Override
+    protected void setUp() {
+        System.out.println(">> Running Test: " + getName() + " >>>>>>>>>>>>>>>");
     }
 
-    protected @Override String getString(String key) {
+    /** method called after each testcase
+     */
+    @Override
+    protected void tearDown() {
+        log("<< Finished Test: " + getName() + " <<<<<<<<<<<<<<<<<");
+    }
+    
+    public void testCheckIDELog() {
         try {
-            return NbBundle.getBundle(CCOptionsBeanInfo.class).getString(key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
+            String err = ComponentUtils.hasUnexpectedException();
+            assertTrue("Unexpected  exceptions found in message.log:\n" + err, err.equals(""));
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            fail(ioe);
         }
     }
 }

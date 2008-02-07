@@ -48,7 +48,7 @@ public class Constants {
             PSM_ICON_BASE + ICON_UNKNOWN;
             
     // Colors //////////////////////////////////////////////////////////////////
-    public static Color NEVER_EXECUTED_COLOR = 
+    public static Color NOT_YET_EXECUTED = 
             Color.GRAY;
     
     public static Color STARTED_COLOR = 

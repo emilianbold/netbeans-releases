@@ -104,7 +104,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     public void propertyChange(final PropertyChangeEvent ev) {
         log.fine("GWV.propertyChange: Property change for " + ev.getPropertyName()); // NOI18N
         
-        String pname = ev.getPropertyName();
+        final String pname = ev.getPropertyName();
         if ((pname.equals(GdbDebugger.PROP_STATE) && ev.getNewValue().equals(GdbDebugger.STATE_STOPPED)) ||
                 pname.equals(GdbDebugger.PROP_CURRENT_THREAD) ||
                 pname.equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
@@ -112,6 +112,9 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
             final GdbWatchVariable gwv = this;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
+                    if (pname.equals(Watch.PROP_EXPRESSION)) {
+                        resetTypeInfo();
+                    }
                     type = getDebugger().requestWhatis(watch.getExpression());
                     value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
                     String rt = getTypeInfo().getResolvedType(gwv);
