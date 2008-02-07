@@ -77,7 +77,9 @@ public class HibernateMappingToolBarMVElement extends ToolBarMultiViewElement {
     private Project project;
 
     public HibernateMappingToolBarMVElement(HibernateMappingDataObject dObj) {
-        super(dObj);
+        // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+        //super(dOjb);
+        super(null);
         this.mappingDataObject = dObj;
         this.project = FileOwnerQuery.getOwner(dObj.getPrimaryFile());
 

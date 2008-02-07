@@ -63,6 +63,7 @@ import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
+import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -76,19 +77,21 @@ import org.openide.util.Utilities;
  * 
  * @author Dongmei Cao
  */
-public class HibernateMappingDataObject extends XmlMultiViewDataObject {
-
+public class HibernateMappingDataObject extends MultiDataObject {//XmlMultiViewDataObject {
+    
     private static final int TYPE_TOOLBAR = 0;
     public static final int UPDATE_DELAY = 200;
     private static final String DESIGN_VIEW_ID = "hibernate_mapping_multiview_design"; // NOI18N
     private HibernateMapping mapping;
-    private ModelSynchronizer modelSynchronizer;
+    //TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+    //private ModelSynchronizer modelSynchronizer;
 
     public HibernateMappingDataObject(FileObject pf, HibernateMappingDataLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader);
-        
-       // Synchronize between the vew and XML file
-        modelSynchronizer = new ModelSynchronizer(this);
+
+        // Synchronize between the vew and XML file
+        // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+        //modelSynchronizer = new ModelSynchronizer(this);
 
         CookieSet cookies = getCookieSet();
         cookies.add((Node.Cookie) DataEditorSupport.create(this, getPrimaryEntry(), cookies));
@@ -97,15 +100,18 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
         cookies.add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         cookies.add(validateCookie);
-        parseDocument();
+        // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+        //parseDocument();
     }
-    
+
     /**
      * Parses the document.
      * @return true if document could be parsed (it was valid), false otwherwise.
      */
     public boolean parseDocument() {
-        if (mapping == null) {
+        // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+         throw new UnsupportedOperationException("Not supported yet.");
+        /*if (mapping == null) {
             try {
                 mapping = getHibernateMapping();
             } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
@@ -136,8 +142,9 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
             }
         }
         return true;
+        */
     }
-    
+
     /**
      * Gets the object graph representing the contents of the 
      * Hibernate mapping file with which this data object 
@@ -156,7 +163,7 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
         assert mapping != null;
         return mapping;
     }
-    
+
     /**
      * Saves the document.
      * @see EditorCookie#saveDocument
@@ -171,15 +178,15 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
             }
         }
     }
-    
-    
+
     protected String getPrefixMark() {
         return null;
     }
 
     public void modelUpdatedFromUI() {
         setModified(true);
-        modelSynchronizer.requestUpdateData();
+        // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+        //modelSynchronizer.requestUpdateData();
     }
 
     @Override
@@ -197,24 +204,28 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
         return true;
     }
 
-    @Override
+    // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+    // TODO: method from XmlMultiViewDataObject
+   /* @Override
     protected Image getXmlViewIcon() {
         return Utilities.loadImage("org/netbeans/modules/hibernate/resources/hibernateMapping.gif");
-    }
+    }*/
 
     /** 
      * Enable to focus specific object in Multiview Editor
      * The default implementation opens the XML View
      */
-    @Override
+    // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+    // TODO: method from XmlMultiViewDataObject
+    /*@Override
     public void showElement(Object element) {
         Object target = null;
-        if( element instanceof MyClass ) {
+        if (element instanceof MyClass) {
             openView(0);
             target = element;
         }
-        
-        if( target != null ) {
+
+        if (target != null) {
             final Object key = target;
             org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(new Runnable() {
 
@@ -223,14 +234,15 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
                 }
             });
         }
-    }
+    }*/
 
     /** 
      * Enable to get active MultiViewElement object
      */
-    public ToolBarMultiViewElement getActiveMultiViewElement0() {
+    // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+    /*public ToolBarMultiViewElement getActiveMultiViewElement0() {
         return (ToolBarMultiViewElement) super.getActiveMultiViewElement();
-    }
+    }*/
 
     protected DesignMultiViewDesc[] getMultiViewDesc() {
         // TODO: enable this later when the Design tab is implemented
@@ -248,7 +260,8 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
         return getCookieSet().getLookup();
     }
 
-    private static class DesignView extends DesignMultiViewDesc {
+    // TODO: not supported till I can figure out conflicts between the XmlMultiViewDataObject and completion provider
+    /*private static class DesignView extends DesignMultiViewDesc {
 
         private static final long serialVersionUID = 1L;
         private int type;
@@ -316,5 +329,5 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
                 }
             }
         }
-    }
+    }*/
 }
