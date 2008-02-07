@@ -828,7 +828,7 @@ public class RightTree extends MapperPanel implements
             if (node.isGraphCollapsed()) {
                 mapper.setExpandedGraphState(node.getTreePath(), true);
             } else {
-                getCanvas().requestFocus();
+                getCanvas().requestFocusInWindow();
                 Graph graph = node.getGraph();
                 if (graph.hasOutgoingLinks()) {
                     List<Link> links = graph.getLinks();

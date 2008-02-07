@@ -279,12 +279,6 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.ruby</code-name-base>
-                        <compile-dependency/>
-                        <recursive/>
-                        <test/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.api.gsf</code-name-base>
                         <recursive/>
                         <compile-dependency/>

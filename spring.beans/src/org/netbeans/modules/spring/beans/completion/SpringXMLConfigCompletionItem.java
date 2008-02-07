@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,10 +37,6 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.spring.beans.completion;
@@ -54,6 +56,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.SimpleElementVisitor6;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -72,6 +75,7 @@ import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.util.SpringBeansUIs;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -105,9 +109,9 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         return new PackageItem(substitutionOffset, packageName, deprecated);
     }
     
-    public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
+    public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle, 
                 boolean deprecated, boolean displayPackage) {
-        return new ClassItem(substitutionOffset, elem, type, deprecated, displayPackage);
+        return new ClassItem(substitutionOffset, elem, elemHandle, deprecated, displayPackage);
     }
     
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
@@ -206,6 +210,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private List<String> beanNames;
         private String displayName;
         private String beanLocFile;
+        private Action goToBeanAction;
         private String leftText;
         
         public BeanRefItem(int substitutionOffset, String displayName, SpringBean bean, FileObject containerFO) {
@@ -213,14 +218,14 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             this.beanId = bean.getId();
             this.beanClass = bean.getClassName();
             this.beanNames = bean.getNames();
-            if(bean.getLocation() != null) {
+            if (bean.getLocation() != null) {
                 File file = bean.getLocation().getFile();
-                if(file != null) {
-                    FileObject fo = FileUtil.toFileObject(file);
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
                     this.beanLocFile = FileUtil.getRelativePath(containerFO.getParent(), fo);
                 }
-                
             }
+            goToBeanAction = SpringBeansUIs.createGoToBeanAction(bean);
             this.displayName = displayName;
         }
         
@@ -268,8 +273,8 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             return new AsyncCompletionTask(new AsyncCompletionQuery() {
                 @Override
                 protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-                    CompletionDocumentation docItem = SpringXMLConfigCompletionDoc.getBeanRefDoc(beanId, 
-                            beanNames, beanClass, beanLocFile);
+                    CompletionDocumentation docItem = SpringXMLConfigCompletionDoc.createBeanRefDoc(beanId, 
+                            beanNames, beanClass, beanLocFile, goToBeanAction);
                     resultSet.setDocumentation(docItem);
                     resultSet.finish();
                 }
@@ -294,7 +299,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
         private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
         
-        private TypeMirrorHandle<DeclaredType> typeHandle;
+        private ElementHandle<TypeElement> elemHandle;
         private boolean deprecated;
         private String simpleName;
         private String enclName;
@@ -302,10 +307,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private String leftText;
         private boolean displayPackage;
 
-        public ClassItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
+        public ClassItem(int substitutionOffset, TypeElement elem, ElementHandle elemHandle, 
                 boolean deprecated, boolean displayPackage) {
             super(substitutionOffset);
-            this.typeHandle = TypeMirrorHandle.create(type);
+            this.elemHandle = elemHandle;
             this.deprecated = deprecated;
             this.simpleName = elem.getSimpleName().toString();
             this.enclName = getElementName(elem.getEnclosingElement(), true).toString();
@@ -379,13 +384,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         js.runUserActionTask(new Task<CompilationController>() {
                             public void run(CompilationController cc) throws Exception {
                                 cc.toPhase(Phase.RESOLVED);
-                                ElementHandle<? extends TypeElement> eh = ElementHandle.from(typeHandle);
-                                Element e = eh.resolve(cc);
-                                if(e.asType().getKind() == TypeKind.ERROR) {
+                                Element element = elemHandle.resolve(cc);
+                                if (element == null) {
                                     return;
                                 }
-                                
-                                SpringXMLConfigCompletionDoc doc = SpringXMLConfigCompletionDoc.createJavaDoc(cc, e);
+                                SpringXMLConfigCompletionDoc doc = SpringXMLConfigCompletionDoc.createJavaDoc(cc, element);
                                 resultSet.setDocumentation(doc);
                             }
                         }, false);

@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.debugger.Watch;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -108,21 +109,19 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
                 pname.equals(GdbDebugger.PROP_CURRENT_THREAD) ||
                 pname.equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                 pname.equals(Watch.PROP_EXPRESSION)) {
-            if (Thread.currentThread().getName().equals("GdbReaderRP")) { // NOI18N
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        type = getDebugger().requestWhatis(watch.getExpression());
-                        value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
-                        model.fireTableValueChanged(ev.getSource(), null);
+            final GdbWatchVariable gwv = this;
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    type = getDebugger().requestWhatis(watch.getExpression());
+                    value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
+                    String rt = getTypeInfo().getResolvedType(gwv);
+                    if (GdbUtils.isPointer(rt)) {
+                        derefValue = getDebugger().requestValue('*' + watch.getExpression());
                     }
-                });
-            } else {
-                type = getDebugger().requestWhatis(watch.getExpression());
-                value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
-                model.fireTableValueChanged(ev.getSource(), null);
-            }
-        } else {
-            log.fine("GWV.propertyChange: Ignoring " + pname);
+                    setModifiedValue(value);
+                    model.fireTableValueChanged(ev.getSource(), null);
+                }
+            });
         }
     }
     
@@ -150,9 +149,6 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     public String getValue() {
         if (value == null || value.length() == 0) {
             value = getDebugger().requestValue("\"" + watch.getExpression() + "\""); // NOI18N
-	    if (fields.length > 0) {
-		setModifiedValue(value);
-	    }
         }
         log.fine("GWV.getValue: [" + (value == null ? "<Null>" : value) + "]");
         return value;

@@ -111,8 +111,8 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
     private final SpringWebFrameworkProvider framework;
     private final ExtenderController controller;
     private boolean customizer;
-    private String dispatcherName; 
-    private String dispatcherMapping; 
+    private String dispatcherName = "dispatcher"; // NOI18N
+    private String dispatcherMapping = "*.htm"; // NOI18N
     private boolean includeJstl = true;
     private ChangeSupport changeSupport = new ChangeSupport(this); 
     
@@ -120,16 +120,12 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
      * Creates a new instance of SpringWebModuleExtender 
      * @param framework
      * @param controller an instance of org.netbeans.modules.web.api.webmodule.ExtenderController 
-     * @param customizer
-     * @param dispatcherName
-     * @param dispatcherMapping
+     * @param customizer     
      */
-    public SpringWebModuleExtender(SpringWebFrameworkProvider framework, ExtenderController controller, boolean customizer, String dispatcherName, String dispatcherMapping) {
+    public SpringWebModuleExtender(SpringWebFrameworkProvider framework, ExtenderController controller, boolean customizer) {
         this.framework = framework;
         this.controller = controller;
-        this.customizer = customizer;
-        this.dispatcherName = dispatcherName;
-        this.dispatcherMapping = dispatcherMapping; 
+        this.customizer = customizer;       
     }
     
     public ExtenderController getController() {
@@ -157,49 +153,25 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
 
     public boolean isValid() {
         if (dispatcherName == null || dispatcherName.trim().length() == 0){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NamePatternIsEmpty")); // NOI18N
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNamePatternIsEmpty")); // NOI18N
             return false;
         }
-        if (!isNamePatternValid(dispatcherName)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_NamePatternIsNotValid")); // NOI18N
+        if (!SpringWebFrameworkValidator.isDispatcherNamePatternValid(dispatcherName)){
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherNamePatternIsNotValid")); // NOI18N
             return false;
         }
         if (dispatcherMapping == null || dispatcherMapping.trim().length() == 0) {
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_MappingPatternIsEmpty")); // NOI18N
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsEmpty")); // NOI18N
             return false;
         }
-        if (!isMappingPatternValid(dispatcherMapping)){
-            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_MappingPatternIsNotValid")); // NOI18N
+        if (!SpringWebFrameworkValidator.isDispatcherMappingPatternValid(dispatcherMapping)){
+            controller.setErrorMessage(NbBundle.getMessage(SpringConfigPanelVisual.class, "MSG_DispatcherMappingPatternIsNotValid")); // NOI18N
             return false;
         }        
         controller.setErrorMessage(null);
         return true;    
     }
-    
-    private boolean isNamePatternValid(String pattern) {        
-        return Pattern.matches("\\w+", pattern);
-    }
-    
-    private boolean isMappingPatternValid(String pattern){
-        // mapping validation based on the Servlet 2.4 specification,section SRV.11.2
-        if (pattern.startsWith("*.")){ // NOI18N
-            String p = pattern.substring(2);
-            if (p.indexOf('.') == -1 && p.indexOf('*') == -1  
-                    && p.indexOf('/') == -1 && !p.trim().equals("") && !p.contains(" ") && Pattern.matches("\\w+",p)) { // NOI18N
-                return true;
-            }
-        }
         
-        if ((pattern.length() > 3) && pattern.endsWith("/*") && pattern.startsWith("/") && !pattern.contains(" ")) // NOI18N
-            return true;
-        
-        if (pattern.matches("/")){ // NOI18N
-            return true;
-        }
-               
-        return false;
-    }
-
     public HelpCtx getHelp() {
         return new HelpCtx(SpringWebModuleExtender.class);
     }
