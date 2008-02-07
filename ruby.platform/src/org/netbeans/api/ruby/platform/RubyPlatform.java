@@ -96,7 +96,7 @@ public final class RubyPlatform {
             RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
         }
     }
-    
+
     private Info info;
     
     private final String id;
@@ -140,6 +140,12 @@ public final class RubyPlatform {
         return platform == null ? null : platform.getGemManager();
     }
 
+    @CheckForNull
+    public static String platformDescriptionFor(Project project) {
+        RubyPlatform platform = platformFor(project);
+        return platform == null ? null : platform.getInfo().getLongDescription();
+    }
+    
     public Info getInfo() {
         return info;
     }
