@@ -42,19 +42,33 @@ package org.netbeans.spi.java.project.support.ui;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.spi.project.libraries.LibraryTypeProvider;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -161,4 +175,111 @@ public final class MakeSharableUtils {
         }
         return panels;
     }
+    
+    static class KeepLibraryAtLocation extends AbstractAction {
+        private boolean keepRelativeLocations;
+        private Library library;
+        private AntProjectHelper helper;
+
+        KeepLibraryAtLocation(Library l , boolean relative, AntProjectHelper h) {
+            library = l;
+            keepRelativeLocations = relative;
+            helper = h;
+        }
+        public void actionPerformed(ActionEvent e) {
+            String loc = helper.getLibrariesLocation();
+            assert loc != null;
+            File mainPropertiesFile = helper.resolveFile(loc);
+            try {
+                LibraryManager man = LibraryManager.forLocation(mainPropertiesFile.toURI().toURL());
+                Map<String, List<URL>> volumes = new HashMap<String, List<URL>>();
+                LibraryTypeProvider provider = LibrariesSupport.getLibraryTypeProvider(library.getType());
+                assert provider != null;
+                for (String volume : provider.getSupportedVolumeTypes()) {
+                    List<URL> urls = library.getContent(volume);
+                    List<URL> newurls = new ArrayList<URL>();
+                    for (URL url : urls) {
+                        String jarFolder = null;
+                        boolean isArchive = false;
+                        if ("jar".equals(url.getProtocol())) { // NOI18N
+                            jarFolder = getJarFolder(url);
+                            url = FileUtil.getArchiveFile(url);
+                            isArchive = true;
+                        }
+                        FileObject fo = URLMapper.findFileObject(url);
+
+                        if (fo != null) {
+                            if (keepRelativeLocations) {
+                                File path = FileUtil.toFile(fo);
+                                String str = PropertyUtils.relativizeFile(mainPropertiesFile.getParentFile(), path);
+                                url = LibrariesSupport.convertFilePathToURL(str);
+                            } else {
+                                url = fo.getURL();
+                            }
+                            if (isArchive) {
+                                url = FileUtil.getArchiveRoot(url);
+                            }
+                            if (jarFolder != null) {
+                                 url = appendJarFolder(url, jarFolder);
+                            }
+                            
+                        }
+                        
+
+                        newurls.add(url);
+                    }
+                    volumes.put(volume, newurls);
+                }
+                
+                man.createLibrary(library.getType(), library.getName(), volumes);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+    }
+    
+    static class CopyLibraryJars extends AbstractAction {
+        private Library library;
+        private ReferenceHelper refHelper;
+ 
+        CopyLibraryJars(ReferenceHelper h, Library l) {
+            refHelper = h;
+            library = l;
+        }
+         
+        public void actionPerformed(ActionEvent e) {
+            assert library.getManager() == LibraryManager.getDefault() : "Only converting from non-sharable to sharable is supported."; //NOi18N
+            try {
+                refHelper.copyLibrary(library);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+    }
+    
+
+    
+    
+    /** for jar url this method returns path wihtin jar or null*/
+    private static String getJarFolder(URL url) {
+        assert "jar".equals(url.getProtocol()) : url;
+        String u = url.toExternalForm();
+        int index = u.indexOf("!/"); //NOI18N
+        if (index != -1 && index + 2 < u.length()) {
+            return u.substring(index + 2);
+        }
+        return null;
+    }
+
+    /** append path to given jar root url */
+    private static URL appendJarFolder(URL u, String jarFolder) {
+        assert "jar".equals(u.getProtocol()) && u.toExternalForm().endsWith("!/") : u;
+        try {
+            return new URL(u + jarFolder.replace('\\', '/')); //NOI18N
+        } catch (MalformedURLException e) {
+            throw new AssertionError(e);
+        }
+    }         
 }
