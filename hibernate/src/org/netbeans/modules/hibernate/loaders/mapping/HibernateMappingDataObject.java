@@ -233,7 +233,9 @@ public class HibernateMappingDataObject extends XmlMultiViewDataObject {
     }
 
     protected DesignMultiViewDesc[] getMultiViewDesc() {
-        return new DesignMultiViewDesc[]{new DesignView(this, TYPE_TOOLBAR)};
+        // TODO: enable this later when the Design tab is implemented
+        //return new DesignMultiViewDesc[]{new DesignView(this, TYPE_TOOLBAR)};
+        return new DesignMultiViewDesc[0];
     }
 
     @Override
