@@ -127,7 +127,11 @@ public class ErrorFixesFakeHint extends AbstractHint {
     }
     
     public static void setCreateLocalVariableInPlace(boolean v) {
-        getHint(FixKind.CREATE_LOCAL_VARIABLE).getPreferences(null).putBoolean(LOCAL_VARIABLES_INPLACE, v);
+        setCreateLocalVariableInPlace(getHint(FixKind.CREATE_LOCAL_VARIABLE).getPreferences(null), v);
+    }
+    
+    public static void setCreateLocalVariableInPlace(Preferences p, boolean v) {
+        p.putBoolean(LOCAL_VARIABLES_INPLACE, v);
     }
     
     public static boolean isUseExceptions() {
@@ -135,7 +139,11 @@ public class ErrorFixesFakeHint extends AbstractHint {
     }
     
     public static void setUseExceptions(boolean v) {
-        getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).putBoolean(SURROUND_USE_EXCEPTIONS, v);
+        setUseExceptions(getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null), v);
+    }
+    
+    public static void setUseExceptions(Preferences p, boolean v) {
+        p.putBoolean(SURROUND_USE_EXCEPTIONS, v);
     }
     
     public static boolean isUseLogger() {
@@ -143,7 +151,11 @@ public class ErrorFixesFakeHint extends AbstractHint {
     }
     
     public static void setUseLogger(boolean v) {
-        getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null).putBoolean(SURROUND_USE_JAVA_LOGGER, v);
+        setUseLogger(getHint(FixKind.SURROUND_WITH_TRY_CATCH).getPreferences(null), v);
+    }
+    
+    public static void setUseLogger(Preferences p, boolean v) {
+        p.putBoolean(SURROUND_USE_JAVA_LOGGER, v);
     }
     
     public static final String LOCAL_VARIABLES_INPLACE = "create-local-variables-in-place";

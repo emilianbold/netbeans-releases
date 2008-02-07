@@ -111,7 +111,7 @@ public class CommandBuffer {
                 }
                 if (state == STATE_WAITING) {
                     state = STATE_COMMAND_TIMEDOUT;
-                    log.fine("CB.postAndWait[" + token + "]: Timeout");
+                    log.fine("CB.postAndWait[" + token + "]: Timeout on " + Thread.currentThread().getName());
                 } else {
                     if (err != null) {
                         state = STATE_ERROR;
@@ -143,6 +143,7 @@ public class CommandBuffer {
     public void done() {
         synchronized (lock) {
             state = STATE_DONE;
+            log.fine("CB.done{" + token + "]: Releasing lock on " + Thread.currentThread().getName());
             lock.notify();
         }
     }
@@ -151,6 +152,7 @@ public class CommandBuffer {
         synchronized (lock) {
             err = msg;
             state = STATE_ERROR;
+            log.fine("CB.error{" + token + "]: Releasing lock on " + Thread.currentThread().getName());
             lock.notify();
         }
     }
