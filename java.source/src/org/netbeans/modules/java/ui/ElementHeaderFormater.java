@@ -45,19 +45,19 @@ public class ElementHeaderFormater {
     }
     
     public static String getMethodHeader(MethodTree tree, CompilationInfo info, String s) {
-        Context context = JavaSourceAccessor.INSTANCE.getJavacTask(info).getContext();
+        Context context = JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext();
         VeryPretty veryPretty = new VeryPretty(context);
         return veryPretty.getMethodHeader(tree, s);
     }
 
     public static String getClassHeader(ClassTree tree, CompilationInfo info, String s) {
-        Context context = JavaSourceAccessor.INSTANCE.getJavacTask(info).getContext();
+        Context context = JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext();
         VeryPretty veryPretty = new VeryPretty(context);
         return veryPretty.getClassHeader(tree, s);
     }
     
     public static String getVariableHeader(VariableTree tree, CompilationInfo info, String s) {
-        Context context = JavaSourceAccessor.INSTANCE.getJavacTask(info).getContext();
+        Context context = JavaSourceAccessor.getINSTANCE().getJavacTask(info).getContext();
         VeryPretty veryPretty = new VeryPretty(context);
         return veryPretty.getVariableHeader(tree, s);
     }
