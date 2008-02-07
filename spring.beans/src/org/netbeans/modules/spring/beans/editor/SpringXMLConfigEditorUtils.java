@@ -192,15 +192,17 @@ public final class SpringXMLConfigEditorUtils {
     }
 
     public static void findAndOpenJavaClass(final String fqn, Document doc) {
+        // Spring bean definitions refer to binary names.
+        final String className = fqn.trim().replace('$', '.'); // NOI18N
         final JavaSource js = getJavaSource(doc);
         if (js != null) {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
                     public void run(CompilationController cc) throws Exception {
                         boolean opened = false;
-                        TypeElement element = cc.getElements().getTypeElement(fqn.trim());
+                        TypeElement element = cc.getElements().getTypeElement(className);
                         if (element != null) {
-                            opened = !ElementOpen.open(js.getClasspathInfo(), element);
+                            opened = ElementOpen.open(js.getClasspathInfo(), element);
                         }
                         if (!opened) {
                             String msg = NbBundle.getMessage(SpringXMLConfigEditorUtils.class, "LBL_SourceNotFound", fqn);

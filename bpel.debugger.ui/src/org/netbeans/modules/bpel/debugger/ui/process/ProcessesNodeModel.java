@@ -22,13 +22,11 @@ package org.netbeans.modules.bpel.debugger.ui.process;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.bpel.debugger.ui.util.HtmlUtil;
 import org.openide.util.NbBundle;
-
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.NodeModel;
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
-
 import org.netbeans.modules.bpel.debugger.api.BpelDebugger;
 import org.netbeans.modules.bpel.debugger.api.BpelProcess;
 import org.netbeans.modules.bpel.debugger.api.CorrelationSet;

@@ -397,7 +397,7 @@ public class DesignerMultiViewElement extends TopComponent
             toolbar.add(new SequenceFilterButton(myDesignView));
             toolbar.addSeparator();
             //FIXME toolbar.add(myDesignView.createExpandAllPatternsToolBarButton());
-            toolbar.addSeparator();
+            //toolbar.addSeparator();
 
             NavigationTools navigationTools = myDesignView.getNavigationTools();
             for (int i = 0; i < navigationTools.getControllersCount(); i++) {
