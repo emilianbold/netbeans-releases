@@ -76,7 +76,11 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 
-
+/**
+ * Utility methods related to sharable libraries UI.
+ * @since org.netbeans.modules.java.project 1.15
+ * 
+ */ 
 public final class SharableLibrariesUtils {
 
     static final String PROP_LOCATION = "location"; //NOI18N
@@ -126,6 +130,14 @@ public final class SharableLibrariesUtils {
         return null;
     }    
 
+    /**
+     * Show a multistep wizard for converting a non-sharable project to a sharable, self-contained one.
+     * @param helper
+     * @param ref
+     * @param libraryNames
+     * @param jarReferences
+     * @return
+     */
     public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
 
         final WizardDescriptor wizardDescriptor = new WizardDescriptor(getPanels());
