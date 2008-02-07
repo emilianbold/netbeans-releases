@@ -135,7 +135,9 @@ public class AutoupdateCheckScheduler {
                     p.refresh (null, true);
                     PluginManagerUI pluginManagerUI = PluginManagerAction.getPluginManagerUI ();
                     if (pluginManagerUI != null) {
-                        pluginManagerUI.updateUnitsChanged();
+                        if (pluginManagerUI.initTask.isFinished ()) {
+                            pluginManagerUI.updateUnitsChanged();
+                        }
                     }
                 } catch (IOException ioe) {
                     err.log (Level.INFO, ioe.getMessage (), ioe);

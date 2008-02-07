@@ -65,6 +65,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.railsprojects.MigrateAction;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
@@ -73,9 +74,11 @@ import org.netbeans.modules.ruby.railsprojects.plugins.PluginAction;
 import org.netbeans.modules.ruby.rubyproject.AutoTestSupport;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsAction;
 import org.netbeans.modules.ruby.rubyproject.RakeTargetsDebugAction;
+import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectEvent;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectListener;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -248,8 +251,26 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             setIconBaseWithExtension("org/netbeans/modules/ruby/railsprojects/ui/resources/rails.png"); // NOI18N
             super.setName( ProjectUtils.getInformation( project ).getDisplayName() );
             setProjectFiles(project);
+            helper.getRakeProjectHelper().addRakeProjectListener(new RakeProjectListener() {
+                public void configurationXmlChanged(RakeProjectEvent ev) {
+                    fireShortDescriptionChange(null, null);
+                }
+
+                public void propertiesChanged(RakeProjectEvent ev) {
+                    fireShortDescriptionChange(null, null);
+                }
+            });
         }
-        
+
+        public @Override String getShortDescription() {
+            String platformDesc = RubyPlatform.platformDescriptionFor(project);
+            if (platformDesc == null) {
+                platformDesc = NbBundle.getMessage(RailsLogicalViewProvider.class, "RailsLogicalViewProvider.PlatformNotFound");
+            }
+            String dirName = FileUtil.getFileDisplayName(project.getProjectDirectory());
+            return NbBundle.getMessage(RailsLogicalViewProvider.class, "RailsLogicalViewProvider.ProjectTooltipDescription", dirName, platformDesc);
+        }
+
         protected final void setProjectFiles(Project project) {
             Sources sources = ProjectUtils.getSources(project);  // returns singleton
             if (sourcesListener == null) {
@@ -416,6 +437,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         // sources change
         public void stateChanged(ChangeEvent e) {
             setProjectFiles(project);
+            fireShortDescriptionChange(null, null);
         }
         
         // group change

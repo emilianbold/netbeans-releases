@@ -274,6 +274,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (results != null)
                                 resultSet.addAllItems(results);
                             resultSet.setHasAdditionalItems(hasAdditionalItems);
+                            if (hasAdditionalItems)
+                                resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-imported-items")); //NOI18N
                         } else if (queryType == TOOLTIP_QUERY_TYPE) {
                             if (toolTip != null)
                                 resultSet.setToolTip(toolTip);

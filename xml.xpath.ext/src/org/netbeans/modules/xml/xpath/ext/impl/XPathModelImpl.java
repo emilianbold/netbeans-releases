@@ -77,6 +77,7 @@ import org.netbeans.modules.xml.xpath.ext.schema.FindChildrenSchemaVisitor;
 import org.netbeans.modules.xml.xpath.ext.visitor.XPathModelTracerVisitor;
 import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Element;
+import org.netbeans.modules.xml.schema.model.ElementReference;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaComponent;
@@ -335,6 +336,12 @@ public class XPathModelImpl implements XPathModel {
         //
         String nodeName = qName.getLocalPart();
         HashSet<SchemaCompPair> foundCompPairSet = new HashSet<SchemaCompPair>();
+
+//ENABLE = qName.toString().equals("ReservationItems");
+//out();
+//out();
+//out("RESOLVE: " + qName);
+//out();
         //
         if (!isGlobal) {
             // 
@@ -349,16 +356,18 @@ public class XPathModelImpl implements XPathModel {
                 // Only one parent component is implied here
                 SchemaCompPair parentCompPair = parentCompPairs.iterator().next();
                 SchemaComponent parentComponent = parentCompPair.getComp();
+
                 if (parentComponent != null) {
                     //
-                    FindChildrenSchemaVisitor visitor =
-                            new FindChildrenSchemaVisitor(nodeName, nsUri, isAttribute);
+                    FindChildrenSchemaVisitor visitor = new FindChildrenSchemaVisitor(nodeName, nsUri, isAttribute);
                     visitor.lookForSubcomponent(parentComponent);
                     //
                     List<SchemaComponent> found = visitor.getFound();
+
                     for (SchemaComponent comp : found) {
                         assert comp instanceof GlobalElement ||
                                 comp instanceof LocalElement ||
+                                comp instanceof ElementReference ||
                                 comp instanceof Attribute;
                         //
                         SchemaCompPair newPair = new SchemaCompPair(comp, parentComponent);
@@ -886,8 +895,13 @@ public class XPathModelImpl implements XPathModel {
         }
         //
         if (sameNameOtherPrefix.isEmpty()) {
-            // The function with the required name isn't found // vlv
-            mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+            // The function with the required name isn't found  // vlv
+
+            // why bytesToString, convert are not recognized?
+            // TODO FIX IT.
+
+            mValidationContext.addResultItem(mRootXPathExpression,
+                    ResultType.WARNING, 
                     XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
                     XPathUtils.qNameObjectToString(funcQName));
         } else {
@@ -897,11 +911,11 @@ public class XPathModelImpl implements XPathModel {
             String nsList = prepareNamespaceList(sameNameOtherPrefix);
             //
             if (nsPrefix.length() == 0) {
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+                mValidationContext.addResultItem(mRootXPathExpression, ResultType.WARNING, // vlv
                         XPathProblem.PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsList);
             } else {
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR, 
+                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR,
                         XPathProblem.OTHER_PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsUri, nsList);
             }
@@ -1191,6 +1205,22 @@ public class XPathModelImpl implements XPathModel {
         }
 
         @Override
+        public void visit(LocationStep locationStep) {
+            XPathSchemaContext lpInitialContext = parentSchemaContext;
+            try {
+                boolean isGlobal = parentSchemaContext == null;
+                processLocationStep(locationStep, isGlobal);
+            } catch (StopResolutionException ex) {
+                // Do nothing here
+                // ex.printStackTrace();
+            } finally {
+                //
+                // restor context
+                parentSchemaContext = lpInitialContext;
+            }
+        }
+        
+        @Override
         public void visit(XPathExpressionPath expressionPath) {
             XPathSchemaContext lpInitialContext = parentSchemaContext;
             try {
@@ -1358,7 +1388,7 @@ public class XPathModelImpl implements XPathModel {
                             //
                             schemaContext = new WildcardSchemaContext(
                                     parentSchemaContext, XPathModelImpl.this, 
-                                    false, true);
+                                    true, true);
                             break;
                         default:
                             assert false : "The axis " + axis + 
@@ -1622,5 +1652,19 @@ public class XPathModelImpl implements XPathModel {
                 }
             }
         }
+    }
+
+    private boolean ENABLE;
+
+    private void out() {
+      if (ENABLE) {
+        System.out.println();
+      }
+    }
+
+    private void out(Object object) {
+      if (ENABLE) {
+        System.out.println("*** " + object);
+      }
     }
 }

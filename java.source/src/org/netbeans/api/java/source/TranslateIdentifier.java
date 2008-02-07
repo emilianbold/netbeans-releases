@@ -610,7 +610,7 @@ class TranslateIdentifier implements TreeVisitor<Tree, Void> {
         Tree tree = translate(node.getBound());
         
 	if (tree != node.getBound()) {
-	    node = make.Wildcard(tree.getKind(), tree);
+	    node = make.Wildcard(node.getKind(), tree);
         }
         return node;
     }

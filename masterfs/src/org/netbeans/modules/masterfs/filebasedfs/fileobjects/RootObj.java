@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
+import java.io.File;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 import org.openide.filesystems.*;
 
@@ -50,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.Enumeration;
+import org.netbeans.modules.masterfs.filebasedfs.FileBasedFileSystem;
 
 public final class RootObj extends FileObject {
     private BaseFileObj realRoot = null;
@@ -110,11 +112,28 @@ public final class RootObj extends FileObject {
         FSException.io("EXC_CannotDeleteRoot", getFileSystem().getDisplayName()); // NOI18N        
     }
 
-    public final Object getAttribute(final String attrName) {
+    public final Object getAttribute(final String attrName) {        
+        if (attrName.equals("SupportsRefreshForNoPublicAPI")) {
+            return true;
+        }
         return getRealRoot().getAttribute(attrName);
     }
 
     public final void setAttribute(final String attrName, final Object value) throws IOException {
+        if ("request_for_refreshing_files_be_aware_this_is_not_public_api".equals(attrName) && (value instanceof File[])) {//NOI18N
+            File[] files = (File[])value;
+            for (File file : files) {
+                FileBasedFileSystem fs = FileBasedFileSystem.getInstance(file, false);
+                if (fs != null) {
+                    if (file.getParentFile() == null) {
+                        fs.refresh(true);
+                    } else {
+                        fs.refreshFor(file);
+                    }
+                }
+            }
+            return;
+        }        
         getRealRoot().setAttribute(attrName, value);
     }
 

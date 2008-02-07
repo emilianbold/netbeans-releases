@@ -43,7 +43,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
@@ -54,11 +56,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.sax.SAXSource;
+import org.apache.commons.jxpath.JXPathContext;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.jaxb.Group;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
+import org.netbeans.modules.websvc.saas.model.wadl.Method;
+import org.netbeans.modules.websvc.saas.model.wadl.Resource;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -78,16 +83,19 @@ public class SaasUtil {
         if (input == null) {
             return null;
         }
-        InputStream in = input.getInputStream();
+        InputStream in = null;
         try {
-            JAXBException jbex = null;
+            Exception jbex = null;
             try {
+                in = input.getInputStream();
                 T t = loadJaxbObject(in, type, includeAware);
                 if (t != null) {
                     return t;
                 }
             } catch (JAXBException ex) {
                 jbex = ex;
+            } catch (IOException ioe) {
+                jbex = ioe;
             }
             String msg = NbBundle.getMessage(SaasUtil.class, "MSG_ErrorLoadingJaxb", type.getName(), input.getPath());
             IOException ioe = new IOException(msg);
@@ -110,6 +118,8 @@ public class SaasUtil {
         JAXBContext jc = JAXBContext.newInstance(type.getPackage().getName());
         Unmarshaller unmarshaller = jc.createUnmarshaller();
         Object o;
+        //TODO fix claspath: http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not
+        includeAware = false;
         if (includeAware) {
             SAXSource ss = getSAXSourceWithXIncludeEnabled(in);
             o = unmarshaller.unmarshal(ss);
@@ -131,6 +141,7 @@ public class SaasUtil {
         try {
             SAXParserFactory spf = SAXParserFactory.newInstance();
             spf.setNamespaceAware(true);
+//TODO: fix classpath http://www.jroller.com/navanee/entry/unsupportedoperationexception_this_parser_does_not            
             spf.setXIncludeAware(true);
             SAXParser saxParser = spf.newSAXParser();
             XMLReader xmlReader = saxParser.getXMLReader();
@@ -201,4 +212,115 @@ public class SaasUtil {
         return extensionsResult.allInstances();
     }
     
+    public static <T> T fromXPath(Object root, String xpath, Class<T> type) {
+        JXPathContext context = JXPathContext.newContext(root);
+        context.registerNamespace("", Saas.NS_WADL);
+        return type.cast(context.getValue(xpath));
+    }
+
+    public static Method wadlMethodFromIdRef(Application app, String methodIdRef) {
+        String methodId = methodIdRef;
+        if (methodId.charAt(0) == '#') {
+            methodId = methodId.substring(1);
+        }
+        Method result = null;
+        for (Object o : app.getResourceTypeOrMethodOrRepresentation()) {
+            if (o instanceof Method) {
+                Method m = (Method) o;
+                if (methodId.equals(m.getId())) {
+                    return m;
+                }
+            }
+        }
+        for (Resource base : app.getResources().getResource()) {
+            result = findMethodById(base, methodId);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+    
+    static Method findMethodById(Resource base, String methodId) {
+        for (Object o : base.getMethodOrResource()) {
+            if (o instanceof Method) {
+                Method m = (Method)o;
+                if (methodId.equals(m.getId())) {
+                    return m;
+                }
+                continue;
+            } else {
+                Method m = findMethodById((Resource)o, methodId);
+                if (m != null) {
+                    return m;
+                }
+            }
+        }
+        return null;
+    }
+    
+    public static Method wadlMethodFromXPath(Application app, String xpath) {
+        String paths[] = xpath.split("/");
+        Resource current = null;
+        for (String path : paths) {
+            if ("application".equals(path) || path.length() == 0 || "resources".equals(path)) {
+                continue;
+            } else if (path.startsWith("resource[")) {
+                int i = getIndex(path);
+                if (i > -1) {
+                    List<Resource> resources = getCurrentResources(app, current);
+                    if (i < resources.size()) {
+                        current = resources.get(i);
+                        continue;
+                    }    
+                }
+                return null;
+            } else if (path.startsWith("method[")) {
+                int iTarget = getIndex(path);
+                if (iTarget > -1) {
+                    int i = 0;
+                    for (Object o : current.getMethodOrResource()) {
+                        if (o instanceof Method) {
+                            if (i == iTarget) {
+                                return (Method) o;
+                            }
+                            if (i < iTarget) {
+                                i++;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+                return null;
+            }
+        }
+        return null;
+    }
+    
+    static List<Resource> getCurrentResources(Application app, Resource current) {
+        if (current == null) {
+            return app.getResources().getResource();
+        }
+        List<Resource> result = new ArrayList<Resource>();
+        for (Object o : current.getMethodOrResource()) {
+            if (o instanceof Resource) {
+                result.add((Resource)o);
+            }
+        }
+        return result;
+    }
+    
+    static int getIndex(String path) {
+        int iOpen = path.indexOf('[');
+        int iClose = path.indexOf(']');
+        if (iOpen < 0 || iClose < 0 || iClose <= iOpen) {
+            return -1;
+        }
+        try {
+            return Integer.valueOf(path.substring(iOpen+1, iClose)) - 1; //xpath index is 1-based
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
 }
