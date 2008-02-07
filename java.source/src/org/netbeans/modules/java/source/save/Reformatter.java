@@ -858,6 +858,8 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitAnnotation(AnnotationTree node, Void p) {
             accept(AT);
+            int old = indent;
+            indent += continuationIndentSize;
             scan(node.getAnnotationType(), p);
             List<? extends ExpressionTree> args = node.getArguments();
             spaces(cs.spaceBeforeAnnotationParen() ? 1 : 0);
@@ -876,6 +878,7 @@ public class Reformatter implements ReformatTask {
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
             }
             accept(RPAREN);
+            indent = old;
             return true;
         }
 
@@ -1696,8 +1699,16 @@ public class Reformatter implements ReformatTask {
                 boolean spaceBeforeLeftBrace = cs.spaceBeforeArrayInitLeftBrace();
                 int oldIndent = indent;
                 Tree parent = getCurrentPath().getParentPath().getLeaf();
-                if (parent.getKind() == Tree.Kind.VARIABLE || parent.getKind() == Tree.Kind.ASSIGNMENT)
-                    indent -= continuationIndentSize;
+                switch (parent.getKind()) {
+                    case ASSIGNMENT:
+                        Tree grandParent = getCurrentPath().getParentPath().getParentPath().getLeaf();
+                        if (grandParent.getKind() != Tree.Kind.BLOCK && grandParent.getKind() != Tree.Kind.CLASS)
+                            break;
+                    case VARIABLE:
+                    case METHOD:
+                        indent -= continuationIndentSize;
+                        break;
+                }
                 int old = indent;
                 int halfIndent = indent;
                 switch(bracePlacement) {

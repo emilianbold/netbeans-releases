@@ -63,6 +63,10 @@ public class LocalsTableModel implements TableModel, Constants {
             return "";
         }
         
+        if (object instanceof LocalsTreeModel.Dummy) {
+            return "";
+        }
+        
         if (column.equals(LOCALS_VALUE_COLUMN_ID)) {
             if (object instanceof JToolTip) {
                 final Object realObject = ((JToolTip) object).
@@ -99,6 +103,10 @@ public class LocalsTableModel implements TableModel, Constants {
             final String column, 
             final Object value) throws UnknownTypeException {
         
+        if (object instanceof LocalsTreeModel.Dummy) {
+            return;
+        }
+        
         if (column.equals(LOCALS_VALUE_COLUMN_ID)) {
             if (object instanceof Node) {
                 myHelper.setValue(object, (String) value);
@@ -114,6 +122,10 @@ public class LocalsTableModel implements TableModel, Constants {
     public boolean isReadOnly(
             final Object object, 
             final String column) throws UnknownTypeException {
+        
+        if (object instanceof LocalsTreeModel.Dummy) {
+            return true;
+        }
         
         if (column.equals(LOCALS_VALUE_COLUMN_ID)) {
             return myHelper.isValueReadOnly(object);

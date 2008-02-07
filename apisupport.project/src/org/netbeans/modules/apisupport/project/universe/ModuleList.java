@@ -256,6 +256,9 @@ public final class ModuleList {
     }
     
     private static ModuleList loadNetBeansOrgCachedModuleList(File root, File nbdestdir) throws IOException {
+        if (!PERMIT_CACHES) {
+            throw new IOException("Not using caches any more due to previous call of refresh()");
+        }
         File scanCache = new File(root, "nbbuild" + File.separatorChar + "nbproject" + File.separatorChar +
                 "private" + File.separatorChar + "scan-cache-full.ser");
         if (!scanCache.isFile()) {
@@ -902,12 +905,14 @@ public final class ModuleList {
         return PropertyUtils.fixedPropertyProvider(NbCollections.checkedMapByFilter(p, String.class, String.class, true));
     }
     
+    private static boolean PERMIT_CACHES = true;
     /**
      * Refresh any existing lists, e.g. in response to a new module being created.
      */
     public static void refresh() {
         sourceLists.clear();
         binaryLists.clear();
+        PERMIT_CACHES = false; // #126524
         // XXX what about knownEntries?
     }
     
