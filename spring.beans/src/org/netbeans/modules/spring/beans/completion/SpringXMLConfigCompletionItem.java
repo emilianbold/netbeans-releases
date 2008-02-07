@@ -142,7 +142,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     
     protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
         BaseDocument doc = (BaseDocument) c.getDocument();
-        CharSequence prefix = getInsertPrefix();
+        CharSequence prefix = getSubstitutionText();
         String text = prefix.toString();
         if(toAdd != null) {
             text += toAdd;
@@ -158,6 +158,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         } finally {
             doc.atomicUnlock();
         }
+    }
+    
+    protected CharSequence getSubstitutionText() {
+        return getInsertPrefix();
     }
 
     public void processKeyEvent(KeyEvent evt) {
@@ -304,7 +308,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private String enclName;
         private String sortText;
         private String leftText;
-        private boolean displayPackage;
+        private boolean smartItem;
 
         public ClassItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle, 
                 boolean deprecated, boolean smartItem) {
@@ -314,7 +318,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             this.displayName = smartItem ? elem.getSimpleName().toString() : getRelativeName(elem);
             this.enclName = getElementName(elem.getEnclosingElement(), true).toString();
             this.sortText = this.displayName + getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
-            this.displayPackage = smartItem;
+            this.smartItem = smartItem;
         }
         
         private String getRelativeName(TypeElement elem) {
@@ -338,6 +342,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }
 
         public CharSequence getInsertPrefix() {
+            return smartItem ? "" : elemHandle.getBinaryName(); // NOI18N
+        }
+        
+        @Override
+        protected CharSequence getSubstitutionText() {
             return elemHandle.getBinaryName();
         }
 
@@ -356,7 +365,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 sb.append(displayName);
                 if (deprecated)
                     sb.append(STRIKE_END);
-                if (displayPackage && enclName != null && enclName.length() > 0) {
+                if (smartItem && enclName != null && enclName.length() > 0) {
                     sb.append(COLOR_END);
                     sb.append(PKG_COLOR);
                     sb.append(" ("); //NOI18N

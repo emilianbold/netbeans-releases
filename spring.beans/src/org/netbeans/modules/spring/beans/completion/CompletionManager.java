@@ -50,7 +50,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
@@ -466,19 +465,14 @@ public final class CompletionManager {
                     if (pkgElem == null) {
                         return;
                     }
-                    List<? extends Element> pkgChildren = pkgElem.getEnclosedElements();
-                    for (Element pkgChild : pkgChildren) {
-                        if (pkgChild.getKind() == ElementKind.CLASS) {
-                            // get this as well as non-static inner classes
-                            List<TypeElement> tes = new TypeScanner().scan(pkgChild);
-                            for (TypeElement te : tes) {
-                                if (ElementUtilities.getBinaryName(te).startsWith(typedPrefix)) {
-                                    SpringXMLConfigCompletionItem item 
-                                            = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                            te, ElementHandle.create(te), cc.getElements().isDeprecated(te), false);
-                                    results.add(item);
-                                }
-                            }
+                    
+                    // get this as well as non-static inner classes
+                    List<TypeElement> tes = new TypeScanner().scan(pkgElem);
+                    for (TypeElement te : tes) {
+                        if (ElementUtilities.getBinaryName(te).startsWith(typedPrefix)) {
+                            SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
+                                    te, ElementHandle.create(te), cc.getElements().isDeprecated(te), false);
+                            results.add(item);
                         }
                     }
 
@@ -487,22 +481,6 @@ public final class CompletionManager {
             }, true);
         }
         
-        private static final class TypeScanner extends ElementScanner6<List<TypeElement>, Void> {
-
-            public TypeScanner() {
-                super(new ArrayList<TypeElement>());
-            }
-            
-            @Override
-            public List<TypeElement> visitType(TypeElement typeElement, Void arg) {
-                if(typeElement.getKind() == ElementKind.CLASS && isAccessibleClass(typeElement)) {
-                    DEFAULT_VALUE.add(typeElement);
-                }
-                return super.visitType(typeElement, arg);
-            }
-            
-        }
-
         private void doSmartJavaCompletion(JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
@@ -546,6 +524,22 @@ public final class CompletionManager {
                     results.add(item);
                 }
             }
+        }
+        
+        private static final class TypeScanner extends ElementScanner6<List<TypeElement>, Void> {
+
+            public TypeScanner() {
+                super(new ArrayList<TypeElement>());
+            }
+            
+            @Override
+            public List<TypeElement> visitType(TypeElement typeElement, Void arg) {
+                if(typeElement.getKind() == ElementKind.CLASS && isAccessibleClass(typeElement)) {
+                    DEFAULT_VALUE.add(typeElement);
+                }
+                return super.visitType(typeElement, arg);
+            }
+            
         }
     }
 
