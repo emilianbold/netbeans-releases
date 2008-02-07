@@ -61,6 +61,7 @@ import org.netbeans.modules.bpel.debugger.api.CorrelationSet;
 import org.netbeans.modules.bpel.debugger.api.Fault;
 import org.netbeans.modules.bpel.debugger.api.RuntimePartnerLink;
 import org.netbeans.modules.bpel.debugger.api.pem.ProcessExecutionModel.Branch;
+import org.netbeans.modules.bpel.debugger.eventlog.ActivityTerminatedRecord;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELPartnerLink;
 import org.netbeans.modules.bpel.debuggerbdi.rmi.api.BPELProcessRef;
 import org.w3c.dom.Element;
@@ -533,12 +534,12 @@ public class ProcessInstanceImpl implements ProcessInstance {
     }
     
     protected void onTerminate(
-            final DebugFrame frame) {
-        
-//        if (getRootFrame() == frame) {
-//            setState(STATE_TERMINATED);
-//            mModel.processInstanceCompleted(this);
-//        }
+            final BreakPosition position) {
+        if (myEventLog != null) {
+            myEventLog.addRecord(new ActivityTerminatedRecord(
+                    position.getFrame().getId(),
+                    position.getXpath()));
+        }
     }
     
     protected void onExit(

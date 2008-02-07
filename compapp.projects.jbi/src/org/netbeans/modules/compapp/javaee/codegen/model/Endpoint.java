@@ -51,6 +51,7 @@
 package org.netbeans.modules.compapp.javaee.codegen.model;
 
 import javax.xml.namespace.QName;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,12 +64,8 @@ public class Endpoint {
     private String endPointName;     // PortName
     private QName interfaceName;    // PortType
     private QName serviceName;      // ServiceName
-    
-    // Below attributes are not part of equality check.
-    private Boolean useBridge = Boolean.TRUE;      // Default is true.
-    private Boolean usingDefaultNames = Boolean.FALSE;   // Default is false.
-    
-    private String  wsdlLocation = ""; 
+        
+    private String  wsdlLocation = "";  //NOI18N
     
     private int hash = -1;
     
@@ -127,23 +124,7 @@ public class Endpoint {
     public QName getServiceName(){
         return this.serviceName;
     }
-    
-    public void isUseBridge(Boolean ib){
-        this.useBridge = ib;
-    }
-    
-    public Boolean isUseBridge(){
-        return this.useBridge ;
-    }
-    
-    public void isUsingDefaultNames(Boolean ib){
-        this.usingDefaultNames = ib;
-    }
-    
-    public Boolean isUsingDefaultNames(){
-        return this.usingDefaultNames ;
-    }
-
+        
     public String getWSDLLocation(){
         return this.wsdlLocation;
     }
@@ -152,6 +133,46 @@ public class Endpoint {
         this.wsdlLocation = nWsdlLoc;
     }
 
+    // Used only by getLocalizedString
+    private static String LOCALIZED_STR_PROVIDES = null;
+    private static String LOCALIZED_STR_CONSUMES = null;
+    private static String LOCALIZED_STR_SERVICE = null;
+    private static String LOCALIZED_STR_INTERFACE = null;
+    private static String LOCALIZED_STR_ENDPOINT = null;
+
+    static {        
+        LOCALIZED_STR_PROVIDES = NbBundle.getMessage(Endpoint.class, "LBL_Provides"); //NOI18N
+        LOCALIZED_STR_CONSUMES = NbBundle.getMessage(Endpoint.class, "LBL_Consumes"); //NOI18N
+        LOCALIZED_STR_SERVICE = NbBundle.getMessage(Endpoint.class, "LBL_Service"); //NOI18N
+        LOCALIZED_STR_INTERFACE = NbBundle.getMessage(Endpoint.class, "LBL_Ineterface"); //NOI18N
+        LOCALIZED_STR_ENDPOINT = NbBundle.getMessage(Endpoint.class, "LBL_Endpoint"); //NOI18N
+    }
+    
+    public String getEPToolTip(){
+        StringBuffer sb = new StringBuffer();
+        sb.append("<html>");//NOI18N
+
+        if (EndPointType.Provider.equals(this.ept)){
+            sb.append(LOCALIZED_STR_PROVIDES);
+        } else {
+            sb.append(LOCALIZED_STR_CONSUMES);
+        }
+        sb.append("<br>"); //NOI18N
+        sb.append(LOCALIZED_STR_SERVICE);
+        sb.append(":"); //NOI18N
+        sb.append(this.serviceName);
+        sb.append("<br>"); //NOI18N
+        sb.append(LOCALIZED_STR_ENDPOINT);
+        sb.append(":"); //NOI18N
+        sb.append(this.endPointName);
+        sb.append("<br>"); //NOI18N
+        sb.append(LOCALIZED_STR_INTERFACE);
+        sb.append(":"); //NOI18N
+        sb.append(this.interfaceName);   
+        sb.append("</html>");//NOI18N
+        return sb.toString();
+    }
+    
     public String toString(){
         StringBuffer sb = new StringBuffer();
         sb.append("EndPoint("); //NOI18N
@@ -203,7 +224,6 @@ public class Endpoint {
     }
     
     /**
-     * "UseBridge" value will not effect equality comparison.
      *
      */
     public boolean equals(Object obj) {
@@ -264,3 +284,4 @@ public class Endpoint {
         return this.hash;
     }
 }
+

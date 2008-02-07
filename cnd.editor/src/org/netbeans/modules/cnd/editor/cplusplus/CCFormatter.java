@@ -130,8 +130,8 @@ public class CCFormatter extends ExtFormatter {
             addFormatLayer(new StripEndWhitespaceLayer(CodeStyle.Language.C));
             addFormatLayer(new CCLayer(CodeStyle.Language.C));
         } else {
-            addFormatLayer(new StripEndWhitespaceLayer(CodeStyle.Language.C));
-            addFormatLayer(new CCLayer(CodeStyle.Language.C));
+            addFormatLayer(new StripEndWhitespaceLayer(CodeStyle.Language.CPP));
+            addFormatLayer(new CCLayer(CodeStyle.Language.CPP));
         }
     }
 
