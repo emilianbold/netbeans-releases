@@ -161,6 +161,7 @@ public class RevertModificationsAction extends ContextAction {
         if (revStr == null) {
             for (File file : revertFiles) {
                 HgUtils.forceStatusRefresh(file);
+            }
         } else {
             HgUtils.forceStatusRefresh(revertFiles.get(0));
         }
