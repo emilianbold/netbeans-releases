@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,39 +39,20 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.core.actions;
+package org.netbeans.modules.cnd.editor;
 
-import org.openide.DialogDescriptor;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
+import org.netbeans.editor.Settings;
+import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
+import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsInitializer;
+import org.netbeans.modules.cnd.editor.cplusplus.CKit;
+import org.openide.modules.ModuleInstall;
 
-/** The action that shows the Configere Shortcuts dialog.
-*
-* @author Ian Formanek
-*/
-public class ConfigureShortcutsAction extends org.openide.util.actions.CallableSystemAction {
+public class EditorModule extends ModuleInstall {
 
-    public ConfigureShortcutsAction() {
-        putValue("noIconInMenu", Boolean.TRUE); //NOI18N
+    /** Module is being opened (NetBeans startup, or enable-toggled) */
+    @Override
+    public void restored() {
+        Settings.addInitializer(new CCSettingsInitializer(CCKit.class));
+	Settings.addInitializer(new CCSettingsInitializer(CKit.class));
     }
-
-    public void performAction () {
-    }
-
-    protected boolean asynchronous() {
-        return false;
-    }
-
-    public String iconResource () {
-        return "org/netbeans/core/resources/actions/configureShortcuts.gif"; // NOI18N
-    }
-
-    public HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx (ConfigureShortcutsAction.class);
-    }
-
-    public String getName() {
-        return NbBundle.getBundle (ConfigureShortcutsAction.class).getString("CTL_ConfigureShortcuts");
-    }
-
 }

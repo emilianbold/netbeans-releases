@@ -40,7 +40,6 @@
 package org.netbeans.modules.cnd.editor.api;
 
 import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 
 /**
@@ -59,15 +58,15 @@ public class CodeStyle {
         this.preferences = preferences;
     }
     
-    public synchronized static CodeStyle getDefault(Project project) {
+    public synchronized static CodeStyle getDefault(Language language) {
         if (INSTANCE == null) {
-            INSTANCE = create();
+            INSTANCE = create(language);
         }
         return INSTANCE;
     }
     
-    static CodeStyle create() {
-        return new CodeStyle(EditorOptions.getPreferences(EditorOptions.getCurrentProfileId()));
+    static CodeStyle create(Language language) {
+        return new CodeStyle(EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(language)));
     }
     
     // General tabs and indents ------------------------------------------------
@@ -144,6 +143,11 @@ public class CodeStyle {
     }
 
     // Nested classes ----------------------------------------------------------
+    public enum Language {
+        C,
+        CPP,
+    }
+
     public enum BracePlacement {
         SAME_LINE,
         NEW_LINE,
