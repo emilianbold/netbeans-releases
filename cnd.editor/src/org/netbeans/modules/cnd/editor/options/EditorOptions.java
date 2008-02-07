@@ -366,7 +366,6 @@ public class EditorOptions {
             case C:
                 return C_DEFAULT_PROFILE;
             case CPP:
-                return CPP_DEFAULT_PROFILE;
             default:
                 return CPP_DEFAULT_PROFILE;
         }

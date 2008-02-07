@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,22 +38,34 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.versioning;
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+import org.netbeans.spi.queries.CollocationQueryImplementation;
+import org.netbeans.modules.versioning.spi.VersioningSystem;
 
-/** Options for the C editor kit */
-public class COptions extends CCOptions {
+import java.io.File;
 
-    static final long serialVersionUID = 6972381723748170673L;
-    
-    public static final String CC = "C"; //NOI18N
+/**
+ * Delegates the work to the owner of files in query.
+ * 
+ * @author Maros Sandor
+ */
+public class VcsCollocationQueryImplementation implements CollocationQueryImplementation {
 
-    public COptions() {
-        super(CKit.class, CC);
+    public boolean areCollocated(File a, File b) {
+        VersioningSystem vsa = VersioningManager.getInstance().getOwner(a);
+        VersioningSystem vsb = VersioningManager.getInstance().getOwner(b);
+        if (vsa == null || vsa != vsb) return false;
+        
+        if (vsa instanceof CollocationQueryImplementation) {
+            CollocationQueryImplementation csa = (CollocationQueryImplementation) vsa;
+            return csa.areCollocated(a, b);
+        }
+        return false;
     }
-  
-    /** Return the C Indent Engine class */
-    protected @Override Class getDefaultIndentEngineClass() {
-        return CIndentEngine.class;
+
+    public File findRoot(File file) {
+        VersioningSystem system = VersioningManager.getInstance().getOwner(file);
+        return system == null ? null : system.getTopmostManagedAncestor(file);
     }
 }
