@@ -113,16 +113,19 @@ public final class XRefResultSet {
     
     public enum DeclarationScope {
         UNRESOLVED,
-        PROJECT,
-        LIBRARY,
+        PROJECT_GLOBAL,
+        LIBRARY_GLOBAL,
+        NAMESPACE_THIS,
         PROJECT_NAMESPACE,
         LIBRARY_NAMESPACE,
-        FILE,
-        FUNCTION,
-        NAMESPACE_THIS,
-        NAMESPACE,
+        FILE_THIS,
+        PROJECT_FILE,
+        LIBRARY_FILE,
+        FUNCTION_THIS,
         CLASSIFIER_THIS,
-        CLASSIFIER_PARENT
+        CLASSIFIER_PARENT,
+        PROJECT_CLASSIFIER,
+        LIBRARY_CLASSIFIER,
     }
     
     public enum IncludeLevel {
