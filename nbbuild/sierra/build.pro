@@ -65,27 +65,6 @@
         ${test.cvs.path}/benchmark/purchaseOrderCoordinator
         ${test.cvs.path}/benchmark/PurchaseOrderService
         ${test.cvs.path}/benchmark/TravelReservationService/TravelReservationService
-        ${test.cvs.path}/dynamicpartnerlink/dynamicPartnerLinkBPEL
-        ${test.cvs.path}/dynamicpartnerlink/justhttpAndBPEL
-        ${test.cvs.path}/dynamicpartnerlink/JustHTTPandBPEL2
-        ${test.cvs.path}/dynamicpartnerlink/sendCallBackInfo
-        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRAssign
-        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRLiteral
-        ${test.cvs.path}/MessageExchange/MessageExchangeBpel
-        ${test.cvs.path}/PartnerLinks/DuplicateProject1
-        ${test.cvs.path}/PartnerLinks/DuplicateProject2
-        ${test.cvs.path}/PartnerLinks/OneBP
-        ${test.cvs.path}/PartnerLinks/PLTLocalNamespace
-        ${test.cvs.path}/PartnerLinks/TwoBPDuplicateImpl
-        ${test.cvs.path}/PartnerLinks/TwoBPs
-        ${test.cvs.path}/SchemaElemDecl/BPwithElemRef
-        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElement
-        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElemQualified
-        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElem
-        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElemQualified
-        ${test.cvs.path}/ScopeTermination/ScopeTerminationBpel
-        ${test.cvs.path}/xslt/DoXslTransformBPEL
-        ${test.cvs.path}/xslt/InOutBPXSLT/InOutBP
         ${test.cvs.path}/blueprints/bp1/BluePrint1
         ${test.cvs.path}/blueprints/bp2/BluePrint2
         ${test.cvs.path}/blueprints/bp3/BluePrint3
@@ -106,6 +85,12 @@
         ${test.cvs.path}/correlation/FlowAsStartActivity
         ${test.cvs.path}/correlation/MatchingInstanceTwoCorrBPEL
         ${test.cvs.path}/correlation/ThreeCorrSetsBpel
+        ${test.cvs.path}/dynamicpartnerlink/dynamicPartnerLinkBPEL
+        ${test.cvs.path}/dynamicpartnerlink/justhttpAndBPEL
+        ${test.cvs.path}/dynamicpartnerlink/JustHTTPandBPEL2
+        ${test.cvs.path}/dynamicpartnerlink/sendCallBackInfo
+        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRAssign
+        ${test.cvs.path}/dynamicpartnerlink/SyncSampleEPRLiteral
         ${test.cvs.path}/empty/EmptyBpel
         ${test.cvs.path}/eventHandlers/onAlarm
         ${test.cvs.path}/eventHandlers/onEvent
@@ -121,7 +106,14 @@
         ${test.cvs.path}/JavaEEIntegration/InOnlyMultipleBPJava/InOnlyMultiBP
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/FaultTest/bplGreetService
         ${test.cvs.path}/JavaEEIntegration/JavaEEToBP/JavaEEToBPProj
+        ${test.cvs.path}/MessageExchange/MessageExchangeBpel
         ${test.cvs.path}/misc/MiscBpel
+        ${test.cvs.path}/PartnerLinks/DuplicateProject1
+        ${test.cvs.path}/PartnerLinks/DuplicateProject2
+        ${test.cvs.path}/PartnerLinks/OneBP
+        ${test.cvs.path}/PartnerLinks/PLTLocalNamespace
+        ${test.cvs.path}/PartnerLinks/TwoBPDuplicateImpl
+        ${test.cvs.path}/PartnerLinks/TwoBPs
         ${test.cvs.path}/pick/PickBpel
         ${test.cvs.path}/repeatuntil/RepeatUntilBpel
         ${test.cvs.path}/rethrow/Rethrow
@@ -129,12 +121,20 @@
         ${test.cvs.path}/samples/EndToEndScenario
         ${test.cvs.path}/samples/samplesBPEL
         ${test.cvs.path}/samples/SynchronousSample
+        ${test.cvs.path}/SchemaElemDecl/BPwithElemRef
+        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElement
+        ${test.cvs.path}/SchemaElemDecl/BPwithMsgElemQualified
+        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElem
+        ${test.cvs.path}/SchemaElemDecl/BPwithNestedElemQualified
+        ${test.cvs.path}/ScopeTermination/ScopeTerminationBpel
         ${test.cvs.path}/TerminationHandler/TerminationHandlerBpel
         ${test.cvs.path}/wait/WaitBpel
         ${test.cvs.path}/while/WhileBpel
         ${test.cvs.path}/xpathfunctions/XPathFunctionsBpel
         ${test.cvs.path}/xpathfunctions/XSDFunctions
         ${test.cvs.path}/xsddatatypes/XSDDataTypesBpel
+        ${test.cvs.path}/xslt/DoXslTransformBPEL
+        ${test.cvs.path}/xslt/InOutBPXSLT/InOutBP
     "/>
     <property name="home" value="../.."/>
     <property name="cache" value="${home}/../cache"/>
