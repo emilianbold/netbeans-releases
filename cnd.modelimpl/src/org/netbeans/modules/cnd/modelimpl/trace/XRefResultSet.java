@@ -66,7 +66,7 @@ public final class XRefResultSet {
         scopeEntries.get(contextScope).add(entry);
     }
     
-    public final void inclScopeCounter(ContextScope contextScope) {
+    public final void incrementScopeCounter(ContextScope contextScope) {
         int val = scopes.get(contextScope);
         scopes.put(contextScope, ++val);
     }
@@ -127,17 +127,20 @@ public final class XRefResultSet {
     
     public enum IncludeLevel {
         UNRESOLVED,
+        THIS_FILE,
         PROJECT_DIRECT,
         PROJECT_DEEP,
         LIBRARY_DIRECT,
         LIBRARY_DEEP
     }
     
-    public final class ContextEntry {        
+    public static final class ContextEntry {
         public final DeclarationKind declaration;
         public final DeclarationScope declarationScope;
         public final IncludeLevel declarationIncludeLevel;
 
+        public final static ContextEntry UNRESOLVED = new ContextEntry(DeclarationKind.UNRESOLVED, DeclarationScope.UNRESOLVED, IncludeLevel.UNRESOLVED);
+        
         public ContextEntry(DeclarationKind declaration, DeclarationScope declarationScope, IncludeLevel declarationIncludeLevel) {
             this.declaration = declaration;
             this.declarationScope = declarationScope;

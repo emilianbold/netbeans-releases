@@ -92,7 +92,7 @@ public class LocalVariableFixCustomizer extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void inPlaceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inPlaceActionPerformed
-    ErrorFixesFakeHint.setCreateLocalVariableInPlace(inPlace.isSelected());
+    ErrorFixesFakeHint.setCreateLocalVariableInPlace(p, inPlace.isSelected());
 }//GEN-LAST:event_inPlaceActionPerformed
 
 

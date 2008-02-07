@@ -200,7 +200,7 @@ public final class SpringXMLConfigEditorUtils {
                         boolean opened = false;
                         TypeElement element = cc.getElements().getTypeElement(fqn.trim());
                         if (element != null) {
-                            opened = !ElementOpen.open(js.getClasspathInfo(), element);
+                            opened = ElementOpen.open(js.getClasspathInfo(), element);
                         }
                         if (!opened) {
                             String msg = NbBundle.getMessage(SpringXMLConfigEditorUtils.class, "LBL_SourceNotFound", fqn);
