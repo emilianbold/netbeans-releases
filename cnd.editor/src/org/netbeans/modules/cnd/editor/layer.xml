@@ -22,7 +22,6 @@
             <folder name="x-c++">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 
-                <file name="Settings.settings" url="resources/CCOptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CCKit"/>
                 </file>
@@ -104,7 +103,6 @@
             <folder name="x-c">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.resources.Bundle"/>
                 
-                <file name="Settings.settings" url="resources/COptions.settings"/>
                 <file name="EditorKit.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.CKit"/>
                 </file>
@@ -185,16 +183,4 @@
         </folder>
     </folder>
     
-    <folder name="Services">
-            
-        <folder name="IndentEngine">
-            <file name="org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine.settings" url="resources/CCIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
-            </file>
-            
-            <file name="org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine.settings" url="resources/CIndentEngine.settings">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.editor.cplusplus.Bundle"/>
-            </file>
-        </folder> <!-- IndentEngine -->
-    </folder>	<!-- Services -->
 </filesystem>
