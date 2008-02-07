@@ -125,6 +125,10 @@ public class AbstractVariable implements LocalVariable, Customizer {
         return tinfo;
     }
     
+    protected void resetTypeInfo() {
+        tinfo = null;
+    }
+    
     /**
      * Declared type of this local.
      *
@@ -576,7 +580,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
     }
     
     private void createChildrenForPointer(String t, String v) {
-        addField(new AbstractField(this, '*' + name, t, v));
+        addField(new AbstractField(this, '*' + getName(), t, v));
     }
     
     private void createChildrenForMultiPointer(String t) {
@@ -590,7 +594,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             if (v == null || v.length() < 1 || v.endsWith("0x0")) { // NOI18N
                 return;
             }
-            addField(new AbstractField(this, name + '[' + i++ + ']', t2, v));
+            addField(new AbstractField(this, getName() + '[' + i++ + ']', t2, v));
         }
     }
     
@@ -839,7 +843,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
             size = 0;
         }
         if (t.equals("char")) { // NOI18N
-            parseCharArray(this, name, type, value);
+            parseCharArray(this, getName(), type, value);
         } else {
             value = value.substring(1, value.length() - 1);
             for (int i = 0; i < size && vstart != -1; i++) {
@@ -848,7 +852,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 } else {
                     vend = GdbUtils.findNextComma(value, vstart);
                 }
-                addField(new AbstractField(this, name + "[" + i + "]", t, // NOI18N
+                addField(new AbstractField(this, getName() + "[" + i + "]", t, // NOI18N
                         vend == -1 ? value.substring(vstart) : value.substring(vstart, vend)));
                 vstart = GdbUtils.firstNonWhite(value, vend + 1);
             }

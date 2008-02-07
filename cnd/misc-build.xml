@@ -129,6 +129,7 @@ made subject to such option by the copyright holder.
 
     <target name="test" description="Run all tests">
         <subant target="test" buildpath="../cnd" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.editor" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.folding" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.modelimpl" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.completion" inheritrefs="false" inheritall="false" failonerror="false"/>

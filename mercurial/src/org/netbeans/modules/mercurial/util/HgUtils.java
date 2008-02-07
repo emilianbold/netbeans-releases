@@ -275,7 +275,8 @@ public class HgUtils {
 
     public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
-        String name = file.getPath();
+        String path = file.getPath();
+        String name = file.getName();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
         
         // We assume that the toplevel directory should not be ignored.
@@ -295,7 +296,7 @@ public class HgUtils {
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
-            if (pattern.matcher(name).find()) {
+            if (pattern.matcher(path).find()) {
                 return true;
             }
         }

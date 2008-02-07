@@ -43,6 +43,14 @@ made subject to such option by the copyright holder.
 
 <mconfig name="Components functional config">
 
+    <!-- Validation suite for COMPOSITE COMPONENTS -->
+    <testbag name="Composite group components Acceptance Test" testattribs="composite, acceptance, all" executor="ide">
+        <testset dir="components/src">
+            <patternset> 
+		<include name="**/CompositeComponentsTest.class"/>
+            </patternset>
+        </testset>
+    </testbag>
     <!-- Validation suite for INPUT COMPONENTS -->
     <testbag name="Input: TextField Acceptance Test" testattribs="acceptance, input, inputee4, all" executor="ide">
         <testset dir="components/src">
