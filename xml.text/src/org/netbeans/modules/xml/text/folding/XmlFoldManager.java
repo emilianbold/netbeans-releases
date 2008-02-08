@@ -45,8 +45,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -147,12 +145,12 @@ public class XmlFoldManager implements FoldManager {
                     myFolds = new ArrayList<Fold>();
                     parseDocument(basedoc, fhTran);
                 } catch (BadLocationException ble) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, 
-                            NbBundle.getMessage(XmlFoldManager.class, "MSG_FOLDS_DISABLED"));
+//                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, 
+//                            NbBundle.getMessage(XmlFoldManager.class, "MSG_FOLDS_DISABLED"));
                     removeAllFolds(fhTran);
                 } catch (IOException iox) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, 
-                            NbBundle.getMessage(XmlFoldManager.class, "MSG_FOLDS_DISABLED"));
+//                    Logger.getLogger(this.getClass().getName()).log(Level.WARNING, 
+//                            NbBundle.getMessage(XmlFoldManager.class, "MSG_FOLDS_DISABLED"));
                     removeAllFolds(fhTran);
                 } finally {
                     if (transaction == null) {
