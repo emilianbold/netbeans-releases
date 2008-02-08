@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="Databases">
+        <folder name="Sample">
+            <folder name="Providers">
+                <file name="SampleDbProvider.instance">
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.db.sample.providers.MySqlSampleDbProvider.getDefault"/>
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.db.sample.SampleDbProvider"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+</filesystem>

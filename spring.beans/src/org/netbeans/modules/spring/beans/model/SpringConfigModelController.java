@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.spring.beans.model;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,12 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.ConfigFileGroup;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
@@ -65,7 +57,6 @@ import org.netbeans.modules.spring.util.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupportListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.RequestProcessor.Task;
 
 /**
  * The implementation of the config model. Listens on the config files
@@ -82,8 +73,7 @@ public class SpringConfigModelController {
     private final ConfigFileGroup configFileGroup;
     private final Map<File, SpringConfigFileModelController> file2Controller = Collections.synchronizedMap(new HashMap<File, SpringConfigFileModelController>());
 
-    private Listener listener;
-    private EditorRegistryListener erListener;
+    private FileListener fileListener;
 
     // Encapsulates the current access to the model.
     private Access currentAccess;
@@ -106,16 +96,15 @@ public class SpringConfigModelController {
     }
 
     private void initialize() {
-        listener = new Listener();
+        fileListener = new FileListener();
         synchronized (file2Controller) {
             for (File file : configFileGroup.getFiles()) {
                 // FileObject fo = FileUtil.toFileObject(file);
                 file2Controller.put(file, new SpringConfigFileModelController(file));
-                FileChangeSupport.DEFAULT.addListener(listener, file);
+                FileChangeSupport.DEFAULT.addListener(fileListener, file);
             }
         }
-        erListener = new EditorRegistryListener();
-        erListener.initialize();
+        EditorListener.getInstance().register(this);
     }
 
     /**
@@ -156,15 +145,16 @@ public class SpringConfigModelController {
         });
     }
 
+    ConfigFileGroup getConfigFileGroup() {
+        return configFileGroup;
+    }
+
     private void notifyFileChanged(File file) {
         FileObject fo = FileUtil.toFileObject(file);
         if (fo == null) {
             return;
         }
-        SpringConfigFileModelController fileController = file2Controller.get(file);
-        if (fileController != null) {
-            fileController.notifyChange(fo);
-        }
+        notifyFileChanged(fo, file);
     }
 
     private void notifyFileDeleted(File file) {
@@ -172,13 +162,9 @@ public class SpringConfigModelController {
         // the controller under exclusive access
     }
 
-    private void notifyFileChanged(FileObject fo) {
-        File file = FileUtil.toFile(fo);
-        if (file == null) {
-            return;
-        }
+    void notifyFileChanged(FileObject fo, File file) {
         SpringConfigFileModelController fileController = file2Controller.get(file);
-        if (file2Controller != null) {
+        if (fileController != null) {
             fileController.notifyChange(fo);
         }
     }
@@ -227,7 +213,7 @@ public class SpringConfigModelController {
     /**
      * Listens on changes to the config files.
      */
-    private final class Listener implements FileChangeSupportListener {
+    private final class FileListener implements FileChangeSupportListener {
 
         public void fileCreated(FileChangeSupportEvent event) {
             notifyFileChanged(event.getPath());
@@ -239,54 +225,6 @@ public class SpringConfigModelController {
 
         public void fileDeleted(FileChangeSupportEvent event) {
             notifyFileDeleted(event.getPath());
-        }
-    }
-
-    // XXX this leaks. Need to create some kind of support to which Controllers register.
-    private final class EditorRegistryListener implements PropertyChangeListener, DocumentListener {
-
-        private volatile Document currentDocument;
-        private FileObject currentFile;
-        private Task task;
-
-        public EditorRegistryListener() {
-        }
-
-        public void initialize() {
-            EditorRegistry.addPropertyChangeListener(this);
-            JTextComponent newComponent = EditorRegistry.lastFocusedComponent();
-            currentDocument = newComponent != null ? newComponent.getDocument() : null;
-        }
-
-        public void propertyChange(PropertyChangeEvent evt) {
-            JTextComponent newComponent = EditorRegistry.lastFocusedComponent();
-            Document newDocument = newComponent != null ? newComponent.getDocument() : null;
-            if (currentDocument == newDocument) {
-                return;
-            }
-            currentDocument.removeDocumentListener(this);
-            currentDocument = newDocument;
-            currentDocument.addDocumentListener(this);
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-            notify(e.getDocument());
-        }
-
-        public void insertUpdate(DocumentEvent e) {
-            notify(e.getDocument());
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            notify(e.getDocument());
-        }
-
-        private void notify(Document document) {
-            FileObject fo = NbEditorUtilities.getFileObject(document);
-            if (fo == null){
-                return;
-            }
-            notifyFileChanged(fo);
         }
     }
 }

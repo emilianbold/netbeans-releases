@@ -673,7 +673,9 @@ public class Installer extends ModuleInstall implements Runnable {
         LOG.log(Level.FINE, "uploadLogs, sending records"); // NOI18N
         for (LogRecord r : recs) {
             h.progress(cnt++);
-            LogRecords.write(data, r);
+            if (r != null) {
+                LogRecords.write(data, r);
+            }
         }
         data.write("</uigestures>\n".getBytes("utf-8")); // NOI18N
         LOG.log(Level.FINE, "uploadLogs, flushing"); // NOI18N

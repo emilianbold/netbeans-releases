@@ -189,6 +189,7 @@ public class BDIDebugConnector {
                     .newInstance();
             return factory.createRMIService(getClass().getClassLoader());
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.warning("Exception in getRMIService:\n" + e);
             return null;
         }

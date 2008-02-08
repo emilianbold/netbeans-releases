@@ -67,6 +67,10 @@ public final class LocalsColumnModel_Type extends AbstractColumn {
         
         @Override
         public String getAsText() {
+            if ("".equals(getValue())) {
+                return "";
+            }
+            
             return myHelper.getType(getValue());
         }
         

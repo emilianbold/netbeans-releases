@@ -213,6 +213,11 @@ public class AbstractBpelModelUpdater {
                 XPathPredicateExpression[] predArr = pred.getPredicates();
                 SchemaComponent sComp = pred.getSComponent();
                 newLocationStep = constructLStep(xPathModel, sComp, predArr);
+            } else if (stepObj instanceof LocationStep) {
+                //
+                // TODO: It would be more correct to do a copy of the stepObj
+                // because of it is owned by another XPathModel. 
+                newLocationStep = (LocationStep)stepObj;
             }
             //
             if (newLocationStep != null) {
@@ -236,27 +241,6 @@ public class AbstractBpelModelUpdater {
             return null;
         }
         //
-        String componentName = ((Named)sComp).getName();
-        QName sCompQName = null;
-        //
-        if (BpelMapperUtils.isPrefixRequired(sComp)) {
-            //
-            String nsPrefix = null;
-            String namespaceURI = sComp.getModel().getEffectiveNamespace(sComp);
-            NamespaceContext nsContext = xPathModel.getNamespaceContext();
-            if (nsContext != null) {
-                nsPrefix = nsContext.getPrefix(namespaceURI);
-            }
-            //
-            if (nsPrefix == null || nsPrefix.length() == 0) {
-                sCompQName = new QName(componentName);
-            } else {
-                sCompQName = new QName(namespaceURI, componentName, nsPrefix);
-            }
-        } else {
-            sCompQName = new QName(componentName);
-        }
-        //
         XPathAxis axis = null;
         if (sComp instanceof Attribute) {
             axis = XPathAxis.ATTRIBUTE;
@@ -264,7 +248,7 @@ public class AbstractBpelModelUpdater {
             axis = XPathAxis.CHILD;
         }
         //
-        StepNodeNameTest nameTest = new StepNodeNameTest(sCompQName);
+        StepNodeNameTest nameTest = new StepNodeNameTest(xPathModel, sComp);
         LocationStep newLocationStep = xPathModel.getFactory().
                 newLocationStep(axis, nameTest, predArr);
         //
@@ -289,11 +273,10 @@ public class AbstractBpelModelUpdater {
         for (Object item : objectPath) {
             //
             if (item instanceof SchemaComponent || 
-                    item instanceof AbstractPredicate) {
+                    item instanceof AbstractPredicate ||
+                    item instanceof LocationStep) {
                 sourceInfo.schemaCompList.add(item);
-            }
-            //
-            if (item instanceof AbstractVariableDeclaration) {
+            } else if (item instanceof AbstractVariableDeclaration) {
                 if (item instanceof VariableDeclarationScope) {
                     continue;
                 } else if (item instanceof VariableDeclarationWrapper) {
@@ -301,17 +284,11 @@ public class AbstractBpelModelUpdater {
                 } else if (item instanceof VariableDeclaration) {
                     sourceInfo.varDecl = (VariableDeclaration)item;
                 }
-            }
-            //
-            if (item instanceof Part) {
+            } else if (item instanceof Part) {
                 sourceInfo.part = (Part)item;
-            }
-            //
-            if (item instanceof PartnerLink) {
+            } else if (item instanceof PartnerLink) {
                 sourceInfo.pLink = (PartnerLink)item;
-            }
-            //
-            if (item instanceof Roles) {
+            } else if (item instanceof Roles) {
                 sourceInfo.roles = (Roles)item;
             }
         }

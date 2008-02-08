@@ -52,17 +52,30 @@ public class WSURIManager {
 
     private static final String WSURI = "deployer:WebSphere:"; //NOI18N
 
+    private static final int REAL_URL_PARTS = 4;
+
     public static final String WSURI60 = WSURI; //NOI18N
 
     public static final String WSURI61 = "deployer:WebSphere61:"; //NOI18N
 
     public static String getRealDeploymentUrl(String url) {
-        Parameters.notNull("url", url);
-        if (url.startsWith(WSURI61)) {
-            return url.replaceFirst(WSURI61, WSURI);
+        Parameters.notNull("url", url); // NOI18N
+
+        String[] parts = url.split(":"); // NOI18N
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < REAL_URL_PARTS && i < parts.length; i++) {
+            if (i > 0) {
+                builder.append(":"); //NOI18N
+            }
+            builder.append(parts[i]);
         }
 
-        return url;
+        int index = builder.indexOf(WSURI61);
+        if (index > -1) {
+            builder.replace(index, index + WSURI61.length(), WSURI);
+        }
+
+        return builder.toString();
     }
 
     public static String getUrlWithoutPrefix(String url) {
@@ -130,6 +143,5 @@ public class WSURIManager {
 
         return instanceProperties;
     }
-
 
 }

@@ -121,6 +121,7 @@ public final class FileUtil extends Object {
 
     /** Cache for {@link #isArchiveFile(FileObject)}. */
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
+    private static FileSystem diskFileSystem;
 
     private FileUtil() {
     }
@@ -132,18 +133,23 @@ public final class FileUtil extends Object {
      * @since 7.6
      */
     public static void refreshFor(File... files) {
-        for (File file : files) {
-            //TODO: files should be filtered (1/remove duplicates 2/to keep just the most top parents) 
-            //not to refresh some fileobjects many times
-            FileObject fo = toFileObject(file);
-            if (fo != null) {
-                try {
-                    fo.setAttribute("request_for_refreshing_files_be_aware_this_is_not_public_api", file); //NOI18N
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+        FileSystem fs = getDiskFileSystem();
+        if (fs == null) {
+            for (File file : files) {
+                FileObject fo = toFileObject(file);
+                fs = getDiskFileSystem();
+                if (fs != null) {
+                    break;
                 }
             }
         }
+        if (fs != null) {
+            try {
+                fs.getRoot().setAttribute("request_for_refreshing_files_be_aware_this_is_not_public_api", files);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } 
     }         
     
     /**
@@ -621,6 +627,16 @@ public final class FileUtil extends Object {
             retVal = null;
         }
 
+        if (retVal != null) {
+            if (getDiskFileSystem() == null) {
+                try {
+                    FileSystem fs = retVal.getFileSystem();
+                    setDiskFileSystem(fs);
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         return retVal;
     }
         
@@ -1853,4 +1869,19 @@ public final class FileUtil extends Object {
             return wrapFileNoCanonicalize(delegate.createFileObject(path));
         }
     }
+    
+    private static FileSystem getDiskFileSystem() {
+        synchronized (FileUtil.class) {
+            return diskFileSystem;
+        }
+    }
+
+    private static void setDiskFileSystem(FileSystem fs) {
+        Object o = fs.getRoot().getAttribute("SupportsRefreshForNoPublicAPI");
+        if (o instanceof Boolean && ((Boolean) o).booleanValue()) {
+            synchronized (FileUtil.class) {
+                diskFileSystem = fs;
+            }
+        }
+    }    
 }

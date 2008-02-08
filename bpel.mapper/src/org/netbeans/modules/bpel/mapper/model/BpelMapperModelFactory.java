@@ -30,6 +30,7 @@ import org.netbeans.modules.bpel.mapper.model.CopyToProcessor.CopyToForm;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateFinderVisitor;
 import org.netbeans.modules.bpel.mapper.predicates.PredicateManager;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
+import org.netbeans.modules.bpel.mapper.predicates.SpecialStepManager;
 import org.netbeans.modules.bpel.mapper.tree.MapperSwingTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.ConditionValueTreeModel;
 import org.netbeans.modules.bpel.mapper.tree.models.DateValueTreeModel;
@@ -433,6 +434,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         return expr;
     }
     
+    // special steps also are collected here!
     public static void collectPredicates(
             XPathExpression expr, MapperSwingTreeModel treeModel) {
         //
@@ -444,9 +446,10 @@ public class BpelMapperModelFactory implements MapperModelFactory {
         //    
         if (varTreeModel != null) {
             PredicateManager predManager = varTreeModel.getPredicateManager();
+            SpecialStepManager sStepManager = varTreeModel.getSStepManager();
             if (predManager != null) {
                 PredicateFinderVisitor predFinderVisitor = 
-                        new PredicateFinderVisitor(predManager);
+                        new PredicateFinderVisitor(predManager, sStepManager);
                 expr.accept(predFinderVisitor);
             }
         }

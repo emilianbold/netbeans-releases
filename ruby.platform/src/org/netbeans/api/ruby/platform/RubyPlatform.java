@@ -84,9 +84,19 @@ public final class RubyPlatform {
     static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
     
     /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
-    static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
+    static final String RDEBUG_IDE_VERSION;
+    static final String RDEBUG_BASE_VERSION;
     
+    static {
+        if (Utilities.isWindows()) {
+            RDEBUG_IDE_VERSION = "0.1.9"; // NOI18N
+            RDEBUG_BASE_VERSION = "0.9.3"; // NOI18N
+        } else {
+            RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
+            RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
+        }
+    }
+
     private Info info;
     
     private final String id;
@@ -130,6 +140,12 @@ public final class RubyPlatform {
         return platform == null ? null : platform.getGemManager();
     }
 
+    @CheckForNull
+    public static String platformDescriptionFor(Project project) {
+        RubyPlatform platform = platformFor(project);
+        return platform == null ? null : platform.getInfo().getLongDescription();
+    }
+    
     public Info getInfo() {
         return info;
     }
@@ -701,7 +717,9 @@ public final class RubyPlatform {
      * i.e. a gem was removed or a new gem was installed.
      */
     public void fireGemsChanged() {
-        pcs.firePropertyChange("gems", null, null); //NOI18N
+        if (pcs != null) {
+            pcs.firePropertyChange("gems", null, null); //NOI18N
+        }
     }
     
     @Override

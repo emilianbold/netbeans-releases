@@ -105,7 +105,7 @@ static void normalizePath(char *userdir);
 static bool runAutoUpdater(bool firstStart, const char * root);
 static bool runAutoUpdaterOnClusters(bool firstStart);
 
-static int findHttpProxyFromRegistry(char **proxy, char **nonProxy);
+static int findProxiesFromRegistry(char **proxy, char **nonProxy, char **socksProxy);
 static int findHttpProxyFromEnv(char **proxy, char **nonProxy);
 
 static char* processAUClustersList(char *userdir);
@@ -114,7 +114,31 @@ static int removeAUClustersListFile(char *userdir);
 int checkForNewUpdater(const char *basePath);
 int createProcessNoVirt(const char *exePath, char *argv[]);
 
+#define HELP_STRING \
+"Usage: launcher {options} arguments\n\
+\n\
+General options:\n\
+  --help                show this help\n\
+  --jdkhome <path>      path to JDK\n\
+  -J<jvm_option>        pass <jvm_option> to JVM\n\
+\n\
+  --cp:p <classpath>    prepend <classpath> to classpath\n\
+  --cp:a <classpath>    append <classpath> to classpath\n\
+\n"
+
 int main(int argc, char *argv[]) {
+    for (int i = 0; i < argc; i++)
+    {
+        if (strcmp(argv[i], "-h") == 0
+                || strcmp(argv[i], "-help") == 0
+                || strcmp(argv[i], "--help") == 0
+                || strcmp(argv[i], "/?") == 0)
+        {
+            printf(HELP_STRING);
+            return 0;
+        }
+    }
+    
     char exepath[1024 * 4];
     char buf[1024 * 8], *pc;
   
@@ -328,7 +352,8 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
     addLauncherJarsToClassPath(plathome);
     addJdkJarsToClassPath(jdkhome);
 
-    char *proxy, *nonProxyHosts;
+    char *proxy = 0, *nonProxyHosts = 0;
+    char *socksProxy = 0;
     if (0 == findHttpProxyFromEnv(&proxy, &nonProxyHosts)) {
         sprintf(buf, "-Dnetbeans.system_http_proxy=%s", proxy);
         addOption(buf);
@@ -337,13 +362,25 @@ void runClass(char *mainclass, bool deleteAUClustersFile) {
         free(proxy);
         free(nonProxyHosts);
     }
-    else if (0 == findHttpProxyFromRegistry(&proxy, &nonProxyHosts)) {
-        sprintf(buf, "-Dnetbeans.system_http_proxy=%s", proxy);
-        addOption(buf);
-        sprintf(buf, "-Dnetbeans.system_http_non_proxy_hosts=%s", nonProxyHosts);
-        addOption(buf);
-        free(proxy);
-        free(nonProxyHosts);
+    else if (0 == findProxiesFromRegistry(&proxy, &nonProxyHosts, &socksProxy)) {
+        if (proxy)
+        {
+            sprintf(buf, "-Dnetbeans.system_http_proxy=%s", proxy);
+            addOption(buf);
+            free(proxy);
+        }
+        if (nonProxyHosts)
+        {
+            sprintf(buf, "-Dnetbeans.system_http_non_proxy_hosts=%s", nonProxyHosts);
+            addOption(buf);
+            free(nonProxyHosts);
+        }
+        if (socksProxy)
+        {
+            snprintf(buf, 10240, "-Dnetbeans.system_socks_proxy=%s", socksProxy);
+            addOption(buf);            
+            free(socksProxy);
+        }
     }
 
     // see BugTraq #5043070
@@ -529,13 +566,13 @@ static int findJdkFromRegistry(const char* keyname, char jdkhome[])
     return rc;
 }
 
-int findHttpProxyFromRegistry(char **proxy, char **nonProxy)
+int findProxiesFromRegistry(char **proxy, char **nonProxy, char **socksProxy)
 {
     HKEY hkey = NULL;
     char *proxyServer = NULL;
     char *proxyOverrides = NULL;
     int rc = 1;
-    *proxy = NULL; *nonProxy = NULL;
+    *proxy = NULL; *nonProxy = NULL; *socksProxy = NULL;
   
     if (RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Internet settings", 0, KEY_READ, &hkey) == 0) {
         DWORD proxyEnable, size = sizeof proxyEnable;
@@ -550,7 +587,24 @@ int findHttpProxyFromRegistry(char **proxy, char **nonProxy)
                     *proxy = strdup(proxyServer);
                     rc = 0;
                 } else {
-                    char *pc = strstr(proxyServer, "http=");
+                    char *pc = strstr(proxyServer, "socks=");
+                    if (pc)
+                    {
+                        pc += strlen("socks=");
+                        if (*pc != '\0' && *pc != ';')
+                        {
+                            char *end = strchr(pc, ';');
+                            if (end)
+                            {
+                                *socksProxy = (char *) malloc(end - pc + 1);
+                                strncpy(*socksProxy, pc, end - pc);
+                            }
+                            else
+                                *socksProxy = strdup(pc);
+                            rc = 0;
+                        }
+                    }
+                    pc = strstr(proxyServer, "http=");
                     if (pc != NULL) {
                         pc += strlen("http=");
                         char *qc = strstr(pc, ";");
@@ -734,27 +788,7 @@ void parseArgs(int argc, char *argv[]) {
 
 #ifdef DEBUG
             printf("parseArgs - processing %s\n", arg);
-#endif
-
-        if ((strcmp("-h", arg) == 0
-            || strcmp("-help", arg) == 0
-            || strcmp("--help", arg) == 0
-            || strcmp("/?", arg) == 0
-            ) && runnormal) {
-            fprintf(stdout, "Usage: launcher {options} arguments\n\
-\n\
-General options:\n\
-  --help                show this help\n\
-  --jdkhome <path>      path to JDK\n\
-  -J<jvm_option>        pass <jvm_option> to JVM\n\
-\n\
-  --cp:p <classpath>    prepend <classpath> to classpath\n\
-  --cp:a <classpath>    append <classpath> to classpath\n\
-\n");  
-            fflush(stdout);
-            arg = "--help";
-        }
-        
+#endif        
 
         if (0 == strcmp("--userdir", arg)) {
             if (argc > 0) {

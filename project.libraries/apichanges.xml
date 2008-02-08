@@ -144,6 +144,7 @@ is the proper place.
         <class package="org.netbeans.spi.project.libraries" name="LibraryProvider"/>
         <class package="org.netbeans.spi.project.libraries" name="ArealLibraryProvider"/>
         <class package="org.netbeans.spi.project.libraries" name="LibraryStorageArea"/>
+        <class package="org.netbeans.spi.project.libraries.support" name="LibrariesSupport"/>
         <issue number="44035"/>
     </change>
     
