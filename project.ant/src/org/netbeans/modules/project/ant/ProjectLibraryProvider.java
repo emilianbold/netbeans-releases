@@ -925,7 +925,8 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
                 if (libEntryFO == null) {
                     if (!"file".equals(libEntry.getProtocol()) && // NOI18N
                         !"nbinst".equals(libEntry.getProtocol())) { // NOI18N
-                        Logger.getLogger(ProjectLibraryProvider.class.getName()).warning("copyLibrary is ignoring entry "+libEntry);
+                        Logger.getLogger(ProjectLibraryProvider.class.getName()).info("copyLibrary is ignoring entry "+libEntry);
+                        //this is probably exclusively urls to maven poms.
                         continue;
                     } else {
                         Logger.getLogger(ProjectLibraryProvider.class.getName()).warning("Library '"+lib.getDisplayName()+ // NOI18N
