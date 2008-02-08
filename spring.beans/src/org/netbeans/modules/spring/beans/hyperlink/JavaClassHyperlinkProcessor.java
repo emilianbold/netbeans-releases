@@ -40,16 +40,7 @@
  */
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import java.util.EnumSet;
-import java.util.Set;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
-import org.netbeans.api.java.source.ClassIndex.SearchScope;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
-import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -61,16 +52,6 @@ public class JavaClassHyperlinkProcessor implements HyperlinkProcessor {
     }
 
     public void process(HyperlinkEnv env) {
-        String binaryName = env.getValueString();
-        JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(env.getDocument());
-        Set<ElementHandle<TypeElement>> handles = js.getClasspathInfo().getClassIndex().getDeclaredTypes("", NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
-        for (ElementHandle<TypeElement> eh : handles) {
-            if (eh.getBinaryName().equals(binaryName)) {
-                SpringXMLConfigEditorUtils.findAndOpenJavaClass(eh.getQualifiedName(), env.getDocument());
-            }
-        }
-        
-        String msg = NbBundle.getMessage(JavaClassHyperlinkProcessor.class, "LBL_ClassNotFound", binaryName);
-        StatusDisplayer.getDefault().setStatusText(msg);
+        SpringXMLConfigEditorUtils.findAndOpenJavaClass(env.getValueString(), env.getDocument());
     }
 }
