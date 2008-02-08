@@ -209,6 +209,7 @@ public class ClassPathSupport {
                         String file = item.getFilePath();
                         // pass null as expected artifact type to always get file reference
                         reference = referenceHelper.createForeignFileReferenceAsIs(file, null);
+                        item.property = reference;
                     }
                     if (item.hasChangedSource()) {
                         if (item.getSourceFilePath() != null) {
