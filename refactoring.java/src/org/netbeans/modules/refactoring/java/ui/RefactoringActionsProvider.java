@@ -86,6 +86,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
@@ -346,7 +347,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 return false;
             }
             FileObject fileObject = dataObject.getPrimaryFile();
-            if (isRefactorableFolder(dataObject)){
+            if (isRefactorableFolder(dataObject) && containsJavaFile(fileObject)) {
                 return true;
             }
             if (!RetoucheUtils.isRefactorable(fileObject)) {
@@ -887,4 +888,29 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
                 RetoucheUtils.isOnSourceClasspath(fileObject) && 
                 !RetoucheUtils.isClasspathRoot(fileObject);
     }
+    
+    private static boolean containsJavaFile(FileObject fileObject) {
+        FileObject[] children = fileObject.getChildren();
+        if (children == null) {
+            return false;
+        }
+        for (int x = 0; x < children.length; x++) {
+            try {
+                DataObject dobj = DataObject.find(children[x]);
+                FileObject fobj = dobj.getPrimaryFile();
+                if (dobj instanceof DataFolder) {
+                    if (containsJavaFile(fobj)) {
+                        return true;
+                    }
+                } else {
+                    if (RetoucheUtils.isJavaFile(fobj)) {
+                        return true;
+                    }
+                }
+            } catch (DataObjectNotFoundException ex) {
+            }
+        }
+        return false;
+    }
+    
 }
