@@ -52,8 +52,8 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.PositionConverter;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -61,18 +61,26 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class JavaSourceAccessor {
 
-
-    static {
-        try {
-            Class.forName("org.netbeans.api.java.source.JavaSource", true, JavaSourceAccessor.class.getClassLoader());   //NOI18N
-        } catch (ClassNotFoundException e) {
-            ErrorManager.getDefault().notify (e);
+        
+    public static synchronized JavaSourceAccessor getINSTANCE () {
+        if (INSTANCE == null) {
+            try {
+                Class.forName("org.netbeans.api.java.source.JavaSource", true, JavaSourceAccessor.class.getClassLoader());   //NOI18N            
+                assert INSTANCE != null;
+            } catch (ClassNotFoundException e) {
+                Exceptions.printStackTrace(e);
+            }
         }
+        return INSTANCE;
     }
     
-    public static JavaSourceAccessor INSTANCE;
+    public static void setINSTANCE (JavaSourceAccessor instance) {
+        assert instance != null;
+        INSTANCE = instance;
+    }
     
-    
+    private static volatile JavaSourceAccessor INSTANCE;
+        
     public void runSpecialTask (final CancellableTask<CompilationInfo> task, final JavaSource.Priority priority) {
         INSTANCE.runSpecialTaskImpl (task, priority);
     }
@@ -122,4 +130,10 @@ public abstract class JavaSourceAccessor {
      * Expert: Unlocks java compiler. Private API for indentation engine only!
      */
     public abstract void unlockJavaCompiler ();
+    
+    /**
+     * For check confinement.
+     * @return
+     */
+    public abstract boolean isJavaCompilerLocked();
 }

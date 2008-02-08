@@ -125,11 +125,11 @@ public class SurroundWithTryCatchLog extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void loggerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loggerActionPerformed
-    ErrorFixesFakeHint.setUseLogger(logger.isSelected());
+    ErrorFixesFakeHint.setUseLogger(p, logger.isSelected());
 }//GEN-LAST:event_loggerActionPerformed
 
 private void exceptionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exceptionsActionPerformed
-    ErrorFixesFakeHint.setUseExceptions(logger.isSelected());
+    ErrorFixesFakeHint.setUseExceptions(p, exceptions.isSelected());
 }//GEN-LAST:event_exceptionsActionPerformed
 
 

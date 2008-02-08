@@ -136,7 +136,7 @@ final class GemRunner {
         }
         
         if (includeDeps) {
-            argList.add("--include-dependencies"); // NOI18N
+            includeDeps(argList);
         } else {
             argList.add("--ignore-dependencies"); // NOI18N
         }
@@ -182,7 +182,7 @@ final class GemRunner {
             argList.add("--no-ri"); // NOI18N
         }
         
-        argList.add("--include-dependencies"); // NOI18N
+        includeDeps(argList);
 
         String[] args = argList.toArray(new String[argList.size()]);
 
@@ -235,6 +235,13 @@ final class GemRunner {
     
     ArrayList<String> getOutput() {
         return output;
+    }
+
+    private void includeDeps(List<String> argList) {
+        // -y and --include-dependencies is deprecated since 0.9.5 (and automatic)
+        if (GemManager.compareGemVersions(platform.getInfo().getGemVersion(), "0.9.5") < 0) { // NOI18N
+            argList.add("--include-dependencies"); // NOI18N
+        }
     }
 
     private boolean gemRunner(String gemCommand, GemProgressPanel progressPanel,

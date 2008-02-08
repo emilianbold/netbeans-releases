@@ -41,15 +41,14 @@
 
 package org.netbeans.modules.spring.beans.hyperlink;
 
-import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.spring.api.Action;
-import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
-import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.util.SpringBeansUIs;
+import org.netbeans.modules.spring.util.SpringBeansUIs.GoToBeanAction;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -73,8 +72,7 @@ public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
         }
         SpringConfigModel model = SpringConfigModel.forFileObject(fileObject);
         final String beanName = env.getValueString();
-        final File[] file = { null };
-        final int[] offset = { -1 };
+        final GoToBeanAction[] action = { null };
         try {
             model.runReadAction(new Action<SpringBeans>() {
                 public void run(SpringBeans beans) {
@@ -82,19 +80,14 @@ public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
                     if (bean == null) {
                         return;
                     }
-                    Location location = bean.getLocation();
-                    if (location == null) {
-                        return;
-                    }
-                    file[0] = location.getFile();
-                    offset[0] = location.getOffset();
+                    action[0] = SpringBeansUIs.createGoToBeanAction(bean);
                 }
             });
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }
-        if (file[0] != null) {
-            SpringXMLConfigEditorUtils.openFile(file[0], offset[0]);
+        if (action[0] != null) {
+            action[0].invoke();
         }
     }
 }

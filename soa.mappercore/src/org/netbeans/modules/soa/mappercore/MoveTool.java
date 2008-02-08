@@ -27,11 +27,10 @@ import java.awt.dnd.DropTargetDragEvent;
 import java.awt.dnd.DropTargetDropEvent;
 import java.io.IOException;
 import javax.swing.JComponent;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.Graph;
-import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -160,15 +159,24 @@ public class MoveTool extends AbstractMapperDnDTool {
             int graphY = node.yToNode(point.y - delta.y);
             int graphX = canvas.toGraph(point.x - delta.x);
             if (dtde.getDropAction() == DnDConstants.ACTION_COPY || graphSubSet.getGraph() == null) {
-                model.copy(node.getTreePath(), graphSubSet,
+                graphSubSet = model.copy(node.getTreePath(), graphSubSet,
                         (graphX + step / 2) / step,
                         Math.max(0, (graphY + step / 2) / step));
             } else {
                 model.move(node.getTreePath(), graphSubSet,
-                        (int)(Math.round(((double)(graphX))/step)),
-                        Math.max(0, (int)(Math.round(((double)(graphY))/step))));
+                        (int) (Math.round(((double) (graphX)) / step)),
+                        Math.max(0, (int) (Math.round(((double) (graphY)) / step))));
             }
-        }
+            
+            getCanvas().requestFocusInWindow();
+            SelectionModel selectionModel = getSelectionModel();
+            TreePath treePath = selectionModel.getSelectedPath();
+            if (graphSubSet != null && graphSubSet.getVertexCount() > 0 &&
+                    !selectionModel.isSelected(treePath, graphSubSet.getVertex(0)))
+            {
+                selectionModel.setSelected(treePath, graphSubSet.getVertex(0));
+            }
+         }
 
         reset();
 

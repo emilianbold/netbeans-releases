@@ -511,7 +511,6 @@ public class RubyLexerTest extends RubyTestBase {
     // Not yet passing
 //    @SuppressWarnings("unchecked")
 //    public void testDefRegexp() {
-//        // /Users/tor/netbeans/work/nbbuild/netbeans/ruby1/jruby-1.0/lib/ruby/1.8/webrick/httputils.rb
 //        //     def _make_regex(str) /([#{Regexp.escape(str)}])/n end
 //        String text = "def f(s) /df/ end";
 //        TokenHierarchy hi = TokenHierarchy.create(text, RubyTokenId.language());

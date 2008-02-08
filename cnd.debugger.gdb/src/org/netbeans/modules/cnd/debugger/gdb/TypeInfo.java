@@ -77,8 +77,9 @@ public class TypeInfo {
         } else {
             rawInfo = debugger.requestSymbolType(var.getFullName(false));
         }
+	log.fine("TI.getTypeInfo[rawInfo]: " + var.getType() + " ==> [" + rawInfo + "]");
         
-        if (rawInfo != null) {
+        if (rawInfo != null && rawInfo.length() > 0) {
             rawInfo = rawInfo.replace("\\n", "").trim(); // NOI18N
             int pos1 = rawInfo.indexOf('{');
             if (pos1 == -1) {
@@ -112,11 +113,11 @@ public class TypeInfo {
         this.rawInfo = rawInfo;
         map = null;
         
-        if (resolvedType != null) {
+        if (resolvedType != null && resolvedType.length() > 0 && !Boolean.getBoolean("gdb.disable.ti-cache")) {
             ticache = debugger.getTypeInfoCache();
             log.fine("TI.<Init>: " + vartype + " ==> [" + resolvedType + ", " + rawInfo + "]");
 
-            if (vartype != null) {
+            if (vartype != null && vartype.length() > 0) {
                 if (!vartype.equals(resolvedType)) {
                     ticache.put(resolvedType, this);
                 }

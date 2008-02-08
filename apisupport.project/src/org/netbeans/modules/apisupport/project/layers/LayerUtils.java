@@ -71,7 +71,6 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
@@ -504,6 +503,9 @@ public class LayerUtils {
          */
         public FileObject getLayerFile() {
             NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
+            if (module == null) { // #126939: other project type
+                return null;
+            }
             Manifest mf = Util.getManifest(module.getManifestFile());
             if (mf == null) {
                 return null;
