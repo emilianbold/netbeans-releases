@@ -42,8 +42,10 @@
 package org.netbeans.modules.spring.api.beans;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -133,6 +135,24 @@ public final class SpringScope {
     }
 
     /**
+     * Returns the a list of all known models for all configuration 
+     * file groups.
+     *
+     * @return the list of models; never null.
+     */
+    public List<SpringConfigModel> getConfigModels() {
+        List<ConfigFileGroup> groups = getConfigFileManager().getConfigFileGroups();
+        List<SpringConfigModel> result = new ArrayList<SpringConfigModel>(groups.size());
+        for (ConfigFileGroup group : groups) {
+            SpringConfigModel model = getGroupConfigModel(group);
+            if (model != null) {
+                result.add(model);
+            }
+        }
+        return Collections.unmodifiableList(result);
+    }
+
+    /**
      * Returns the model of the beans configuration files for the given file
      * (and any related files, if the files belongs to a
      * {@link ConfigFileGroup config file group}).
@@ -159,6 +179,10 @@ public final class SpringScope {
         if (group == null) {
             return null;
         }
+        return getGroupConfigModel(group);
+    }
+
+    private SpringConfigModel getGroupConfigModel(ConfigFileGroup group) {
         SpringConfigModel model;
         synchronized (this) {
             model = group2Model.get(group);

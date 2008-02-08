@@ -51,8 +51,14 @@ public class ThreadsNodeModel implements NodeModel, Constants {
         
         if (object == TreeModel.ROOT) {
             return NbBundle.getMessage(
-                ThreadsNodeModel.class, 
-                "CTL_Column_Name"); // NOI18N
+                    ThreadsNodeModel.class, 
+                    "CTL_Column_Name"); // NOI18N
+        }
+        
+        if (object instanceof ThreadsTreeModel.Dummy) {
+            return NbBundle.getMessage(
+                    ThreadsNodeModel.class, 
+                    "CTL_Empty_Model"); // NOI18N
         }
         
         if (object instanceof Branch) {
@@ -81,6 +87,10 @@ public class ThreadsNodeModel implements NodeModel, Constants {
         
         if (object == TreeModel.ROOT) {
             return ""; // NOI18N
+        }
+        
+        if (object instanceof ThreadsTreeModel.Dummy) {
+            return null;
         }
         
         if (object instanceof Branch) {

@@ -244,7 +244,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
                     }
                 }
                 layout.showCompletion(Collections.singletonList(waitText),
-                        null, -1, CompletionImpl.this, null, 0);
+                        null, -1, CompletionImpl.this, null, null, 0);
                 pleaseWaitDisplayed = true;                
             }
         });
@@ -593,7 +593,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             }
         } else {
             completionCancel();
-            layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, null, 0);
+            layout.showCompletion(Collections.singletonList(NO_SUGGESTIONS), null, -1, CompletionImpl.this, null, null, 0);
             pleaseWaitDisplayed = false;
         }
     }
@@ -770,6 +770,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
         String title = null;
         int anchorOffset = -1;
         boolean hasAdditionalItems = false;
+        final StringBuilder hasAdditionalItemsText = new StringBuilder();
         if (size > 0) {
             for (int i = 0; i < completionResultSets.size(); i++) {
                 CompletionResultSetImpl resultSet = completionResultSets.get(i);
@@ -778,8 +779,12 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                     resultItems.addAll(items);
                     if (title == null)
                         title = resultSet.getTitle();
-                    if (!hasAdditionalItems)
-                        hasAdditionalItems = resultSet.hasAdditionalItems();
+                    if (resultSet.hasAdditionalItems()) {
+                        hasAdditionalItems = true;
+                        String s = resultSet.getHasAdditionalItemsText();
+                        if (s != null)
+                            hasAdditionalItemsText.append(s);
+                    }
                     if (anchorOffset == -1)
                         anchorOffset = resultSet.getAnchorOffset();
                 }
@@ -837,7 +842,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                 
                 int selectedIndex = getCompletionPreSelectionIndex(sortedResultItems);
                 getActiveComponent().putClientProperty("completion-visible", Boolean.TRUE);
-                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, displayAdditionalItems ? completionShortcut : null, selectedIndex);
+                layout.showCompletion(noSuggestions ? Collections.singletonList(NO_SUGGESTIONS) : sortedResultItems, displayTitle, displayAnchorOffset, CompletionImpl.this, displayAdditionalItems ? hasAdditionalItemsText.toString() : null, displayAdditionalItems ? completionShortcut : null, selectedIndex);
                 pleaseWaitDisplayed = false;
 
                 // Show documentation as well if set by default

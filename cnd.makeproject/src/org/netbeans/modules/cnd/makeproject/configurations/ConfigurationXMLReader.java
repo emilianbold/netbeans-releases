@@ -119,21 +119,19 @@ public class ConfigurationXMLReader extends XMLDocReader {
         //
         
         xml = projectDirectory.getFileObject("nbproject/private/configurations.xml"); // NOI18N
-        if (xml == null) {
+        if (xml != null) {
             // Don't post an error.
             // It's OK to sometimes not have a private config
-            return configurationDescriptor;
-        }
-        
-        XMLDecoder auxDecoder =
-                new AuxConfigurationXMLCodec(tag, configurationDescriptor);
-        registerXMLDecoder(auxDecoder);
-        inputStream = xml.getInputStream();
-        success = read(inputStream, projectDirectory.getName());
-        deregisterXMLDecoder(auxDecoder);
-        
-        if (!success) {
-            return configurationDescriptor;
+            XMLDecoder auxDecoder =
+                    new AuxConfigurationXMLCodec(tag, configurationDescriptor);
+            registerXMLDecoder(auxDecoder);
+            inputStream = xml.getInputStream();
+            success = read(inputStream, projectDirectory.getName());
+            deregisterXMLDecoder(auxDecoder);
+
+            if (!success) {
+                return configurationDescriptor;
+            }
         }
         
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then

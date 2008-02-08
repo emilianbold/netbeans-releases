@@ -74,8 +74,6 @@ public final class FolderObj extends BaseFileObj {
     boolean valid = true;    
     private int bitmask = 0;
     //#43278 section
-    static final String LIGHTWEIGHT_LOCK_SET = "LIGHTWEIGHT_LOCK_SET";//NOI18N
-    private static int LIGHTWEIGHT_LOCK = 1 << 0;
 
     /**
      * Creates a new instance of FolderImpl
@@ -471,24 +469,6 @@ public final class FolderObj extends BaseFileObj {
             folderChildren = new FolderChildrenCache();
         }
         return folderChildren;
-    }
-
-    public Object getAttribute(final String attrName) {
-        if (attrName.equals(LIGHTWEIGHT_LOCK_SET)) {
-            bitmask |= LIGHTWEIGHT_LOCK;
-            return new FileLock() {
-                public void releaseLock() {
-                    super.releaseLock();
-                    bitmask &= ~LIGHTWEIGHT_LOCK;
-                }
-                
-            };
-        } 
-        return super.getAttribute(attrName);
-    }
-    
-    boolean isLightWeightLockRequired() {
-        return (bitmask & LIGHTWEIGHT_LOCK) == LIGHTWEIGHT_LOCK; 
     }
 
     public final class FolderChildrenCache implements ChildrenCache {

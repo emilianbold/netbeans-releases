@@ -34,6 +34,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.bpel.mapper.multiview.DesignContextController;
 import org.netbeans.modules.bpel.mapper.predicates.editor.PathConverter;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTcContext;
 import org.netbeans.modules.bpel.mapper.tree.spi.MapperTreeModel;
@@ -178,6 +179,20 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
         return displayName;
     }
     
+    public String getToolTipText(Object node) {
+        assert node instanceof MapperTreeNode;
+        MapperTreeNode mNode = (MapperTreeNode)node;
+        String toolTipText = null;
+        if (mSourceModel != null) {
+            TreeItemInfoProvider infoProvider =
+                    mSourceModel.getTreeItemInfoProvider();
+            if (infoProvider != null) {
+                Object dataObject = mNode.getDataObject();
+                toolTipText = infoProvider.getToolTipText(dataObject);
+            }
+        }
+        return toolTipText;
+    }
     public Icon getIcon(Object node) {
         assert node instanceof MapperTreeNode;
         MapperTreeNode mNode = (MapperTreeNode)node;
@@ -247,11 +262,21 @@ public class MapperSwingTreeModel implements TreeModel, MapperTcContext.Provider
                     getDataObjectsPathIterator(parent);
             List<Object> childrenDataObjectList = 
                     mSourceModel.getChildren(dataObjectPathItr);
+            
             if (childrenDataObjectList != null) {
+                DesignContextController dcc = mMapperTcContext
+                        .getDesignContextController();
+            
                 for (Object childDataObject : childrenDataObjectList) {
+                    if (dcc != null) {
+                        dcc.processDataObject(childDataObject);
+                    }
+                
                     MapperTreeNode newNode = 
                             new MapperTreeNode(parent, childDataObject);
                     childrenList.add(newNode);
+                    
+                    
                 }
             }
         }

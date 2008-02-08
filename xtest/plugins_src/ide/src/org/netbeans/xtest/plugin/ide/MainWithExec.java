@@ -180,7 +180,7 @@ public class MainWithExec implements Main.MainWithExecInterface {
                     // ClassNotFound exception, etc
                     e.printStackTrace();
                 }
-            }
+            } 
             errorInTest = false;
         }
         

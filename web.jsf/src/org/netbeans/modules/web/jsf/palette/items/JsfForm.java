@@ -195,28 +195,30 @@ public final class JsfForm implements ActiveEditorDrop {
         return REL_NONE;
     }
     
-    public static ExecutableElement getOtherSideOfRelation(Types types, ExecutableElement executableElement, boolean isFieldAccess) {
+    public static ExecutableElement getOtherSideOfRelation(CompilationController controller, ExecutableElement executableElement, boolean isFieldAccess) {
         TypeMirror passedReturnType = executableElement.getReturnType();
         if (TypeKind.DECLARED != passedReturnType.getKind() || !(passedReturnType instanceof DeclaredType)) {
             return null;
         }
-        passedReturnType = stripCollection((DeclaredType)passedReturnType, types);
-        if (passedReturnType == null) {
+        Types types = controller.getTypes();
+        TypeMirror passedReturnTypeStripped = stripCollection((DeclaredType)passedReturnType, types);
+        if (passedReturnTypeStripped == null) {
             return null;
         }
-        TypeElement passedReturnTypeElement = (TypeElement) types.asElement(passedReturnType);
-        //try to find a mappedBy annotation element on the passedReturnType
-        //mbohm: attempt to get mappedBy not currently working!
+        TypeElement passedReturnTypeStrippedElement = (TypeElement) types.asElement(passedReturnTypeStripped);
+        
+        //try to find a mappedBy annotation element on the possiblyAnnotatedElement
+        Element possiblyAnnotatedElement = isFieldAccess ? guessField(controller, executableElement) : executableElement;
         String mappedBy = null;
-        AnnotationMirror persistenceAnnotation = findAnnotation(passedReturnTypeElement, "javax.persistence.OneToOne");  //NOI18N"
+        AnnotationMirror persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.OneToOne");  //NOI18N"
         if (persistenceAnnotation == null) {
-            persistenceAnnotation = findAnnotation(passedReturnTypeElement, "javax.persistence.OneToMany");  //NOI18N"
+            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.OneToMany");  //NOI18N"
         }
         if (persistenceAnnotation == null) {
-            persistenceAnnotation = findAnnotation(passedReturnTypeElement, "javax.persistence.ManyToOne");  //NOI18N"
+            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.ManyToOne");  //NOI18N"
         }
         if (persistenceAnnotation == null) {
-            persistenceAnnotation = findAnnotation(passedReturnTypeElement, "javax.persistence.ManyToMany");  //NOI18N"
+            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.ManyToMany");  //NOI18N"
         }
         if (persistenceAnnotation != null) {
             Map<? extends ExecutableElement,? extends AnnotationValue> persistenceAnnotationMap = persistenceAnnotation.getElementValues();
@@ -224,13 +226,17 @@ public final class JsfForm implements ActiveEditorDrop {
                 if ("mappedBy".equals(key.getSimpleName().toString())) {
                     AnnotationValue mappedByValue = persistenceAnnotationMap.get(key);
                     mappedBy = mappedByValue.toString();
+                    if (mappedBy.startsWith("\"") && mappedBy.endsWith("\"")) {
+                        mappedBy = mappedBy.substring(1, mappedBy.length() - 1);
+                    }
+                    break;
                 }
             }
         }
-        for (ExecutableElement method : getEntityMethods(passedReturnTypeElement)) {
+        for (ExecutableElement method : getEntityMethods(passedReturnTypeStrippedElement)) {
             if (mappedBy != null && mappedBy.length() > 0) {
                 String tail = mappedBy.length() > 1 ? mappedBy.substring(1) : "";
-                String getterName = "get" + mappedBy.substring(0).toUpperCase() + tail;
+                String getterName = "get" + mappedBy.substring(0,1).toUpperCase() + tail;
                 if (getterName.equals(method.getSimpleName().toString())) {
                     return method;
                 }
@@ -482,7 +488,7 @@ public final class JsfForm implements ActiveEditorDrop {
                     String name = methodName.substring(3);
                     String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
                     if (isRelationship == REL_TO_MANY) {
-                        ExecutableElement otherSide = getOtherSideOfRelation(controller.getTypes(), method, fieldAccess);
+                        ExecutableElement otherSide = getOtherSideOfRelation(controller, method, fieldAccess);
                         int otherSideMultiplicity = REL_TO_ONE;
                         if (otherSide != null) {
                             TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
@@ -490,8 +496,9 @@ public final class JsfForm implements ActiveEditorDrop {
                             otherSideMultiplicity = isRelationship(controller, otherSide, isRelFieldAccess);
                         }
 
-                        List<TypeElement> typeParameters = getTypeParameters(method.getReturnType());
-                        TypeElement typeElement = typeParameters.size() > 0 ? typeParameters.get(0) : null;
+                        Types types = controller.getTypes();                        
+                        TypeMirror typeArgMirror = stripCollection(method.getReturnType(), types);
+                        TypeElement typeElement = (TypeElement)types.asElement(typeArgMirror);
                         
                         if (typeElement != null) {
                             boolean relatedIsFieldAccess = isFieldAccess(typeElement);
@@ -595,12 +602,5 @@ public final class JsfForm implements ActiveEditorDrop {
             }
         }
         return null;
-    }
-
-    private static List<TypeElement> getTypeParameters(TypeMirror typeMirrror) {
-        List<TypeElement> result = new ArrayList<TypeElement>();
-        //TODO: RETOUCHE type parameters
-        return result;
-    }
-    
+    }    
 }

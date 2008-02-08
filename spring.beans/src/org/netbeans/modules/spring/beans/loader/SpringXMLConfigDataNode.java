@@ -46,17 +46,12 @@ package org.netbeans.modules.spring.beans.loader;
 import java.awt.Image;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 public class SpringXMLConfigDataNode extends DataNode {
 
     public SpringXMLConfigDataNode(SpringXMLConfigDataObject obj) {
         super(obj, Children.LEAF);
-    }
-
-    SpringXMLConfigDataNode(SpringXMLConfigDataObject obj, Lookup lookup) {
-        super(obj, Children.LEAF, lookup);
     }
 
     @Override

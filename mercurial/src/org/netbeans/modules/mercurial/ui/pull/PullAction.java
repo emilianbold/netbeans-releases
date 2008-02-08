@@ -261,16 +261,16 @@ public class PullAction extends ContextAction {
             if (list != null && !list.isEmpty()) {
 
                 if (!bNoChanges) {
-                    annotateChangeSets(listIncoming, PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
+                    annotateChangeSets(HgUtils.replaceHttpPassword(listIncoming), PullAction.class, "MSG_CHANGESETS_TO_PULL"); // NOI18N
                 }
 
-                HgUtils.outputMercurialTab(list);
+                HgUtils.outputMercurialTab(HgUtils.replaceHttpPassword(list));
                 if (fromPrjName != null) {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM", fromPrjName, HgUtils.stripDoubleSlash(pullPath))); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM", fromPrjName, HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
                 } else {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(
-                            PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(pullPath))); // NOI18N
+                            PullAction.class, "MSG_PULL_FROM_NONAME", HgUtils.stripDoubleSlash(HgUtils.replaceHttpPassword(pullPath)))); // NOI18N
                 }
                 if (toPrjName != null) {
                     HgUtils.outputMercurialTabInRed(NbBundle.getMessage(

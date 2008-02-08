@@ -140,7 +140,7 @@ public class FacesContainer {
      *
      * @param cl
      */
-    public void initialize(ClassLoader cl) {
+    public synchronized void initialize(ClassLoader cl) {
         this.loader = cl;
 
         // Initialize the mock ServletContext
@@ -204,11 +204,24 @@ public class FacesContainer {
     /**
      * Destroy this environment, clearing out references to other resources
      */
-    public void destroy() {
-        facesContext.setDesignContext(null);
-        facesContext.release();
-        FactoryFinder.releaseFactories();
-        releaseCommonsLogFactory();
+    public synchronized void destroy() {
+        ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(loader);
+            facesContext.setDesignContext(null);
+            // Remove the FacesContext current instance Cache in the Factory Finder
+            facesContext.release();
+            // Remove the Factory instance Cache in the Factory Finder
+            FactoryFinder.releaseFactories();
+            // Remove the ClassLoader Cache in the Commons Log Factory
+            releaseCommonsLogFactory();
+            // Remove the ClassLoader Cache in the FacesConfigurListener
+            configureListener.contextDestroyed(new ServletContextEvent(context));
+            // Remove the ClassLoader Cache in the Woodstock Theme Reference
+            releaseThemeResource();
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldContextClassLoader);
+        }
     }
 
     /**
@@ -230,7 +243,7 @@ public class FacesContainer {
     /**
      * @return
      */
-    public UIViewRoot newViewRoot() {
+    public synchronized UIViewRoot newViewRoot() {
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(loader);
@@ -264,7 +277,7 @@ public class FacesContainer {
      * @return
      */
 //    public DocFragmentJspWriter beginRender(DesignContext lc, UIViewRoot viewRoot, DocumentFragment frag) {
-    public void beginRender(DesignContext lc, UIViewRoot viewRoot, ResponseWriter responseWriter) {
+    public synchronized void beginRender(DesignContext lc, UIViewRoot viewRoot, ResponseWriter responseWriter) {
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(loader);
@@ -300,7 +313,7 @@ public class FacesContainer {
      * @param rw
      */
 //    public void endRender(DocFragmentJspWriter rw) {
-    public void endRender(ResponseWriter responseWriter) {
+    public synchronized void endRender(ResponseWriter responseWriter) {
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(loader);
@@ -329,7 +342,7 @@ public class FacesContainer {
      * Set the ClassLoader associated with this container
      * @param loader The ClassLoader to be used for loading resources
      */
-    public void setClassLoader(ClassLoader loader) {
+    public synchronized void setClassLoader(ClassLoader loader) {
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(this.loader);
@@ -338,14 +351,22 @@ public class FacesContainer {
             if (facesContext != null) {
                 facesContext.resetApplication();
             }
+            // Remove the Factory instance Cache in the Factory Finder
+            FactoryFinder.releaseFactories();
+            // Remove the ClassLoader Cache in the Commons Log Factory
+            releaseCommonsLogFactory();
+            // Remove the ClassLoader Cache in the FacesConfigurListener
+            configureListener.contextDestroyed(new ServletContextEvent(context));
+            // Remove the ClassLoader Cache in the Woodstock Theme Reference
+            releaseThemeResource();
+            configureListener.contextDestroyed(new ServletContextEvent(context));
         } catch (Exception exc) {
             exc.printStackTrace();
         } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         } 
         
-        FactoryFinder.releaseFactories();
-        releaseCommonsLogFactory();
+         
 
         // set the loader
         this.loader = loader;
@@ -366,8 +387,8 @@ public class FacesContainer {
     private void releaseCommonsLogFactory(){
         ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
         try {
-            Class<?> Klass = Class.forName("com.sun.org.apache.commons.logging.LogFactory", false, classLoader);
-            Method releaseFactory = Klass.getMethod("release", ClassLoader.class);
+            Class<?> logFactoryClass = Class.forName("com.sun.org.apache.commons.logging.LogFactory", false, classLoader);
+            Method releaseFactory = logFactoryClass.getMethod("release", ClassLoader.class);
             releaseFactory.invoke(null, loader);
 
         } catch (NoSuchMethodException ex) {
@@ -384,8 +405,33 @@ public class FacesContainer {
             Exceptions.printStackTrace(ex);
         }
     }
+    
+    // Bug Fix: 125082
+    private void releaseThemeResource(){
+        ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+        try {
+            Class<?> themeResourcesClass = Class.forName("com.sun.webui.theme.ThemeResources", false, classLoader);
+            Class<?> resourceBundleThemeClass = Class.forName("com.sun.webui.theme.ResourceBundleTheme", false, classLoader);
+            Method releaseThemeResource = resourceBundleThemeClass.getMethod("getInstance", themeResourcesClass);
+            releaseThemeResource.invoke(null, (Object)null);
 
-    public String findComponentClass(String tagName, String taglibUri) throws JsfTagSupportException {
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+
+    public synchronized String findComponentClass(String tagName, String taglibUri) throws JsfTagSupportException {
         String errorMessage = org.openide.util.NbBundle.getMessage(FacesContainer.class, "JSF_COMPONENT_NOT_FOUND", new Object[]{tagName, taglibUri});
         try {
             return JsfTagSupport.getInstance(taglibUri).getComponentClass(loader, tagName);
@@ -394,7 +440,7 @@ public class FacesContainer {
         }
     }
     
-    public boolean isComponentRendersChildren(UIComponent comp) {
+    public synchronized boolean isComponentRendersChildren(UIComponent comp) {
         facesContext.setCurrentInstance();
         ClassLoader oldContextClassLoader = Thread.currentThread().getContextClassLoader();
         try {

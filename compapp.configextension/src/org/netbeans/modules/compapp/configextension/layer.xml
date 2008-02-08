@@ -30,13 +30,18 @@
                 <folder name="on-failure">
                     <attr name="choice" stringvalue="true"/>
                     <folder name="error-endpoint">
-                        <file name="endpoint-name">
+                        <!--<file name="endpoint-name">
                             <attr name="type" stringvalue="String"/>
                             <attr name="description" stringvalue="Error endpoint name"/>
                         </file>
                         <file name="service-name">
                             <attr name="type" stringvalue="QName"/>
                             <attr name="description" stringvalue="Error endpoint service name"/>
+                        </file>-->
+                        <file name="error-endpoint">
+                            <attr name="type" stringvalue="Endpoint"/>
+                            <attr name="description" stringvalue="Error endpoint"/>
+                            <attr name="codegen" stringvalue="false"/>
                         </file>
                     </folder>
                     <folder name="delete"/>

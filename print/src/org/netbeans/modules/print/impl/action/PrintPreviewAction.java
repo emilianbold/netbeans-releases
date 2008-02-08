@@ -101,6 +101,7 @@ public final class PrintPreviewAction extends IconAction {
 
   private List<PrintProvider> getPrintProviders() {
 //out();
+//out("get print providers");
     List<PrintProvider> providers = getComponentProviders();
 
     if (providers != null) {
@@ -215,6 +216,7 @@ public final class PrintPreviewAction extends IconAction {
   private List<PrintProvider> getNodeProviders() {
     Node [] nodes = getSelectedNodes();
 //out();
+//out("get node provider");
     if (nodes == null) {
 //out("NODES NULL");
       return null;
@@ -246,19 +248,24 @@ public final class PrintPreviewAction extends IconAction {
   }
 
   private PrintProvider getEditorProvider(Node node) {
+//out("get editor provider");
     DataObject data = getDataObject(node);
 
     if (data == null) {
+//out("get editor provider.1");
       return null;
     }
     EditorCookie editor = (EditorCookie) data.getCookie(EditorCookie.class);
 
     if (editor == null) {
+//out("get editor provider.2");
       return null;
     }
     if (editor.getDocument() == null) {
+//out("get editor provider.3");
       return null;
     }
+//out("get editor provider.4");
     return new TextProvider(editor, getDate(data));
   }
 
@@ -282,6 +289,7 @@ public final class PrintPreviewAction extends IconAction {
       return true;
     }
 //out("IS ENABLED: " + (getPrintProviders() != null || getPrintCookie() != null));
+//out("          : " + getPrintProviders());
     return getPrintProviders() != null || getPrintCookie() != null;
   }
 
