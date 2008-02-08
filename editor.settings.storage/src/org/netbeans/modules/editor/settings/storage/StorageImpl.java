@@ -203,7 +203,7 @@ public final class StorageImpl <K extends Object, V extends Object> {
                         LOG.finest("--- Removing '" + storageDescription.getId() + "': " + removed); //NOI18N
                     }
 
-                    // First remove all code templates marked as removed
+                    // First remove all entries marked as removed
                     for(K key : removed) {
                         map.remove(key);
                     }
@@ -212,8 +212,14 @@ public final class StorageImpl <K extends Object, V extends Object> {
                         LOG.finest("--- Adding '" + storageDescription.getId() + "': " + added); //NOI18N
                     }
 
-                    // Then add all new bindings
-                    map.putAll(added);
+                    // Then add all new entries
+                    for (K key : added.keySet()) {
+                        V value = added.get(key);
+                        V origValue = map.put(key, value);
+                        if (LOG.isLoggable(Level.FINEST) && origValue != null && !origValue.equals(value)) {
+                            LOG.finest("--- Replacing old entry for '" + key + "', orig value = '" + origValue + "', new value = '" + value + "'"); //NOI18N
+                        }
+                    }
 
                     if (LOG.isLoggable(Level.FINEST)) {
                         LOG.finest("-------------------------------------"); //NOI18N

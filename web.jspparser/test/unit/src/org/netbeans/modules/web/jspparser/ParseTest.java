@@ -163,14 +163,7 @@ public class ParseTest extends NbTestCase {
     }
 
     public JspParserAPI.ParseResult parserTestInProject(String projectFolderName, String pagePath) throws Exception{
-        log("Parsing test of page  " + pagePath + " in project " + projectFolderName + " started.");
-        FileObject projectPath = FileUtil.toFileObject(new File(getDataDir(), projectFolderName));
-        Project project = ProjectManager.getDefault().findProject(projectPath);
-        assertNotNull("Project should exist", project);
-        FileObject jspFo = projectPath.getFileObject(pagePath);
-        assertNotNull("JSP file should exist", jspFo);
-        log("Parsing page " + pagePath);
-
+        FileObject jspFo = TestUtil.getProjectFile(this, projectFolderName, pagePath);
         WebModule webModule = TestUtil.getWebModule(jspFo);
         JspParserAPI jspParser = JspParserFactory.getJspParser();
         JspParserAPI.ParseResult result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
