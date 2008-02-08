@@ -173,11 +173,18 @@ public final class GemManager {
             return null;
         }
         
-        if (!gemHome.canWrite()) {
-            return NbBundle.getMessage(GemAction.class, "GemNotWritable", gemHome.getAbsolutePath());
-        }
-        
         return null;
+    }
+
+    private boolean checkGemHomePermissions() {
+        if (!getGemHomeF().canWrite()) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                    NbBundle.getMessage(GemAction.class, "GemNotWritable", getGemHome()),
+                    NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notifyLater(nd);
+            return false;
+        }
+        return true;
     }
 
     /** Initialize/creates empty Gem Repository. */
@@ -534,7 +541,7 @@ public final class GemManager {
         if (gemProblem != null) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(gemProblem,
                     NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
+            DialogDisplayer.getDefault().notifyLater(nd);
             return false;
         }
         return true;
@@ -682,6 +689,9 @@ public final class GemManager {
      *        latest remote version
      */
     public void installGem(final String gem, final boolean rdoc, final boolean ri, final String version) {
+        if (!checkGemHomePermissions()) {
+            return;
+        }
         final Gem[] gems = new Gem[] {
             new Gem(gem, null, null)
         };
@@ -723,6 +733,9 @@ public final class GemManager {
     public boolean install(Gem[] gems, Component parent, boolean rdoc, boolean ri,
             String version, boolean includeDeps, boolean asynchronous,
             final Runnable asyncCompletionTask) {
+        if (!checkGemHomePermissions()) {
+            return false;
+        }
         List<String> gemNames = mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
@@ -748,6 +761,9 @@ public final class GemManager {
      * @param asyncCompletionTask If asynchronous is true and the gem task completes normally, this task will be run at the end.
      */
     public boolean uninstall(Gem[] gems, Component parent, boolean asynchronous, final Runnable asyncCompletionTask) {
+        if (!checkGemHomePermissions()) {
+            return false;
+        }
         List<String> gemNames = mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
@@ -775,6 +791,9 @@ public final class GemManager {
      */
     public boolean update(Gem[] gems, Component parent, boolean rdoc,
             boolean ri, boolean asynchronous, Runnable asyncCompletionTask) {
+        if (!checkGemHomePermissions()) {
+            return false;
+        }
         List<String> gemNames = gems == null ? null : mapToGemNames(gems);
         GemRunner gemRunner = new GemRunner(platform);
         if (asynchronous) {
