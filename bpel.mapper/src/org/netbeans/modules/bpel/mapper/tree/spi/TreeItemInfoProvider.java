@@ -38,5 +38,5 @@ public interface TreeItemInfoProvider {
     public List<Action> getMenuActions(MapperTcContext mapperTcContext, 
             boolean inLeftTree, TreePath treePath, 
             RestartableIterator<Object> dataObjectPathItr);
-    public String getTooltipText(Object treeItem);
+    public String getToolTipText(Object treeItem);
 }

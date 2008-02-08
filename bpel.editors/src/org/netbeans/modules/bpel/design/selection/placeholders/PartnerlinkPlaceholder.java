@@ -188,7 +188,8 @@ public class PartnerlinkPlaceholder extends PlaceHolder {
                                             pLink.createWSDLReference(plt, PartnerLinkType.class);
                                     
                                     pLink.setPartnerLinkType(plt_ref);
-                                    new ImportRegistrationHelper(pLink.getBpelModel()).addImport(plt.getModel());
+                                    new ImportRegistrationHelper(pLink.getBpelModel())
+                                            .addImport(plt.getModel());
                                 }
 
                                 PartnerLinkHelper.setPartnerlinkRole(pLink,

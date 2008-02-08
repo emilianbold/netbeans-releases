@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -158,6 +159,7 @@ public class ProxyLookup extends Lookup {
         Map<Result,LookupListener> toRemove = new IdentityHashMap<Lookup.Result, LookupListener>();
         Map<Result,LookupListener> toAdd = new IdentityHashMap<Lookup.Result, LookupListener>();
         
+        List<Runnable> delayed = new LinkedList<Runnable>();
         synchronized (this) {
             old = getLookups(false);
             current = identityHashSet(Arrays.asList(old));
@@ -184,9 +186,16 @@ public class ProxyLookup extends Lookup {
             for (Reference<R> ref : arr) {
                 R<?> r = ref.get();
                 if (r != null) {
-                    r.lookupChange(newL, removed, old, lookups, toAdd, toRemove);
+                    Runnable delay = r.lookupChange(newL, removed, old, lookups, toAdd, toRemove);
+                    if (delay != null) {
+                        delayed.add(delay);
+                    }
                 }
             }
+        }
+        
+        for (Runnable runnable : delayed) {
+            runnable.run();
         }
         
         // better to do this later than in synchronized block
@@ -388,14 +397,14 @@ public class ProxyLookup extends Lookup {
          * @param remove set of removed lookups
          * @param current array of current lookups
          */
-        protected void lookupChange(
-            Set<Lookup> added, Set<Lookup> removed, Lookup[] old, Lookup[] current, 
-            Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
+        protected Runnable lookupChange(
+            Set<Lookup> added, Set<Lookup> removed, Lookup[] old, final Lookup[] current, 
+            final Map<Result,LookupListener> toAdd, Map<Result,LookupListener> toRemove
         ) {
             synchronized (this) {
                 if (weakL.results == null) {
                     // not computed yet, do not need to do anything
-                    return;
+                    return null;
                 }
 
                 // map (Lookup, Lookup.Result)
@@ -411,13 +420,30 @@ public class ProxyLookup extends Lookup {
                     }
                 }
 
-                Lookup.Result<T>[] arr = newResults(current.length);
+                final Lookup.Result<T>[] arr = newResults(current.length);
 
+                Runnable delayedInitialization = null;
                 for (int i = 0; i < current.length; i++) {
                     if (added.contains(current[i])) {
-                        // new lookup
-                        arr[i] = current[i].lookup(template);
-                        toAdd.put(arr[i], weakL);
+                        final int index = i;
+                        class Delay implements Runnable {
+                            private Runnable previous;
+
+                            public Delay(Runnable previous) {
+                                this.previous = previous;
+                            }
+                            
+                            public void run() {
+                                if (previous != null) {
+                                    previous.run();
+                                }
+                                // new lookup
+                                arr[index] = current[index].lookup(template);
+                                toAdd.put(arr[index], weakL);
+                            }
+                        }
+                        delayedInitialization = new Delay(delayedInitialization);
+                        arr[i] = Lookup.EMPTY.lookup(template);
                     } else {
                         // old lookup
                         arr[i] = map.get(current[i]);
@@ -431,6 +457,7 @@ public class ProxyLookup extends Lookup {
 
                 // remember the new results
                 weakL.results = arr;
+                return delayedInitialization;
             }
         }
 

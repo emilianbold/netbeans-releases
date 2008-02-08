@@ -136,7 +136,7 @@ public class BpelMapperModelFactory implements MapperModelFactory {
             sourceModel.addExtensionModel(sourceVariableModel);
             PartnerLinkTreeExtModel pLinkExtModel = 
                     new PartnerLinkTreeExtModel(assign, true);
-            sourceModel.addExtensionModel(pLinkExtModel);
+            //sourceModel.addExtensionModel(pLinkExtModel);   [Issue 125124]
             //
             EmptyTreeModel targetModel = new EmptyTreeModel();
             VariableTreeModel targetVariableModel = new VariableTreeModel(context);
