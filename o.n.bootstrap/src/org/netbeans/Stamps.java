@@ -496,10 +496,13 @@ public final class Stamps {
         private void count(int add) {
             count += add;
             if (count > 64 * 1024) {
-                try {
-                    Thread.sleep(delay.get());
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                int wait = delay.get();
+                if (wait > 0) {
+                    try {
+                        Thread.sleep(wait);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
                 count = 0;
             }
@@ -573,7 +576,9 @@ public final class Stamps {
             int before = delay.get();
             for (int till = before; till >= 0; till -= 500) {
                 try {
-                    Thread.sleep(500);
+                    synchronized (this) {
+                        wait(500);
+                    }
                 } catch (InterruptedException ex) {
                     LOG.log(Level.INFO, null, ex);
                 }
@@ -581,9 +586,8 @@ public final class Stamps {
                     break;
                 }
             }
-            before = 128;
-            if (before > 128) {
-                delay.compareAndSet(before, 128);
+            if (before > 512) {
+                delay.compareAndSet(before, 512);
             }
             
             long time = System.currentTimeMillis();
@@ -625,6 +629,9 @@ public final class Stamps {
             try {
                 this.noNotify = noNotify;
                 delay.set(0);
+                synchronized (this) {
+                    notifyAll();
+                }
                 join();
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);

@@ -274,6 +274,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (results != null)
                                 resultSet.addAllItems(results);
                             resultSet.setHasAdditionalItems(hasAdditionalItems);
+                            if (hasAdditionalItems)
+                                resultSet.setHasAdditionalItemsText(NbBundle.getMessage(JavaCompletionProvider.class, "JCP-imported-items")); //NOI18N
                         } else if (queryType == TOOLTIP_QUERY_TYPE) {
                             if (toolTip != null)
                                 resultSet.setToolTip(toolTip);
@@ -2572,8 +2574,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         break;
                     case CONSTRUCTOR:
-                    case METHOD:
                         ExecutableType et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
+                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, type, smartTypes)));
+                        break;
+                    case METHOD:
+                        et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
                         results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, et.getReturnType(), smartTypes)));
                         break;
                     case CLASS:

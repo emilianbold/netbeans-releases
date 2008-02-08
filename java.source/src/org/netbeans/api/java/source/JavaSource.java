@@ -53,9 +53,10 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Source;
-import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symbol.CompletionFailure;
+import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.parser.DocCommentScanner;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -67,6 +68,7 @@ import com.sun.tools.javac.util.CancelAbort;
 import com.sun.tools.javac.util.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
+import com.sun.tools.javac.util.FlowListener;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javadoc.JavadocEnter;
 import com.sun.tools.javadoc.JavadocMemberEnter;
@@ -117,13 +119,12 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
+import javax.tools.Diagnostic;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -168,7 +169,6 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -274,7 +274,7 @@ public final class JavaSource {
      * Init the maps
      */
     static {
-        JavaSourceAccessor.INSTANCE = new JavaSourceAccessorImpl ();
+        JavaSourceAccessor.setINSTANCE (new JavaSourceAccessorImpl ());
         phase2Message.put (Phase.PARSED,"Parsed");                              //NOI18N
         phase2Message.put (Phase.ELEMENTS_RESOLVED,"Signatures Attributed");    //NOI18N
         phase2Message.put (Phase.RESOLVED, "Attributed");                       //NOI18N
@@ -1105,6 +1105,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     JavacTaskImpl createJavacTask(final DiagnosticListener<? super JavaFileObject> diagnosticListener) {
         String sourceLevel = null;
         if (!this.files.isEmpty()) {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.finer("Created new JavacTask for: " + this.files);
+            }
             FileObject file = files.iterator().next();
             
             sourceLevel = SourceLevelQuery.getSourceLevel(file);
@@ -1125,6 +1128,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         JavacTaskImpl javacTask = createJavacTask(getClasspathInfo(), diagnosticListener, sourceLevel, false);
         Context context = javacTask.getContext();
         JSCancelService.preRegister(context);
+        JSFlowListener.preRegister(context);
         TreeLoader.preRegister(context, getClasspathInfo());
         Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         ErrorHandlingJavadocEnter.preRegister(context);
@@ -1135,7 +1139,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         return javacTask;
     }
     
-    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation) {
+    private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation) {        
         ArrayList<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
         
@@ -2427,6 +2431,29 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                
     }
     
+    private static class JSFlowListener extends FlowListener {
+        
+        private boolean flowCompleted;
+        
+        public static JSFlowListener instance (final Context context) {
+            final FlowListener flowListener = FlowListener.instance(context);
+            return (flowListener instanceof JSFlowListener) ? (JSFlowListener) flowListener : null;
+        }
+        
+        static void preRegister(final Context context) {
+            context.put(flowListenerKey, new JSFlowListener());
+        }
+        
+        final boolean hasFlowCompleted () {
+            return this.flowCompleted;
+        }
+        
+        @Override
+        public void flowFinished (final Env<AttrContext> env) {            
+            this.flowCompleted = true;
+        }
+    }
+    
     /**
      *Ugly and slow, called only when -ea
      *
@@ -2610,6 +2637,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
     
     private static boolean reparseMethod (final CompilationInfoImpl ci, final MethodTree orig, final String newBody) throws IOException {        
         assert ci != null; 
+        if (LOGGER.isLoggable(Level.FINER)) {
+            LOGGER.finer("Reparse method in: " + ci.javaSource.files);          //NOI18N
+        }
         if (!ci.getJavaSource().supportsReparse) {
             return false;
         }
@@ -2638,6 +2668,9 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             final FindAnnonVisitor fav = new FindAnnonVisitor();
             fav.scan(orig.getBody(), null);
             if (fav.hasLocalClass) {
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("Skeep reparse method (old local classes): " + ci.javaSource.files);   //NOI18N
+                }
                 return false;
             }
             final int firstInner = fav.firstInner;
@@ -2652,11 +2685,17 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 assert dl instanceof CompilationInfoImpl.DiagnosticListenerImpl;
                 ((CompilationInfoImpl.DiagnosticListenerImpl)dl).startPartialReparse(origStartPos, origEndPos);
                 block = task.reparseMethodBody(cu, orig, newBody, firstInner);
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("Reparsed method in: " + ci.javaSource.files);     //NOI18N
+                }
                 assert block != null;
                 fav.reset();
                 fav.scan(block, null);
                 final int newNoInner = fav.noInner;
                 if (fav.hasLocalClass || noInner != newNoInner) {
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.finer("Skeep reparse method (new local classes): " + ci.javaSource.files);   //NOI18N
+                    }
                     return false;
                 }
                 final int newEndPos = (int) jt.getSourcePositions().getEndPosition(cu, block);
@@ -2667,10 +2706,25 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 ((JCMethodDecl)orig).body = block;
                 if (Phase.RESOLVED.compareTo(currentPhase)<=0) {
                     task.reattrMethodBody(orig, block);
+                    if (LOGGER.isLoggable(Level.FINER)) {
+                        LOGGER.finer("Resolved method in: " + ci.javaSource.files);     //NOI18N
+                    }
                     if (!((CompilationInfoImpl.DiagnosticListenerImpl)dl).hasPartialReparseErrors()) {
-                        TreePath tp = TreePath.getPath(cu, orig);       //todo: store treepath in changed method => improve speed
-                        Tree t = tp.getParentPath().getLeaf();
-                        task.reflowMethodBody(cu, (ClassTree) t, orig);
+                        final JSFlowListener fl = JSFlowListener.instance(ctx);
+                        if (fl != null && fl.hasFlowCompleted()) {
+                            if (LOGGER.isLoggable(Level.FINER)) {
+                                final List<? extends Diagnostic> diag = ci.getDiagnostics();
+                                if (!diag.isEmpty()) {
+                                    LOGGER.finer("Reflow with errors: " + ci.javaSource.files + " " + diag);     //NOI18N
+                                }                            
+                            }
+                            TreePath tp = TreePath.getPath(cu, orig);       //todo: store treepath in changed method => improve speed
+                            Tree t = tp.getParentPath().getLeaf();
+                            task.reflowMethodBody(cu, (ClassTree) t, orig);
+                            if (LOGGER.isLoggable(Level.FINER)) {
+                                LOGGER.finer("Reflowed method in: " + ci.javaSource.files); //NOI18N
+                            }
+                        }
                     }
                 }
                 ((CompilationInfoImpl.DiagnosticListenerImpl)dl).endPartialReparse (delta);
@@ -2683,7 +2737,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             if (t instanceof ThreadDeath) {
                 throw (ThreadDeath) t;
             }
-            Exceptions.printStackTrace(t);
+            dumpSource(ci, t);
             return false;
         }
         return true;
@@ -2711,7 +2765,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                 hasLocalClass = true;
             }
             noInner++;
-            return null;
+            return super.visitClass(node, p);
         }                
         
     }

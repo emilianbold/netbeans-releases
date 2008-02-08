@@ -95,7 +95,9 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.openide.awt.HtmlBrowser;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.OutputListener;
 
@@ -148,7 +150,7 @@ public class HgUtils {
     public static List<String> replaceHttpPassword(List<String> list){
         if(list == null) return null;
 
-        List<String> out = new ArrayList(list.size());
+        List<String> out = new ArrayList<String>(list.size());
         for(String s: list){
             out.add(replaceHttpPassword(s));
         } 
@@ -275,7 +277,8 @@ public class HgUtils {
 
     public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
-        String name = file.getPath();
+        String path = file.getPath();
+        String name = file.getName();
         File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
         
         // We assume that the toplevel directory should not be ignored.
@@ -295,7 +298,7 @@ public class HgUtils {
 
         for (Iterator i = patterns.iterator(); i.hasNext();) {
             Pattern pattern = (Pattern) i.next();
-            if (pattern.matcher(name).find()) {
+            if (pattern.matcher(path).find()) {
                 return true;
             }
         }
@@ -304,7 +307,7 @@ public class HgUtils {
         if (checkSharability) {
             int sharability = SharabilityQuery.getSharability(file);
             if (sharability == SharabilityQuery.NOT_SHARABLE) return true;
-        }
+            }
         return false;
     }
 
