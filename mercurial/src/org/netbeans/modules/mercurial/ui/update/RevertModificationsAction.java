@@ -180,6 +180,9 @@ public class RevertModificationsAction extends ContextAction {
     }
 
     public boolean isEnabled() {
-        return HgUtils.getRootFile(context) != null;
+        Set<File> ctxFiles = context != null? context.getRootFiles(): null;
+        if(HgUtils.getRootFile(context) == null || ctxFiles == null || ctxFiles.size() == 0) 
+            return false;
+        return true; 
     }
 }
