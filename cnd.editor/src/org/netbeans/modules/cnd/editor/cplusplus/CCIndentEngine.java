@@ -43,13 +43,10 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.editor.FormatterIndentEngine;
-import org.openide.util.HelpCtx;
 import org.netbeans.modules.cnd.MIMENames;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
 
 /** C++ indentation engine that delegates to C++ formatter */
-public class CCIndentEngine extends FormatterIndentEngine {
+public class CCIndentEngine extends BaseIndentEngine {
 
     public CCIndentEngine() {
         setAcceptedMimeTypes(new String[] { MIMENames.CPLUSPLUS_MIME_TYPE });
@@ -57,42 +54,5 @@ public class CCIndentEngine extends FormatterIndentEngine {
 
     protected ExtFormatter createFormatter() {
 	return (CCFormatter) Formatter.getFormatter(CCKit.class);
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx("Welcome_opt_indent_cpp"); // NOI18N
-    }
-
-    protected CodeStyle getCodeStyle(){
-        return CodeStyle.getDefault(CodeStyle.Language.CPP);
-    }
-    
-    public boolean getCCFormatSpaceBeforeParenthesis() {
-        return getCodeStyle().getFormatSpaceBeforeParenthesis();
-    }
-    
-    public boolean getCCFormatNewlineBeforeBrace() {
-        return getCodeStyle().getFormatNewlineBeforeBrace() == CodeStyle.BracePlacement.NEW_LINE;
-    }
-
-    public boolean getCCFormatNewlineBeforeBraceDeclaration() {
-        return getCodeStyle().getFormatNewlineBeforeBraceDeclaration() == CodeStyle.BracePlacement.NEW_LINE;
-    }
-
-    public boolean getCCFormatSpaceAfterComma() {
-        return getCodeStyle().getFormatSpaceAfterComma();
-    }
-
-    public boolean getCCFormatPreprocessorAtLineStart() {
-        return getCodeStyle().getFormatPreprocessorAtLineStart();
-    }
-
-    public boolean getCCFormatLeadingStarInComment() {
-        return getCodeStyle().getFormatLeadingStarInComment();
-    }        
-
-    public int getCCFormatStatementContinuationIndent() {
-        return getCodeStyle().getFormatStatementContinuationIndent();
     }
 }

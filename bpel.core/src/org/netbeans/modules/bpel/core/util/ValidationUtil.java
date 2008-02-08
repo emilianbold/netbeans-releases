@@ -29,17 +29,12 @@ public final class ValidationUtil {
     
     private ValidationUtil() {}
     
-    public static List<ResultItem> filterBpelResultItems( 
-            List<ResultItem> validationResults) 
-    {
+    public static List<ResultItem> filterBpelResultItems(List<ResultItem> validationResults) {
         List<ResultItem> bpelResultItems = new ArrayList<ResultItem>();
         
-        // Go through all result items.
         for(ResultItem resultItem: validationResults) {
-            // For each result item go through all components for
-            // which it applies.
             Component component = resultItem.getComponents();
-            // Only gather bpel components.
+
             if(component instanceof BpelEntity) {
                 ResultItem bpelResultItem = 
                     new ResultItem(resultItem.getValidator(),
@@ -71,46 +66,7 @@ public final class ValidationUtil {
         }
         return true;
     }
-    
-    public static List<ResultItem> getAddedResultItems(List<ResultItem> oldList, 
-            List<ResultItem> newList) 
-    {
-        List<ResultItem> addedResultItems = new ArrayList<ResultItem>();
-        
-        if(oldList == null)
-            return newList;
-        
-        if(newList == null) // No items could have been added.
-            return addedResultItems;
-        
-        for(ResultItem item: newList) {
-            if(!contains(oldList, item)) {
-                addedResultItems.add(item);
-            }
-        }
-        return addedResultItems;
-    }
-    
-    public static List<ResultItem> getRemovedResultItems(List<ResultItem> oldList,
-            List<ResultItem> newList) 
-    {
-        List<ResultItem> removedResultItems = new ArrayList<ResultItem>();
-        
-        if(newList == null) {
-            return oldList;
-        }
-        if(oldList == null) {  // No items could have been removed.
-            return removedResultItems;
-        }
-        
-        for(ResultItem item: oldList) {
-            if(!contains(newList, item)) {
-                removedResultItems.add(item);
-            }
-        }
-        return removedResultItems;
-    }
-    
+
     private static boolean contains(List<ResultItem> list, ResultItem resultItem) {
         assert list!=null;
         for (ResultItem item: list) {

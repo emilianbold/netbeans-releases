@@ -256,6 +256,9 @@ public class ModuleFactoryTest extends ModuleManagerTest {
     }
     
     private static final class NoOpClassLoader extends ClassLoader {
+        NoOpClassLoader() {
+	    super(ClassLoader.getSystemClassLoader());
+	}
         protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
             if ("java.lang.String".equals(name)) {
                 throw new ClassNotFoundException("NoOpClassLoader cannot load " + name);

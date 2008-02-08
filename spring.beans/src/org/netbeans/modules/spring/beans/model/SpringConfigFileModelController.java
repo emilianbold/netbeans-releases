@@ -47,6 +47,7 @@ import org.netbeans.modules.spring.beans.model.ExclusiveAccess.AsyncTask;
 import org.netbeans.modules.spring.beans.model.impl.ConfigFileSpringBeanSource;
 import java.io.IOException;
 import java.util.logging.Level;
+import javax.swing.text.Document;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -95,14 +96,25 @@ public class SpringConfigFileModelController {
      * access.
      */
     public void makeUpToDate() throws IOException {
+        makeUpToDateImpl(false);
+    }
+
+    public Document makeUpToDateForWrite() throws IOException {
+        return makeUpToDateImpl(true);
+    }
+
+    private Document makeUpToDateImpl(boolean force) throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
-        FileObject fileToParse;
+        FileObject fileToParse = null;
         synchronized (this) {
             if (currentUpdateTask == null || currentUpdateTask.isFinished()) {
+                // No update scheduled.
                 if (parsedAtLeastOnce) {
-                    // No update in progress and file already parsed,
-                    // nothing to do.
-                    return;
+                    // The file is already parsed. We don't need to parse again...
+                    if (force) {
+                        // ... unless we are forced to.
+                        fileToParse = currentFile;
+                    }
                 } else {
                     // Not parsed yet, so parse now.
                     fileToParse = FileUtil.toFileObject(file);
@@ -116,16 +128,18 @@ public class SpringConfigFileModelController {
             }
         }
         if (fileToParse != null) {
-            parse(fileToParse);
+            return parse(fileToParse, force);
         }
+        return null;
     }
 
     public void notifyChange(FileObject configFO) {
-        Parameters.notNull("configFO", configFO);
+        assert configFO != null;
         LOGGER.log(Level.FINE, "Scheduling update for {0}", configFO);
         synchronized (this) {
             if (configFO != currentFile) {
-                // We are going to parse another file.
+                // We are going to parse another FileObject (for example, because the
+                // original one has been renamed).
                 if (currentUpdateTask != null) {
                     currentUpdateTask.cancel();
                 }
@@ -136,12 +150,13 @@ public class SpringConfigFileModelController {
         }
     }
 
-    private void parse(FileObject configFO) throws IOException {
+    private Document parse(FileObject configFO, boolean keepDocument) throws IOException {
         assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
         if (!parsedAtLeastOnce) {
             parsedAtLeastOnce = true;
         }
         beanSource.parse(configFO);
+        return null;
     }
 
     private final class Updater implements Runnable {
@@ -155,7 +170,7 @@ public class SpringConfigFileModelController {
         public void run() {
             assert ExclusiveAccess.getInstance().isCurrentThreadAccess();
             try {
-                parse(configFile);
+                parse(configFile, false);
             } catch (IOException e) {
                 Exceptions.printStackTrace(e);
             }
