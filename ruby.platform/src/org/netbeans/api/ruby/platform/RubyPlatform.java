@@ -607,7 +607,7 @@ public final class RubyPlatform {
 
     public boolean installFastDebugger() {
         assert gemManager != null : "has gemManager when trying to install fast debugger";
-        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false);
+        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, RDEBUG_IDE_VERSION);
         return hasFastDebuggerInstalled();
     }
 
