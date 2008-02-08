@@ -153,6 +153,7 @@ public class SpringXMLConfigHyperlinkProvider implements HyperlinkProvider {
         
         beansRefHyperlinkProcessor = new BeansRefHyperlinkProcessor(false);
         registerAttribValueHyperlinkPoint(IDREF_TAG, LOCAL_ATTRIB, beansRefHyperlinkProcessor);
+        registerAttribValueHyperlinkPoint(REF_TAG, LOCAL_ATTRIB, beansRefHyperlinkProcessor);
     }
     
     private void registerAttribValueHyperlinkPoint(String tagName, String attribName, 
