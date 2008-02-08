@@ -208,4 +208,18 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
+       <folder name="Editors">
+       <folder name="text">
+           <folder name="x-hibernate-cfg+xml">
+               <folder name="CompletionProviders">
+                   <file name="org-netbeans-modules-hibernate-completion-HibernateCfgCompletionProvider.instance"/>
+               </folder>
+           </folder>
+           <folder name="x-hibernate-mapping+xml">
+               <folder name="CompletionProviders">
+                   <file name="org-netbeans-modules-hibernate-completion-HibernateMappingCompletionProvider.instance"/>
+               </folder>
+           </folder>
+       </folder>
+   </folder> 
 </filesystem>
