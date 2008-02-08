@@ -19,20 +19,8 @@
 -->
 <project name="etl.editor" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-	  <target name="netbeans-extra" depends="init">
-        <mkdir dir="${cluster}/modules/ext/etl" />
-        <antcall target="compile-i18" />
-        <copy todir="${cluster}/modules/ext/etl">
-            <fileset dir="${basedir}/external">
-                <include name="*.jar" />
-                <include name="*.zip" />
-            </fileset>
-        </copy>
-    </target>
-
-	<taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/external/net.java.hulp.i18ntask.jar"></taskdef>
-	  <target name="compile-i18" depends="init">
-        <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/logger/msgs.properties" prefix="DM-DI-" strict="false" pattern="([A-Z][A-Z][A-Z]\d\d\d)(: )(.*)"></i18n>   
-          <echo message="hello how are u!!!${basedir}"/>
+    <target name="netbeans-extra" depends="init">
+	<taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="external/net.java.hulp.i18ntask.jar"/>
+        <i18n dir="build/classes" file="src/org/netbeans/modules/etl/logger/msgs.properties" prefix="DM-DI-" strict="false" pattern="([A-Z][A-Z][A-Z]\d\d\d)(: )(.*)"/>
     </target>
 </project>
