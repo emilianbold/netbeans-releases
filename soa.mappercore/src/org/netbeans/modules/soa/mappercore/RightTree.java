@@ -98,7 +98,8 @@ public class RightTree extends MapperPanel implements
         eventHandler = new RightTreeEventHandler(this);
         
         ToolTipManager.sharedInstance().registerComponent(this);
-
+        
+        
         InputMap iMap = getInputMap();
         ActionMap aMap = getActionMap();
         
