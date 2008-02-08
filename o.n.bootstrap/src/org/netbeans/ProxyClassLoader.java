@@ -150,6 +150,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         if (moduleFactory != null && moduleFactory.removeBaseClassLoader()) {
             // this hack is here to prevent having the application classloader
             // as parent to all module classloaders.
+            systemCL = ClassLoader.getSystemClassLoader();
             resParents = coalesceAppend(new ProxyClassLoader[0], nueparents);
         } else {
             resParents = coalesceAppend(parents, nueparents);

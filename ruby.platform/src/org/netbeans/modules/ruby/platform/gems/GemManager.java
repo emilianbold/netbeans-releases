@@ -672,14 +672,16 @@ public final class GemManager {
     }
 
     /**
-     * Install the latest version of the given gem with dependencies and refresh
+     * Install the given version of the given gem with dependencies and refresh
      * IDE caches accordingly after the gem is installed.
      *
      * @param gem gem to install
      * @param rdoc if true, generate rdoc as part of the installation
      * @param ri if true, generate ri data as part of the installation
+     * @param version If non null, install the specified version rather than the
+     *        latest remote version
      */
-    public void installGem(final String gem, final boolean rdoc, final boolean ri) {
+    public void installGem(final String gem, final boolean rdoc, final boolean ri, final String version) {
         final Gem[] gems = new Gem[] {
             new Gem(gem, null, null)
         };
@@ -688,7 +690,19 @@ public final class GemManager {
                 platform.recomputeRoots();
             }
         };
-        install(gems, null, rdoc, ri, null, true, true, installationComplete);
+        install(gems, null, rdoc, ri, version, true, true, installationComplete);
+    }
+    
+    /**
+     * Install the latest version of the given gem with dependencies and refresh
+     * IDE caches accordingly after the gem is installed.
+     *
+     * @param gem gem to install
+     * @param rdoc if true, generate rdoc as part of the installation
+     * @param ri if true, generate ri data as part of the installation
+     */
+    public void installGem(final String gem, final boolean rdoc, final boolean ri) {
+        installGem(gem, rdoc, ri, null);
     }
 
     /**
