@@ -56,9 +56,9 @@ public class CommandBuffer {
     public static final int STATE_WAITING = 1;
     public static final int STATE_COMMAND_TIMEDOUT = 2;
     public static final int STATE_OK = 3;
-    public static final int STATE_DONE = 4;
-    public static final int STATE_ERROR = 5;
-    private final int WAIT_TIME = 500;
+    public static final int STATE_ERROR = 4;
+    private final int WAIT_TIME = 30000;
+    private boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
     private static Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
     
@@ -68,63 +68,71 @@ public class CommandBuffer {
     
     // Instance parts
     private StringBuilder buf;
-    private CommandBufferCallbackProc cbproc;
     private Integer token;
     private String err;
     private int state;
     private Object lock;
-    protected static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    protected static Logger log = Logger.getLogger("gdb.logger.cb"); // NOI18N
     
-    public CommandBuffer(int token, CommandBufferCallbackProc cbproc) {
+    public CommandBuffer() {
         buf = new StringBuilder();
-        this.token = new Integer(token);
-        this.cbproc = cbproc;
+        token = null;
         state = STATE_NONE;
         err = null;
         lock = new Object();
-        map.put(this.token, this);
     }
     
-    public CommandBuffer(int token) {
-        this(token, null);
-    }
-    
-    public void callback() {
-        if (cbproc != null) {
-            cbproc.callback(toString());
-        }
-    }
-    
-    public String postAndWait() {
+    public String waitForCompletion() {
         synchronized (lock) {
-            try {
+            if (state == STATE_NONE) {
                 state = STATE_WAITING; // this will change unless we timeout
+            }
+            try {
                 long tstart = System.currentTimeMillis();
-                long tend = 0;
+                long tend = tstart;
                 while (state == STATE_WAITING) {
                     lock.wait(WAIT_TIME);
                     tend = System.currentTimeMillis();
                     if ((tend - tstart) > WAIT_TIME) {
-                        state = STATE_COMMAND_TIMEDOUT;
-                    }
-                }
-                if (log.isLoggable(Level.FINE)) {
-                    if (state == STATE_COMMAND_TIMEDOUT) {
-                        log.fine("CB.postAndWait[" + token + "]: Timeout on " + Thread.currentThread().getName());
+                        if (state == STATE_OK) {
+                            log.finest("CB.postAndWait[" + token + "]: Timed out after Done [" + toString() + "]");
+                        } else {
+                            state = STATE_COMMAND_TIMEDOUT;
+                        }
                     } else {
-                        log.fine("CB.postAndWait[" + token + "]: Waited " + (tend - tstart) + " milliseconds"); // NOI18N
+                        log.finest("CB.postAndWait[" + token + "]: Back from wait at " + tend);
                     }
                 }
+                if (state == STATE_COMMAND_TIMEDOUT) {
+                    log.warning("CB.postAndWait[" + token + "]: Timeout at " + tend + " on " + GdbUtils.threadId());
+                } else if (log.isLoggable(Level.FINE)) {
+                    if (state == STATE_ERROR && 
+                            !Thread.currentThread().getName().equals("ToolTip-Evaluator")) { // NOI18N
+                        log.fine("CB.postAndWait[" + token + "]: Error wait of " + (tend - tstart) + " ms on " +
+                                GdbUtils.threadId());
+                    } else if (state == STATE_OK) {
+                        log.fine("CB.postAndWait[" + token + "]: OK wait of " + (tend - tstart) + " ms on " +
+                                GdbUtils.threadId());
+                    }
+                }
+                map.remove(token);
                 return toString();
             } catch (InterruptedException ex) {
+                map.remove(token);
+                return "";
             }
         }
-        
-        return null;
     }
     
     public Integer getID() {
         return token;
+    }
+    
+    public void setID(int token) {
+        synchronized (lock) {
+            this.token = Integer.valueOf(token);
+            map.put(this.token, this);
+        }
     }
     
     public int getState() {
@@ -136,18 +144,30 @@ public class CommandBuffer {
     }
     
     public void done() {
+        String time;
+        if (timerOn && log.isLoggable(Level.FINEST)) {
+            time = Long.toString(System.currentTimeMillis()) + ':';
+        } else {
+            time = "";
+        }
         synchronized (lock) {
-            state = STATE_DONE;
-            log.fine("CB.done{" + token + "]: Releasing lock on " + Thread.currentThread().getName());
+            state = STATE_OK;
             lock.notifyAll();
+            log.finest("CB.done[" + time + token + "]: Released lock on " + GdbUtils.threadId());
         }
     }
     
     public void error(String msg) {
+        String time;
+        if (timerOn && log.isLoggable(Level.FINEST)) {
+            time = Long.toString(System.currentTimeMillis()) + ':';
+        } else {
+            time = "";
+        }
         synchronized (lock) {
             err = msg;
             state = STATE_ERROR;
-            log.fine("CB.error{" + token + "]: Releasing lock on " + Thread.currentThread().getName());
+            log.finest("CB.error[" + time + token + "]: Releasing lock on " + GdbUtils.threadId());
             lock.notifyAll();
         }
     }
@@ -159,12 +179,8 @@ public class CommandBuffer {
         return null;
     }
     
-    public boolean attachTimedOut() {
-        return state == STATE_WAITING;
-    }
-    
-    public void dispose() {
-        map.remove(token);
+    public boolean timedOut() {
+        return state == STATE_COMMAND_TIMEDOUT;
     }
 
     @Override
