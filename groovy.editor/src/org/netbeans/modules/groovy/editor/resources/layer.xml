@@ -18,6 +18,15 @@
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.editor.lexer.GroovyTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
+                
+                <folder name="HyperlinkProviders">
+                    <file name="GroovyHyperlinkProvider.instance">
+                        <attr name="instanceClass" 
+                              stringvalue="org.netbeans.modules.groovy.editor.GroovyHyperlinkProvider"/>
+                        <attr name="instanceOf" 
+                              stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                    </file>
+                </folder>
 
                 <folder name="CodeTemplates">
                     <folder name="Defaults">
