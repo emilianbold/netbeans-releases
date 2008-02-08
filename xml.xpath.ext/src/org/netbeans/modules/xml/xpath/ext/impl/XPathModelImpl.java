@@ -452,7 +452,7 @@ public class XPathModelImpl implements XPathModel {
         if (mValidationContext != null) {
             if (foundCompPairSet.isEmpty()) {
                 String name = XPathUtils.qNameObjectToString(qName);
-                if (isAttribute) { // vlv
+                if (isAttribute) {
                     if (nsUri == null || nsUri.length() == 0) {
                         mValidationContext.addResultItem(getRootExpression(), 
                                 ResultType.ERROR, 
@@ -895,13 +895,20 @@ public class XPathModelImpl implements XPathModel {
         }
         //
         if (sameNameOtherPrefix.isEmpty()) {
-            // The function with the required name isn't found  // vlv
+            // The function with the required name isn't found
 
-            // why bytesToString, convert are not recognized?
+            // vlv
+            // why stringToBytes, bytesToString, convert are not recognized?
             // TODO FIX IT.
-
+            if (
+              funcQName.equals("convert") ||
+              funcQName.equals("bytesToString") ||
+              funcQName.equals("stringToBytes"))
+            {
+              return true;
+            }
             mValidationContext.addResultItem(mRootXPathExpression,
-                    ResultType.WARNING, 
+                    ResultType.ERROR, 
                     XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
                     XPathUtils.qNameObjectToString(funcQName));
         } else {
@@ -911,7 +918,17 @@ public class XPathModelImpl implements XPathModel {
             String nsList = prepareNamespaceList(sameNameOtherPrefix);
             //
             if (nsPrefix.length() == 0) {
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.WARNING, // vlv
+                // vlv
+                // why current-date, current-dateTime, current-time are not recognized?
+                // TODO FIX IT.
+                if (
+                  funcQName.equals("current-date") ||
+                  funcQName.equals("current-dateTime") ||
+                  funcQName.equals("current-time"))
+                {
+                  return true;
+                }
+                mValidationContext.addResultItem(mRootXPathExpression, ResultType.ERROR,
                         XPathProblem.PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsList);
             } else {
