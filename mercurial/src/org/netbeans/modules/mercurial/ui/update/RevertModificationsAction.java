@@ -77,18 +77,6 @@ public class RevertModificationsAction extends ContextAction {
     }
 
     public void performAction(ActionEvent e) {
-        if(!HgRepositoryContextCache.hasHistory(context)){
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(UpdateAction.class,
-                    "MSG_REVERT_TITLE")); // NOI18N
-            HgUtils.outputMercurialTabInRed(
-                    NbBundle.getMessage(UpdateAction.class,
-                    "MSG_REVERT_TITLE_SEP")); // NOI18N
-            HgUtils.outputMercurialTab(NbBundle.getMessage(UpdateAction.class, "MSG_REVERT_NOTHING")); // NOI18N
-            HgUtils.outputMercurialTabInRed(NbBundle.getMessage(UpdateAction.class, "MSG_REVERT_DONE")); // NOI18N
-            HgUtils.outputMercurialTab(""); // NOI18N
-            return;
-        }
         revert(context);
     }
 
@@ -139,6 +127,20 @@ public class RevertModificationsAction extends ContextAction {
             HgUtils.outputMercurialTabInRed(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_TITLE_SEP")); // NOI18N
+            
+            // No revisions to revert too
+            if (NbBundle.getMessage(RevertModificationsAction.class,
+                    "MSG_Revision_Default").startsWith(revStr)) {
+                HgUtils.outputMercurialTab(
+                        NbBundle.getMessage(RevertModificationsAction.class,
+                        "MSG_REVERT_NOTHING")); // NOI18N
+                HgUtils.outputMercurialTabInRed(
+                        NbBundle.getMessage(RevertModificationsAction.class,
+                        "MSG_REVERT_DONE")); // NOI18N
+                HgUtils.outputMercurialTabInRed(""); // NOI18N
+                return;
+            }
+            
             HgUtils.outputMercurialTab(
                     NbBundle.getMessage(RevertModificationsAction.class,
                     "MSG_REVERT_REVISION_STR", revStr)); // NOI18N
@@ -146,11 +148,11 @@ public class RevertModificationsAction extends ContextAction {
                 HgUtils.outputMercurialTab(file.getAbsolutePath());
             }
             HgUtils.outputMercurialTab(""); // NOI18N
- 
+
             HgCommand.doRevert(repository, revertFiles, revStr);
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
             File[] conflictFiles = cache.listFiles(revertFiles.toArray(new File[0]), FileInformation.STATUS_VERSIONED_CONFLICT);
-            if(conflictFiles.length != 0){
+            if (conflictFiles.length != 0) {
                 ConflictResolvedAction.conflictResolved(repository, conflictFiles);
             }
         } catch (HgException ex) {

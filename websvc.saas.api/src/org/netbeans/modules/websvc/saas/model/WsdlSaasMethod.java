@@ -37,29 +37,54 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.ui.nodes;
+package org.netbeans.modules.websvc.saas.model;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.openide.util.lookup.InstanceContent;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 
 /**
  *
  * @author nam
  */
-public class WadlSaasMethodNode extends WadlMethodNode {
-    private WadlSaasMethod saasMethod;
+public class WsdlSaasMethod extends SaasMethod {
+    WsdlPort port;
+    WsdlOperation operation;
     
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        this(saasMethod, new InstanceContent());
+    public WsdlSaasMethod(WsdlSaas saas, Method method) {
+        super(saas, method);
     }
 
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod, InstanceContent content) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod(), content);
-        this.saasMethod = saasMethod;
+    public WsdlSaas getSaas() {
+        return (WsdlSaas) super.getSaas();
     }
-
-    @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
+    
+    public WsdlOperation getWsdlOperation() {
+        init();
+        return operation;
+    }
+    
+    public WsdlPort getPort() {
+        init();
+        return port;
+    }
+    
+    private void init() {
+        if (port == null || operation == null) {
+            for (WsdlPort p : getSaas().getWsdlModel().getPorts()) {
+                if (! p.getName().equals(getMethod().getPortName())) {
+                    continue;
+                }
+                port = p;
+                
+                for (WsdlOperation op : port.getOperations()) {
+                    if (op.getName().equals(getMethod().getOperationName())) {
+                        operation = op;
+                        return;
+                    }
+                }
+                break;
+            }
+        }
     }
 }

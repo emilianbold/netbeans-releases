@@ -39,27 +39,37 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.openide.util.lookup.InstanceContent;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author nam
  */
-public class WadlSaasMethodNode extends WadlMethodNode {
-    private WadlSaasMethod saasMethod;
-    
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        this(saasMethod, new InstanceContent());
-    }
+public class WsdlPortNodeChildren extends Children.Keys<WsdlOperation>{
+    private WsdlSaas saas;
+    private WsdlPort port;
 
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod, InstanceContent content) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod(), content);
-        this.saasMethod = saasMethod;
+    public WsdlPortNodeChildren(WsdlSaas saas, WsdlPort port) {
+        this.saas = saas;
+        this.port = port;
     }
 
     @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
+    protected void addNotify() {
+        super.addNotify();
+    }
+
+    @Override
+    protected void removeNotify() {
+        super.removeNotify();
+    }
+
+    @Override
+    protected Node[] createNodes(WsdlOperation key) {
+        return new Node[] { new WsdlMethodNode(saas, port, key) };
     }
 }
