@@ -199,7 +199,7 @@ public final class EditorRegistry {
                     l.add(c);
                     item = item.next;
                 } else
-                    item = removeItem(item);
+                    item = removeFromItemList(item);
             }
 
         } else // No valid items
@@ -273,7 +273,7 @@ public final class EditorRegistry {
                     focusLost(textComponent, null); // Checks if the component is focused and does nothing otherwise
                     item = removeFromRegistry(item);
                 } else { // Null text component - just remove the item
-                    item = removeItem(item);
+                    item = removeFromItemList(item);
                 }
             } else {
                 item = item.next;
@@ -286,8 +286,8 @@ public final class EditorRegistry {
         assert (item != null) : "Not registered!"; // NOI18N
 
         // Move the item to head of the list
-        removeItem(item);
-        addAsFirst(item);
+        removeFromItemList(item);
+        addToItemListAsFirst(item);
         item.focused = true;
 
         c.addPropertyChangeListener(PropertyDocL.INSTANCE);
@@ -320,8 +320,10 @@ public final class EditorRegistry {
         // If the component was removed from the component hierarchy and then
         // returned back to the hierarchy it will be readded to the end of the component list.
         // If the item is not removed yet then the addAsLast() will do nothing.
-        addAsLast(item);
-        JTextComponent c = item.getNonNullComponent();
+        addToItemListAsLast(item);
+        JTextComponent c = item.get();
+        if (c == null)
+            throw new IllegalStateException("Component should be non-null");
         
         // Remember whether component should not be removed from registry upon removeNotify()
         item.ignoreAncestorChange = (SwingUtilities.getAncestorOfClass(ignoredAncestorClass, c) != null);
@@ -342,7 +344,7 @@ public final class EditorRegistry {
     private static JTextComponent firstValidComponent() {
         JTextComponent c = null;
         while (items != null && (c = items.get()) == null) {
-            removeItem(items);
+            removeFromItemList(items);
         }
         return c;
     }
@@ -352,7 +354,7 @@ public final class EditorRegistry {
 
     }
     
-    static void addAsLast(Item item) {
+    private static void addToItemListAsLast(Item item) {
         if (item.linked)
             return;
         item.linked = true;
@@ -371,7 +373,7 @@ public final class EditorRegistry {
         }
     }
 
-    static void addAsFirst(Item item) {
+    private static void addToItemListAsFirst(Item item) {
         if (item.linked)
             return;
         item.linked = true;
@@ -387,7 +389,7 @@ public final class EditorRegistry {
     /**
      * Remove given entry and return a next one.
      */
-    static Item removeItem(Item item) {
+    private static Item removeFromItemList(Item item) {
         if (!item.linked)
             return null;
         item.linked = false;
@@ -416,16 +418,18 @@ public final class EditorRegistry {
     static Item removeFromRegistry(Item item) {
         boolean lastFocused = (items == item);
         // Remove component from item chain
-        JTextComponent component = item.getNonNullComponent();
-        item = removeItem(item);
-        if (LOG.isLoggable(Level.FINEST)) {
-            LOG.fine("Component removed: " + dumpComponent(component) + '\n');
-            logItemListFinest();
-        }
-        if (lastFocused) {
-            firePropertyChange(LAST_FOCUSED_REMOVED_PROPERTY, component, lastFocusedComponent());
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Fired LAST_FOCUSED_REMOVED_PROPERTY for " + dumpComponent(component) + '\n');
+        JTextComponent component = item.get();
+        item = removeFromItemList(item);
+        if (component != null) {
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.fine("Component removed: " + dumpComponent(component) + '\n');
+                logItemListFinest();
+            }
+            if (lastFocused) {
+                firePropertyChange(LAST_FOCUSED_REMOVED_PROPERTY, component, lastFocusedComponent());
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("Fired LAST_FOCUSED_REMOVED_PROPERTY for " + dumpComponent(component) + '\n');
+                }
             }
         }
         return item;
@@ -533,13 +537,6 @@ public final class EditorRegistry {
          */
         Timer runningTimer;
 
-        JTextComponent getNonNullComponent() {
-            JTextComponent c = get();
-            if (c == null)
-                throw new IllegalStateException("Component should be non-null");
-            return c;
-        }
-        
         @Override
         public String toString() {
             return "component=" + get() + ", linked=" + linked +
