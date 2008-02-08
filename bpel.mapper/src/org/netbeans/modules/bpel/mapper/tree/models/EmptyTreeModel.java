@@ -137,10 +137,10 @@ public class EmptyTreeModel implements MapperTreeModel<Object>, TreeItemInfoProv
         return null;
     }
 
-    public String getTooltipText(Object treeItem) {
+    public String getToolTipText(Object treeItem) {
         for (MapperTreeExtensionModel extModel : mExtModelList) {
             TreeItemInfoProvider provider = extModel.getTreeItemInfoProvider();
-            String result = provider.getTooltipText(treeItem);
+            String result = provider.getToolTipText(treeItem);
             if (result != null) {
                 return result;
             }

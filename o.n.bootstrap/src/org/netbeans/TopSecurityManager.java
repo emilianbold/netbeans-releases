@@ -308,7 +308,7 @@ public class TopSecurityManager extends SecurityManager {
     public @Override void checkRead(FileDescriptor fd) {
     }
 
-    private static Map m = new HashMap();
+    private static Map<String,Throwable> m = new HashMap<String,Throwable>();
     private static PreferenceChangeListener pcl = null;
     
     public @Override void checkWrite(FileDescriptor fd) {

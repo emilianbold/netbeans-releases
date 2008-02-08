@@ -112,22 +112,30 @@ public class GemManagerTest extends RubyTestBase {
     public void testGetRepositories() throws Exception {
         final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
-        List<String> paths = gemManager.getRepositories();
+        Set<? extends File> paths = gemManager.getRepositories();
         assertEquals("one path element", 1, paths.size());
-        assertEquals("same as Gem Home", gemManager.getGemHome(), paths.get(0));
+        assertEquals("same as Gem Home", gemManager.getGemHomeF(), paths.iterator().next());
         assertEquals("same as Gem Home", gemManager.getGemHome(), platform.getInfo().getGemPath());
     }
     
     public void testAddRemoveRepository() throws Exception {
         final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
-        String dummyRepo = getWorkDirPath() + "/a";
-        gemManager.addRepository(dummyRepo);
+        File dummyRepo = new File(getWorkDirPath(), "/a");
+        gemManager.addGemPath(dummyRepo);
         assertEquals("two repositories", 2, gemManager.getRepositories().size());
         assertTrue("two repositories in info's gempath", platform.getInfo().getGemPath().indexOf(File.pathSeparatorChar) != -1);
-        gemManager.removeRepository(dummyRepo);
+        gemManager.removeGemPath(dummyRepo);
         assertEquals("one repositories", 1, gemManager.getRepositories().size());
         assertTrue("one repositories in info's gempath", platform.getInfo().getGemPath().indexOf(File.pathSeparatorChar) == -1);
+    }
+    
+    public void testAddTheSameRepositoryTwice() {
+        final RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        GemManager gemManager = platform.getGemManager();
+        File dummyRepo = new File(getWorkDirPath(), "/a");
+        assertTrue("successfuly added", gemManager.addGemPath(dummyRepo));
+        assertFalse("failed to add second time", gemManager.addGemPath(dummyRepo));
     }
     
     public void testInitializeRepository() throws Exception {
