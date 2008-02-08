@@ -50,17 +50,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
+import javax.lang.model.util.ElementScanner6;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
@@ -344,7 +346,7 @@ public final class CompletionManager {
 
                     public void run(SpringBeans sb) {
                         List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
-                        Map<String, SpringBean> name2Bean = getName2Beans(beans);
+                        Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
                         for(String beanName : name2Bean.keySet()) {
                             if(!beanName.startsWith(prefix) || cNames.contains(beanName)) {
                                 continue;
@@ -357,16 +359,18 @@ public final class CompletionManager {
                         }
                     }
 
-                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans) {
+                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
                         Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
                         for (SpringBean bean : beans) {
                             String beanId = bean.getId();
-                            List<String> beanNames = bean.getNames();
                             if (beanId != null) {
                                 name2Bean.put(beanId, bean);
                             }
-                            for (String beanName : beanNames) {
-                                name2Bean.put(beanName, bean);
+                            if (addNames) {
+                                List<String> beanNames = bean.getNames();
+                                for (String beanName : beanNames) {
+                                    name2Bean.put(beanName, bean);
+                                }
                             }
                         }
 
@@ -452,12 +456,10 @@ public final class CompletionManager {
                     ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
                     int index = substitutionOffset;
                     String packName = typedPrefix;
-                    String classPrefix = "";
                     int dotIndex = typedPrefix.lastIndexOf('.'); // NOI18N
                     if (dotIndex != -1) {
                         index += (dotIndex + 1);  // NOI18N
                         packName = typedPrefix.substring(0, dotIndex);
-                        classPrefix = (dotIndex + 1 < typedPrefix.length()) ? typedPrefix.substring(dotIndex + 1) : "";
                     }
                     addPackages(ci, results, typedPrefix, index);
 
@@ -465,13 +467,13 @@ public final class CompletionManager {
                     if (pkgElem == null) {
                         return;
                     }
-                    List<? extends Element> pkgChildren = pkgElem.getEnclosedElements();
-                    for (Element pkgChild : pkgChildren) {
-                        if ((pkgChild.getKind() == ElementKind.CLASS) && pkgChild.getSimpleName().toString().startsWith(classPrefix)) {
-                            TypeElement typeElement = (TypeElement) pkgChild;
+                    
+                    // get this as well as non-static inner classes
+                    List<TypeElement> tes = new TypeScanner().scan(pkgElem);
+                    for (TypeElement te : tes) {
+                        if (ElementUtilities.getBinaryName(te).startsWith(typedPrefix)) {
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                    typeElement, ElementHandle.create(typeElement), 
-                                    cc.getElements().isDeprecated(pkgChild), false);
+                                    te, ElementHandle.create(te), cc.getElements().isDeprecated(te), false);
                             results.add(item);
                         }
                     }
@@ -480,7 +482,7 @@ public final class CompletionManager {
                 }
             }, true);
         }
-
+        
         private void doSmartJavaCompletion(JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
@@ -497,7 +499,7 @@ public final class CompletionManager {
                     for (ElementHandle<TypeElement> eh : matchingTypes) {
                         if (eh.getKind() == ElementKind.CLASS) {
                             TypeElement typeElement = eh.resolve(cc);
-                            if (typeElement != null) {
+                            if (typeElement != null && isAccessibleClass(typeElement)) {
                                 SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
                                         typeElement, eh, cc.getElements().isDeprecated(typeElement), true);
                                 results.add(item);
@@ -510,6 +512,12 @@ public final class CompletionManager {
             setAnchorOffset(substitutionOffset);
         }
         
+        private static boolean isAccessibleClass(TypeElement te) {
+            NestingKind nestingKind = te.getNestingKind();
+            return (nestingKind == NestingKind.TOP_LEVEL) 
+                    || (nestingKind == NestingKind.MEMBER && te.getModifiers().contains(Modifier.STATIC));
+        }
+        
         private void addPackages(ClassIndex ci, List<SpringXMLConfigCompletionItem> results, String typedPrefix, int substitutionOffset) {
             Set<String> packages = ci.getPackageNames(typedPrefix, true, EnumSet.allOf(SearchScope.class));
             for (String pkg : packages) {
@@ -518,6 +526,22 @@ public final class CompletionManager {
                     results.add(item);
                 }
             }
+        }
+        
+        private static final class TypeScanner extends ElementScanner6<List<TypeElement>, Void> {
+
+            public TypeScanner() {
+                super(new ArrayList<TypeElement>());
+            }
+            
+            @Override
+            public List<TypeElement> visitType(TypeElement typeElement, Void arg) {
+                if(typeElement.getKind() == ElementKind.CLASS && isAccessibleClass(typeElement)) {
+                    DEFAULT_VALUE.add(typeElement);
+                }
+                return super.visitType(typeElement, arg);
+            }
+            
         }
     }
 

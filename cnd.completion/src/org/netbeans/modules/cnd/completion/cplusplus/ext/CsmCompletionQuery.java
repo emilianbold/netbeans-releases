@@ -1762,7 +1762,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                             text = ")"; // NOI18N
                         } else { // one or more parameters
                             int ind = substituteExp.getParameterCount();
-                            boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceAfterComma();
+                            boolean addSpace = CodeStyle.getDefault(doc).spaceAfterComma();
                             try {
                                 if (addSpace && (ind == 0 || (substituteOffset > 0
                                                               && Character.isWhitespace(doc.getText(substituteOffset - 1, 1).charAt(0))))
@@ -1783,7 +1783,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                     default:
                         text = getMainText(csmRepl);
-                        boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceBeforeParenthesis();
+                        boolean addSpace = CodeStyle.getDefault(doc).spaceBeforeMethodCallParen();//getFormatSpaceBeforeParenthesis();
                         if (addSpace) {
                             text += ' ';
                         }

@@ -341,7 +341,7 @@ public class CCFormatter extends ExtFormatter {
                             break;
 
                         case CCTokenContext.LPAREN_ID:
-                            if (ccfs.getFormatSpaceBeforeParenthesis()) {
+                            if (ccfs.getFormatSpaceBeforeMethodCallParenthesis()) {
                                 TokenItem prevToken = token.getPrevious();
                                 if (prevToken != null && prevToken.getTokenID() == CCTokenContext.IDENTIFIER) {
                                     if (ccfs.canInsertToken(token)) {

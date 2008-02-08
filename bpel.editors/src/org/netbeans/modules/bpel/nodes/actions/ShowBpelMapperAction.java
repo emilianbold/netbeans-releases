@@ -39,12 +39,12 @@ import org.openide.windows.WindowManager;
 public class ShowBpelMapperAction extends BpelNodeAction {
 
     private static final long serialVersionUID = 1L;
-    public static final KeyStroke GOTOMAPPER_KEYSTROKE = KeyStroke.getKeyStroke(
-            NbBundle.getMessage(ShowBpelMapperAction.class,"ACT_GoToMapperAction"));// NOI18N
+//    public static final KeyStroke GOTOMAPPER_KEYSTROKE = KeyStroke.getKeyStroke(
+//            NbBundle.getMessage(ShowBpelMapperAction.class,"ACT_GoToMapperAction"));// NOI18N
 
     public ShowBpelMapperAction() {
         super();
-        putValue(ShowBpelMapperAction.ACCELERATOR_KEY, GOTOMAPPER_KEYSTROKE);
+//        putValue(ShowBpelMapperAction.ACCELERATOR_KEY, GOTOMAPPER_KEYSTROKE);
     }
 
     protected String getBundleName() {

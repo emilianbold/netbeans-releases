@@ -56,18 +56,31 @@ public interface SpringBeans {
     // XXX aliases.
 
     /**
-     * Finds a bean by its id.
+     * Finds a bean by its id or name.
      *
-     * @param  beanId the bean id; never null.
-     * @return the bean with the specified id or {@code null}.
+     * @param  name the bean id or name; never null.
+     * @return the bean with the specified id or name; {@code null} if no such
+     *         bean was found.
      */
-    SpringBean findBean(String beanId);
+    SpringBean findBean(String name);
+
+    /**
+     * Finds a bean by its id in the given beans config file.
+     *
+     * @param  name the bean id; never null.
+     * @param  file the file to look in.
+     * @return the bean with the specified id or {@code null} if no such
+     *         bean could be found or {@code file} was not used
+     *         to create the contents of this {@code SpringBeans}.
+     */
+    SpringBean findBean(File file, String id);
 
     /**
      * Returns the list of beans in the specified beans config file.
      *
      * @param  file the beans config file.
-     * @return the list of beans; never {@code null}.
+     * @return the list of beans or {@code null} if {@code file} was not used
+     *         to create the contents of this {@code SpringBeans}.
      */
     List<SpringBean> getBeans(File file);
 

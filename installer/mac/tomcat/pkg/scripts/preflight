@@ -38,12 +38,12 @@
 
 set -e
 
-instdir="/Applications/NetBeans/apache-tomcat-6.0.14"
+instdir="/Applications/NetBeans/apache-tomcat-6.0.16"
 
 if [ -d "$instdir" ] ; then
     rm -rf "$instdir"
 fi
 
-if [ -d "/Library/Receipts/apache-tomcat-6.0.14.pkg" ] ; then
-    rm -rf "/Library/Receipts/apache-tomcat-6.0.14.pkg"
+if [ -d "/Library/Receipts/apache-tomcat-6.0.16.pkg" ] ; then
+    rm -rf "/Library/Receipts/apache-tomcat-6.0.16.pkg"
 fi

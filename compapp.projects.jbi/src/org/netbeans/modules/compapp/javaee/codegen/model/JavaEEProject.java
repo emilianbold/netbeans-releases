@@ -58,6 +58,11 @@ public interface JavaEEProject {
     public void setProjectType(ProjectType type);
     public void isDeployThruCA(boolean depThruCA);
     public boolean isDeployThruCA();    
+
+    public void setEndpointOverrides(List<EndpointCfg> epCfgs);
+    public List<EndpointCfg> getEndpointOverrides();
+    public List<Endpoint> getEndpoints();
+    
     public ProjectType getProjectType();    
     public void setClassPathURLs(List<URL> classpathURLs);
     public void addSubproject(JavaEEProject subProj);    
