@@ -35,6 +35,7 @@ import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.multiview.BpelDesignContext;
 import org.netbeans.modules.bpel.mapper.predicates.AbstractPredicate;
+import org.netbeans.modules.bpel.mapper.tree.MapperTreeNode;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddPredicateAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.AddSpecialStepAction;
 import org.netbeans.modules.bpel.mapper.tree.actions.DeletePredicateAction;
@@ -53,6 +54,7 @@ import org.netbeans.modules.xml.schema.model.Attribute;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
 import org.netbeans.modules.xml.schema.model.Element;
 import org.netbeans.modules.xml.schema.model.ElementReference;
+import org.netbeans.modules.xml.schema.model.GlobalAttribute;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.schema.model.LocalAttribute;
@@ -312,8 +314,46 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
     }
 
     
-    public String getTooltipText(Object treeItem) {
-        return null;
+    public String getToolTipText(Object treeItem) {
+        if (treeItem instanceof GlobalElement) {
+            if (((GlobalElement) treeItem).getType() != null) {
+                return ((GlobalElement) treeItem).getType().getRefString();
+            }
+        }
+        
+        if (treeItem instanceof LocalElement) {
+            if (((LocalElement)treeItem).getType() != null &&
+                    ((LocalElement)treeItem).getType().get() != null)
+            {
+                return ((LocalElement)treeItem).getType().get().getName();
+            }
+        }
+        
+        if (treeItem instanceof LocalAttribute) {
+            if (((LocalAttribute) treeItem).getType() != null) {
+                return ((LocalAttribute) treeItem).getType().getRefString();
+            }
+        }
+        
+        if (treeItem instanceof GlobalAttribute) {
+            if (((GlobalAttribute)treeItem).getType() != null) {
+                return ((GlobalAttribute)treeItem).getType().getRefString();
+            }
+        }
+        
+        if (treeItem instanceof GlobalType) {
+            return ((GlobalType)treeItem).getName();
+        }
+
+        if (treeItem instanceof Variable) {
+            if (((Variable) treeItem).getMessageType() != null) {
+                return ((Variable) treeItem).getMessageType().getRefString();
+            }
+            if (((Variable) treeItem).getType() != null) {
+                return ((Variable) treeItem).getType().getRefString();
+            }
+        }    
+        return "not named type";
     }
 
 }

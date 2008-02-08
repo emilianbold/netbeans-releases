@@ -129,7 +129,7 @@ public class PathValidationContext implements XPathValidationContext {
     public void addResultItem(ResultType resultType, String bundleKey,
             Object... values){
         //
-        String str = NbBundle.getMessage(BpelXpathValidator.class, bundleKey);
+        String str = NbBundle.getMessage(PathValidationContext.class, bundleKey);
         addResultItemImpl(null, resultType, str, values);
     }
 
@@ -139,7 +139,7 @@ public class PathValidationContext implements XPathValidationContext {
     public void addResultItem(String exprText, ResultType resultType, 
             String bundleKey, Object... values){
         //
-        String str = NbBundle.getMessage(BpelXpathValidator.class, bundleKey);
+        String str = NbBundle.getMessage(PathValidationContext.class, bundleKey);
         addResultItemImpl(exprText, resultType, str, values);
     }
 

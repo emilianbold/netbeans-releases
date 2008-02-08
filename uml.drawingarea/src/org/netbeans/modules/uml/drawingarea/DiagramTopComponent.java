@@ -241,6 +241,7 @@ public class DiagramTopComponent extends CloneableTopComponent
             return ""; // NOI18N
         
         StringBuffer fullNameSpace = new StringBuffer();
+
         IProject project = mControl.getNamespace().getProject();
         IElement owner = mControl.getDiagram().getOwner();
         
@@ -1243,9 +1244,11 @@ public class DiagramTopComponent extends CloneableTopComponent
     
     public Lookup getThisLookup()
     {
-        if ( paletteContrl == null)
+        if ( paletteContrl == null) 
             paletteContrl = this.getAssociatedPalette();
-        //return Lookups.fixed(new Object[] {mControl, paletteContrl, diagramDO});
+        if ( paletteContrl == null)
+            return Lookups.fixed(new Object[] {mControl, diagramDO});
+        
         return Lookups.fixed(new Object[] {mControl, paletteContrl, getDiagramDO() } );
     }
     

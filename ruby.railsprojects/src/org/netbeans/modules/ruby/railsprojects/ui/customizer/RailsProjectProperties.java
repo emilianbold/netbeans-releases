@@ -142,6 +142,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     private StoreGroup projectGroup;
     private RubyPlatform platform;
     private RubyInstance server;
+    private String railsEnvironment;
     
     RailsProject getProject() {
         return project;
@@ -267,6 +268,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
 
         RailsProjectProperties.storePlatform(privateProperties, getPlatform());
         RailsProjectProperties.storeServer(privateProperties, getServer());
+        privateProperties.setProperty(RAILS_ENV, getRailsEnvironment()); // NOI18N
 
         // Standard store of the properties
         projectGroup.store( projectProperties );        
@@ -346,6 +348,15 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         ep.setProperty(RAILS_SERVERTYPE, server.getServerUri()); // NOI18N
     }
 
+    String getRailsEnvironment() {
+        return this.railsEnvironment;
+    }
+
+    void setRailsEnvironment(String railsEnvironment) {
+        this.railsEnvironment = railsEnvironment;
+    }
+    
+    
     /**
      * A mess.
      */
@@ -404,7 +415,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
                 MAIN_CLASS, APPLICATION_ARGS, RUN_JVM_ARGS/*, RUN_WORK_DIR*/}) {
             String v = def.get(prop);
             EditableProperties ep = (prop.equals(RAILS_PORT) ||
-                    prop.equals(RAKE_ARGS) || prop.equals(RAILS_ENV) ||
+                    prop.equals(RAKE_ARGS) ||
                     prop.equals(APPLICATION_ARGS)/* || prop.equals(RUN_WORK_DIR)*/) ?
                 privateProperties : projectProperties;
             if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
