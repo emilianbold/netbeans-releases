@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.compapp.casaeditor.nodes;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -126,7 +128,16 @@ public class ExtensionPropertyHelper {
             String eeNamespace = eeQName.getNamespaceURI();
             String eeLocalName = eeQName.getLocalPart();
 
-            for (JbiExtensionInfo extInfo : installedExtInfo.getJbiExtensionList()) {
+            List<JbiExtensionInfo> extInfoList = installedExtInfo.getJbiExtensionList();
+            Collections.sort(extInfoList, new Comparator() {
+                public int compare(Object o1, Object o2) {
+                    JbiExtensionInfo extInfo1 = (JbiExtensionInfo)o1;
+                    JbiExtensionInfo extInfo2 = (JbiExtensionInfo)o2;
+                    return extInfo1.getName().compareTo(extInfo2.getName());
+                }                
+            });
+            
+            for (JbiExtensionInfo extInfo : extInfoList) {
                 if (!(extInfo.getNameSpace().equals(eeNamespace)) ||
                         !(extensionType.equals(extInfo.getType()))) {
                     continue;
