@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -218,39 +218,54 @@ public final class GemManager {
         return gemHomeUrl;
     }
 
+    public Set<? extends File> getRepositories() {
+        Set<File> repos = getGemPath();
+        repos.add(getGemHomeF());
+        return repos;
+    }
+    
     /** Returns paths to all Gem repositories. */
-    public List<String> getRepositories() {
-        List<String> repos = new ArrayList<String>();
+    public Set<File> getGemPath() {
+        Set<File> repos = new LinkedHashSet<File>();
         StringTokenizer st = new StringTokenizer(platform.getInfo().getGemPath(), File.pathSeparator);
         while (st.hasMoreTokens()) {
-            repos.add(st.nextToken());
+            repos.add(new File(st.nextToken()));
         }
         return repos;
     }
     
-    public void addRepository(final String path) {
-        List<String> gemPath = getRepositories();
-        gemPath.add(path);
-        storeRepositories(gemPath);
-        DebuggerPreferences prefs = DebuggerPreferences.getInstance();
-        if (!platform.isJRuby() && platform.hasFastDebuggerInstalled()) {
-            prefs.setUseClassicDebugger(platform, false);
+    public boolean addGemPath(final File path) {
+        Set<File> gemPath = getGemPath();
+        boolean result;
+        try {
+            result = gemPath.add(path.getCanonicalFile());
+        } catch (IOException ioe) {
+            LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
+            result = false;
         }
+        if (result) {
+            storeGemPath(gemPath);
+            DebuggerPreferences prefs = DebuggerPreferences.getInstance();
+            if (!platform.isJRuby() && platform.hasFastDebuggerInstalled()) {
+                prefs.setUseClassicDebugger(platform, false);
+            }
+        }
+        return result;
     }
 
-    public void removeRepository(final String path) {
-        List<String> gemPath = getRepositories();
+    public void removeGemPath(final File path) {
+        Set<File> gemPath = getGemPath();
         gemPath.remove(path);
-        storeRepositories(gemPath);
+        storeGemPath(gemPath);
     }
 
-    private void storeRepositories(final List<String> gemPath) {
+    private void storeGemPath(final Set<File> gemPath) {
         StringBuilder pathSB = new StringBuilder();
-        for (String token : gemPath) {
+        for (File token : gemPath) {
             if (pathSB.length() != 0) {
                 pathSB.append(File.pathSeparator);
             }
-            pathSB.append(token);
+            pathSB.append(token.getAbsolutePath());
         }
         platform.getInfo().setGemPath(pathSB.toString());
         try {
@@ -418,10 +433,8 @@ public final class GemManager {
         if (gemFiles == null) {
             // Initialize lazily
             assert platform.hasRubyGemsInstalled() : "asking for gems only when RubyGems are installed";
-            List<String> repos = getRepositories();
-            repos.add(0, getGemHome()); // XXX is not a GEM_HOME always part of GEM_PATH
             gemFiles = new HashMap<String, Map<String, File>>();
-            for (String gemDir : repos) {
+            for (File gemDir : getRepositories()) {
                 File specDir = new File(gemDir, SPECIFICATIONS);
                 if (specDir.exists()) {
                     LOGGER.finest("Initializing \"" + gemDir + "\" repository");
