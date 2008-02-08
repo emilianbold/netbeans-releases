@@ -44,7 +44,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,9 +83,19 @@ public final class RubyPlatform {
     static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
     
     /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
-    static final String RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
+    static final String RDEBUG_IDE_VERSION;
+    static final String RDEBUG_BASE_VERSION;
     
+    static {
+        if (Utilities.isWindows()) {
+            RDEBUG_IDE_VERSION = "0.1.9"; // NOI18N
+            RDEBUG_BASE_VERSION = "0.9.3"; // NOI18N
+        } else {
+            RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
+            RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
+        }
+    }
+
     private Info info;
     
     private final String id;
@@ -130,6 +139,12 @@ public final class RubyPlatform {
         return platform == null ? null : platform.getGemManager();
     }
 
+    @CheckForNull
+    public static String platformDescriptionFor(Project project) {
+        RubyPlatform platform = platformFor(project);
+        return platform == null ? null : platform.getInfo().getLongDescription();
+    }
+    
     public Info getInfo() {
         return info;
     }
@@ -489,10 +504,8 @@ public final class RubyPlatform {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
             }
             if (exec == null && hasRubyGemsInstalled()) {
-                List<String> repos = gemManager.getRepositories();
-                repos.add(0, gemManager.getGemHome()); // XXX is not a GEM_HOME always part of GEM_PATH?
-                for (String repo : repos) {
-                    String libGemBinDir = repo + File.separator + "bin"; // NOI18N
+                for (File repo : gemManager.getRepositories()) {
+                    String libGemBinDir = repo.getAbsolutePath() + File.separator + "bin"; // NOI18N
                     exec = RubyPlatform.findExecutable(libGemBinDir, toFind);
                     if (exec != null) {
                         break;

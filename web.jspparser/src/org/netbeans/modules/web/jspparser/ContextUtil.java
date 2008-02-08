@@ -121,22 +121,4 @@ public class ContextUtil {
         String result = "/" + findRelativePath(rootFolder, relativeObject); // NOI18N
         return relativeObject.isFolder() ? (result + "/") : result; // NOI18N
     }
-    
-    /** Finds a FileObject relative to a given root folder, with a given relative path. 
-     * @param rootFolder the root folder
-     * @relativePath the relative path (not starting with a '/', delimited by '/')
-     * @return fileobject relative to the given root folder or null if not found.
-     * @exception IllegalArgumentException if relativeObject is not in rootFolder's tree.
-     */ 
-    public static FileObject findRelativeFileObject(FileObject rootFolder, String relativePath) {
-        if (relativePath.startsWith("/")) {  // NOI18N
-            relativePath = relativePath.substring(1);
-        }
-        FileObject myObj = rootFolder;
-        StringTokenizer st = new StringTokenizer(relativePath, "/"); // NOI18N
-        while (myObj != null && st.hasMoreTokens()) {
-            myObj = myObj.getFileObject(st.nextToken());
-        }
-        return myObj;
-    }
 }

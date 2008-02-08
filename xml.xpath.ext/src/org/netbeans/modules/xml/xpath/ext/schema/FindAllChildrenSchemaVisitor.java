@@ -63,8 +63,6 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
      * Any kind of component can be used. 
      */ 
     public void lookForSubcomponents(SchemaComponent sc) {
-//out();
-//out("SEE: " + sc);
         myFound.clear();
         //
         if (sc instanceof Element) {
@@ -115,13 +113,5 @@ public class FindAllChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             myFound.add(sc);
             return;
         }
-    }
-
-    private void out() {
-      System.out.println();
-    }
-
-    private void out(Object object) {
-      System.out.println("*** " + object);
     }
 }

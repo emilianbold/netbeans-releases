@@ -20,10 +20,7 @@ package org.netbeans.modules.bpel.logging;
 
 import java.util.List;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.Documentation;
 import org.netbeans.modules.bpel.model.api.ExtensibleElements;
-import org.netbeans.modules.bpel.model.api.events.VetoException;
-import org.netbeans.modules.bpel.editors.api.utils.Util;
 
 import org.netbeans.modules.bpel.design.DesignView;
 import org.netbeans.modules.bpel.design.decoration.ComponentsDescriptor;
@@ -31,10 +28,7 @@ import org.netbeans.modules.bpel.design.decoration.Decoration;
 import org.netbeans.modules.bpel.design.decoration.DecorationProvider;
 import org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory;
 import org.netbeans.modules.bpel.design.decoration.Descriptor;
-import org.netbeans.modules.bpel.design.decoration.GlowDescriptor;
-import org.netbeans.modules.bpel.design.decoration.TextstyleDescriptor;
 import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
-import org.netbeans.modules.bpel.model.api.Activity;
 import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 
 /**
@@ -61,7 +55,8 @@ public final class LoggingDecorator extends DecorationProvider
         if (getTrace(entity) == null) {
             return null;
         }
-        LoggingButton button = new LoggingButton((ExtensibleElements) entity);
+        LoggingButton button 
+                = new LoggingButton(getDesignView(),(ExtensibleElements) entity);
         ComponentsDescriptor descriptor = new ComponentsDescriptor();
         descriptor.add(button, ComponentsDescriptor.RIGHT_TB);
         return new Decoration(new Descriptor[]{descriptor});
