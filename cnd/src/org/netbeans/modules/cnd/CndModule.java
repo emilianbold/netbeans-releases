@@ -45,9 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import org.netbeans.editor.Settings;
 import org.netbeans.modules.cnd.builds.OutputWindowOutputStream;
-import org.netbeans.modules.cnd.editor.cplusplus.CCKit;
-import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsInitializer;
-import org.netbeans.modules.cnd.editor.cplusplus.CKit;
 import org.netbeans.modules.cnd.editor.fortran.FKit;
 import org.netbeans.modules.cnd.editor.fortran.FSettingsInitializer;
 import org.netbeans.modules.cnd.editor.makefile.MakefileKit;
@@ -80,8 +77,6 @@ public class CndModule extends ModuleInstall {
     @Override public void restored() {
 
 	// Settings for editor kits
-        Settings.addInitializer(new CCSettingsInitializer(CCKit.class));
-	Settings.addInitializer(new CCSettingsInitializer(CKit.class));
 	Settings.addInitializer(new FSettingsInitializer(FKit.class));
 	Settings.addInitializer(new MakefileSettingsInitializer(MakefileKit.class));
 	Settings.addInitializer(new ShellSettingsInitializer(ShellKit.class));

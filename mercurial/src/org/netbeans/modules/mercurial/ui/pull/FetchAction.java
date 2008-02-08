@@ -104,7 +104,7 @@ public class FetchAction extends ContextAction {
             list = HgCommand.doFetch(root);
             
             if (list != null && !list.isEmpty()) {
-                HgUtils.outputMercurialTab(list);
+                HgUtils.outputMercurialTab(HgUtils.replaceHttpPassword(list));
             }
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);

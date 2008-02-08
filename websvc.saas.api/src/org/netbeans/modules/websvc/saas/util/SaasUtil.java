@@ -83,16 +83,19 @@ public class SaasUtil {
         if (input == null) {
             return null;
         }
-        InputStream in = input.getInputStream();
+        InputStream in = null;
         try {
-            JAXBException jbex = null;
+            Exception jbex = null;
             try {
+                in = input.getInputStream();
                 T t = loadJaxbObject(in, type, includeAware);
                 if (t != null) {
                     return t;
                 }
             } catch (JAXBException ex) {
                 jbex = ex;
+            } catch (IOException ioe) {
+                jbex = ioe;
             }
             String msg = NbBundle.getMessage(SaasUtil.class, "MSG_ErrorLoadingJaxb", type.getName(), input.getPath());
             IOException ioe = new IOException(msg);
@@ -213,6 +216,47 @@ public class SaasUtil {
         JXPathContext context = JXPathContext.newContext(root);
         context.registerNamespace("", Saas.NS_WADL);
         return type.cast(context.getValue(xpath));
+    }
+
+    public static Method wadlMethodFromIdRef(Application app, String methodIdRef) {
+        String methodId = methodIdRef;
+        if (methodId.charAt(0) == '#') {
+            methodId = methodId.substring(1);
+        }
+        Method result = null;
+        for (Object o : app.getResourceTypeOrMethodOrRepresentation()) {
+            if (o instanceof Method) {
+                Method m = (Method) o;
+                if (methodId.equals(m.getId())) {
+                    return m;
+                }
+            }
+        }
+        for (Resource base : app.getResources().getResource()) {
+            result = findMethodById(base, methodId);
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
+    }
+    
+    static Method findMethodById(Resource base, String methodId) {
+        for (Object o : base.getMethodOrResource()) {
+            if (o instanceof Method) {
+                Method m = (Method)o;
+                if (methodId.equals(m.getId())) {
+                    return m;
+                }
+                continue;
+            } else {
+                Method m = findMethodById((Resource)o, methodId);
+                if (m != null) {
+                    return m;
+                }
+            }
+        }
+        return null;
     }
     
     public static Method wadlMethodFromXPath(Application app, String xpath) {

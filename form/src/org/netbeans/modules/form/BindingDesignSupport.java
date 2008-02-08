@@ -1004,10 +1004,12 @@ public class BindingDesignSupport {
                             title = capitalize(title);
                         }
                     }
-                    buf.append(columnVariable);
-                    buf.append(".setColumnName(\""); // NOI18N
-                    buf.append(title);
-                    buf.append("\");\n"); // NOI18N
+                    if ((title != null) && (!"null".equals(title))) { // NOI18N
+                        buf.append(columnVariable);
+                        buf.append(".setColumnName(\""); // NOI18N
+                        buf.append(title);
+                        buf.append("\");\n"); // NOI18N
+                    }
                     String columnClass = sub.getParameter(MetaBinding.TABLE_COLUMN_CLASS_PARAMETER);
                     if (columnClass != null) {
                         buf.append(columnVariable);
