@@ -16,13 +16,13 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
-
 package org.netbeans.modules.bpel.mapper.multiview;
 
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.EventObject;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModelFactory;
@@ -59,17 +59,14 @@ public class DesignContextControllerImpl2
 
     private MapperTcContext mMapperTcContext;
     private BpelModelSynchListener mBpelModelSynchListener;
-
     private BpelModel myBpelModel;
     // flag property for MapperTC showing/hidding states
     private transient boolean isMapperShown;
     private BpelDesignContext mNewContext;
     private MapperStateManager myMapperStateManager;
-
     private static final int ACTION_NODE_CHANGE_TASK_DELAY = 150;
     private transient RequestProcessor.Task myPreviousTask;
     private int myDelay = ACTION_NODE_CHANGE_TASK_DELAY;
-
     private WeakReference<Object> mBpelModelUpdateSourceRef;
 
     /**
@@ -80,11 +77,11 @@ public class DesignContextControllerImpl2
         assert mapperTc != null;
         assert mapperTc instanceof MapperTcContext;
 
-        mMapperTcContext = (MapperTcContext)mapperTc;
+        mMapperTcContext = (MapperTcContext) mapperTc;
         myBpelModel = mapperTc.getLookup().lookup(BpelModel.class);
         assert myBpelModel != null;
         mBpelModelSynchListener = new BpelModelSynchListener(this);
-        myBpelModel.addEntityChangeListener(mBpelModelSynchListener);
+        mBpelModelSynchListener.register(myBpelModel);
 
         TopComponent.getRegistry().addPropertyChangeListener(this);
 
@@ -93,7 +90,7 @@ public class DesignContextControllerImpl2
 
     public void cleanup() {
         TopComponent.getRegistry().removePropertyChangeListener(this);
-        myBpelModel.removeEntityChangeListener(mBpelModelSynchListener);
+        mBpelModelSynchListener.unregisterAll();
         myBpelModel = null;
         mMapperTcContext = null;
     }
@@ -151,7 +148,7 @@ public class DesignContextControllerImpl2
     }
 
     // TODO m
-    public void reloadMapper(ChangeEvent event) {
+    public void reloadMapper(EventObject event) {
         //
         // Ignore reload if it has been initiated by the mapper itself
         if (event.getSource() == getBpelModelUpdateSource()) {
@@ -218,7 +215,7 @@ public class DesignContextControllerImpl2
         // TODO m
         isMapperShown = true;
         Mapper mapper = mMapperTcContext != null
-            ? mMapperTcContext.getMapper() : null;
+                ? mMapperTcContext.getMapper() : null;
         if (mapper != null) {
             mapper.setVisible(true);
         }
@@ -229,7 +226,7 @@ public class DesignContextControllerImpl2
         assert EventQueue.isDispatchThread();
         isMapperShown = false;
         Mapper mapper = mMapperTcContext != null
-            ? mMapperTcContext.getMapper() : null;
+                ? mMapperTcContext.getMapper() : null;
         if (mapper != null) {
             mapper.setVisible(false);
         }
@@ -296,7 +293,7 @@ public class DesignContextControllerImpl2
             return;
         }
 
-        if  (isModelInvalid()) {
+        if (isModelInvalid()) {
             myMapperStateManager.storeOldEntityContext(mContext);
             // hide mapper if BpelModel is invalid
             showModelIsInvalid();
@@ -328,11 +325,12 @@ public class DesignContextControllerImpl2
             }
 
             SwingUtilities.invokeLater(new Runnable() {
+
                 public void run() {
                     GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
                 }
             });
-            //
+        //
 //            mMapperTcContext.showMapperTcGroup(true);
         }
 /*
@@ -393,7 +391,7 @@ public class DesignContextControllerImpl2
             TopComponent mapperTc = mMapperTcContext.getTopComponent();
             if (mapperTc != null) {
                 if (aNode != null) {
-                    mapperTc.setActivatedNodes(new Node[] {aNode});
+                    mapperTc.setActivatedNodes(new Node[]{aNode});
                 } else {
                     mapperTc.setActivatedNodes(new Node[0]);
                 }
@@ -417,11 +415,11 @@ public class DesignContextControllerImpl2
         entityName = node != null ? node.getDisplayName() : null;
         if (entityName == null) {
             BpelEntity entity = context.getSelectedEntity();
-            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : Util.getTagName(entity);
+            entityName = entity instanceof Nameable ? ((Nameable) entity).getName() : Util.getTagName(entity);
         }
         entityName = entityName == null ? "" : entityName;
         disableMapper(NbBundle.getMessage(MapperMultiviewElement.class,
-                                            "LBL_EmptyMapper", entityName)); // NOI18N
+                "LBL_EmptyMapper", entityName)); // NOI18N
     }
 
     private void showNotValidContext(BpelDesignContext context) {
@@ -431,16 +429,16 @@ public class DesignContextControllerImpl2
         entityName = node != null ? node.getDisplayName() : null;
         if (entityName == null) {
             BpelEntity entity = context.getSelectedEntity();
-            entityName = entity instanceof Nameable ? ((Nameable)entity).getName() : Util.getTagName(entity);
+            entityName = entity instanceof Nameable ? ((Nameable) entity).getName() : Util.getTagName(entity);
         }
         entityName = entityName == null ? "" : entityName;
         disableMapper(NbBundle.getMessage(MapperMultiviewElement.class,
-                                            "LBL_InValidMapperContext", entityName)); // NOI18N
+                "LBL_InValidMapperContext", entityName)); // NOI18N
     }
 
     private void disableMapper(String message) {
         TopComponent tc = mMapperTcContext.getTopComponent();
-        if ( tc == null) {
+        if (tc == null) {
             return;
         }
 
@@ -460,4 +458,7 @@ public class DesignContextControllerImpl2
         return false; // Consider the model valid by default
     }
 
+    public void processDataObject(Object dataObject) {
+        mBpelModelSynchListener.processDataObject(dataObject);
+    }
 }

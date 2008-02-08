@@ -85,9 +85,9 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
-import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsNames;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 
@@ -812,15 +812,7 @@ public abstract class CsmResultItem
                         return substed;
                     }
                     int ind = substituteExp.getParameterCount() - 1;
-                    boolean addSpace = false;
-                    Formatter f = doc.getFormatter();
-                    if (f instanceof ExtFormatter) {
-                        Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
-                        o = Settings.getValue(doc.getKitClass(), CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
-                        if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                            addSpace = true;
-                        }
-                    }
+                    boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceAfterComma();
                     try {
                         if (addSpace && (ind == 0 || (offset > 0 && Character.isWhitespace(DocumentUtilities.getText(doc, offset - 1, 1).charAt(0))))) {
                             addSpace = false;
@@ -837,16 +829,11 @@ public abstract class CsmResultItem
 
             default:
                 text = getItemText();
-                boolean addSpace = false;
+                boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceBeforeParenthesis();
                 boolean addClosingParen = false;
                 Formatter f = doc.getFormatter();
                 if (f instanceof ExtFormatter) {
-                    Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
-                    o = Settings.getValue(doc.getKitClass(), CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
-                    if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                        addSpace = true;
-                    }
-                    o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
+                    Object o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
                     o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
                     if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                         addClosingParen = true;
@@ -958,17 +945,12 @@ public abstract class CsmResultItem
                             text = ")"; // NOI18N
                     } else { // one or more parameters
                         int ind = substituteExp.getParameterCount() - 1;
-                        boolean addSpace = false;
+                        boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceAfterComma();
                         boolean addClosingParen = false;
                         Formatter f = doc.getFormatter();
                         if (f instanceof ExtFormatter) {
                             // XXX CPP settings
-                            Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
-                            if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                                addSpace = true;
-                            }
-                            // XXX CPP settings
-                            o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
+                            Object o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
                             if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                                 addClosingParen = true;
                             }
@@ -1008,16 +990,11 @@ public abstract class CsmResultItem
                     
                 default:
                     text = getItemText();
-                    boolean addSpace = false;
+                    boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceBeforeParenthesis();
                     boolean addClosingParen = false;
                     Formatter f = doc.getFormatter();
                     if (f instanceof ExtFormatter) {
-//                        Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
-                        Object o = Settings.getValue(doc.getKitClass(), CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
-                        if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                            addSpace = true;
-                        }
-                        o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
+                        Object o =Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
 //                        o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
                         if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                             addClosingParen = true;

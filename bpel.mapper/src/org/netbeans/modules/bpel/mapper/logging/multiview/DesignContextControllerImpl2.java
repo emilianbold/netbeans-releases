@@ -23,6 +23,7 @@ import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.EventObject;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bpel.editors.api.utils.Util;
 import org.netbeans.modules.bpel.mapper.logging.model.LoggingMapperModelFactory;
@@ -91,7 +92,7 @@ public class DesignContextControllerImpl2
         myBpelModel = mapperTc.getLookup().lookup(BpelModel.class);
         assert myBpelModel != null;
         mBpelModelSynchListener = new BpelModelSynchListener(this);
-        myBpelModel.addEntityChangeListener(mBpelModelSynchListener);
+        mBpelModelSynchListener.register(myBpelModel);
 
         TopComponent.getRegistry().addPropertyChangeListener(this);
 
@@ -100,7 +101,7 @@ public class DesignContextControllerImpl2
 
     public void cleanup() {
         TopComponent.getRegistry().removePropertyChangeListener(this);
-        myBpelModel.removeEntityChangeListener(mBpelModelSynchListener);
+        mBpelModelSynchListener.unregisterAll();
         myBpelModel = null;
         mMapperTcContext = null;
     }
@@ -113,8 +114,13 @@ public class DesignContextControllerImpl2
         return mContext;
     }
 
-    // context changes if selectedEntity changes
     public synchronized void setContext(BpelDesignContext newContext) {
+        assert EventQueue.isDispatchThread();
+        setContext(newContext, false);
+    }
+
+    // context changes if selectedEntity changes
+    public synchronized void setContext(BpelDesignContext newContext, boolean forceReload) {
         assert EventQueue.isDispatchThread();
         //
         mNewContext = newContext;
@@ -144,7 +150,7 @@ public class DesignContextControllerImpl2
 
         // the context have to be updated just if context changes,
         // in case the bpel model changes doesn't need to update context
-        if (newContext.equals(mContext))
+        if (newContext.equals(mContext) && !forceReload)
         {
             return;
         }
@@ -152,12 +158,12 @@ public class DesignContextControllerImpl2
         setActivatedNodes(newContext == null ? null : newContext.getActivatedNode());
 
         if (isMapperShown) {
-            setContextImpl();
+            setContextImpl(forceReload);
         }
     }
 
     // TODO m
-    public void reloadMapper(ChangeEvent event) {
+    public void reloadMapper(EventObject event) {
         //
         // Ignore reload if it has been initiated by the mapper itself
         if (event.getSource() == getBpelModelUpdateSource()) {
@@ -190,7 +196,7 @@ public class DesignContextControllerImpl2
         assert EventQueue.isDispatchThread();
         if (!DesignContextUtil.isValidContext(mContext)) {
             setDelay(0);
-            updateContext(-1);
+            updateContext(-1, false);
             return;
         }
 
@@ -228,7 +234,9 @@ public class DesignContextControllerImpl2
         if (mapper != null) {
             mapper.setVisible(true);
         }
-        setContextImpl(true);
+
+        updateContext(-1, true);
+//        setContextImpl(true);
     }
 
     public void hideMapper() {
@@ -250,7 +258,7 @@ public class DesignContextControllerImpl2
         myMapperStateManager = new MapperStateManager(mMapperTcContext);
     }
 
-    private void updateContext(int delay) {
+    private void updateContext(int delay, boolean forceReload) {
         assert EventQueue.isDispatchThread();
         if (delay <= 0) {
             setDelay(ACTION_NODE_CHANGE_TASK_DELAY);
@@ -267,7 +275,7 @@ public class DesignContextControllerImpl2
         }
 
         if (delay <= 0) {
-            setContext(LoggingDesignContextFactory.getInstance().getActivatedContext(myBpelModel));
+            setContext(LoggingDesignContextFactory.getInstance().getActivatedContext(myBpelModel), forceReload);
         } else {
             myPreviousTask = RequestProcessor.getDefault().post(
                     new Runnable() {
@@ -285,7 +293,7 @@ public class DesignContextControllerImpl2
 
     // todo m
     private void updateContext() {
-        updateContext(getDelay());
+        updateContext(getDelay(), false);
     }
 
     // TODO m correct behaviour if just selectedEntity changes
@@ -466,4 +474,7 @@ public class DesignContextControllerImpl2
         return false; // Consider the model valid by default
     }
 
+    public void processDataObject(Object dataObject) {
+        mBpelModelSynchListener.processDataObject(dataObject);
+    }
 }
