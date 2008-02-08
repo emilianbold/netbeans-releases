@@ -140,11 +140,11 @@ final class MakeSharableVisualPanel2 extends JPanel {
                 //file reference
                 String ref = (String)item;
                 if (ACTION_ABSOLUTE.equals(action)) {
-//                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, false, anthelper, helper));
+                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, false, anthelper, helper));
                 } else if (ACTION_RELATIVE.equals(action)) {
-//                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, true, anthelper, helper));
+                    actions.add(new SharableLibrariesUtils.KeepJarAtLocation(ref, true, anthelper, helper));
                 } else if (ACTION_COPY.equals(action)) {
-//                    actions.add(new SharableLibrariesUtils.CopyLibraryJars(helper, anthelper, ref));
+                    actions.add(new SharableLibrariesUtils.CopyJars(helper, anthelper, ref));
                 } else {
                     assert false: "no handling defined for action: " + action;
                 }

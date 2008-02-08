@@ -69,6 +69,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -171,14 +172,18 @@ public final class SharableLibrariesUtils {
 
                         public Object run() throws IOException {
                             try {
-                                helper.setLibrariesLocation(loc);
-                                ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
+                                helper.getProjectDirectory().getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                                    public void run() throws IOException {
+                                        helper.setLibrariesLocation(loc);
 
-                                // TODO or make just runnables?
-                                List<Action> actions = (List<Action>) wizardDescriptor.getProperty(PROP_ACTIONS);
-                                for (Action act : actions) {
-                                    act.actionPerformed(null);
-                                }
+                                        // TODO or make just runnables?
+                                        List<Action> actions = (List<Action>) wizardDescriptor.getProperty(PROP_ACTIONS);
+                                        for (Action act : actions) {
+                                            act.actionPerformed(null);
+                                        }
+                                        ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
+                                    }
+                                });
                             } catch (IllegalArgumentException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -229,6 +234,120 @@ public final class SharableLibrariesUtils {
             }
         }
         return panels;
+    }
+
+    static class CopyJars extends AbstractAction {
+        private ReferenceHelper refhelper;
+        private AntProjectHelper ahelper;
+        private String reference;
+
+        public CopyJars(ReferenceHelper helper, AntProjectHelper anthelper, String ref) {
+            this.reference = ref;
+            this.ahelper = anthelper;
+            refhelper = helper;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String value = ahelper.getStandardPropertyEvaluator().evaluate(reference);
+            File absFile = ahelper.resolveFile(value);
+            String location = ahelper.getLibrariesLocation();
+            File libraryFile = ahelper.resolveFile(location);
+            File directory = libraryFile.getParentFile();
+            if (!directory.exists()) {
+                directory.mkdirs();
+                FileUtil.refreshFor(directory);
+            }
+            FileObject dir = FileUtil.toFileObject(directory);
+            updateReference(absFile, reference, true, dir);
+            //now process source reference
+            String source = reference.replace("${file.reference", "${source.reference"); //NOI18N
+            value = ahelper.getStandardPropertyEvaluator().evaluate(source);
+            if (!value.startsWith("${source.")) { //NOI18N
+                absFile = ahelper.resolveFile(value);
+                updateReference(absFile, source.replace("${", "").replace("}", ""), false, dir);
+            }
+            //now process javadoc reference
+            String javadoc = reference.replace("${file.reference", "${javadoc.reference"); //NOI18N
+            value = ahelper.getStandardPropertyEvaluator().evaluate(javadoc);
+            if (!value.startsWith("${javadoc.")) { //NOI18N
+                absFile = ahelper.resolveFile(value);
+                updateReference(absFile, javadoc.replace("${", "").replace("}", ""), false, dir);
+            }
+        }
+        
+        private void updateReference(File oldFile, String key, boolean main, FileObject dir) {
+            FileObject src = FileUtil.toFileObject(oldFile);
+            FileObject newFile;
+            try {
+                //TODO it could actually already exist..
+                newFile = FileUtil.copyFile(src, dir, src.getName());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                newFile = src;
+            }
+            File absFile = FileUtil.toFile(newFile);
+        //always relative when possible.
+        // assume we have relative path to library as well, thus relative path is
+        //good default value. 
+            String newVal = PropertyUtils.relativizeFile(FileUtil.toFile(ahelper.getProjectDirectory()), absFile);
+            if (newVal == null) {
+                //fallback
+                newVal = absFile.getAbsolutePath();
+            }
+            if (main) {
+                refhelper.createForeignFileReferenceAsIs(newVal, key);
+            } else {
+                refhelper.createExtraForeignFileReferenceAsIs(newVal, key);
+            }
+        }
+        
+    }
+
+    static class KeepJarAtLocation extends AbstractAction {
+        private ReferenceHelper refhelper;
+        private AntProjectHelper ahelper;
+        private String reference;
+        private boolean relative;
+
+        public KeepJarAtLocation(String ref, boolean b, AntProjectHelper anthelper, ReferenceHelper helper) {
+            this.reference = ref;
+            this.ahelper = anthelper;
+            refhelper = helper;
+            relative = b;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String value = ahelper.getStandardPropertyEvaluator().evaluate(reference);
+            updateReference(value, reference, true);
+            //now process source reference
+            String source = reference.replace("${file.reference", "${source.reference"); //NOI18N
+            value = ahelper.getStandardPropertyEvaluator().evaluate(source);
+            if (!value.startsWith("${source.")) { //NOI18N
+                updateReference(value, source.replace("${", "").replace("}", ""), false);
+            }
+            //now process javadoc reference
+            String javadoc = reference.replace("${file.reference", "${javadoc.reference"); //NOI18N
+            value = ahelper.getStandardPropertyEvaluator().evaluate(javadoc);
+            if (!value.startsWith("${javadoc.")) { //NOI18N
+                updateReference(value, javadoc.replace("${", "").replace("}", ""), false);
+            }
+        }
+
+        private void updateReference(String value, String key, boolean main) {
+            File absFile = ahelper.resolveFile(value);
+            String newVal = relative ? PropertyUtils.relativizeFile(FileUtil.toFile(ahelper.getProjectDirectory()), absFile) : absFile.getAbsolutePath();
+            if (newVal == null) {
+                //fallback
+                newVal = absFile.getAbsolutePath();
+            }
+            if (!newVal.equals(value)) {
+                if (main) {
+                    refhelper.createForeignFileReferenceAsIs(newVal, key);
+                } else {
+                    refhelper.createExtraForeignFileReferenceAsIs(newVal, key);
+                }
+            }
+        }
     }
     
     static class KeepLibraryAtLocation extends AbstractAction {
@@ -302,7 +421,7 @@ public final class SharableLibrariesUtils {
             refHelper = h;
             library = l;
         }
-         
+
         public void actionPerformed(ActionEvent e) {
             assert library.getManager() == LibraryManager.getDefault() : "Only converting from non-sharable to sharable is supported."; //NOi18N
             try {

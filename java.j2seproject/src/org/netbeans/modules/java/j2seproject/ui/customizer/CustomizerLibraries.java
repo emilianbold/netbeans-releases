@@ -818,6 +818,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 librariesLocation.setEnabled(true);
                 librariesLocation.setText(uiProperties.getProject().getAntProjectHelper().getLibrariesLocation());
                 Mnemonics.setLocalizedText(librariesBrowse, NbBundle.getMessage(CustomizerLibraries.class, "LBL_CustomizerLibraries_Browse_JButton")); // NOI18N
+                switchLibrary();
             }
         } else {
             File prjLoc = FileUtil.toFile(uiProperties.getProject().getProjectDirectory());
