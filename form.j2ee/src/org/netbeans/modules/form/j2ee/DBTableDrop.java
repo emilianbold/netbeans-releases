@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.form.j2ee;
 
-import com.sun.source.tree.*;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTargetDragEvent;
 import java.util.*;
@@ -120,7 +119,7 @@ public class DBTableDrop extends DBConnectionDrop {
             pItem.setIcon(new ImageIcon(
                 Utilities.loadImage("org/netbeans/modules/form/j2ee/resources/binding.gif")).getImage()); // NOI18N
         } else {
-            pItem = new PaletteItem(new ClassSource("javax.swing.JTable", null, null), null); // NOI18N
+            pItem = new PaletteItem(new ClassSource("javax.swing.JTable"), null); // NOI18N
         }
         return pItem;
     }

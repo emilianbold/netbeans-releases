@@ -96,6 +96,9 @@ public class XMLGeneratorVisitor extends DeepAXITreeVisitor {
         File f = new File(schemaFileName);
         f = FileUtil.normalizeFile(f);
         FileObject fObj =FileUtil.toFileObject(f);
+        //temp fix to handle http based xsd files
+        if(fObj == null)
+            return;
         ModelSource ms = null;
         try {
             ms = Utilities.createModelSource(fObj, true);

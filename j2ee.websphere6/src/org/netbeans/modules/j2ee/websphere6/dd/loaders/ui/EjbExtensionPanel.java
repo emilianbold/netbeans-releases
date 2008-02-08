@@ -91,14 +91,6 @@ public class EjbExtensionPanel extends SectionInnerPanel implements java.awt.eve
         idField.setText(ejbExtension.getXmiId());
         beanIdField.setText(ejbExtension.getHref());
         
-        String [] data = new String[] {
-            ejbExtension.getEjbExtensionsType(),
-            ejbExtension.getEnterpriseBean(),
-            ejbExtension.getHref(),
-            ejbExtension.getXmiId(),
-            ejbExtension.getXmiName(),
-            ejbExtension.getXmiType()
-        };
         addModifier(nameField);
         addModifier(idField);
         addModifier(beanIdField);

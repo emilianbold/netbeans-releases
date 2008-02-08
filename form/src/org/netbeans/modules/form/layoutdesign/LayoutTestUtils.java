@@ -249,7 +249,7 @@ public class LayoutTestUtils implements LayoutConstants {
 	    FileObject fo = targetFolder.createData(formFO.getName() + "Test-ExpectedEndModel" + Integer.toString(fd.getLayoutDesigner().getModelCounter()), "txt"); //NOI18N
 	    fw = new FileWriter(FileUtil.toFile(fo));
 	    fw.write(lm.dump(idToNameMap));
-	    StatusDisplayer.getDefault().setStatusText("The test was successfully written: " + fo.getPath()); // NOI18N
+	    StatusDisplayer.getDefault().setStatusText("The test was successfully written: " + FileUtil.getFileDisplayName(fo)); // NOI18N
 	} catch (IOException ex) {
 	    ex.printStackTrace();
 	    return;

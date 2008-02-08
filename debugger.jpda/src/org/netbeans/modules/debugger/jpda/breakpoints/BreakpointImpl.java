@@ -379,6 +379,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                     }
                     if (step.thread().status() == ThreadReference.THREAD_STATUS_ZOMBIE) {
                         thread.virtualMachine().eventRequestManager().deleteEventRequest(step);
+                        debugger.getOperator().unregister(step);
                         activeStepRequests.remove(i);
                         continue;
                     }
@@ -473,6 +474,7 @@ public abstract class BreakpointImpl implements Executor, PropertyChangeListener
                         // the step requests to prevent confusion
                         for (StepRequest step : activeStepRequests) {
                             thread.virtualMachine().eventRequestManager().deleteEventRequest(step);
+                            debugger.getOperator().unregister(step);
                         }
                     }
                     return yes;

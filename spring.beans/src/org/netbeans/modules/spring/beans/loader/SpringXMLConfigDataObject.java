@@ -73,7 +73,7 @@ public class SpringXMLConfigDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new SpringXMLConfigDataNode(this, getLookup());
+        return new SpringXMLConfigDataNode(this);
     }
 
     @Override

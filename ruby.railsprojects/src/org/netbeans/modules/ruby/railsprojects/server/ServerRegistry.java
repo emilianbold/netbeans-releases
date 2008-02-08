@@ -39,14 +39,19 @@
  */
 package org.netbeans.modules.ruby.railsprojects.server;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstanceProvider;
 import org.openide.util.lookup.Lookups;
@@ -54,75 +59,143 @@ import org.openide.util.lookup.Lookups;
 /**
  * A server registry for servers with Ruby capabilities.
  *
- * TODO: a work in progess
+ * TODO: a work in progess. Need to be better integrated with RubyInstanceProvider,
+ * possibly implement an instance provider for WEBrick/Mongrel instead of 
+ * handling them here.
  * 
  * @author peterw99, Erno Mononen
  */
-class ServerRegistry {
+public class ServerRegistry implements VetoableChangeListener {
 
-    private static final ServerRegistry defaultRegistry = new ServerRegistry();
-    private final List<RubyInstance> servers = new ArrayList<RubyInstance>();
-    private static Map<RubyPlatform, List<RubyServer>> rubyServers;
-
+    private static ServerRegistry defaultRegistry; 
     private ServerRegistry() {
     }
 
-    public static ServerRegistry getDefault() {
+    public synchronized static ServerRegistry getDefault() {
+        if (defaultRegistry == null) {
+            defaultRegistry = new ServerRegistry();
+            RubyPlatformManager.addVetoableChangeListener(defaultRegistry);
+        }
         return defaultRegistry;
     }
 
     public List<RubyInstance> getServers() {
+        List<RubyInstance> result = new ArrayList<RubyInstance>();
+
         for (RubyInstanceProvider provider : Lookups.forPath("Servers/Ruby").lookupAll(RubyInstanceProvider.class)) {
-            servers.addAll(provider.getInstances());
+            result.addAll(provider.getInstances());
         }
-        servers.addAll(getRubyServers());
-        return servers;
+        result.addAll(getRubyServers());
+
+        return result;
     }
 
-    static List<? extends RubyInstance> getServers(RubyPlatform platform) {
-        return getServerMap().get(platform);
+    List<RubyInstance> getServers(RubyPlatform platform) {
+        List<RubyInstance> result = new  ArrayList<RubyInstance>();
+        for (RubyInstance each : getServers()) {
+            if (each.isPlatformSupported(platform)) {
+                result.add(each);
+            }
+        }
+        return result;
     }
+    
+    List<RubyServer> getRubyServers() {
+        List<RubyServer> result = new  ArrayList<RubyServer>();
+        for (RubyPlatform each : RubyPlatformManager.getPlatforms()) {
+            result.addAll(RubyServerFactory.getInstance(each).getServers());
+        }
+        return result;
+    }
+    
+    public RubyInstance getServer(String serverId, RubyPlatform platform) {
 
-    static RubyInstance getServer(String uri, RubyPlatform platform) {
-        for (RubyInstance each : getServerMap().get(platform)) {
-            if (each.getServerUri().equals(uri)) {
+        for (RubyInstanceProvider provider : Lookups.forPath("Servers/Ruby").lookupAll(RubyInstanceProvider.class)) {
+            RubyInstance instance = provider.getInstance(serverId); 
+            if (instance != null && instance.isPlatformSupported(platform)) {
+                return instance;
+            }
+        }
+        
+        for (RubyServer each : RubyServerFactory.getInstance(platform).getServers()) {
+            if (each.getServerUri().equals(serverId) && each.isPlatformSupported(platform)) {
                 return each;
             }
         }
         return null;
+        
     }
     
-    private static Map<RubyPlatform, List<RubyServer>> getServerMap(){
-        if (rubyServers == null) {
-            rubyServers = new HashMap<RubyPlatform, List<RubyServer>>();
-            for (RubyPlatform platform : RubyPlatformManager.getPlatforms()) {
-                rubyServers.put(platform, getServersFor(platform));
-            }
+    public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+        if (evt.getPropertyName().equals("platforms")) { //NOI18N
+            ServerInstanceProviderImpl.getInstance().fireServersChanged();
         }
-        return Collections.<RubyPlatform, List<RubyServer>>unmodifiableMap(rubyServers);
-    }
-    
-    static List<RubyServer> getRubyServers() {
-        List<RubyServer> result = new ArrayList<RubyServer>();
-        for (List<RubyServer> each : getServerMap().values()) {
-            result.addAll(each);
-        }
-        return result;
     }
 
-    private static List<RubyServer> getServersFor(RubyPlatform platform) {
-        List<RubyServer> result = new  ArrayList<RubyServer>();
-        // assume there is always webrick when creating rails applications
-        result.add(new WEBrick(platform));
-        GemManager gemManager = platform.getGemManager();
-        if (gemManager == null) {
+    /**
+     * A factory for Mongrel and WEBrick instances for a Ruby platform. Takes care 
+     * of caching the instances and reinitializing 
+     * the server list when there are changes in the gems of the platform.
+     */
+    private static class RubyServerFactory implements PropertyChangeListener {
+
+        private static final Map<RubyPlatform, RubyServerFactory> instances = new HashMap<RubyPlatform, ServerRegistry.RubyServerFactory>();
+        private final RubyPlatform platform;
+        private final Set<RubyServer> servers = new HashSet<RubyServer>();
+
+        private RubyServerFactory(RubyPlatform platform) {
+            this.platform = platform;
+        }
+
+        public static RubyServerFactory getInstance(RubyPlatform platform) {
+            RubyServerFactory existing = instances.get(platform);
+            if (existing != null) {
+                return existing;
+            }
+            RubyServerFactory result = new RubyServerFactory(platform);
+            result.initWEBrick();
+            result.initMongrel();
+            platform.addPropertyChangeListener(result);
+            instances.put(platform, result);
             return result;
         }
-        String mongrelVersion = gemManager.getVersion(Mongrel.GEM_NAME);
-        if (mongrelVersion != null) {
-            result.add(new Mongrel(platform, mongrelVersion));
+
+        public List<RubyServer> getServers() {
+            return new ArrayList<RubyServer>(servers);
         }
-        return result;
+
+        private void initMongrel() {
+            String mongrelVersion = platform.getGemManager().getVersion(Mongrel.GEM_NAME);
+            if (mongrelVersion == null) {
+                // remove all mongrels
+                for (Iterator<RubyServer> it = servers.iterator(); it.hasNext(); ) {
+                    if (it.next() instanceof Mongrel) {
+                        it.remove();
+                    }
+                }
+                return;
+
+            }
+            Mongrel candidate = new Mongrel(platform, mongrelVersion);
+            if (!servers.contains(candidate)) {
+                servers.add(candidate);
+            }
+        }
+
+        private void initWEBrick() {
+            WEBrick candidate = new WEBrick(platform);
+            if (!servers.contains(candidate)) {
+                servers.add(candidate);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals("gems")) { //NOI18N
+                initMongrel();
+                initWEBrick();
+                ServerInstanceProviderImpl.getInstance().fireServersChanged();
+            }
+        }
     }
 
 }

@@ -145,6 +145,9 @@ public final class DBMetaData {
     /** Database type display description for SQL Server */
     public static final String SQLSERVER_TEXT = "SQL SERVER"; // NOI18N
 
+	/** Database type display description for MySQL Server */
+    public static final String MYSQL_TEXT = "MySQL"; // NOI18N
+	public static final String MYSQL = "MYSQL"; // NOI18N
     /** Database type display description for JDBC */
     // public static final String JDBC_TEXT = "JDBC"; // NOI18N
     /** Database type display description for VSAM/ADABAS/IAM */
@@ -154,8 +157,7 @@ public final class DBMetaData {
     public static final String JDBC_TEXT = "JDBC-ODBC"; // NOI18N
 
     /** List of database type display descriptions */
-    public static final String[] DBTYPES = { DBMetaData.DB2_TEXT, DBMetaData.ORACLE_TEXT, DBMetaData.SQLSERVER_TEXT, DBMetaData.JDBC_TEXT, DBMetaData.VSAM_ADABAS_IAM_TEXT,
-            DBMetaData.JDBC_TEXT };
+    public static final String[] DBTYPES = { DBMetaData.DB2_TEXT, DBMetaData.ORACLE_TEXT, DBMetaData.SQLSERVER_TEXT, DBMetaData.JDBC_TEXT, DBMetaData.VSAM_ADABAS_IAM_TEXT, DBMetaData.JDBC_TEXT,DBMetaData.MYSQL_TEXT };
 
     /** List of Java types */
     public static final String[] JAVATYPES = { "boolean", "byte", "byte[]", "double", "float", "int",
@@ -411,6 +413,9 @@ public final class DBMetaData {
         if (dbname.equals("microsoft sql server")) {
             // Microsoft SQL Server
             dbtype = DBMetaData.SQLSERVER;
+        }else if (dbname.equals("mysql")) {
+            // Microsoft SQL Server
+            dbtype = DBMetaData.MYSQL;
         } else if (dbname.equals("sql server") || dbname.indexOf("jdbc") > -1) {
             // JDBC
             dbtype = DBMetaData.JDBC;

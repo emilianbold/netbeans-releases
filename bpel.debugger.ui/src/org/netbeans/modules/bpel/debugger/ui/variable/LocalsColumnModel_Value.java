@@ -78,6 +78,10 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
         
         @Override
         public String getAsText() {
+            if ("".equals(getValue())) {
+                return "";
+            }
+            
             return myHelper.getValue(getValue());
         }
         
@@ -90,6 +94,10 @@ public final class LocalsColumnModel_Value extends AbstractColumn {
         
         @Override
         public boolean supportsCustomEditor() {
+            if ("".equals(getValue())) {
+                return false;
+            }
+            
             return myHelper.supportsCustomEditor(getValue());
         }
         

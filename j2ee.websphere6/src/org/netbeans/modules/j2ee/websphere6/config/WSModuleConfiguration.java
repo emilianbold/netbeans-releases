@@ -67,21 +67,14 @@ import org.openide.loaders.DataObject;
 public class WSModuleConfiguration implements ModuleConfiguration {
     
     // j2ee module object
-    private J2eeModule j2eeModule;
+    private final J2eeModule j2eeModule;
     
     // cached data object for the server-specific configuration file (initialized by the subclasses)
     protected DataObject deploymentDescriptorDO;
 
-    // the directory with resources - supplied by the configuration support in the construction time
-    private File resourceDir;
-
-    
-    public WSModuleConfiguration() {
-    }
 
     public WSModuleConfiguration(J2eeModule j2eeModule) {
         this.j2eeModule = j2eeModule;
-        this.resourceDir = j2eeModule.getResourceDirectory();
     }
 
     public void dispose() {

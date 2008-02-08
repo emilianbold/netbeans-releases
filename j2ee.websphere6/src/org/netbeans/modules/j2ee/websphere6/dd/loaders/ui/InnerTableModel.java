@@ -58,8 +58,8 @@ public abstract class InnerTableModel extends AbstractTableModel {
 
     public InnerTableModel(XmlMultiViewDataSynchronizer synchronizer, String[] columnNames, int[] columnWidths) {
         this.synchronizer = synchronizer;
-        this.columnNames = columnNames;
-        this.columnWidths = columnWidths;
+        this.columnNames = columnNames.clone();
+        this.columnWidths = columnWidths.clone();
     }
 
     public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -79,7 +79,7 @@ public abstract class InnerTableModel extends AbstractTableModel {
     }
 
     public int[] getColumnWidths() {
-        return columnWidths;
+        return columnWidths.clone();
     }
 
     public abstract int addRow();

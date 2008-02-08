@@ -225,6 +225,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                     if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
                         return;
                     }
+                    projectDescriptor.setVersion(currentVersion);
                 }
                 
 		//projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);

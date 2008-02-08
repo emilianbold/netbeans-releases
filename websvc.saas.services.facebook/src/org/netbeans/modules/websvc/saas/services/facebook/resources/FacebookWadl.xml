@@ -1,0 +1,1412 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10">
+  <grammars/>
+  <resources base="http://api.facebook.com">
+    <resource path="restserver.php">
+      <method id="facebook.admin_getAppProperties" name="POST">
+        <doc xml:lang="en">Gets property values previously set for an application on either the Facebook Developer application or the with the admin.setAppProperties call.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="properties" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">A list of property names that you want to view. This list is described on ApplicationProperties.</doc>
+          </param>
+          <param fixed="facebook.admin.getAppProperties" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.admin_setAppProperties" name="POST">
+        <doc xml:lang="en">Sets (several) property values for an application. These values previously were only accessible through the Developer application.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="properties" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">A JSON encoded map of property names to new values. This call will fail if values have the wrong type. The full list is described on ApplicationProperties.</doc>
+          </param>
+          <param fixed="facebook.admin.setAppProperties" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.auth_createToken" name="POST">
+        <doc xml:lang="en">Creates an auth_token to be passed in as a parameter to login.php and then to auth.getSession after the user has logged in. The user must log in soon after you create this token.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.auth.createToken" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.data_getCookies" name="POST">
+        <doc xml:lang="en">This method returns all cookies for a given user and application.</doc>
+        <request>
+          <param name="uid" required="true" style="query" type="xsd:integer">
+            <doc xml:lang="en">The user from whom to get the cookies.</doc>
+          </param>
+          <param name="name" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The name of the cookie. If not specified, all the cookies for the given user get returned.</doc>
+          </param>
+          <param fixed="facebook.data.getCookies" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.data_setCookie" name="POST">
+        <doc xml:lang="en">This method sets a cookie for a given user and application.</doc>
+        <request>
+          <param name="uid" required="true" style="query" type="xsd:integer">
+            <doc xml:lang="en">The user for whom this cookie needs to be set.</doc>
+          </param>
+          <param name="name" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">Name of the cookie.</doc>
+          </param>
+          <param name="value" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">Value of the cookie.</doc>
+          </param>
+          <param name="expires" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">Time stamp when the cookie should expire. If not specified, the cookie never expires.</doc>
+          </param>
+          <param name="path" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Path relative to the application's callback URL, with which the cookie should be associated. Default value is 'null'</doc>
+          </param>
+          <param fixed="facebook.data.setCookie" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.events_get" name="POST">
+        <doc xml:lang="en">Returns all visible events according to the filters specified. You can use this method to find all events for a user, or to query a specific set of events by a list of event IDs (eids).
+
+If both the uid and eids parameters are provided, the method returns all events in the set of eids that are associated with the user. If no eids parameter are specified, the method returns all events associated with the specified user.
+
+If the uid parameter is omitted, the method returns all events associated with the provided eids, regardless of any user relationship.
+
+If both parameters are omitted, the method returns all events associated with the session user.
+
+start_time and end_time parameters specify a (possibly open-ended) window in which all events returned overlap. Note that if start_time is greater than or equal to end_time, an empty top-level element is returned.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="uid" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">Filter by events associated with a user with this uid.</doc>
+          </param>
+          <param name="eids" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by this list of event IDs. This is a comma-separated list of event IDs.</doc>
+          </param>
+          <param name="start_time" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">Filter with this UTC as lower bound. A missing or zero parameter indicates no lower bound.</doc>
+          </param>
+          <param name="end_time" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">Filter with this UTC as upper bound. A missing or zero parameter indicates no upper bound.</doc>
+          </param>
+          <param name="rsvp_status" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by this RSVP status. The RSVP status should be one of the following strings:
+* attending
+* unsure
+* declined
+* not_replied</doc>
+          </param>
+          <param fixed="facebook.events.get" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.events_getMembers" name="POST">
+        <doc xml:lang="en">Returns membership list data associated with an event.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="eid" required="true" style="query" type="xsd:integer">
+            <doc xml:lang="en">The event ID.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.events.getMembers" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.fbml_refreshImgSrc" name="POST">
+        <doc xml:lang="en">Fetches and re-caches the image stored at the given URL, for use in images published to non-canvas pages via the API (e.g. to user profiles via profile.setFBML, or to news feed via feed.publishActionOfUser). See the FBML documentation for a description of the markup and its role in various contexts.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="url" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The absolute URL from which to refresh the image.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.fbml.refreshImgSrc" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.fbml_refreshRefUrl" name="POST">
+        <doc xml:lang="en">Fetches and re-caches the content stored at the given URL, for use in a fb:ref FBML tag. See the FBML documentation for a description of the markup and its role in various contexts.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="url" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The absolute URL from which to fetch content. This URL should be used in a fb:ref FBML tag.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.fbml.refreshRefUrl" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.fbml_setRefHandle" name="POST">
+        <doc xml:lang="en">Associates a given "handle" with FBML markup so that the handle can be used within the fb:ref FBML tag. A handle is unique within an application and allows an application to publish identical FBML to many user profiles and do subsequent updates without having to republish FBML on behalf of each user. See the FBML documentation for a description of the markup and its role in various contexts.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="handle" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The handle to associate with the given FBML.</doc>
+          </param>
+          <param name="fbml" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The FBML to associate with the given handle.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.fbml.setRefHandle" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.feed_publishActionOfUser" name="POST">
+        <doc xml:lang="en">Publishes a Mini-Feed story to the user corresponding to the session_key parameter, and publishes News Feed stories to the friends of that user who have added the application.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="title" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The markup displayed in the feed story's title section.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="body" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The markup displayed in the feed story's body section.</doc>
+          </param>
+          <param name="image_1" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the News Feed story.</doc>
+          </param>
+          <param name="image_1_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_1.</doc>
+          </param>
+          <param name="image_2" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the News Feed story.</doc>
+          </param>
+          <param name="image_2_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_2.</doc>
+          </param>
+          <param name="image_3" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the News Feed story.</doc>
+          </param>
+          <param name="image_3_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_3.</doc>
+          </param>
+          <param name="image_4" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the News Feed story.</doc>
+          </param>
+          <param name="image_4_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_4.</doc>
+          </param>
+          <param fixed="facebook.feed.publishActionOfUser" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.feed_publishStoryToUser" name="POST">
+        <doc xml:lang="en">Publishes a News Feed story '''to''' the user corresponding to the session_key parameter.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="title" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The markup displayed in the feed story's title section.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="body" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The markup displayed in the feed story's body section.</doc>
+          </param>
+          <param name="image_1" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the News Feed story.</doc>
+          </param>
+          <param name="image_1_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_1.</doc>
+          </param>
+          <param name="image_2" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the News Feed story.</doc>
+          </param>
+          <param name="image_2_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_2.</doc>
+          </param>
+          <param name="image_3" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the News Feed story.</doc>
+          </param>
+          <param name="image_3_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_3.</doc>
+          </param>
+          <param name="image_4" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the News Feed story.</doc>
+          </param>
+          <param name="image_4_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_4.</doc>
+          </param>
+          <param name="priority" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">TBD.</doc>
+          </param>
+          <param fixed="facebook.feed.publishStoryToUser" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.feed_publishTemplatizedAction" name="POST">
+        <doc xml:lang="en">Publishes a Mini-Feed story to the user or Page corresponding to the session_key or page_actor_id parameter. For user stories, this function publishes News Feed stories to the friends of that user.  The likelihood of the story showing up in the user's friends' News Feeds depends upon a variety of factors, such as the closeness of the relationship between the users, the interaction data we have about that particular story type, and the quality of the content in the story/on the linked page.  '''Note that you should not be using a session_key for a user who is not ''actively'' using your application when calling this method; for example, publishing a story like "John received a present" is not allowed''' - for more information, see the http://developers.facebook.com/news.php?blog=1&amp;story=69 announcement of this policy.
+
+For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (for people using PHP5) or '''facebookapi_php4_restlib.php''' (for PHP4).</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="title_template" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The markup template displayed in the Feed story's title section. This template must contain the token {actor} somewhere in it (see  the Notes section below for more requirements).</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="title_data" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">A JSON-encoded associative array of the values that should be substituted into the templates in the title_template markup string. The keys of this array are the tokens, and their associated values are the desired substitutions. 'actor' and 'target' are special tokens and should not be included in this array. If your title_template contains tokens besides 'actor' or 'target', then this is a required parameter.</doc>
+          </param>
+          <param name="body_template" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The markup template displayed in the Feed story's body section.</doc>
+          </param>
+          <param name="body_data" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">A JSON-encoded associative array of the values that should be substituted into the templates in the body_template markup string. The keys of this array are the tokens, and their associated values are the desired substitutions for the specific instance of this templatized story.  If your body_template contains tokens besides 'actor' or 'target', then this is a required parameter.</doc>
+          </param>
+          <param name="body_general" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Additional markup that goes in the body that is not aggregated. I.e., if two or more stories are aggregated into one story, the markup in the body_general from any one of those stories may be displayed.</doc>
+          </param>
+          <param name="page_actor_id" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The ID of the Facebook Page performing the action.  Whether the Page must have the application added to its Feed in order for this call to be successful.  For Feed stories about users, you will leave this parameter blank and instead use the session_key to indicate the ID of the user who performed the action.  For Feed stories about Facebook Pages (where this parameter is used), the usage of a session_key is not required.</doc>
+          </param>
+          <param name="image_1" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the Feed story. Similar to body_general, the image displayed is not aggregated -- the image from any one of the aggregated stories may be displayed.</doc>
+          </param>
+          <param name="image_1_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_1.</doc>
+          </param>
+          <param name="image_2" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the Feed story. Similar to body_general, the image displayed is not aggregated -- the image from any one of the aggregated stories may be displayed.</doc>
+          </param>
+          <param name="image_2_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_2.</doc>
+          </param>
+          <param name="image_3" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the Feed story. Similar to body_general, the image displayed is not aggregated -- the image from any one of the aggregated stories may be displayed.</doc>
+          </param>
+          <param name="image_3_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_3.</doc>
+          </param>
+          <param name="image_4" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL of an image to be displayed in the Feed story. Similar to body_general, the image displayed is not aggregated -- the image from any one of the aggregated stories may be displayed.</doc>
+          </param>
+          <param name="image_4_link" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The URL destination after a click on the image referenced by image_4.</doc>
+          </param>
+          <param name="target_ids" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Comma-delimited list of IDs of friends of the actor, used for stories about a direct action between the actor and these targets of his/her action. This is required if either the title_template or body_template includes the token {target}.</doc>
+          </param>
+          <param fixed="facebook.feed.publishTemplatizedAction" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.fql_query" name="POST">
+        <doc xml:lang="en">Evaluates an FQL (Facebook Query Language) query.
+
+'''Warning:''' If you use JSON as the output format, you may run into problems when selecting multiple fields with the same name or with selecting multiple "anonymous" fields (for example, SELECT 1+2, 3+4 ...).</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="query" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The query to perform, as described in the FQL documentation.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.fql.query" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.friends_areFriends" name="POST">
+        <doc xml:lang="en">Returns whether or not two specified users are friends with each other. The first array specifies one half of each pair, the second array the other half; therefore, they must be of equal size.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="uids1" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">A list of user IDs matched with uids2. This is a comma-separated list of user IDs.</doc>
+          </param>
+          <param name="uids2" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">A list of user IDs matched with uids1. This is a comma-separated list of user IDs.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.friends.areFriends" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.friends_get" name="POST">
+        <doc xml:lang="en">Returns the identifiers of the current user's Facebook friends. The current user is determined from the session_key parameter. The values returned from this call are '''not''' storable.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="flid" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">Returns the friends in a friend list.</doc>
+          </param>
+          <param fixed="facebook.friends.get" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.friends_getAppUsers" name="POST">
+        <doc xml:lang="en">Returns the identifiers of the current user's Facebook friends who are signed up for the specific calling application. The current user is determined from the session_key parameter. The values returned from this call are '''not''' storable.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.friends.getAppUsers" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.friends_getLists" name="POST">
+        <doc xml:lang="en">Returns the names and identifiers of any friend lists that the user has created. The current user is determined from the session_key parameter. 
+
+The values returned from this call are storable. You can store the ID of a friend list that the user has elected for use in some feature of your application, but you should verify the ID periodically, as users may delete or modify lists at any time. Friend lists are private on Facebook, so you '''cannot''' republish this information to anyone other than the logged in user. Members of lists may be obtained using friends.get with an flid parameter.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.friends.getLists" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.groups_get" name="POST">
+        <doc xml:lang="en">Returns all visible groups according to the filters specified. You can use this method to return all groups associated with a user, or query a specific set of groups by a list of GIDs.
+
+If both the uid and gids parameters are provided, the method returns all groups in the set of gids with which the user is associated. If the gids parameter is omitted, the method returns all groups associated with the provided user.
+
+However, if the uid parameter is omitted, the method returns all groups associated with the provided gids, regardless of any user relationship.
+
+If both parameters are omitted, the method returns all groups of the session user.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="uid" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">Filter by groups associated with a user with this UID.</doc>
+          </param>
+          <param name="gids" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by this list of group IDs. This is a comma-separated list of GIDs.</doc>
+          </param>
+          <param fixed="facebook.groups.get" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.groups_getMembers" name="POST">
+        <doc xml:lang="en">Returns membership list data associated with a group.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="gid" required="true" style="query" type="xsd:integer">
+            <doc xml:lang="en">Group ID for which to retrieve member list.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.groups.getMembers" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.marketplace_createListing" name="POST">
+        <doc xml:lang="en">Create or modify a listing in Marketplace. You may only create and modify a listing for the logged-in user, and then only if the logged-in user has granted the application the extended permission create_listing.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="listing_id" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The listing ID to modify, or 0 if the user is creating a new listing.</doc>
+          </param>
+          <param name="show_on_profile" required="false" style="query" type="xsd:boolean">
+            <doc xml:lang="en">A privacy control indicating whether to display the listing on the poster's profile.</doc>
+          </param>
+          <param name="listing_attrs" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">A JSON encoded string of the listing attributes.  Marketplace Listing Attributes has a list of attributes by category.  Note that when using our PHP client library, you can actually pass an associative array and Facebook automatically handles the JSON encoding.  For example: 'category':'OTHER','subcategory':'GENERAL','title':'test listing','description':'test listing'}</doc>
+          </param>
+          <param fixed="facebook.marketplace.createListing" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.marketplace_getCategories" name="POST">
+        <doc xml:lang="en">Returns all the Marketplace categories.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.marketplace.getCategories" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.marketplace_getListings" name="POST">
+        <doc xml:lang="en">Return all Marketplace listings either by listing ID or by user.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="listing_ids" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by listing IDs.  This is a comma-separated list of listing IDs. If you leave this blank, then the list is filtered only for user IDs.</doc>
+          </param>
+          <param name="uids" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by a list of users.  This is a comma-separated list of user IDs.  If you leave this blank, then the list is filtered only for listing IDs.</doc>
+          </param>
+          <param fixed="facebook.marketplace.getListings" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.marketplace_getSubCategories" name="POST">
+        <doc xml:lang="en">Returns the Marketplace subcategories for a particular category.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="category" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by category.  If this is not a valid category, no subcategories get returned.</doc>
+          </param>
+          <param fixed="facebook.marketplace.getSubCategories" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.marketplace_removeListing" name="POST">
+        <doc xml:lang="en">Remove a listing from Marketplace.
+
+'''Note:''' You may remove only the logged-in user's listings.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="listing_id" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The listing ID to remove.</doc>
+          </param>
+          <param name="status" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">A string that indicates whether the listing was successful. Valid strings include 'SUCCESS', 'DEFAULT' or 'NOT_SUCCESS'.</doc>
+          </param>
+          <param fixed="facebook.marketplace.removeListing" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.marketplace_search" name="POST">
+        <doc xml:lang="en">Search Marketplace for listings filtering by category, subcategory, and a query string.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="category" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by a Marketplace category.  While this parameter is optional, you must specify it if you want to filter by subcategory.</doc>
+          </param>
+          <param name="subcategory" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by a Marketplace subcategory.</doc>
+          </param>
+          <param name="query" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by a query string.</doc>
+          </param>
+          <param fixed="facebook.marketplace.search" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.notifications_get" name="POST">
+        <doc xml:lang="en">Returns information on outstanding Facebook notifications for current session user.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.notifications.get" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.notifications_send" name="POST">
+        <doc xml:lang="en">Send a notification to a set of users.  You can also send messages to the logged-in user's notification page.  Your application can send up to 40 notifications to the notifications page per user per day -- this number includes invites.  Notifications sent to the notifications page for non-application users are subject to spam control.  Read http://www.facebook.com/topic.php?uid=2205007948&amp;topic=13262&amp;start=30&amp;hash=0ce1d00dde55ae7fc1d6f206621bdfc4#post71908 more information about how spamminess is measured. Additionally, any notification that you send on behalf of a user appears on that user's notifications page as a "sent notification."</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="to_ids" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">Comma-separated list of recipient IDs. These must be either friends of the logged-in user or people who have added your application. To send a notification to the current logged-in user without a name prepended to the message, set to_ids to the empty string.</doc>
+          </param>
+          <param name="notification" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">FBML for the notifications page. Uses a stripped down version allowing only text and links.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.notifications.send" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.notifications_sendEmail" name="POST">
+        <doc xml:lang="en">Sends an email to the specified users, who must have added your application. You can  send five (5) emails to a user per day. Requires a session key for desktop applications, which may only send email to the person whose session it is. This method does not require a session for Web applications.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="recipients" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">A comma-separated list of recipient IDs. The recipients must be people who have already added your application. You can email up to 100 people at a time.</doc>
+          </param>
+          <param name="subject" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The subject of the email message.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="text" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The plain text version of the email content. You must include at least one of either the fbml or text parameters.</doc>
+          </param>
+          <param name="fbml" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The FBML version of the email. You must include at least one of either the fbml or text parameters. The fbml parameter is a stripped-down set of FBML that allows only tags that result in text, links and linebreaks.</doc>
+          </param>
+          <param fixed="facebook.notifications.sendEmail" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.pages_getinfo" name="POST">
+        <doc xml:lang="en">Returns all visible pages to the filters specified.  This may be used to find all pages of which a user is a fan, or to query specific page_ids.  The session_key parameter is optional.  When the session_key parameter is not passed, you can only get information for pages that have added your application.  The uid parameter is not even considered.  With a session_key, normal privacy rules are put into place.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="fields" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">List of desired fields in return.  This is a comma-separated list of field strings.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="page_ids" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">List of page IDs.  This is a comma-separated list of page IDs.</doc>
+          </param>
+          <param name="uid" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The ID of the user.  Defaults to the logged in user if the session_key is valid, and no page_ids are passed.  Used to get the pages a given user is a fan of.</doc>
+          </param>
+          <param fixed="facebook.pages.getinfo" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.pages_isAdmin" name="POST">
+        <doc xml:lang="en">Checks whether the logged-in user is the admin for a given page.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="page_id" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The id of the page</doc>
+          </param>
+          <param fixed="facebook.pages.isAdmin" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.pages_isAppAdded" name="POST">
+        <doc xml:lang="en">Checks whether the page has added the application.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="page_id" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The id of the page</doc>
+          </param>
+          <param fixed="facebook.pages.isAppAdded" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.pages_isFan" name="POST">
+        <doc xml:lang="en">Checks whether a user is a fan of a given page.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="page_id" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The ID of the page.</doc>
+          </param>
+          <param name="uid" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The ID of the user. Defaults to the logged-in user if not set.</doc>
+          </param>
+          <param fixed="facebook.pages.isFan" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.photos_addTag" name="POST">
+        <doc xml:lang="en">Adds a tag with the given information to a photo. See photo uploads for a description of the upload workflow.
+
+For regular applications, tags can only be added to pending photos owned by the current session user – once a photo has been approved or rejected, it can no longer be tagged with this method. Applications with the photo_upload extended permission can add tags to any photo owned by the user. There is a limit of 20 tags per pending photo.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="pid" required="true" style="query" type="xsd:integer">
+            <doc xml:lang="en">The ID of the photo to be tagged.</doc>
+          </param>
+          <param name="tag_uid" required="true" style="query" type="xsd:integer">
+            <doc xml:lang="en">The ID of the user being tagged. You must specify either the tag_uid or the tag_text parameter, but not both. They have no defaults and this parameter is ignored if tag_text is specified.</doc>
+          </param>
+          <param name="tag_text" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">Some text identifying the person being tagged. You must specify either the tag_uid or the tag_text parameter, but not both. They have no defaults and this parameter is ignored if tag_uid is specified.</doc>
+          </param>
+          <param name="x" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The horizontal position of the tag, as a percentage from 0 to 100, from the left of the photo.</doc>
+          </param>
+          <param name="y" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The vertical position of the tag, as a percentage from 0 to 100, from the top of the photo.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="tags" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">A JSON-serialized array representing a list of tags to be added to the photo. If the tags parameter is specified, the x, y, tag_uid, and tag_text parameters are ignored. Each tag in the list must specify: "x", "y", and either the user id "tag_uid" or free-form "tag_text" identifying the person being tagged. An example of this is the string
+ "x":"30.0","y":"30.0","tag_uid":1234567890}, {"x":"70.0","y":"70.0","tag_text":"some person"}</doc>
+          </param>
+          <param fixed="facebook.photos.addTag" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.photos_createAlbum" name="POST">
+        <doc xml:lang="en">Creates and returns a new album owned by the current session user. See photo uploads for a description of the upload workflow. The only storable values returned from this call are aid and owner.  No relationships between them are storable.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="name" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The album name.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="location" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The album location.</doc>
+          </param>
+          <param name="description" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The album description.</doc>
+          </param>
+          <param fixed="facebook.photos.createAlbum" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.photos_get" name="POST">
+        <doc xml:lang="en">Returns all visible photos according to the filters specified. You can use this method to find all photos that are:
+* Tagged with the specified uid
+* Contained within the album specified by aid
+* Included in the list of photos specified by pids
+* Any combination of these three criteria</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="subj_id" required="true" style="query" type="xsd:integer">
+            <doc xml:lang="en">Filter by photos tagged with this user. You must specify at least one of subj_id, aid or pids. The subj_id parameter has no default value.</doc>
+          </param>
+          <param name="aid" required="true" style="query" type="xsd:integer">
+            <doc xml:lang="en">Filter by photos in this album. You must specify at least one of subj_id, aid or pids. The aid parameter has no default value.</doc>
+          </param>
+          <param name="pids" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">Filter by photos in this list. This is a comma-separated list of pids. You must specify at least one of subj_id, aid or pids. The pids parameter has no default value.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.photos.get" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.photos_getAlbums" name="POST">
+        <doc xml:lang="en">Returns metadata about all of the photo albums uploaded by the specified user. 
+
+This method returns information from all visible albums satisfying the filters specified. The method can be used to return all photo albums created by a user, query a specific set of albums by a list of aids, or filter on any combination of these two.
+
+The values returned from this call are '''cannot''' be stored.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="uid" required="true" style="query" type="xsd:integer">
+            <doc xml:lang="en">Return albums created by this user. You must specify either uid or aids. The uid parameter has no default value.</doc>
+          </param>
+          <param name="aids" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">Return albums with aids in this list. This is a comma-separated list of aids. You must specify either uid or aids. The aids parameter has no default value.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.photos.getAlbums" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.photos_getTags" name="POST">
+        <doc xml:lang="en">Returns the set of user tags for all photos specified.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="pids" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The list of photos from which to extract photo tags. This is a comma-separated list of PIDs.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.photos.getTags" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.profile_getFBML" name="POST">
+        <doc xml:lang="en">Gets the FBML that is currently set for a user's profile. See the FBML documentation for a description of the markup and its role in various contexts.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="session_key" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="uid" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The user whose profile FBML is to be fetched, or the page ID in case of a Page. If not specified, defaults to the logged-in user. Not allowed for desktop applications, since the application secret is essentially public.</doc>
+          </param>
+          <param fixed="facebook.profile.getFBML" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.profile_setFBML" name="POST">
+        <doc xml:lang="en">Sets the FBML for a user's profile, including the content for both the profile box and the profile actions. See the FBML documentation for a description of the markup and its role in various contexts. Note that this method can also be used to set fb:profile-actions for users.
+
+The FBML is cached on Facebook's server for that particular user and that particular application. To change it, profile.setFBML must be called through a canvas page.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="uid" required="false" style="query" type="xsd:integer">
+            <doc xml:lang="en">The user ID for the user whose profile is to be updated, or the page ID in case of a Page. If this parameter is not specified, then it defaults to the logged-in user. This parameter is not allowed for desktop applications, since the application secret is essentially public.</doc>
+          </param>
+          <param name="markup" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Deprecated parameter for a user's profile FBML.</doc>
+          </param>
+          <param name="profile" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The FBML intended for the application profile box on the user's profile.</doc>
+          </param>
+          <param name="profile_action" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The FBML intended for the user's profile actions. A profile action is the link under the user's profile picture that allows a user to take an action with your application.</doc>
+          </param>
+          <param name="mobile_fbml" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The FBML intended for mobile devices.</doc>
+          </param>
+          <param fixed="facebook.profile.setFBML" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.users_getinfo" name="POST">
+        <doc xml:lang="en">Returns a wide array of user-specific information for each user identifier passed, limited by the view of the current user. The current user is determined from the session_key parameter. The only storable values returned from this call are the those under the affiliations element, the notes_count value, and the contents of the profile_update_time element.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="uids" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">List of user IDs. This is a comma-separated list of user IDs.</doc>
+          </param>
+          <param name="fields" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">List of desired fields in return. This is a comma-separated list of field strings.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.users.getinfo" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.users_getLoggedInUser" name="POST">
+        <doc xml:lang="en">Gets the user ID (uid) associated with the current session. This value should be stored for the duration of the session, to avoid unnecessary subsequent calls to this method.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.users.getLoggedInUser" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.users_hasAppPermission" name="POST">
+        <doc xml:lang="en">Checks whether the user has opted in to an extended application permission.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="ext_perm" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">String identifier for the extended permission that is being checked for. Must be one of status_update, create_listing, or photo_upload.</doc>
+          </param>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.users.hasAppPermission" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.users_isAppAdded" name="POST">
+        <doc xml:lang="en">Returns whether the logged-in user has added the calling application.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param fixed="facebook.users.isAppAdded" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+      <method id="facebook.users_setStatus" name="POST">
+        <doc xml:lang="en">Updates a user's Facebook status. This method requires the extended permission status_update, which the user must opt into via the Extended Permissions system. You can test for this permission by checking for the error code listed below (250), or via the users.hasAppPermission method.</doc>
+        <request>
+          <param name="api_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The application key associated with the calling application.</doc>
+          </param>
+          <param name="session_key" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">The session key of the logged in user.</doc>
+          </param>
+          <param name="call_id" required="true" style="query" type="xsd:decimal">
+            <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.</doc>
+          </param>
+          <param name="sig" required="true" style="query" type="xsd:string">
+            <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.</doc>
+          </param>
+          <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+          <param name="format" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">Desired response format. Either XML (default) or JSON.</doc>
+          </param>
+          <param name="status" required="false" style="query" type="xsd:string">
+            <doc xml:lang="en">The status message to set.</doc>
+          </param>
+          <param name="clear" required="false" style="query" type="xsd:boolean">
+            <doc xml:lang="en">Set to true to clear the status.</doc>
+          </param>
+          <param name="status_includes_verb" required="false" style="query" type="xsd:boolean">
+            <doc xml:lang="en">If set to true, the word "is" will ''not'' be prepended to the status message.</doc>
+          </param>
+          <param fixed="facebook.users.setStatus" name="method" required="true" style="query" type="xsd:string"/>
+        </request>
+        <response/>
+        
+      </method>
+    </resource>
+  </resources>
+</application>

@@ -48,7 +48,7 @@ public class Constants {
             PSM_ICON_BASE + ICON_UNKNOWN;
             
     // Colors //////////////////////////////////////////////////////////////////
-    public static Color NEVER_EXECUTED_COLOR = 
+    public static Color NOT_YET_EXECUTED = 
             Color.GRAY;
     
     public static Color STARTED_COLOR = 
@@ -77,6 +77,21 @@ public class Constants {
             default :
                 return STARTED_COLOR;
         }
+    }
+    
+    public static boolean isBold(PemEntity pemEntity) {
+        final String currentBranchId = 
+                pemEntity.getModel().getCurrentBranch().getId();
+        final String pemBranchId = pemEntity.getBranchId();
+        final boolean isInCurrentBranch = pemBranchId != null ?
+                pemBranchId.equals(currentBranchId) : false;
+        
+        if (isInCurrentBranch && 
+                (pemEntity.getState() == PemEntity.State.STARTED)) {
+            return true;
+        }
+        
+        return false;
     }
     
     public static String makeLabel(String tag, String name) {

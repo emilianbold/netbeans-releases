@@ -427,7 +427,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private void scrollTo() {
 //out("Scroll to: " + myPaperNumber);
-    Paper paper = myPapers [myPaperNumber - 1];
+    Paper paper = myPapers.get(myPaperNumber - 1);
     int gap  = getGap();
     int x = paper.getX() - gap;
     int y = paper.getY() - gap;
@@ -445,8 +445,8 @@ public final class Preview extends Dialog implements Percent.Listener {
     if (getPaperCount() == 0) {
       return 0.0;
     }
-    int width = myPapers [0].getPaperWidth() + GAP_SIZE;
-    int height = myPapers [0].getPaperHeight() + GAP_SIZE;
+    int width = myPapers.get(0).getPaperWidth() + GAP_SIZE;
+    int height = myPapers.get(0).getPaperHeight() + GAP_SIZE;
 
     if (index == 0) {
       return getWidthScale(width);
@@ -524,7 +524,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     c.insets = new Insets(gap, gap, 0, 0);
 
     if (isSingleMode()) {
-      myPaperPanel.add(myPapers [myPaperNumber - 1], c);
+      myPaperPanel.add(myPapers.get(myPaperNumber - 1), c);
     }
     else {
       for (Paper paper : myPapers) {
@@ -542,82 +542,64 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   private void createPapers() {
-    PrintProvider myPrintProvider = myPrintProviders.get(0);
-    PrintPage [][] pages = myPrintProvider.getPages(
-      Option.getDefault().getPageWidth(),
-      Option.getDefault().getPageHeight(),
-      Option.getDefault().getZoom());
-//out("Create papers: " + pages.length);
-    myPapers = null;
+    myPapers = new ArrayList<Paper>();
 
-    if (pages == null) {
-      return;
-    }
-    String name = myPrintProvider.getName();
-    
-    if (name == null) {
-      name = ""; // NOI18N
-    }
-    Date modified = myPrintProvider.getLastModifiedDate();
+    int width = Option.getDefault().getPageWidth();
+    int height = Option.getDefault().getPageHeight();
 
-    if (modified == null) {
-      modified = new Date(System.currentTimeMillis());
-    }
+    double zoom = Option.getDefault().getZoom();
     double scale = 1.0;
 
     if (myScale != null) {
       scale = myScale.getValue();
     }
+    int delta = 0;
     int number = 0;
-    int count = getCount(pages);
-    myPapers = new Paper [count];
 
-    for (int i=0; i < pages.length; i++) {
-      for (int j=0; j < pages [i].length; j++) {
-        PrintPage page = pages [i][j];
-
-        if (page == null) {
-          continue;
-        }
-        myPapers [number] = new Paper(
-          page,
-          name,
-          modified,
-          scale
-        );
-        myPapers [number].setInfo(
-          number + 1,
-          i, j,
-          count
-        );
-        number++;
+    for (PrintProvider provider : myPrintProviders) {
+      String name = provider.getName();
+      
+      if (name == null) {
+        name = ""; // NOI18N
       }
-    }
-  }
+      Date modified = provider.getLastModifiedDate();
 
-  private int getCount(PrintPage [][] pages) {
-    int count = 0;
+      if (modified == null) {
+        modified = new Date(System.currentTimeMillis());
+      }
+      PrintPage [][] pages = provider.getPages(width, height, zoom);
+//out("Create papers: " + pages.length);
 
-    for (int i=0; i < pages.length; i++) {
-      for (int j=0; j < pages [i].length; j++) {
-        PrintPage page = pages [i][j];
+      for (int i=0; i < pages.length; i++) {
+        for (int j=0; j < pages [i].length; j++) {
+          PrintPage page = pages [i][j];
 
-        if (page != null) {
-          count++;
+          if (page == null) {
+            continue;
+          }
+          Paper paper = new Paper(page, name, modified);
+          paper.setCoordinate(number + 1, i + delta, j, scale);
+          myPapers.add(paper);
+          number++;
         }
       }
+      delta += pages.length;
     }
-    return count;
-  }
+    int count = myPapers.size();
 
-  public void invalidValue(String value) {}
+    for (Paper paper : myPapers) {
+      paper.setCount(count);
+    }
+  }
 
   private int getPaperCount() {
     if (myPapers == null) {
       return 0;
     }
-    return myPapers.length;
+    return myPapers.size();
   }
+
+  public void invalidValue(String value) {}
 
   private void first() {
     updatePaperNumber();
@@ -856,8 +838,8 @@ public final class Preview extends Dialog implements Percent.Listener {
     private List<MouseWheelListener> myMouseWheelListeners;
   }
 
-  private Paper [] myPapers;
   private JPanel myPaperPanel;
+  private List<Paper> myPapers;
   
   private JButton myFirst;
   private JButton myPrevious;

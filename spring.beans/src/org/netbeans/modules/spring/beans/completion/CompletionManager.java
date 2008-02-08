@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,11 +37,8 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.spring.beans.completion;
 
 import java.io.IOException;
@@ -47,27 +50,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.DeclaredType;
+import javax.lang.model.util.ElementScanner6;
 import javax.swing.text.Document;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.spring.api.Action;
+import org.netbeans.modules.spring.api.beans.model.SpringBean;
+import org.netbeans.modules.spring.api.beans.model.SpringBeans;
+import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -87,6 +98,11 @@ public final class CompletionManager {
     private static final String IMPORT_TAG = "import"; // NOI18N
     private static final String VALUE_TAG = "value"; // NOI18N
     private static final String CONSTRUCTOR_ARG_TAG = "constructor-arg"; // NOI18N
+    private static final String REF_TAG = "ref"; // NOI18N
+    private static final String IDREF_TAG = "idref"; // NOI18N
+    private static final String ENTRY_TAG = "entry"; // NOI18N
+    private static final String PROPERTY_TAG = "property"; // NOI18N
+    private static final String LOOKUP_METHOD_TAG = "lookup-method"; // NOI18N
     private static final String DEPENDS_ON_ATTRIB = "depends-on"; // NOI18N
     private static final String PARENT_ATTRIB = "parent"; // NOI18N
     private static final String FACTORY_BEAN_ATTRIB = "factory-bean"; // NOI18N
@@ -107,7 +123,12 @@ public final class CompletionManager {
     private static final String CLASS_ATTRIB = "class"; // NOI18N
     private static final String VALUE_TYPE_ATTRIB = "value-type"; // NOI18N
     private static final String KEY_TYPE_ATTRIB = "key-type"; // NOI18N
-    private static final String TYPE_ATTRIB = "type";
+    private static final String TYPE_ATTRIB = "type"; // NOI18N
+    private static final String REF_ATTRIB = "ref"; // NOI18N
+    private static final String BEAN_ATTRIB = "bean"; // NOI18N
+    private static final String LOCAL_ATTRIB = "local"; // NOI18N
+    private static final String KEY_REF_ATTRIB = "key-ref"; // NOI18N
+    private static final String VALUE_REF_ATTRIB = "value-ref"; // NOI18N
     private static Map<String, Completor> completors = new HashMap<String, Completor>();
 
     private CompletionManager() {
@@ -176,7 +197,7 @@ public final class CompletionManager {
         registerCompletor(MAP_TAG, MERGE_ATTRIB, completor);
         registerCompletor(PROPS_TAG, MERGE_ATTRIB, completor);
         
-        ResourceCompletor resourceCompletor = new ResourceCompletor(true);
+        ResourceCompletor resourceCompletor = new ResourceCompletor();
         registerCompletor(IMPORT_TAG, RESOURCE_ATTRIB, resourceCompletor);
 
         JavaClassCompletor javaClassCompletor = new JavaClassCompletor();
@@ -187,6 +208,23 @@ public final class CompletionManager {
         registerCompletor(SET_TAG, VALUE_TYPE_ATTRIB, javaClassCompletor);
         registerCompletor(VALUE_TAG, TYPE_ATTRIB, javaClassCompletor);
         registerCompletor(CONSTRUCTOR_ARG_TAG, TYPE_ATTRIB, javaClassCompletor);
+        
+        BeansRefCompletor beansRefCompletor = new BeansRefCompletor(true);
+        registerCompletor(ALIAS_TAG, NAME_ATTRIB, beansRefCompletor);
+        registerCompletor(BEAN_TAG, PARENT_ATTRIB, beansRefCompletor);
+        registerCompletor(BEAN_TAG, DEPENDS_ON_ATTRIB, beansRefCompletor);
+        registerCompletor(BEAN_TAG, FACTORY_BEAN_ATTRIB, beansRefCompletor);
+        registerCompletor(CONSTRUCTOR_ARG_TAG, REF_ATTRIB, beansRefCompletor);
+        registerCompletor(REF_TAG, BEAN_ATTRIB, beansRefCompletor);
+        registerCompletor(IDREF_TAG, BEAN_ATTRIB, beansRefCompletor);
+        registerCompletor(ENTRY_TAG, KEY_REF_ATTRIB, beansRefCompletor);
+        registerCompletor(ENTRY_TAG, VALUE_REF_ATTRIB, beansRefCompletor);
+        registerCompletor(PROPERTY_TAG, REF_ATTRIB, beansRefCompletor);
+        registerCompletor(LOOKUP_METHOD_TAG, BEAN_ATTRIB, beansRefCompletor);
+        
+        beansRefCompletor = new BeansRefCompletor(false);
+        registerCompletor(REF_TAG, LOCAL_ATTRIB, beansRefCompletor);
+        registerCompletor(IDREF_TAG, LOCAL_ATTRIB, beansRefCompletor);
     }
     private static CompletionManager INSTANCE = new CompletionManager();
 
@@ -268,6 +306,87 @@ public final class CompletionManager {
         return null;
     }
 
+    private static class BeansRefCompletor extends Completor {
+
+        final private boolean includeGlobal;
+
+        public BeansRefCompletor(boolean includeGlobal) {
+            this.includeGlobal = includeGlobal;
+        }
+
+        @Override
+        public List<SpringXMLConfigCompletionItem> doCompletion(final CompletionContext context) {
+            Document doc = context.getDocument();
+            final FileObject fo = NbEditorUtilities.getFileObject(doc);
+            if (fo == null) {
+                return Collections.emptyList();
+            }
+            SpringConfigModel model = SpringConfigModel.forFileObject(fo);
+            if (model == null) {
+                return Collections.emptyList();
+            }
+            final List<SpringXMLConfigCompletionItem> results = new ArrayList<SpringXMLConfigCompletionItem>();
+            final String prefix = context.getTypedPrefix();
+       
+            final List<String> cNames = new ArrayList<String>();
+            // get current bean parameters
+            if(SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "id")) { // NOI18N
+                String cId = SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "id"); // NOI18N
+                cNames.add(cId);
+            }
+            if(SpringXMLConfigEditorUtils.hasAttribute(context.getTag(), "name")) { // NOI18N
+                List<String> names = StringUtils.tokenize(
+                        SpringXMLConfigEditorUtils.getAttribute(context.getTag(), "name"), 
+                        SpringXMLConfigEditorUtils.BEAN_NAME_DELIMITERS); // NOI18N
+                cNames.addAll(names);
+            }
+            
+            try {
+                model.runReadAction(new Action<SpringBeans>() {
+
+                    public void run(SpringBeans sb) {
+                        List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
+                        Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
+                        for(String beanName : name2Bean.keySet()) {
+                            if(!beanName.startsWith(prefix) || cNames.contains(beanName)) {
+                                continue;
+                            }
+                            SpringBean bean = name2Bean.get(beanName);
+                            SpringXMLConfigCompletionItem item = 
+                                    SpringXMLConfigCompletionItem.createBeanRefItem(context.getCurrentToken().getOffset() + 1, 
+                                    beanName, bean, fo);
+                            results.add(item);
+                        }
+                    }
+
+                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
+                        Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
+                        for (SpringBean bean : beans) {
+                            String beanId = bean.getId();
+                            if (beanId != null) {
+                                name2Bean.put(beanId, bean);
+                            }
+                            if (addNames) {
+                                List<String> beanNames = bean.getNames();
+                                for (String beanName : beanNames) {
+                                    name2Bean.put(beanName, bean);
+                                }
+                            }
+                        }
+
+                        return name2Bean;
+                    }
+                });
+                
+                setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+
+            return results;
+        }
+    }
+    
     /**
      * A simple completor for general attribute value items
      * 
@@ -311,9 +430,6 @@ public final class CompletionManager {
             try {
                 Document doc = context.getDocument();
                 final String typedChars = context.getTypedPrefix();
-                if (typedChars == null) {
-                    return Collections.emptyList();
-                }
 
                 JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
                 if (js == null) {
@@ -340,35 +456,33 @@ public final class CompletionManager {
                     ClassIndex ci = cc.getJavaSource().getClasspathInfo().getClassIndex();
                     int index = substitutionOffset;
                     String packName = typedPrefix;
-                    String classPrefix = "";
-                    if(typedPrefix.contains(".")) { // NOI18N
-                        index += typedPrefix.lastIndexOf(".") + 1;  // NOI18N
-                        packName = typedPrefix.substring(0, typedPrefix.lastIndexOf(".")); // NOI18N
-                        classPrefix = typedPrefix.endsWith(".") ? "" : 
-                            typedPrefix.substring(typedPrefix.lastIndexOf(".") + 1); // NOI18N
+                    int dotIndex = typedPrefix.lastIndexOf('.'); // NOI18N
+                    if (dotIndex != -1) {
+                        index += (dotIndex + 1);  // NOI18N
+                        packName = typedPrefix.substring(0, dotIndex);
                     }
                     addPackages(ci, results, typedPrefix, index);
-                    
-                    
+
                     PackageElement pkgElem = cc.getElements().getPackageElement(packName);
                     if (pkgElem == null) {
                         return;
                     }
-                    List<? extends Element> pkgChildren = pkgElem.getEnclosedElements();
-                    for (Element pkgChild : pkgChildren) {
-                        if ((pkgChild.getKind() == ElementKind.CLASS) && pkgChild.getSimpleName().toString().startsWith(classPrefix)) {
+                    
+                    // get this as well as non-static inner classes
+                    List<TypeElement> tes = new TypeScanner().scan(pkgElem);
+                    for (TypeElement te : tes) {
+                        if (ElementUtilities.getBinaryName(te).startsWith(typedPrefix)) {
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                    (TypeElement) pkgChild, (DeclaredType) pkgChild.asType(), 
-                                    cc.getElements().isDeprecated(pkgChild));
+                                    te, ElementHandle.create(te), cc.getElements().isDeprecated(te), false);
                             results.add(item);
                         }
                     }
-                    
+
                     setAnchorOffset(index);
                 }
             }, true);
         }
-
+        
         private void doSmartJavaCompletion(JavaSource js, final List<SpringXMLConfigCompletionItem> results, 
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
@@ -383,19 +497,25 @@ public final class CompletionManager {
                     Set<ElementHandle<TypeElement>> matchingTypes = ci.getDeclaredTypes(typedPrefix, 
                             NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
                     for (ElementHandle<TypeElement> eh : matchingTypes) {
-                        TypeElement typeElement = eh.resolve(cc);
-                        if ((typeElement.getKind() == ElementKind.CLASS) 
-                                && typeElement.getSimpleName().toString().startsWith(typedPrefix)) {
-                            SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                    typeElement, (DeclaredType) typeElement.asType(), 
-                                    cc.getElements().isDeprecated(typeElement));
-                            results.add(item);
+                        if (eh.getKind() == ElementKind.CLASS) {
+                            TypeElement typeElement = eh.resolve(cc);
+                            if (typeElement != null && isAccessibleClass(typeElement)) {
+                                SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
+                                        typeElement, eh, cc.getElements().isDeprecated(typeElement), true);
+                                results.add(item);
+                            }
                         }
                     }
                 }
             }, true);
             
             setAnchorOffset(substitutionOffset);
+        }
+        
+        private static boolean isAccessibleClass(TypeElement te) {
+            NestingKind nestingKind = te.getNestingKind();
+            return (nestingKind == NestingKind.TOP_LEVEL) 
+                    || (nestingKind == NestingKind.MEMBER && te.getModifiers().contains(Modifier.STATIC));
         }
         
         private void addPackages(ClassIndex ci, List<SpringXMLConfigCompletionItem> results, String typedPrefix, int substitutionOffset) {
@@ -407,14 +527,27 @@ public final class CompletionManager {
                 }
             }
         }
+        
+        private static final class TypeScanner extends ElementScanner6<List<TypeElement>, Void> {
+
+            public TypeScanner() {
+                super(new ArrayList<TypeElement>());
+            }
+            
+            @Override
+            public List<TypeElement> visitType(TypeElement typeElement, Void arg) {
+                if(typeElement.getKind() == ElementKind.CLASS && isAccessibleClass(typeElement)) {
+                    DEFAULT_VALUE.add(typeElement);
+                }
+                return super.visitType(typeElement, arg);
+            }
+            
+        }
     }
 
     private static class ResourceCompletor extends Completor {
 
-        private boolean showDirectories;
-
-        public ResourceCompletor(boolean showDirectories) {
-            this.showDirectories = showDirectories;
+        public ResourceCompletor() {
         }
 
         public List<SpringXMLConfigCompletionItem> doCompletion(CompletionContext context) {
@@ -445,23 +578,22 @@ public final class CompletionManager {
                 prefix = "";
             }
 
-            if (showDirectories) {
-                Enumeration<? extends FileObject> folders = fileObject.getFolders(false);
-                while (folders.hasMoreElements()) {
-                    FileObject fo = folders.nextElement();
-                    if (fo.getName().startsWith(prefix)) {
-                        results.add(SpringXMLConfigCompletionItem.createFolderItem(context.getCaretOffset() - prefix.length(),
-                                fo));
-                    }
+            
+            Enumeration<? extends FileObject> folders = fileObject.getFolders(false);
+            while (folders.hasMoreElements()) {
+                FileObject fo = folders.nextElement();
+                if (fo.getName().startsWith(prefix)) {
+                    results.add(SpringXMLConfigCompletionItem.createFolderItem(context.getCaretOffset() - prefix.length(),
+                            fo));
                 }
             }
+
 
             Enumeration<? extends FileObject> files = fileObject.getData(false);
             while (files.hasMoreElements()) {
                 FileObject fo = files.nextElement();
-                if (fo.getName().startsWith(prefix) && fo.getMIMEType().equals("text/x-springconfig+xml")) { // NOI18N
-                    results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(),
-                            fo));
+                if (fo.getName().startsWith(prefix) && fo.getMIMEType().equals(SpringXMLConfigDataLoader.REQUIRED_MIME)) {
+                    results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(), fo));
                 }
             }
 

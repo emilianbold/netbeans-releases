@@ -41,6 +41,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import net.java.hulp.i18n.Logger;
+import org.netbeans.modules.etl.logger.Localizer;
+import org.netbeans.modules.etl.logger.LogUtil;
 import org.openide.nodes.BeanNode;
 import org.openide.util.NbBundle;
 
@@ -55,13 +58,15 @@ public class AxionDBConfiguration {
     public static final String PROP_DRIVER_LOC = "DriverLocation";
     public static final String PROP_LOC = "location";
     public static final String PROP_DRV_LOC = "driver";
-
+    private static transient final Logger mLogger = LogUtil.getLogger(FlatfileResulSetPanel.class.getName());
+    private static transient final Localizer mLoc = Localizer.get();
     public static AxionDBConfiguration getDefault() {
         return DEFAULT;
     }
 
     public String displayName() {
-        return NbBundle.getMessage(AxionDBConfiguration.class, "LBL_AxionConf");
+        String nbBundle4 = mLoc.t("PRSR001: MashupDB Configuration");
+        return Localizer.parse(nbBundle4);
     }
 
     protected final String putProperty(String key, String value, boolean notify) {
@@ -93,7 +98,7 @@ public class AxionDBConfiguration {
         } else {
             // Check for mashup driver under soa cluster.
             String nbHomeDir = System.getProperty("netbeans.home") + File.separator +
-                    ".." + File.separator + "soa1" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
+                    ".." + File.separator + "soa2" + File.separator + "modules" + File.separator + "ext" + File.separator + "etl" + File.separator + "axiondb.jar";
             File driver = new File(nbHomeDir);
             if (!driver.exists()) {
 

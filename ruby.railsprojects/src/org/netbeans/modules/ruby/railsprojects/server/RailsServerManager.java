@@ -51,6 +51,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -85,7 +86,6 @@ import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.util.ChangeSupport;
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -178,7 +178,9 @@ public final class RailsServerManager {
                 public void run() {
                     synchronized (RailsServerManager.this) {
                         status = ServerStatus.NOT_STARTED;
-                        server.removeApplication(port);
+                        if (server != null) {
+                            server.removeApplication(port);
+                        }
                         IN_USE_PORTS.remove(port);
                         if (portConflict) {
                             // Failed to start due to port conflict - notify user.
@@ -216,12 +218,18 @@ public final class RailsServerManager {
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         String serverId = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE);
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        RubyInstance instance = ServerRegistry.getServer(serverId, platform);
+        RubyInstance instance = ServerRegistry.getDefault().getServer(serverId, platform);
         if (instance == null) {
             // TODO: need to inform the user somehow
             // fall back to the first available server
-            List<? extends RubyInstance> availableServers = ServerRegistry.getServers(platform);
-            instance = availableServers.get(availableServers.size() - 1);
+            List<? extends RubyInstance> availableServers = ServerRegistry.getDefault().getServers();
+            for (RubyInstance each : availableServers) {
+                if (each.isPlatformSupported(platform)) {
+                    instance = each;
+                    break;
+                }
+            }
+            assert instance != null : "No servers found for " + platform;
         }
         if (!(instance instanceof RubyServer)){
             //XXX: handle glassfish..
@@ -232,11 +240,7 @@ public final class RailsServerManager {
         String displayName = getServerTabName(server, projectName, port);
         String serverPath = server.getServerPath();
         ExecutionDescriptor desc = new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, dir, serverPath);
-        if (server.getStartupParam() != null){
-            desc.additionalArgs(server.getStartupParam(), "--port", Integer.toString(port)); // NOI18N
-        } else {
-            desc.additionalArgs("--port", Integer.toString(port)); // NOI18N
-        }
+        desc.additionalArgs(buildStartupArgs());
         desc.postBuild(finishedAction);
         desc.classPath(classPath);
         desc.addStandardRecognizers();
@@ -251,6 +255,21 @@ public final class RailsServerManager {
         IN_USE_PORTS.add(port);
         execution = new RubyExecution(desc, charsetName);
         execution.run();
+    }
+    
+    private String[] buildStartupArgs() {
+        List<String> result = new  ArrayList<String>();
+        if (server.getStartupParam() != null) {
+            result.add(server.getStartupParam());
+        } 
+        String railsEnv = project.evaluator().getProperty(RailsProjectProperties.RAILS_ENV);
+        if (railsEnv != null && !"".equals(railsEnv.trim())) {
+            result.add("-e");
+            result.add(railsEnv);
+        }
+        result.add("--port");
+        result.add(Integer.toString(port));
+        return result.toArray(new String[result.size()]);
     }
     
     private static String getServerTabName(RubyServer server, String projectName, int port) {
@@ -447,7 +466,7 @@ public final class RailsServerManager {
         private Object selected;
 
         public ServerListModel(RubyPlatform platform) {
-            this.servers = ServerRegistry.getServers(platform);
+            this.servers = ServerRegistry.getDefault().getServers(platform);
             this.selected = servers.get(0);
         }
 

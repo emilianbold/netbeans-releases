@@ -102,7 +102,7 @@ public class UriToPath extends Task {
             
             getProject().setProperty(property, path);
         } catch (URISyntaxException e) {
-            throw new BuildException("Cannot parse URI."); // NOI18N
+            throw new BuildException("Cannot parse URI.",e); // NOI18N
         }
     }
 }

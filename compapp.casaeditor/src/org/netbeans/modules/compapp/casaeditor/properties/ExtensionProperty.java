@@ -48,8 +48,12 @@ import java.util.List;
 import java.util.Map;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaEndpoint;
 import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaWrapperModel;
 import org.netbeans.modules.compapp.casaeditor.nodes.CasaNode;
+import org.netbeans.modules.compapp.projects.jbi.api.Endpoint;
+import org.openide.util.Exceptions;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -68,7 +72,6 @@ class ExtensionProperty<T> extends BaseCasaProperty<T> {
      * e.x., casa:connection
      */
     protected CasaComponent extensionPointComponent;
-    
     /**
      * The top-level extensiblity elements under a CASA extension point element,
      * e.x., redelivery:redelivery
@@ -78,14 +81,14 @@ class ExtensionProperty<T> extends BaseCasaProperty<T> {
     @SuppressWarnings("unchecked")
     ExtensionProperty(
              CasaNode node,
-             CasaComponent extensionPointComponent,
-             CasaExtensibilityElement firstEE,
-             CasaExtensibilityElement lastEE,
-             String propertyType,
-             Class valueType,
-             String propertyName,
-             String displayName,
-             String description) {
+            CasaComponent extensionPointComponent,
+            CasaExtensibilityElement firstEE,
+            CasaExtensibilityElement lastEE,
+            String propertyType,
+            Class valueType,
+            String propertyName,
+            String displayName,
+            String description) {
         super(node, lastEE, propertyType, valueType,
                 propertyName, displayName, description);
 
@@ -123,25 +126,23 @@ class ExtensionProperty<T> extends BaseCasaProperty<T> {
  *
 class StringExtensionProperty extends ExtensionProperty<String> {
 
-    StringExtensionProperty(CasaNode node,
-            CasaComponent extensionPointComponent,
-            CasaExtensibilityElement firstEE,
-            CasaExtensibilityElement lastEE,
-            String propertyType,
-            String propertyName,
-            String displayName,
-            String description) {
-        super(node, extensionPointComponent, firstEE, lastEE, propertyType,
-                String.class, propertyName, displayName, description);
-    }
+StringExtensionProperty(CasaNode node,
+CasaComponent extensionPointComponent,
+CasaExtensibilityElement firstEE,
+CasaExtensibilityElement lastEE,
+String propertyType,
+String propertyName,
+String displayName,
+String description) {
+super(node, extensionPointComponent, firstEE, lastEE, propertyType,
+String.class, propertyName, displayName, description);
+}
 
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new StringEditor();
-    }
+@Override
+public PropertyEditor getPropertyEditor() {
+return new StringEditor();
+}
 }*/
-
-
 /**
  * Extension poperty of Integer type (empty value allowed).
  */
@@ -163,10 +164,9 @@ class IntegerExtensionProperty extends ExtensionProperty<Integer> {
     @Override
     public PropertyEditor getPropertyEditor() {
         // compared to the built-in IntEditor, this one allows empty value
-        return new IntegerEditor(); 
+        return new IntegerEditor();
     }
 }
-
 
 /**
  * Extension poperty of QName type.
@@ -318,12 +318,10 @@ class QNameExtensionProperty extends ExtensionProperty<QName> {
 class ChoiceExtensionProperty extends ExtensionProperty<String> {
 
     private List<String> choices;
-    
     // a map of possible child extensibility elements keyed by the element names
     private Map<String, CasaExtensibilityElement> choiceMap;
-
     private CasaNode node;
-    
+
     public ChoiceExtensionProperty(
             CasaNode node,
             CasaComponent extensionPointComponent,
@@ -334,13 +332,13 @@ class ChoiceExtensionProperty extends ExtensionProperty<String> {
             String displayName,
             String description,
             Map<String, CasaExtensibilityElement> choiceMap) {
-        
+
         super(node, extensionPointComponent, firstEE, lastEE, propertyType,
                 String.class, propertyName, displayName, description);
-        
+
         this.node = node;
         this.choiceMap = choiceMap;
-        
+
         choices = new ArrayList<String>();
         choices.addAll(choiceMap.keySet());
         Collections.sort(choices);
@@ -348,16 +346,16 @@ class ChoiceExtensionProperty extends ExtensionProperty<String> {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-        return new ComboBoxEditor(choices);
+        return new ComboBoxEditor(choices.toArray(new String[]{}));
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public String getValue()
             throws IllegalAccessException, InvocationTargetException {
-        CasaExtensibilityElement casaEE = 
+        CasaExtensibilityElement casaEE =
                 (CasaExtensibilityElement) getComponent(); // e.x., redelivery:on-failure        
-        List<CasaExtensibilityElement> children = 
+        List<CasaExtensibilityElement> children =
                 casaEE.getChildren(CasaExtensibilityElement.class);
         if (children != null && children.size() == 1) {
             return children.get(0).getQName().getLocalPart();
@@ -367,9 +365,9 @@ class ChoiceExtensionProperty extends ExtensionProperty<String> {
 
     @Override
     public void setValue(String value)
-            throws IllegalAccessException, IllegalArgumentException, 
+            throws IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
-        CasaExtensibilityElement lastEE = 
+        CasaExtensibilityElement lastEE =
                 (CasaExtensibilityElement) getComponent(); // e.x., redelivery:on-failure
 
         if (firstEE.getParent() == null) { // e.x., firstEE: redelivery:redelivery
@@ -401,8 +399,169 @@ class ChoiceExtensionProperty extends ExtensionProperty<String> {
             getModel().addExtensibilityElement(lastEE,
                     (CasaExtensibilityElement) ee.copy(lastEE));
         }
-        
+
         // rebuild property sheet
         node.refresh();
     }
 }
+
+/**
+ * Extension poperty of Endpoint type..
+ */
+class EndpointExtensionProperty extends ExtensionProperty<Endpoint> {
+    
+    private static final String ENDPOINT_NAME = "endpoint-name";
+    private static final String SERVICE_NAME = "service-name";
+
+    private static final QName ENDPOINT_NAME_QNAME = new QName(ENDPOINT_NAME);
+    private static final QName SERVICE_NAME_QNAME = new QName(SERVICE_NAME);
+    
+    EndpointExtensionProperty(
+            CasaNode node,
+            CasaComponent extensionPointComponent,
+            CasaExtensibilityElement firstEE,
+            CasaExtensibilityElement lastEE,
+            String propertyType,
+            String propertyName,
+            String displayName,
+            String description) {
+        super(node, extensionPointComponent, firstEE, lastEE, propertyType, 
+                String.class, //?
+                propertyName, displayName, description);
+    }
+
+//    public boolean canWrite() {
+//        return true;
+//    }
+
+    @Override
+    public PropertyEditor getPropertyEditor() {
+        EndpointEditor endpointEditor = new EndpointEditor();
+        try {
+            endpointEditor.setValue(getValue());
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return endpointEditor;
+    }
+
+    @Override
+    public Endpoint getValue()
+            throws IllegalAccessException, InvocationTargetException {
+        CasaComponent component = getComponent();
+        Element element = component.getPeer();
+        String endpointName = component.getAnyAttribute(ENDPOINT_NAME_QNAME);
+        QName serviceQName = XmlUtil.getAttributeNSName(element, SERVICE_NAME);
+
+        return new Endpoint(serviceQName, endpointName);
+    }
+
+    @Override
+    public void setValue(Endpoint endpoint)
+            throws IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
+
+        if (endpoint == null) {
+            return;
+        }
+
+        String endpointName = endpoint.getEndpointName();
+        String prefixedServiceName = endpoint.getPrefixedServiceName();
+
+        CasaComponent component = getComponent();
+
+        CasaWrapperModel model = getModel();
+        model.startTransaction();
+        try {
+            component.setAnyAttribute(ENDPOINT_NAME_QNAME, endpointName);
+            component.setAnyAttribute(SERVICE_NAME_QNAME, prefixedServiceName);
+        } finally {
+            if (model.isIntransaction()) {
+                model.endTransaction();
+            }
+        }
+    }
+
+    class EndpointEditor extends ComboBoxEditor<Endpoint> {
+
+        EndpointEditor() {
+            List<Endpoint> values = new ArrayList<Endpoint>();
+
+            CasaWrapperModel model = getModel();
+            List<CasaEndpoint> casaEndpoints =
+                    model.getRootComponent().getEndpoints().getEndpoints();
+            
+            for (CasaEndpoint casaEndpoint : casaEndpoints) {
+                Endpoint endpoint = new Endpoint(
+                        casaEndpoint.getServiceQName(), 
+                        casaEndpoint.getEndpointName());
+                values.add(endpoint);
+            }
+
+            setValues(values.toArray(new Endpoint[0]));
+        }
+
+        /**
+         * @param value     string representation of an endpoint in the form of
+         *                  {namespaceURI}serviceName:endpointName
+         */
+        @Override
+        public void setAsText(String value) {
+            Endpoint endpoint = Endpoint.valueOf(value);
+            
+            Endpoint[] endpoints = getValues();
+            for (Endpoint ep : endpoints) {
+                if (ep.equals(endpoint)) {
+                    setValue(ep); // endpoint doesn't have prefix info
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
+class XmlUtil {
+
+    public static QName getAttributeNSName(Element e, String attrName) {
+        String attrValue = e.getAttribute(attrName);
+        return getNSName(e, attrValue);
+    }
+
+    private static QName getNSName(Element e, String qname) {
+        if (qname == null) {
+            return null;
+        }
+        int i = qname.indexOf(':');
+        if (i > 0) {
+            String name = qname.substring(i + 1);
+            String prefix = qname.substring(0, i);
+            return new QName(getNamespaceURI(e, prefix), name);
+        } else {
+            return new QName(qname);
+        }
+    }
+
+    public static String getNamespaceURI(Element el, String prefix) {
+        if ((prefix == null) || (prefix.length() < 1)) {
+            return "";
+        }
+        prefix = prefix.trim();
+        try {
+            NamedNodeMap map = el.getOwnerDocument().getDocumentElement().getAttributes();
+            for (int j = 0; j < map.getLength(); j++) {
+                Node n = map.item(j);
+                String attrName = ((Attr) n).getName();
+                if (attrName != null) {
+                    if (attrName.trim().equals("xmlns:" + prefix)) {
+                        return ((Attr) n).getValue();
+                    }
+                }
+            }
+        } catch (Exception e) {
+        }
+
+        return "";
+    }
+}
+

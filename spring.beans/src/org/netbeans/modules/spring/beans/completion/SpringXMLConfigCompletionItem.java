@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,10 +37,6 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.spring.beans.completion;
@@ -45,20 +47,16 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.beans.BeanInfo;
+import java.io.File;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleElementVisitor6;
-import javax.lang.model.util.SimpleTypeVisitor6;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -72,11 +70,11 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.util.SpringBeansUIs;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -85,12 +83,12 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
-import org.openide.xml.XMLUtil;
 
 /**
  * A completion item shown in a valid code completion request 
@@ -100,14 +98,19 @@ import org.openide.xml.XMLUtil;
  */
 public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 
-    public static SpringXMLConfigCompletionItem createPackageItem(int substitutionOffset, String packageName, 
-            boolean isDeprecated) {
-        return new PackageItem(substitutionOffset, packageName, isDeprecated);
+    public static SpringXMLConfigCompletionItem createBeanRefItem(int substitutionOffset, String displayName, 
+            SpringBean bean, FileObject containerFO) {
+        return new BeanRefItem(substitutionOffset, displayName, bean, containerFO);
     }
     
-    public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
-                boolean isDeprecated) {
-        return new ClassItem(substitutionOffset, elem, type, isDeprecated);
+    public static SpringXMLConfigCompletionItem createPackageItem(int substitutionOffset, String packageName, 
+            boolean deprecated) {
+        return new PackageItem(substitutionOffset, packageName, deprecated);
+    }
+    
+    public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle, 
+                boolean deprecated, boolean smartItem) {
+        return new ClassItem(substitutionOffset, elem, elemHandle, deprecated, smartItem);
     }
     
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
@@ -139,7 +142,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     
     protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
         BaseDocument doc = (BaseDocument) c.getDocument();
-        CharSequence prefix = getInsertPrefix();
+        CharSequence prefix = getSubstitutionText();
         String text = prefix.toString();
         if(toAdd != null) {
             text += toAdd;
@@ -155,6 +158,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         } finally {
             doc.atomicUnlock();
         }
+    }
+    
+    protected CharSequence getSubstitutionText() {
+        return getInsertPrefix();
     }
 
     public void processKeyEvent(KeyEvent evt) {
@@ -197,6 +204,87 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         return null;
     }
     
+    private static class BeanRefItem extends SpringXMLConfigCompletionItem {
+
+        private static final String CLASS_COLOR = "<font color=#808080>"; //NOI18N
+        
+        private String beanId;
+        private String beanClass;
+        private List<String> beanNames;
+        private String displayName;
+        private String beanLocFile;
+        private Action goToBeanAction;
+        private String leftText;
+        
+        public BeanRefItem(int substitutionOffset, String displayName, SpringBean bean, FileObject containerFO) {
+            super(substitutionOffset);
+            this.beanId = bean.getId();
+            this.beanClass = bean.getClassName();
+            this.beanNames = bean.getNames();
+            if (bean.getLocation() != null) {
+                File file = bean.getLocation().getFile();
+                FileObject fo = FileUtil.toFileObject(file);
+                if (fo != null) {
+                    this.beanLocFile = FileUtil.getRelativePath(containerFO.getParent(), fo);
+                }
+            }
+            goToBeanAction = SpringBeansUIs.createGoToBeanAction(bean);
+            this.displayName = displayName;
+        }
+        
+        public int getSortPriority() {
+            return 100;
+        }
+
+        public CharSequence getSortText() {
+            return displayName;
+        }
+
+        public CharSequence getInsertPrefix() {
+            return displayName;
+        }
+
+        @Override
+        protected String getLeftHtmlText() {
+            if (leftText == null) {
+                StringBuilder sb = new StringBuilder();
+                sb.append(displayName);
+                sb.append(CLASS_COLOR);
+                sb.append(" ("); // NOI18N
+                if(this.beanClass != null) {
+                    sb.append(beanClass);
+                }
+                sb.append(")"); // NOI18N
+                sb.append(COLOR_END);
+                leftText = sb.toString();
+            }
+            return leftText;
+        }
+
+        @Override
+        protected String getRightHtmlText() {
+            return beanLocFile;
+        }
+        
+        @Override
+        protected ImageIcon getIcon() {
+            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/spring/beans/resources/bean.gif")); // NOI18N
+        }
+
+        @Override
+        public CompletionTask createDocumentationTask() {
+            return new AsyncCompletionTask(new AsyncCompletionQuery() {
+                @Override
+                protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+                    CompletionDocumentation docItem = SpringXMLConfigCompletionDoc.createBeanRefDoc(beanId, 
+                            beanNames, beanClass, beanLocFile, goToBeanAction);
+                    resultSet.setDocumentation(docItem);
+                    resultSet.finish();
+                }
+            });
+        }        
+    }
+    
     public static final String COLOR_END = "</font>"; //NOI18N
     public static final String STRIKE = "<s>"; //NOI18N
     public static final String STRIKE_END = "</s>"; //NOI18N
@@ -214,23 +302,35 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
         private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
         
-        private TypeMirrorHandle<DeclaredType> typeHandle;
-        private boolean isDeprecated;
-        private String simpleName;
-        private String typeName;
+        private ElementHandle<TypeElement> elemHandle;
+        private boolean deprecated;
+        private String displayName;
         private String enclName;
         private String sortText;
         private String leftText;
+        private boolean smartItem;
 
-        public ClassItem(int substitutionOffset, TypeElement elem, DeclaredType type, 
-                boolean isDeprecated) {
+        public ClassItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle, 
+                boolean deprecated, boolean smartItem) {
             super(substitutionOffset);
-            this.typeHandle = TypeMirrorHandle.create(type);
-            this.isDeprecated = isDeprecated;
-            this.simpleName = elem.getSimpleName().toString();
-            this.typeName = getTypeName(type, false).toString();
+            this.elemHandle = elemHandle;
+            this.deprecated = deprecated;
+            this.displayName = smartItem ? elem.getSimpleName().toString() : getRelativeName(elem);
             this.enclName = getElementName(elem.getEnclosingElement(), true).toString();
-            this.sortText = this.simpleName + getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
+            this.sortText = this.displayName + getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
+            this.smartItem = smartItem;
+        }
+        
+        private String getRelativeName(TypeElement elem) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(elem.getSimpleName().toString());
+            Element parent = elem.getEnclosingElement();
+            while(parent.getKind() != ElementKind.PACKAGE) {
+                sb.insert(0, parent.getSimpleName().toString() + "$"); // NOI18N
+                parent = parent.getEnclosingElement();
+            }
+            
+            return sb.toString();
         }
         
         public int getSortPriority() {
@@ -242,7 +342,12 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }
 
         public CharSequence getInsertPrefix() {
-            return enclName + "." + typeName; // NOI18N
+            return smartItem ? "" : elemHandle.getBinaryName(); // NOI18N
+        }
+        
+        @Override
+        protected CharSequence getSubstitutionText() {
+            return elemHandle.getBinaryName();
         }
 
         @Override
@@ -255,12 +360,12 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             if (leftText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(getColor());
-                if (isDeprecated)
+                if (deprecated)
                     sb.append(STRIKE);
-                sb.append(escape(typeName));
-                if (isDeprecated)
+                sb.append(displayName);
+                if (deprecated)
                     sb.append(STRIKE_END);
-                if (enclName != null && enclName.length() > 0) {
+                if (smartItem && enclName != null && enclName.length() > 0) {
                     sb.append(COLOR_END);
                     sb.append(PKG_COLOR);
                     sb.append(" ("); //NOI18N
@@ -288,9 +393,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 @Override
                 protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
                     try {
-                        JTextComponent component = EditorRegistry.lastFocusedComponent();
-                        Document document = component.getDocument();
-                        JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(document);
+                        JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
                         if (js == null) {
                             return;
                         }
@@ -298,13 +401,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         js.runUserActionTask(new Task<CompilationController>() {
                             public void run(CompilationController cc) throws Exception {
                                 cc.toPhase(Phase.RESOLVED);
-                                ElementHandle<? extends TypeElement> eh = ElementHandle.from(typeHandle);
-                                Element e = eh.resolve(cc);
-                                if(e.asType().getKind() == TypeKind.ERROR) {
+                                Element element = elemHandle.resolve(cc);
+                                if (element == null) {
                                     return;
                                 }
-                                
-                                SpringXMLConfigCompletionDoc doc = SpringXMLConfigCompletionDoc.createJavaDoc(cc, e);
+                                SpringXMLConfigCompletionDoc doc = SpringXMLConfigCompletionDoc.createJavaDoc(cc, element);
                                 resultSet.setDocumentation(doc);
                             }
                         }, false);
@@ -313,7 +414,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         Exceptions.printStackTrace(ex);
                     }
                 }
-            });
+            }, EditorRegistry.lastFocusedComponent());
         }
     }
     
@@ -323,16 +424,16 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private static final String PACKAGE_COLOR = "<font color=#005600>"; //NOI18N
         private static ImageIcon icon;
         
-        private boolean isDeprecated;
+        private boolean deprecated;
         private String simpleName;
         private String sortText;
         private String leftText;
         
-        public PackageItem(int substitutionOffset, String packageFQN, boolean isDeprecated) {
+        public PackageItem(int substitutionOffset, String packageFQN, boolean deprecated) {
             super(substitutionOffset);
             int idx = packageFQN.lastIndexOf('.'); // NOI18N
             this.simpleName = idx < 0 ? packageFQN : packageFQN.substring(idx + 1);
-            this.isDeprecated = isDeprecated;
+            this.deprecated = deprecated;
             this.sortText = this.simpleName + "#" + packageFQN; //NOI18N
         }
 
@@ -373,10 +474,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             if (leftText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(PACKAGE_COLOR);
-                if (isDeprecated)
+                if (deprecated)
                     sb.append(STRIKE);
                 sb.append(simpleName);
-                if (isDeprecated)
+                if (deprecated)
                     sb.append(STRIKE_END);
                 sb.append(COLOR_END);
                 leftText = sb.toString();
@@ -558,124 +659,6 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }        
     }
     
-    public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
-        return getTypeName(type, fqn, false);
-    }
-    
-    public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
-	if (type == null)
-            return ""; //NOI18N
-        return new TypeNameVisitor(varArg).visit(type, fqn);
-    }
-    
-    private static final String UNKNOWN = "<unknown>"; //NOI18N
-    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
-    
-    private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
-        
-        private boolean varArg;
-        
-        private TypeNameVisitor(boolean varArg) {
-            super(new StringBuilder());
-            this.varArg = varArg;
-        }
-        
-        @Override
-        public StringBuilder defaultAction(TypeMirror t, Boolean p) {
-            return DEFAULT_VALUE.append(t);
-        }
-        
-        @Override
-        public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
-            Element e = t.asElement();
-            if (e instanceof TypeElement) {
-                TypeElement te = (TypeElement)e;
-                DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
-                Iterator<? extends TypeMirror> it = t.getTypeArguments().iterator();
-                if (it.hasNext()) {
-                    DEFAULT_VALUE.append("<"); //NOI18N
-                    while(it.hasNext()) {
-                        visit(it.next(), p);
-                        if (it.hasNext())
-                            DEFAULT_VALUE.append(", "); //NOI18N
-                    }
-                    DEFAULT_VALUE.append(">"); //NOI18N
-                }
-                return DEFAULT_VALUE;                
-            } else {
-                return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
-            }
-        }
-                        
-        @Override
-        public StringBuilder visitArray(ArrayType t, Boolean p) {
-            boolean isVarArg = varArg;
-            varArg = false;
-            visit(t.getComponentType(), p);
-            return DEFAULT_VALUE.append(isVarArg ? "..." : "[]"); //NOI18N
-        }
-
-        @Override
-        public StringBuilder visitTypeVariable(TypeVariable t, Boolean p) {
-            Element e = t.asElement();
-            if (e != null) {
-                String name = e.getSimpleName().toString();
-                if (!CAPTURED_WILDCARD.equals(name))
-                    return DEFAULT_VALUE.append(name);
-            }
-            DEFAULT_VALUE.append("?"); //NOI18N
-            TypeMirror bound = t.getLowerBound();
-            if (bound != null && bound.getKind() != TypeKind.NULL) {
-                DEFAULT_VALUE.append(" super "); //NOI18N
-                visit(bound, p);
-            } else {
-                bound = t.getUpperBound();
-                if (bound != null && bound.getKind() != TypeKind.NULL) {
-                    DEFAULT_VALUE.append(" extends "); //NOI18N
-                    if (bound.getKind() == TypeKind.TYPEVAR)
-                        bound = ((TypeVariable)bound).getLowerBound();
-                    visit(bound, p);
-                }
-            }
-            return DEFAULT_VALUE;
-        }
-
-        @Override
-        public StringBuilder visitWildcard(WildcardType t, Boolean p) {
-            DEFAULT_VALUE.append("?"); //NOI18N
-            TypeMirror bound = t.getSuperBound();
-            if (bound == null) {
-                bound = t.getExtendsBound();
-                if (bound != null) {
-                    DEFAULT_VALUE.append(" extends "); //NOI18N
-                    if (bound.getKind() == TypeKind.WILDCARD)
-                        bound = ((WildcardType)bound).getSuperBound();
-                    visit(bound, p);
-                } else {
-                    bound = SourceUtils.getBound(t);
-                    if (bound != null && (bound.getKind() != TypeKind.DECLARED || !((TypeElement)((DeclaredType)bound).asElement()).getQualifiedName().contentEquals("java.lang.Object"))) { //NOI18N
-                        DEFAULT_VALUE.append(" extends "); //NOI18N
-                        visit(bound, p);
-                    }
-                }
-            } else {
-                DEFAULT_VALUE.append(" super "); //NOI18N
-                visit(bound, p);
-            }
-            return DEFAULT_VALUE;
-        }
-
-        @Override
-        public StringBuilder visitError(ErrorType t, Boolean p) {
-            Element e = t.asElement();
-            if (e instanceof TypeElement) {
-                TypeElement te = (TypeElement)e;
-                return DEFAULT_VALUE.append((p ? te.getQualifiedName() : te.getSimpleName()).toString());
-            }
-            return DEFAULT_VALUE;
-        }
-    }
-    
     public static int getImportanceLevel(String fqn) {
         int weight = 50;
         if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) // NOI18N
@@ -687,14 +670,5 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) // NOI18N
             weight += 30;
         return weight;
-    }
-    
-    private static String escape(String s) {
-        if (s != null) {
-            try {
-                return XMLUtil.toAttributeValue(s);
-            } catch (Exception ex) {}
-        }
-        return s;
     }
 }

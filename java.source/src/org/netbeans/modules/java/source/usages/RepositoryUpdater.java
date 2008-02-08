@@ -587,7 +587,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     p = JavaSource.Priority.MAX;
                     break;
             }
-            JavaSourceAccessor.INSTANCE.runSpecialTask (cw, p);
+            JavaSourceAccessor.getINSTANCE().runSpecialTask (cw, p);
         }
     }
     
@@ -1325,7 +1325,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                         }
                                         else {
                                             CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
-                                            JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
+                                            JavaSourceAccessor.getINSTANCE().runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
                                             continuation = true;
                                             return null;
                                         }
@@ -1333,7 +1333,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 }
                                 if (!scanRoots()) {
                                     CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
-                                    JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
+                                    JavaSourceAccessor.getINSTANCE().runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
                                     continuation = true;
                                     return null;
                                 }
@@ -1373,7 +1373,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                     }
                                     if (!scanRoots ()) {
                                         CompileWorker.this.work = new Work (WorkType.COMPILE_CONT,null);
-                                        JavaSourceAccessor.INSTANCE.runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
+                                        JavaSourceAccessor.getINSTANCE().runSpecialTask (CompileWorker.this,JavaSource.Priority.MAX);
                                         continuation = true;
                                         return null;
                                     }
@@ -1405,7 +1405,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 final Document doc = editor.getDocument();
                                 JavaSource js = doc == null ? null : JavaSource.forDocument(doc);
                                 if (js != null) {
-                                    JavaSourceAccessor.INSTANCE.revalidate(js);
+                                    JavaSourceAccessor.getINSTANCE().revalidate(js);
                                 }
                             }
                             LOGGER.fine(String.format("Complete binary scan time: %d ms. Complete source scan time: %d ms.", cbst, csst));      //NOI18N
@@ -1720,9 +1720,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             final ClasspathInfo cpInfo;
             if (!this.ignoreExcludes.contains(root)) {
                 entry = getClassPathEntry(sourcePath, root);
-                cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath,filter,true,false);
+                cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath,sourcePath,filter,true,false);
             } else {
-                cpInfo = ClasspathInfoAccessor.INSTANCE.create(bootPath,compilePath,sourcePath,filter,true,true);
+                cpInfo = ClasspathInfoAccessor.getINSTANCE().create(bootPath,compilePath,sourcePath,filter,true,true);
             }
             
             LOGGER.fine("Initial value of clean: "+clean);
@@ -2015,7 +2015,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 try {
                     uqImpl.setDirty(null);
                     final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(fo);
-                    ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create (fo, filter, true, false);
+                    ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (fo, filter, true, false);
                     final File rootFile = FileUtil.toFile(rootFo);
                     final File fileFile = FileUtil.toFile(fo);
                     final File classCache = Index.getClassFolder (rootFile);
@@ -2058,9 +2058,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                     if (entry == null || entry.includes(fo)) {
                         String sourceLevel = SourceLevelQuery.getSourceLevel(fo);
                         final CompilerListener listener = new CompilerListener ();
-                        final JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);                
+                        final JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);                
                         JavaFileObject active = FileObjects.nbFileObject(fo, rootFo, filter, false);
-                        JavacTaskImpl jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
+                        JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
                         jt.setTaskListener(listener);
                         Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[] {active});
                         Iterable<? extends TypeElement> classes = jt.enter();
@@ -2187,7 +2187,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 FileObject rootFO = FileUtil.toFileObject(rootFile);
                 if (rootFO != null) {
                     final JavaFileFilterImplementation filter = JavaFileFilterQuery.getFilter(rootFO);
-                    ClasspathInfo cpInfo = ClasspathInfoAccessor.INSTANCE.create(rootFO, filter, true, false);
+                    ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(rootFO, filter, true, false);
                     toReparse = RebuildOraculum.findAllDependent(rootFile, null, cpInfo.getClassIndex(), removed);
                 }
                 //actually delete the sig files:
@@ -2455,9 +2455,9 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
      private static String classPathToString(ClasspathInfo info) throws FileStateInvalidException {
-         ClassPath bootPath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.BOOT);
-         ClassPath compilePath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.COMPILE);
-         ClassPath sourcePath = ClasspathInfoAccessor.INSTANCE.getCachedClassPath(info, ClasspathInfo.PathKind.SOURCE);
+         ClassPath bootPath = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(info, ClasspathInfo.PathKind.BOOT);
+         ClassPath compilePath = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(info, ClasspathInfo.PathKind.COMPILE);
+         ClassPath sourcePath = ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(info, ClasspathInfo.PathKind.SOURCE);
 
          StringBuilder sb = new StringBuilder();
 
@@ -2662,7 +2662,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         JavaFileObject active = null;
         File           activeFile = null;
         Pair<JavaFileObject, File> activePair = null;
-        final JavaFileManager fileManager = ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo);
+        final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo);
         final CompilerListener listener = new CompilerListener ();    
         Set<URL> toRefresh = new HashSet<URL>();
         LowMemoryNotifier.getDefault().addLowMemoryListener(listener);
@@ -2713,7 +2713,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         }
                         if (jt == null) {
-                            jt = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, listener, sourceLevel);
+                            jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);
                             jt.setTaskListener(listener);
                             LOGGER.fine("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo));    //NOI18N
                         }
@@ -2803,7 +2803,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             continue;
                         }
                         if (sa != null) {
-                            sa.analyse(trees,jt, ClasspathInfoAccessor.INSTANCE.getFileManager(cpInfo), active, added);
+                            sa.analyse(trees,jt, ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), active, added);
                         }                                
                         List<Diagnostic> diag = new ArrayList<Diagnostic>();
                         URI u = active.toUri();

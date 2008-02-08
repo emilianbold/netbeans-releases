@@ -46,6 +46,7 @@ import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.beans.ConfigFileTestCase;
 import org.netbeans.modules.spring.beans.TestUtils;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -60,13 +61,16 @@ public class ConfigFileSpringBeanSourceTest extends ConfigFileTestCase {
         String contents = TestUtils.createXMLConfigText("<bean id='foo' name='bar baz' class='org.example.Foo'/>");
         TestUtils.copyStringToFile(contents, configFile);
         ConfigFileSpringBeanSource source = new ConfigFileSpringBeanSource();
-        source.parse(configFile);
+        source.parse(FileUtil.toFileObject(configFile));
         List<SpringBean> beans = source.getBeans();
         assertEquals(1, beans.size());
         SpringBean bean = beans.get(0);
-        assertSame(bean, source.findBean("foo"));
-        assertSame(bean, source.findBean("bar"));
-        assertSame(bean, source.findBean("baz"));
+        assertSame(bean, source.findBeanByIDOrName("foo"));
+        assertSame(bean, source.findBeanByIDOrName("bar"));
+        assertSame(bean, source.findBeanByIDOrName("baz"));
+        assertSame(bean, source.findBeanByID("foo"));
+        assertNull(source.findBeanByID("bar"));
+        assertNull(source.findBeanByID("baz"));
         int offset = contents.indexOf("<bean ");
         Location location = bean.getLocation();
         assertEquals(offset, location.getOffset());

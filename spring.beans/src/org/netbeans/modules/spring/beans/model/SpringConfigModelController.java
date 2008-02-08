@@ -55,6 +55,8 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupport;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupportEvent;
 import org.netbeans.modules.spring.util.fcs.FileChangeSupportListener;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * The implementation of the config model. Listens on the config files
@@ -70,7 +72,8 @@ public class SpringConfigModelController {
 
     private final ConfigFileGroup configFileGroup;
     private final Map<File, SpringConfigFileModelController> file2Controller = Collections.synchronizedMap(new HashMap<File, SpringConfigFileModelController>());
-    private final Listener listener = new Listener();
+
+    private FileListener fileListener;
 
     // Encapsulates the current access to the model.
     private Access currentAccess;
@@ -93,10 +96,15 @@ public class SpringConfigModelController {
     }
 
     private void initialize() {
-        for (File configFile : configFileGroup.getFiles()) {
-            file2Controller.put(configFile, new SpringConfigFileModelController(configFile));
-            FileChangeSupport.DEFAULT.addListener(listener, configFile);
+        fileListener = new FileListener();
+        synchronized (file2Controller) {
+            for (File file : configFileGroup.getFiles()) {
+                // FileObject fo = FileUtil.toFileObject(file);
+                file2Controller.put(file, new SpringConfigFileModelController(file));
+                FileChangeSupport.DEFAULT.addListener(fileListener, file);
+            }
         }
+        EditorListener.getInstance().register(this);
     }
 
     /**
@@ -121,7 +129,7 @@ public class SpringConfigModelController {
     }
 
     private void runReadAction0(final Action<SpringBeans> action) throws Exception {
-        ExclusiveAccess.getInstance().runPriorityTask(new Callable<Void>() {
+        ExclusiveAccess.getInstance().runSyncTask(new Callable<Void>() {
             public Void call() throws IOException {
                 // Handle reentrant access.
                 boolean firstEntry = (currentAccess == null);
@@ -137,16 +145,28 @@ public class SpringConfigModelController {
         });
     }
 
+    ConfigFileGroup getConfigFileGroup() {
+        return configFileGroup;
+    }
+
     private void notifyFileChanged(File file) {
-        SpringConfigFileModelController fileController = file2Controller.get(file);
-        if (fileController != null) {
-            fileController.notifyChange();
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null) {
+            return;
         }
+        notifyFileChanged(fo, file);
     }
 
     private void notifyFileDeleted(File file) {
         // XXX probably in order to support repeatable read, we should not remove
         // the controller under exclusive access
+    }
+
+    void notifyFileChanged(FileObject fo, File file) {
+        SpringConfigFileModelController fileController = file2Controller.get(file);
+        if (fileController != null) {
+            fileController.notifyChange(fo);
+        }
     }
 
     /**
@@ -193,7 +213,7 @@ public class SpringConfigModelController {
     /**
      * Listens on changes to the config files.
      */
-    private final class Listener implements FileChangeSupportListener {
+    private final class FileListener implements FileChangeSupportListener {
 
         public void fileCreated(FileChangeSupportEvent event) {
             notifyFileChanged(event.getPath());

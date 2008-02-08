@@ -183,7 +183,7 @@ public class NbiFrame extends JFrame {
     }
     
     // protected ////////////////////////////////////////////////////////////////////
-    protected void initComponents() {
+    private void initComponents() {
         // the frame itself
         try {
             setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -206,6 +206,7 @@ public class NbiFrame extends JFrame {
         }
         
         addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent event) {
                 if ((frameMinimumWidth != -1) &&
                         (getSize().width < frameMinimumWidth)) {

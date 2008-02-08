@@ -44,7 +44,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,9 +83,19 @@ public final class RubyPlatform {
     static final String RUBY_DEBUG_BASE_NAME = "ruby-debug-base"; // NOI18N
     
     /** Required version of ruby-debug-ide gem. */
-    static final String RDEBUG_IDE_VERSION = "0.1.9"; // NOI18N
-    static final String RDEBUG_BASE_VERSION = "0.9.3"; // NOI18N
+    static final String RDEBUG_IDE_VERSION;
+    static final String RDEBUG_BASE_VERSION;
     
+    static {
+        if (Utilities.isWindows()) {
+            RDEBUG_IDE_VERSION = "0.1.9"; // NOI18N
+            RDEBUG_BASE_VERSION = "0.9.3"; // NOI18N
+        } else {
+            RDEBUG_IDE_VERSION = "0.1.10"; // NOI18N
+            RDEBUG_BASE_VERSION = "0.10.0"; // NOI18N
+        }
+    }
+
     private Info info;
     
     private final String id;
@@ -130,6 +139,12 @@ public final class RubyPlatform {
         return platform == null ? null : platform.getGemManager();
     }
 
+    @CheckForNull
+    public static String platformDescriptionFor(Project project) {
+        RubyPlatform platform = platformFor(project);
+        return platform == null ? null : platform.getInfo().getLongDescription();
+    }
+    
     public Info getInfo() {
         return info;
     }
@@ -489,10 +504,8 @@ public final class RubyPlatform {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
             }
             if (exec == null && hasRubyGemsInstalled()) {
-                List<String> repos = gemManager.getRepositories();
-                repos.add(0, gemManager.getGemHome()); // XXX is not a GEM_HOME always part of GEM_PATH?
-                for (String repo : repos) {
-                    String libGemBinDir = repo + File.separator + "bin"; // NOI18N
+                for (File repo : gemManager.getRepositories()) {
+                    String libGemBinDir = repo.getAbsolutePath() + File.separator + "bin"; // NOI18N
                     exec = RubyPlatform.findExecutable(libGemBinDir, toFind);
                     if (exec != null) {
                         break;
@@ -594,7 +607,7 @@ public final class RubyPlatform {
 
     public boolean installFastDebugger() {
         assert gemManager != null : "has gemManager when trying to install fast debugger";
-        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false);
+        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, RDEBUG_IDE_VERSION);
         return hasFastDebuggerInstalled();
     }
 
@@ -694,6 +707,38 @@ public final class RubyPlatform {
      */
     public boolean hasRubyGemsInstalled() {
         return info.getGemHome() != null;
+    }
+
+    /**
+     * Notifies the registered listeners that are changes in this platform's gems,
+     * i.e. a gem was removed or a new gem was installed.
+     */
+    public void fireGemsChanged() {
+        if (pcs != null) {
+            pcs.firePropertyChange("gems", null, null); //NOI18N
+        }
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RubyPlatform other = (RubyPlatform) obj;
+        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + (this.id != null ? this.id.hashCode() : 0);
+        return hash;
     }
 
     public @Override String toString() {

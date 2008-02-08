@@ -59,6 +59,13 @@ public class ProcessesTreeModel implements TreeModel {
     
     /**
      * Creates a new instance of ProcessInstancesTreeModel.
+     */
+    public ProcessesTreeModel() {
+        // Does nothing
+    }
+    
+    /**
+     * Creates a new instance of ProcessInstancesTreeModel.
      *
      * @param lookupProvider debugger context
      */
@@ -235,7 +242,7 @@ public class ProcessesTreeModel implements TreeModel {
         
         myListeners.remove(listener);
         
-        if (myListeners.size() == 0) {
+        if ((myListeners.size() == 0) && (myListener != null)) {
             myListener.destroy();
             myListener = null;
         }

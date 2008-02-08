@@ -80,14 +80,15 @@ public class PathConverter {
                 stage = ParsingStage.SCHEMA;
                 sCompList.addFirst(((AbstractPredicate)obj).getSComponent());
             } else if (obj instanceof Part) {
-                if (stage != ParsingStage.SCHEMA) {
+                if (!(stage == ParsingStage.SCHEMA || stage == null)) {
                     return null;
                 }
                 stage = ParsingStage.PART;
                 part = (Part)obj;
             } else if (obj instanceof AbstractVariableDeclaration) {
                 if (!(stage == ParsingStage.SCHEMA || 
-                        stage == ParsingStage.PART)) {
+                        stage == ParsingStage.PART || 
+                        stage == null)) {
                     return null;
                 }
                 stage = ParsingStage.VARIABLE;

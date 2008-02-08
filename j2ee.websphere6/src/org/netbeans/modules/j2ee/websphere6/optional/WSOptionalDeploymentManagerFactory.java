@@ -40,21 +40,14 @@
  */
 package org.netbeans.modules.j2ee.websphere6.optional;
 
-import javax.enterprise.deploy.spi.*;
-
-import org.openide.WizardDescriptor.*;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
-
-import org.netbeans.modules.j2ee.websphere6.ui.wizard.*;
+import javax.enterprise.deploy.spi.DeploymentManager;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
-import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager.WsVersion;
+import org.netbeans.modules.j2ee.websphere6.WSVersion;
+import org.netbeans.modules.j2ee.websphere6.ui.wizard.WSInstantiatingIterator;
+import org.openide.WizardDescriptor.InstantiatingIterator;
 
 /**
  * An entry point to the plugin's optional functionality, such as server
@@ -63,22 +56,21 @@ import org.netbeans.modules.j2ee.websphere6.WSDeploymentManager.WsVersion;
  *
  * @author Kirill Sorokin
  */
-public class WSOptionalDeploymentManagerFactory extends
-        OptionalDeploymentManagerFactory {
+public class WSOptionalDeploymentManagerFactory extends OptionalDeploymentManagerFactory {
 
-	private final WsVersion version;
+    private final WSVersion version;
 
     /** Creates a new instance of OptionalFactory */
-    private WSOptionalDeploymentManagerFactory(WsVersion version) {
+    private WSOptionalDeploymentManagerFactory(WSVersion version) {
         this.version = version;
     }
 
     public static WSOptionalDeploymentManagerFactory create60() {
-        return new WSOptionalDeploymentManagerFactory(WsVersion.WS_60);
+        return new WSOptionalDeploymentManagerFactory(WSVersion.VERSION_60);
     }
 
     public static WSOptionalDeploymentManagerFactory create61() {
-        return new WSOptionalDeploymentManagerFactory(WsVersion.WS_61);
+        return new WSOptionalDeploymentManagerFactory(WSVersion.VERSION_61);
     }
 
 
@@ -130,6 +122,6 @@ public class WSOptionalDeploymentManagerFactory extends
      * @return a custom wizard
      */
     public InstantiatingIterator getAddInstanceIterator() {
-        return new WSInstantiatingIterator();
+        return new WSInstantiatingIterator(version);
     }
 }
