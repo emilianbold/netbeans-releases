@@ -176,11 +176,11 @@ public class MakeSources implements Sources, AntProjectListener {
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
-        fireChange();
+        // fireChange(); // ignore - cnd projects don't keep source file info in project.xml
     }
 
     public void descriptorChanged() {
-        fireChange();
+        // fireChange(); // ignore
     }
 
     public void propertiesChanged(AntProjectEvent ev) {
