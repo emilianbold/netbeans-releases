@@ -40,13 +40,19 @@
 package org.netbeans.modules.websvc.saas.model;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.manager.model.WebServiceData;
+import org.netbeans.modules.websvc.manager.model.WebServiceListModel;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata.CodeGen;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -58,7 +64,6 @@ public class WsdlSaas extends Saas {
 
     public WsdlSaas(SaasGroup parentGroup, SaasServices services) {
         super(parentGroup, services);
-        //wsData = WebServiceListModel.getInstance().findWebServiceData(services.getUrl(), getServiceName());
     }
 
     public WsdlSaas(SaasGroup parentGroup, String displayName, String url, String packageName) {
@@ -79,11 +84,46 @@ public class WsdlSaas extends Saas {
         //wsData = WebServiceListModel.getInstance().findWebServiceData(services.getUrl(), getServiceName());
     }
     
+    private WebServiceData findWebServiceData() {
+        WebServiceData data = WebServiceListModel.getInstance().findWebServiceData(getUrl(), null , false);
+        if (data != null) {
+            data.setName(wsData.getWsdlService().getJavaName());
+        }
+        return data;
+    }
+    
+    public WebServiceData getWsdlData() {
+        if (wsData == null) {
+            wsData = findWebServiceData();
+            if (wsData == null) {
+                Task t = WebServiceListModel.getInstance().addWebService(getUrl(), null, null);
+                try {
+                    t.waitFinished(30000);
+                } catch(InterruptedException ex) {
+                    //log down there
+                }
+                wsData = findWebServiceData();
+            }
+            if (wsData == null) {
+                Logger.getLogger(this.getClass().getName()).log(Level.INFO, "Failed to add service "+getUrl());
+            }
+        }
+        return wsData;
+    }
+    
     public WsdlService getWsdlModel() {
         return wsData.getWsdlService();
     }
 
     public FileObject getLocalWsdlFile() {
         return FileUtil.toFileObject(new File(wsData.getWsdlFile()));
+    }
+    
+    public List<Object> getPortsOrMethods() {
+        List<SaasMethod> methods = getMethods();
+        if (methods != null && methods.size() > 0) {
+            return new ArrayList<Object>(methods);
+        }
+        return new ArrayList<Object>(getWsdlModel().getPorts());
     }
 }

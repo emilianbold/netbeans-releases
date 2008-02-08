@@ -79,16 +79,18 @@ public class PaletteSupport {
     public PaletteController getPalette(IDrawingAreaControl drawingAreaControl) {
         
         // get a string representing the diagram kind given a drawingAreaControl object
-        String paletteFolderName = findPaletteRepository(drawingAreaControl.getDiagramKind());   
+        String paletteFolderName = findPaletteRepository(drawingAreaControl.getDiagramKind());  
         pController = UMLPaletteFactory.getPalette(paletteFolderName);
-        
-        // registers a PropertyChangeListner to the palette controller object
-        propertyChangeListener = new PalettePropertyChangeListener(drawingAreaControl);
-        pController.addPropertyChangeListener(propertyChangeListener);
-        initPaletteSettings();
-        
-        drawingAreaControl.addDrawingAreaToolSelectionSink(new DrawingAreaSelectStateEnteredListener(pController, propertyChangeListener));
-       
+
+        if (pController != null) 
+        {
+            // registers a PropertyChangeListner to the palette controller object
+            propertyChangeListener = new PalettePropertyChangeListener(drawingAreaControl);
+            pController.addPropertyChangeListener(propertyChangeListener);
+            initPaletteSettings();
+            
+            drawingAreaControl.addDrawingAreaToolSelectionSink(new DrawingAreaSelectStateEnteredListener(pController, propertyChangeListener));
+        }
         return pController;
     }
     

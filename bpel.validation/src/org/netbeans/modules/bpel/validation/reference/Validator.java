@@ -48,14 +48,14 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.Validation.ValidationType;
-import org.netbeans.modules.bpel.validation.util.ValidationItem;
+import org.netbeans.modules.bpel.validation.core.Outcome;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-public final class Validator extends org.netbeans.modules.bpel.validation.util.Validator {
+public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
 
   public ValidationResult validate(Model model, Validation validation, ValidationType type) {
       if ( !(model instanceof BpelModel)) {
@@ -116,7 +116,7 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
                   str = i18n(getClass(), FIX_VARIABLE);
               }
               str = MessageFormat.format( str, builder.substring(0, builder.length()-2), expression.trim());
-              result.add(new ValidationItem(this, ResultType.ERROR, (Component)entity, str));
+              result.add(new Outcome(this, ResultType.ERROR, (Component)entity, str));
           }
       }
   }
@@ -175,8 +175,8 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
         continue;
       }
       if (reference.isBroken()) {
-        result.add(new ValidationItem(
-          this, ResultType.ERROR, (Component) entity, getMessage(entity, reference), QuickFix.get(entity, (Reference<Referenceable>) reference)));
+        result.add(new Outcome(this, ResultType.ERROR, (Component) entity,
+          getMessage(entity, reference), QuickFix.get(entity, (Reference<Referenceable>) reference)));
       }
     }
   }

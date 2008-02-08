@@ -395,7 +395,7 @@ public class WebServiceListModel {
         return initialized;
     }
     
-    public void addWebService(final String wsdl, final String packageName, final String groupId) {
+    public Task addWebService(final String wsdl, final String packageName, final String groupId) {
         // Run the add W/S asynchronously
         Runnable addWsRunnable = new Runnable() {
             public void run() {
@@ -430,7 +430,7 @@ public class WebServiceListModel {
             }
         };
         
-        WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
+        return WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
         
     }
 

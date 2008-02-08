@@ -102,11 +102,11 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
     public void testRepositoriesAreStored() throws Exception {
         RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
         GemManager gemManager = platform.getGemManager();
-        String dummyRepo = getWorkDirPath() + "/a";
+        File dummyRepo = new File(getWorkDirPath(), "/a");
         assertEquals("one repositories", 1, gemManager.getRepositories().size());
         
         // add and check
-        gemManager.addRepository(dummyRepo);
+        gemManager.addGemPath(dummyRepo);
         assertEquals("two repositories", 2, gemManager.getRepositories().size());
         RubyPlatformManager.resetPlatforms();
         platform = RubyPlatformManager.getDefaultPlatform();
@@ -114,12 +114,12 @@ public final class RubyPlatformManagerTest extends RubyTestBase {
         assertEquals("two repositories", 2, gemManager.getRepositories().size());
 
         // remove and check
-        gemManager.removeRepository(dummyRepo);
+        gemManager.removeGemPath(dummyRepo);
         RubyPlatformManager.resetPlatforms();
         platform = RubyPlatformManager.getDefaultPlatform();
         gemManager = platform.getGemManager();
         assertEquals("two repositories", 1, RubyPlatformManager.getDefaultPlatform().getGemManager().getRepositories().size());
-        gemManager.removeRepository(dummyRepo);
+        gemManager.removeGemPath(dummyRepo);
     }
 
 }

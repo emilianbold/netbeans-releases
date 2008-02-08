@@ -161,6 +161,7 @@ class RevisionNode extends AbstractNode {
     
     private class UsernameProperty extends CommitNodeProperty {
 
+        @SuppressWarnings("unchecked")
         public UsernameProperty() {
             super(COLUMN_NAME_USERNAME, String.class, COLUMN_NAME_USERNAME, COLUMN_NAME_USERNAME);
         }
@@ -176,6 +177,7 @@ class RevisionNode extends AbstractNode {
 
     private class DateProperty extends CommitNodeProperty {
 
+        @SuppressWarnings("unchecked")
         public DateProperty() {
             super(COLUMN_NAME_DATE, String.class, COLUMN_NAME_DATE, COLUMN_NAME_DATE);
         }
@@ -190,7 +192,8 @@ class RevisionNode extends AbstractNode {
     }
 
     private class MessageProperty extends CommitNodeProperty {
-
+        
+        @SuppressWarnings("unchecked")
         public MessageProperty() {
             super(COLUMN_NAME_MESSAGE, String.class, COLUMN_NAME_MESSAGE, COLUMN_NAME_MESSAGE);
         }
