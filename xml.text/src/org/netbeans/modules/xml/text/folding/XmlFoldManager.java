@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.xml.lexer.XMLTokenId;
+import org.netbeans.editor.Utilities;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -238,6 +239,10 @@ public class XmlFoldManager implements FoldManager {
                         if(tokenElem != null) {
                             int so = tokenElem.getStartOffset();
                             int eo = currentTokensSize+image.length();
+                            //do not create fold if start and end tags are
+                            //in the same line
+                            if(isOneLiner(so, eo))
+                                break;
                             String foldName = "<" + currentNode + ">";
                             Fold f = createFold(XmlFoldTypes.TAG, foldName, false, so, eo, fhTran);
                             myFolds.add(f);
@@ -339,6 +344,17 @@ public class XmlFoldManager implements FoldManager {
     public void expandNotify(Fold expandedFold) {
     }
     
+    public boolean isOneLiner(int start, int end) {
+        try {
+            BaseDocument doc = getDocument();
+            return Utilities.getLineOffset(doc, start) ==
+                   Utilities.getLineOffset(doc, end);
+        } catch (BadLocationException ex) {
+            //Exceptions.printStackTrace(ex);
+            return false;
+        }
+    }
+       
     public class TokenElement {
         private TokenType type;
         private String name;
@@ -371,7 +387,6 @@ public class XmlFoldManager implements FoldManager {
         public String toString() {
             return type + ", " + name + ", " + startOffset + ", " + endOffset;
         }
-
     }
     
     public enum Token {
