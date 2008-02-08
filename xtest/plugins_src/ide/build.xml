@@ -52,6 +52,8 @@ made subject to such option by the copyright holder.
         <exclude name="org/netbeans/xtest/plugin/ide/MainWithProjects*" unless="java.source.dir"/>
         <!-- Stuff needed for xtest error manager functionality controled by xtest.ide.error.manager property -->
         <include name="org/netbeans/xtest/plugin/ide/services/XTestErrorManager*"/>
+        <!-- BlacklistedClassesHandler classes -->
+        <include name="org/netbeans/xtest/plugin/ide/BlacklistedClasses*"/>
         <include name="META-INF/**"/>
         <!-- Needed for xtest IDE handler functionality controled by xtest.ide.handler property -->
         <include name="org/netbeans/xtest/plugin/ide/XTestIDEHandler*"/>

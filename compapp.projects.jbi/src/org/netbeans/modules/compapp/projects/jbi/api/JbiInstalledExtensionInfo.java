@@ -100,6 +100,10 @@ public class JbiInstalledExtensionInfo {
     /**
      * DOCUMENT ME!
      */
+    public static final String ITEM_CODEGEN = "codegen"; // NOI18N
+    /**
+     * DOCUMENT ME!
+     */
     public static final String ITEM_DESC = "description"; // NOI18N
 
     /**
@@ -224,8 +228,12 @@ public class JbiInstalledExtensionInfo {
             } else {
                 String extType = (String) childFO.getAttribute(ITEM_TYPE);
                 String extDesc = (String) childFO.getAttribute(ITEM_DESC);
+                String extCodeGen = (String) childFO.getAttribute(ITEM_CODEGEN);
                 JbiExtensionAttribute attr = new JbiExtensionAttribute(
-                        childName, extType, extDesc);
+                        childName, 
+                        JbiExtensionAttribute.Type.getType(extType), 
+                        extDesc,
+                        !("false".equalsIgnoreCase(extCodeGen)));
                 attrs.add(attr);
             }
         }

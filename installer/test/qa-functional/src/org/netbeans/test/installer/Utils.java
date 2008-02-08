@@ -522,9 +522,10 @@ public class Utils {
     }
 
     public static String constructURL(TestData data) {
-        String val = System.getProperty("installer.url.prefix");
-        String prefix = (data.getBuildNumber() != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + data.getBuildNumber() : val;
+        String prefix = System.getProperty("test.installer.url.prefix");
+        //String prefix = (data.getBuildNumber() != null) ? "http://bits.netbeans.org/netbeans/6.0/nightly/latest/bundles/netbeans-6.0-" + data.getBuildNumber() : val;
 
+        
         String bundleType = data.getInstallerType();
         if (bundleType == null || bundleType.equals("all")) {
             bundleType = "";
@@ -532,6 +533,7 @@ public class Utils {
             bundleType = "-" + bundleType;
         }
 
+        String build_number = (Boolean.valueOf(System.getProperty("test.use.build.number"))) ? data.getBuildNumber() : "";
         return prefix + bundleType + "-" + data.getPlatformName() + "." + data.getPlatformExt();
     }
 }

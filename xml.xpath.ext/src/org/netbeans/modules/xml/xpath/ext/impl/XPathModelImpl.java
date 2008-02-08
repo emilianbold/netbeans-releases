@@ -452,7 +452,7 @@ public class XPathModelImpl implements XPathModel {
         if (mValidationContext != null) {
             if (foundCompPairSet.isEmpty()) {
                 String name = XPathUtils.qNameObjectToString(qName);
-                if (isAttribute) { // vlv
+                if (isAttribute) {
                     if (nsUri == null || nsUri.length() == 0) {
                         mValidationContext.addResultItem(getRootExpression(), 
                                 ResultType.ERROR, 
@@ -895,14 +895,15 @@ public class XPathModelImpl implements XPathModel {
         }
         //
         if (sameNameOtherPrefix.isEmpty()) {
-            // The function with the required name isn't found  // vlv
+            // The function with the required name isn't found
 
-            // why bytesToString, convert are not recognized?
+            // vlv
+            // why stringToBytes, bytesToString, convert are not recognized?
             // TODO FIX IT.
-
+            //
             mValidationContext.addResultItem(mRootXPathExpression,
-                    ResultType.WARNING, 
-                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION, 
+                    ResultType.WARNING,
+                    XPathProblem.UNKNOWN_EXTENSION_FUNCTION,
                     XPathUtils.qNameObjectToString(funcQName));
         } else {
             // The function with the required name is found, but in other namespace
@@ -911,7 +912,11 @@ public class XPathModelImpl implements XPathModel {
             String nsList = prepareNamespaceList(sameNameOtherPrefix);
             //
             if (nsPrefix.length() == 0) {
-                mValidationContext.addResultItem(mRootXPathExpression, ResultType.WARNING, // vlv
+                // vlv
+                // why current-date, current-dateTime, current-time are not recognized?
+                // TODO FIX IT.
+                //
+                mValidationContext.addResultItem(mRootXPathExpression, ResultType.WARNING,
                         XPathProblem.PREFIX_REQUIRED_FOR_EXT_FUNCTION, 
                         funcName, nsList);
             } else {

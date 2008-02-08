@@ -21,18 +21,24 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jSeparator2" alignment="0" pref="726" max="32767" attributes="1"/>
-                  <Component id="jSeparator1" alignment="0" pref="726" max="32767" attributes="1"/>
+                  <Component id="jSeparator2" alignment="0" pref="726" max="32767" attributes="2"/>
+                  <Component id="jSeparator1" alignment="0" pref="726" max="32767" attributes="2"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="attributes" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="attributes" max="32767" attributes="0"/>
+                              <EmptySpace min="523" pref="523" max="523" attributes="0"/>
+                          </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="elements" pref="187" max="32767" attributes="0"/>
                               <EmptySpace min="527" pref="527" max="527" attributes="0"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" alignment="0" attributes="0">
+                                      <Component id="jLabel7" max="32767" attributes="0"/>
+                                      <EmptySpace min="46" pref="46" max="46" attributes="0"/>
+                                  </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="jLabel5" max="32767" attributes="0"/>
                                       <EmptySpace min="30" pref="30" max="30" attributes="0"/>
@@ -43,12 +49,13 @@
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="17" max="-2" attributes="0"/>
-                                      <Component id="rootElementComboBox" min="-2" max="-2" attributes="0"/>
+                                      <Component id="rootElementComboBox" max="32767" attributes="0"/>
+                                      <EmptySpace min="500" pref="500" max="500" attributes="0"/>
                                   </Group>
                                   <Group type="102" alignment="0" attributes="0">
                                       <EmptySpace min="-2" pref="42" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="depthSpinner" min="-2" max="-2" attributes="0"/>
+                                          <Component id="depthSpinner" max="32767" attributes="0"/>
                                           <Component id="occurSpinner" max="32767" attributes="0"/>
                                       </Group>
                                       <EmptySpace min="-2" pref="66" max="-2" attributes="0"/>
@@ -62,9 +69,18 @@
                                   </Group>
                               </Group>
                           </Group>
-                          <Component id="titleLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="titleLabel" max="32767" attributes="0"/>
+                              <EmptySpace min="341" pref="341" max="341" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel1" max="32767" attributes="0"/>
+                              <EmptySpace min="623" pref="623" max="623" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="jLabel2" max="32767" attributes="0"/>
+                              <EmptySpace min="601" pref="601" max="601" attributes="0"/>
+                          </Group>
                       </Group>
                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                   </Group>
