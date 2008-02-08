@@ -39,27 +39,47 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.openide.util.lookup.InstanceContent;
+import java.util.ArrayList;
+import java.util.Collections;
+import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author nam
  */
-public class WadlSaasMethodNode extends WadlMethodNode {
-    private WadlSaasMethod saasMethod;
+public class SaasNodeChildren extends Children.Keys<SaasMethod> {
+    private CustomSaas saas;
     
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        this(saasMethod, new InstanceContent());
-    }
-
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod, InstanceContent content) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod(), content);
-        this.saasMethod = saasMethod;
+    public SaasNodeChildren(CustomSaas saas) {
+        this.saas = saas;
     }
 
     @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
+    protected void addNotify() {
+        super.addNotify();
+        updateKeys();
     }
+
+    @Override
+    protected void removeNotify() {
+        java.util.List<SaasMethod> emptyList = Collections.emptyList();
+        setKeys(emptyList);
+        super.removeNotify();
+    }
+
+    private void updateKeys() {
+        ArrayList<SaasMethod> keys = new ArrayList<SaasMethod>();
+        keys.addAll(saas.getMethods());
+        setKeys(keys.toArray(new SaasMethod[saas.getMethods().size()]));
+    }
+    
+    
+    @Override
+    protected Node[] createNodes(SaasMethod key) {
+        return new Node[] { new SaasMethodNode(saas, key) };
+    }
+
 }

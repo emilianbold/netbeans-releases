@@ -39,27 +39,52 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.openide.util.lookup.InstanceContent;
+import java.util.ArrayList;
+import java.util.Collections;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.saas.model.WsdlSaas;
+import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author nam
  */
-public class WadlSaasMethodNode extends WadlMethodNode {
-    private WadlSaasMethod saasMethod;
+public class WsdlSaasNodeChildren extends Children.Keys<Object> {
+    private WsdlSaas saas;
     
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        this(saasMethod, new InstanceContent());
+    WsdlSaasNodeChildren(WsdlSaas saas) {
+        this.saas = saas;
     }
-
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod, InstanceContent content) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod(), content);
-        this.saasMethod = saasMethod;
+    
+    @Override
+    protected void addNotify() {
+        super.addNotify();
+        updateKeys();
     }
 
     @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
+    protected void removeNotify() {
+        java.util.List<String> emptyList = Collections.emptyList();
+        setKeys(emptyList);
+        super.removeNotify();
     }
+
+    private void updateKeys() {
+        ArrayList<Object> keys = new ArrayList<Object>();
+        keys.addAll(saas.getPortsOrMethods());
+        setKeys(keys.toArray());
+    }
+    
+    @Override
+    protected Node[] createNodes(Object key) {
+        if (key instanceof WsdlPort) {
+            return new Node[] { new WsdlPortNode(saas, (WsdlPort) key) };
+        } else if (key instanceof WsdlSaasMethod) {
+            return new Node[] { new WsdlSaasMethodNode((WsdlSaasMethod) key) };
+        }
+        return new Node[0];
+    }
+
 }
