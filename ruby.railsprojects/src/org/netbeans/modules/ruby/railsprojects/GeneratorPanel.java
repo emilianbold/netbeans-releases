@@ -308,8 +308,8 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         GemManager gemManager = RubyPlatform.gemManagerFor(project);
         if (gemManager != null) {
             // 3. Add in RubyGem generators
-            for (String r : gemManager.getRepositories()) {
-                File gemDir = new File(r + File.separator + "gems"); // NOI18N
+            for (File repo : gemManager.getRepositories()) {
+                File gemDir = new File(repo, "gems"); // NOI18N
                 if (gemDir.exists()) {
                     Set<String> gems = gemManager.getInstalledGemsFiles();
                     for (String gem : gems) {
@@ -362,8 +362,8 @@ public class GeneratorPanel extends javax.swing.JPanel implements Runnable {
         } else if (gemManager != null) {
             railsVersion = gemManager.getVersion("rails"); // NOI18N
             if (railsVersion != null) {
-                for (String r : gemManager.getRepositories()) {
-                    File gemDir = new File(r + File.separator + "gems"); // NOI18N
+                for (File repo : gemManager.getRepositories()) {
+                    File gemDir = new File(repo, "gems"); // NOI18N
                     if (gemDir.exists()) {
                         File railsDir = new File(gemDir, "rails" + "-" + railsVersion); // NOI18N
                         if (railsDir.exists()) {

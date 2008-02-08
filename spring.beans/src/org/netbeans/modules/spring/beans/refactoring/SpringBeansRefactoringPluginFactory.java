@@ -38,64 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.spring.beans.refactoring;
 
-
-package org.netbeans.modules.uml.palette;
-import org.netbeans.modules.uml.palette.actions.UMLPaletteActions;
-import org.netbeans.modules.uml.palette.ui.ModelingPalette;
-import org.netbeans.spi.palette.PaletteController;
-import org.netbeans.spi.palette.PaletteFactory;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.Repository;
-import org.openide.loaders.DataFolder;
-import org.openide.nodes.Node;
+import org.netbeans.modules.refactoring.api.AbstractRefactoring;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 
 /**
- *
- * @author Thuy
+ * @author John Baker
  */
+public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFactory {
 
-public final class UMLPaletteFactory {
+    public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
+       
+        if (refactoring instanceof WhereUsedQuery) {
+            return new SpringBeansRefactoringFindUsagesPlugin((WhereUsedQuery) refactoring);
+        }
 
-    //private static String paletteFolder = null;
-    private static Node paletteRootNode = null;
-    private static PaletteController palette = null;
-    
-    
-    public static PaletteController getPalette(Node rootNode) {
-        
-        if (palette == null || (rootNode != null && !rootNode.equals(paletteRootNode)) ) {
-            paletteRootNode = rootNode;
-            palette = PaletteFactory.createPalette(paletteRootNode, new UMLPaletteActions());
-        }
-        return palette;
-    }
-    
-    public static PaletteController getPalette(String folderName) {
-        if (folderName == null) 
-        {
-            return null;
-        }
-        String paletteFolder = folderName;
-        
-        //get the file object from folder
-        FileObject fileObject = Repository.getDefault().getDefaultFileSystem().findResource(paletteFolder);
-        
-        // get DataFolder of fileObject
-        DataFolder dFolder = DataFolder.findFolder(fileObject);
-        
-        //create a hierarchy of Nodes (root - categories - items)
-        Node pRootnode = new ModelingPalette(dFolder.getNodeDelegate());
-        
-        // create common palette with the root node and customized actions for palette contextual menu
-        palette = PaletteFactory.createPalette(pRootnode, new UMLPaletteActions());
-        //}
-        
-        return palette;
-    }
-    
-    public static PaletteController getPaletteController() {
-        return palette;
+        // TODO: RENAME
+        // TODO: MOVE
+        return null;
     }
 }
-
