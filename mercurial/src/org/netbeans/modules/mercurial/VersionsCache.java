@@ -77,7 +77,7 @@ public class VersionsCache {
         
         if (Setup.REVISION_BASE.equals(revision)) {
             try {
-                File tempFile = File.createTempFile(base.getName(), null);
+                File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
                 File repository = Mercurial.getInstance().getTopmostManagedParent(base);
                 HgCommand.doCat(repository, base, tempFile);
                 if (tempFile.length() == 0) return null;
@@ -91,7 +91,7 @@ public class VersionsCache {
             return base;
         } else {
             try {
-                File tempFile = File.createTempFile(base.getName(), null);
+                File tempFile = File.createTempFile("tmp", "-" + base.getName()); //NOI18N
                 File repository = Mercurial.getInstance().getTopmostManagedParent(base);
                 HgCommand.doCat(repository, base, tempFile, revision);
                 if (tempFile.length() == 0) return null;
