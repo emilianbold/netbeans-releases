@@ -2574,8 +2574,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         break;
                     case CONSTRUCTOR:
-                    case METHOD:
                         ExecutableType et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
+                        results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, type, smartTypes)));
+                        break;
+                    case METHOD:
+                        et = (ExecutableType)(type.getKind() == TypeKind.DECLARED ? types.asMemberOf((DeclaredType)type, e) : e.asType());
                         results.add(JavaCompletionItem.createExecutableItem((ExecutableElement)e, et, anchorOffset, typeElem != e.getEnclosingElement(), elements.isDeprecated(e), inImport, isOfSmartType(env, et.getReturnType(), smartTypes)));
                         break;
                     case CLASS:
