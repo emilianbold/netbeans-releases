@@ -1364,13 +1364,7 @@ public class Reformatter implements ReformatTask {
             if (inits != null && !inits.isEmpty()) {
                 spaces(cs.spaceWithinForParens() ? 1 : 0);
                 for (Iterator<? extends StatementTree> it = inits.iterator(); it.hasNext();) {
-                    StatementTree init = it.next();
-                    scan(init, p);
-                    if (it.hasNext()) {
-                        spaces(cs.spaceBeforeComma() ? 1 : 0);
-                        accept(COMMA);
-                        spaces(cs.spaceAfterComma() ? 1 : 0);
-                    }
+                    scan(it.next(), p);
                 }
                 spaces(cs.spaceBeforeSemi() ? 1 : 0);
             }
