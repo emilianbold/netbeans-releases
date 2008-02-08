@@ -227,7 +227,7 @@ public class GdbProxy implements GdbMiDefinitions {
     }
     
     public int print(String expression) {
-        return engine.sendCommand("print " + expression);
+        return engine.sendCommand("print " + expression); // NOI18N
     }
 
     /**

@@ -87,7 +87,7 @@ public class Reformatter implements ReformatTask {
                     }
                 }, true);            
             } catch (IOException ioe) {
-                JavaSourceAccessor.INSTANCE.unlockJavaCompiler();
+                JavaSourceAccessor.getINSTANCE().unlockJavaCompiler();
             }
             if (controller == null)
                 return;
@@ -101,7 +101,7 @@ public class Reformatter implements ReformatTask {
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
             ClasspathInfo cpInfo = ClasspathInfo.create(empty, empty, empty);
-            JavacTaskImpl javacTask = JavaSourceAccessor.INSTANCE.createJavacTask(cpInfo, null, null);
+            JavacTaskImpl javacTask = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, null, null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject(text, "")).iterator().next(); //NOI18N
@@ -243,12 +243,12 @@ public class Reformatter implements ReformatTask {
     private class Lock implements ExtraLock {
 
         public void lock() {
-            JavaSourceAccessor.INSTANCE.lockJavaCompiler();
+            JavaSourceAccessor.getINSTANCE().lockJavaCompiler();
         }
 
         public void unlock() {
             controller = null;
-            JavaSourceAccessor.INSTANCE.unlockJavaCompiler();
+            JavaSourceAccessor.getINSTANCE().unlockJavaCompiler();
         }        
     }
     
@@ -1364,13 +1364,7 @@ public class Reformatter implements ReformatTask {
             if (inits != null && !inits.isEmpty()) {
                 spaces(cs.spaceWithinForParens() ? 1 : 0);
                 for (Iterator<? extends StatementTree> it = inits.iterator(); it.hasNext();) {
-                    StatementTree init = it.next();
-                    scan(init, p);
-                    if (it.hasNext()) {
-                        spaces(cs.spaceBeforeComma() ? 1 : 0);
-                        accept(COMMA);
-                        spaces(cs.spaceAfterComma() ? 1 : 0);
-                    }
+                    scan(it.next(), p);
                 }
                 spaces(cs.spaceBeforeSemi() ? 1 : 0);
             }

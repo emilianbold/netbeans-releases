@@ -1448,10 +1448,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             CommandBuffer cb;
         if (expression.indexOf('(') != -1) {
             suspendBreakpointsAndSignals();
-            cb = new CommandBuffer(gdb.data_evaluate_expression('"' + expression + '"'));
+            cb = new CommandBuffer(gdb.data_evaluate_expression('"' + expression + '"')); // NOI18N
             restoreBreakpointsAndSignals();
         } else {
-            cb = new CommandBuffer(gdb.data_evaluate_expression('"' + expression + '"'));
+            cb = new CommandBuffer(gdb.data_evaluate_expression('"' + expression + '"')); // NOI18N
         }
         String response = cb.postAndWait();
         if (response.startsWith("@0x")) { // NOI18N

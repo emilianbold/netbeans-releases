@@ -421,6 +421,9 @@ public class AbstractVariable implements LocalVariable, Customizer {
         int pos1;
         long i;
         
+        if (value == null && this instanceof GdbWatchVariable) {
+            getValue(); // A watch might not have a value yet. This will initialize "value"
+        }
         if (value != null) { // value can be null for watches during initialization...
             if (value.length() > 0 && value.charAt(0) == '(') {
                 pos1 = value.indexOf("*) 0x"); // NOI18N
@@ -442,7 +445,7 @@ public class AbstractVariable implements LocalVariable, Customizer {
                 }
             } else if (value.startsWith("0x")) { // NOI18N
                 try {
-                    i = Integer.parseInt(value.substring(2), 16);
+                    i = Long.parseLong(value.substring(2), 16);
                 } catch (NumberFormatException ex) {
                     return false;
                 }
