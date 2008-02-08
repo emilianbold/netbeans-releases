@@ -346,7 +346,7 @@ public final class CompletionManager {
 
                     public void run(SpringBeans sb) {
                         List<SpringBean> beans = includeGlobal ? sb.getBeans() : sb.getBeans(FileUtil.toFile(fo));
-                        Map<String, SpringBean> name2Bean = getName2Beans(beans);
+                        Map<String, SpringBean> name2Bean = getName2Beans(beans, includeGlobal); // if local beans, then add only bean ids;
                         for(String beanName : name2Bean.keySet()) {
                             if(!beanName.startsWith(prefix) || cNames.contains(beanName)) {
                                 continue;
@@ -359,16 +359,18 @@ public final class CompletionManager {
                         }
                     }
 
-                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans) {
+                    private Map<String, SpringBean> getName2Beans(List<SpringBean> beans, boolean addNames) {
                         Map<String, SpringBean> name2Bean = new HashMap<String, SpringBean>();
                         for (SpringBean bean : beans) {
                             String beanId = bean.getId();
-                            List<String> beanNames = bean.getNames();
                             if (beanId != null) {
                                 name2Bean.put(beanId, bean);
                             }
-                            for (String beanName : beanNames) {
-                                name2Bean.put(beanName, bean);
+                            if (addNames) {
+                                List<String> beanNames = bean.getNames();
+                                for (String beanName : beanNames) {
+                                    name2Bean.put(beanName, bean);
+                                }
                             }
                         }
 

@@ -38,62 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.validation.core;
 
-package org.netbeans.modules.spring.beans.hyperlink;
-
-import java.io.IOException;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.spring.api.Action;
-import org.netbeans.modules.spring.api.beans.model.SpringBean;
-import org.netbeans.modules.spring.api.beans.model.SpringBeans;
-import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
-import org.netbeans.modules.spring.util.SpringBeansUIs;
-import org.netbeans.modules.spring.util.SpringBeansUIs.GoToBeanAction;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.netbeans.modules.bpel.validation.core.QuickFix;
 
 /**
- *
- * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.12.07
  */
-public class BeansRefHyperlinkProcessor implements HyperlinkProcessor {
+public final class Outcome extends ResultItem {
 
-    private boolean globalSearch;
+  public Outcome(Validator validator, ResultType type, Component component, String description) {
+    this(validator, type, component, description, null);
+  }
 
-    public BeansRefHyperlinkProcessor(boolean globalSearch) {
-        this.globalSearch = globalSearch;
-    }
+  public Outcome(Validator validator, ResultType type, Component component, String description, QuickFix quickFix) {
+    super(validator, type, component, description);
+    myQuickFix = quickFix;
+  }         
 
-    public void process(HyperlinkEnv env) {
-        final FileObject fileObject = NbEditorUtilities.getFileObject(env.getDocument());
-        if (fileObject == null) {
-            return;
-        }
-        SpringConfigModel model = SpringConfigModel.forFileObject(fileObject);
-        final String beanName = env.getValueString();
-        final GoToBeanAction[] action = { null };
-        try {
-            model.runReadAction(new Action<SpringBeans>() {
-                public void run(SpringBeans beans) {
-                    SpringBean bean;
-                    if(globalSearch) {
-                        bean = beans.findBean(beanName);
-                    } else {
-                        bean = beans.findBean(FileUtil.toFile(fileObject), beanName);
-                    }
-                    
-                    if (bean == null) {
-                        return;
-                    }
-                    action[0] = SpringBeansUIs.createGoToBeanAction(bean);
-                }
-            });
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-        if (action[0] != null) {
-            action[0].invoke();
-        }
-    }
+  public QuickFix getQuickFix() {
+    return myQuickFix;
+  }
+
+  private QuickFix myQuickFix;
 }

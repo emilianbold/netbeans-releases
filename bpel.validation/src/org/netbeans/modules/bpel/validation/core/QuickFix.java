@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.util;
+package org.netbeans.modules.bpel.validation.core;
 
 /**
  * @author Vladimir Yaroslavskiy

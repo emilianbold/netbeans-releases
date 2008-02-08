@@ -495,11 +495,6 @@ In order for the IDE to recognize references to those classes defined in the
 <extra-compilation-unit>, you may also need add/modify your module's cp.extra
 property to include the value specified in the <package-root> element.
 
-If you export some API (declared in <public-packages> or <friend-packages>) and
-wish to be able to build Javadoc, just specify
-
-    <javadoc/>
-
 PROPERTIES WHICH MAY BE DEFINED IN YOUR project.properties
 ----------------------------------------------------------
 

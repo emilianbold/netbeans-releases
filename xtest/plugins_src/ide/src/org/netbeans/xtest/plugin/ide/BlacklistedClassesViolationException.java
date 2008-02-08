@@ -38,31 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.util;
+package org.netbeans.xtest.plugin.ide;
 
-import org.netbeans.modules.xml.xam.Component;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.bpel.validation.util.QuickFix;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.12.07
+ *
+ * @author mrkam@netbeans.org
  */
-public final class ValidationItem extends ResultItem {
+public class BlacklistedClassesViolationException extends java.lang.Exception {
 
-  public ValidationItem(Validator validator, ResultType type, Component component, String description) {
-    this(validator, type, component, description, null);
-  }
+    private String instantiator;
 
-  public ValidationItem(Validator validator, ResultType type, Component component, String description, QuickFix quickFix) {
-    super(validator, type, component, description);
-    myQuickFix = quickFix;
-  }         
+    public BlacklistedClassesViolationException(String instantiator) {
+        super("Instantiator: " + instantiator);
+        this.instantiator = instantiator;
+    }
 
-  public QuickFix getQuickFix() {
-    return myQuickFix;
-  }
+    public String getInstantiator() {
+        return instantiator;
+    }
 
-  private QuickFix myQuickFix;
+    public void printStackTrace() {
+        printStackTrace(System.out);
+    }
+
+    public void printStackTrace(PrintStream s) {
+        printStackTrace(new PrintWriter(s));
+    }
+
+    public void printStackTrace(PrintWriter s) {
+        s.println("   Instantiator: " + instantiator);
+        s.println("     Stack trace:");
+        final StackTraceElement[] stackTrace = getStackTrace();
+        for (int i = 0; i < stackTrace.length; i++) {
+            s.println("           " + stackTrace[i]);
+        }
+    }
 }
