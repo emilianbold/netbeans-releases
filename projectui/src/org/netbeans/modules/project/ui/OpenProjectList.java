@@ -68,6 +68,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -146,7 +147,7 @@ public final class OpenProjectList {
     private final RecentProjectList recentProjects;
 
     /** LRU List of recently used templates */
-    private List<String> recentTemplates;
+    private final List<String> recentTemplates;
     
     /** Property change listeners */
     private final PropertyChangeSupport pchSupport;
@@ -170,6 +171,7 @@ public final class OpenProjectList {
         };
         pchSupport = new PropertyChangeSupport( this );
         recentProjects = new RecentProjectList(10); // #47134
+        recentTemplates = new CopyOnWriteArrayList<String>();
     }
     
            
@@ -182,6 +184,7 @@ public final class OpenProjectList {
         synchronized ( OpenProjectList.class ) {
             if ( INSTANCE == null ) {
                 INSTANCE = new OpenProjectList();
+                INSTANCE.
                 INSTANCE.openProjects = loadProjectList();                
                 WindowManager.getDefault().invokeWhenUIReady(INSTANCE.LOAD);
             }
@@ -214,7 +217,6 @@ public final class OpenProjectList {
             action = a;
             currentFiles = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
             currentFiles.addLookupListener(WeakListeners.create(LookupListener.class, this, currentFiles));
-            resultChanged(null);
         }
 
         final void waitFinished() {
@@ -229,6 +231,7 @@ public final class OpenProjectList {
                 case 0: 
                     action = 1;
                     TASK.schedule(0);
+                    resultChanged(null);
                     return;
                 case 1:
                     action = 2;
@@ -259,7 +262,7 @@ public final class OpenProjectList {
             synchronized (INSTANCE) {
                 INSTANCE.openProjects = openedProjects;
                 INSTANCE.mainProject = mainProject;
-                INSTANCE.recentTemplates = recentTemplates;
+                INSTANCE.recentTemplates.addAll(recentTemplates);
             }
             
             INSTANCE.pchSupport.firePropertyChange(PROPERTY_OPEN_PROJECTS, new Project[0], openedProjects.toArray(new Project[0]));
