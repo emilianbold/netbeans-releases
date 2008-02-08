@@ -41,18 +41,35 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.cnd.MIMENames;
+import java.beans.BeanDescriptor;
+import java.util.MissingResourceException;
+import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
+import org.openide.util.NbBundle;
 
-/** C++ indentation engine that delegates to C++ formatter */
-public class CCIndentEngine extends BaseIndentEngine {
+/** Beaninfo for CIndentEngine */
+public class CIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
 
-    public CCIndentEngine() {
-        setAcceptedMimeTypes(new String[] { MIMENames.CPLUSPLUS_MIME_TYPE });
+    @Override
+    public BeanDescriptor getBeanDescriptor () {
+	BeanDescriptor beanDescriptor = new BeanDescriptor(getBeanClass());
+	beanDescriptor.setDisplayName(getString("LAB_CIndentEngine")); // NOI18N
+	beanDescriptor.setShortDescription(getString("HINT_CIndentEngine"));// NOI18N
+	beanDescriptor.setValue("global", Boolean.TRUE); // NOI18N
+        return beanDescriptor;
     }
 
-    protected ExtFormatter createFormatter() {
-	return (CCFormatter) Formatter.getFormatter(CCKit.class);
+    @Override
+    protected Class getBeanClass() {
+        return CIndentEngine.class;
+    }
+
+    @Override
+    protected String getString(String key) {
+        try {
+            return NbBundle.getBundle(CCIndentEngineBeanInfo.class).getString(key);
+        } catch (MissingResourceException e) {
+            return super.getString(key);
+        }
     }
 }
+

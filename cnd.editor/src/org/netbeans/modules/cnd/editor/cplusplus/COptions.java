@@ -41,18 +41,19 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.cnd.MIMENames;
+/** Options for the C editor kit */
+public class COptions extends CCOptions {
 
-/** C++ indentation engine that delegates to C++ formatter */
-public class CCIndentEngine extends BaseIndentEngine {
+    static final long serialVersionUID = 6972381723748170673L;
+    
+    private static final String CC = "C"; //NOI18N
 
-    public CCIndentEngine() {
-        setAcceptedMimeTypes(new String[] { MIMENames.CPLUSPLUS_MIME_TYPE });
+    public COptions() {
+        super(CKit.class, CC);
     }
-
-    protected ExtFormatter createFormatter() {
-	return (CCFormatter) Formatter.getFormatter(CCKit.class);
+  
+    /** Return the C Indent Engine class */
+    protected @Override Class getDefaultIndentEngineClass() {
+        return CIndentEngine.class;
     }
 }
