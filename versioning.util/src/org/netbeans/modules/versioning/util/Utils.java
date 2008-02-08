@@ -401,13 +401,13 @@ public final class Utils {
      * @param file file/directory to delete
      */
     public static void deleteRecursively(File file) {
-        FileObject fo = FileUtil.toFileObject(file);
-        if (fo == null) return;
-        try {
-            fo.delete();
-        } catch (IOException e) {
-            Utils.logError(Utils.class, e);
+        if (file.isDirectory()) {
+            File [] files = file.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                deleteRecursively(files[i]);
+            }
         }
+        file.delete();
     }
 
     /**
