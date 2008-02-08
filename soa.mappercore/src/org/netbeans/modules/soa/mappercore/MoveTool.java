@@ -171,7 +171,7 @@ public class MoveTool extends AbstractMapperDnDTool {
             getCanvas().requestFocusInWindow();
             SelectionModel selectionModel = getSelectionModel();
             TreePath treePath = selectionModel.getSelectedPath();
-            if (graphSubSet.getVertexCount() > 0 &&
+            if (graphSubSet != null && graphSubSet.getVertexCount() > 0 &&
                     !selectionModel.isSelected(treePath, graphSubSet.getVertex(0)))
             {
                 selectionModel.setSelected(treePath, graphSubSet.getVertex(0));

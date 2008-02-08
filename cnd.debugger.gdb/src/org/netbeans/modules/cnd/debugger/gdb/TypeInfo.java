@@ -113,7 +113,7 @@ public class TypeInfo {
         this.rawInfo = rawInfo;
         map = null;
         
-        if (resolvedType != null && resolvedType.length() > 0) {
+        if (resolvedType != null && resolvedType.length() > 0 && !Boolean.getBoolean("gdb.disable.ti-cache")) {
             ticache = debugger.getTypeInfoCache();
             log.fine("TI.<Init>: " + vartype + " ==> [" + resolvedType + ", " + rawInfo + "]");
 

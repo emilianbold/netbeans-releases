@@ -74,7 +74,7 @@ public class WebModulesNode extends AbstractNode {
 
     private WebModulesNode(WebModuleChildFactory factory) {
         super(Children.create(factory, true));
-        setDisplayName(NbBundle.getMessage(WebModulesNode.class, "LBL_EntApps"));
+        setDisplayName(NbBundle.getMessage(WebModulesNode.class, "LBL_WebApps"));
         getCookieSet().add(new RefreshEnterpriseModuleChildren(factory));
     }
 

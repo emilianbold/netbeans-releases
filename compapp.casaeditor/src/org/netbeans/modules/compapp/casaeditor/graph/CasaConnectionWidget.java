@@ -38,30 +38,96 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.compapp.casaeditor.graph;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Image;
+import java.awt.Point;
+import java.awt.Stroke;
+import java.beans.PropertyChangeEvent;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.Scene;
 
-import java.awt.*;
+
+import java.beans.PropertyChangeListener;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.visual.anchor.Anchor;
+import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.ImageWidget;
+import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaComponent;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaConnection;
+import org.netbeans.modules.compapp.casaeditor.model.casa.CasaExtensibilityElement;
+import org.openide.util.Utilities;
 
-
+/**
+ * 
+ * @author jqian
+ */
 public class CasaConnectionWidget extends ConnectionWidget {
 
-    private static final Stroke STROKE_DEFAULT  = new BasicStroke (1.0f);
-    private static final Stroke STROKE_HOVERED  = new BasicStroke (1.5f);
-    private static final Stroke STROKE_SELECTED = new BasicStroke (2.0f);
-    
-    
-    public CasaConnectionWidget (Scene scene) {
-        super (scene);
-        setSourceAnchorShape (AnchorShape.NONE);
-        setTargetAnchorShape (AnchorShape.TRIANGLE_FILLED);
-        setPaintControlPoints (true);
-        setState (ObjectState.createNormal ());
+    private static final Stroke STROKE_DEFAULT = new BasicStroke(1.0f);
+    private static final Stroke STROKE_HOVERED = new BasicStroke(1.5f);
+    private static final Stroke STROKE_SELECTED = new BasicStroke(2.0f);
+    private static final Image IMAGE_QOS_BADGE_ICON = Utilities.loadImage(
+            "org/netbeans/modules/compapp/casaeditor/nodes/resources/QoS.png");    // NOI18N
+    private DependenciesRegistry mDependenciesRegistry = new DependenciesRegistry(this);
+    private Widget mQoSWidget;
+
+    public CasaConnectionWidget(Scene scene) {
+        super(scene);
+        setSourceAnchorShape(AnchorShape.NONE);
+        setTargetAnchorShape(AnchorShape.TRIANGLE_FILLED);
+        setPaintControlPoints(true);
+        setState(ObjectState.createNormal());
+
+        mQoSWidget = new ImageWidget(getScene(), IMAGE_QOS_BADGE_ICON);
+
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                ObjectScene objectScene = (ObjectScene) getScene();
+                final CasaConnection myCasaConnection =
+                        (CasaConnection) objectScene.findObject(CasaConnectionWidget.this);
+                System.out.println("obj for connection is " + myCasaConnection);
+                if (myCasaConnection == null) {
+                    return; // FIXME
+                }
+
+                updateQoSWidget(myCasaConnection);
+
+                myCasaConnection.getModel().addPropertyChangeListener(new PropertyChangeListener() {
+
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        CasaConnection casaConnection = null;
+
+                        Object source = evt.getSource();
+                        if (source instanceof CasaExtensibilityElement) {
+                            CasaComponent parent = (CasaExtensibilityElement) source;
+                            while (parent != null &&
+                                    parent instanceof CasaExtensibilityElement) {
+                                parent = parent.getParent();
+                            }
+
+                            if (parent == null || !(parent instanceof CasaConnection)) {
+                                return;
+                            }
+
+                            casaConnection = (CasaConnection) parent;
+                        } else if (source instanceof CasaConnection) {
+                            casaConnection = (CasaConnection) source;
+                        }
+
+                        if (casaConnection == myCasaConnection) {
+                            updateQoSWidget(myCasaConnection);
+                        }
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -69,22 +135,92 @@ public class CasaConnectionWidget extends ConnectionWidget {
      * @param previousState the previous state
      * @param state the new state
      */
-    public void notifyStateChanged (ObjectState previousState, ObjectState state) {
-        if (state.isSelected () || state.isFocused()) {
+    @Override
+    public void notifyStateChanged(ObjectState previousState, ObjectState state) {
+        Stroke stroke;
+        Color fgColor;
+
+        CasaCustomizer customizer = CasaFactory.getCasaCustomizer();
+        if (state.isSelected() || state.isFocused()) {
             bringToFront();
-            setStroke(STROKE_SELECTED);
-            setForeground (CasaFactory.getCasaCustomizer().getCOLOR_SELECTION());
-        } else if (state.isHovered () || state.isHighlighted()) {
+            stroke = STROKE_SELECTED;
+            fgColor = customizer.getCOLOR_SELECTION();
+        } else if (state.isHovered() || state.isHighlighted()) {
             bringToFront();
-            setStroke(STROKE_HOVERED);
-            setForeground (CasaFactory.getCasaCustomizer().getCOLOR_HOVERED_EDGE());
+            stroke = STROKE_HOVERED;
+            fgColor = customizer.getCOLOR_HOVERED_EDGE();
         } else {
-            setStroke(STROKE_DEFAULT);
-            setForeground (CasaFactory.getCasaCustomizer().getCOLOR_CONNECTION_NORMAL());
+            stroke = STROKE_DEFAULT;
+            fgColor = customizer.getCOLOR_CONNECTION_NORMAL();
         }
+
+        setStroke(stroke);
+        setForeground(fgColor);
     }
-    
+
     public void setForegroundColor(Color color) {
         setForeground(color);
+    }
+
+    @Override
+    protected void notifyAdded() {
+        super.notifyAdded();
+
+        // Update the error badge location if the widget moves.
+        Widget.Dependency errorDependency = new Widget.Dependency() {
+
+            public void revalidateDependency() {
+                if (getBounds() == null) {
+                    return;
+                }
+
+                Anchor sourceAnchor = getSourceAnchor();
+                if (sourceAnchor == null) {
+                    return;
+                }
+
+                Widget sourceWidget = sourceAnchor.getRelatedWidget();
+                if (sourceWidget == null) {
+                    return;
+                }
+
+                Point p = sourceAnchor.getRelatedSceneLocation();
+                int x = p.x + sourceWidget.getBounds().width / 2 + 10;
+                int y = p.y - 6;
+
+                mQoSWidget.setPreferredLocation(new Point(x, y));
+            }
+        };
+
+        mDependenciesRegistry.registerDependency(errorDependency);
+    }
+
+    @Override
+    protected void notifyRemoved() {
+        super.notifyRemoved();
+
+        mDependenciesRegistry.removeAllDependencies();
+
+        if (mQoSWidget != null) {
+            mQoSWidget.removeFromParent();
+        }
+    }
+
+    private void updateQoSWidget(CasaConnection casaConnection) {
+        if (isConnectionConfiguredWithQoS(casaConnection)) {
+            if (!getChildren().contains(mQoSWidget)) {
+                addChild(mQoSWidget);
+                getScene().validate();
+            }
+        } else {
+            if (getChildren().contains(mQoSWidget)) {
+                removeChild(mQoSWidget);
+                getScene().validate();
+            }
+        }
+    }
+
+    private boolean isConnectionConfiguredWithQoS(CasaConnection casaConnection) {
+        return casaConnection.getChildren().size() != 0;
     }
 }
