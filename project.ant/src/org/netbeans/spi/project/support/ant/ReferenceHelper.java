@@ -1016,8 +1016,7 @@ public final class ReferenceHelper {
      * <p>
      * Acquires write access.
      * @param path a file path to refer to (need not currently exist)
-     * @param fileId
-     * @param propertyPrefix the prefix of the created property
+     * @param property name of the property
      * @return a string which can refer to that file somehow
      *
      * @since org.netbeans.modules.project.ant/1 1.19
