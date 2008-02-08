@@ -1,0 +1,5 @@
+# Black list for BlacklistedClassesHandler
+# Enter full qualified class names, one class name per line
+
+org.somecompany.somepackage.SomeClass
+com.somecompany.anotherpackage.AnotherClass
