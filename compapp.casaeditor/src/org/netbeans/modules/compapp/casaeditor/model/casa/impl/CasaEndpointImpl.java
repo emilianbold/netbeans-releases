@@ -68,9 +68,9 @@ public class CasaEndpointImpl extends CasaComponentImpl
         visitor.visit(this);
     }
 
-    public boolean isConsumes() {
-        return Boolean.valueOf(getAttribute(CasaAttribute.IS_CONSUME));
-    }
+//    public boolean isConsumes() {
+//        return Boolean.valueOf(getAttribute(CasaAttribute.IS_CONSUME));
+//    }
     
     public String getName() {
         return getAttribute(CasaAttribute.NAME);
