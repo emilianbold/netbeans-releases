@@ -44,14 +44,11 @@ package org.netbeans.modules.cnd.editor.cplusplus;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.MIMENames;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
 
 /** C indentation engine that delegates to java formatter */
-public class CIndentEngine extends CCIndentEngine {
+public class CIndentEngine extends BaseIndentEngine {
     
-    static final long serialVersionUID = -794367501912140447L;
-    
-    public CIndentEngine() {
+   public CIndentEngine() {
         setAcceptedMimeTypes(new String[] { MIMENames.C_MIME_TYPE });
     }
     
@@ -60,9 +57,5 @@ public class CIndentEngine extends CCIndentEngine {
         return (CCFormatter) Formatter.getFormatter(CKit.class);
     }
 
-    @Override
-    protected CodeStyle getCodeStyle(){
-        return CodeStyle.getDefault(CodeStyle.Language.C);
-    }
 }
 
