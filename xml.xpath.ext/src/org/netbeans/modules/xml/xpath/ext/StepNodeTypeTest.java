@@ -38,24 +38,29 @@ public class StepNodeTypeTest extends StepNodeTest {
     /** The node type. */
     private StepNodeTestType mNodeType;
     
+    // The instruciton relates to the processing_instruction() only!
+    private String mInstruction; 
+    
     /**
      * Constructor.
      * @param nodeType the node type
      */
-    public StepNodeTypeTest(int intNodeType) {
+    public StepNodeTypeTest(int intNodeType, String instruction) {
         super();
-        assert intNodeType < int2Type.length : "The index of node test type " + intNodeType + 
+        assert intNodeType <= int2Type.length : "The index of node test type " + intNodeType + 
                 " is out of possible values"; // NOI18N
         mNodeType = int2Type[intNodeType - 1];
+        mInstruction = instruction;
     }
 
     /**
      * Constructor.
      * @param nodeType the node type
      */
-    public StepNodeTypeTest(StepNodeTestType nodeType) {
+    public StepNodeTypeTest(StepNodeTestType nodeType, String instruction) {
         super();
         mNodeType = nodeType;
+        mInstruction = instruction;
     }
     
     /**
@@ -66,7 +71,41 @@ public class StepNodeTypeTest extends StepNodeTest {
         return mNodeType;
     }
     
+    public String getInstruction() {
+        return mInstruction;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof StepNodeTypeTest) {
+            StepNodeTypeTest otherStep = (StepNodeTypeTest)obj;
+            if (otherStep.mNodeType == mNodeType) {
+                if (mNodeType == StepNodeTestType.NODETYPE_PI) {
+                    if (otherStep.mInstruction == null) {
+                        return mInstruction == null;
+                    } else {
+                        return otherStep.mInstruction.equals(mInstruction);
+                    }
+                } else {
+                    // Ignore the instruction if another type is used.
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public String getXPathText() {
+        StepNodeTestType type = getNodeType();
+        if (type == StepNodeTestType.NODETYPE_PI && 
+                mInstruction != null && mInstruction.length() != 0) {
+            return type.getXPathText() + "(" + mInstruction + ")";
+        }
+        return type.getXPathText() + "()";
+    }
+    
+    @Override
     public String toString() {
-        return getNodeType().getXPathText();
+        return getXPathText();
     }
 }

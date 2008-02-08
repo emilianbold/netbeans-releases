@@ -55,6 +55,7 @@ import org.netbeans.modules.soa.mappercore.Mapper;
 import org.netbeans.modules.soa.mappercore.utils.GraphLayout;
 import org.netbeans.modules.bpel.mapper.model.BpelMapperModel;
 import org.netbeans.modules.bpel.mapper.model.ItemHandler;
+import org.netbeans.modules.soa.mappercore.model.GraphSubset;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
@@ -82,7 +83,11 @@ final class Item extends JMenuItem implements DragGestureListener, Transferable 
         Mapper mapper = myPalette.getMapper();
         TreePath path = mapper.getSelectedPath();
         BpelMapperModel model = (BpelMapperModel) mapper.getModel();
-        model.add(path, myHandler, GraphLayout.getNextFreeX(model.getGraph(path)), 0);
+        GraphSubset graphSubset = model.add(path, myHandler, 
+                GraphLayout.getNextFreeX(model.getGraph(path)), 0);
+        if (graphSubset != null && graphSubset.getVertexCount() > 0) {
+            mapper.getSelectionModel().setSelected(path, graphSubset.getVertex(0));
+        }
       }
     });
   }

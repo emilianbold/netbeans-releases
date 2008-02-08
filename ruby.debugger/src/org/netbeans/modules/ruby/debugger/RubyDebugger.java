@@ -60,8 +60,6 @@ import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.netbeans.spi.debugger.SessionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor.Confirmation;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.rubyforge.debugcommons.RubyDebuggerFactory;

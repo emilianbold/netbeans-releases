@@ -21,6 +21,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.UIManager;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.util.NbBundle;
 
 /**
@@ -32,12 +33,14 @@ public class EditorOptionsPanel extends javax.swing.JPanel implements ActionList
     private List<Category> categories = new ArrayList<Category>();
     private EditorOptionsPanelController topControler;
     private boolean loaded = false;
+    private CodeStyle.Language language;
 
     /** Creates new form EditorOptionsPanel */
-    public EditorOptionsPanel(EditorOptionsPanelController topControler) {
+    public EditorOptionsPanel(CodeStyle.Language language, EditorOptionsPanelController topControler) {
+        this.language = language;
         this.topControler = topControler;
         initComponents();
-        setName("Tab_Name"); // NOI18N (used as a bundle key)
+        setName("Tab_Name_"+language.name()); // NOI18N (used as a bundle key)
         if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
             setOpaque( false );
         }
@@ -93,9 +96,10 @@ public class EditorOptionsPanel extends javax.swing.JPanel implements ActionList
     }
 
     private void createCategories() {
-        categories.add(TabsIndentsPanel.getController());
-        categories.add(AlignmentBracesPanel.getController());
-        categories.add(SpacesPanel.getController());
+        categories.add(TabsIndentsPanel.getController(language));
+        categories.add(AlignmentBracesPanel.getController(language));
+        categories.add(SpacesPanel.getController(language));
+        categories.add(BlankLinesPanel.getController(language));
         for (Category category : categories) {
             category.addPropertyChangeListener(this);
         }
@@ -134,12 +138,14 @@ public class EditorOptionsPanel extends javax.swing.JPanel implements ActionList
         setName(null);
         setLayout(new java.awt.GridBagLayout());
 
+        jSplitPane1.setBorder(null);
         jSplitPane1.setDividerLocation(300);
 
+        oprionsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         oprionsPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setLabelFor(categoryComboBox);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(EditorOptionsPanel.class, "Label_Category")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(EditorOptionsPanel.class, "Label_Category")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -167,6 +173,7 @@ public class EditorOptionsPanel extends javax.swing.JPanel implements ActionList
 
         jSplitPane1.setLeftComponent(oprionsPanel);
 
+        previewPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         previewPanel.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setViewportView(previewPane);

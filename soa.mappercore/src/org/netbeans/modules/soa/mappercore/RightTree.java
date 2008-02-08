@@ -98,7 +98,8 @@ public class RightTree extends MapperPanel implements
         eventHandler = new RightTreeEventHandler(this);
         
         ToolTipManager.sharedInstance().registerComponent(this);
-
+        
+        
         InputMap iMap = getInputMap();
         ActionMap aMap = getActionMap();
         
@@ -828,7 +829,7 @@ public class RightTree extends MapperPanel implements
             if (node.isGraphCollapsed()) {
                 mapper.setExpandedGraphState(node.getTreePath(), true);
             } else {
-                getCanvas().requestFocus();
+                getCanvas().requestFocusInWindow();
                 Graph graph = node.getGraph();
                 if (graph.hasOutgoingLinks()) {
                     List<Link> links = graph.getLinks();

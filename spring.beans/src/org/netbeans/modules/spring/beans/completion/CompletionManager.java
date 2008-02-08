@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,11 +37,8 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.spring.beans.completion;
 
 import java.io.IOException;
@@ -69,6 +72,7 @@ import org.netbeans.modules.spring.api.beans.model.SpringBeans;
 import org.netbeans.modules.spring.api.beans.model.SpringConfigModel;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.editor.SpringXMLConfigEditorUtils;
+import org.netbeans.modules.spring.beans.loader.SpringXMLConfigDataLoader;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.openide.filesystems.FileObject;
@@ -422,9 +426,6 @@ public final class CompletionManager {
             try {
                 Document doc = context.getDocument();
                 final String typedChars = context.getTypedPrefix();
-                if (typedChars == null) {
-                    return Collections.emptyList();
-                }
 
                 JavaSource js = SpringXMLConfigEditorUtils.getJavaSource(doc);
                 if (js == null) {
@@ -467,8 +468,9 @@ public final class CompletionManager {
                     List<? extends Element> pkgChildren = pkgElem.getEnclosedElements();
                     for (Element pkgChild : pkgChildren) {
                         if ((pkgChild.getKind() == ElementKind.CLASS) && pkgChild.getSimpleName().toString().startsWith(classPrefix)) {
+                            TypeElement typeElement = (TypeElement) pkgChild;
                             SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                    (TypeElement) pkgChild, (DeclaredType) pkgChild.asType(), 
+                                    typeElement, ElementHandle.create(typeElement), 
                                     cc.getElements().isDeprecated(pkgChild), false);
                             results.add(item);
                         }
@@ -497,8 +499,7 @@ public final class CompletionManager {
                             TypeElement typeElement = eh.resolve(cc);
                             if (typeElement != null) {
                                 SpringXMLConfigCompletionItem item = SpringXMLConfigCompletionItem.createTypeItem(substitutionOffset,
-                                        typeElement, (DeclaredType) typeElement.asType(), 
-                                        cc.getElements().isDeprecated(typeElement), true);
+                                        typeElement, eh, cc.getElements().isDeprecated(typeElement), true);
                                 results.add(item);
                             }
                         }
@@ -567,9 +568,8 @@ public final class CompletionManager {
             Enumeration<? extends FileObject> files = fileObject.getData(false);
             while (files.hasMoreElements()) {
                 FileObject fo = files.nextElement();
-                if (fo.getName().startsWith(prefix) && fo.getMIMEType().equals("text/x-springconfig+xml")) { // NOI18N
-                    results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(),
-                            fo));
+                if (fo.getName().startsWith(prefix) && fo.getMIMEType().equals(SpringXMLConfigDataLoader.REQUIRED_MIME)) {
+                    results.add(SpringXMLConfigCompletionItem.createSpringXMLFileItem(context.getCaretOffset() - prefix.length(), fo));
                 }
             }
 

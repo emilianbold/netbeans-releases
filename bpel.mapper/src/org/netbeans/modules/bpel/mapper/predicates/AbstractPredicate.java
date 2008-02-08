@@ -23,6 +23,7 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.xam.Named;
 import org.netbeans.modules.xml.xpath.ext.XPathPredicateExpression;
 import org.netbeans.modules.xml.xpath.ext.XPathSchemaContext;
+import org.netbeans.modules.xml.xpath.ext.XPathUtils;
 
 /**
  * The base class for different kind of Predicated Schema components.
@@ -49,28 +50,6 @@ public abstract class AbstractPredicate {
         } else {
             return "";
         }
-    }
-    
-    public boolean hasSamePredicates(XPathPredicateExpression[] predArr) {
-        XPathPredicateExpression[] myPredArr = getPredicates();
-        //
-        // Compare predicates count
-        int counter = myPredArr == null ? 0 : myPredArr.length;
-        int otherCount = predArr == null ? 0 : predArr.length;
-        if (counter != otherCount) {
-            return false;
-        }
-        // Compare predicates one by one
-        for (int index = 0; index < counter; index++) {
-            XPathPredicateExpression myPredicate = myPredArr[index];
-            XPathPredicateExpression otherPredicate = predArr[index];
-            String myPredText = myPredicate.getExpressionString();
-            String otherPredText = otherPredicate.getExpressionString();
-            if (!(myPredText.equals(otherPredText))) {
-                return false;
-            }
-        }
-        return true;
     }
     
     public boolean hasSameContext(XPathSchemaContext context) {
@@ -107,7 +86,7 @@ public abstract class AbstractPredicate {
         //
         // Compare predicates 
         XPathPredicateExpression[] otherPredicateArr = comp2.getPredicates();
-        return hasSamePredicates(otherPredicateArr);        
+        return XPathUtils.samePredicatesArr(getPredicates(), otherPredicateArr);        
     }
 
     public String getDisplayName() {

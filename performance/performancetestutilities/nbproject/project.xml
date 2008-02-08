@@ -84,7 +84,7 @@
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">../../jemmy/builds/jemmy.jar:../../jellytools/builds/jelly2-nb.jar:../../xtest/lib/nbjunit.jar:../../xtest/lib/junit.jar:../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-projectui.jar:../../nbbuild/netbeans/ide8/modules/org-netbeans-modules-editor.jar</classpath>
+                <classpath mode="compile">../../jemmy/builds/jemmy.jar:../../jellytools/builds/jelly2-nb.jar:../../xtest/lib/nbjunit.jar:../../xtest/lib/junit.jar:../../nbbuild/netbeans/ide9/modules/org-netbeans-modules-projectui.jar:../../nbbuild/netbeans/ide9/modules/org-netbeans-modules-editor.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
             <compilation-unit>

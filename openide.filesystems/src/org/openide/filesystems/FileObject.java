@@ -919,11 +919,8 @@ public abstract class FileObject extends Object implements Serializable {
                         break;
                     default:
                         transmit = !fo.equals(fe.getSource());
-                        if (!transmit && fo.getClass().getName().contains("masterfs")) {
-                            Object o = fo.getAttribute("ExistsParentNoPublicAPI");
-                            if (o instanceof Boolean && !((Boolean) o).booleanValue()) {
-                                transmit = true;
-                            } 
+                        if (!transmit && fe instanceof Enumeration && !((Enumeration) fe).hasMoreElements()) {
+                            transmit = true;
                         } 
                 }
                 

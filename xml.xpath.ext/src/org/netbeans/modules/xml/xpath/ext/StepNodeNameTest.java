@@ -19,7 +19,11 @@
 
 package org.netbeans.modules.xml.xpath.ext;
 
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
+import org.netbeans.modules.xml.schema.model.Attribute;
+import org.netbeans.modules.xml.schema.model.SchemaComponent;
+import org.netbeans.modules.xml.xam.Named;
 
 /**
  * Represents a node test on name.
@@ -41,6 +45,32 @@ public class StepNodeNameTest extends StepNodeTest {
         mNodeName = nodeName;
     }
     
+    public StepNodeNameTest(XPathModel xPathModel, SchemaComponent sComp) {
+        super();
+        assert (sComp instanceof Named);
+        String componentName = ((Named)sComp).getName();
+        QName sCompQName = null;
+        //
+        if (XPathUtils.isPrefixRequired(sComp)) {
+            //
+            String nsPrefix = null;
+            String namespaceURI = sComp.getModel().getEffectiveNamespace(sComp);
+            NamespaceContext nsContext = xPathModel.getNamespaceContext();
+            if (nsContext != null) {
+                nsPrefix = nsContext.getPrefix(namespaceURI);
+            }
+            //
+            if (nsPrefix == null || nsPrefix.length() == 0) {
+                sCompQName = new QName(componentName);
+            } else {
+                sCompQName = new QName(namespaceURI, componentName, nsPrefix);
+            }
+        } else {
+            sCompQName = new QName(componentName);
+        }
+        mNodeName = sCompQName;
+    }
+    
     /**
      * Gets the node name.
      * @return the node name
@@ -52,7 +82,17 @@ public class StepNodeNameTest extends StepNodeTest {
     public boolean isWildcard() {
         return mNodeName.getLocalPart().equals("*"); // NOI18N
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof StepNodeNameTest) {
+            QName nodeName2 = ((StepNodeNameTest)obj).getNodeName();
+            return XPathUtils.equalsIgnorNsUri(nodeName2, mNodeName);
+        }
+        return false;
+    }
 
+    @Override
     public String toString() {
         return XPathUtils.qNameObjectToString(mNodeName);
     }

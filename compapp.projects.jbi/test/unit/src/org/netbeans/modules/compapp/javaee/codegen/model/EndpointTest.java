@@ -156,7 +156,6 @@ public class EndpointTest extends TestCase {
         instance2.setServiceName( new QName("http://someCorp.com/schema/service", "CorpSvcsOne"));//NOI18N
         assertEquals(instance, instance2);
         
-        instance2.isUseBridge(Boolean.TRUE);
         assertEquals(instance, instance2);
         
         instance2.setEndPointName("epName1");//NOI18N

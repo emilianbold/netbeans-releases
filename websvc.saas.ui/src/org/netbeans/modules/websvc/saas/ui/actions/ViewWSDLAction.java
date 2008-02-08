@@ -57,12 +57,12 @@ public class ViewWSDLAction extends NodeAction {
     }
     
     protected boolean enable(Node[] nodes) {
-        //TODO
-        return false;
+        //TODO maybe check lookup if not to much performance cost
+        return true;
     }
     
     public HelpCtx getHelpCtx() {
-        return new HelpCtx("projrave_ui_elements_server_nav_websvc_view_wsdl");
+        return HelpCtx.DEFAULT_HELP;
     }
     
     public String getName() {
