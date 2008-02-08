@@ -190,12 +190,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new HibernateCfgDataNode(this, getLookup());
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getCookieSet().getLookup();
+        return new HibernateCfgDataNode(this);
     }
 
     protected String getPrefixMark() {

@@ -119,7 +119,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
     }
 
     public String name() {
-        return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_WizardTitle");
+        return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_ConfWizardTitle");
     }
 
     public boolean hasPrevious() {
@@ -217,6 +217,7 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
             return Collections.singleton(hdo.getPrimaryFile());
 
         } catch (Exception e) {
+            System.err.println("Error**************************" + e);
             return Collections.EMPTY_SET;
         }
 

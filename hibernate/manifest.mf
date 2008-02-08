@@ -6,10 +6,10 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/hibernate/resources/Bundl
 OpenIDE-Module-Specification-Version: 1.0
 
 Name: org/netbeans/modules/hibernate/loaders/cfg/HibernateCfgDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
 OpenIDE-Module-Class: Loader
 
 Name: org/netbeans/modules/hibernate/loaders/mapping/HibernateMappingDataLoader.class
-Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.core.XMLDataObject
+Install-Before: org.openide.loaders.XMLDataObject, org.netbeans.modules.xml.XMLDataObject
 OpenIDE-Module-Class: Loader
 

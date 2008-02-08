@@ -198,28 +198,14 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateConfigurationFile.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>                                		
             </file>
-            <file name="HibernateMappingTemplate.xml" url="HibernateMappingTemplate.xml">
+            <file name="HibernateMapping.hbm.xml" url="HibernateMapping.xml">
                 <attr name="position" intvalue="200"/>
                 <attr name="template" boolvalue="true"/>                
-                <attr name="instantiatingIterator" methodvalue=""/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.hibernate.wizards.HibernateMappingWizard.create"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
    		<attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/hibernate/resources/HibernateMappingFile.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.hibernate.resources.Bundle"/>
             </file>
-        </folder>
-    </folder>
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-hibernate-cfg+xml">
-                <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-hibernate-completion-HibernateCfgCompletionProvider.instance"/>
-                </folder>
-            </folder>
-            <folder name="x-hibernate-mapping+xml">
-                <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-hibernate-completion-HibernateMappingCompletionProvider.instance"/>
-                </folder>
-            </folder>
         </folder>
     </folder>
 </filesystem>

@@ -18,7 +18,7 @@ import org.openide.util.NbBundle;
  *
  * @author  gowri
  */
-public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
+public class HibernateConfigurationWizardPanel extends javax.swing.JPanel  {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private Project project;
@@ -135,21 +135,7 @@ public class HibernateConfigurationWizardPanel extends javax.swing.JPanel implem
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     // End of variables declaration//GEN-END:variables
-    /**
-     * Document listener that invokes <code>checkValidity</code> when
-     * changes are made.
-     */
-    public void changedUpdate(DocumentEvent e) {
-        changeSupport.fireChange();
-    }
 
-    public void insertUpdate(DocumentEvent e) {
-        changeSupport.fireChange();
-    }
-
-    public void removeUpdate(DocumentEvent e) {
-        changeSupport.fireChange();
-    }
 
     public void actionPerformed(ActionEvent e) {
     }

@@ -42,7 +42,6 @@ package org.netbeans.modules.hibernate.loaders.cfg;
 
 import org.openide.loaders.DataNode;
 import org.openide.nodes.Children;
-import org.openide.util.Lookup;
 
 /**
  * 
@@ -54,11 +53,6 @@ public class HibernateCfgDataNode extends DataNode {
 
     public HibernateCfgDataNode(HibernateCfgDataObject obj) {
         super(obj, Children.LEAF);
-        setIconBaseWithExtension(IMAGE_ICON_BASE);
-    }
-
-    HibernateCfgDataNode(HibernateCfgDataObject obj, Lookup lookup) {
-        super(obj, Children.LEAF, lookup);
         setIconBaseWithExtension(IMAGE_ICON_BASE);
     }
 
