@@ -99,8 +99,6 @@ public class CommandBuffer {
                         } else {
                             state = STATE_COMMAND_TIMEDOUT;
                         }
-                    } else {
-                        log.finest("CB.postAndWait[" + token + "]: Back from wait at " + tend);
                     }
                 }
                 if (state == STATE_COMMAND_TIMEDOUT) {
