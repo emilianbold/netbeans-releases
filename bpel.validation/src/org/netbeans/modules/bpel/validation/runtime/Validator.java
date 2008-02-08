@@ -74,14 +74,14 @@ import org.netbeans.modules.bpel.model.api.support.TBoolean;
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
-import org.netbeans.modules.bpel.validation.util.ValidationItem;
+import org.netbeans.modules.bpel.validation.core.Outcome;
 import static org.netbeans.modules.soa.ui.util.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
-public final class Validator extends org.netbeans.modules.bpel.validation.util.Validator {
+public final class Validator extends org.netbeans.modules.bpel.validation.core.Validator {
     
     // vlv
     private void processCorrelationsHolder(CorrelationsHolder holder) {
@@ -464,26 +464,26 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
     private void addAttributeWarning(String attributeName, Component entities) {
         String str = i18n(getClass(), FIX_ATTRIBUTE);
         str = MessageFormat.format( str, attributeName);
-        getResultItems().add(new ValidationItem(this, ResultType.WARNING, entities, str));
+        getResultItems().add(new Outcome(this, ResultType.WARNING, entities, str));
     }
     
     private void addElementError(BpelEntity entity) {
         String str = i18n(getClass(), FIX_ELEMENT);
         str = MessageFormat.format( str,  entity.getPeer().getLocalName());
-        getResultItems().add(new ValidationItem(this, ResultType.ERROR, (Component) entity, str));
+        getResultItems().add(new Outcome(this, ResultType.ERROR, (Component) entity, str));
     }
     
     private void addElementsInParentError(BpelContainer parent, BpelEntity... entities) {
         assert entities.length >0;
         String str = i18n( getClass(), FIX_ELEMENT_IN_PARENT);
         str = MessageFormat.format( str,  entities[0].getPeer().getLocalName(), parent.getPeer().getLocalName());
-        getResultItems().add(new ValidationItem(this, ResultType.ERROR, (Component)entities[0], str));
+        getResultItems().add(new Outcome(this, ResultType.ERROR, (Component)entities[0], str));
     }
     
     private void addElementsInParentError( BpelContainer parent, String tagName ) {
         String str = i18n( getClass(), FIX_ELEMENT_IN_PARENT);
         str = MessageFormat.format(str, tagName,parent.getPeer().getLocalName());
-        getResultItems().add(new ValidationItem(this, ResultType.ERROR, (Component) parent, str));
+        getResultItems().add(new Outcome(this, ResultType.ERROR, (Component) parent, str));
     }
     
     private boolean isAttributeValueSpecified(String value) {
@@ -493,7 +493,7 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
     private void addAttributeNeededForRuntime(String attributeName, Component component) {
         String str = i18n(getClass(), FIX_ATTRIBUTE_REQUIRED_SUN_BPELSE);
         str = MessageFormat.format(str, attributeName);
-        getResultItems().add(new ValidationItem(this, ResultType.WARNING, component, str));
+        getResultItems().add(new Outcome(this, ResultType.WARNING, component, str));
     }
     
     private void checkValidURI(BpelEntity bpelEntity, String attribute, String attributeValue) {
@@ -503,7 +503,7 @@ public final class Validator extends org.netbeans.modules.bpel.validation.util.V
             }
             catch (URISyntaxException ex) {
                 String message = i18n(getClass(), FIX_INVALID_URI, attribute);
-                getResultItems().add(new ValidationItem(this, ResultType.ERROR, bpelEntity, message));
+                getResultItems().add(new Outcome(this, ResultType.ERROR, bpelEntity, message));
             }
         }
     }

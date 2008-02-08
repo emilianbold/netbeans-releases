@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,19 +38,38 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.util;
 
-/**
- * @author Vladimir Yaroslavskiy
- * @version 2007.12.06
- */
-public interface QuickFix {
+package org.netbeans.modules.cnd.editor.cplusplus;
 
-  boolean canFix();
-  void doFix();
-  String getDescription();
+import java.beans.BeanDescriptor;
+import java.util.MissingResourceException;
+import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
+import org.openide.util.NbBundle;
 
-  // ------------------------------------------------
-  public abstract class Adapter implements QuickFix {
-  }
+/** Beaninfo for CIndentEngine */
+public class CIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
+
+    @Override
+    public BeanDescriptor getBeanDescriptor () {
+	BeanDescriptor beanDescriptor = new BeanDescriptor(getBeanClass());
+	beanDescriptor.setDisplayName(getString("LAB_CIndentEngine")); // NOI18N
+	beanDescriptor.setShortDescription(getString("HINT_CIndentEngine"));// NOI18N
+	beanDescriptor.setValue("global", Boolean.TRUE); // NOI18N
+        return beanDescriptor;
+    }
+
+    @Override
+    protected Class getBeanClass() {
+        return CIndentEngine.class;
+    }
+
+    @Override
+    protected String getString(String key) {
+        try {
+            return NbBundle.getBundle(CCIndentEngineBeanInfo.class).getString(key);
+        } catch (MissingResourceException e) {
+            return super.getString(key);
+        }
+    }
 }
+

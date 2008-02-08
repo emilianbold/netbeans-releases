@@ -347,13 +347,13 @@ public class VariableTreeInfoProvider implements TreeItemInfoProvider {
 
         if (treeItem instanceof Variable) {
             if (((Variable) treeItem).getMessageType() != null) {
-                return "Variable " + ((Variable) treeItem).getMessageType().getRefString();
+                return ((Variable) treeItem).getMessageType().getRefString();
             }
             if (((Variable) treeItem).getType() != null) {
                 return ((Variable) treeItem).getType().getRefString();
             }
         }    
-        return null;
+        return "not named type";
     }
 
 }

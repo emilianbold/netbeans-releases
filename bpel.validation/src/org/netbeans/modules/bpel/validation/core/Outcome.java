@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,21 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.bpel.validation.core;
 
-package org.netbeans.modules.cnd.editor.cplusplus;
+import org.netbeans.modules.xml.xam.Component;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
+import org.netbeans.modules.xml.xam.spi.Validator.ResultType;
+import org.netbeans.modules.bpel.validation.core.QuickFix;
 
-import org.netbeans.editor.Formatter;
-import org.netbeans.editor.ext.ExtFormatter;
-import org.netbeans.modules.cnd.MIMENames;
+/**
+ * @author Vladimir Yaroslavskiy
+ * @version 2007.12.07
+ */
+public final class Outcome extends ResultItem {
 
-/** C++ indentation engine that delegates to C++ formatter */
-public class CCIndentEngine extends BaseIndentEngine {
+  public Outcome(Validator validator, ResultType type, Component component, String description) {
+    this(validator, type, component, description, null);
+  }
 
-    public CCIndentEngine() {
-        setAcceptedMimeTypes(new String[] { MIMENames.CPLUSPLUS_MIME_TYPE });
-    }
+  public Outcome(Validator validator, ResultType type, Component component, String description, QuickFix quickFix) {
+    super(validator, type, component, description);
+    myQuickFix = quickFix;
+  }         
 
-    protected ExtFormatter createFormatter() {
-	return (CCFormatter) Formatter.getFormatter(CCKit.class);
-    }
+  public QuickFix getQuickFix() {
+    return myQuickFix;
+  }
+
+  private QuickFix myQuickFix;
 }
