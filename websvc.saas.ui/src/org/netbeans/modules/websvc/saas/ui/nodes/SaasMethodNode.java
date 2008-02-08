@@ -40,91 +40,43 @@
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
+import java.awt.datatransfer.Transferable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import javax.swing.Action;
-import javax.xml.bind.JAXBElement;
-import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.model.wadl.Method;
-import org.netbeans.modules.websvc.saas.model.wadl.Param;
-import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
-import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
-import org.netbeans.modules.websvc.saas.model.wadl.Resource;
+import org.netbeans.modules.websvc.saas.model.CustomSaas;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
-import org.netbeans.modules.websvc.saas.ui.actions.TestMethodAction;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.util.Utilities;
+import org.openide.util.datatransfer.PasteType;
 
 /**
  *
  * @author nam
  */
-public class WadlMethodNode extends AbstractNode {
-    public static final String GET = "GET";
-    public static final String POST = "POST";
-    public static final String PUT = "PUT";
-    public static final String DELETE = "DELETE";
+public class SaasMethodNode extends AbstractNode {
+    CustomSaas saas;
+    SaasMethod method;
     
-    private Method method;
-    private Resource[] path;
-    private WadlSaas wadlSaas;
-    
-    public WadlMethodNode(WadlSaas wadlSaas, Resource[] path, Method method) {
-        this(wadlSaas, path, method, new InstanceContent());
-    }
-
-    public WadlMethodNode(WadlSaas wadlSaas, Resource[] path, Method method, InstanceContent content) {
-        super(Children.LEAF, new AbstractLookup(content));
-        this.wadlSaas = wadlSaas;
-        this.path = path;
+    public SaasMethodNode(CustomSaas saas, SaasMethod method) {
+        super(Children.LEAF);
+        this.saas = saas;
         this.method = method;
-        content.add(method);
-        content.add(wadlSaas);
-    }
-
-    @Override
-    public String getDisplayName() {
-        if (method.getId() != null) {
-            return method.getId();
-        }
-        String name = method.getName();
-        String displayName = name;
-        if (GET.equals(name)) {
-            Set<String> medias = SaasUtil.getMediaTypesFromJAXBElement(method.getResponse().getRepresentationOrFault());
-            if (medias != null && medias.size() > 0) {
-                displayName += medias.toString();
-            }
-        } else if (PUT.equals(name) || POST.equals(name)) {
-            Set<String> medias = SaasUtil.getMediaTypes(method.getRequest().getRepresentation());
-            if (medias != null && medias.size() > 0) {
-                displayName += medias;
-            }
-        }
-        return displayName;
     }
     
-    @Override
-    public String getShortDescription() {
-        return SaasUtil.getSignature(wadlSaas, path, method);
-    }
-    
-    private static final java.awt.Image SERVICE_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/saas/ui/resources/method.png" ); //NOI18N
+    static private final Image ICON = Utilities.loadImage("org/netbeans/modules/websvc/saas/resources/method.png");
     
     @Override
-    public java.awt.Image getIcon(int type) {
-        return SERVICE_BADGE;
+    public Image getIcon(int type){
+        return ICON;
     }
     
     @Override
     public Image getOpenedIcon(int type){
-        return getIcon( type);
+        return ICON;
     }
     
     @Override
@@ -135,9 +87,12 @@ public class WadlMethodNode extends AbstractNode {
                 actions.add(a);
             }
         }
-        //TODO maybe ???
-        actions.add(SystemAction.get(TestMethodAction.class));
         return actions.toArray(new Action[actions.size()]);
+    }
+    
+    @Override
+    protected void createPasteTypes(final Transferable t, List<PasteType> s) {
+        //TODO review original
     }
     
 }

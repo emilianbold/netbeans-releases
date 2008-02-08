@@ -37,29 +37,19 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.saas.ui.nodes;
+package org.netbeans.modules.websvc.saas.model;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
-import org.openide.util.lookup.InstanceContent;
+import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
 
 /**
- *
+ * Typing purpose
  * @author nam
  */
-public class WadlSaasMethodNode extends WadlMethodNode {
-    private WadlSaasMethod saasMethod;
+public class CustomSaas extends Saas {
+
+    public CustomSaas(SaasGroup parentGroup, SaasServices services) {
+        super(parentGroup, services);
+    }
     
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
-        this(saasMethod, new InstanceContent());
-    }
-
-    public WadlSaasMethodNode(WadlSaasMethod saasMethod, InstanceContent content) {
-        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod(), content);
-        this.saasMethod = saasMethod;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return saasMethod.getName();
-    }
+    //no override implementation at this time.
 }
