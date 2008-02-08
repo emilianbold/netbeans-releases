@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
@@ -77,7 +78,6 @@ import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.text.ActiveEditorDrop;
 import org.openide.util.Exceptions;
 
@@ -195,19 +195,84 @@ public final class JsfForm implements ActiveEditorDrop {
         return REL_NONE;
     }
     
-    public static ExecutableElement getOtherSideOfRelation(Types types, ExecutableElement executableElement, boolean isFieldAccess) {
+    public static ExecutableElement getOtherSideOfRelation(CompilationController controller, ExecutableElement executableElement, boolean isFieldAccess) {
         TypeMirror passedReturnType = executableElement.getReturnType();
-        if (TypeKind.DECLARED == passedReturnType.getKind()) {
-            TypeElement typeElement = (TypeElement) passedReturnType;
-            //PENDING detect using mappedBy parameter of the relationship annotation!!
-            for (ExecutableElement method : getEntityMethods(typeElement)) {
+        if (TypeKind.DECLARED != passedReturnType.getKind() || !(passedReturnType instanceof DeclaredType)) {
+            return null;
+        }
+        Types types = controller.getTypes();
+        TypeMirror passedReturnTypeStripped = stripCollection((DeclaredType)passedReturnType, types);
+        if (passedReturnTypeStripped == null) {
+            return null;
+        }
+        TypeElement passedReturnTypeStrippedElement = (TypeElement) types.asElement(passedReturnTypeStripped);
+        
+        //try to find a mappedBy annotation element on the possiblyAnnotatedElement
+        Element possiblyAnnotatedElement = isFieldAccess ? guessField(controller, executableElement) : executableElement;
+        String mappedBy = null;
+        AnnotationMirror persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.OneToOne");  //NOI18N"
+        if (persistenceAnnotation == null) {
+            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.OneToMany");  //NOI18N"
+        }
+        if (persistenceAnnotation == null) {
+            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.ManyToOne");  //NOI18N"
+        }
+        if (persistenceAnnotation == null) {
+            persistenceAnnotation = findAnnotation(possiblyAnnotatedElement, "javax.persistence.ManyToMany");  //NOI18N"
+        }
+        if (persistenceAnnotation != null) {
+            Map<? extends ExecutableElement,? extends AnnotationValue> persistenceAnnotationMap = persistenceAnnotation.getElementValues();
+            for (ExecutableElement key : persistenceAnnotationMap.keySet()) {
+                if ("mappedBy".equals(key.getSimpleName().toString())) {
+                    AnnotationValue mappedByValue = persistenceAnnotationMap.get(key);
+                    mappedBy = mappedByValue.toString();
+                    if (mappedBy.startsWith("\"") && mappedBy.endsWith("\"")) {
+                        mappedBy = mappedBy.substring(1, mappedBy.length() - 1);
+                    }
+                    break;
+                }
+            }
+        }
+        for (ExecutableElement method : getEntityMethods(passedReturnTypeStrippedElement)) {
+            if (mappedBy != null && mappedBy.length() > 0) {
+                String tail = mappedBy.length() > 1 ? mappedBy.substring(1) : "";
+                String getterName = "get" + mappedBy.substring(0,1).toUpperCase() + tail;
+                if (getterName.equals(method.getSimpleName().toString())) {
+                    return method;
+                }
+            }
+            else {
                 TypeMirror iteratedReturnType = method.getReturnType();
-                if (types.isSameType(passedReturnType, iteratedReturnType)) {
+                iteratedReturnType = stripCollection(iteratedReturnType, types);
+                TypeMirror executableElementEnclosingType = executableElement.getEnclosingElement().asType();
+                if (types.isSameType(executableElementEnclosingType, iteratedReturnType)) {
                     return method;
                 }
             }
         }
         return null;
+    }
+    
+    public static TypeMirror stripCollection(TypeMirror passedType, Types types) {
+        if (TypeKind.DECLARED != passedType.getKind() || !(passedType instanceof DeclaredType)) {
+            return passedType;
+        }
+        TypeElement passedTypeElement = (TypeElement) types.asElement(passedType);
+        String passedTypeQualifiedName = passedTypeElement.getQualifiedName().toString();   //does not include type parameter info
+        Class passedTypeClass = null;
+        try {
+            passedTypeClass = Class.forName(passedTypeQualifiedName);
+        } catch (ClassNotFoundException e) {
+            //just let passedTypeClass be null
+        }
+        if (passedTypeClass != null && Collection.class.isAssignableFrom(passedTypeClass)) {
+            List<? extends TypeMirror> passedTypeArgs = ((DeclaredType)passedType).getTypeArguments();
+            if (passedTypeArgs.size() == 0) {
+                return null;
+            }
+            return passedTypeArgs.get(0);
+        }
+        return passedType;
     }
     
     /** Returns all methods in class and its super classes which are entity
@@ -423,7 +488,7 @@ public final class JsfForm implements ActiveEditorDrop {
                     String name = methodName.substring(3);
                     String propName = JSFClientGenerator.getPropNameFromMethod(methodName);
                     if (isRelationship == REL_TO_MANY) {
-                        ExecutableElement otherSide = getOtherSideOfRelation(controller.getTypes(), method, fieldAccess);
+                        ExecutableElement otherSide = getOtherSideOfRelation(controller, method, fieldAccess);
                         int otherSideMultiplicity = REL_TO_ONE;
                         if (otherSide != null) {
                             TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
@@ -431,8 +496,9 @@ public final class JsfForm implements ActiveEditorDrop {
                             otherSideMultiplicity = isRelationship(controller, otherSide, isRelFieldAccess);
                         }
 
-                        List<TypeElement> typeParameters = getTypeParameters(method.getReturnType());
-                        TypeElement typeElement = typeParameters.size() > 0 ? typeParameters.get(0) : null;
+                        Types types = controller.getTypes();                        
+                        TypeMirror typeArgMirror = stripCollection(method.getReturnType(), types);
+                        TypeElement typeElement = (TypeElement)types.asElement(typeArgMirror);
                         
                         if (typeElement != null) {
                             boolean relatedIsFieldAccess = isFieldAccess(typeElement);
@@ -536,12 +602,5 @@ public final class JsfForm implements ActiveEditorDrop {
             }
         }
         return null;
-    }
-
-    private static List<TypeElement> getTypeParameters(TypeMirror typeMirrror) {
-        List<TypeElement> result = new ArrayList<TypeElement>();
-        //TODO: RETOUCHE type parameters
-        return result;
-    }
-    
+    }    
 }

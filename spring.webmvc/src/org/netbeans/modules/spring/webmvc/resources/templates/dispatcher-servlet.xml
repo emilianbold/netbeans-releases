@@ -23,9 +23,6 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
         </property>
     </bean>
     
-    <bean id="viewNameTranslator"
-          class="org.springframework.web.servlet.view.DefaultRequestToViewNameTranslator" />
-    
     <bean id="viewResolver"
           class="org.springframework.web.servlet.view.InternalResourceViewResolver"
           p:prefix="/WEB-INF/jsp/"

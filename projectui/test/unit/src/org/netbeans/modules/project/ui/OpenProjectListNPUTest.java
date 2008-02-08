@@ -105,7 +105,7 @@ public class OpenProjectListNPUTest extends NbTestCase {
         f1_3_close = p1.createData("f1_3.java");
 
         project1 = ProjectManager.getDefault ().findProject (p1);
-//        OpenProjectList.getDefault().getTemplatesLRU(project1);
+        OpenProjectList.getDefault().getTemplatesLRU(project1);
         
         ((TestSupport.TestProject) project1).setLookup (Lookups.singleton (TestSupport.createAuxiliaryConfiguration ()));
         

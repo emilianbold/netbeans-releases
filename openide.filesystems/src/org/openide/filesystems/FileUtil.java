@@ -121,6 +121,7 @@ public final class FileUtil extends Object {
 
     /** Cache for {@link #isArchiveFile(FileObject)}. */
     private static final Map<FileObject, Boolean> archiveFileCache = new WeakHashMap<FileObject,Boolean>();
+    private static FileSystem diskFileSystem;
 
     private FileUtil() {
     }
@@ -132,18 +133,23 @@ public final class FileUtil extends Object {
      * @since 7.6
      */
     public static void refreshFor(File... files) {
-        for (File file : files) {
-            //TODO: files should be filtered (1/remove duplicates 2/to keep just the most top parents) 
-            //not to refresh some fileobjects many times
-            FileObject fo = toFileObject(file);
-            if (fo != null) {
-                try {
-                    fo.setAttribute("request_for_refreshing_files_be_aware_this_is_not_public_api", file); //NOI18N
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+        FileSystem fs = getDiskFileSystem();
+        if (fs == null) {
+            for (File file : files) {
+                FileObject fo = toFileObject(file);
+                fs = getDiskFileSystem();
+                if (fs != null) {
+                    break;
                 }
             }
         }
+        if (fs != null) {
+            try {
+                fs.getRoot().setAttribute("request_for_refreshing_files_be_aware_this_is_not_public_api", files);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } 
     }         
     
     /**
@@ -194,29 +200,30 @@ public final class FileUtil extends Object {
      * @since 7.0
      */
     public static FileObject createFolder (final File folder) throws IOException {
-        FileObject retval = null;
-        File root = getRoot(folder);
-        if (!root.exists()) {
+        File existingFolder = folder;
+        while(existingFolder != null && !existingFolder.isDirectory()) {
+            existingFolder = existingFolder.getParentFile();
+        }
+        if (existingFolder == null) {
             throw new IOException(folder.getAbsolutePath());
-        }
-        FileObject rootFo = FileUtil.toFileObject(root);
-        if (rootFo == null) {
-            throw new IllegalStateException("Cannot get a FileObject for " + root + " while trying to create " + folder +
-                "; URLMapper's=" + Lookup.getDefault().lookupAll(URLMapper.class));
-        }
-        final String relativePath = getRelativePath(root, folder);                                
+        }        
+                      
+        FileObject retval = null;
+        FileObject folderFo = FileUtil.toFileObject(existingFolder);        
+        assert folderFo != null : existingFolder.getAbsolutePath();
+        final String relativePath = getRelativePath(existingFolder, folder);
         try {
-            retval = FileUtil.createFolder(rootFo,relativePath);        
+            retval = FileUtil.createFolder(folderFo,relativePath);        
         } catch (IOException ex) {
             //thus retval = null;
         }
-        //if refresh needed because of external changes
+        //if refresh needed because of external changes        
         if (retval == null || !retval.isValid()) {
-            rootFo.getFileSystem().refresh(false);
-            retval = FileUtil.createFolder(rootFo,relativePath);
+            folderFo.getFileSystem().refresh(false);
+            retval = FileUtil.createFolder(folderFo,relativePath);
         }        
         assert retval != null;        
-        return retval;
+        return retval;        
     } 
     
     /**Returns FileObject for a data file.
@@ -229,23 +236,27 @@ public final class FileUtil extends Object {
      * @since 7.0
      */
     public static FileObject createData (final File data) throws IOException {        
-        FileObject retval = null;
-        File root = getRoot(data);
-        if (!root.exists()) {
+        File folder = data;
+        while(folder != null && !folder.isDirectory()) {
+            folder = folder.getParentFile();
+        }
+        if (folder == null) {
             throw new IOException(data.getAbsolutePath());
         }        
-        FileObject rootFo = FileUtil.toFileObject(root);        
-        assert rootFo != null : root.getAbsolutePath();
-        final String relativePath = getRelativePath(root, data);        
+                      
+        FileObject retval = null;
+        FileObject folderFo = FileUtil.toFileObject(folder);
+        assert folderFo != null : folder.getAbsolutePath();
+        final String relativePath = getRelativePath(folder, data);
         try {
-            retval = FileUtil.createData(rootFo,relativePath);        
+            retval = FileUtil.createData(folderFo,relativePath);        
         } catch (IOException ex) {
             //thus retval = null;
         }
         //if refresh needed because of external changes        
         if (retval == null || !retval.isValid()) {
-            rootFo.getFileSystem().refresh(false);
-            retval = FileUtil.createData(rootFo,relativePath);
+            folderFo.getFileSystem().refresh(false);
+            retval = FileUtil.createData(folderFo,relativePath);
         }        
         assert retval != null;        
         return retval;
@@ -621,6 +632,16 @@ public final class FileUtil extends Object {
             retVal = null;
         }
 
+        if (retVal != null) {
+            if (getDiskFileSystem() == null) {
+                try {
+                    FileSystem fs = retVal.getFileSystem();
+                    setDiskFileSystem(fs);
+                } catch (FileStateInvalidException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
         return retVal;
     }
         
@@ -1853,4 +1874,19 @@ public final class FileUtil extends Object {
             return wrapFileNoCanonicalize(delegate.createFileObject(path));
         }
     }
+    
+    private static FileSystem getDiskFileSystem() {
+        synchronized (FileUtil.class) {
+            return diskFileSystem;
+        }
+    }
+
+    private static void setDiskFileSystem(FileSystem fs) {
+        Object o = fs.getRoot().getAttribute("SupportsRefreshForNoPublicAPI");
+        if (o instanceof Boolean && ((Boolean) o).booleanValue()) {
+            synchronized (FileUtil.class) {
+                diskFileSystem = fs;
+            }
+        }
+    }    
 }

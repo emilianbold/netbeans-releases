@@ -81,6 +81,8 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPackage;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IVersionableElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationProxy;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.RelationValidator;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.TypedFactoryRetriever;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IDerivationClassifier;
@@ -480,6 +482,8 @@ public class UMLParsingIntegrator
             reportHeapExceeded() ;
         }
 	
+        m_FragDocument = null;
+        m_Packages = null;
 	XMLManip.clearCachedXPaths();
         
         return m_Cancelled ? true : false;
@@ -2479,8 +2483,16 @@ public class UMLParsingIntegrator
         
         try
         {
-            IGeneralization gen = m_Factory.createGeneralization(superClass, subClass);
-            redef.add(gen);
+            RelationProxy p = new RelationProxy();
+            p.setFrom(subClass);
+            p.setTo(superClass);
+            p.setConnectionElementType("Generalization");
+            boolean relOk = new RelationValidator().validateRels(p);
+            if (relOk) 
+            {
+                IGeneralization gen = m_Factory.createGeneralization(superClass, subClass);
+                redef.add(gen);
+            }
         }
         catch (Exception e)
         {
@@ -4264,6 +4276,7 @@ public class UMLParsingIntegrator
                 setDefaultValue(pNavEnd, attr);
                 setMultiplicity(pNavEnd, attr);
                 setVisibility(pNavEnd, attr);
+                setModifiers(pNavEnd, attr);
             }
             //NameNavigableEnd(assoc, to, attr));
         }
@@ -5835,6 +5848,31 @@ public class UMLParsingIntegrator
                 {
                     scrubMultiplicities(pMultNode);
                     ((Element) pNode).add(pMultNode);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            // I just want to forward the error to the listener.
+            sendExceptionMessage(e);
+        }
+    }
+    
+    protected void setModifiers(INamedElement pElement, Node pAttr)
+    {
+        try
+        {
+            String[] modifierAttrs = {"isTransient", "isStatic", "isVolatile", "isFinal"}; // NOI18N
+            for(String modAttr : modifierAttrs) 
+            {
+                boolean isSet = XMLManip.getAttributeBooleanValue(pAttr, modAttr);
+                if (isSet)
+                {
+                    Node pNode = pElement.getNode();
+                    if (pNode != null)
+                    {
+                        XMLManip.setAttributeValue(pNode, modAttr, "true") ; // NOI18N
+                    }
                 }
             }
         }

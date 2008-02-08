@@ -62,6 +62,9 @@ import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.modules.bpel.core.util.BPELValidationController;
 import org.netbeans.modules.bpel.core.util.SelectBpelElement;
 import org.netbeans.modules.bpel.design.ZoomManager;
+import org.netbeans.modules.bpel.design.actions.BreakpointsDeleteAction;
+import org.netbeans.modules.bpel.design.actions.BreakpointsDisableAction;
+import org.netbeans.modules.bpel.design.actions.BreakpointsEnableAction;
 import org.netbeans.modules.bpel.editors.api.nodes.NodeType;
 import org.netbeans.modules.bpel.model.api.Assign;
 import org.netbeans.modules.bpel.model.api.BpelEntity;
@@ -394,7 +397,7 @@ public class DesignerMultiViewElement extends TopComponent
             toolbar.add(new SequenceFilterButton(myDesignView));
             toolbar.addSeparator();
             //FIXME toolbar.add(myDesignView.createExpandAllPatternsToolBarButton());
-            toolbar.addSeparator();
+            //toolbar.addSeparator();
 
             NavigationTools navigationTools = myDesignView.getNavigationTools();
             for (int i = 0; i < navigationTools.getControllersCount(); i++) {
@@ -435,6 +438,12 @@ public class DesignerMultiViewElement extends TopComponent
             // vlv: valdiation
             toolbar.addSeparator();
             toolbar.add(new BPELValidateAction(myDesignView.getBPELModel()));
+            
+            // ksorokin: breakpoints
+            toolbar.addSeparator();
+            toolbar.add(new BreakpointsEnableAction(myDesignView));
+            toolbar.add(new BreakpointsDisableAction(myDesignView));
+            toolbar.add(new BreakpointsDeleteAction(myDesignView));
             
             int maxButtonHeight = 0;
             

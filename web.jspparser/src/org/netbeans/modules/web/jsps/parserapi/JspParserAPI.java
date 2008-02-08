@@ -97,6 +97,7 @@ public interface JspParserAPI {
         
         public abstract void removePropertyChangeListener(PropertyChangeListener l);
         
+        // XXX needs to be abstract, WEB-INF can be located anywhere
         public FileObject getWebInf() {
             FileObject webInfFO = null;
             FileObject documentBase = getDocumentBase();

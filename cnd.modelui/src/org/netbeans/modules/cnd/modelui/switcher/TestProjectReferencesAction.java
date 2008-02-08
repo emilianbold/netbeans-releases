@@ -38,30 +38,38 @@
  */
 package org.netbeans.modules.cnd.modelui.switcher;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  *
- * @author vv159170
+ * @author Vladirmir Voskresensky
  */
 public class TestProjectReferencesAction extends NodeAction {
 
     private CsmModel model;
     private static boolean running = false;
     private final JMenuItem presenter;
-    private final static boolean TEST_XREF = Boolean.getBoolean("text.xref.action");
+    private final static boolean TEST_XREF = Boolean.getBoolean("test.xref.action"); // NOI18N
 
     private enum State {
 
@@ -197,7 +205,6 @@ public class TestProjectReferencesAction extends NodeAction {
 
     private void performAction(Collection<NativeProject> projects) {
         if (projects != null) {
-            System.err.println("called on projects " + projects);
             for (NativeProject p : projects) {
                 testProject(p);
             }
@@ -206,8 +213,33 @@ public class TestProjectReferencesAction extends NodeAction {
 
     
     private void testProject(NativeProject p) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
+        String task = "xRef - " + p.getProjectDisplayName(); // NOI18N
+        InputOutput io = IOProvider.getDefault().getIO(task, false);
+        io.select();
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(task);
+        handle.start();
+        final PrintWriter out = io.getOut();
+        final long[] time = new long[2];
+        time[0] = System.currentTimeMillis();
+        TraceXRef.traceProjectRefsStatistics(p, out, new CsmProgressAdapter() {
+            private int handled = 0;
+            @Override
+            public void projectFilesCounted(CsmProject project, int filesCount) {
+                out.println("Project " + project.getName() + " has " + filesCount + " files"); // NOI18N
+                handle.switchToDeterminate(filesCount);
+            }
 
-    
+            @Override
+            public void fileParsingStarted(CsmFile file) {
+                handle.progress("Analyzing " + file.getName(), handled++); // NOI18N
+            }
+
+            @Override
+            public void projectParsingFinished(CsmProject project) {
+                time[1] = System.currentTimeMillis();
+            }
+        });
+        handle.finish();
+        out.println("Analyzing " + p.getProjectDisplayName() + " took " + (time[1]-time[0]) + "ms");
+    }
 }

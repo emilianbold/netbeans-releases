@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
    javadoc. If there is new javadoc being build for certain
    module, the nbbuild/javadoctools/template.xml adds new
    entry at the end of this file, it is then on the author
-   to decide whether such change shall be commited to CVS
+   to decide whether such change shall be commited to the repository
    or not
 -->
 <property name="javadoc.docs.org-openide-util" value="${javadoc.web.root}/org-openide-util"/>
@@ -160,3 +160,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-bootstrap" value="${javadoc.web.root}/org-netbeans-bootstrap"/>
 <property name="javadoc.docs.org-netbeans-modules-xml-retriever" value="${javadoc.web.root}/org-netbeans-modules-xml-retriever"/>
 <property name="javadoc.docs.org-netbeans-modules-server" value="${javadoc.web.root}/org-netbeans-modules-server"/>
+<property name="javadoc.docs.org-netbeans-modules-websvc-serviceapi" value="${javadoc.web.root}/org-netbeans-modules-websvc-serviceapi"/>

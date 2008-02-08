@@ -25,6 +25,7 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.TexturePaint;
+import javax.swing.Icon;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.CanvasRendererContext;
 import org.netbeans.modules.soa.mappercore.MapperStyle;
@@ -38,12 +39,12 @@ import org.netbeans.modules.soa.mappercore.icons.Icon2D;
 public class Constant extends Vertex {
 
     
-    public Constant(Icon2D icon) {
+    public Constant(Icon icon) {
         this(null, icon);
     }
     
     
-    public Constant(Object dataObject, Icon2D icon) {
+    public Constant(Object dataObject, Icon icon) {
         super(dataObject, icon);
     }
 
@@ -84,13 +85,18 @@ public class Constant extends Vertex {
         g2.setPaint(new TexturePaint(MapperStyle.GRADIENT_TEXTURE, bounds));
         g2.fill(rrect);
 
-        Icon2D icon = getIcon();
+        Icon icon = getIcon();
         if (icon != null) {
-            double tx2 = 1.5 * step;
-            double ty2 = 0.5 * height;
+            double tx2 = step - 0.5;
+            double ty2 = Math.round(0.5 * height) - 0.5 
+                    - icon.getIconHeight() / 2 + 1;
             
             g2.translate(tx2, ty2);
-            icon.paintIcon(this, g2, step);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                    RenderingHints.VALUE_STROKE_NORMALIZE);
+            icon.paintIcon(rendererContext.getCanvas(), g2, 0, 0);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
+                    RenderingHints.VALUE_STROKE_PURE);
             g2.translate(-tx2, -ty2);
         }
         

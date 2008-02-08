@@ -65,10 +65,16 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -109,7 +115,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 
 /**
@@ -184,7 +189,6 @@ public final class OpenProjectList {
         synchronized ( OpenProjectList.class ) {
             if ( INSTANCE == null ) {
                 INSTANCE = new OpenProjectList();
-                INSTANCE.
                 INSTANCE.openProjects = loadProjectList();                
                 WindowManager.getDefault().invokeWhenUIReady(INSTANCE.LOAD);
             }
@@ -202,8 +206,11 @@ public final class OpenProjectList {
         }
     }
     
+    Future<Project[]> openProjectsAPI() {
+        return LOAD;
+    }
     
-    private final class LoadOpenProjects implements Runnable, LookupListener {
+    private final class LoadOpenProjects implements Runnable, LookupListener, Future<Project[]> {
         final RequestProcessor RP = new RequestProcessor("Load Open Projects"); // NOI18N
         final RequestProcessor.Task TASK = RP.create(this);
         private int action;
@@ -212,6 +219,9 @@ public final class OpenProjectList {
         private List<String> recentTemplates;
         private Project mainProject;
         private Lookup.Result<FileObject> currentFiles;
+        private int entered;
+        private final Lock enteredGuard = new ReentrantLock();
+        private final Condition enteredZeroed = enteredGuard.newCondition();
         
         public LoadOpenProjects(int a) {
             action = a;
@@ -324,6 +334,69 @@ public final class OpenProjectList {
             }
 
         }
+
+        final void enter() {
+            try {
+                enteredGuard.lock();
+                entered++;
+            } finally {
+                enteredGuard.unlock();
+            }
+        }
+    
+        final void exit() {
+            try {
+                enteredGuard.lock();
+                if (--entered == 0) {
+                    enteredZeroed.signalAll();
+                }
+            } finally {
+                enteredGuard.unlock();
+            }
+        }
+
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        public boolean isCancelled() {
+            return false;
+        }
+
+        public boolean isDone() {
+            return TASK.isFinished() && entered == 0;
+        }
+
+        public Project[] get() throws InterruptedException, ExecutionException {
+            TASK.waitFinished();
+            try {
+                enteredGuard.lock();
+                while (entered > 0) {
+                    enteredZeroed.await();
+                }
+            } finally {
+                enteredGuard.unlock();
+            }
+            return getDefault().getOpenProjects();
+        }
+
+        public Project[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            long ms = unit.convert(timeout, TimeUnit.MILLISECONDS);
+            if (!TASK.waitFinished(timeout)) {
+                throw new TimeoutException();
+            } 
+            try {
+                enteredGuard.lock();
+                if (entered > 0) {
+                    if (!enteredZeroed.await(ms, TimeUnit.MILLISECONDS)) {
+                        throw new TimeoutException();
+                    }
+                }
+            } finally {
+                enteredGuard.unlock();
+            }
+            return getDefault().getOpenProjects();
+        }
     }
     
     public void open( Project p ) {
@@ -382,7 +455,7 @@ public final class OpenProjectList {
 			    public void run() {
                                 //fix for #67114:
                                 try {
-                                    Thread.currentThread().sleep(50);
+                                    Thread.sleep(50);
                                 } catch (InterruptedException e) {
                                     // ignored
                                 }
@@ -410,6 +483,9 @@ public final class OpenProjectList {
         assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
         LOAD.waitFinished();
             
+            
+        try {
+            LOAD.enter();
         boolean recentProjectsChanged = false;
         int  maxWork = 1000;
         int  workForSubprojects = maxWork / 2;
@@ -505,7 +581,6 @@ public final class OpenProjectList {
         LogRecord[] addedRec = createRecord("UI_OPEN_PROJECTS", projectsToOpen.toArray(new Project[0])); // NOI18N
         log(addedRec);
         
-        
         Mutex.EVENT.readAccess(new Action<Void>() {
             public Void run() {
                 pchSupport.firePropertyChange( PROPERTY_OPEN_PROJECTS, oldprjs.toArray(new Project[oldprjs.size()]), 
@@ -517,6 +592,9 @@ public final class OpenProjectList {
                 return null;
             }
         });
+        } finally {
+            LOAD.exit();
+    }
     }
        
     public void close( Project projects[], boolean notifyUI ) {
@@ -524,6 +602,10 @@ public final class OpenProjectList {
         if (!ProjectUtilities.closeAllDocuments (projects, notifyUI )) {
             return;
         }
+        
+        try {
+            LOAD.enter();
+
         logProjects("close(): closing project: ", projects);
         boolean mainClosed = false;
         boolean someClosed = false;
@@ -586,6 +668,9 @@ public final class OpenProjectList {
         }
         LogRecord[] removedRec = createRecord("UI_CLOSED_PROJECTS", projects); // NOI18N
         log(removedRec);
+        } finally {
+            LOAD.exit();
+    }
     }
         
     public synchronized Project[] getOpenProjects() {

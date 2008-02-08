@@ -43,7 +43,8 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.util.Vector;
+import java.util.List;
+import java.util.ArrayList;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
@@ -59,7 +60,7 @@ public class LibrariesNodeProp extends PropertySupport {
     String[] texts;
     
     public LibrariesNodeProp(VectorConfiguration vectorConfiguration, Project project, MakeConfiguration conf, String baseDir, String[] texts) {
-        super(texts[0], Vector.class, texts[1], texts[2], true, true);
+        super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
 	this.project = project;
 	this.conf = conf;
@@ -79,7 +80,7 @@ public class LibrariesNodeProp extends PropertySupport {
     }
     
     public void setValue(Object v) {
-        vectorConfiguration.setValue((Vector)v);
+        vectorConfiguration.setValue((List)v);
     }
     
     public void restoreDefaultValue() {
@@ -95,7 +96,7 @@ public class LibrariesNodeProp extends PropertySupport {
     }
 
     public PropertyEditor getPropertyEditor() {
-	return new DirectoriesEditor((Vector)vectorConfiguration.getValue().clone());
+	return new DirectoriesEditor((List)((ArrayList)vectorConfiguration.getValue()).clone());
     }
 
     public Object getValue(String attributeName) {
@@ -105,10 +106,10 @@ public class LibrariesNodeProp extends PropertySupport {
     }
 
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
-        private Vector value;
+        private List value;
         private PropertyEnv env;
         
-        public DirectoriesEditor(Vector value) {
+        public DirectoriesEditor(List value) {
             this.value = value;
         }
         
@@ -121,7 +122,7 @@ public class LibrariesNodeProp extends PropertySupport {
 	    for (int i = 0; i < value.size(); i++) {
 		if (addSep)
 		    ret.append(", "); // NOI18N
-		ret.append(value.elementAt(i).toString());
+		ret.append(value.get(i).toString());
 		addSep = true;
 	    }
 	    return ret.toString();

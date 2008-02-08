@@ -58,8 +58,8 @@
                  bundle="org.netbeans.modules.websvc.components.google.Bundle"/>
         
     <icons>
-        <icon url="org/netbeans/modules/websvc/components/google/resources/google16.png" size="16"/>
-        <icon url="org/netbeans/modules/websvc/components/google/resources/google32.png" size="32"/>
+        <icon url="org/netbeans/modules/websvc/manager/resources/webservice.png" size="16"/>
+        <icon url="org/netbeans/modules/websvc/manager/resources/webservice.png" size="32"/>
     </icons>
 
     <service name="AdSenseForContent">

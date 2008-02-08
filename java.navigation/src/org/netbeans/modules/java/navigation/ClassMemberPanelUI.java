@@ -271,7 +271,10 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         
         ElementHandle<? extends Element> eh = node.getDescritption().elementHandle;
 
-        JavaSource js = JavaSource.forFileObject( root.getDescritption().fileObject );
+        final JavaSource js = JavaSource.forFileObject( root.getDescritption().fileObject );
+        if (js == null) {
+            return null;
+        }
         JavaDocCalculator calculator = new JavaDocCalculator( eh );
         final CompilationInfo[] ci = new CompilationInfo[1];
         
@@ -420,6 +423,40 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                 }
             });
         }
+
+        //#123940 start
+        private boolean inHierarchy;
+        private boolean doExpandAll;
+        
+        @Override
+        public void addNotify() {
+            super.addNotify();
+            
+            inHierarchy = true;
+            
+            if (doExpandAll) {
+                super.expandAll();
+                doExpandAll = false;
+            }
+        }
+
+        @Override
+        public void removeNotify() {
+            super.removeNotify();
+            
+            inHierarchy = false;
+        }
+
+        @Override
+        public void expandAll() {
+            super.expandAll();
+            
+            if (!inHierarchy) {
+                doExpandAll = true;
+            }
+        }
+        //#123940 end
+        
     }
 
     public void propertyChange(PropertyChangeEvent evt) {

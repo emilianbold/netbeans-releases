@@ -230,6 +230,10 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("package test;\npublic class Test extends XX {\nprivate int test;\n}\nclass XX {\npublic XX(boolean b){\n}\n}\n", new ConstructorTask(30), new ConstructorValidator());
     }
     
+    public void testConstructor100341() throws Exception {
+        performTest("package test;\npublic class Test extends java.util.ArrayList<String> {\n}\n", new ALConstructorTask(30), null);
+    }
+    
     public void testGetter() throws Exception {
         performTest("package test;\npublic class Test {\nprivate int test;\npublic Test(){\n}\n }\n", new GetterSetterTask(34, true), new GetterSetterValidator(true));
     }
@@ -584,6 +588,46 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         }
     }
     
+    private static class ALConstructorTask implements CancellableTask<WorkingCopy> {        
+    
+        private int offset;
+        
+        public ALConstructorTask(int offset) {
+            this.offset = offset;
+        }
+        
+        public void cancel() {
+        }
+    
+        public void run(WorkingCopy copy) throws Exception {
+            copy.toPhase(JavaSource.Phase.RESOLVED);
+            TreePath tp = copy.getTreeUtilities().pathFor(offset);
+            assertTrue(tp.getLeaf().getKind() == Tree.Kind.CLASS);
+            ClassTree ct = (ClassTree)tp.getLeaf();
+            TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
+            assertNotNull(te);
+            List<? extends VariableElement> vars = ElementFilter.fieldsIn(te.getEnclosedElements());
+            TypeElement sup = (TypeElement)((DeclaredType)te.getSuperclass()).asElement();
+            assertNotNull(sup);
+            List<? extends ExecutableElement> ctors = ElementFilter.constructorsIn(sup.getEnclosedElements());
+            ExecutableElement found = null;
+            for (ExecutableElement ee : ctors) {
+                if (ee.getParameters().size() != 1) {
+                    continue;
+                }
+                
+                if (ee.getParameters().get(0).asType().getKind() == TypeKind.DECLARED) {
+                    found = ee;
+                    break;
+                }
+            }
+            GeneratorUtilities utilities = GeneratorUtilities.get(copy);
+            assertNotNull(utilities);
+            ClassTree newCt = utilities.insertClassMember(ct, utilities.createConstructor(te, vars, found));
+            copy.rewrite(ct, newCt);
+        }
+    }
+    
     private final class ConstructorValidator implements Validator {
         
         public void validate(CompilationInfo info) {
@@ -724,5 +768,32 @@ public class GeneratorUtilitiesTest extends NbTestCase {
             return lfs.getRoot();
         }
     }
-    
+
+    public void testimportFQNs126796() throws Exception {
+        String sourceCode = "package test;\n" +
+                            "public class Test{\n" +
+                            "     public void test(Class<? extends CharSequence> c) {}\n" +
+                            "}\n";
+        FileObject root = makeScratchDir(this);
+
+        FileObject sourceDir = root.createFolder("src");
+        FileObject buildDir = root.createFolder("build");
+        FileObject cacheDir = root.createFolder("cache");
+
+        FileObject source = sourceDir.createFolder("test").createData("Test.java");
+
+        writeIntoFile(source, sourceCode);
+
+        SourceUtilsTestUtil.prepareTest(sourceDir, buildDir, cacheDir, new FileObject[0]);
+
+        JavaSource js = JavaSource.forFileObject(source);
+
+        js.runModificationTask(new Task<WorkingCopy>() {
+            public void run(WorkingCopy copy) throws Exception {
+                copy.toPhase(JavaSource.Phase.RESOLVED);
+
+                GeneratorUtilities.get(copy).importFQNs(copy.getCompilationUnit());
+            }
+        });
+    }
 }

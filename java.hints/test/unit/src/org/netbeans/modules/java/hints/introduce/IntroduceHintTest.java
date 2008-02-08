@@ -248,6 +248,42 @@ public class IntroduceHintTest extends NbTestCase {
                        3, 0);
     }
     
+    public void testFix126460() throws Exception {
+        performFixTest("package test; import java.util.List; public class Test {public void test1() {List<String> l = null; assert |l.get(0)| == null;} }",
+                       "package test; import java.util.List; public class Test {public void test1() {List<String> l = null;String name = l.get(0); assert name == null;} }",
+                       new DialogDisplayerImpl("name", true, false, true),
+                       3, 0);
+    }
+    
+    public void testFix126269() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        javax.swing.JTable table = null;\n" +
+                       "        if (true) {\n" +
+                       "            table.getColumnModel().getColumn(0);\n" +
+                       "        } else {\n" +
+                       "            |table.getColumnModel()|.getColumn(0);\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test;\n" +
+                       "import javax.swing.table.TableColumnModel;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "        javax.swing.JTable table = null;\n" +
+                       "        TableColumnModel name = table.getColumnModel();\n" +
+                       "        if (true) {\n" +
+                       "            name.getColumn(0);\n" +
+                       "        } else {\n" +
+                       "            name.getColumn(0);\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       new DialogDisplayerImpl("name", true, false, true),
+                       3, 0);
+    }
+    
 //    public void testFix121420() throws Exception {
 //        performFixTest("package test; public class Test {public void test1() {|System.getProperty(\"\")|;} }",
 //                       "package test; public class Test {public void test1() { String name = System.getProperty(\"\");} }",
@@ -1014,6 +1050,7 @@ public class IntroduceHintTest extends NbTestCase {
         fixes.get(useFix).implement();
         
         String result = doc.getText(0, doc.getLength()).replaceAll("[ \t\n]+", " ");
+        golden = golden.replaceAll("[ \t\n]+", " ");
         
         assertEquals(golden, result);
     }

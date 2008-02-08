@@ -98,6 +98,12 @@ public class UnitTable extends JTable {
     }
     
     @Override
+    public void removeNotify () {
+        super.removeNotify ();
+        enableRenderer = null;
+    }
+    
+    @Override
     public String getToolTipText (MouseEvent e) {
         String tip = null;
         java.awt.Point p = e.getPoint ();

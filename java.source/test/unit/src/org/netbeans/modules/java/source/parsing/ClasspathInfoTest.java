@@ -160,7 +160,7 @@ public class ClasspathInfoTest extends NbTestCase {
     
     public void testGetTypeDeclaration() throws Exception {
         ClasspathInfo ci = ClasspathInfo.create( bootPath, classPath, null);
-	JavacElements elements = (JavacElements) JavaSourceAccessor.INSTANCE.createJavacTask(ci,  (DiagnosticListener) null, (String) null).getElements();
+	JavacElements elements = (JavacElements) JavaSourceAccessor.getINSTANCE().createJavacTask(ci,  (DiagnosticListener) null, (String) null).getElements();
 	
         List<String> notFound = new LinkedList<String>();
         JarFile jf = new JarFile( rtJar );       
@@ -185,7 +185,7 @@ public class ClasspathInfoTest extends NbTestCase {
     
     public void testGetPackageDeclaration() throws Exception {
         ClasspathInfo ci = ClasspathInfo.create( bootPath, classPath, null);
-        JavaFileManager fm = ClasspathInfoAccessor.INSTANCE.getFileManager(ci);
+        JavaFileManager fm = ClasspathInfoAccessor.getINSTANCE().getFileManager(ci);
         JarFile jf = new JarFile( rtJar );
         for( Enumeration entries = jf.entries(); entries.hasMoreElements(); ) {
             JarEntry je = (JarEntry)entries.nextElement();
@@ -196,7 +196,7 @@ public class ClasspathInfoTest extends NbTestCase {
                     // empty package
                     continue;
                 }
-                PackageElement pd = JavaSourceAccessor.INSTANCE.createJavacTask(ci,  (DiagnosticListener) null, (String) null).getElements().getPackageElement( packageName );
+                PackageElement pd = JavaSourceAccessor.getINSTANCE().createJavacTask(ci,  (DiagnosticListener) null, (String) null).getElements().getPackageElement( packageName );
                 assertNotNull( "Declaration for " + packageName + " should not be null.", pd );
             }
         }

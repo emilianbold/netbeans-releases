@@ -497,7 +497,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
                 !busy && ServiceAssemblyInfo.SHUTDOWN_STATE.equals(assemblyStatus);
     }
 
-    public void undeploy(boolean force) {
+    public boolean undeploy(boolean force) {
 
         // The cached SA status is for performance purpose. The tradeoff is that
         // the actual SA status is not always correct. 
@@ -512,7 +512,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         DeploymentService deploymentService = getDeploymentService();
 
         if (deploymentService == null) {
-            return;
+            return false;
         }
 
         final String assemblyName = getName();
@@ -530,6 +530,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
             }
         });
 
+        boolean success = true;
         String result = null;
         try {
             result = deploymentService.undeployServiceAssembly(
@@ -537,7 +538,7 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
         } catch (ManagementRemoteException e) {
             result = e.getMessage();
         } finally {
-            JBIMBeanTaskResultHandler.showRemoteInvokationResult(
+            success = JBIMBeanTaskResultHandler.showRemoteInvokationResult(
                     GenericConstants.UNDEPLOY_SERVICE_ASSEMBLY_OPERATION_NAME,
                     assemblyName, result);
         }
@@ -549,6 +550,8 @@ public class JBIServiceAssemblyNode extends AppserverJBIMgmtContainerNode
                 setBusy(false);
             }
         });
+        
+        return success;
     }
 
     // DnD Support for CASA
