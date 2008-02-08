@@ -38,19 +38,42 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bpel.validation.util;
+package org.netbeans.xtest.plugin.ide;
+
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 /**
- * @author Vladimir Yaroslavskiy
- * @version 2007.12.06
+ *
+ * @author mrkam@netbeans.org
  */
-public interface QuickFix {
+public class BlacklistedClassesViolationException extends java.lang.Exception {
 
-  boolean canFix();
-  void doFix();
-  String getDescription();
+    private String instantiator;
 
-  // ------------------------------------------------
-  public abstract class Adapter implements QuickFix {
-  }
+    public BlacklistedClassesViolationException(String instantiator) {
+        super("Instantiator: " + instantiator);
+        this.instantiator = instantiator;
+    }
+
+    public String getInstantiator() {
+        return instantiator;
+    }
+
+    public void printStackTrace() {
+        printStackTrace(System.out);
+    }
+
+    public void printStackTrace(PrintStream s) {
+        printStackTrace(new PrintWriter(s));
+    }
+
+    public void printStackTrace(PrintWriter s) {
+        s.println("   Instantiator: " + instantiator);
+        s.println("     Stack trace:");
+        final StackTraceElement[] stackTrace = getStackTrace();
+        for (int i = 0; i < stackTrace.length; i++) {
+            s.println("           " + stackTrace[i]);
+        }
+    }
 }

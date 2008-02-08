@@ -46,6 +46,7 @@ import org.netbeans.editor.Settings;
 import org.netbeans.editor.SettingsNames;
 import org.netbeans.editor.SettingsUtil;
 import org.netbeans.editor.TokenContext;
+import org.netbeans.editor.ext.ExtSettingsDefaults;
 import org.netbeans.editor.ext.ExtSettingsNames;
 
 /** Extended settings for CC */ 
@@ -54,7 +55,7 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
     /** Name assigned to initializer */
     public static final String NAME = "cc-settings-initializer";  //NOI18N
 
-    private Class ccKitClass;
+    private Class kitClass;
 
     /**
      * Construct new cc-settings-initializer.
@@ -63,7 +64,7 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
      */
     public CCSettingsInitializer(Class ccKitClass) {
         super(NAME);
-        this.ccKitClass = ccKitClass;
+        this.kitClass = ccKitClass;
     }
 
     /**
@@ -77,52 +78,34 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
     @SuppressWarnings("unchecked")
     public void updateSettingsMap(Class kitClass, Map settingsMap) {
         
-        if (kitClass == ccKitClass) {
+        if (kitClass == kitClass) {
             SettingsUtil.updateListSetting(settingsMap, SettingsNames.TOKEN_CONTEXT_LIST,
                 new TokenContext[] { CCTokenContext.context });
 
             settingsMap.put(ExtSettingsNames.CARET_SIMPLE_MATCH_BRACE,
-                            CCSettingsDefaults.defaultCaretSimpleMatchBrace);
+                            ExtSettingsDefaults.defaultCaretSimpleMatchBrace);
 
             settingsMap.put(ExtSettingsNames.HIGHLIGHT_MATCH_BRACE,
-                            CCSettingsDefaults.defaultHighlightMatchBrace);
+                            ExtSettingsDefaults.defaultHighlightMatchBrace);
+
+            settingsMap.put(SettingsNames.ABBREV_RESET_ACCEPTOR,
+                            ExtSettingsDefaults.defaultAbbrevResetAcceptor);
+
+            settingsMap.put(SettingsNames.WORD_MATCH_MATCH_CASE,
+                            ExtSettingsDefaults.defaultWordMatchMatchCase);
 
             settingsMap.put(SettingsNames.IDENTIFIER_ACCEPTOR,
                             CCSettingsDefaults.defaultCCIdentifierAcceptor);
 
-            settingsMap.put(SettingsNames.ABBREV_RESET_ACCEPTOR,
-                            CCSettingsDefaults.defaultAbbrevResetAcceptor);
-
-            settingsMap.put(SettingsNames.WORD_MATCH_MATCH_CASE,
-                            CCSettingsDefaults.defaultWordMatchMatchCase);
-
             settingsMap.put(SettingsNames.WORD_MATCH_STATIC_WORDS,
                             CCSettingsDefaults.defaultWordMatchStaticWords);
 
-            // Formatting settings
-            settingsMap.put(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS,
-                            CCSettingsDefaults.defaultCCFormatSpaceBeforeParenthesis);
-
-            settingsMap.put(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA,
-                            CCSettingsDefaults.defaultCCFormatSpaceAfterComma);
-
-            settingsMap.put(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE,
-                            CCSettingsDefaults.defaultCCFormatNewlineBeforeBrace);
-
-            settingsMap.put(CCSettingsNames.CC_FORMAT_NEWLINE_BEFORE_BRACE_DECLARATION,
-                            CCSettingsDefaults.defaultCCFormatNewlineBeforeBraceDeclaration);
-
-            settingsMap.put(CCSettingsNames.CC_FORMAT_LEADING_SPACE_IN_COMMENT,
-                            CCSettingsDefaults.defaultCCFormatLeadingSpaceInComment);
-
-            settingsMap.put(CCSettingsNames.CC_FORMAT_LEADING_STAR_IN_COMMENT,
-                            CCSettingsDefaults.defaultCCFormatLeadingStarInComment);
-
-            settingsMap.put(CCSettingsNames.INDENT_HOT_CHARS_ACCEPTOR,
+            settingsMap.put(ExtSettingsNames.INDENT_HOT_CHARS_ACCEPTOR,
                             CCSettingsDefaults.defaultIndentHotCharsAcceptor);
 
 	    // Code folding settings
-	    settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE, CCSettingsDefaults.defaultCCCodeFoldingEnable);
+	    settingsMap.put(SettingsNames.CODE_FOLDING_ENABLE,
+                            CCSettingsDefaults.defaultCCCodeFoldingEnable);
             
 	    settingsMap.put(SettingsNames.PAIR_CHARACTERS_COMPLETION,
 			    CCSettingsDefaults.defaultPairCharactersCompletion);
@@ -132,4 +115,3 @@ public class CCSettingsInitializer extends Settings.AbstractInitializer {
         }
     }
 }
- 
