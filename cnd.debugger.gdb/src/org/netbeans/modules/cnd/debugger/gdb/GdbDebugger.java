@@ -158,8 +158,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String currentThreadID = "0"; // NOI18N
     private static final String[] emptyThreadsList = new String[0];
     private String[] threadsList = emptyThreadsList;
-    private int ttToken = 0;
-    private ToolTipAnnotation ttAnnotation = null;
     private Timer startupTimer = null;
     private boolean cygwin = false;
     private boolean cplusplus = false;
@@ -697,9 +695,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.done();
                 cb.callback();
                 cb.dispose();
-            } else if (token == ttToken) {
-                ttAnnotation.postToolTip(msg.substring(13, msg.length() - 1));
-                ttToken = 0;
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.setModifiedValue(msg.substring(13, msg.length() - 1));
             }
@@ -732,9 +727,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.error(msg);
                 cb.callback();
                 cb.dispose();
-            } else if (token == ttToken) { // invalid tooltip request
-                ttAnnotation.postToolTip('>' + msg.substring(1, msg.length() - 1) + '<');
-                ttToken = 0;
             } else if ((avar = updateVariablesMap.remove(itok)) != null) {
                 avar.restoreOldValue();
             } else if (msg.equals("\"Can't attach to process.\"")) { // NOI18N
@@ -953,11 +945,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void updateVariable(AbstractVariable var, String name, String value) {
         int token = gdb.data_evaluate_expression(name + '=' + value);
         updateVariablesMap.put(new Integer(token), var);
-    }
-    
-    public void completeToolTip(int token, ToolTipAnnotation tt) {
-        ttToken = token;
-        ttAnnotation = tt;
     }
     
     // currently not called - should do more than set state (see JPDADebuggerImpl)
@@ -1457,16 +1444,27 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
     
-    public int evaluate(String expression) {
-        int token;
+    public String evaluateToolTip(String expression) {
+            CommandBuffer cb;
         if (expression.indexOf('(') != -1) {
             suspendBreakpointsAndSignals();
-            token = gdb.data_evaluate_expression('"' + expression + '"'); // NOI18N
+            cb = new CommandBuffer(gdb.data_evaluate_expression('"' + expression + '"')); // NOI18N
             restoreBreakpointsAndSignals();
         } else {
-            token = gdb.data_evaluate_expression('"' + expression + '"'); // NOI18N
+            cb = new CommandBuffer(gdb.data_evaluate_expression('"' + expression + '"')); // NOI18N
         }
-        return token;
+        String response = cb.postAndWait();
+        if (response.startsWith("@0x")) { // NOI18N
+            cb = new CommandBuffer(gdb.print(expression));
+            response = cb.postAndWait();
+            if (response.length() > 0 && response.charAt(0) == '$') {
+                int pos = response.indexOf('=');
+                if (pos != -1 && (pos + 2) < response.length()) {
+                    response = response.substring(pos + 2, response.length()).replace("\\n", "").trim(); // NOI18N
+                }
+            }
+        }
+        return response.length() > 0 ? response : null;
     }
     
     public Map<String, TypeInfo> getTypeInfoCache() {

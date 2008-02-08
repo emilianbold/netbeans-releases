@@ -209,10 +209,16 @@ public class FacesContainer {
         try {
             Thread.currentThread().setContextClassLoader(loader);
             facesContext.setDesignContext(null);
+            // Remove the FacesContext current instance Cache in the Factory Finder
             facesContext.release();
+            // Remove the Factory instance Cache in the Factory Finder
             FactoryFinder.releaseFactories();
+            // Remove the ClassLoader Cache in the Commons Log Factory
             releaseCommonsLogFactory();
+            // Remove the ClassLoader Cache in the FacesConfigurListener
             configureListener.contextDestroyed(new ServletContextEvent(context));
+            // Remove the ClassLoader Cache in the Woodstock Theme Reference
+            releaseThemeResource();
         } finally {
             Thread.currentThread().setContextClassLoader(oldContextClassLoader);
         }
@@ -345,8 +351,14 @@ public class FacesContainer {
             if (facesContext != null) {
                 facesContext.resetApplication();
             }
+            // Remove the Factory instance Cache in the Factory Finder
             FactoryFinder.releaseFactories();
+            // Remove the ClassLoader Cache in the Commons Log Factory
             releaseCommonsLogFactory();
+            // Remove the ClassLoader Cache in the FacesConfigurListener
+            configureListener.contextDestroyed(new ServletContextEvent(context));
+            // Remove the ClassLoader Cache in the Woodstock Theme Reference
+            releaseThemeResource();
             configureListener.contextDestroyed(new ServletContextEvent(context));
         } catch (Exception exc) {
             exc.printStackTrace();
@@ -375,8 +387,8 @@ public class FacesContainer {
     private void releaseCommonsLogFactory(){
         ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
         try {
-            Class<?> Klass = Class.forName("com.sun.org.apache.commons.logging.LogFactory", false, classLoader);
-            Method releaseFactory = Klass.getMethod("release", ClassLoader.class);
+            Class<?> logFactoryClass = Class.forName("com.sun.org.apache.commons.logging.LogFactory", false, classLoader);
+            Method releaseFactory = logFactoryClass.getMethod("release", ClassLoader.class);
             releaseFactory.invoke(null, loader);
 
         } catch (NoSuchMethodException ex) {
@@ -393,6 +405,31 @@ public class FacesContainer {
             Exceptions.printStackTrace(ex);
         }
     }
+    
+    // Bug Fix: 125082
+    private void releaseThemeResource(){
+        ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
+        try {
+            Class<?> themeResourcesClass = Class.forName("com.sun.webui.theme.ThemeResources", false, classLoader);
+            Class<?> resourceBundleThemeClass = Class.forName("com.sun.webui.theme.ResourceBundleTheme", false, classLoader);
+            Method releaseThemeResource = resourceBundleThemeClass.getMethod("getInstance", themeResourcesClass);
+            releaseThemeResource.invoke(null, (Object)null);
+
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
 
     public synchronized String findComponentClass(String tagName, String taglibUri) throws JsfTagSupportException {
         String errorMessage = org.openide.util.NbBundle.getMessage(FacesContainer.class, "JSF_COMPONENT_NOT_FOUND", new Object[]{tagName, taglibUri});

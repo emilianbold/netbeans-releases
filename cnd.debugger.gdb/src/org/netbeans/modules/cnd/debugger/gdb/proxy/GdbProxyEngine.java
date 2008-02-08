@@ -236,7 +236,7 @@ public class GdbProxyEngine {
         
         switch (msg.charAt(0)) {
             case '^': // result-record
-                if (token == currentToken && msg.equals("^done")) {
+                if (token == currentToken && msg.equals("^done")) { // NOI18N
                     currentToken = -1;
                 }
                 debugger.resultRecord(token, msg);
@@ -339,10 +339,6 @@ public class GdbProxyEngine {
     
     private GdbLogger getLogger() {
         return gdbProxy.getLogger();
-    }
-    
-    class TokenList extends LinkedList {
-        
     }
     
     private static class CommandInfo {

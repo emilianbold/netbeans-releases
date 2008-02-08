@@ -70,6 +70,9 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.editor.SettingsNames;
@@ -77,11 +80,14 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceAlias;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.ParamStr;
-import org.netbeans.modules.cnd.editor.cplusplus.CCSettingsNames;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 
@@ -291,10 +297,116 @@ public abstract class CsmResultItem
 
     boolean defaultAction(JTextComponent component, String addText) {
         int substOffset = substituteOffset;
-        if (substOffset == -1)
+        if (substOffset == -1) {
             substOffset = component.getCaret().getDot();
+        }
         CsmResultItem.toAdd = addText;
-        return substituteText(component, substOffset, component.getCaret().getDot() - substOffset, false);
+        if (substituteText(component, substOffset, component.getCaret().getDot() - substOffset, false)) {
+            CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
+            BaseDocument doc = (BaseDocument) component.getDocument();
+            Object ob = getAssociatedObject();
+            if (CsmKindUtilities.isCsmObject(ob)) {
+                CsmFile currentFile = CsmUtilities.getCsmFile(doc, false);
+                if (!inclResolver.isObjectVisible(currentFile, (CsmObject) ob)) {
+                    String include = inclResolver.getIncludeDirective(currentFile, (CsmObject) ob);
+
+                    if (include.length() != 0) {
+                        insertInclude(component, currentFile, include, include.charAt(include.length() - 1) == '>');
+                    }
+                }
+            } else {
+                System.err.println("not yet handled object " + ob);
+            }
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    // Inserts include derctive into document
+    private void insertInclude(JTextComponent component, CsmFile currentFile, String include, boolean isSystem) {
+        BaseDocument doc = (BaseDocument) component.getDocument();
+        CsmInclude lastInclude = null;
+        boolean isLastIncludeTypeMatch = false;
+        for (CsmInclude inc : currentFile.getIncludes()) {
+            if (inc.isSystem() == isSystem) {
+                lastInclude = inc;
+                isLastIncludeTypeMatch = true;
+            } else {
+                if (lastInclude == null || (!isLastIncludeTypeMatch && !isSystem)) {
+                    lastInclude = inc;
+                }
+            }
+        }
+        doc.atomicLock();
+        try {
+            if (lastInclude != null) {
+                if (isLastIncludeTypeMatch) {
+                    doc.insertString(lastInclude.getEndOffset(), "\n" + include, null); // NOI18N
+                } else if (!isSystem) {
+                    doc.insertString(lastInclude.getEndOffset(), "\n\n" + include, null); // NOI18N
+                } else {
+                    doc.insertString(lastInclude.getStartOffset(), include + "\n\n", null); // NOI18N
+                }
+            } else {
+                TokenSequence<CppTokenId> ts;
+                ts = CndLexerUtilities.getCppTokenSequence(component, 0);
+                if (ts != null) {
+                    int offset = getIncludeOffsetFromTokenSequence(ts);
+                    if (offset == 0) {
+                        doc.insertString(offset, "\n" + include + "\n\n", null); // NOI18N
+                    } else {
+                        doc.insertString(offset, "\n\n" + include + "\n", null); // NOI18N
+                    }
+                }
+            }
+        } catch (BadLocationException e) {
+            // Can't update
+        } finally {
+            doc.atomicUnlock();
+        }
+    }
+
+    // Finds place for include insertion in case if there is no other includes in document
+    private int getIncludeOffsetFromTokenSequence(TokenSequence<CppTokenId> ts) {
+        ts.moveStart();
+        if (!ts.moveNext()) {
+            return 0;
+        }
+        while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                ts.token().id().equals(CppTokenId.NEW_LINE)) {
+            if (!ts.moveNext()) {
+                return 0;
+            }
+        }
+        if (ts.token().id().equals(CppTokenId.BLOCK_COMMENT) ||
+                ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT)) {
+            if (!ts.moveNext()) {
+                return 0;
+            }
+            int firstCommentEndOffset = ts.offset();
+            int newLineNumber = 0;
+            while (ts.token().id().equals(CppTokenId.WHITESPACE) ||
+                    ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                if (ts.token().id().equals(CppTokenId.NEW_LINE)) {
+                    newLineNumber++;
+                }
+                if (!ts.moveNext()) {
+                    return 0;
+                }
+            }
+            if (ts.token().id().equals(CppTokenId.BLOCK_COMMENT) ||
+                    ts.token().id().equals(CppTokenId.DOXYGEN_COMMENT)) {
+                return firstCommentEndOffset;
+            } else {
+                if (newLineNumber > 1) {
+                    return firstCommentEndOffset;
+                }
+                return 0;
+            }
+        }
+        return 0;
     }
     
     protected String getReplaceText() {
@@ -700,15 +812,7 @@ public abstract class CsmResultItem
                         return substed;
                     }
                     int ind = substituteExp.getParameterCount() - 1;
-                    boolean addSpace = false;
-                    Formatter f = doc.getFormatter();
-                    if (f instanceof ExtFormatter) {
-                        Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
-                        o = Settings.getValue(doc.getKitClass(), CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
-                        if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                            addSpace = true;
-                        }
-                    }
+                    boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceAfterComma();
                     try {
                         if (addSpace && (ind == 0 || (offset > 0 && Character.isWhitespace(DocumentUtilities.getText(doc, offset - 1, 1).charAt(0))))) {
                             addSpace = false;
@@ -725,16 +829,11 @@ public abstract class CsmResultItem
 
             default:
                 text = getItemText();
-                boolean addSpace = false;
+                boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceBeforeParenthesis();
                 boolean addClosingParen = false;
                 Formatter f = doc.getFormatter();
                 if (f instanceof ExtFormatter) {
-                    Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
-                    o = Settings.getValue(doc.getKitClass(), CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
-                    if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                        addSpace = true;
-                    }
-                    o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
+                    Object o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
                     o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
                     if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                         addClosingParen = true;
@@ -846,17 +945,12 @@ public abstract class CsmResultItem
                             text = ")"; // NOI18N
                     } else { // one or more parameters
                         int ind = substituteExp.getParameterCount() - 1;
-                        boolean addSpace = false;
+                        boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceAfterComma();
                         boolean addClosingParen = false;
                         Formatter f = doc.getFormatter();
                         if (f instanceof ExtFormatter) {
                             // XXX CPP settings
-                            Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_AFTER_COMMA);
-                            if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                                addSpace = true;
-                            }
-                            // XXX CPP settings
-                            o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
+                            Object o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
                             if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                                 addClosingParen = true;
                             }
@@ -896,16 +990,11 @@ public abstract class CsmResultItem
                     
                 default:
                     text = getItemText();
-                    boolean addSpace = false;
+                    boolean addSpace = CodeStyle.getDefault(doc).getFormatSpaceBeforeParenthesis();
                     boolean addClosingParen = false;
                     Formatter f = doc.getFormatter();
                     if (f instanceof ExtFormatter) {
-//                        Object o = ((ExtFormatter)f).getSettingValue(CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
-                        Object o = Settings.getValue(doc.getKitClass(), CCSettingsNames.CC_FORMAT_SPACE_BEFORE_PARENTHESIS);
-                        if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
-                            addSpace = true;
-                        }
-                        o = Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
+                        Object o =Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION);
 //                        o = ((ExtFormatter)f).getSettingValue(SettingsNames.PAIR_CHARACTERS_COMPLETION);
                         if ((o instanceof Boolean) && ((Boolean)o).booleanValue()) {
                             addClosingParen = true;

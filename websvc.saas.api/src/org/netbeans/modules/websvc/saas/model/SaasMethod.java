@@ -39,15 +39,9 @@
 
 package org.netbeans.modules.websvc.saas.model;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method.Input;
 import org.netbeans.modules.websvc.saas.model.jaxb.Method.Output;
-import org.netbeans.modules.websvc.saas.model.wadl.Resource;
-import org.netbeans.modules.websvc.saas.util.SaasUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
