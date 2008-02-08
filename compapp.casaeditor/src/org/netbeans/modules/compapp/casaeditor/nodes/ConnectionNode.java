@@ -141,6 +141,15 @@ public class ConnectionNode extends CasaNode {
         // Add JBI extensions on connection
         ExtensionPropertyHelper.setupExtensionPropertySheet(this,
                 casaConnection, sheet, "connection", "all"); // NOI18N
+
+//        CasaComponent component = casaConnection;
+//        EndpointProperty endpointProperty = new EndpointProperty(this, component,
+//                "propertyType",
+//                String.class,
+//                "propertyName",
+//                "displayName",
+//                "description");
+//        providerProperties.put(endpointProperty);
     }
 
     //The navigator title is unable to decode HTML text and showing the encoded chars (&#60;-&#62;) as is...
@@ -224,7 +233,7 @@ public class ConnectionNode extends CasaNode {
 
         if (isConnectionConfiguredWithQoS(casaConnection)) {
             actions.add(new ClearConfigExtensionsAction(
-                    NbBundle.getMessage(ConnectionNode.class, 
+                    NbBundle.getMessage(ConnectionNode.class,
                     "CLEAR_QOS_CONFIG"), this));  // NOI18N
         }
     }

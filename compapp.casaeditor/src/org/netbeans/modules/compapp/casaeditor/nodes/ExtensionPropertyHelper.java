@@ -58,6 +58,7 @@ import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionAttribute;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionElement;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiExtensionInfo;
 import org.netbeans.modules.compapp.projects.jbi.api.JbiInstalledExtensionInfo;
+import org.netbeans.modules.compapp.projects.jbi.api.Endpoint;
 import org.openide.nodes.Sheet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,12 +73,14 @@ public class ExtensionPropertyHelper {
     private static Logger logger = Logger.getLogger(
             "org.netbeans.modules.compapp.casaeditor.nodes.ExtensionPropertyHelper"); // NOI18N
            
-    private static Map<String, Class> classMap = new HashMap<String, Class>();
+    private static Map<JbiExtensionAttribute.Type, Class> classMap = 
+            new HashMap<JbiExtensionAttribute.Type, Class>();
     
     static {
-        classMap.put("String", String.class); // NOI18N
-        classMap.put("Integer", Integer.class); // NOI18N
-        classMap.put("QName", QName.class); // NOI18N
+        classMap.put(JbiExtensionAttribute.Type.STRING, String.class); // NOI18N
+        classMap.put(JbiExtensionAttribute.Type.INTEGER, Integer.class); // NOI18N
+        classMap.put(JbiExtensionAttribute.Type.QNAME, QName.class); // NOI18N
+        classMap.put(JbiExtensionAttribute.Type.ENDPOINT, Endpoint.class); // NOI18N 
     }
     
     private static String EXTENSION_TARGET_ALL = "all"; // NOI18N
@@ -261,10 +264,13 @@ public class ExtensionPropertyHelper {
             if (attributes != null) {
                 for (JbiExtensionAttribute attr : extElement.getAttributes()) {
                     String attrName = attr.getName();
-                    String attrType = attr.getType();
+                    JbiExtensionAttribute.Type attrType = attr.getType();
                     String attrDescription = attr.getDescription();
+                    boolean codeGen = attr.getCodeGen();
 
-                    lastEE.setAttribute(attrName, ""); // NOI18N
+                    if (codeGen) {
+                        lastEE.setAttribute(attrName, ""); // NOI18N
+                    }
 
                     if (install) {
                         PropertyUtils.installExtensionProperty(
@@ -351,7 +357,7 @@ public class ExtensionPropertyHelper {
         if (attributes != null) {
             for (JbiExtensionAttribute attr : attributes) {
                 String attrName = attr.getName();
-                String attrType = attr.getType();
+                JbiExtensionAttribute.Type attrType = attr.getType();
                 String attrDescription = attr.getDescription();
                 PropertyUtils.installExtensionProperty(
                     extSheetSet, node, casaExtPoint, 
