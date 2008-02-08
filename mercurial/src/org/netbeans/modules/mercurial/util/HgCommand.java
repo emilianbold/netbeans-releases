@@ -2520,11 +2520,12 @@ public class HgCommand {
     }
 
     private static void handleError(List<String> command, List<String> list, String message) throws HgException{
-        Mercurial.LOG.log(Level.WARNING, "command: " + command); // NOI18N
-        Mercurial.LOG.log(Level.WARNING, "output: " + list); // NOI18N
-        
+        Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
+        Mercurial.LOG.log(Level.WARNING, "output: " + HgUtils.replaceHttpPassword(list)); // NOI18N
+
         HgUtils.outputMercurialTabInRed(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ERR")); // NOI18N
-        HgUtils.outputMercurialTab(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_INFO_ERR", command, list)); // NOI18N
+        HgUtils.outputMercurialTab(NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_INFO_ERR", 
+                HgUtils.replaceHttpPassword(command), HgUtils.replaceHttpPassword(list))); // NOI18N
 
         throw new HgException(message);
     }

@@ -71,6 +71,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -113,6 +114,8 @@ import org.netbeans.modules.web.jsf.palette.items.JsfForm;
 import org.netbeans.modules.web.jsf.palette.items.JsfTable;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.AnnotationInfo;
 import org.netbeans.modules.web.jsf.wizards.JSFClientGenerator.TypeInfo;
+import org.netbeans.modules.web.spi.webmodule.WebModuleExtender;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -210,8 +213,8 @@ public class JSFClientGenerator {
         //automatically add JSF framework if it is not added
         JSFFrameworkProvider fp = new JSFFrameworkProvider();
         if (!fp.isInWebModule(wm)) {
-            fp.createWebModuleExtender(wm, ExtenderController.create());
-            fp.extendImpl(wm);
+            WebModuleExtender wme = fp.createWebModuleExtender(wm, ExtenderController.create());
+            wme.extend(wm);
         }
         
         controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, simpleControllerName, 
@@ -366,7 +369,7 @@ public class JSFClientGenerator {
         List<String> idProperties = new ArrayList<String>();
         for (ElementHandle<ExecutableElement> handle : toOneRelMethods) {
             ExecutableElement method = handle.resolve(controller);
-            ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(controller.getTypes(), method, fieldAccess);
+            ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(controller, method, fieldAccess);
             if (otherSide != null) {
                 TypeElement relClass = (TypeElement) otherSide.getEnclosingElement();
                 classNames.add(relClass.getQualifiedName().toString());
@@ -386,7 +389,7 @@ public class JSFClientGenerator {
                 }
             }
             newSb.append("<h:commandLink action=\"#{" + managedBean + ".createFrom" + 
-                    classNames.get(i) + "}\" value=\"Create\" rendered=\"#{" + managedBean + "." + fieldName + "." + idProperties.get(i) + " != null" + negativeCondition.toString() + "}\"/>\n");
+                    simpleClassName(classNames.get(i)) + "}\" value=\"Create\" rendered=\"#{" + managedBean + "." + fieldName + "." + idProperties.get(i) + " != null" + negativeCondition.toString() + "}\"/>\n");
             if (i > 0) {
                 newRenderDefaultOption.append(" and ");
             }
@@ -1020,16 +1023,19 @@ public class JSFClientGenerator {
                     methodInfo = new MethodInfo("getDetail" + simpleEntityName + "s", publicModifier, "javax.faces.model.DataModel", null, null, null, "return model;", null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
-                    //ensure imports -- mbohm: not working; only last one taking effect!
-                    TreeMakerUtils.createImport(workingCopy, "javax.faces.model.ListDataModel");
-                    TreeMakerUtils.createImport(workingCopy, "java.util.List");
-                    TreeMakerUtils.createImport(workingCopy, "java.util.ArrayList");
-                    TreeMakerUtils.createImport(workingCopy, "javax.persistence.Query");
-                    TreeMakerUtils.createImport(workingCopy, "javax.faces.application.FacesMessage");
-                    TreeMakerUtils.createImport(workingCopy, "javax.faces.context.FacesContext");
+                    String[] importFqs = {"javax.faces.model.ListDataModel",
+                                "java.util.ArrayList",
+                                "javax.persistence.Query",
+                                "javax.faces.application.FacesMessage",
+                                "javax.faces.context.FacesContext"
+                    };
+                    CompilationUnitTree modifiedImportCut = null;
+                    for (String importFq : importFqs) {
+                        modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);
+                    }
                     
                     TypeInfo[] typeInfos = {new TypeInfo("java.util.Collection", new String[]{entityClass})};
-                    methodInfo = new MethodInfo("setDetail" + simpleEntityName + "s", publicModifier, new TypeInfo("void"), null, typeInfos, new String[]{"m"}, "model = new javax.faces.model.ListDataModel(new java.util.ArrayList(m));", null, null);
+                    methodInfo = new MethodInfo("setDetail" + simpleEntityName + "s", publicModifier, new TypeInfo("void"), null, typeInfos, new String[]{"m"}, "model = new ListDataModel(new ArrayList(m));", null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);
                     
                     String bodyText = null;
@@ -1066,17 +1072,16 @@ public class JSFClientGenerator {
                         ElementHandle<ExecutableElement> handle = it.next();
                         ExecutableElement m = handle.resolve(workingCopy);
                         int multiplicity = JsfForm.isRelationship(workingCopy, m, isFieldAccess);
-                        ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(workingCopy.getTypes(), m, isFieldAccess);
-                        //was not being executed in nb55, and is generating broken code now. comment out for the time being.
-                        /*
+                        ExecutableElement otherSide = JsfForm.getOtherSideOfRelation(workingCopy, m, isFieldAccess);
+
                         if (otherSide != null) {
                             TypeElement relClass = (TypeElement)otherSide.getEnclosingElement();
                             boolean isRelFieldAccess = JsfForm.isFieldAccess(relClass);
                             int otherSideMultiplicity = JsfForm.isRelationship(workingCopy, otherSide, isRelFieldAccess);
                             TypeMirror t = m.getReturnType();
-                            List<? extends TypeParameterElement> typeParameters = m.getTypeParameters();
-                            boolean isCollection = typeParameters.size() > 0;
-                            String relType = JsfForm.stripCollection(t, workingCopy.getTypes()).toString();
+                            TypeMirror tstripped = JsfForm.stripCollection(t, workingCopy.getTypes());
+                            boolean isCollection = t != tstripped;
+                            String relType = tstripped.toString();
                             String simpleRelType = simpleClassName(relType); //just "Pavilion"
                             String relTypeReference = simpleRelType;
                             String mName = m.getSimpleName().toString();
@@ -1209,11 +1214,11 @@ public class JSFClientGenerator {
 //                    javaClass.getFeatures().add(controllerAccess);
                             
                             if (isInjection) {
-                                bodyText = "javax.faces.context.FacesContext context = javax.faces.context.FacesContext.getCurrentInstance();\n" + 
+                                bodyText = "FacesContext context = FacesContext.getCurrentInstance();\n" + 
                                         "return (" + simpleRelType +"Controller) context.getApplication().getELResolver().getValue(\n context.getELContext(), null, \"" + 
                                         getManagedBeanName(simpleRelType) +"\");\n";
                             } else {
-                                bodyText = "javax.faces.context.FacesContext context = javax.faces.context.FacesContext.getCurrentInstance();\n" + 
+                                bodyText = "FacesContext context = FacesContext.getCurrentInstance();\n" + 
                                         "return (" + simpleRelType +"Controller) context.getApplication().getVariableResolver().resolveVariable(\n context, \""  +
                                         getManagedBeanName(simpleRelType) +"\");\n";
                             }
@@ -1255,8 +1260,9 @@ public class JSFClientGenerator {
                             
                             if (multiplicity == JsfForm.REL_TO_MANY && otherSideMultiplicity == JsfForm.REL_TO_MANY) {
                                 //methods needed to add items into N:M relationship
+                                modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.List");
                                 bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                                        "javax.persistence.Query q = em.createQuery(\"select o from " + simpleRelType + " as o where " + 
+                                        "Query q = em.createQuery(\"select o from " + simpleRelType + " as o where " + 
                                         (otherSideMultiplicity == JsfForm.REL_TO_MANY ? ":param not member of o." + getPropNameFromMethod(otherName) + "\");\n" : 
                                             "o." + getPropNameFromMethod(otherName) + " <> :param or o." + getPropNameFromMethod(otherName) + " IS NULL\");\n") + 
                                         "q.setParameter(\"param\", " + fieldName + ");\n" + 
@@ -1414,7 +1420,7 @@ public class JSFClientGenerator {
                         } else {
                             ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "Cannot detect other side of a relationship.");
                         }
-                        */
+
                     }
                     
                     methodInfo = new MethodInfo("get" + simpleEntityName, publicModifier, entityClass, null, null, null, "return " + fieldName + ";", null, null);
@@ -1577,9 +1583,9 @@ public class JSFClientGenerator {
 //            javaClass.getFeatures().add(getEntities);
 
                     String dmReferenceName = "javax.faces.model.DataModel";
-                    String ldmReferenceName = "javax.faces.model.ListDataModel";
+                    String ldmReferenceName = "ListDataModel";
                     bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                        "javax.persistence.Query q = em.createQuery(\"select object(o) from " + simpleEntityName +" as o\");\n" + 
+                        "Query q = em.createQuery(\"select object(o) from " + simpleEntityName +" as o\");\n" + 
                         "q.setMaxResults(batchSize);\n" + 
                         "q.setFirstResult(firstItem);\n" + 
                         "model = new " + ldmReferenceName + "(q.getResultList());\n" + 
@@ -1614,14 +1620,14 @@ public class JSFClientGenerator {
 //            findById.getParameters().add(idParameter);
 //            javaClass.getFeatures().add(findById);
 
-                    bodyText = "javax.faces.application.FacesMessage facesMsg = new javax.faces.application.FacesMessage(javax.faces.application.FacesMessage.SEVERITY_ERROR, msg, msg);\n" + //NOI18N
-                        "javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();\n" + //NOI18N
+                    bodyText = "FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, msg);\n" + //NOI18N
+                        "FacesContext fc = FacesContext.getCurrentInstance();\n" + //NOI18N
                         "fc.addMessage(null, facesMsg);"; //NOI18N
                     methodInfo = new MethodInfo("addErrorMessage", publicStaticModifier, "void", null, new String[]{"java.lang.String"}, new String[]{"msg"}, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
-                    bodyText = "javax.faces.application.FacesMessage facesMsg = new javax.faces.application.FacesMessage(javax.faces.application.FacesMessage.SEVERITY_INFO, msg, msg);\n" + //NOI18N
-                        "javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();\n" + //NOI18N
+                    bodyText = "FacesMessage facesMsg = new FacesMessage(FacesMessage.SEVERITY_INFO, msg, msg);\n" + //NOI18N
+                        "FacesContext fc = FacesContext.getCurrentInstance();\n" + //NOI18N
                         "fc.addMessage(\"successInfo\", facesMsg);"; //NOI18N
                     methodInfo = new MethodInfo("addSuccessMessage", publicStaticModifier, "void", null, new String[]{"java.lang.String"}, new String[]{"msg"}, bodyText, null, null);
                     modifiedClassTree = TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
@@ -1690,8 +1696,9 @@ public class JSFClientGenerator {
 //            // </editor-fold>
 
                     if (!alreadyGenerated) {
+                        modifiedImportCut = TreeMakerUtils.createImport(workingCopy, modifiedImportCut, "java.util.List");
                         bodyText = "EntityManager em = getEntityManager();\n try{\n" + 
-                                "java.util.List <" + relTypeReference + "> l = (java.util.List <" + relTypeReference +">) em.createQuery(\"select o from " + simpleRelType + " as o\").getResultList();\n" + 
+                                "List <" + relTypeReference + "> l = (List <" + relTypeReference +">) em.createQuery(\"select o from " + simpleRelType + " as o\").getResultList();\n" + 
                                 "SelectItem select[] = new SelectItem[l.size()];\n" + 
                                 "int i = 0;\n for(" + relTypeReference + " x : l) {\n" + 
                                 "select[i++] = new SelectItem(x);\n}\nreturn select;\n" + 
@@ -2751,10 +2758,11 @@ public class JSFClientGenerator {
             return wc.getTreeMaker().Modifiers(flags, annotationTrees);
         }
         
-        //currently not working
-        public static void createImport(WorkingCopy wc, String fq) {
-            CompilationUnitTree cut = wc.getCompilationUnit();
-            List<? extends ImportTree> imports = cut.getImports();
+        public static CompilationUnitTree createImport(WorkingCopy wc, CompilationUnitTree modifiedCut, String fq) {
+            if (modifiedCut == null) {
+                modifiedCut = wc.getCompilationUnit();  //use committed cut as modifiedCut
+            }
+            List<? extends ImportTree> imports = modifiedCut.getImports();
             boolean found = false;
             for (ImportTree imp : imports) {
                if (fq.equals(imp.getQualifiedIdentifier().toString())) {
@@ -2765,11 +2773,13 @@ public class JSFClientGenerator {
             if (!found) {
                 TreeMaker make = wc.getTreeMaker();
                 CompilationUnitTree newCut = make.addCompUnitImport(
-                    cut, 
+                    modifiedCut, 
                     make.Import(make.Identifier(fq), false)
-                );
-                wc.rewrite(cut, newCut);
+                );                                              //create a newCut from modifiedCut
+                wc.rewrite(wc.getCompilationUnit(), newCut);    //replace committed cut with newCut in change map
+                return newCut;                                  //return the newCut we just created
             }
+            return modifiedCut; //no newCut created from modifiedCut, so just return modifiedCut
         }
         
     }

@@ -39,19 +39,23 @@
 
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
-import org.netbeans.modules.websvc.saas.model.WadlSaas;
-import org.netbeans.modules.websvc.saas.model.jaxb.Method;
+import org.netbeans.modules.websvc.saas.model.SaasMethod;
+import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 
 /**
  *
  * @author nam
  */
 public class WadlSaasMethodNode extends WadlMethodNode {
-    private Method saasMethod;
+    private SaasMethod saasMethod;
     
-    public WadlSaasMethodNode(WadlSaas wadlSaas, Method saasMethod) {
-        super(wadlSaas, null, null);
+    public WadlSaasMethodNode(WadlSaasMethod saasMethod) {
+        super(saasMethod.getSaas(), saasMethod.getResourcePath(), saasMethod.getWadlMethod());
         this.saasMethod = saasMethod;
     }
 
+    @Override
+    public String getDisplayName() {
+        return saasMethod.getName();
+    }
 }

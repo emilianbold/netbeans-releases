@@ -98,6 +98,8 @@ public class TreeLoader extends LazyTreeLoader {
     
     @Override
     public boolean loadTreeFor(final ClassSymbol clazz) {
+        assert JavaSourceAccessor.getINSTANCE().isJavaCompilerLocked();
+        
         if (clazz != null) {
             try {
                 FileObject fo = SourceUtils.getFile(clazz, cpInfo);                
@@ -105,15 +107,17 @@ public class TreeLoader extends LazyTreeLoader {
                 if (fo != null && jti != null) {
                     Log.instance(context).nerrors = 0;
                     JavaFileObject jfo = FileObjects.nbFileObject(fo, null);
+                    Map<ClassSymbol, StringBuilder> oldCouplingErrors = couplingErrors;
                     try {
                         couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
                         jti.analyze(jti.enter(jti.parse(jfo)));
                         dumpSymFile(clazz);
                         return true;
                     } finally {
-                        for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet())
+                        for (Map.Entry<ClassSymbol, StringBuilder> e : couplingErrors.entrySet()) {
                             logCouplingError(e.getKey(), e.getValue().toString());
-                        couplingErrors = null;
+                        }
+                        couplingErrors = oldCouplingErrors;
                     }
                 }
             } catch (IOException ex) {

@@ -55,7 +55,7 @@ import org.openide.nodes.Node;
  */
 public class ExternalReferenceDecorator {
 
-    private SchemaPanel panel;
+    private SchemaImportGUI panel;
     private static String SCHEMA = "xsd";    
     private static int counter = 0;
     /** Prefix for the namespace prefix values (e.g. "ns"). */
@@ -63,7 +63,7 @@ public class ExternalReferenceDecorator {
    /** Hashmap to keep track of prefixes */
     private Map prefixMap = new HashMap();
    
-    public ExternalReferenceDecorator(SchemaPanel panel){
+    public ExternalReferenceDecorator(SchemaImportGUI panel){
        this.panel = panel;
     }
     /**

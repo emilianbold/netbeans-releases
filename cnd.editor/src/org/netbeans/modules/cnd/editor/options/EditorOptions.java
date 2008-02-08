@@ -165,6 +165,31 @@ public class EditorOptions {
     public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
     public static final boolean alignMultilineMethodParamsDefault = false;
 
+    public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
+    public static final boolean indentCasesFromSwitchDefault = false;
+    
+    public static final String newLineCatch = "newLineCatch"; //NOI18N
+    public static final boolean newLineCatchDefault = false;
+    public static final String newLineElse = "newLineElse"; //NOI18N
+    public static final boolean newLineElseDefault = false;
+    public static final String newLineWhile = "newLineWhile"; //NOI18N
+    public static final boolean newLineWhileDefault = false;
+
+    public static final String blankLinesBeforeClass = "blankLinesBeforeClass"; //NOI18N
+    public static final int blankLinesBeforeClassDefault = 1;    
+    public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
+    public static final int blankLinesAfterClassDefault = 0;    
+    public static final String blankLinesAfterClassHeader = "blankLinesAfterClassHeader"; //NOI18N
+    public static final int blankLinesAfterClassHeaderDefault = 0;    
+    public static final String blankLinesBeforeFields = "blankLinesBeforeFields"; //NOI18N
+    public static final int blankLinesBeforeFieldsDefault = 0;    
+    public static final String blankLinesAfterFields = "blankLinesAfterFields"; //NOI18N
+    public static final int blankLinesAfterFieldsDefault = 0;    
+    public static final String blankLinesBeforeMethods = "blankLinesBeforeMethods"; //NOI18N
+    public static final int blankLinesBeforeMethodsDefault = 1;    
+    public static final String blankLinesAfterMethods = "blankLinesAfterMethods"; //NOI18N
+    public static final int blankLinesAfterMethodsDefault = 0;    
+
     /**
      * Whether insert extra new-line before the compound bracket or not.
      * Values: java.lang.Boolean instances
@@ -243,7 +268,8 @@ public class EditorOptions {
     
     private static final Preferences preferences = NbPreferences.forModule(EditorOptions.class);
 
-    private static final String DEFAULT_PROFILE = "default"; // NOI18N
+    private static final String C_DEFAULT_PROFILE = "c_default"; // NOI18N
+    private static final String CPP_DEFAULT_PROFILE = "cpp_default"; // NOI18N
 
     public static CodeStyleProducer codeStyleProducer;
 
@@ -267,6 +293,12 @@ public class EditorOptions {
         defaults.put(CC_FORMAT_LEADING_SPACE_IN_COMMENT,defaultCCFormatLeadingSpaceInComment);
         defaults.put(CC_FORMAT_LEADING_STAR_IN_COMMENT,defaultCCFormatLeadingStarInComment);
         defaults.put(CC_FORMAT_STATEMENT_CONTINUATION_INDENT,defaultCCFormatStatementContinuationIndent);
+
+        defaults.put(indentCasesFromSwitch, indentCasesFromSwitchDefault);
+    
+        defaults.put(newLineCatch,newLineCatchDefault);
+        defaults.put(newLineElse,newLineElseDefault);
+        defaults.put(newLineWhile,newLineWhileDefault);
 
         defaults.put(spaceBeforeWhile,spaceBeforeWhileDefault);
         defaults.put(spaceBeforeElse,spaceBeforeElseDefault);
@@ -312,6 +344,14 @@ public class EditorOptions {
         defaults.put(spaceAfterColon,spaceAfterColonDefault);
         defaults.put(spaceAfterTypeCast,spaceAfterTypeCastDefault);
     
+        defaults.put(blankLinesBeforeClass,blankLinesBeforeClassDefault);
+        defaults.put(blankLinesAfterClass,blankLinesAfterClassDefault);
+        defaults.put(blankLinesAfterClassHeader,blankLinesAfterClassHeaderDefault);
+        defaults.put(blankLinesBeforeFields,blankLinesBeforeFieldsDefault);
+        defaults.put(blankLinesAfterFields,blankLinesAfterFieldsDefault);
+        defaults.put(blankLinesBeforeMethods,blankLinesBeforeMethodsDefault);
+        defaults.put(blankLinesAfterMethods,blankLinesAfterMethodsDefault);      
+        
         defaults.put(alignMultilineArrayInit,alignMultilineArrayInitDefault);
         defaults.put(alignMultilineCallArgs,alignMultilineCallArgsDefault);
         defaults.put(alignMultilineMethodParams,alignMultilineMethodParamsDefault);
@@ -321,12 +361,18 @@ public class EditorOptions {
         return defaults.get(id);
     }
     
-    public static String getCurrentProfileId() {
-        return DEFAULT_PROFILE;
+    public static String getCurrentProfileId(CodeStyle.Language language) {
+        switch(language){
+            case C:
+                return C_DEFAULT_PROFILE;
+            case CPP:
+            default:
+                return CPP_DEFAULT_PROFILE;
+        }
     }
 
-    public static Object getLastValue(String optionID) {
-        Preferences p = lastValues == null ? getPreferences(getCurrentProfileId()) : lastValues;
+    public static Object getLastValue(CodeStyle.Language language, String optionID) {
+        Preferences p = lastValues == null ? getPreferences(getCurrentProfileId(language)) : lastValues;
         Object def = getDefault(optionID);
         if (def instanceof Integer) {
             return p.getInt(optionID, (Integer)def);
@@ -340,8 +386,8 @@ public class EditorOptions {
         return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").node(profileId);
     }
 
-    public static CodeStyle createCodeStyle(Preferences p) {
-        CodeStyle.getDefault(null);
+    public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p) {
+        CodeStyle.getDefault(language);
         return codeStyleProducer.create(p);
     }
 

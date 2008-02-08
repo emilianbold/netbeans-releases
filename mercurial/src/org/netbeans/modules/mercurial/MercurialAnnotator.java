@@ -591,9 +591,9 @@ public class MercurialAnnotator extends VCSAnnotator {
             }          
         }
         if (fileName != null)
-            return uptodateFormat.format(new Object [] { name, " [" + fileName + "]" }); // NOI18N
+            return uptodateFormat.format(new Object [] { nameHtml, " [" + fileName + "]" }); // NOI18N
         else
-            return uptodateFormat.format(new Object [] { name, "" }); // NOI18N
+            return uptodateFormat.format(new Object [] { nameHtml, "" }); // NOI18N
     }
     
     private boolean isMoreImportant(FileInformation a, FileInformation b) {
