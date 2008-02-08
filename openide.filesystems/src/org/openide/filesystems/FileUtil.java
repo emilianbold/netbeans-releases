@@ -200,29 +200,30 @@ public final class FileUtil extends Object {
      * @since 7.0
      */
     public static FileObject createFolder (final File folder) throws IOException {
-        FileObject retval = null;
-        File root = getRoot(folder);
-        if (!root.exists()) {
+        File existingFolder = folder;
+        while(existingFolder != null && !existingFolder.isDirectory()) {
+            existingFolder = existingFolder.getParentFile();
+        }
+        if (existingFolder == null) {
             throw new IOException(folder.getAbsolutePath());
-        }
-        FileObject rootFo = FileUtil.toFileObject(root);
-        if (rootFo == null) {
-            throw new IllegalStateException("Cannot get a FileObject for " + root + " while trying to create " + folder +
-                "; URLMapper's=" + Lookup.getDefault().lookupAll(URLMapper.class));
-        }
-        final String relativePath = getRelativePath(root, folder);                                
+        }        
+                      
+        FileObject retval = null;
+        FileObject folderFo = FileUtil.toFileObject(existingFolder);        
+        assert folderFo != null : existingFolder.getAbsolutePath();
+        final String relativePath = getRelativePath(existingFolder, folder);
         try {
-            retval = FileUtil.createFolder(rootFo,relativePath);        
+            retval = FileUtil.createFolder(folderFo,relativePath);        
         } catch (IOException ex) {
             //thus retval = null;
         }
-        //if refresh needed because of external changes
+        //if refresh needed because of external changes        
         if (retval == null || !retval.isValid()) {
-            rootFo.getFileSystem().refresh(false);
-            retval = FileUtil.createFolder(rootFo,relativePath);
+            folderFo.getFileSystem().refresh(false);
+            retval = FileUtil.createFolder(folderFo,relativePath);
         }        
         assert retval != null;        
-        return retval;
+        return retval;        
     } 
     
     /**Returns FileObject for a data file.
@@ -235,23 +236,27 @@ public final class FileUtil extends Object {
      * @since 7.0
      */
     public static FileObject createData (final File data) throws IOException {        
-        FileObject retval = null;
-        File root = getRoot(data);
-        if (!root.exists()) {
+        File folder = data;
+        while(folder != null && !folder.isDirectory()) {
+            folder = folder.getParentFile();
+        }
+        if (folder == null) {
             throw new IOException(data.getAbsolutePath());
         }        
-        FileObject rootFo = FileUtil.toFileObject(root);        
-        assert rootFo != null : root.getAbsolutePath();
-        final String relativePath = getRelativePath(root, data);        
+                      
+        FileObject retval = null;
+        FileObject folderFo = FileUtil.toFileObject(folder);
+        assert folderFo != null : folder.getAbsolutePath();
+        final String relativePath = getRelativePath(folder, data);
         try {
-            retval = FileUtil.createData(rootFo,relativePath);        
+            retval = FileUtil.createData(folderFo,relativePath);        
         } catch (IOException ex) {
             //thus retval = null;
         }
         //if refresh needed because of external changes        
         if (retval == null || !retval.isValid()) {
-            rootFo.getFileSystem().refresh(false);
-            retval = FileUtil.createData(rootFo,relativePath);
+            folderFo.getFileSystem().refresh(false);
+            retval = FileUtil.createData(folderFo,relativePath);
         }        
         assert retval != null;        
         return retval;
