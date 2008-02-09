@@ -93,9 +93,9 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
     
     private final static String LOCAL_URL_HELP          = "file:///repository_path";              // NOI18N
     private final static String HTTP_URL_HELP           = "http://[username[:password]@]hostname/repository_path";      // NOI18N
-    private final static String HTTPS_URL_HELP          = "https://hostname/repository_path";     // NOI18N
+    private final static String HTTPS_URL_HELP          = "https://[username[:password]@]hostname/repository_path";     // NOI18N
     private final static String STATIC_HTTP_URL_HELP    = "static-http://hostname/repository_path";       // NOI18N
-    private final static String SSH_URL_HELP        = "ssh://hostname/repository_path";   // NOI18N   
+    private final static String SSH_URL_HELP            = "ssh://hostname/repository_path";   // NOI18N   
                
     private RepositoryPanel repositoryPanel;
     private boolean valid = true;
@@ -130,7 +130,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
         //repositoryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
         
         // retrieve the dialog size for the largest configuration
-        updateVisibility("svn+");                                                                       // NOI18N
+        updateVisibility("https:");                                                                       // NOI18N
         maxNeededSize = repositoryPanel.getPreferredSize();
 
         repositoryPanel.savePasswordCheckBox.setSelected(HgModuleConfig.getDefault().getSavePassword());
@@ -195,7 +195,7 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             // templates for supported connection methods        
             recentRoots.add(new RepositoryConnection("file:///"));      // NOI18N
             recentRoots.add(new RepositoryConnection("http://"));       // NOI18N
-            //recentRoots.add(new RepositoryConnection("https://"));      // NOI18N
+            recentRoots.add(new RepositoryConnection("https://"));      // NOI18N
             recentRoots.add(new RepositoryConnection("static-http://"));        // NOI18N
             recentRoots.add(new RepositoryConnection("ssh://"));        // NOI18N
         };
@@ -400,10 +400,10 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             repositoryPanel.tipLabel.setText(HTTP_URL_HELP);
             authFields = true;
             proxyFields = true;
-        //} else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
-            //repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
+        } else if(selectedUrlString.startsWith("https:")) {                     // NOI18N
+            repositoryPanel.tipLabel.setText(HTTPS_URL_HELP);
             //authFields = true;
-            //proxyFields = true;
+            proxyFields = true;
         } else if(selectedUrlString.startsWith("static-http:")) {                       // NOI18N
             repositoryPanel.tipLabel.setText(STATIC_HTTP_URL_HELP);
             authFields = true;
@@ -415,8 +415,8 @@ public class Repository implements ActionListener, DocumentListener, FocusListen
             repositoryPanel.tipLabel.setText(LOCAL_URL_HELP);
         } else {
             repositoryPanel.tipLabel.setText(NbBundle.getMessage(Repository.class, "MSG_Repository_Url_Help", new Object [] { // NOI18N
-                //LOCAL_URL_HELP, HTTP_URL_HELP, HTTPS_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
-                LOCAL_URL_HELP, HTTP_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
+                LOCAL_URL_HELP, HTTP_URL_HELP, HTTPS_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
+                //LOCAL_URL_HELP, HTTP_URL_HELP, STATIC_HTTP_URL_HELP, SSH_URL_HELP
             }));
         }
 

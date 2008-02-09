@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  * 
+ * Contributor(s):
+ * 
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,19 +37,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.debugger.gdb.utils;
+package org.netbeans.modules.websvc.saas.codegen.java.support;
+
+import org.netbeans.api.java.source.CancellableTask;
 
 /**
  *
- * @author gordonp
+ * @author PeterLiu
  */
-public interface CommandBufferCallbackProc {
-
-    public void callback(String info);
+public abstract class AbstractTask<P> implements CancellableTask<P> {
+    
+    /** Creates a new instance of AbstractTask */
+    public AbstractTask() {
+    }
+  
+    public void cancel() {};
 }
