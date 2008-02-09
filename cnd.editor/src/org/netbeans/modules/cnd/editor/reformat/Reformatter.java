@@ -71,7 +71,7 @@ public class Reformatter implements ReformatTask {
 
     public void reformat() throws BadLocationException {
         if (codeStyle == null){
-            codeStyle = CodeStyle.getDefault(null);
+            codeStyle = CodeStyle.getDefault(doc);
         }
         if (context != null) {
             for (Context.Region region : context.indentRegions()) {

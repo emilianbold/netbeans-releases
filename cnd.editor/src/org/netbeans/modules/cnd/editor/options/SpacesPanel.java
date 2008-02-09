@@ -27,6 +27,7 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.openide.util.NbBundle;
 
 /**
@@ -38,13 +39,15 @@ public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListen
 
     private static MyCategorySupport controller;
     private DefaultTreeModel model;
+    private CodeStyle.Language language;
     private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();    
     private JCheckBox renderer = new JCheckBox();
     
 
     /** Creates new form SpacesPanel */
-    public SpacesPanel() {
+    public SpacesPanel(CodeStyle.Language language) {
         initComponents();
+        this.language = language;
         model = createModel();
         spaceTree.setModel(model);
         spaceTree.setRootVisible(false);
@@ -236,12 +239,13 @@ public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListen
         return false;
     }
 
-    public static Category getController() {
+    public static Category getController(CodeStyle.Language language) {
         if (controller == null ) {
             Map<String,Object> force = new HashMap<String,Object>();
             controller =  new MyCategorySupport(
+                language,
                 "LBL_Spaces", // NOI18N
-                new SpacesPanel(), // NOI18N
+                new SpacesPanel(language), // NOI18N
                 NbBundle.getMessage(SpacesPanel.class, "SAMPLE_Spaces"),
                 force);
         }
@@ -266,8 +270,9 @@ public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListen
         
     private static class MyCategorySupport extends CategorySupport {
         SpacesPanel panel;
-        public MyCategorySupport(String nameKey, JPanel panel, String previewText, Map<String, Object> forcedOptions) {
-            super(nameKey, panel, previewText,forcedOptions );
+        public MyCategorySupport(CodeStyle.Language language,
+                String nameKey, JPanel panel, String previewText, Map<String, Object> forcedOptions) {
+            super(language, nameKey, panel, previewText,forcedOptions );
             this.panel = (SpacesPanel) getComponent(null); 
             update();
         }
@@ -278,7 +283,7 @@ public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListen
         @Override
         public void update() {
             List<Item> items = getAllItems();
-            Preferences node = EditorOptions.getPreferences(EditorOptions.getCurrentProfileId());
+            Preferences node = EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(panel.language));
             for (Item item : items) {
                 boolean df = (Boolean)EditorOptions.getDefault(item.id);
                 item.value = node.getBoolean(item.id, df);
@@ -286,7 +291,7 @@ public class SpacesPanel extends JPanel implements TreeCellRenderer, MouseListen
         }
         @Override
         public void applyChanges() {
-            storeTo(EditorOptions.getPreferences(EditorOptions.getCurrentProfileId()));            
+            storeTo(EditorOptions.getPreferences(EditorOptions.getCurrentProfileId(panel.language)));            
         }
 
         @Override

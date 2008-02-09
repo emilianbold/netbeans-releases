@@ -490,7 +490,9 @@ introduced by support for multiple source roots. -jglick
                     </attribute>
                     <sequential>
                         <nbjpdareload>
-                            <fileset includes="${{fix.includes}}*.class" dir="@{{dir}}"/>
+                            <fileset includes="${{fix.classes}}" dir="@{{dir}}" >
+                                <include name="${{fix.includes}}*.class"/>
+                            </fileset>
                         </nbjpdareload>
                     </sequential>
                 </macrodef>

@@ -3,3 +3,4 @@ org.netbeans.modules.bpel.validation.reference.Validator
 org.netbeans.modules.bpel.validation.runtime.Validator
 org.netbeans.modules.bpel.validation.schema.Validator
 org.netbeans.modules.bpel.validation.statics.Validator
+org.netbeans.modules.bpel.validation.xpath.Validator

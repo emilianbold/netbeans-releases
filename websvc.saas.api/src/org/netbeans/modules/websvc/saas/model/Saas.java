@@ -51,6 +51,7 @@ import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices.Header;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasMetadata;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -58,13 +59,24 @@ import org.openide.util.Exceptions;
  */
 public class Saas {
     public static final String PROP_PARENT_GROUP = "parentGroup";
+    public static final String PROP_STATE = "saasState";
+
+    public static enum State { 
+        UNINITIALIZED, 
+        RETRIEVED, 
+        READY 
+    }
+    
     public static final String NS_SAAS = "http://xml.netbeans.org/websvc/saas/services/1.0";
     public static final String NS_WSDL = "http://schemas.xmlsoap.org/wsdl/";
     public static final String NS_WADL = "http://research.sun.com/wadl/2006/10";
     //private static final String CUSTOM = "custom";
+    
     protected final SaasServices delegate;
     private SaasGroup parentGroup;
     private List<SaasMethod> saasMethods;
+    
+    private State state = State.UNINITIALIZED;
     private FileObject saasFolder; // userdir folder to store customization and consumer artifacts
     private FileObject moduleJar; // NBM this saas was loaded from
     private URLClassLoader loader;
@@ -89,7 +101,29 @@ public class Saas {
     public String getUrl() {
         return delegate.getUrl();
     }
+    
+    public State getState() {
+        return state;
+    }
 
+    protected synchronized void setState(State v) {
+        State old = state;
+        state = v;
+        SaasServicesModel.getInstance().fireChange(PROP_STATE, this, old, state);
+    }
+    
+    /**
+     * Asynchronous call to transition Saas to READY state; mainly for UI usage
+     * Sub-class need to completely override as needed, without calling super().
+     */
+    public void toStateReady() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                setState(State.READY);
+            }
+        });
+    }
+    
     public FileObject getModuleJar() {
         return moduleJar;
     }

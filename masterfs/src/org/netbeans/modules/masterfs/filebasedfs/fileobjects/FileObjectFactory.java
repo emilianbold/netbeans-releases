@@ -170,21 +170,21 @@ public final class FileObjectFactory {
     }    
 
     private boolean printWarning(File file, Status stat) {
-            NbPreferences.root().node("/org/netbeans").put("warning", file.getAbsolutePath()); 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            PrintStream ps = new PrintStream(bos);
-            new Exception().printStackTrace(ps);
-            ps.close();
-            String h = file.exists() ? "WARNING: externally created " : "WARNING: externally deleted "; //NOI18N
-            h += (file.isDirectory() ? "folder: " : "file: ") + file.getAbsolutePath(); //NOI18N
-            if (!stat.equals(Status.NoRecover)) {
-                h += " State: " + stat.toString();//NOI18N
-            }
-            h += "  - please report. (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)";//NOI18N
-            if (Utilities.isWindows()) {
-                h = h.replace('\\', '/');//NOI18N
-            }
-            Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replaceAll("java[.]lang[.]Exception", h));//NOI18N
+        NbPreferences.root().node("/org/netbeans").put("warning", file.getAbsolutePath());
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(bos);
+        new Exception().printStackTrace(ps);
+        ps.close();
+        String h = "WARNING(please REPORT):  Externally ";
+        h += file.exists() ? "created " : "deleted "; //NOI18N
+        h += (file.isDirectory() ? "folder: " : "file: "); //NOI18N
+        if (Utilities.isWindows()) {
+            h += file.getAbsolutePath().replace('\\', '/');
+        } else {
+            h += file.getAbsolutePath();
+        }        
+        h += "  (For additional information see: http://wiki.netbeans.org/wiki/view/FileSystems)";//NOI18N
+        Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FolderObj").log(Level.WARNING, bos.toString().replace("java.lang.Exception", h));//NOI18N
         return true;
     }
     
