@@ -136,6 +136,7 @@ import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesSupportFactory;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
+import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -404,7 +405,9 @@ public final class WebProject implements Project, AntProjectListener, PropertyCh
             new WebProjectEncodingQueryImpl(evaluator()),
             new WebTemplateAttributesProvider(this.helper),
             ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
+            LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
+            LookupMergerSupport.createJFBLookupMerger(),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }

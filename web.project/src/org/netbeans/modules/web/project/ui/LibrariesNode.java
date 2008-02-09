@@ -168,6 +168,9 @@ final class LibrariesNode extends AbstractNode {
 
     //Static Action Factory Methods
     public static Action createAddProjectAction (WebProject p, boolean sources) {
+        if (p.getSourceRoots().getRoots().length == 0) {
+            return null;
+        }
         if (sources) {
             return new AddProjectAction(p, p.getSourceRoots().getRoots()[0]);
         } else {
@@ -176,6 +179,9 @@ final class LibrariesNode extends AbstractNode {
     }
 
     public static Action createAddLibraryAction (WebProject p, boolean sources) {
+        if (p.getSourceRoots().getRoots().length == 0) {
+            return null;
+        }
         if (sources) {
             return new AddLibraryAction(p, p.getSourceRoots().getRoots()[0]);
         } else {
@@ -184,6 +190,9 @@ final class LibrariesNode extends AbstractNode {
     }
 
     public static Action createAddFolderAction (WebProject p, boolean sources) {
+        if (p.getSourceRoots().getRoots().length == 0) {
+            return null;
+        }
         if (sources) {
             return new AddFolderAction(p, p.getSourceRoots().getRoots()[0]);
         } else {

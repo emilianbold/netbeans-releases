@@ -404,11 +404,10 @@ public class UpdateHelper {
 //                            warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? findText((Element) pathInWarElements.item(0)) : Item.PATH_IN_WAR_NONE);
                             if (webFileText.startsWith ("lib.")) {
                                 String libName = webFileText.substring(6, webFileText.indexOf(".classpath")); //NOI18N
-                                List/*<URL>*/ roots = LibraryManager.getDefault().getLibrary(libName).getContent("classpath"); //NOI18N
-                                ArrayList files = new ArrayList ();
-                                ArrayList dirs = new ArrayList ();
-                                for (Iterator it = roots.iterator(); it.hasNext();) {
-                                    URL rootUrl = (URL) it.next();
+                                List<URL> roots = LibraryManager.getDefault().getLibrary(libName).getContent("classpath"); //NOI18N
+                                ArrayList<FileObject> files = new ArrayList<FileObject>();
+                                ArrayList<FileObject> dirs = new ArrayList<FileObject>();
+                                for (URL rootUrl : roots) {
                                     FileObject root = URLMapper.findFileObject (rootUrl);
                                     if ("jar".equals(rootUrl.getProtocol())) {  //NOI18N
                                         root = FileUtil.getArchiveFile (root);

@@ -380,9 +380,11 @@ public class WebProjectClassPathModifier extends ProjectClassPathModifierImpleme
     }
     
     private void unregisterLibraryListeners() {
-        Library libs [] = LibraryManager.getDefault().getLibraries();
-        for (int i = 0; i < libs.length; i++) {
-            libs [i].removePropertyChangeListener(listener);
+        for (LibraryManager man : LibraryManager.getOpenManagers()) {
+            Library libs [] = man.getLibraries();
+            for (int i = 0; i < libs.length; i++) {
+                libs [i].removePropertyChangeListener(listener);
+            }
         }
     }
     

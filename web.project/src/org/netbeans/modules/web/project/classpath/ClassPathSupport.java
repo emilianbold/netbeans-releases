@@ -75,6 +75,7 @@ import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -873,6 +874,8 @@ public class ClassPathSupport {
         private final File resolvedFile;
 
         public RelativePath(String filePath, File base) {
+            Parameters.notNull("filePath", filePath);
+            Parameters.notNull("base", base);
             this.filePath = filePath;
             this.base = base;
             resolvedFile = PropertyUtils.resolveFile(base, filePath);
@@ -888,6 +891,20 @@ public class ClassPathSupport {
 
         public File getResolvedFile() {
             return resolvedFile;
+        }
+
+        @Override
+        public int hashCode() {
+            return filePath.hashCode() + base.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof RelativePath)) {
+                return false;
+            }
+            RelativePath other = (RelativePath)obj;
+            return filePath.equals(other.filePath) && base.equals(other.base);
         }
         
     }
