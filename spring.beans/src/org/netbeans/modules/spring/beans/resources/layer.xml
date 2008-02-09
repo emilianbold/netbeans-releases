@@ -143,19 +143,7 @@ made subject to such option by the copyright holder.
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-spring-beans-completion-SpringXMLConfigCompletionProvider.instance"/>
                 </folder>
-                <folder name="Popup">
-                    <file name="RefactoringAll.instance">
-                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
-                    </file>
-                </folder>
-            </folder> 
-            <folder name="x-java">
-                <folder name="Popup">
-                    <file name="RefactoringAll.instance">
-                         <attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
-                    </file>
-                </folder>
-            </folder>       
+            </folder>
         </folder>
     </folder>
     <folder name="Projects">
